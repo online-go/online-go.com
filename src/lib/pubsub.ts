@@ -41,7 +41,7 @@ export class Publisher<T> {
     public readonly Subscriber: new <K extends Extract<keyof T, string>>(callback: Callback<T, K>) => Subscriber<T, K>;
 
     constructor() {
-        let serial: number = 0;
+        let serial = 0;
         const callback_table: CallbackTable<T> = {};
 
         this.callback_table = callback_table;

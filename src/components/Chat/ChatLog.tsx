@@ -349,7 +349,7 @@ function ChannelTopic(
 }
 
 
-let scrolled_to_bottom: boolean = true;
+let scrolled_to_bottom = true;
 function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers}: InternalChatLogProperties): JSX.Element {
     const user = data.get("user");
     const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;

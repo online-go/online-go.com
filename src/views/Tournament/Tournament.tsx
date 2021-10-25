@@ -895,7 +895,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
             }
 
             let groups = new Array(last_group);
-            let broken_list = new Array();
+            let broken_list = [];
             for (let i = 0; i < groups.length; ++i) {
                 groups[i] = {"players": []};
             }

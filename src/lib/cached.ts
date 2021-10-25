@@ -168,7 +168,7 @@ export const cached = {
 };
 
 
-let current_user_id: number = 0;
+let current_user_id = 0;
 let refresh_debounce = setTimeout(refresh_all, 10);
 function refresh_all() {
     refresh_debounce = null;

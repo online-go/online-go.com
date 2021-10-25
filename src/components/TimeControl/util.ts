@@ -495,7 +495,7 @@ export function durationString(seconds: number): string {
 export function daysOnlyDurationString(seconds): string {
     const days = Math.floor(seconds / 86400);
 
-    let ret: string = "";
+    let ret = "";
     ret += interpolate(_("{{number_of_days}} {{day_or_days_plurality}}"), {number_of_days: days, day_or_days_plurality: ngettext("Day", "Days", days)});
     return ret.trim();
 }

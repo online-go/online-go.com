@@ -313,7 +313,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             );
         } else {
             const player_id = this.state.user.id || this.state.user.player_id;
-            const uri: string = `/player/${player_id}/${encodeURIComponent(username_string)}`;
+            const uri = `/player/${player_id}/${encodeURIComponent(username_string)}`;
 
             return (
                 // if only we could put {...main_attrs} on the span, we could put the styles in .Player.  But router seems to hate that.

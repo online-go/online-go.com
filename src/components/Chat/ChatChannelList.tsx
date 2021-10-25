@@ -101,7 +101,7 @@ export function ChatChannelList({channel}: ChatChannelListProperties): JSX.Eleme
     autojoin_channels();
 
     const joined_channels = data.get("chat.joined");
-    const using_resolved_channel: boolean = !(
+    const using_resolved_channel = !(
         group_channels.filter(chan => `group-${chan.id}` === channel).length
         + tournament_channels.filter(chan => `tournament-${chan.id}` === channel).length
         + global_channels.filter(chan => chan.id === channel).length

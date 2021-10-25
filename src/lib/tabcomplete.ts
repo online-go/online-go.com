@@ -243,7 +243,7 @@ function onKeyPress(e, options) {
             }
         }
     }
-};
+}
 /* tslint:enable */
 /* eslint-enable @typescript-eslint/no-invalid-this */
 

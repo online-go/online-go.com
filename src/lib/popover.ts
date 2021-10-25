@@ -40,7 +40,7 @@ interface PopoverConfig {
     //right?:HTMLElement;;
 }
 
-let last_id: number = 0;
+let last_id = 0;
 const open_popovers = {};
 
 export class PopOver extends TypedEventEmitter<Events> {
@@ -84,8 +84,8 @@ export function popover(config: PopoverConfig): PopOver {
 
     const minWidth: number = config.minWidth || 150;
     const minHeight: number = config.minHeight || 25;
-    let x: number = 0;
-    let y: number = 0;
+    let x = 0;
+    let y = 0;
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
     const bounds = {x: scrollLeft + window.innerWidth - 16 , y: scrollTop + window.innerHeight - 16};

@@ -947,9 +947,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
         });
 
         let last_audio_played: ValidSound = 'error';
-        let overtime_announced: boolean = false;
+        let overtime_announced = false;
         let last_period_announced = -1;
-        let first_audio_event_received: boolean = false;
+        let first_audio_event_received = false;
         // this exists to prevent some early announcements when we reconnect
         setTimeout(() => first_audio_event_received = true, 1000);
 
@@ -1007,8 +1007,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
             let audio_to_play: ValidSound;
             const seconds_left: number = audio_clock_event.countdown_seconds;
-            let numeric_announcement: boolean = false;
-            let force_play: boolean = false;
+            let numeric_announcement = false;
+            let force_play = false;
 
             if (audio_clock_event.in_overtime && !overtime_announced) {
                 force_play = true;

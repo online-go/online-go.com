@@ -387,7 +387,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const cur_move = this.props.move;
         const trunk_move = cur_move.getBranchPoint();
         const move_number = trunk_move.move_number;
-        let next_move_pretty_coords: string = '';
+        let next_move_pretty_coords = '';
 
         const trunk_move_string = trunk_move.getMoveStringToThisPoint();
         const cur_move_string = cur_move.getMoveStringToThisPoint();
@@ -1023,7 +1023,7 @@ function isEqualMoveIntersection(a: JGOFIntersection, b: JGOFIntersection): bool
 }
 function ReviewStrengthIcon({review}: {review: JGOFAIReview}): JSX.Element {
     let strength: string;
-    let content: string = '';
+    let content = '';
     if (review.type === 'fast') {
         strength = 'ai-review-fast';
         content = '';

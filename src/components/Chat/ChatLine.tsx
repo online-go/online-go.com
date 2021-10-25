@@ -92,7 +92,7 @@ export function ChatLine(props: ChatLineInterface): JSX.Element {
 
     const mentions = name_match_regex.test(body);
 
-    let timestamp_str: string = "";
+    let timestamp_str = "";
     if (ts) {
         const hours = ts.getHours();
         const minutes = ts.getMinutes();

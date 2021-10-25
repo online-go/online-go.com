@@ -30,7 +30,7 @@ import * as player_cache from "player_cache";
 import online_status from "online_status";
 import {alertModerator} from "misc";
 
-let last_id: number = 0;
+let last_id = 0;
 
 const private_chats = [];
 const instances = {};

@@ -56,7 +56,7 @@ function initialize() {
 
 
 const requests_in_flight = {};
-let last_request_id: number = 0;
+let last_request_id = 0;
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 interface RequestFunction {

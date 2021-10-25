@@ -356,7 +356,7 @@ interface RemoteKV {
 let remote_store: {[key: string]: RemoteKV} = {};
 let wal: {[key: string]: {key: string; value?: any; replication: Replication}} = {};
 let wal_currently_processing: {[k: string]: boolean} = {};
-let last_modified: string = "2000-01-01T00:00:00.000Z";
+let last_modified = "2000-01-01T00:00:00.000Z";
 let loaded_user_id: number | null = null; // user id we've currently loaded data for
 
 
