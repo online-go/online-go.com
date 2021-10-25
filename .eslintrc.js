@@ -29,6 +29,10 @@ module.exports = {
         "@typescript-eslint",
         "@typescript-eslint/tslint"
     ],
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended"
+    ],
     "rules": {
         "@typescript-eslint/adjacent-overload-signatures": "error",
         "@typescript-eslint/consistent-type-assertions": "error",
