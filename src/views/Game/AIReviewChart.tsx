@@ -208,10 +208,8 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
                 this.full_crosshair?.style('display', 'none');
             })
             .on('mousemove', function() {
-                /* tslint:disable */
                 // eslint-disable-next-line @typescript-eslint/no-invalid-this
                 const x0 = self.x.invert(d3.mouse(this as d3.ContainerElement)[0]);
-                /* tslint:enable */
 
                 const i = bisector(self.props.entries, x0, 1);
                 const d0 = self.props.entries[i - 1];
@@ -236,10 +234,8 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
                 mouse_down = true;
                 last_move = -1;
 
-                /* tslint:disable */
                 // eslint-disable-next-line @typescript-eslint/no-invalid-this
                 const x0 = self.x.invert(d3.mouse(this as d3.ContainerElement)[0]);
-                /* tslint:enable */
 
                 const i = bisector(self.props.entries, x0, 1);
                 const d0 = self.props.entries[i - 1];
