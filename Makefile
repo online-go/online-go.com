@@ -12,9 +12,6 @@ pretty prettier:
 	npm run prettytsx
 	npm run prettyts
 
-lint tslint:
-	npm run tslint -- --project tsconfig.json
-
 min: minjs mincss
 
 mincss:
@@ -32,6 +29,6 @@ analyze:
 #NODE_PATH=$(NODE_PATH) PATH=$(PATH) PRODUCTION=true webpack --optimization-minimize --devtool=source-map --profile --json > analyze.json
 #npm run webpack-bundle-analyzer dist/ analyze.json
 
-.PHONY: dev lint tslint min minjs mincss
+.PHONY: dev min minjs mincss
 
 -include Makefile.production
