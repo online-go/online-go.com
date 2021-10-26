@@ -1,9 +1,9 @@
 'use strict';
 
 // Which backend server would you like to use today? ...
-const BACKEND = 'BETA';
-//const BACKEND = 'PRODUCTION';
-//const BACKEND = 'LOCAL';
+let BACKEND = 'BETA';
+//BACKEND = 'PRODUCTION';
+//BACKEND = 'LOCAL';
 
 const spawn        = require('child_process').spawn;
 const fs           = require('fs');
@@ -235,7 +235,7 @@ function dev_server(done) {
         .listen(port, null, function() {
             console.info(`#############################################`);
             console.info(`## Development server started on port ${port}`);
-            console.info(`##  (localhost:${port})`                      );
+            console.info(`##  ( http://localhost:${port} )`             );
             console.info(`##  pointing at ${BACKEND} (${server_url})`   );
             console.info(`#############################################`);
         });

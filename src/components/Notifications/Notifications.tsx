@@ -450,7 +450,11 @@ class NotificationManager {
             }
 
             if (notification.type === "lateChatReceivedInGame") {
-                emitNotification(_("Chat add to finished game"), _("Someone added some chat to your finished game"));
+                if (getCurrentGameId() === notification.game_id) {
+                    this.deleteNotification(notification, true);
+                } else {
+                    emitNotification(_("Chat add to finished game"), _("Someone added some chat to your finished game"));
+                }
             }
 
             this.rebuildNotificationList();
@@ -940,7 +944,7 @@ class NotificationEntry extends React.Component<{notification}, any> {
                     <span className="late-notification-text">
                         {_(" added chat to your finished ")}
                     </span>
-                    <a href={`/game/${notification.game}`}>
+                    <a href={`/game/${notification.game_id}`}>
                         {_("game")}
                     </a>
                 </div>;
