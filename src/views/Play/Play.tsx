@@ -109,8 +109,8 @@ export class Play extends React.Component<PlayProperties, any> {
             return;
         }
 
-        let w = this.ref_container.offsetWidth;
-        let h = this.ref_container.offsetHeight;
+        const w = this.ref_container.offsetWidth;
+        const h = this.ref_container.offsetHeight;
         if (w !== this.seekgraph.width || h !== this.seekgraph.height) {
             this.seekgraph.resize(w, h);
         }
@@ -121,11 +121,11 @@ export class Play extends React.Component<PlayProperties, any> {
 
     updateChallenges = (challenges) => {
         if (this.state.freeze_challenge_list) {
-            let live = this.state.live_list;
-            let corr = this.state.correspondence_list;
-            for (let list of [live, corr]) {
-                for (let i in list) {
-                    let id = list[i].challenge_id;
+            const live = this.state.live_list;
+            const corr = this.state.correspondence_list;
+            for (const list of [live, corr]) {
+                for (const i in list) {
+                    const id = list[i].challenge_id;
                     if (!challenges[id]) {
                         // console.log("Challenge went away:", id);
                         list[i].removed = true;
@@ -143,10 +143,10 @@ export class Play extends React.Component<PlayProperties, any> {
         }
 
         //console.log("Updating challenges with:", challenges);
-        let live = [];
-        let corr = [];
-        for (let i in challenges) {
-            let C = challenges[i];
+        const live = [];
+        const corr = [];
+        for (const i in challenges) {
+            const C = challenges[i];
             player_cache.fetch(C.user_id).then(() => 0).catch(ignore); /* just get the user data ready ready if we don't already have it */
             C.ranked_text = C.ranked ? _("Yes") : _("No");
             if (C.handicap === -1) {
@@ -218,8 +218,8 @@ export class Play extends React.Component<PlayProperties, any> {
     };
 
     findMatch = (speed: 'blitz' | 'live' | 'correspondence') => {
-        let settings = getAutomatchSettings(speed);
-        let preferences: AutomatchPreferences = {
+        const settings = getAutomatchSettings(speed);
+        const preferences: AutomatchPreferences = {
             uuid: uuid(),
             size_speed_options: this.state.automatch_size_options.map((size) => {
                 return {
@@ -325,7 +325,7 @@ export class Play extends React.Component<PlayProperties, any> {
     };
 
     anyChallengesToShow = (live) => {
-        let challengeList = live ? this.state.live_list : this.state.correspondence_list;
+        const challengeList = live ? this.state.live_list : this.state.correspondence_list;
 
         return this.state.show_all_challenges && challengeList.length || challengeList.reduce( (prev, current) => {
             return prev || current.eligible || current.user_challenge;
@@ -333,7 +333,7 @@ export class Play extends React.Component<PlayProperties, any> {
     };
 
     liveOwnChallengePending = () => {
-        let locp = this.state.live_list.some((c) => (c.user_challenge));
+        const locp = this.state.live_list.some((c) => (c.user_challenge));
         return locp;
     };
 
@@ -358,8 +358,8 @@ export class Play extends React.Component<PlayProperties, any> {
     };
 
     render() {
-        let corr_automatcher_uuids = Object.keys(automatch_manager.active_correspondence_automatchers);
-        let corr_automatchers = corr_automatcher_uuids.map((uuid) => automatch_manager.active_correspondence_automatchers[uuid]);
+        const corr_automatcher_uuids = Object.keys(automatch_manager.active_correspondence_automatchers);
+        const corr_automatchers = corr_automatcher_uuids.map((uuid) => automatch_manager.active_correspondence_automatchers[uuid]);
         corr_automatchers.sort((a, b) => a.timestamp - b.timestamp);
 
         return (
@@ -508,7 +508,7 @@ export class Play extends React.Component<PlayProperties, any> {
     }
 
     automatchContainer() {
-        let size_enabled = (size) => {
+        const size_enabled = (size) => {
             return this.state.automatch_size_options.indexOf(size) >= 0;
         };
 
@@ -619,10 +619,10 @@ export class Play extends React.Component<PlayProperties, any> {
     }
 
     challengeList(isLive: boolean) {
-        let user = data.get("user");
+        const user = data.get("user");
 
-        let timeControlClassName = (config) => {
-            let isBold = isLive && (config.time_per_move > 3600 || config.time_per_move === 0);
+        const timeControlClassName = (config) => {
+            const isBold = isLive && (config.time_per_move > 3600 || config.time_per_move === 0);
             return "cell " + (isBold ? "bold" : "");
         };
 
@@ -636,13 +636,13 @@ export class Play extends React.Component<PlayProperties, any> {
             );
         }
 
-        let commonSpan = (text: string, align: "center"|"left") => {
+        const commonSpan = (text: string, align: "center"|"left") => {
             return <span className="cell" style={{textAlign: align}}>
                 {text}
             </span>;
         };
 
-        let challengeList = isLive ? this.state.live_list : this.state.correspondence_list;
+        const challengeList = isLive ? this.state.live_list : this.state.correspondence_list;
 
         return challengeList.map((C) => (
             (((C.eligible || C.user_challenge || this.state.show_all_challenges)
@@ -708,7 +708,7 @@ export class Play extends React.Component<PlayProperties, any> {
     }
 
     cellBreaks(amount) {
-        let result = [];
+        const result = [];
         for (let i = 0; i < amount; ++i) {
             result.push(<span key={i} className="cell break"></span>);
         }
@@ -737,7 +737,7 @@ function challenge_sort(A, B) {
     if (A.user_challenge && !B.user_challenge) { return -1; }
     if (!A.user_challenge && B.user_challenge) { return 1; }
 
-    let t = A.username.localeCompare(B.username);
+    const t = A.username.localeCompare(B.username);
     if (t) { return t; }
 
     if (A.ranked && !B.ranked) { return -1; }

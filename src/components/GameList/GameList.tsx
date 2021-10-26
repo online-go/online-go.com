@@ -54,7 +54,7 @@ export class GameList extends React.PureComponent<GameListProps, any> {
     }
 
     render() {
-        let lst = this.props.list.slice(0);
+        const lst = this.props.list.slice(0);
 
         if (!this.props.disableSort) {
             switch (this.state.sort_order) {
@@ -62,8 +62,8 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                 case 'clock':
                     lst.sort((a, b) => {
                         try {
-                            let a_clock = a.goban && a.goban.last_clock ? a.goban.last_clock : a.json.clock;
-                            let b_clock = b.goban && b.goban.last_clock ? b.goban.last_clock : b.json.clock;
+                            const a_clock = a.goban && a.goban.last_clock ? a.goban.last_clock : a.json.clock;
+                            const b_clock = b.goban && b.goban.last_clock ? b.goban.last_clock : b.json.clock;
 
                             /* not my move? push to bottom (or top) */
                             if (a_clock.current_player === this.props.player.id && b_clock.current_player !== this.props.player.id) {
@@ -85,8 +85,8 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                 case 'opponent-clock':
                     lst.sort((a, b) => {
                         try {
-                            let a_clock = a.goban && a.goban.last_clock ? a.goban.last_clock : a.json.clock;
-                            let b_clock = b.goban && b.goban.last_clock ? b.goban.last_clock : b.json.clock;
+                            const a_clock = a.goban && a.goban.last_clock ? a.goban.last_clock : a.json.clock;
+                            const b_clock = b.goban && b.goban.last_clock ? b.goban.last_clock : b.json.clock;
 
                             /* not my move? push to bottom (or top) */
                             if (a_clock.current_player === this.props.player.id && b_clock.current_player !== this.props.player.id) {
@@ -120,8 +120,8 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                 case 'opponent':
                     lst.sort((a, b) => {
                         try {
-                            let a_opponent = a.black.id === this.props.player.id ? a.white : a.black;
-                            let b_opponent = b.black.id === this.props.player.id ? b.white : b.black;
+                            const a_opponent = a.black.id === this.props.player.id ? a.white : a.black;
+                            const b_opponent = b.black.id === this.props.player.id ? b.white : b.black;
                             return a_opponent.username.localeCompare(b_opponent.username) || a.id - b.id;
                         } catch (e) {
                             console.error(a, b, e);
@@ -134,8 +134,8 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                 case 'move-number' :
                     lst.sort((a, b) => {
                         try {
-                            let a_move_num = a.goban ? a.goban.engine.getMoveNumber() : a.json.moves.length;
-                            let b_move_num = b.goban ? b.goban.engine.getMoveNumber() : b.json.moves.length;
+                            const a_move_num = a.goban ? a.goban.engine.getMoveNumber() : a.json.moves.length;
+                            const b_move_num = b.goban ? b.goban.engine.getMoveNumber() : b.json.moves.length;
 
                             return a_move_num - b_move_num || a.id - b.id;
                         } catch (e) {
@@ -151,8 +151,8 @@ export class GameList extends React.PureComponent<GameListProps, any> {
                         try {
                             // sort by number of intersection
                             // for non-square boards with the same number of intersections, the wider board is concidered larger
-                            let a_size = a.width * a.height * 100 + a.width;
-                            let b_size = b.width * b.height * 100 + b.width;
+                            const a_size = a.width * a.height * 100 + a.width;
+                            const b_size = b.width * b.height * 100 + b.width;
 
                             return a_size - b_size || a.id - b.id;
                         } catch (e) {
@@ -172,14 +172,14 @@ export class GameList extends React.PureComponent<GameListProps, any> {
         if (lst.length === 0) {
             return <div className="container">{this.props.emptyMessage || ""}</div>;
         } else if (this.props.forceList || lst.length > preferences.get("game-list-threshold")) {
-            let sortable = this.props.disableSort && this.props.player ? '' : ' sortable ';
-            let sort_order = this.state.sort_order;
-            let move_number_sort      = sort_order === 'move-number'    ? 'sorted-desc' : sort_order === '-move-number'    ? 'sorted-asc' : '';
-            let game_sort             = sort_order === 'name'           ? 'sorted-desc' : sort_order === '-name'           ? 'sorted-asc' : '';
-            let opponent_sort         = sort_order === 'opponent'       ? 'sorted-desc' : sort_order === '-opponent'       ? 'sorted-asc' : '';
-            let clock_sort            = sort_order === 'clock'          ? 'sorted-desc' : sort_order === '-clock'          ? 'sorted-asc' : '';
-            let opponent_clock_sort   = sort_order === 'opponent-clock' ? 'sorted-desc' : sort_order === '-opponent-clock' ? 'sorted-asc' : '';
-            let size                  = sort_order === 'size'           ? 'sorted-desc' : sort_order === '-size'           ? 'sorted-asc' : '';
+            const sortable = this.props.disableSort && this.props.player ? '' : ' sortable ';
+            const sort_order = this.state.sort_order;
+            const move_number_sort      = sort_order === 'move-number'    ? 'sorted-desc' : sort_order === '-move-number'    ? 'sorted-asc' : '';
+            const game_sort             = sort_order === 'name'           ? 'sorted-desc' : sort_order === '-name'           ? 'sorted-asc' : '';
+            const opponent_sort         = sort_order === 'opponent'       ? 'sorted-desc' : sort_order === '-opponent'       ? 'sorted-asc' : '';
+            const clock_sort            = sort_order === 'clock'          ? 'sorted-desc' : sort_order === '-clock'          ? 'sorted-asc' : '';
+            const opponent_clock_sort   = sort_order === 'opponent-clock' ? 'sorted-desc' : sort_order === '-opponent-clock' ? 'sorted-asc' : '';
+            const size                  = sort_order === 'size'           ? 'sorted-desc' : sort_order === '-size'           ? 'sorted-asc' : '';
 
             return (
                 <div className="GameList GobanLineSummaryContainer">

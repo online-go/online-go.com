@@ -57,12 +57,12 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
         get("supporter_center/player/%%", this.props.playerId)
         .then((res) => {
 
-            let last_transaction = null;
-            let transactions = [];
-            for (let account of res.payment_accounts) {
-                for (let method of account.payment_methods) {
-                    for (let purchase of method.purchases) {
-                        for (let transaction of purchase.transactions) {
+            const last_transaction = null;
+            const transactions = [];
+            for (const account of res.payment_accounts) {
+                for (const method of account.payment_methods) {
+                    for (const purchase of method.purchases) {
+                        for (const transaction of purchase.transactions) {
                             transactions.push(transaction);
                         }
                     }
@@ -91,7 +91,7 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
     };
 
     makeSupporter = () => {
-        let num_months = parseInt(this.state.num_months);
+        const num_months = parseInt(this.state.num_months);
 
         swal({
             "text": (`Grant ${num_months} month supporter status to player?`),
@@ -105,7 +105,7 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
     };
 
     render() {
-        let user = this.state;
+        const user = this.state;
 
         return (
             <div className="Modal SupporterAdmin" ref="modal">

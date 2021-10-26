@@ -57,9 +57,9 @@ export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProper
 
 
     render() {
-        let show_block_chat = !this.props.onlyAnnouncements;
-        let show_block_game = !this.props.onlyAnnouncements;
-        let show_block_announcements = true;
+        const show_block_chat = !this.props.onlyAnnouncements;
+        const show_block_game = !this.props.onlyAnnouncements;
+        const show_block_announcements = true;
 
         return (
             <div className={"BlockPlayerModal" + (this.props.inline ? " inline" : "")}>
@@ -89,8 +89,8 @@ export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProper
 }
 
 export function openBlockPlayerControls(ev, user_id): PopOver {
-    let elt = $(ev.target);
-    let offset = elt.offset();
+    const elt = $(ev.target);
+    const offset = elt.offset();
 
     return popover({
         elt: (<BlockPlayerModal playerId={user_id} />),

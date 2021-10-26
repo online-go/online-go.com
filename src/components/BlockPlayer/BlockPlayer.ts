@@ -35,7 +35,7 @@ class BlockState {
     }
 }
 
-let ignores: {[player_id: number]: boolean} = {};
+const ignores: {[player_id: number]: boolean} = {};
 let block_states: {[player_id: number]: BlockState} = {};
 
 export function setIgnore(player_id: number, tf: boolean) {
@@ -95,7 +95,7 @@ export function getAllBlocks(): BlockState[] {
 }
 
 export function getAllBlocksWithUsernames(): Promise<BlockState[]> {
-    let ret = Object.keys(block_states).map(k => block_states[k]);
+    const ret = Object.keys(block_states).map(k => block_states[k]);
 
     return (
         Promise.all(
@@ -143,20 +143,20 @@ data.watch(cached.blocks, (blocks: BlockState[]) => {
         }
 
         block_states = {};
-        let new_ignores: {[player_id: number]: boolean} = {};
-        for (let entry of blocks) {
+        const new_ignores: {[player_id: number]: boolean} = {};
+        for (const entry of blocks) {
             block_states[entry.blocked] = entry;
             if (entry.block_chat) {
                 new_ignores[entry.blocked] = true;
             }
         }
 
-        for (let uid in new_ignores) {
+        for (const uid in new_ignores) {
             if (!(uid in ignores)) {
                 ignoreUser(uid, true);
             }
         }
-        for (let uid in ignores) {
+        for (const uid in ignores) {
             if (!(uid in new_ignores)) {
                 unIgnoreUser(uid);
             }

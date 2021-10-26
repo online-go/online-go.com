@@ -44,7 +44,7 @@ export class Resizable extends React.Component<any, {}> {
             return;
         }
 
-        let div = this.div;
+        const div = this.div;
         let width: number;
         let height: number;
 
@@ -82,7 +82,7 @@ export class Resizable extends React.Component<any, {}> {
     };
 
     componentDidMount() {
-        let div = this.div;
+        const div = this.div;
         this.last_width = div.clientWidth;
         this.last_height = div.clientHeight;
         this.check_interval = setInterval(this.checkForResize, 50);

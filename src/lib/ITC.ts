@@ -18,7 +18,7 @@
 /* Inter tab communications library */
 import {comm_socket} from "sockets";
 
-let registrations = {};
+const registrations = {};
 
 comm_socket.on("itc", (obj) => {
     if (obj.event in registrations) {

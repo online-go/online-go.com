@@ -42,14 +42,14 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
 
     constructor(props: PlayerIconProps) {
         super(props);
-        let id = this.getId(props);
+        const id = this.getId(props);
         if (!id) {
             this.state = { url: null };
             return;
         }
 
-        let user = player_cache.lookup(id);
-        let size = typeof(props.size) === 'number' ? props.size : parseInt(props.size);
+        const user = player_cache.lookup(id);
+        const size = typeof(props.size) === 'number' ? props.size : parseInt(props.size);
         this.state = {
             url: user && user.icon ? icon_size_url(user.icon, size) : null
         };
@@ -78,7 +78,7 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
     }
     componentDidMount() {
         this.mounted = true;
-        let id = this.getId(this.props);
+        const id = this.getId(this.props);
         if (!isNaN(id) && id > 0) {
             this.subscriber.on(id);
         }
@@ -89,8 +89,8 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
     }
 
     UNSAFE_componentWillReceiveProps(next_props) {
-        let current_id = this.getId(this.props);
-        let next_id = this.getId(next_props);
+        const current_id = this.getId(this.props);
+        const next_id = this.getId(next_props);
         if (current_id !== next_id) {
             this.setState({url: null});
             this.subscriber.off(this.subscriber.players());

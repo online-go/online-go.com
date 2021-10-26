@@ -105,7 +105,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
     }
 
     initialize() {
-        let self = this;
+        const self = this;
 
         //let this.props.use_score = this.props.use_score && this.props.ai_review.scores != null;
 
@@ -210,18 +210,18 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .on('mousemove', function() {
                 /* tslint:disable */
                 // eslint-disable-next-line @typescript-eslint/no-invalid-this
-                let x0 = self.x.invert(d3.mouse(this as d3.ContainerElement)[0]);
+                const x0 = self.x.invert(d3.mouse(this as d3.ContainerElement)[0]);
                 /* tslint:enable */
 
-                let i = bisector(self.props.entries, x0, 1);
-                let d0 = self.props.entries[i - 1];
-                let d1 = self.props.entries[i];
+                const i = bisector(self.props.entries, x0, 1);
+                const d0 = self.props.entries[i - 1];
+                const d1 = self.props.entries[i];
 
                 if (!d0 || !d1) {
                     return;
                 }
 
-                let d = x0 - d0.move_number > d1.move_number - x0 ? d1 : d0;
+                const d = x0 - d0.move_number > d1.move_number - x0 ? d1 : d0;
                 self.cursor_crosshair?.attr('transform', 'translate(' + self.x(d.move_number) + ', 0)');
                 self.full_crosshair?.attr('transform', 'translate(0, ' + self.y(self.props.use_score ? d.score : d.win_rate * 100.0) + ')');
 
@@ -238,18 +238,18 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
 
                 /* tslint:disable */
                 // eslint-disable-next-line @typescript-eslint/no-invalid-this
-                let x0 = self.x.invert(d3.mouse(this as d3.ContainerElement)[0]);
+                const x0 = self.x.invert(d3.mouse(this as d3.ContainerElement)[0]);
                 /* tslint:enable */
 
-                let i = bisector(self.props.entries, x0, 1);
-                let d0 = self.props.entries[i - 1];
-                let d1 = self.props.entries[i];
+                const i = bisector(self.props.entries, x0, 1);
+                const d0 = self.props.entries[i - 1];
+                const d1 = self.props.entries[i];
 
                 if (!d0 || !d1) {
                     return;
                 }
 
-                let d = x0 - d0.move_number > d1.move_number - x0 ? d1 : d0;
+                const d = x0 - d0.move_number > d1.move_number - x0 ? d1 : d0;
                 last_move = d.move_number;
                 self.props.setmove(d.move_number);
             })
@@ -270,7 +270,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         let entries: Array<AIReviewEntry>;
         let variation_entries: Array<AIReviewEntry> = [];
 
-        let use_score_safe = this.props.use_score
+        const use_score_safe = this.props.use_score
           && this.props.ai_review.scores != null;
 
         if (this.props.entries.length > 0) {
@@ -362,8 +362,8 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             ?.datum(variation_entries)
             .attr('d', this.win_rate_line as any);
 
-        let show_all = Object.keys(this.props.ai_review.moves).length <= 3;
-        let circle_coords = entries.filter((x) => {
+        const show_all = Object.keys(this.props.ai_review.moves).length <= 3;
+        const circle_coords = entries.filter((x) => {
             if (this.props.ai_review.moves[x.move_number]
                 && (show_all || (
                     !this.props.ai_review.moves[x.move_number + 1]
@@ -379,7 +379,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
 
         let gradient_transition_point = 50;
         if (use_score_safe) {
-            let yRange = this.max_score - this.min_score;
+            const yRange = this.max_score - this.min_score;
             if (yRange !== 0) {
                 gradient_transition_point = (this.max_score / yRange) * 100;
             }
@@ -433,9 +433,9 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
                 .selectAll('circle')
                 .data(circle_coords) as d3.Selection<SVGCircleElement, AIReviewEntry, SVGSVGElement, unknown>;
         // remove any data points that were removed
-        let removes = this.highlighted_move_circles.exit().remove();
+        const removes = this.highlighted_move_circles.exit().remove();
         // add circles that were added
-        let adds = this.highlighted_move_circles.enter().append('circle');
+        const adds = this.highlighted_move_circles.enter().append('circle');
         // update positions for our circles
         this.highlighted_move_circles
             .transition()
@@ -490,7 +490,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
 
         this.x.range([0, this.width]);
 
-        let entries = this.props.entries.map(x => x);
+        const entries = this.props.entries.map(x => x);
         entries.unshift({win_rate: 0.5, score: 0.0, move_number: 0, num_variations: 0});
         entries.push({
             win_rate: 0.5,
@@ -499,7 +499,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             num_variations: 0
         });
 
-        let variation_entries = this.props.variation_entries.map(x => x);
+        const variation_entries = this.props.variation_entries.map(x => x);
         variation_entries.unshift({win_rate: 0.5, score: 0.0, move_number: 0, num_variations: 0});
         variation_entries.push({
             win_rate: 0.5,
@@ -534,7 +534,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
         this.plot();
     };
     setContainer = (e: HTMLElement | null) => {
-        let need_resize = !this.container;
+        const need_resize = !this.container;
 
         if (e) {
             this.container = e;

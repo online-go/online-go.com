@@ -44,9 +44,9 @@ import {FabX, FabCheck} from "material";
 
 
 
-let UserRating = (props: {rating: number}) => {
-    let wholeRating = Math.floor(props.rating);
-    let tenthsRating = Math.floor(props.rating * 10) % 10;
+const UserRating = (props: {rating: number}) => {
+    const wholeRating = Math.floor(props.rating);
+    const tenthsRating = Math.floor(props.rating * 10) % 10;
     return <span className="UserRating">{wholeRating}{(tenthsRating > 0) && <sup><span className="frac"><sup>{tenthsRating}</sup>&frasl;<sub>10</sub></span></sup>}</span>;
 };
 
@@ -81,7 +81,7 @@ export class Overview extends React.Component<{}, any> {
     }
 
     setTitle() {
-        let count = this.state.boards_to_move_on > 0 ? `(${this.state.boards_to_move_on}) ` : "";
+        const count = this.state.boards_to_move_on > 0 ? `(${this.state.boards_to_move_on}) ` : "";
         window.document.title = `${count}${Overview.defaultTitle}`;
     }
 
@@ -122,7 +122,7 @@ export class Overview extends React.Component<{}, any> {
     }
 
     render() {
-        let user = this.state.user;
+        const user = this.state.user;
 
         return (
             <div id="Overview-Container">

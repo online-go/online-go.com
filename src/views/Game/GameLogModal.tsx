@@ -57,8 +57,8 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, {log: Ar
             log: []
         };
 
-        let config = this.props.config;
-        let game_id = config.game_id;
+        const config = this.props.config;
+        const game_id = config.game_id;
         termination_socket.send(`game/log`, {game_id}, (log) => this.setLog(log));
     }
 
@@ -68,9 +68,9 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, {log: Ar
     }
 
     render() {
-        let config = this.props.config;
-        let user = data.get('user');
-        let game_id = config.game_id;
+        const config = this.props.config;
+        const user = data.get('user');
+        const game_id = config.game_id;
 
         return (
             <div className="Modal GameLogModal" ref="modal">
@@ -120,17 +120,17 @@ function LogData({config, event, data}: {config: any; event: string; data: any})
         return null;
     }
 
-    let ret: Array<JSX.Element> = [];
+    const ret: Array<JSX.Element> = [];
 
     if (data) {
         try {
-            for (let k in data) {
+            for (const k in data) {
                 if (k === 'player_id') {
                     ret.push(<span key={k} className='field'><Player user={data[k]} /></span>);
                 } else if (k === 'winner') {
                     ret.push(<span key={k} className='field'>Winner: <Player user={data[k]} /></span>);
                 } else if (k === 'stones') {
-                    let stones =
+                    const stones =
                         GoMath.decodeMoves(data[k], config.width, config.height)
                         .map((mv) => GoMath.prettyCoords(mv.x, mv.y, config.height))
                         .join(', ');

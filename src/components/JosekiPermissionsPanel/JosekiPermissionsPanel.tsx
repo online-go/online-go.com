@@ -85,7 +85,7 @@ export class JosekiPermissionsPanel extends React.PureComponent<any, any> {
             throb: true
         });
 
-        let new_permissions = {
+        const new_permissions = {
             can_comment: this.state.can_comment,
             can_edit: this.state.can_edit,
             can_admin: this.state.can_admin

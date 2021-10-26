@@ -44,7 +44,7 @@ interface Events {
 
 // null or id of game that we're current viewing
 function getCurrentGameId() {
-    let m = window.location.pathname.match(/game\/(view\/)?([0-9]+)/);
+    const m = window.location.pathname.match(/game\/(view\/)?([0-9]+)/);
     if (m) {
         return parseInt(m[2]);
     }
@@ -52,9 +52,9 @@ function getCurrentGameId() {
 }
 
 function formatTime(seconds) {
-    let days = Math.floor(seconds / 86400); seconds -= days * 86400;
-    let hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
-    let minutes = Math.floor(seconds / 60); seconds -= minutes * 60;
+    const days = Math.floor(seconds / 86400); seconds -= days * 86400;
+    const hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
+    const minutes = Math.floor(seconds / 60); seconds -= minutes * 60;
 
     function plurality(num, single, plural) {
         if (num > 0) {
@@ -85,14 +85,14 @@ function formatTime(seconds) {
 }
 
 let boot_time = Date.now();
-let already_asked_for_permission = false;
+const already_asked_for_permission = false;
 let notification_timeout = null;
-let sent = {};
+const sent = {};
 $(window).on("storage", (event) => {
     //console.log(event);
-    let ev: any = event.originalEvent;
+    const ev: any = event.originalEvent;
     if (ev.key === "lastNotificationSent") {
-        let key = ev.newValue;
+        const key = ev.newValue;
         sent[key] = true;
         setTimeout(() => {
             delete sent[key];
@@ -108,7 +108,7 @@ export function emitNotification(title, body, cb?) {
 
         if (!preferences.get("asked-to-enable-desktop-notifications") && Notification.permission === "default") {
             preferences.set("asked-to-enable-desktop-notifications", true);
-            let t = toast(
+            const t = toast(
                 <div>
                     {_("Hi! While you're using OGS, you can enable Desktop Notifications to be notified when your name is mentioned in chat or you receive a game challenge. Would you like to enable them? (You can always change your answer under settings)")}
                     <div>
@@ -154,7 +154,7 @@ export function emitNotification(title, body, cb?) {
             if (notification_timeout) {
                 clearTimeout(notification_timeout);
             }
-            let delay = Math.round((Math.random() * 0.2 + 0.05) * 1000); /* sleep 0.05-0.15 seconds */
+            const delay = Math.round((Math.random() * 0.2 + 0.05) * 1000); /* sleep 0.05-0.15 seconds */
             notification_timeout = setTimeout(() => {
                 notification_timeout = null;
                 if ((title + body) in sent) {
@@ -168,7 +168,7 @@ export function emitNotification(title, body, cb?) {
                 }
 
                 try {
-                    let notification = new Notification(title,
+                    const notification = new Notification(title,
                         {
                             body: body,
                             icon: "https://cdn.online-go.com/favicon.ico",
@@ -242,15 +242,15 @@ class NotificationManager {
     }
 
     advanceToNextBoard(ev?) {
-        let game_id = getCurrentGameId() || 0;
-        let board_ids = [];
+        const game_id = getCurrentGameId() || 0;
+        const board_ids = [];
         //notificationPermissionRequest();
-        for (let k in this.boards_to_move_on) {
+        for (const k in this.boards_to_move_on) {
             board_ids.push(parseInt(this.boards_to_move_on[k].id));
         }
 
         if (board_ids.length === 0) {
-            for (let k in this.active_boards) {
+            for (const k in this.active_boards) {
                 board_ids.push(parseInt(this.active_boards[k].id));
             }
         }
@@ -310,8 +310,8 @@ class NotificationManager {
         }
     }
     clearAllNonActionableNotifications() {
-        for (let id in this.notifications) {
-            let notification = this.notifications[id];
+        for (const id in this.notifications) {
+            const notification = this.notifications[id];
             switch (notification.type) {
                 case "challenge":
                 case "friendRequest":
@@ -356,7 +356,7 @@ class NotificationManager {
             }
 
             if (this.boards_to_move_on[game.id]) {
-                let current_game_id = getCurrentGameId();
+                const current_game_id = getCurrentGameId();
                 if ((current_game_id !== game.id || !document.hasFocus())) {
                     if (game.avg_move_time > 3600) { // don't notify for realtime games ever
                         emitNotification(_("Your Turn"), interpolate("It's your turn in game {{game_id}}", {'game_id': game.id}),
@@ -457,11 +457,11 @@ class NotificationManager {
         return comm_socket;
     }
     onNavigate = (location) => {
-        let current_game_id = getCurrentGameId();
+        const current_game_id = getCurrentGameId();
         if (current_game_id) {
             let found = false;
-            for (let k in this.notifications) {
-                let notification = this.notifications[k];
+            for (const k in this.notifications) {
+                const notification = this.notifications[k];
                 if (notification.game_id === current_game_id) {
                     this.deleteNotification(notification, true);
                     found = true;
@@ -476,7 +476,7 @@ class NotificationManager {
         this.ordered_notifications = [];
 
         this.unread_notification_count = 0;
-        for (let k in this.notifications) {
+        for (const k in this.notifications) {
             this.unread_notification_count += !(this.notifications[k].read) ? 1 : 0;
             this.ordered_notifications.push(this.notifications[k]);
         }
@@ -498,7 +498,7 @@ class NotificationManager {
 
 
 
-export let notification_manager: NotificationManager = new NotificationManager();
+export const notification_manager: NotificationManager = new NotificationManager();
 
 export class TurnIndicator extends React.Component<{}, any> {
     constructor(props) {
@@ -653,7 +653,7 @@ class NotificationEntry extends React.Component<{notification}, any> {
 
     open = (ev) => {
         if (!$(ev.target).hasClass("fab") && !$(ev.target).hasClass("fa")) {
-            let url = this.getOpenUrl();
+            const url = this.getOpenUrl();
             if (url) {
                 browserHistory.push(url);
             }
@@ -663,7 +663,7 @@ class NotificationEntry extends React.Component<{notification}, any> {
         return !!this.getOpenUrl();
     }
     getOpenUrl() {
-        let notification = this.props.notification;
+        const notification = this.props.notification;
 
         switch (notification.type) {
             case "gameStarted":
@@ -706,7 +706,7 @@ class NotificationEntry extends React.Component<{notification}, any> {
             return <div>{this.state.message + "..."}</div>;
         }
 
-        let inner = this.renderNotification();
+        const inner = this.renderNotification();
         if (!inner) {
             return null;
         }
@@ -719,7 +719,7 @@ class NotificationEntry extends React.Component<{notification}, any> {
 
 
     renderNotification() {
-        let notification = this.props.notification;
+        const notification = this.props.notification;
 
         switch (notification.type) {
             case "test":
@@ -783,8 +783,8 @@ class NotificationEntry extends React.Component<{notification}, any> {
                 );
 
             case "timecop":
-                let now = (Date.now()) / 1000;
-                let left = Math.floor(notification.time / 1000 - now);
+                const now = (Date.now()) / 1000;
+                const left = Math.floor(notification.time / 1000 - now);
                 return <div>{interpolate(_("You have {{time_left}} to make your move!"), {"time_left": formatTime(left)})}</div>;
 
             case "gameEnteredStoneRemoval":

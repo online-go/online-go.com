@@ -102,21 +102,21 @@ export class Group extends React.PureComponent<GroupProperties, any> {
         setExtraActionCallback(null);
     }
     UNSAFE_componentWillReceiveProps(next_props) {
-        let group_id = parseInt(next_props.match.params.group_id);
+        const group_id = parseInt(next_props.match.params.group_id);
         if (group_id !== this.state.group_id) {
             this.resolve(group_id);
             this.setState({group_id: group_id});
         }
     }
     resolve(group_id: number) {
-        let user = data.get("user");
+        const user = data.get("user");
 
         get("groups/%%", group_id).then((group) => {
             window.document.title = group.name;
 
             let is_admin = false;
 
-            for (let admin of group.admins) {
+            for (const admin of group.admins) {
                 player_cache.update(admin);
                 if (user.id === admin.id) {
                     is_admin = true;
@@ -138,7 +138,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
             return false;
         }
 
-        for (let admin of this.state.group.admins) {
+        for (const admin of this.state.group.admins) {
             if (player_id === admin.id) {
                 return true;
             }
@@ -387,10 +387,10 @@ export class Group extends React.PureComponent<GroupProperties, any> {
 
 
     render() {
-        let user = data.get("user");
-        let group = this.state.group;
-        let news = this.state.news;
-        let editing = this.state.editing;
+        const user = data.get("user");
+        const group = this.state.group;
+        const news = this.state.news;
+        const editing = this.state.editing;
 
 
         let group_website_href = group.website;
@@ -705,14 +705,14 @@ export class Group extends React.PureComponent<GroupProperties, any> {
                         <Card className="invitation-requests">
                             <h4>{_("Invitation requests")}</h4>
                             {group.invitation_requests.map((ir) => {
-                                let accept = () => {
+                                const accept = () => {
                                     group.invitation_requests = group.invitation_requests.filter((x) => x.id !== ir.id);
                                     this.setState({'refresh': this.state.refresh + 1});
                                     post("me/groups/invitations", { request_id: ir.id })
                                     .then(() => console.log("Accepted invitation request", ir))
                                     .catch(err => console.error(err));
                                 };
-                                let reject = () => {
+                                const reject = () => {
                                     group.invitation_requests = group.invitation_requests.filter((x) => x.id !== ir.id);
                                     this.setState({'refresh': this.state.refresh + 1});
                                     post("me/groups/invitations", { "delete": true, request_id: ir.id })

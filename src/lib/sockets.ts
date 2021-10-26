@@ -25,7 +25,7 @@ declare let ogs_version;
 
 const debug = new Debug("sockets");
 
-let io_config = {
+const io_config = {
     reconnection: true,
     reconnectionDelay: 750,
     reconnectionDelayMax: 10000,
@@ -33,7 +33,7 @@ let io_config = {
     upgrade: false,
 };
 
-let ai_config = {
+const ai_config = {
     reconnection: true,
     reconnectionDelay: 750,
     reconnectionDelayMax: 10000,
@@ -87,9 +87,9 @@ function ping() {
     }
 }
 function handle_pong(data) {
-    let now = Date.now();
-    let latency = now - data.client;
-    let drift = ((now - latency / 2) - data.server);
+    const now = Date.now();
+    const latency = now - data.client;
+    const drift = ((now - latency / 2) - data.server);
     last_latency = latency;
     last_clock_drift = drift;
 }
@@ -122,8 +122,8 @@ function ai_ping() {
     }
 }
 function ai_handle_pong(data) {
-    let now = Date.now();
-    let latency = now - data.client;
+    const now = Date.now();
+    const latency = now - data.client;
     last_ai_latency = latency;
 }
 

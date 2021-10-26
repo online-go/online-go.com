@@ -34,7 +34,7 @@ import {createDemoBoard} from "ChallengeModal";
 window['dup'] = dup;
 
 declare let swal;
-let ranks = allRanks();
+const ranks = allRanks();
 
 
 interface TournamentRecordProperties {
@@ -53,7 +53,7 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
     constructor(props) {
         super(props);
 
-        let tournament_record_id = parseInt(this.props.match.params.tournament_record_id) || 0;
+        const tournament_record_id = parseInt(this.props.match.params.tournament_record_id) || 0;
 
         this.state = {
             editing: false,
@@ -107,7 +107,7 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
         .then(ignore)
         .catch(errorAlerter);
 
-        for (let round of this.state.rounds) {
+        for (const round of this.state.rounds) {
             if (round.updated) {
                 put(`tournament_records/${this.state.tournament_record_id}/round/${round.id}`, {
                     'name': round.name
@@ -139,7 +139,7 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
         this.setState({new_round_name: ev.target.value});
     };
     setRoundName(idx, ev) {
-        let rounds = dup(this.state.rounds);
+        const rounds = dup(this.state.rounds);
         rounds[idx].name = ev.target.value;
         rounds[idx].updated = true;
         this.setState({rounds});
@@ -156,7 +156,7 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
             notes: '',
         })
         .then((res) => {
-            let rounds = dup(this.state.rounds);
+            const rounds = dup(this.state.rounds);
             rounds.unshift(res);
             this.setState({rounds});
         })
@@ -164,15 +164,15 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
     };
 
     addPlayer = (ev) => {
-        let name = this.state.new_player_name;
-        let rank = this.state.new_player_rank;
+        const name = this.state.new_player_name;
+        const rank = this.state.new_player_rank;
 
         if (name.trim().length < 2) {
             $(".new-player-name").focus();
             return;
         }
 
-        let new_player = { name, rank };
+        const new_player = { name, rank };
 
         post(`tournament_records/${this.state.tournament_record_id}/players/`, new_player)
         .then((res) => {
@@ -276,9 +276,9 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
     };
 
     render() {
-        let user = data.get('user');
-        let editing = this.state.editing || null;
-        let editable = this.state.editable_by_current_user || null;
+        const user = data.get('user');
+        const editing = this.state.editing || null;
+        const editable = this.state.editable_by_current_user || null;
 
         if (this.state.loading) {
             return (

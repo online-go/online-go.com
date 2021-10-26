@@ -54,7 +54,7 @@ interface PlayerDetailsProperties {
 let friends = {};
 data.watch(cached.friends, (friends_arr) => {
     friends = {};
-    for (let friend of friends_arr) {
+    for (const friend of friends_arr) {
         friends[friend.id] = true;
     }
 });
@@ -65,7 +65,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     constructor(props) {
         super(props);
         this.state = this.blankState();
-        let player = player_cache.lookup(this.props.playerId);
+        const player = player_cache.lookup(this.props.playerId);
         if (player) {
             this.state = Object.assign(this.state, player);
         }
@@ -113,7 +113,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     }
     UNSAFE_componentWillReceiveProps(new_props) {
         if (new_props.playerId !== this.props.playerId) {
-            let player = player_cache.lookup(new_props.playerId);
+            const player = player_cache.lookup(new_props.playerId);
             let new_state = this.blankState();
             if (player) {
                 new_state = Object.assign(new_state, this.state, player);
@@ -135,7 +135,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     gotoPlayerView = (ev) => {
         this.close_all_modals_and_popovers();
 
-        let url = `/player/${this.props.playerId}/${this.state.username}`;
+        const url = `/player/${this.props.playerId}/${this.state.username}`;
         if (shouldOpenNewTab(ev)) {
             window.open(url, "_blank");
         } else {
@@ -155,7 +155,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
         this.close_all_modals_and_popovers();
     };
     block = (ev) => {
-        let controls = openBlockPlayerControls(ev, this.props.playerId);
+        const controls = openBlockPlayerControls(ev, this.props.playerId);
         controls.on("close", () => {
             this.close_all_modals_and_popovers();
         });
@@ -193,12 +193,12 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
         post('me/friends', {"delete": true, player_id: this.props.playerId}).then(ignore).catch(errorAlerter);
     };
     removeSingleLine = () => {
-        let m = this.props.chatId.match(/^([gr]).([^.]+).([^.]+).(.+)/);
+        const m = this.props.chatId.match(/^([gr]).([^.]+).([^.]+).(.+)/);
         if (m) {
-            let game    = m[1] === 'g';
-            let id      = parseInt(m[2]);
-            let channel = m[3];
-            let chat_id = m[4];
+            const game    = m[1] === 'g';
+            const id      = parseInt(m[2]);
+            const channel = m[3];
+            const chat_id = m[4];
 
             console.log(game ? 'game' : 'review', id, channel, chat_id);
             if (game) {
@@ -234,9 +234,9 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
         .catch(() => 0);
     };
     render() {
-        let user = data.get("user");
+        const user = data.get("user");
 
-        let rating = !preferences.get("hide-ranks") && (this.state.ratings ? getUserRating(this.state, 'overall', 0) : null);
+        const rating = !preferences.get("hide-ranks") && (this.state.ratings ? getUserRating(this.state, 'overall', 0) : null);
 
         const add_note_label = data.get(`player-notes.${user.id}.${this.props.playerId}`) ? _('Player notes') : _('Add notes');
 

@@ -226,7 +226,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             this.goban.destroy();
         }
 
-        let opts: GobanConfig = {
+        const opts: GobanConfig = {
             "board_div": this.goban_div,
             "interactive": true,
             "mode": "puzzle",
@@ -344,7 +344,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     };
 
     recenterGoban() {
-        let m = this.goban.computeMetrics();
+        const m = this.goban.computeMetrics();
         if (this.goban_container.offsetWidth > 0 && m.width > 0) {
             this.goban_persistent_element.container.style.left = Math.round(Math.ceil(this.goban_container.offsetWidth - m.width) / 2) + "px";
         }
@@ -497,7 +497,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
         this.processNewJosekiPosition(dto);
 
-        let elapsed = new Date().valueOf() - this.last_click;
+        const elapsed = new Date().valueOf() - this.last_click;
 
         console.log("displayed result in", elapsed / 1000);
 
@@ -584,8 +584,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     // Draw all the variations that we know about from the server (array of moves from the server)
     renderCurrentJosekiPosition = () => {
-        let next_moves = this.next_moves;
-        let current_marks = this.current_marks;
+        const next_moves = this.next_moves;
+        const current_marks = this.current_marks;
         // console.log("rendering josekis ", next_moves, current_marks);
         this.goban.engine.cur_move.clearMarks();  // these usually get removed when the person clicks ... but just in case.
         let new_options = {};
@@ -608,7 +608,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
 
         this.setState({pass_available});
-        let new_marks = {};
+        const new_marks = {};
         current_marks.forEach((mark: {}) => {
             const label = mark['label'];
             new_marks[label] = GoMath.encodePrettyCoord(mark['position'], this.goban.height);
@@ -623,7 +623,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
        We ask the board engine what the position is now, and update the display accordingly */
     onBoardUpdate = () => {
         this.last_click = new Date().valueOf();
-        let mvs = GoMath.decodeMoves(
+        const mvs = GoMath.decodeMoves(
             this.goban.engine.cur_move.getMoveStringToThisPoint(),
             this.goban.width,
             this.goban.height);
@@ -633,7 +633,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
         // console.log("onBoardUpdate mvs", mvs);
         if (mvs.length > 0) {
-            let move_string_array = mvs.map((p) => {
+            const move_string_array = mvs.map((p) => {
                 let coord = GoMath.prettyCoords(p.x, p.y, this.goban.height);
                 coord = coord === '' ? 'pass' : coord;  // if we put '--' here instead ... https://stackoverflow.com/questions/56822128/rtl-text-direction-displays-dashes-very-strangely-bug-or-misunderstanding#
                 return coord;
@@ -811,7 +811,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.renderCurrentJosekiPosition();
 
         if (this.last_placement !== 'pass') {
-            let new_options = {
+            const new_options = {
                 'X': {
                     move: GoMath.encodePrettyCoord(this.last_placement, this.goban.height),
                     color: ColorMap['MISTAKE']
@@ -866,7 +866,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     // Here we are getting the user's overall play history results
     fetchPlayResults = () => {
-        let results_url = server_url + "playrecord";
+        const results_url = server_url + "playrecord";
 
         // console.log("Fetching play record logs ", results_url);
         this.setState({extra_throb: true});
@@ -1006,7 +1006,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             if (body.tags) {
                 tags = body.tags.sort((t1, t2) => (t1.group !== t2.group ? Math.sign(t1.group - t2.group) : Math.sign(t1.seq - t2.seq)));
             }
-            let counts = [];
+            const counts = [];
             tags.forEach(t => {
                 counts.push({tagname: t.description, count: t.continuationCount});
             });
@@ -1408,7 +1408,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
 
     extractCommentary = (commentary_dto) => {
         // console.log(commentary_dto);
-        let commentary = commentary_dto.commentary.map((comment) => (
+        const commentary = commentary_dto.commentary.map((comment) => (
             {
                 user_id: comment.userId,
                 date: new Date(comment.date),
@@ -1490,7 +1490,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             this.props.current_filter.contributor ||
             this.props.current_filter.source);
 
-        let description = applyJosekiMarkdown(this.props.description);
+        const description = applyJosekiMarkdown(this.props.description);
 
         return (
             <div className="explore-pane">
@@ -1829,7 +1829,7 @@ class EditPane extends React.Component<EditProps, any> {
         // we have to grok each mark out of the multiline string then parse it, because es5.
         const mark_matches = description.match(/<[A-Z]:[A-Z][0-9]{1,2}>/mg);
 
-        let current_marks = [];
+        const current_marks = [];
 
         if (mark_matches) {
             mark_matches.forEach(mark => {
@@ -1881,7 +1881,7 @@ class EditPane extends React.Component<EditProps, any> {
         //console.log("rendering EditPane with ", this.state.move_type, this.state.new_description, this.state.variation_label);
 
         // create the set of select option elements from the valid MoveCategory items, with the current one at the top
-        let selections = Object.keys(MoveCategory).map((selection, i) => (
+        const selections = Object.keys(MoveCategory).map((selection, i) => (
             <option key={i} value={MoveCategory[selection]}>{_(MoveCategory[selection])}</option>
         ));
 
@@ -1889,11 +1889,11 @@ class EditPane extends React.Component<EditProps, any> {
             selections.unshift(<option key={-1} value={MoveCategory[this.state.move_type]}>{_(MoveCategory[this.state.move_type])}</option>);
         }
 
-        let labels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '_'].map((label, i) => (
+        const labels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '_'].map((label, i) => (
             <option key={i} value={label}>{label}</option>
         ));
 
-        let sources = this.state.joseki_source_list.map((selection, i) => (
+        const sources = this.state.joseki_source_list.map((selection, i) => (
             <option key={i} value={selection["id"]}>{_(selection["description"])}</option>
         ));
 
@@ -1901,7 +1901,7 @@ class EditPane extends React.Component<EditProps, any> {
         // console.log("EditPane render, tags", this.state.tags);
 
         // give feedback that we recognised their marks
-        let preview = applyJosekiMarkdown(this.state.new_description);
+        const preview = applyJosekiMarkdown(this.state.new_description);
 
         return (
             <div className="edit-container">

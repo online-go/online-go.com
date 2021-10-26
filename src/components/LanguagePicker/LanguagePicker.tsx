@@ -41,7 +41,7 @@ function language_sorter(a, b) {
     return 0;
 }
 
-export let LanguagePicker = (props: LanguagePickerProperties) => (
+export const LanguagePicker = (props: LanguagePickerProperties) => (
     <span className="LanguagePicker fakelink" onClick={openLanguageModal}>
         <i className="fa fa-language"/>
         {languages[current_language]}
@@ -64,7 +64,7 @@ class LanguagePickerModal extends Modal<Events, LanguagePickerProperties, any> {
     }
 
     render() {
-        let auto = preferences.get("language") === "auto";
+        const auto = preferences.get("language") === "auto";
         function computeClass(lc) {
             let ret = "";
             if (auto) {

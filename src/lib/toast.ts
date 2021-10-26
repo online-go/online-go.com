@@ -59,14 +59,14 @@ export function toast(element: React.ReactElement<any>, timeout?: number): Toast
         $(document.body).append(toast_meta_container);
     }
 
-    let position_container = $("<div class='toast-position-container'>");
+    const position_container = $("<div class='toast-position-container'>");
     toast_meta_container.prepend(position_container);
 
-    let container = $("<div class='toast-container'>");
+    const container = $("<div class='toast-container'>");
     position_container.append(container);
 
     ReactDOM.render(element, container[0]);
-    let ret = new Toast(container[0] as HTMLElement, timeout);
+    const ret = new Toast(container[0] as HTMLElement, timeout);
     container.click((ev) => {
         if (
             ev.target.nodeName !== "BUTTON"

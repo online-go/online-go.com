@@ -40,7 +40,7 @@ export class Register extends React.PureComponent<{}, any> {
     }
 
     register = event => {
-        let actually_register = () => {
+        const actually_register = () => {
             console.log("Should be logging in");
 
             post("/api/v0/register", {
@@ -59,7 +59,7 @@ export class Register extends React.PureComponent<{}, any> {
             }).catch(errorAlerter);
         };
 
-        let focus_empty = (focus_email?: boolean) => {
+        const focus_empty = (focus_email?: boolean) => {
             if (this.refs.username.value.trim() === "" || !this.validateUsername()) {
                 this.refs.username.focus();
                 return true;

@@ -66,7 +66,7 @@ export class KBShortcut extends React.Component<KBProps, any> {
 
 
 
-let keymap = {
+const keymap = {
     27: "esc",
     9: "tab",
     8: "del",
@@ -98,7 +98,7 @@ let keymap = {
     163: "german-pound", // german pound key, the ` key is a "dead key"
 };
 
-let input_enabled_keys = {
+const input_enabled_keys = {
     27: "esc",
     112: "f1",
     113: "f2",
@@ -113,7 +113,7 @@ let input_enabled_keys = {
 };
 
 
-let modifiers = {
+const modifiers = {
     "shift": "shift",
     "alt": "alt",
     "meta": "meta",
@@ -124,13 +124,13 @@ let modifiers = {
 //    `let bound_shortcuts: {[x: string]: Binding} = {};
 // but I won't touch this for now -BPJ
 // eslint-disable-next-line id-denylist
-let bound_shortcuts = {string: Binding};
+const bound_shortcuts = {string: Binding};
 
 function sanitize_shortcut(shortcut) {
-    let shift = shortcut.indexOf("shift-") >= 0;
-    let ctrl  = shortcut.indexOf("ctrl-") >= 0;
-    let alt   = shortcut.indexOf("alt-") >= 0;
-    let meta  = shortcut.indexOf("meta-") >= 0;
+    const shift = shortcut.indexOf("shift-") >= 0;
+    const ctrl  = shortcut.indexOf("ctrl-") >= 0;
+    const alt   = shortcut.indexOf("alt-") >= 0;
+    const meta  = shortcut.indexOf("meta-") >= 0;
 
     shortcut = shortcut.toLowerCase();
     shortcut = shortcut.replace(/([^+-])[+]/g, "$1-");
@@ -193,7 +193,7 @@ $(() => {
         }
 
         if (shortcut in bound_shortcuts && bound_shortcuts[shortcut].length > 0) {
-            let binding = bound_shortcuts[shortcut][bound_shortcuts[shortcut].length - 1];
+            const binding = bound_shortcuts[shortcut][bound_shortcuts[shortcut].length - 1];
 
             binding.fn(e);
 
@@ -227,7 +227,7 @@ export function kb_bind(shortcut, fn, priority) {
     }
     shortcut = sanitize_shortcut(shortcut);
     //console.log("KB Binding", shortcut);
-    let b = new Binding(shortcut, fn, priority);
+    const b = new Binding(shortcut, fn, priority);
     if (!(shortcut in bound_shortcuts)) {
         bound_shortcuts[shortcut] = [];
     }

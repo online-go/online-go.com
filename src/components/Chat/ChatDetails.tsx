@@ -34,7 +34,7 @@ interface ChatDetailsProperties {
 export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any> {
     constructor(props) {
         super(props);
-        let channel = this.props.chatChannelId;
+        const channel = this.props.chatChannelId;
         if (channel) {
             this.state = {
                 channelId: channel,
@@ -66,14 +66,14 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
     };
 
     leave = (_ev) => {
-        let c = this.state.channelId;
+        const c = this.state.channelId;
         this.props.partFunc(c, false, false);
         this.close_all_modals_and_popovers();
     };
     goToGroup = (ev) => {
         this.close_all_modals_and_popovers();
 
-        let url: string = '/group/' + this.state.channelId.slice(6);
+        const url: string = '/group/' + this.state.channelId.slice(6);
         if (shouldOpenNewTab(ev)) {
             window.open(url, "_blank");
         } else {
@@ -83,7 +83,7 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
     goToTournament = (ev) => {
         this.close_all_modals_and_popovers();
 
-        let url: string = '/tournament/' + this.state.channelId.slice(11);
+        const url: string = '/tournament/' + this.state.channelId.slice(11);
         if (shouldOpenNewTab(ev)) {
             window.open(url, "_blank");
         } else {
@@ -92,7 +92,7 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
     };
 
     toggleNewMessageNotification = (ev) => {
-        let n_list: {[channel: string]: {[option: string]: Boolean}} = data.get("chat-indicator.chat-subscriptions", {});
+        const n_list: {[channel: string]: {[option: string]: Boolean}} = data.get("chat-indicator.chat-subscriptions", {});
         if (!(this.state.channelId in n_list)) {
             n_list[this.state.channelId] = {};
         }
@@ -105,7 +105,7 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
     };
 
     toggleMentionNotification = (ev) => {
-        let n_list: {[channel: string]: {[option: string]: Boolean}} = data.get("chat-indicator.chat-subscriptions", {});
+        const n_list: {[channel: string]: {[option: string]: Boolean}} = data.get("chat-indicator.chat-subscriptions", {});
         if (!(this.state.channelId in n_list)) {
             n_list[this.state.channelId] = {};
         }
@@ -118,9 +118,9 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any>
     };
 
     render() {
-        let group_text = pgettext("Go to the main page for this group.", "Group Page");
-        let tournament_text = pgettext("Go to the main page for this tournament.", "Tournament Page");
-        let leave_text = pgettext("Leave the selected channel.", "Leave Channel");
+        const group_text = pgettext("Go to the main page for this group.", "Group Page");
+        const tournament_text = pgettext("Go to the main page for this tournament.", "Tournament Page");
+        const leave_text = pgettext("Leave the selected channel.", "Leave Channel");
 
         return (
             <div className="ChatDetails">

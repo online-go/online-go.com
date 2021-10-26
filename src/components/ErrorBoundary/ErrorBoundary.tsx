@@ -50,7 +50,7 @@ export class ErrorBoundary extends React.Component<{}, any> {
         }
 
         try {
-            let user = data.get('user') || {id:0, username: 'guest'};
+            const user = data.get('user') || {id:0, username: 'guest'};
 
             Sentry.withScope(scope => {
                 try {

@@ -84,7 +84,7 @@ export class Terminology extends LearningHubSection {
 }
 
 
-export let sections: [string, any[]][] = [
+export const sections: [string, any[]][] = [
     [pgettext("Learning hub section title", "Fundamentals"),
         [Intro, Capture, Defend, /*Territory, */ EndingTheGame]],
     [pgettext("Learning hub section title", "Basics"),
@@ -102,7 +102,7 @@ export let sections: [string, any[]][] = [
 ];
 
 export let allsections: Array<typeof LearningHubSection> = [];
-for (let S of sections) {
+for (const S of sections) {
     allsections = allsections.concat(S[1]);
 }
 

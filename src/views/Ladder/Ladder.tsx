@@ -123,7 +123,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
     };
 
     render() {
-        let user = data.get("user");
+        const user = data.get("user");
 
         return (
             <div className="Ladder-container">
@@ -201,7 +201,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
         }
 
 
-        let page = Math.floor(idx / PAGE_SIZE) + 1;
+        const page = Math.floor(idx / PAGE_SIZE) + 1;
         if (page in this.requests_in_flight) {
             return this.requests_in_flight[page].then(() => this.cache[idx]);
         }
@@ -210,7 +210,7 @@ export class Ladder extends React.PureComponent<LadderProperties, any> {
             get(`ladders/${this.props.match.params.ladder_id}/players`, {page, page_size: PAGE_SIZE})
             .then((obj) => {
                 delete this.requests_in_flight[page];
-                let start = (page - 1) * PAGE_SIZE;
+                const start = (page - 1) * PAGE_SIZE;
 
                 for (let i = 0; i < obj.results.length; ++i) {
                     this.cache[start + i] = obj.results[i];
@@ -304,7 +304,7 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
     sync() {
         if (this.props.isScrolling) {
             /* if we're scrolling, only show rows if we have them in cache */
-            let obj = this.props.ladder.load(this.props.index, true);
+            const obj = this.props.ladder.load(this.props.index, true);
             if (!this.state) {
                 this.state = { row: obj };
             } else if (obj) {
@@ -314,8 +314,8 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
             }
         } else {
             /* not scrolling, do actual loading */
-            let index = this.props.index;
-            let resolve = (obj) => {
+            const index = this.props.index;
+            const resolve = (obj) => {
                 if (this.unmounted || index !== this.props.index) {
                     /* the row we're responsible for rendering has changed, abandon our work */
                     return;
@@ -328,7 +328,7 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
                 }
             };
 
-            let obj_or_promise = this.props.ladder.load(this.props.index, false);
+            const obj_or_promise = this.props.ladder.load(this.props.index, false);
 
             if (obj_or_promise && obj_or_promise.then) {
                 obj_or_promise.then(resolve).catch(() => 0);
@@ -339,10 +339,10 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
     }
 
     render() {
-        let user = data.get('user');
-        let row = this.state.row;
-        let challenged_by = row && row.incoming_challenges;
-        let challenging = row && row.outgoing_challenges;
+        const user = data.get('user');
+        const row = this.state.row;
+        const challenged_by = row && row.incoming_challenges;
+        const challenging = row && row.outgoing_challenges;
 
         // <b>{_("Challenged by") /* Translators: List of players that challenged this player in a ladder */}: </b>
         // <b>{_("Challenging") /* Translators: List of players that have been challenged by this player in a ladder */}: </b>
@@ -417,10 +417,10 @@ export class LadderRow extends React.Component<LadderRowProperties, any> {
             return;
         }
 
-        let row = this.state.row;
-        let user = data.get('user');
-        let challenged_by = row && row.incoming_challenges;
-        let challenging = row && row.outgoing_challenges;
+        const row = this.state.row;
+        const user = data.get('user');
+        const challenged_by = row && row.incoming_challenges;
+        const challenging = row && row.outgoing_challenges;
 
         close_all_popovers();
 

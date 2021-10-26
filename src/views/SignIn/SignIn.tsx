@@ -31,13 +31,13 @@ window['Md5'] = Md5;
 declare let swal;
 
 export function get_bid() {
-    let bid = data.get("bid") || `${Math.random()}`.split(".")[1];
+    const bid = data.get("bid") || `${Math.random()}`.split(".")[1];
     data.set("bid", bid);
     return bid;
 }
 
 export function get_ebi() {
-    let bid = get_bid();
+    const bid = get_bid();
 
     let plugin_hash = "xxx";
     let user_agent_hash = "xxx";
@@ -87,7 +87,7 @@ export class SignIn extends React.PureComponent<{}, any> {
     }
 
     login(event) {
-        let actually_login = () => {
+        const actually_login = () => {
             post("/api/v0/login", {
                 "username": this.refs.username.value.trim(),
                 "password": this.refs.password.value,
@@ -107,7 +107,7 @@ export class SignIn extends React.PureComponent<{}, any> {
             }).catch(errorAlerter);
         };
 
-        let focus_empty = () => {
+        const focus_empty = () => {
             if (this.refs.username.value.trim() === "") {
                 this.refs.username.focus();
                 return true;

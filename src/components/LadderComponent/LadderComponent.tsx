@@ -110,14 +110,14 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
         if (!this.state.ladder) {
             return null;
         }
-        let user = data.get("user");
-        let full_view = this.props.fullView;
+        const user = data.get("user");
+        const full_view = this.props.fullView;
         let startingPage = 1;
         if (!this.props.dontStartOnPlayersPage && this.state.ladder.player_rank > 0) {
             startingPage = Math.max(1, Math.ceil(this.state.ladder.player_rank / this.state.page_size));
         }
 
-        let thin_view = $(window).width() < 800;
+        const thin_view = $(window).width() < 800;
         //let challenged_by = [];
         //let challenging = [];
 

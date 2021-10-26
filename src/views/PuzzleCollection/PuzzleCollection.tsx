@@ -27,11 +27,11 @@ import { openACLModal } from 'ACLModal';
 declare let swal;
 
 export function PuzzleCollection({match:{params:{collection_id}}}: {match: {params: {collection_id: number}}}): JSX.Element {
-    let [collection, setCollection] = React.useState(null);
-    let [name, setName] = React.useState(null);
-    let [puzzle_is_private, setPrivate] = React.useState(false);
-    let [color_transform_enabled, setColorTransformEnabled] = React.useState(false);
-    let [position_transform_enabled, setPositionTransformEnabled] = React.useState(false);
+    const [collection, setCollection] = React.useState(null);
+    const [name, setName] = React.useState(null);
+    const [puzzle_is_private, setPrivate] = React.useState(false);
+    const [color_transform_enabled, setColorTransformEnabled] = React.useState(false);
+    const [position_transform_enabled, setPositionTransformEnabled] = React.useState(false);
 
     React.useEffect(() => {
         get(`puzzles/collections/${collection_id}`)

@@ -23,13 +23,13 @@ interface Events {
     "users-online-updated": never;
 }
 
-let listeners: {[id: number]: Array<any>} = {};
-let state = {};
-let event_emitter = new TypedEventEmitter<Events>();
+const listeners: {[id: number]: Array<any>} = {};
+const state = {};
+const event_emitter = new TypedEventEmitter<Events>();
 
 comm_socket.on("connect", () => {
-    let list = [];
-    for (let id in state) {
+    const list = [];
+    for (const id in state) {
         list.push(id);
     }
     if (list.length) {
@@ -39,7 +39,7 @@ comm_socket.on("connect", () => {
 
 comm_socket.on("user/state", (states) => {
     let i;
-    for (let id in states) {
+    for (const id in states) {
         state[id] = states[id];
         for (i = 0; i < listeners[id].length; ++i) {
             listeners[id][i](id, state[id]);
@@ -49,7 +49,7 @@ comm_socket.on("user/state", (states) => {
 });
 
 comm_socket.on("disconnect", () => {
-    for (let id in state) {
+    for (const id in state) {
         state[id] = false;
         for (let i = 0; i < listeners[id].length; ++i) {
             listeners[id][i](id, state[id]);
@@ -58,7 +58,7 @@ comm_socket.on("disconnect", () => {
     event_emitter.emit("users-online-updated");
 });
 
-let subscribe_queue = new Batcher<number>(ids => {
+const subscribe_queue = new Batcher<number>(ids => {
     comm_socket.send("user/monitor", ids);
 });
 

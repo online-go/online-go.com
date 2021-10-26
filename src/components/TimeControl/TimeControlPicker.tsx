@@ -35,8 +35,8 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
     constructor(props) {
         super(props);
 
-        let speed = data.get("time_control.speed", "correspondence") || "correspondence";
-        let system = data.get("time_control.system", "fischer") || "fischer";
+        const speed = data.get("time_control.speed", "correspondence") || "correspondence";
+        const system = data.get("time_control.system", "fischer") || "fischer";
 
         this.state = Object.assign(recallTimeControlSettings(speed, system), this.props.value || {});
         if (this.state.time_control) {
@@ -56,10 +56,10 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
         }
     }
     syncTimeControl(update: any) { /* {  */
-        let tc = Object.assign({}, this.state, update);
+        const tc = Object.assign({}, this.state, update);
 
-        let speed = tc.speed;
-        let options = time_options[tc.speed];
+        const speed = tc.speed;
+        const options = time_options[tc.speed];
 
         function goodChoice(arr) {
             return arr[Math.round(arr.length / 2)].time;
@@ -161,15 +161,15 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
     update_pause_on_weekends    = (ev) => this.syncTimeControl({pause_on_weekends: ev.target.checked});
 
     saveSettings() {
-        let speed = this.state.speed;
-        let system = this.state.system;
+        const speed = this.state.speed;
+        const system = this.state.system;
         data.set(`time_control.speed`, speed);
         data.set(`time_control.system`, system);
         data.set(`time_control.${speed}.${system}`, makeTimeControlParameters(this.state));
     }
 
     render() {
-        let speed = this.state.speed;
+        const speed = this.state.speed;
 
         return (
             <div className="TimeControlPicker">

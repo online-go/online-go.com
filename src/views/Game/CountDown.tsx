@@ -32,7 +32,7 @@ export class CountDown extends React.PureComponent<{to: Date}, any> {
             clearTimeout(this.timeout);
         }
 
-        let left = this.props.to.getTime() - Date.now();
+        const left = this.props.to.getTime() - Date.now();
 
         if (left > 0) {
             //this.timeout = setTimeout(() => this.update(), left % 100 || 100);
@@ -47,11 +47,11 @@ export class CountDown extends React.PureComponent<{to: Date}, any> {
             return '0:00.0';
         }
 
-        let minutes = Math.floor(ms / 60000);
+        const minutes = Math.floor(ms / 60000);
         ms -= minutes * 60000;
-        let seconds = Math.floor(ms / 1000);
+        const seconds = Math.floor(ms / 1000);
         ms -= seconds * 1000;
-        let tenths = Math.floor(ms / 100);
+        const tenths = Math.floor(ms / 100);
 
         if (seconds < 10) {
             return `${minutes}:0${seconds}.${tenths}`;

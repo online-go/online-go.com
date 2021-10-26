@@ -34,21 +34,21 @@ export function getSectionCompletion(section_name: string): SectionCompletion {
     let finished = 0;
     let total = 0;
 
-    for (let arr of sections) {
+    for (const arr of sections) {
         if (arr[1][0].section() === section_name) {
             first = true;
         }
     }
 
     let section = null;
-    for (let S of allsections) {
+    for (const S of allsections) {
         if (S.section() === section_name) {
             section = S;
             break;
         }
     }
 
-    let completion = data.get(`learning-hub.${section_name}`, {});
+    const completion = data.get(`learning-hub.${section_name}`, {});
     total = section.pages().length;
     for (let i = 0; i < total; ++i) {
         if (i in completion) {
@@ -69,7 +69,7 @@ export function getSectionCompletion(section_name: string): SectionCompletion {
 }
 
 export function getSectionByName(section_name: string): typeof LearningHubSection {
-    for (let S of allsections) {
+    for (const S of allsections) {
         if (S.section() === section_name) {
             return S;
         }
@@ -79,9 +79,9 @@ export function getSectionByName(section_name: string): typeof LearningHubSectio
 }
 
 export function getFirstUncompletedPage(section_name: string): number {
-    let completion = data.get(`learning-hub.${section_name}`, {});
+    const completion = data.get(`learning-hub.${section_name}`, {});
     let section = null;
-    for (let S of allsections) {
+    for (const S of allsections) {
         if (S.section() === section_name) {
             section = S;
             break;
@@ -98,12 +98,12 @@ export function getFirstUncompletedPage(section_name: string): number {
 }
 
 export function setSectionPageCompleted(section_name: string, page_number: number): void {
-    let completion = data.get(`learning-hub.${section_name}`, {});
+    const completion = data.get(`learning-hub.${section_name}`, {});
     completion[page_number] = true;
     data.set(`learning-hub.${section_name}`, completion);
 }
 
 export function getSectionPageCompleted(section_name: string, page_number: number): boolean {
-    let completion = data.get(`learning-hub.${section_name}`, {});
+    const completion = data.get(`learning-hub.${section_name}`, {});
     return page_number in completion;
 }

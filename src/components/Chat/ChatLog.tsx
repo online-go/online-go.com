@@ -83,8 +83,10 @@ function saveSplitSizes(sizes: Array<number>): void {
 }
 
 export function ChatLog(props: ChatLogProperties): JSX.Element {
+    /* eslint-disable prefer-const */
     let [showing_games, set_showing_games]: [boolean, (tf: boolean) => void] = useState(data.get('chat.show-games', true) as boolean);
     let [height, set_height]: [number, (tf: number) => void] = useState(document.body.clientHeight);
+    /* eslint-enable prefer-const */
     const onShowGames = useCallback((tf: boolean) => {
         //if (tf !== showing_games) {
         set_showing_games(tf);
@@ -113,7 +115,7 @@ export function ChatLog(props: ChatLogProperties): JSX.Element {
     }
 
     let canShowGames = /^(group-|global)/.test(props.channel);
-    let game_channel = /^(group-)/.test(props.channel) ? props.channel : '' /* global */;
+    const game_channel = /^(group-)/.test(props.channel) ? props.channel : '' /* global */;
 
     if (height <= 300) {
         canShowGames = false;
@@ -177,19 +179,19 @@ function ChannelTopic(
         return null;
     }
 
-    let user = data.get('user');
+    const user = data.get('user');
 
-    let [editing, set_editing]: [boolean, (tf: boolean) => void] = useState(false as boolean);
-    let [topic, set_topic]: [string, (tf: string) => void] = useState("");
-    let [topic_updated, set_topic_updated]: [boolean, (tf: boolean) => void] = useState(false as boolean);
-    let [name, set_name]: [string, (tf: string) => void] = useState(channel);
-    let [group_id, set_group_id]: [number | null, (tf: number) => void] = useState(null);
-    let [tournament_id, set_tournament_id]: [number | null, (tf: number) => void] = useState(null);
-    let [banner, set_banner]: [string, (s: string) => void] = useState("");
-    let [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
-    let [title_hover, set_title_hover]: [string, (s: string) => void] = useState("");
+    const [editing, set_editing]: [boolean, (tf: boolean) => void] = useState(false as boolean);
+    const [topic, set_topic]: [string, (tf: string) => void] = useState("");
+    const [topic_updated, set_topic_updated]: [boolean, (tf: boolean) => void] = useState(false as boolean);
+    const [name, set_name]: [string, (tf: string) => void] = useState(channel);
+    const [group_id, set_group_id]: [number | null, (tf: number) => void] = useState(null);
+    const [tournament_id, set_tournament_id]: [number | null, (tf: number) => void] = useState(null);
+    const [banner, set_banner]: [string, (s: string) => void] = useState("");
+    const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
+    const [title_hover, set_title_hover]: [string, (s: string) => void] = useState("");
 
-    let groups = data.get('cached.groups', []);
+    const groups = data.get('cached.groups', []);
 
     // member of group, or a moderator, or a tournament channel
     const topic_editable = user.is_moderator
@@ -220,7 +222,7 @@ function ChannelTopic(
     }, [channel]);
 
     useEffect(() => {
-        let proxy = chat_manager.join(channel);
+        const proxy = chat_manager.join(channel);
         setProxy(proxy);
         set_topic(proxy.channel?.topic?.topic || "");
         set_title_hover(getTitleHover(proxy.channel?.topic));
@@ -244,12 +246,12 @@ function ChannelTopic(
     }, [channel]);
 
     const partChannel = useCallback(() => {
-        let joined = data.get("chat.joined");
+        const joined = data.get("chat.joined");
         data.set('chat.active_channel', null);
         delete joined[channel];
         data.set("chat.joined", joined);
 
-        let parted_channels = data.get("chat.parted", {});
+        const parted_channels = data.get("chat.parted", {});
         parted_channels[channel] = 1;
         data.set("chat.parted", parted_channels);
 
@@ -349,17 +351,17 @@ function ChannelTopic(
 }
 
 
-let scrolled_to_bottom: boolean = true;
+let scrolled_to_bottom = true;
 function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers}: InternalChatLogProperties): JSX.Element {
     const user = data.get("user");
     const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;
-    let chat_log_div = useRef(null);
-    let [, refresh]: [number, (n: number) => void] = useState(0);
-    let [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
+    const chat_log_div = useRef(null);
+    const [, refresh]: [number, (n: number) => void] = useState(0);
+    const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
 
 
     useEffect(() => {
-        let proxy = chat_manager.join(channel);
+        const proxy = chat_manager.join(channel);
         setProxy(proxy);
         proxy.on("chat", onChatMessage);
         proxy.on("chat-removed", onChatMessageRemoved);
@@ -427,12 +429,12 @@ function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers
     }, [channel]);
 
     const onScroll = useCallback((event: React.UIEvent<HTMLDivElement>): void => {
-        let div = chat_log_div.current;
+        const div = chat_log_div.current;
         if (!div) {
             return;
         }
 
-        let tf = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
+        const tf = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
         if (tf !== scrolled_to_bottom) {
             scrolled_to_bottom  = tf;
             div.className = (rtl_mode ? "rtl chat-lines " : "chat-lines ") + (tf ? "autoscrolling" : "");
@@ -441,7 +443,7 @@ function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers
     }, [channel]);
 
     window.requestAnimationFrame(() => {
-        let div = chat_log_div.current;
+        const div = chat_log_div.current;
         if (!div) {
             return;
         }
@@ -467,7 +469,7 @@ function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers
             onClick={focusInput}
         >
             {proxy?.channel.chat_log.slice(-500).map((line, idx) => {
-                let ll = last_line;
+                const ll = last_line;
                 last_line = line;
                 return <ChatLine key={line.message.i || `system-${idx}`} line={line} lastline={ll} />;
             })}
@@ -479,13 +481,13 @@ function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers
 function ChatInput({channel, autoFocus}: InternalChatLogProperties): JSX.Element {
     const user = data.get("user");
     const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;
-    let input = useRef(null);
-    let [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
-    let [show_say_hi_placeholder, set_show_say_hi_placeholder] = useState(true);
-    let [channel_name, set_channel_name] = useState(cachedChannelInformation(channel)?.name);
+    const input = useRef(null);
+    const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
+    const [show_say_hi_placeholder, set_show_say_hi_placeholder] = useState(true);
+    const [channel_name, set_channel_name] = useState(cachedChannelInformation(channel)?.name);
 
     useEffect(() => {
-        let proxy = chat_manager.join(channel);
+        const proxy = chat_manager.join(channel);
         setProxy(proxy);
 
         resolveChannelInformation(channel).then((info) => {
@@ -495,7 +497,7 @@ function ChatInput({channel, autoFocus}: InternalChatLogProperties): JSX.Element
 
     const onKeyPress = useCallback((event: React.KeyboardEvent<HTMLInputElement>): boolean => {
         if (event.charCode === 13) {
-            let input = event.target as HTMLInputElement;
+            const input = event.target as HTMLInputElement;
             if (!comm_socket.connected) {
                 swal(_("Connection to server lost"));
                 return false;

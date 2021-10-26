@@ -102,10 +102,10 @@ export function configure_goban() {
         plainBoardUrl: (): string => data.get("custom.url"),
 
         addCoordinatesToChatInput: (coordinates: string): void => {
-            let chat_input = $(".chat-input");
+            const chat_input = $(".chat-input");
 
             if (!chat_input.attr("disabled")) {
-                let txt = (chat_input.val().trim() + " " + coordinates).trim();
+                const txt = (chat_input.val().trim() + " " + coordinates).trim();
                 chat_input.val(txt);
             }
         },

@@ -56,7 +56,7 @@ export class Styling extends React.PureComponent<{}, any> {
     }
 
     setStarRating(idx, v) {
-        let cpy = this.state.star_ratings.slice();
+        const cpy = this.state.star_ratings.slice();
         cpy[idx] = v;
         this.setState({star_ratings: cpy});
     }

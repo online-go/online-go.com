@@ -17,15 +17,15 @@
 
 import { setGobanTranslations } from 'goban';
 
-let w = window as { [key: string]: any }; // Add index signature
+const w = window as { [key: string]: any }; // Add index signature
 export let current_language: string = w["ogs_current_language"] as string || 'en';
 //export let languages: { [key: string]: string } = w["ogs_languages"] || { 'en': 'English' };
-export let languages: { [key: string]: string } = w["supported_languages"] || { 'en': 'English' };
-export let countries: { [key: string]: { [key: string]: string } } =
+export const languages: { [key: string]: string } = w["supported_languages"] || { 'en': 'English' };
+export const countries: { [key: string]: { [key: string]: string } } =
     w["ogs_countries"] || { 'en': { 'us': 'United States' } };
-export let locales: { [key: string]: { [key: string]: string[] } } =
+export const locales: { [key: string]: { [key: string]: string[] } } =
     w["ogs_locales"] || { 'en': {} };
-export let sorted_locale_countries: { cc: string; name: string }[] = [];
+export const sorted_locale_countries: { cc: string; name: string }[] = [];
 
 
 let catalog: { [key: string]: string[] };
@@ -132,7 +132,7 @@ export function gettext(msgid: string) {
  * Like gettext(), but for plural forms.
  */
 export function ngettext(singular: string, plural: string, count: number) {
-    let key = singular + '\u0005' + plural;
+    const key = singular + '\u0005' + plural;
 
     if (key in catalog) {
         const idx = pluralidx(count);
@@ -171,7 +171,7 @@ export function ngettext(singular: string, plural: string, count: number) {
  * or else pgettext() will return msgid.
  */
 export function pgettext(context: string, msgid: string) {
-    let key = context + "" + msgid;
+    const key = context + "" + msgid;
     if (key in catalog) {
         return catalog[key][0];
     }
@@ -182,9 +182,9 @@ export function pgettext(context: string, msgid: string) {
  * Like pgettext() but for plural forms.
  */
 export function npgettext(context: string, singular: string, plural: string, count: number) {
-    let key = context + "\u0004" + singular + "\u0005" + plural;
-    let skey = context + "\u0004" + singular;
-    let pkey = context + "\u0004" + plural;
+    const key = context + "\u0004" + singular + "\u0005" + plural;
+    const skey = context + "\u0004" + singular;
+    const pkey = context + "\u0004" + plural;
     if (key in catalog) {
         const idx = pluralidx(count);
         if (idx < catalog[key].length) { return catalog[key][idx]; }
@@ -229,7 +229,7 @@ export function npgettext(context: string, singular: string, plural: string, cou
     return debug_wrap(count === 1 ? singular : plural);
 }
 
-let gettext_formats: { [key: string]: string | string[] } = {};
+const gettext_formats: { [key: string]: string | string[] } = {};
 
 gettext_formats["DATETIME_FORMAT"] = "N j, Y, P";
 gettext_formats["DATE_FORMAT"] = "N j, Y";
@@ -248,7 +248,7 @@ gettext_formats["DATETIME_INPUT_FORMATS"] = ["%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%
 
 // TODO: remove this function after confirming it is not used elsewhere.
 export function get_format(format_type: string) {
-    let value = gettext_formats[format_type];
+    const value = gettext_formats[format_type];
     if (typeof (value) === "undefined") {
         return format_type;
     } else {
@@ -258,7 +258,7 @@ export function get_format(format_type: string) {
 
 //let original_countries=dup(countries);
 
-let extended_countries: [string, string][] = [];
+const extended_countries: [string, string][] = [];
 extended_countries.push(["_African_Union", gettext("African Union")]);
 extended_countries.push(["_Arab_League", gettext("Arab League")]);
 extended_countries.push(["_ASEAN", gettext("ASEAN")]);
@@ -282,8 +282,8 @@ extended_countries.push(["_United_Nations", gettext("United Nations")]);
 extended_countries.push(["_Wales", gettext("Wales")]);
 extended_countries.push(["_cat", gettext("Catalonia")]);
 
-let fantasy_countries: [string, string][] = [];
-let fantasy_countries_cc: { [key: string]: boolean } = {};
+const fantasy_countries: [string, string][] = [];
+const fantasy_countries_cc: { [key: string]: boolean } = {};
 fantasy_countries.push(["_Klingon", gettext("Klingon")]);
 fantasy_countries.push(["_United_Federation_of_Planets", gettext("United Federation of Planets")]);
 fantasy_countries.push(["_Pirate", gettext("Pirate")]);
@@ -302,11 +302,11 @@ fantasy_countries.push(["_GoT_Tyrell", gettext("House Tyrell")]);
 fantasy_countries.push(["_LGBT", gettext("LGBT+ Pride")]);
 
 try {
-    for (let e of fantasy_countries) {
+    for (const e of fantasy_countries) {
         fantasy_countries_cc[e[0]] = true;
         countries[current_language][e[0]] = e[1];
     }
-    for (let e of extended_countries) {
+    for (const e of extended_countries) {
         countries[current_language][e[0]] = e[1];
     }
 } catch (e) {
@@ -365,8 +365,8 @@ export function cc_to_country_name(country_code: string) {
 
 
 languages["auto"] = gettext("Automatic");
-let current_countries = countries[current_language];
-for (let cc in current_countries) {
+const current_countries = countries[current_language];
+for (const cc in current_countries) {
     sorted_locale_countries.push({
         cc: cc,
         name: current_countries[cc],

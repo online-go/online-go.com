@@ -25,10 +25,10 @@ function clearTooltip() {
 }
 
 export default function tooltip(event) {
-    let target = $(event.target);
-    let title = target.attr("title") || target.attr("data-title");
-    let X = event.nativeEvent.pageX + 10;
-    let Y = event.nativeEvent.pageY + 10;
+    const target = $(event.target);
+    const title = target.attr("title") || target.attr("data-title");
+    const X = event.nativeEvent.pageX + 10;
+    const Y = event.nativeEvent.pageY + 10;
 
     if (event.type === "click") {
         if (current_tooltip) {

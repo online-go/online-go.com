@@ -42,7 +42,7 @@ import * as preferences from "preferences";
 import cached from 'cached';
 import {ChatIndicator} from "Chat";
 
-let body = $(document.body);
+const body = $(document.body);
 
 function _update_theme(theme) {
     if (body.hasClass(theme)) {
@@ -72,9 +72,9 @@ function toggleTheme() {
         setTheme("dark");
     }
 }
-let setThemeLight = setTheme.bind(null, "light");
-let setThemeDark = setTheme.bind(null, "dark");
-let setThemeAccessible = setTheme.bind(null, "accessible");
+const setThemeLight = setTheme.bind(null, "light");
+const setThemeDark = setTheme.bind(null, "dark");
+const setThemeAccessible = setTheme.bind(null, "accessible");
 
 export function logout() {
     get("/api/v0/logout").then((config) => {
@@ -190,7 +190,7 @@ export class NavBar extends React.PureComponent<{}, any> {
     }
     updateOmnisearch = (ev) => {
         try {
-            let q = ev.target.value || "";
+            const q = ev.target.value || "";
 
             if (q.trim() !== this.state.omnisearch_string.trim()) {
                 this.abortOmnisearch();
@@ -248,17 +248,17 @@ export class NavBar extends React.PureComponent<{}, any> {
 
 
     render() {
-        let user = this.state.user.anonymous ? null : this.state.user;
-        let anon = this.state.user.anonymous;
-        let tournament_invites = this.state.tournament_invites;
-        let tournaments = this.state.tournaments;
-        let ladders = this.state.ladders;
-        let group_invites = this.state.group_invites;
-        let groups = this.state.groups;
+        const user = this.state.user.anonymous ? null : this.state.user;
+        const anon = this.state.user.anonymous;
+        const tournament_invites = this.state.tournament_invites;
+        const tournaments = this.state.tournaments;
+        const ladders = this.state.ladders;
+        const group_invites = this.state.group_invites;
+        const groups = this.state.groups;
 
-        let show_debug = data.get("user").is_superuser;
-        let debug = data.get("debug", false);
-        let no_results = false;
+        const show_debug = data.get("user").is_superuser;
+        const debug = data.get("debug", false);
+        const no_results = false;
 
         let omnisearch_searching = false;
         try {
@@ -267,7 +267,7 @@ export class NavBar extends React.PureComponent<{}, any> {
             // ignore
         }
 
-        let omnisearch_result_count =
+        const omnisearch_result_count =
             this.state.omnisearch_players.length +
             this.state.omnisearch_tournaments.length +
             this.state.omnisearch_groups.length +
@@ -551,7 +551,7 @@ export class NavBar extends React.PureComponent<{}, any> {
 
 
 declare let ogs_version;
-let omnisearch_sitemap = {};
+const omnisearch_sitemap = {};
 
 omnisearch_sitemap[_("Home")] = [_("Home"), "/overview"];
 omnisearch_sitemap[_("Play")] = [_("Play"), "/play"];
@@ -593,9 +593,9 @@ omnisearch_sitemap[_("Version")] = [_("Version") + " " + ogs_version];
 function match_sitemap(q) {
     q = q.trim().toLowerCase();
 
-    let res = [];
+    const res = [];
 
-    for (let k in omnisearch_sitemap) {
+    for (const k in omnisearch_sitemap) {
         if (q.length >= (Math.min(5, k.length)) && k.toLowerCase().indexOf(q) === 0) {
             res.push(omnisearch_sitemap[k]);
         }

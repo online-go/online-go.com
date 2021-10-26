@@ -52,21 +52,21 @@ class UIPushManager {
 
         comm_socket.on("ui-push", (msg) => {
             if (msg.event in this.handlers) {
-                for (let handler of this.handlers[msg.event]) {
+                for (const handler of this.handlers[msg.event]) {
                     handler.cb(msg.data, msg.event);
                 }
             }
         });
         comm_socket.on("connect", () => {
             /* handle resubscriptions */
-            for (let channel in this.subscriptions) {
+            for (const channel in this.subscriptions) {
                 comm_socket.send("ui-pushes/subscribe", {"channel": channel});
             }
         });
     }
 
     on(event, cb) {
-        let handler = new Handler();
+        const handler = new Handler();
         handler.id = ++last_handler_id,
         handler.event = event;
         handler.cb = cb;
@@ -109,7 +109,7 @@ class UIPushManager {
     }
 }
 
-export let push_manager = new UIPushManager();
+export const push_manager = new UIPushManager();
 
 export class UIPush extends React.Component<UIPushProperties, any> {
     handler: Handler = null;

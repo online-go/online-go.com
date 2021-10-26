@@ -63,8 +63,8 @@ interface UserProperties {
     // callback?: ()=>any,
 }
 
-let inlineBlock = {display: "inline-flex", "alignItems": "center"};
-let marginBottom0 = {marginBottom: "0"};
+const inlineBlock = {display: "inline-flex", "alignItems": "center"};
+const marginBottom0 = {marginBottom: "0"};
 
 function getGameResultRichText(game) {
     let result = getGameResultText(game);
@@ -152,12 +152,12 @@ export class User extends React.PureComponent<UserProperties, any> {
 
     componentDidMount() {
         window.document.title = _("Player");
-        let interval_start = Date.now();
+        const interval_start = Date.now();
         this.vacation_update_interval = setInterval(() => {
             if (this.state.user) {
                 if (this.state.user.on_vacation) {
-                    let time_diff = Math.round(((Date.now()) - interval_start) / 1000);
-                    let vacation_time_left = this.state.user.vacation_left - time_diff;
+                    const time_diff = Math.round(((Date.now()) - interval_start) / 1000);
+                    const vacation_time_left = this.state.user.vacation_left - time_diff;
                     this.setState({
                         vacation_left_text: vacation_time_left > 0 ? durationString(vacation_time_left) : ("0 " + _("Seconds").toLowerCase())
                     });
@@ -186,7 +186,7 @@ export class User extends React.PureComponent<UserProperties, any> {
 
     vacationAccrued() {
         if (this.state.user) {
-            let vacation_time_accrued = this.state.user.vacation_left;
+            const vacation_time_accrued = this.state.user.vacation_left;
             if (this.isSpecialUser()) {
                 return daysOnlyDurationString(vacation_time_accrued) + " " + _("out of 60 Days");
             } else {
@@ -229,7 +229,7 @@ export class User extends React.PureComponent<UserProperties, any> {
         state.user.rating_live = parseFloat(state.user.rating_live);
         state.user.rating_blitz = parseFloat(state.user.rating_blitz);
         state.user.rating_correspondence = parseFloat(state.user.rating_correspondence);
-        let user = state.user;
+        const user = state.user;
         try {
             state.website_href = user.website.trim().toLowerCase().indexOf("http") !== 0 ? "http://" + user.website : user.website;
         } catch (e) {
@@ -237,7 +237,7 @@ export class User extends React.PureComponent<UserProperties, any> {
         }
 
 
-        let vs = state.vs;
+        const vs = state.vs;
         state.vs.total = vs.wins + vs.losses + vs.draws;
         state.vs.winPercent = (vs.wins / vs.total) * 100.0;
         state.vs.lossPercent = (vs.losses / vs.total) * 100.0;
@@ -282,7 +282,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             return;
         }
 
-        let last_ip = this.state.user.last_ip;
+        const last_ip = this.state.user.last_ip;
         get("host_ip_settings/", {"address": last_ip})
         .then((lst) => {
             this.setState({"host_ip_settings": lst.count ? lst.results[0] : {
@@ -298,7 +298,7 @@ export class User extends React.PureComponent<UserProperties, any> {
 
     saveHostIpSettings() {
         console.log("Saving host ip settings: ", this.state.host_ip_settings);
-        let obj = {
+        const obj = {
             "address": this.state.host_ip_settings.address,
             "clients_limit": this.state.host_ip_settings.clients_limit,
             "ban_affects_all": this.state.host_ip_settings.ban_affects_all ? 1 : 0,
@@ -482,7 +482,7 @@ export class User extends React.PureComponent<UserProperties, any> {
         this.setState({user: Object.assign({}, this.state.user, { real_name_is_private: ev.target.checked})});
     };
     saveEditChanges() {
-        let username = this.state.user.username.trim();
+        const username = this.state.user.username.trim();
         let promise: Promise<void>;
         if (!data.get('user').is_moderator && (this.original_username !== username)) {
             promise = swal({
@@ -511,7 +511,7 @@ export class User extends React.PureComponent<UserProperties, any> {
         .catch(ignore);
     }
     openModerateUser = () => {
-        let modal = openModerateUserModal(this.state.user);
+        const modal = openModerateUserModal(this.state.user);
         modal.on("close", () => {
             this.resolve(this.props);
         });
@@ -536,7 +536,7 @@ export class User extends React.PureComponent<UserProperties, any> {
 
 
     addModeratorNote = () => {
-        let txt = this.moderator_note.value.trim();
+        const txt = this.moderator_note.value.trim();
 
         if (txt.length < 2) {
             this.moderator_note.focus();
@@ -561,16 +561,16 @@ export class User extends React.PureComponent<UserProperties, any> {
     };
 
     render() {
-        let user = this.state.user;
+        const user = this.state.user;
         if (!user) {
             return this.renderInvalidUser();
         }
-        let editing = this.state.editing;
-        let showRatings = this.state.temporary_show_ratings;
+        const editing = this.state.editing;
+        const showRatings = this.state.temporary_show_ratings;
 
         /* any dom binding stuff needs to happen after the template has been
          * processed and added to the dom, this can be done with a 0ms timer */
-        let doDomWork = () => {
+        const doDomWork = () => {
             try {
                 $("#user-su-is-bot").prop("checked", this.state.user.is_bot);
             } catch (e) {
@@ -579,11 +579,11 @@ export class User extends React.PureComponent<UserProperties, any> {
         };
         setTimeout(doDomWork, 0);
 
-        let game_history_groomer = (results) => {
-            let ret = [];
+        const game_history_groomer = (results) => {
+            const ret = [];
             for (let i = 0; i < results.length; ++i) {
-                let r = results[i];
-                let item: any = {
+                const r = results[i];
+                const item: any = {
                     "id": r.id,
                 };
 
@@ -601,7 +601,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                 item.white_class = item.white_won ? (item.white.id === this.user_id ? "library-won" : "library-lost") : "";
                 item.historical = r.historical_ratings;
 
-                let outcome = effective_outcome(item.historical.black.ratings.overall.rating, item.historical.white.ratings.overall.rating, item.handicap);
+                const outcome = effective_outcome(item.historical.black.ratings.overall.rating, item.historical.white.ratings.overall.rating, item.handicap);
                 if (item.white.id === this.user_id) /* played white */ {
                     item.played_black = false;
                     item.opponent = r.historical_ratings.black;
@@ -637,7 +637,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                 }
 
                 if ("time_control_parameters" in r) {
-                    let tcp = JSON.parse(r.time_control_parameters);
+                    const tcp = JSON.parse(r.time_control_parameters);
                     if ("speed" in tcp) {
                         item.speed = tcp.speed[0].toUpperCase() + tcp.speed.slice(1); // capitalize string
                     }
@@ -677,12 +677,12 @@ export class User extends React.PureComponent<UserProperties, any> {
             return ret;
         };
 
-        let review_history_groomer = (results) => {
-            let ret = [];
+        const review_history_groomer = (results) => {
+            const ret = [];
 
             for (let i = 0; i < results.length; ++i) {
-                let r = results[i];
-                let item: any = {
+                const r = results[i];
+                const item: any = {
                     "id": r.id,
                 };
 
@@ -718,9 +718,9 @@ export class User extends React.PureComponent<UserProperties, any> {
         }
 
 
-        let global_user = data.get("config.user");
-        let cdn_release = data.get("config.cdn_release");
-        let account_links = user.self_reported_account_linkages;
+        const global_user = data.get("config.user");
+        const cdn_release = data.get("config.cdn_release");
+        const account_links = user.self_reported_account_linkages;
 
         return (
             <div className="User container">
@@ -1271,7 +1271,7 @@ export class User extends React.PureComponent<UserProperties, any> {
         );
     }
     renderRatingOrRank(speed, size, show_rating: boolean): JSX.Element {
-        let r = getUserRating(this.state.user, speed, size);
+        const r = getUserRating(this.state.user, speed, size);
 
         return (
             <div className={`rating-entry ${speed}-${size}x${size} ` + (r.unset ? 'unset ' : '') + (speed === this.state.selected_speed && size === this.state.selected_size ? 'active' : '')}
@@ -1301,7 +1301,7 @@ function openNotes(notes) {
 function SelfReportedAccountLinkages({links}: {links: any}): JSX.Element {
     const has_association = links.org1 || links.org2 || links.org3;
     let has_other_server = false;
-    for (let key in links) {
+    for (const key in links) {
         if (key !== "hidden" &&
             key !== "hidden_ids" &&
             key !== "last_updated" &&
@@ -1337,7 +1337,7 @@ function AssociationLink({country, id, rank}: {country: string; id?: string; ran
             return null;
         }
 
-        let association = associations.filter(a => a.country === country)[0];
+        const association = associations.filter(a => a.country === country)[0];
         let linker: (id: string) => string;
 
         if (country === "us") {

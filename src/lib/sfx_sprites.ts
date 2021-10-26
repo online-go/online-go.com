@@ -30,7 +30,7 @@ export interface SpritePack {
     };
 }
 
-export let sprite_packs: {
+export const sprite_packs: {
     [pack_id: string]: SpritePack;
 } = {};
 

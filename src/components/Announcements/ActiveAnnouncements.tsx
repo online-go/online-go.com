@@ -33,8 +33,8 @@ interface ActiveAnnouncementsProperties {
 }
 
 // Holds the expirations dates of cleared announcements
-let hard_cleared_announcements: {[id: number]: number} = data.get("announcements.hard_cleared", {});
-for (let k in hard_cleared_announcements) {
+const hard_cleared_announcements: {[id: number]: number} = data.get("announcements.hard_cleared", {});
+for (const k in hard_cleared_announcements) {
     if (hard_cleared_announcements[k] < Date.now()) {
         delete hard_cleared_announcements[k];
     }
@@ -64,13 +64,13 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
     }
 
     render() {
-        let lst: Announcement[] = [];
+        const lst: Announcement[] = [];
 
-        for (let announcement_id in active_announcements) {
-            let announcement = active_announcements[announcement_id];
-            let is_hidden = announcement_id in hard_cleared_announcements;
-            let creator_blocked = getBlocks(announcement.creator.id).block_announcements;
-            let type_muted = announcementTypeMuted(announcement);
+        for (const announcement_id in active_announcements) {
+            const announcement = active_announcements[announcement_id];
+            const is_hidden = announcement_id in hard_cleared_announcements;
+            const creator_blocked = getBlocks(announcement.creator.id).block_announcements;
+            const type_muted = announcementTypeMuted(announcement);
 
             if (announcement.type !== "tournament" && !is_hidden && !creator_blocked && !type_muted) {
                 lst.push(announcement);
@@ -84,12 +84,12 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
         return (
             <Card className="ActiveAnnouncements">
                 {lst.map((announcement, idx) => {
-                    let user = data.get("user");
-                    let can_block_user = !user.anonymous &&
+                    const user = data.get("user");
+                    const can_block_user = !user.anonymous &&
                         (user.id !== announcement.creator.id) &&
                         announcement.creator.ui_class.indexOf('moderator') < 0;
 
-                    let announcement_actions: PopupMenuItem[] = [
+                    const announcement_actions: PopupMenuItem[] = [
                         {title: _('Hide this announcement'), onClick: () => {
                             this.clearAnnouncement(announcement.id);
                             /*

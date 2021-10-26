@@ -48,7 +48,7 @@ export function PuzzleCollectionList({match:{params:{player_id}}}: {match: {para
                         }}
                         groom={
                             (arr) => {
-                                for (let e of arr) {
+                                for (const e of arr) {
                                     e.min_rank_string = longRankString(e.min_rank);
                                     e.max_rank_string = longRankString(e.max_rank);
                                     e.min_rank_short = rankString(e.min_rank);

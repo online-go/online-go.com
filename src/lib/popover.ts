@@ -40,8 +40,8 @@ interface PopoverConfig {
     //right?:HTMLElement;;
 }
 
-let last_id: number = 0;
-let open_popovers = {};
+let last_id = 0;
+const open_popovers = {};
 
 export class PopOver extends TypedEventEmitter<Events> {
     id: number;
@@ -73,22 +73,22 @@ export class PopOver extends TypedEventEmitter<Events> {
 }
 
 export function close_all_popovers(): void {
-    for (let k in open_popovers) {
+    for (const k in open_popovers) {
         open_popovers[k].close();
     }
 }
 
 export function popover(config: PopoverConfig): PopOver {
-    let backdrop = $("<div class='popover-backdrop'></div>");
-    let container = $("<div class='popover-container'></div>");
+    const backdrop = $("<div class='popover-backdrop'></div>");
+    const container = $("<div class='popover-container'></div>");
 
-    let minWidth: number = config.minWidth || 150;
-    let minHeight: number = config.minHeight || 25;
-    let x: number = 0;
-    let y: number = 0;
-    let scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0;
-    let scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    let bounds = {x: scrollLeft + window.innerWidth - 16 , y: scrollTop + window.innerHeight - 16};
+    const minWidth: number = config.minWidth || 150;
+    const minHeight: number = config.minHeight || 25;
+    let x = 0;
+    let y = 0;
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    const bounds = {x: scrollLeft + window.innerWidth - 16 , y: scrollTop + window.innerHeight - 16};
 
     if (config.at) {
         x = config.at.x;
@@ -102,7 +102,7 @@ export function popover(config: PopoverConfig): PopOver {
             container.css({minWidth: minWidth, bottom: $(window).height() - y, left: x});
         }
     } else if (config.below) {
-        let rectangle = (ReactDOM.findDOMNode(config.below) as Element).getBoundingClientRect();
+        const rectangle = (ReactDOM.findDOMNode(config.below) as Element).getBoundingClientRect();
         x = rectangle.left + window.scrollX;
         x = Math.min(x, bounds.x - minWidth);
 

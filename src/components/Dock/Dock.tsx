@@ -34,8 +34,8 @@ export class Dock extends React.Component<any, any> {
             delay = 99999;
         }
         // open dock at speed set by preference 'dock-delay'
-        let modified_transition = `all 0.1s ease-in ${delay}s`;
-        let dock = document.getElementsByClassName('Dock')[0] as HTMLElement;
+        const modified_transition = `all 0.1s ease-in ${delay}s`;
+        const dock = document.getElementsByClassName('Dock')[0] as HTMLElement;
         // tested on Opera, Chrome, Safari, Edge, Firefox
         dock.style.transition = modified_transition;
         dock.style.webkitTransition = modified_transition;
@@ -43,8 +43,8 @@ export class Dock extends React.Component<any, any> {
 
     mouseExited = (ev) => {
         // always close fast
-        let fast_transition = `all 0.1s ease-in 0s`;
-        let dock = document.getElementsByClassName('Dock')[0] as HTMLElement;
+        const fast_transition = `all 0.1s ease-in 0s`;
+        const dock = document.getElementsByClassName('Dock')[0] as HTMLElement;
         dock.style.transition = fast_transition;
         dock.style.webkitTransition = fast_transition;
     };

@@ -39,9 +39,9 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
 
     constructor(props) {
         super(props);
-        let exp = new Date();
+        const exp = new Date();
         exp.setSeconds(exp.getSeconds() + 300);
-        let user = data.get('user');
+        const user = data.get('user');
 
         this.state = {
             announcements: [],
@@ -64,7 +64,7 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
     setExpiration = (moment_date) => {
 
         let message = null;
-        let announcement_duration = moment_date.toDate().getTime() - Date.now();
+        const announcement_duration = moment_date.toDate().getTime() - Date.now();
         if (announcement_duration > MAX_ANNOUNCEMENT_DURATION && !data.get('user').is_superuser) {
             message = _("Announcement durations must be 6 hours or less");
         }
@@ -79,13 +79,13 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
         this.setState({text: ev.target.value});
     };
     setLink = (ev) => {
-        let link  = ev.target.value.trim();
+        const link  = ev.target.value.trim();
         this.setState({
             link: link
         });
     };
     create = () => {
-        let announcement_duration = moment(this.state.expiration).toDate().getTime() - Date.now();
+        const announcement_duration = moment(this.state.expiration).toDate().getTime() - Date.now();
         if (announcement_duration > MAX_ANNOUNCEMENT_DURATION && !data.get('user').is_superuser) {
             return;
         }
@@ -121,10 +121,10 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
 
 
     render() {
-        let user = data.get("user");
+        const user = data.get("user");
 
         let can_create = (this.state.expiration && this.state.text) ;
-        let announcement_duration = moment(this.state.expiration).toDate().getTime() - Date.now();
+        const announcement_duration = moment(this.state.expiration).toDate().getTime() - Date.now();
         if (announcement_duration > MAX_ANNOUNCEMENT_DURATION && !data.get('user').is_superuser) {
             can_create = false;
         }
@@ -222,8 +222,8 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
                         columns={[
                             {header: "Time"      , className: "", render: (a) => moment(a.timestamp).format('YYYY-MM-DD LTS')},
                             {header: "Duration"  , className: "", render: (a) => {
-                                let ms = moment(a.expiration).diff(moment(a.timestamp));
-                                let d = moment.duration(ms);
+                                const ms = moment(a.expiration).diff(moment(a.timestamp));
+                                const d = moment.duration(ms);
                                 return Math.floor(d.asHours()) + moment.utc(ms).format(":mm");
                                 //.format('HH:mm')
                             }

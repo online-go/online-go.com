@@ -58,7 +58,7 @@ import {GameTimings} from "./GameTimings";
 
 declare let swal;
 
-let win = $(window);
+const win = $(window);
 
 interface GameProperties {
     match: {
@@ -300,14 +300,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
         setExtraActionCallback(null);
         $(window).off("focus", this.onFocus);
         window.document.title = "OGS";
-        let body = document.getElementsByTagName('body')[0];
+        const body = document.getElementsByTagName('body')[0];
         body.classList.remove("zen");   //remove the class
     }
     getLocation(): string {
         return window.location.pathname;
     }
     autoadvance = () => {
-        let user = data.get('user');
+        const user = data.get('user');
 
         if (!user.anonymous && /^\/game\//.test(this.getLocation())) {
             /* if we just moved */
@@ -359,8 +359,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
             : chat_manager.join(`review-${this.review_id}`);
         $(document).on("keypress", this.setLabelHandler);
 
-        let label_position = preferences.get("label-positioning");
-        let opts: GobanCanvasConfig = {
+        const label_position = preferences.get("label-positioning");
+        const opts: GobanCanvasConfig = {
             "board_div": this.goban_div,
             "move_tree_container": this.ref_move_tree_container,
             "interactive": true,
@@ -386,7 +386,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         };
 
         if (opts.display_width <= 0) {
-            let I = setInterval(() => {
+            const I = setInterval(() => {
                 this.onResize(true);
                 setTimeout(() => {
                     if (!this.goban || (this.ref_goban_container && Math.min(this.ref_goban_container.offsetWidth, this.ref_goban_container.offsetHeight) > 0)) {
@@ -418,7 +418,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
         if (preferences.get("dynamic-title")) {
             /* Title Updates { */
-            let last_title = window.document.title;
+            const last_title = window.document.title;
             this.last_move_viewed = 0;
             this.on_refocus_title = last_title;
             this.goban.on("state_text", (state) => {
@@ -432,7 +432,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         this.last_move_viewed = this.goban.engine.getMoveNumber();
                         window.document.title = state.title;
                     } else {
-                        let diff = this.goban.engine.getMoveNumber() - this.last_move_viewed;
+                        const diff = this.goban.engine.getMoveNumber() - this.last_move_viewed;
                         window.document.title = interpolate(_("(%s) moves made"), [diff]);
                     }
                 } else {
@@ -450,7 +450,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             /* This is the code that draws the count down number on the "hover
              * stone" for the current player if they are running low on time */
 
-            let user = data.get('user');
+            const user = data.get('user');
 
             if (!clock) {
                 return;
@@ -466,7 +466,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             }
 
             let ms_left = 0;
-            let player_clock = clock.current_player === 'black' ? clock.black_clock : clock.white_clock;
+            const player_clock = clock.current_player === 'black' ? clock.black_clock : clock.white_clock;
             if (player_clock.main_time > 0) {
                 ms_left = player_clock.main_time;
                 if (this.goban.engine.time_control.system === "byoyomi"
@@ -477,7 +477,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 ms_left = player_clock.period_time_left || player_clock.block_time_left || 0;
             }
 
-            let seconds = Math.ceil((ms_left - 1) / 1000);
+            const seconds = Math.ceil((ms_left - 1) / 1000);
 
             const every_second_start = preferences.get('sound.countdown.every-second.start') as number;
 
@@ -552,7 +552,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.debouncedChatUpdate();
         });
         this.goban.on("chat-remove", (obj) => {
-            for (let chat_id of obj.chat_ids) {
+            for (const chat_id of obj.chat_ids) {
                 for (let i = 0; i < this.chat_log.length; ++i) {
                     if (this.chat_log[i].chat_id === chat_id) {
                         this.chat_log.splice(i, 1);
@@ -639,13 +639,13 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 }
 
                 if (stashed_move_string && stashed_review_id === this.goban.review_id) {
-                    let cur_move_string = this.goban.engine.cur_move.getMoveStringToThisPoint();
+                    const cur_move_string = this.goban.engine.cur_move.getMoveStringToThisPoint();
 
-                    let prev_last_review_message = this.goban.getLastReviewMessage();
-                    let moves = GoMath.decodeMoves(stashed_move_string, this.goban.width, this.goban.height);
+                    const prev_last_review_message = this.goban.getLastReviewMessage();
+                    const moves = GoMath.decodeMoves(stashed_move_string, this.goban.width, this.goban.height);
 
                     this.goban.engine.jumpTo(this.goban.engine.move_tree);
-                    for (let move of moves) {
+                    for (const move of moves) {
                         if (move.edited) {
                             this.goban.engine.editPlace(
                                 move.x,
@@ -695,8 +695,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 this.ladder_id = game.ladder;
                 this.tournament_id = game.tournament;
 
-                let review_list = [];
-                for (let k in game.gamedata.reviews) {
+                const review_list = [];
+                for (const k in game.gamedata.reviews) {
                     review_list.push({
                         id: k,
                         owner: game.gamedata.reviews[k],
@@ -747,7 +747,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
 
     private bindAudioEvents(): void { // called by init
-        let user = data.get('user');
+        const user = data.get('user');
         //this.goban.on('audio-game-started', (obj:{ player_id: number }) => sfx.play("game_started"));
 
         this.goban.on('audio-enter-stone-removal', () => {
@@ -915,8 +915,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         this.goban.on('audio-game-ended', (winner: 'black' | 'white' | 'tie') => {
-            let user = data.get('user');
-            let color = this.goban.engine.playerColor(user?.id);
+            const user = data.get('user');
+            const color = this.goban.engine.playerColor(user?.id);
 
             if (winner === 'tie') {
                 sfx.play('tie');
@@ -947,14 +947,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
         });
 
         let last_audio_played: ValidSound = 'error';
-        let overtime_announced: boolean = false;
+        let overtime_announced = false;
         let last_period_announced = -1;
-        let first_audio_event_received: boolean = false;
+        let first_audio_event_received = false;
         // this exists to prevent some early announcements when we reconnect
         setTimeout(() => first_audio_event_received = true, 1000);
 
         this.goban.on('audio-clock', (audio_clock_event: AudioClockEvent) => {
-            let user = data.get('user');
+            const user = data.get('user');
             if (user.anonymous) {
                 //console.log("anon");
                 return;
@@ -1006,9 +1006,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
 
             let audio_to_play: ValidSound;
-            let seconds_left: number = audio_clock_event.countdown_seconds;
-            let numeric_announcement: boolean = false;
-            let force_play: boolean = false;
+            const seconds_left: number = audio_clock_event.countdown_seconds;
+            let numeric_announcement = false;
+            let force_play = false;
 
             if (audio_clock_event.in_overtime && !overtime_announced) {
                 force_play = true;
@@ -1080,7 +1080,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         if (seconds_left < every_second_start) {
                             audio_to_play = (every_second_start - seconds_left).toString() as ValidSound;
                         } else {
-                            let count_from = Math.max(ten_seconds_start, five_seconds_start);
+                            const count_from = Math.max(ten_seconds_start, five_seconds_start);
 
                             if (ten_seconds_start > 0 && seconds_left <= ten_seconds_start && seconds_left % 10 === 0 && seconds_left !== every_second_start) {
                                 //audio_to_play = (period_time - parseInt(audio_to_play)).toString() as ValidSound;
@@ -1129,14 +1129,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.goban.syncReviewMove();
     }
     nav_first() {
-        let last_estimate_move = this.stopEstimatingScore();
+        const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
         this.goban.showFirst();
         this.goban.syncReviewMove();
     }
     nav_prev_10() {
-        let last_estimate_move = this.stopEstimatingScore();
+        const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
         for (let i = 0; i < 10; ++i) {
@@ -1145,14 +1145,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.goban.syncReviewMove();
     }
     nav_prev() {
-        let last_estimate_move = this.stopEstimatingScore();
+        const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
         this.goban.showPrevious();
         this.goban.syncReviewMove();
     }
     nav_next(event?: React.MouseEvent<any>, dont_stop_autoplay?: boolean) {
-        let last_estimate_move = this.stopEstimatingScore();
+        const last_estimate_move = this.stopEstimatingScore();
         if (!dont_stop_autoplay) {
             this.stopAutoplay();
         }
@@ -1161,7 +1161,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.goban.syncReviewMove();
     }
     nav_next_10() {
-        let last_estimate_move = this.stopEstimatingScore();
+        const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
         for (let i = 0; i < 10; ++i) {
@@ -1170,7 +1170,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.goban.syncReviewMove();
     }
     nav_last() {
-        let last_estimate_move = this.stopEstimatingScore();
+        const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
         this.goban.jumpToLastOfficialMove();
@@ -1184,7 +1184,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
     }
     nav_goto_move = (move_number: number) => {
-        let last_estimate_move = this.stopEstimatingScore();
+        const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
         this.goban.showFirst(move_number > 0);
@@ -1208,7 +1208,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             this.stopAutoplay();
         }
         this.checkAndEnterAnalysis();
-        let step = () => {
+        const step = () => {
             if (this.goban.mode === "analyze") {
                 this.nav_next(null, true);
 
@@ -1244,7 +1244,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         return false;
     }
     recenterGoban() {
-        let m = this.goban.computeMetrics();
+        const m = this.goban.computeMetrics();
         $(this.goban_div).css({
             top: Math.ceil(this.ref_goban_container.offsetHeight - m.height) / 2,
             left: Math.ceil(this.ref_goban_container.offsetWidth - m.width) / 2,
@@ -1277,7 +1277,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         if (this.computeViewMode() === "portrait") {
-            let w = win.width() + 10;
+            const w = win.width() + 10;
             if (this.ref_goban_container.style.minHeight !== `${w}px`) {
                 this.ref_goban_container.style.minHeight = `${w}px`;
             }
@@ -1285,7 +1285,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             if (this.ref_goban_container.style.minHeight !== `initial`) {
                 this.ref_goban_container.style.minHeight = `initial`;
             }
-            let w = this.ref_goban_container.offsetWidth;
+            const w = this.ref_goban_container.offsetWidth;
             if (this.ref_goban_container.style.flexBasis !== `${w}px`) {
                 this.ref_goban_container.style.flexBasis = `${w}px`;
             }
@@ -1345,7 +1345,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         if (this.goban && this.goban.mode === "analyze") {
             if (this.goban.analyze_tool === "label") {
                 if (event.charCode) {
-                    let ch = String.fromCharCode(event.charCode).toUpperCase();
+                    const ch = String.fromCharCode(event.charCode).toUpperCase();
                     this.goban.setLabelCharacter(ch);
                 }
             }
@@ -1358,7 +1358,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         return win.height() < 680;
     }
     toggleCoordinates() {
-        let goban = this.goban;
+        const goban = this.goban;
 
         let label_position = preferences.get("label-positioning");
         switch (label_position) {
@@ -1379,7 +1379,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         goban.redraw(true);
     }
     showGameInfo() {
-        for (let k of ['komi', 'rules', 'handicap']) {
+        for (const k of ['komi', 'rules', 'handicap']) {
             this.goban.config[k] = this.goban.engine.config[k];
         }
         openGameInfoModal(
@@ -1404,11 +1404,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
         openGameLinkModal(this.goban);
     }
     gameAnalyze() {
-        let user = data.get("user");
+        const user = data.get("user");
         if (this.goban.isAnalysisDisabled() && this.goban.engine.phase !== "finished") {
             //swal(_("Analysis mode has been disabled for this game"));
         } else {
-            let last_estimate_move = this.stopEstimatingScore();
+            const last_estimate_move = this.stopEstimatingScore();
 
             this.goban.setMode("analyze");
             if (last_estimate_move) {
@@ -1425,14 +1425,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
     toggleZenMode() {
         if (this.state.zen_mode) {
-            let body = document.getElementsByTagName('body')[0];
+            const body = document.getElementsByTagName('body')[0];
             body.classList.remove("zen");   //remove the class
             this.setState({
                 zen_mode: false,
                 view_mode: this.computeViewMode(),
             });
         } else {
-            let body = document.getElementsByTagName('body')[0];
+            const body = document.getElementsByTagName('body')[0];
             body.classList.add("zen");   //add the class
             this.setState({
                 zen_mode: true,
@@ -1476,7 +1476,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.onResize();
     }
     setPencilColor(ev) {
-        let color = (ev.target as HTMLInputElement).value;
+        const color = (ev.target as HTMLInputElement).value;
         if (this.goban.analyze_tool === "draw") {
             this.goban.analyze_subtool = color;
         }
@@ -1501,10 +1501,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }, 1);
     }
     shareAnalysis() {
-        let diff = this.goban.engine.getMoveDiff();
+        const diff = this.goban.engine.getMoveDiff();
         let str;
         let name = this.state.variation_name;
-        let goban = this.goban;
+        const goban = this.goban;
         let autonamed = false;
 
         if (!name) {
@@ -1512,15 +1512,15 @@ export class Game extends React.PureComponent<GameProperties, any> {
             name = "" + (++this.last_variation_number);
         }
 
-        let marks = {};
+        const marks = {};
         let mark_ct = 0;
         for (let y = 0; y < goban.height; ++y) {
             for (let x = 0; x < goban.width; ++x) {
-                let pos = goban.getMarks(x, y);
-                let marktypes = ["letter", "triangle", "circle", "square", "cross"];
+                const pos = goban.getMarks(x, y);
+                const marktypes = ["letter", "triangle", "circle", "square", "cross"];
                 for (let i = 0; i < marktypes.length; ++i) {
                     if (marktypes[i] in pos && pos[marktypes[i]]) {
-                        let markkey = marktypes[i] === "letter" ? pos.letter : marktypes[i];
+                        const markkey = marktypes[i] === "letter" ? pos.letter : marktypes[i];
                         if (!(markkey in marks)) {
                             marks[markkey] = "";
                         }
@@ -1532,7 +1532,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
 
-        let analysis: any = {
+        const analysis: any = {
             "type": "analysis",
             "from": diff.from,
             "moves": diff.moves,
@@ -1547,7 +1547,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             analysis.pen_marks = goban.pen_marks;
         }
 
-        let last_analysis_sent = this.last_analysis_sent;
+        const last_analysis_sent = this.last_analysis_sent;
         if (last_analysis_sent &&
             last_analysis_sent.from === analysis.from &&
             last_analysis_sent.moves === analysis.moves &&
@@ -1577,7 +1577,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     };
 
     popupScores() {
-        let goban = this.goban;
+        const goban = this.goban;
 
         if (goban.engine.cur_move) {
             this.orig_marks = JSON.stringify(goban.engine.cur_move.getAllMarks());
@@ -1590,14 +1590,14 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this._popupScores('white');
     }
     _popupScores(color) {
-        let goban = this.goban;
+        const goban = this.goban;
 
-        let only_prisoners = false;
-        let scores = goban.engine.computeScore(only_prisoners);
+        const only_prisoners = false;
+        const scores = goban.engine.computeScore(only_prisoners);
         this.showing_scores = goban.showing_scores;
         goban.showScores(scores);
 
-        let score = scores[color];
+        const score = scores[color];
         let html = "";
         if (!only_prisoners) {
             html += "<div class='score_breakdown'>";
@@ -1637,7 +1637,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         });
     }
     hideScores() {
-        let goban = this.goban;
+        const goban = this.goban;
 
         if (!this.showing_scores) {
             goban.hideScores();
@@ -1657,8 +1657,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
     /*** Game stuff ***/
     reviewAdded(review) {
-        let review_list = [];
-        for (let r of this.state.review_list) {
+        const review_list = [];
+        for (const r of this.state.review_list) {
             review_list.push(r);
         }
         review_list.push(review);
@@ -1688,18 +1688,18 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
     }
     sync_state() {
-        let new_state: any = {
+        const new_state: any = {
             game_id: this.game_id,
             review_id: this.review_id,
             user_is_player: false,
         };
-        let goban: Goban = this.goban;
-        let engine: GoEngine = goban ? goban.engine : null;
+        const goban: Goban = this.goban;
+        const engine: GoEngine = goban ? goban.engine : null;
 
         if (this.goban) {
             /* Is player? */
             try {
-                for (let color in this.goban.engine.players) {
+                for (const color in this.goban.engine.players) {
                     if (this.goban.engine.players[color].id === data.get("user").id) {
                         new_state.user_is_player = true;
                         break;
@@ -1741,13 +1741,13 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
             if (engine.phase === "stone removal") {
                 new_state.stone_removals = engine.getStoneRemovalString();
-                let stone_removals = new_state.stone_removals;
+                const stone_removals = new_state.stone_removals;
 
                 if (this.stone_removal_accept_timeout) {
                     clearTimeout(this.stone_removal_accept_timeout);
                 }
 
-                let gsra = $("#game-stone-removal-accept");
+                const gsra = $("#game-stone-removal-accept");
                 gsra.prop("disabled", true);
                 this.stone_removal_accept_timeout = setTimeout(() => {
                     gsra.prop("disabled", false);
@@ -1775,11 +1775,11 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
 
             if (goban.mode === "conditional") {
-                let tree = $(this.conditional_move_tree);
+                const tree = $(this.conditional_move_tree);
                 tree.empty();
                 this.selected_conditional_move = null;
                 this.conditional_move_list = [];
-                let elts = this.createConditionalMoveTreeDisplay(this.goban.conditional_tree, "", this.goban.conditional_starting_color === "black");
+                const elts = this.createConditionalMoveTreeDisplay(this.goban.conditional_tree, "", this.goban.conditional_starting_color === "black");
                 for (let i = 0; i < elts.length; ++i) {
                     tree.append(elts[i]);
                 }
@@ -1810,9 +1810,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
 
     createConditionalMoveTreeDisplay(root, cpath, blacks_move) {
-        let goban = this.goban;
+        const goban = this.goban;
 
-        let mkcb = (path) => {
+        const mkcb = (path) => {
             return () => {
                 goban.jumpToLastOfficialMove();
                 goban.followConditionalPath(path);
@@ -1820,7 +1820,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 goban.redraw();
             };
         };
-        let mkdelcb = (path) => {
+        const mkdelcb = (path) => {
             return () => {
                 goban.jumpToLastOfficialMove();
                 goban.deleteConditionalPath(path);
@@ -1829,20 +1829,20 @@ export class Game extends React.PureComponent<GameProperties, any> {
             };
         };
 
-        let color1 = blacks_move ? "black" : "white";
-        let color2 = blacks_move ? "white" : "black";
+        const color1 = blacks_move ? "black" : "white";
+        const color2 = blacks_move ? "white" : "black";
 
         let ret = null;
-        let ul = $("<ul>").addClass("tree");
+        const ul = $("<ul>").addClass("tree");
         if (root.move) {
             if ((cpath + root.move) === goban.getCurrentConditionalPath()) {
                 this.selected_conditional_move = (cpath + root.move);
             }
             this.conditional_move_list.push((cpath + root.move));
 
-            let mv = goban.engine.decodeMoves(root.move)[0];
+            const mv = goban.engine.decodeMoves(root.move)[0];
 
-            let delete_icon = $("<i>")
+            const delete_icon = $("<i>")
                 .addClass("fa fa-times")
                 .addClass("delete-move")
                 .click(mkdelcb(cpath + root.move));
@@ -1868,15 +1868,15 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
 
-        for (let ch in root.children) {
+        for (const ch in root.children) {
             if ((cpath + ch) === goban.getCurrentConditionalPath()) {
                 this.selected_conditional_move = (cpath + ch);
             }
             this.conditional_move_list.push((cpath + ch));
 
-            let li = $("<li>").addClass("move-row");
-            let mv = goban.engine.decodeMoves(ch)[0];
-            let span = $("<span>")
+            const li = $("<li>").addClass("move-row");
+            const mv = goban.engine.decodeMoves(ch)[0];
+            const span = $("<span>")
                 .addClass("entry")
                 .append($("<span>").addClass("stone " + color1))
                 .append($("<span>").html(goban.engine.prettyCoords(mv.x, mv.y)))
@@ -1885,7 +1885,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             li.append(span);
 
 
-            let elts = this.createConditionalMoveTreeDisplay(root.children[ch], cpath + ch, blacks_move);
+            const elts = this.createConditionalMoveTreeDisplay(root.children[ch], cpath + ch, blacks_move);
             for (let i = 0; i < elts.length; ++i) {
                 li.append(elts[i]);
             }
@@ -1917,8 +1917,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.goban.pauseGame();
     }
     startReview() {
-        let user = data.get("user");
-        let is_player = user.id === this.goban.engine.players.black.id || user.id === this.goban.engine.players.white.id;
+        const user = data.get("user");
+        const is_player = user.id === this.goban.engine.players.black.id || user.id === this.goban.engine.players.white.id;
 
         if (this.goban.isAnalysisDisabled() && this.goban.engine.phase !== "finished" && is_player) {
             //swal(_("Analysis mode has been disabled for this game, you can start a review after the game has concluded."));
@@ -1936,8 +1936,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
     }
     estimateScore(): boolean {
-        let user = data.get("user");
-        let is_player = (
+        const user = data.get("user");
+        const is_player = (
             user.id === this.goban.engine.players.black.id ||
             user.id === this.goban.engine.players.white.id ||
             shared_ip_with_player_map[this.game_id]
@@ -1961,7 +1961,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             return null;
         }
         this.setState({estimating_score: false});
-        let ret = this.goban.setScoringMode(false);
+        const ret = this.goban.setScoringMode(false);
         this.goban.hideScores();
         this.goban.score_estimate = null;
         //goban.engine.cur_move.clearMarks();
@@ -2154,7 +2154,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         if (this.copied_node) {
-            let paste = (base: MoveTree, source: MoveTree) => {
+            const paste = (base: MoveTree, source: MoveTree) => {
                 this.goban.engine.jumpTo(base);
                 if (source.edited) {
                     this.goban.engine.editPlace(
@@ -2174,12 +2174,12 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         false
                     );
                 }
-                let cur = this.goban.engine.cur_move;
+                const cur = this.goban.engine.cur_move;
 
                 if (source.trunk_next) {
                     paste(cur, source.trunk_next);
                 }
-                for (let branch of source.branches) {
+                for (const branch of source.branches) {
                     paste(cur, branch);
                 }
             };
@@ -2245,7 +2245,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         this.setState({
             volume: volume,
         });
-        let idx = Math.round(Math.random() * 10000) % 5; /* 5 === number of stone sounds */
+        const idx = Math.round(Math.random() * 10000) % 5; /* 5 === number of stone sounds */
 
         if (this.volume_sound_debounce) {
             clearTimeout(this.volume_sound_debounce);
@@ -2398,7 +2398,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
     }
     frag_play_buttons(show_cancel_button) {
-        let state = this.state;
+        const state = this.state;
 
         return (
             <span className="play-buttons">
@@ -2440,8 +2440,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
     };
 
     frag_play_controls(show_cancel_button) {
-        let state = this.state;
-        let user = data.get("user");
+        const state = this.state;
+        const user = data.get("user");
 
         if (!this.goban) {
             return null;
@@ -2717,7 +2717,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         );
     }
     frag_review_controls() {
-        let user = data.get("user");
+        const user = data.get("user");
 
         if (!this.goban) {
             return null;
@@ -2808,7 +2808,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         );
     }
     frag_analyze_button_bar() {
-        let state = this.state;
+        const state = this.state;
 
         return (
             <div className="game-analyze-button-bar">
@@ -2944,9 +2944,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
     };
 
     frag_num_captures_text(color) {
-        let num_prisoners = this.state.score[color].prisoners;
-        let prisoner_color = color === "black" ? "white" : "black";
-        let prisoner_img_src = data.get("config.cdn_release") + "/img/" + prisoner_color + ".png";
+        const num_prisoners = this.state.score[color].prisoners;
+        const prisoner_color = color === "black" ? "white" : "black";
+        const prisoner_img_src = data.get("config.cdn_release") + "/img/" + prisoner_color + ".png";
         return (
             <div className={"captures" + (this.state.estimating_score ? " hidden" : "")}>
                 <span className="num-captures-container">
@@ -2967,18 +2967,18 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
 
     frag_players() {
-        let goban = this.goban;
+        const goban = this.goban;
         if (!goban) {
             return null;
         }
-        let engine = goban.engine;
+        const engine = goban.engine;
 
         return (
             <div ref={el => this.ref_players = el} className="players">
                 {["black", "white"].map((color: 'black' | 'white', idx) => {
-                    let player_bg: any = {};
+                    const player_bg: any = {};
                     if (this.state[`historical_${color}`]) {
-                        let icon = icon_size_url(this.state[`historical_${color}`]['icon'], 64);
+                        const icon = icon_size_url(this.state[`historical_${color}`]['icon'], 64);
                         player_bg.backgroundImage = `url("${icon}")`;
                     }
                     return (
@@ -3043,7 +3043,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
 
     frag_below_board_controls() {
-        let goban = this.goban;
+        const goban = this.goban;
 
         if (this.state.view_mode === "portrait" && this.state.portrait_tab === "dock") {
             return (
@@ -3088,15 +3088,15 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
 
     frag_dock() {
-        let goban = this.goban;
+        const goban = this.goban;
         let superuser_ai_review_ready = (goban && data.get("user").is_superuser && goban.engine.phase === "finished" || null);
         let mod = (goban && data.get("user").is_moderator && goban.engine.phase !== "finished" || null);
         let annul = (goban && data.get("user").is_moderator && goban.engine.phase === "finished" || null);
-        let annulable = (goban && !this.state.annulled && goban.engine.config.ranked || null);
-        let unannulable = (goban && this.state.annulled && goban.engine.config.ranked || null);
+        const annulable = (goban && !this.state.annulled && goban.engine.config.ranked || null);
+        const unannulable = (goban && this.state.annulled && goban.engine.config.ranked || null);
 
-        let review = !!this.review_id || null;
-        let game = !!this.game_id || null;
+        const review = !!this.review_id || null;
+        const game = !!this.game_id || null;
         if (review) {
             superuser_ai_review_ready = null;
             mod = null;
@@ -3214,7 +3214,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         );
     }
     frag_kb_shortcuts() {
-        let goban = this.goban;
+        const goban = this.goban;
 
         return (
             <div>
@@ -3248,7 +3248,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
 
     renderExtraPlayerActions = (player_id: number, unused: any) => {
-        let user = data.get("user");
+        const user = data.get("user");
         if (this.review_id && this.goban && (this.goban.review_controller_id === user.id || this.goban.review_owner_id === user.id)) {
             let is_owner = null;
             let is_controller = null;
@@ -3259,7 +3259,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 is_controller = <div style={{fontStyle: "italic"}}>{_("Controller") /* translators: Review controller */}</div>;
             }
 
-            let give_control = (
+            const give_control = (
                 <button className="xs" onClick={() => {
                     this.goban.giveReviewControl(player_id);
                     close_all_popovers();
@@ -3303,9 +3303,9 @@ export function goban_view_mode(bar_width?: number): ViewMode {
         bar_width = 300;
     }
 
-    let h = win.height() || 1;
-    let w = win.width() || 1;
-    let aspect_ratio = w / h;
+    const h = win.height() || 1;
+    const w = win.width() || 1;
+    const aspect_ratio = w / h;
 
     if (((aspect_ratio <= 0.8) || w < bar_width * 2) && w < 1280) {
         return "portrait";

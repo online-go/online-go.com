@@ -65,7 +65,7 @@ export class PuzzleEditor {
 
         if (new_puzzle) {
             let collection_id = 0;
-            let m = window.location.href.match(/collection_id=([0-9]+)/);
+            const m = window.location.href.match(/collection_id=([0-9]+)/);
             if (m) {
                 collection_id = parseInt(m[1]);
             }
@@ -159,9 +159,9 @@ export class PuzzleEditor {
             get("puzzles/%%/rate", puzzle_id),
         ])
         .then((arr) => {
-            let rating = arr[2];
-            let puzzle = arr[0].puzzle;
-            let collection = arr[0].collection;
+            const rating = arr[2];
+            const puzzle = arr[0].puzzle;
+            const collection = arr[0].collection;
 
             let randomize_transform = preferences.get("puzzle.randomize.transform"); /* only randomize when we are getting a new puzzle */
             let randomize_color = preferences.get("puzzle.randomize.color"); /* only randomize when we are getting a new puzzle */
@@ -176,7 +176,7 @@ export class PuzzleEditor {
             this.transform.settings.transform_v = randomize_transform && Math.random() > 0.5;
             this.transform.settings.transform_x = randomize_transform && Math.random() > 0.5;
 
-            let new_state = Object.assign({
+            const new_state = Object.assign({
                 puzzle_collection_summary: arr[1],
                 loaded: true,
                 my_rating: rating.rating,
@@ -191,7 +191,7 @@ export class PuzzleEditor {
 
             this.orig_puzzle_config = puzzle;
 
-            let bounds = this.getBounds(puzzle, puzzle.width, puzzle.height);
+            const bounds = this.getBounds(puzzle, puzzle.width, puzzle.height);
             new_state.zoomable = bounds && (bounds.left > 0 || bounds.top > 0 || bounds.right < puzzle.width - 1 || bounds.bottom < puzzle.height - 1);
 
             callback(new_state, false);
@@ -206,7 +206,7 @@ export class PuzzleEditor {
      * @return Goban options
      */
     reset(goban_div: HTMLDivElement, editing: boolean, replacementSettingsFunction: () => PuzzlePlacementSetting): GobanCanvasConfig {
-        let puzzle = this.puzzle_config = dup(this.orig_puzzle_config);
+        const puzzle = this.puzzle_config = dup(this.orig_puzzle_config);
 
         if (!puzzle) {
             throw new Error("No puzzle loaded");
@@ -220,21 +220,21 @@ export class PuzzleEditor {
             bounds = null;
         }
 
-        let label_position = preferences.get("label-positioning-puzzles");
+        const label_position = preferences.get("label-positioning-puzzles");
 
         while (goban_div.firstChild) {
             goban_div.removeChild(goban_div.firstChild);
         }
 
-        let opts: GobanCanvasConfig = Object.assign({
+        const opts: GobanCanvasConfig = Object.assign({
             "board_div": goban_div,
             "interactive": true,
-            "mode": "puzzle" as "puzzle",
+            "mode": "puzzle" as const,
             "draw_top_labels": (label_position === "all" || label_position.indexOf("top") >= 0),
             "draw_left_labels": (label_position === "all" || label_position.indexOf("left") >= 0),
             "draw_right_labels": (label_position === "all" || label_position.indexOf("right") >= 0),
             "draw_bottom_labels": (label_position === "all" || label_position.indexOf("bottom") >= 0),
-            "getPuzzlePlacementSetting": () => ({ "mode": "play" as "play"}),
+            "getPuzzlePlacementSetting": () => ({ "mode": "play" as const}),
             "bounds": bounds,
             "player_id": 0,
             "server_socket": null,
@@ -259,14 +259,14 @@ export class PuzzleEditor {
 
 
     getBounds(puzzle: PuzzleConfig, width: number, height: number) {
-        let ret = {
+        const ret = {
             top: 9999,
             bottom: 0,
             left: 9999,
             right: 0,
         };
 
-        let process = (pos, width, height) => {
+        const process = (pos, width, height) => {
             if (Array.isArray(pos)) {
                 for (let i = 0; i < pos.length; ++i) {
                     process(pos[i], width, height);
@@ -300,13 +300,13 @@ export class PuzzleEditor {
             return null;
         }
 
-        let padding = 1;
+        const padding = 1;
         ret.top = Math.max(0, ret.top - padding);
         ret.bottom = Math.min(height - 1, ret.bottom + padding);
         ret.left = Math.max(0, ret.left - padding);
         ret.right = Math.min(width - 1, ret.right + padding);
 
-        let snap_to_edge = 3;
+        const snap_to_edge = 3;
         if (ret.top <= snap_to_edge) {
             ret.top = 0;
         }
