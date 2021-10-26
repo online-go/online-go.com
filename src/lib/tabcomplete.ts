@@ -163,7 +163,6 @@ function matchFullName(input, nicknames) {
     return { value: "", matches: matches };
 }
 
-/* tslint:disable */
 /* eslint-disable @typescript-eslint/no-invalid-this */
 function onKeyPress(e, options) {
     if (e.which === 9) {
@@ -244,10 +243,8 @@ function onKeyPress(e, options) {
         }
     }
 }
-/* tslint:enable */
 /* eslint-enable @typescript-eslint/no-invalid-this */
 
-/* tslint:disable */
 $.fn.nicknameTabComplete = function(options) {
     options = $.extend({}, $.fn.nicknameTabComplete.defaults, options);
     this.bind("keydown.nickname", (e) => {
@@ -267,7 +264,6 @@ $.fn.nicknameTabComplete = function(options) {
     }
     return this;
 };
-/* tslint:enable */
 
 $.fn.nicknameTabComplete.defaults = {
     nicknames: () => player_cache.nicknames,

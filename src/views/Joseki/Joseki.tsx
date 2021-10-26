@@ -1442,7 +1442,6 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             this.extractAuditLog(body);
         }).catch((r) => {
             console.log("Audits GET failed:", r);
-        // tslint:disable-next-line:no-floating-promises
         }).finally(() => {
             this.setState({extra_throb: false});
         });

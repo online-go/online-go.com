@@ -307,10 +307,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                     this.setState({hovered_month: null});
                 })
                 .on('mousemove', function() {
-                    /* tslint:disable */
                     // eslint-disable-next-line @typescript-eslint/no-invalid-this
                     const x0 = self.ratings_x.invert(d3.mouse(this as d3.ContainerElement)[0]);
-                    /* tslint:enable */
 
                     let d = null;
 
@@ -454,10 +452,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, any> {
                 this.setState({hovered_date: null});
             })
             .on('mousemove', function() {
-                /* tslint:disable */
                 // eslint-disable-next-line @typescript-eslint/no-invalid-this
                 const x0 = self.ratings_x.invert(d3.mouse(this as d3.ContainerElement)[0]);
-                /* tslint:enable */
 
                 const i = date_bisector(self.games_by_day, x0, 1);
                 const d0 = self.games_by_day[i - 1];

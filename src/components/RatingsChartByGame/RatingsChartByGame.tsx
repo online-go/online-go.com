@@ -393,11 +393,9 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                 self.hover_timer = window.setTimeout(this.restorePie.bind(self), pie_restore_delay);
             })
             .on('mousemove', function() {
-                /* tslint:disable */
                 // 'this' is the mouse area, in this context
                 // eslint-disable-next-line @typescript-eslint/no-invalid-this
                 const x0 = self.ratings_x.invert(d3.mouse(this as d3.ContainerElement)[0]);
-                /* tslint:enable */
 
                 const n = Math.round(x0);
                 const d = self.game_entries[n];
