@@ -30,12 +30,12 @@ import * as player_cache from "player_cache";
 import online_status from "online_status";
 import {alertModerator} from "misc";
 
-let last_id: number = 0;
+let last_id = 0;
 
-let private_chats = [];
-let instances = {};
+const private_chats = [];
+const instances = {};
 
-let date_format: Intl.DateTimeFormatOptions  = {
+const date_format: Intl.DateTimeFormatOptions  = {
     month: 'long' , day: 'numeric', year: 'numeric'
 };
 
@@ -114,12 +114,12 @@ class PrivateChat {
         this.dom.append($("<div class='paper-shadow top z2'>"));
         this.dom.append($("<div class='paper-shadow bottom z2'>"));
 
-        let title = $("<div>").addClass("title")
+        const title = $("<div>").addClass("title")
             .append(this.player_dom)
         ;
 
         if (data.get("user").is_moderator) {
-            let superchat = $("<i>").addClass("fa fa-bullhorn").click(() => {
+            const superchat = $("<i>").addClass("fa fa-bullhorn").click(() => {
                 this.superchat_enabled = !this.superchat_enabled;
                 if (this.superchat_enabled) {
                     superchat.addClass("enabled");
@@ -171,19 +171,19 @@ class PrivateChat {
 
         this.dom.append(title);
 
-        let handle = title;
-        let start_drag = (ev) => {
+        const handle = title;
+        const start_drag = (ev) => {
             if (!$(ev.target).hasClass("title") && !$(ev.target).hasClass("user")) { return; }
 
 
-            let body = $("body");
+            const body = $("body");
 
             body.append(this.dom); /* brings the chat to the front of other chats */
-            let offset = this.dom.offset();
+            const offset = this.dom.offset();
             let ox = offset.left;
             let oy = offset.top;
-            let sx = ev.clientX;
-            let sy = ev.clientY;
+            const sx = ev.clientX;
+            const sy = ev.clientY;
             let lx = sx;
             let ly = sy;
             let moving = false;
@@ -192,8 +192,8 @@ class PrivateChat {
             let last_roy = 0;
 
             const move = (ev) => {
-                let cx = ev.clientX;
-                let cy = ev.clientY;
+                const cx = ev.clientX;
+                const cy = ev.clientY;
                 if (moving || (Math.abs(cx - lx) + Math.abs(cy - ly)) > 5) {
                     moving = true;
                     if (!this.floating) {
@@ -204,8 +204,8 @@ class PrivateChat {
                     lx = cx;
                     ly = cy;
 
-                    let rox = Math.round(ox);
-                    let roy = Math.round(oy);
+                    const rox = Math.round(ox);
+                    const roy = Math.round(oy);
 
                     if (last_rox !== rox || last_roy !== roy) {
                         last_rox = rox;
@@ -234,18 +234,18 @@ class PrivateChat {
         handle.on("mousedown touchstart", start_drag);
 
         const raise_to_top = () => {
-            let body = $("body");
+            const body = $("body");
             if (body[0].childNodes[body[0].childNodes.length - 1] !== this.dom[0]) {
                 body.append(this.dom); /* brings the chat to the front of other chats */
                 this.body[0].scrollTop = this.body[0].scrollHeight;
             }
         };
 
-        let banner = this.banner =  $("<div>").addClass("banner banner-inactive");
+        const banner = this.banner =  $("<div>").addClass("banner banner-inactive");
         this.dom.append(banner);
         this.updateModeratorBanner();
 
-        let body = this.body = $("<div>").addClass("body");
+        const body = this.body = $("<div>").addClass("body");
         this.dom.append(body);
         body.on("mousedown touchstart", raise_to_top);
 
@@ -253,7 +253,7 @@ class PrivateChat {
             body.append(this.lines[i]);
         }
 
-        let input = this.input = $("<input>").attr("type", "text").keypress((ev) => {
+        const input = this.input = $("<input>").attr("type", "text").keypress((ev) => {
             if (!data.get('user').email_validated && this.player.ui_class.indexOf('moderator') < 0 && this.lines.length === 0) {
                 return;
             }
@@ -290,7 +290,7 @@ class PrivateChat {
         if (this.player.ui_class.match(/moderator/)) {  // surely would be better to use player.is_moderator, but not available!
             this.banner.removeClass("banner-inactive");
             this.banner.empty();
-            let line = $("<div>").addClass("banner-text");
+            const line = $("<div>").addClass("banner-text");
             if (this.superchat_enabled) {
                 line.addClass("megaphone-banner");
                 line.text(_("OGS Moderator official message: please respond"));
@@ -325,7 +325,7 @@ class PrivateChat {
 
         this.dom = $("<div>").addClass("private-chat-window").addClass("minimized");
 
-        let title = $("<div>").addClass("title").click(() => { this.open(true); });
+        const title = $("<div>").addClass("title").click(() => { this.open(true); });
         title.append(this.player_dom);
         title.append($("<i>").addClass("ogs-goban").click(() => {
             challenge(this.user_id);
@@ -377,11 +377,11 @@ class PrivateChat {
     addChat(from, txt, user_id, timestamp) {
         from = unicodeFilter(from);
 
-        let line = $("<div>").addClass("chat-line");
+        const line = $("<div>").addClass("chat-line");
         line.addClass("chat-user-" + user_id);
 
         if (timestamp) {
-            let ts = new Date(timestamp * 1000);
+            const ts = new Date(timestamp * 1000);
             if (this.last_date !== ts.toLocaleDateString(undefined, date_format)) {
                 this.last_date = ts.toLocaleDateString(undefined, date_format);
                 line.append($("<div>").addClass("date").text(ts.toLocaleDateString(undefined, date_format)));
@@ -402,9 +402,9 @@ class PrivateChat {
 
         this.lines.push(line);
         if (this.body) {
-            let body = this.body[0];
+            const body = this.body[0];
             let scroll = false;
-            let cur = body.scrollTop;
+            const cur = body.scrollTop;
             body.scrollTop = body.scrollHeight;
             if (body.scrollTop === cur) {
                 scroll = true;
@@ -419,13 +419,13 @@ class PrivateChat {
         this.updateModeratorBanner();
     }
     addSystem(message) {
-        let line = $("<div>").addClass("chat-line system");
+        const line = $("<div>").addClass("chat-line system");
         line.text(message.message);
         this.lines.push(line);
         if (this.body) {
-            let body = this.body[0];
+            const body = this.body[0];
             let scroll = false;
-            let cur = body.scrollTop;
+            const cur = body.scrollTop;
             body.scrollTop = body.scrollHeight;
             if (body.scrollTop === cur) {
                 scroll = true;
@@ -508,8 +508,8 @@ class PrivateChat {
     sendChat(msg) {
 
         while (msg.length) {
-            let arr = splitOnBytes(msg, 500);
-            let line = arr[0];
+            const arr = splitOnBytes(msg, 500);
+            const line = arr[0];
             msg = arr[1];
 
             this.addChat(data.get("user").username, line, this.user_id, Date.now() / 1000);
@@ -548,7 +548,7 @@ class PrivateChat {
             if (!this.superchat_modal) {
                 this.superchat_modal = $("<div>").addClass("superchat-modal");
                 $("body").append(this.superchat_modal);
-                let check = setInterval(() => {
+                const check = setInterval(() => {
                     if (!this.superchat_enabled) {
                         clearInterval(check);
                         return;
@@ -573,13 +573,13 @@ function update_chat_layout() {
     let pos = $("#em10").width() / 2.5;
     let max_width = '20rem';
 
-    let window_width = $(window).width();
+    const window_width = $(window).width();
     if (window_width < 640) {
         pos = 0;
         max_width = '100vw';
     }
 
-    let docked_chats = [];
+    const docked_chats = [];
     for (let i = 0; i < private_chats.length; ++i) {
         if (!private_chats[i].floating) {
             docked_chats.push(private_chats[i]);
@@ -646,7 +646,7 @@ comm_socket.on("private-superchat", (config) => {
     }
 });
 ITC.register("private-chat-close", (data) => {
-    let pc = getPrivateChat(data.user_id);
+    const pc = getPrivateChat(data.user_id);
     if (pc.display_state === "minimized") {
         pc.close();
     }
@@ -657,22 +657,22 @@ function chat_markup(body) {
         // Some link urls can have an @-sign in. Be careful not to cause the link_matcher
         // and email_matcher to overlap! See for example
         // https://www.google.co.uk/maps/place/Platform+9%C2%BE/@51.5321578,-0.1261661
-        let link_matcher = /(((ftp|http)(s)?:\/\/)([^<> ]+))/gi;
+        const link_matcher = /(((ftp|http)(s)?:\/\/)([^<> ]+))/gi;
         ret = ret.replace(link_matcher, (match) => "<a target='_blank' href='" +
             match.replace("@", "%40") + "'>" +
             match.replace("@", "&commat;") + "</a>");
-        let email_matcher = /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi;
+        const email_matcher = /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi;
         ret = ret.replace(email_matcher, "<a target='_blank' href='mailto:$1'>$1</a>");
-        let review_matcher = /(^##([0-9]{3,})|([ ])##([0-9]{3,}))/gi;
+        const review_matcher = /(^##([0-9]{3,})|([ ])##([0-9]{3,}))/gi;
         ret = ret.replace(review_matcher, "<a target='_blank' href='/review/$2$4'>$3##$2$4</a>");
-        let game_matcher = /(^#([0-9]{3,})|([ ])#([0-9]{3,}))/gi;
+        const game_matcher = /(^#([0-9]{3,})|([ ])#([0-9]{3,}))/gi;
         ret = ret.replace(game_matcher, "<a target='_blank' href='/game/$2$4'>$3#$2$4</a>");
-        let player_matcher = /(player ([0-9]+))/gi;
+        const player_matcher = /(player ([0-9]+))/gi;
         ret = ret.replace(player_matcher, "<a target='_blank' href='/user/view/$2'>$1</a>");
-        let group_matcher = /(#group-([0-9]+))/gi;
+        const group_matcher = /(#group-([0-9]+))/gi;
         ret = ret.replace(group_matcher, "<a target='_blank' href='/group/$2'>$1</a>");
         // try to migigate tsumegodojo spam
-        let tsumegodojo_matcher = /(tsumegodojo)/gi;
+        const tsumegodojo_matcher = /(tsumegodojo)/gi;
         ret = ret.replace(tsumegodojo_matcher, "tsumegododo");
         return ret;
     } else {

@@ -43,7 +43,7 @@ export class GroupCreate extends React.PureComponent<GroupCreateProperties, any>
 
     createGroup() {
         if (this.state.name.trim() !== "") {
-            let group = {
+            const group = {
                 name: this.state.name,
                 require_invitation: this.state.require_invitation,
                 is_public: this.state.is_public,

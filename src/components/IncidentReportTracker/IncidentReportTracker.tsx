@@ -51,8 +51,8 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
     }
 
     componentDidMount() {
-        let connect_fn = () => {
-            let user = data.get("user");
+        const connect_fn = () => {
+            const user = data.get("user");
             this.active_incident_reports = {};
             this.setState({ reports: [] });
 
@@ -139,12 +139,12 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
             this.active_incident_reports[report.id] = report;
         }
 
-        let user = data.get("user");
-        let reports = [];
+        const user = data.get("user");
+        const reports = [];
         let normal_ct = 0;
         let sandbag_ct = 0;
-        for (let id in this.active_incident_reports) {
-            let report = this.active_incident_reports[id];
+        for (const id in this.active_incident_reports) {
+            const report = this.active_incident_reports[id];
             reports.push(report);
             if (eq_bagger(report.reporter_note)) {
                 sandbag_ct++;
@@ -193,7 +193,7 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
 
 
     render() {
-        let user = data.get("user");
+        const user = data.get("user");
 
         if (this.state.reports.length === 0) {
             return null;

@@ -93,11 +93,11 @@ export interface UnreadChanged {
 }
 
 
-let channel_information_cache: {[channel: string]: ChannelInformation} = {};
-let channel_information_resolvers: {[channel: string]: Promise<ChannelInformation>} = {};
+const channel_information_cache: {[channel: string]: ChannelInformation} = {};
+const channel_information_resolvers: {[channel: string]: Promise<ChannelInformation>} = {};
 
 
-export let global_channels: Array<ChannelInformation> = [
+export const global_channels: Array<ChannelInformation> = [
     {"id": "global-english"    , "name": "English"    , "country": "us"           , language: "en"}    ,
     {"id": "global-help"       , "name": "Help"       , "country": "un"}          ,
     {"id": "global-offtopic"   , "name": "Off Topic"  , "country": "un"}          ,
@@ -139,7 +139,7 @@ export let global_channels: Array<ChannelInformation> = [
 
 try {
     let sort_order = 0;
-    for (let chan of global_channels) {
+    for (const chan of global_channels) {
         chan.sort_order = sort_order + 1000;
         sort_order += 1;
     }
@@ -150,10 +150,10 @@ try {
     for (let language of navigator.languages) {
         language = language.toLowerCase().replace('-', '_');
 
-        for (let chan of global_channels) {
+        for (const chan of global_channels) {
             if (chan.language) {
-                let chan_lang_list = typeof(chan.language) === "string" ? [chan.language] : chan.language;
-                for (let chan_lang of chan_lang_list) {
+                const chan_lang_list = typeof(chan.language) === "string" ? [chan.language] : chan.language;
+                for (const chan_lang of chan_lang_list) {
                     if (chan_lang === language && !chan.navigator_language) {
                         chan.navigator_language = true;
                         if (primary_language) {
@@ -221,14 +221,14 @@ export function resolveChannelDisplayName(channel: string): string {
             }
         });
     } else if (channel.startsWith("tournament-")) {
-        let id: number = parseInt(channel.substring(11));
+        const id: number = parseInt(channel.substring(11));
         tournament_channels.forEach(element => {
             if (id === element.id) {
                 return element.name;
             }
         });
     } else if (channel.startsWith("group-")) {
-        let id: number = parseInt(channel.substring(6));
+        const id: number = parseInt(channel.substring(6));
         group_channels.forEach(element => {
             if (id === element.id) {
                 return element.name;
@@ -258,7 +258,7 @@ data.watch(cached.active_tournaments, updateTournaments);
 let user_id: number;
 let name_match_regex = /^loading...$/;
 data.watch("config.user", (user) => {
-    let cleaned_username_regex = user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&");
+    const cleaned_username_regex = user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&");
     name_match_regex = new RegExp(
         "\\b"  + cleaned_username_regex + "\\b"
         + "|\\bplayer ?" + user.id + "\\b"
@@ -307,7 +307,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         setTimeout(() => this.joining = false, 10000); /* don't notify for name matches within 10s of joining a channel */
         comm_socket.on("connect", this._rejoin);
         this._rejoin();
-        let last_seen = data.get("chat-manager.last-seen", {});
+        const last_seen = data.get("chat-manager.last-seen", {});
         if (channel in last_seen) {
             this.last_seen_timestamp = last_seen[channel];
         } else {
@@ -316,11 +316,11 @@ class ChatChannel extends TypedEventEmitter<Events> {
     }
 
     markAsRead() {
-        let unread_delta = - this.unread_ct;
-        let previous_mentioned = this.mentioned;
+        const unread_delta = - this.unread_ct;
+        const previous_mentioned = this.mentioned;
         this.unread_ct = 0;
         this.mentioned = false;
-        let last_seen = data.get("chat-manager.last-seen", {});
+        const last_seen = data.get("chat-manager.last-seen", {});
         last_seen[this.channel] = this.last_seen_timestamp;
         data.set("chat-manager.last-seen", last_seen);
         try {
@@ -349,7 +349,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         this.removeAllListeners();
     }
     createProxy(): ChatChannelProxy {
-        let proxy = new ChatChannelProxy(this);
+        const proxy = new ChatChannelProxy(this);
         this.proxies[proxy.id] = proxy;
         return proxy;
     }
@@ -373,7 +373,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         this.chat_ids[obj.message.i] = true;
         this.chat_log.push(obj);
 
-        let previous_mentioned = this.mentioned;
+        const previous_mentioned = this.mentioned;
         let unread_delta = 0;
 
         try {
@@ -432,7 +432,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         console.log("Chat message removed: ", obj);
         this.chat_ids[obj.uuid] = true;
         for (let idx = 0; idx < this.chat_log.length; ++idx) {
-            let entry = this.chat_log[idx];
+            const entry = this.chat_log[idx];
             if (entry.message.i === obj.uuid) {
                 this.chat_log.splice(idx, 1);
             }
@@ -445,7 +445,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
     }
 
     handleJoins(users: Array<any>): void {
-        for (let user of users) {
+        for (const user of users) {
             if (!(user.id in this.user_list)) {
                 this.user_count++;
                 this._insert_into_sorted_lists(user);
@@ -495,7 +495,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
 
     public send(text: string): void {
         if (text.length > 300) {
-            for (let split_str of string_splitter(text)) {
+            for (const split_str of string_splitter(text)) {
                 this.send(split_str);
             }
             return;
@@ -524,10 +524,10 @@ class ChatChannel extends TypedEventEmitter<Events> {
                 )
                 , "flood"
             );
-            let start = Date.now();
+            const start = Date.now();
             this.flood_protection = setInterval(() => {
                 this.clearSystemMessages("flood");
-                let left = chillout_time * 1000 - (Date.now() - start);
+                const left = chillout_time * 1000 - (Date.now() - start);
                 if (left > 0) {
                     this.systemMessage(
                         interpolate(
@@ -546,16 +546,16 @@ class ChatChannel extends TypedEventEmitter<Events> {
         --this.send_tokens;
         setTimeout(() => { this.send_tokens = Math.min(5, this.send_tokens + 1); }, 2000);
 
-        let user = data.get("config.user");
+        const user = data.get("config.user");
 
-        let _send_obj = {
+        const _send_obj = {
             "channel": this.channel,
             "uuid": n2s(user.id) + "." + n2s(Date.now()),
             "message": text
         };
 
         comm_socket.send("chat/send", _send_obj);
-        let obj: ChatMessage = {
+        const obj: ChatMessage = {
             channel: _send_obj.channel,
             username: user.username,
             id: user.id,
@@ -569,9 +569,9 @@ class ChatChannel extends TypedEventEmitter<Events> {
         this.emit("chat", obj);
     }
     public setTopic(topic: string) {
-        let user = data.get('user');
+        const user = data.get('user');
 
-        let msg: TopicMessage = {
+        const msg: TopicMessage = {
             channel: this.channel,
             username: user.username,
             id: user.id,
@@ -587,7 +587,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
     }
 
     public systemMessage(text: string, system_message_type: 'flood'): void {
-        let obj: ChatMessage = {
+        const obj: ChatMessage = {
             channel: this.channel,
             username: 'system',
             id: -1,
@@ -631,8 +631,8 @@ export function users_by_rank(a, b) {
         return b.ranking - a.ranking;
     }
 
-    let a_rank = Math.floor(bounded_rank(a));
-    let b_rank = Math.floor(bounded_rank(b));
+    const a_rank = Math.floor(bounded_rank(a));
+    const b_rank = Math.floor(bounded_rank(b));
 
     if (a_rank === b_rank && a.username && b.username) {
         return a.username.localeCompare(b.username);
@@ -764,7 +764,7 @@ class ChatManager {
         this.channels[part.channel].handlePart(part.user);
     };
     join(channel: string): ChatChannelProxy {
-        let display_name = resolveChannelDisplayName(channel);
+        const display_name = resolveChannelDisplayName(channel);
         if (!(channel in this.channels)) {
             this.channels[channel] = new ChatChannel(channel, display_name);
         }
@@ -806,20 +806,20 @@ export function resolveChannelInformation(channel: string): Promise<ChannelInfor
 
     let resolver: Promise<ChannelInformation>;
 
-    let ret: ChannelInformation = {
+    const ret: ChannelInformation = {
         id: channel,
         name: channel,
     };
 
     {
-        let m = channel.match(/^group-([0-9]+)$/);
+        const m = channel.match(/^group-([0-9]+)$/);
         if (m) {
             ret.group_id = parseInt(m[1]);
         }
     }
 
     {
-        let m = channel.match(/^tournament-([0-9]+)$/);
+        const m = channel.match(/^tournament-([0-9]+)$/);
         if (m) {
             ret.tournament_id = parseInt(m[1]);
         }
@@ -852,11 +852,11 @@ export function resolveChannelInformation(channel: string): Promise<ChannelInfor
 }
 
 
-for (let chan of global_channels) {
+for (const chan of global_channels) {
     updateCachedChannelInformation(chan.id, chan);
 }
 data.watch(cached.active_tournaments, (tournaments: ActiveTournamentList) => {
-    for (let tournament of tournaments) {
+    for (const tournament of tournaments) {
         updateCachedChannelInformation(`tournament-${tournament.id}`, {
             id: `tournament-${tournament.id}`,
             name: tournament.name,

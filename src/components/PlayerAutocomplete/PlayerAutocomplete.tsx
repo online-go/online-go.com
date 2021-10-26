@@ -47,7 +47,7 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
         };
 
         if (this.props.playerId) {
-            let user = player_cache.lookup(this.props.playerId);
+            const user = player_cache.lookup(this.props.playerId);
             if (user && user.username) {
                 (this.state as any).value = user.username;
             }
@@ -56,7 +56,7 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
 
     UNSAFE_componentWillReceiveProps(next_props) {
         if (this.props.playerId !== next_props.player_id) {
-            let user = player_cache.lookup(this.props.playerId);
+            const user = player_cache.lookup(this.props.playerId);
             if (user && user.username) {
                 this.setState({value: user.username});
             }
@@ -101,7 +101,7 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
             }
 
             q.then((res) => {
-                let suggestions = [];
+                const suggestions = [];
                 for (let user of res.results) {
                     if (this.props.ladderId) {
                         user.player.ladder_rank = user.rank;
@@ -150,7 +150,7 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
     };
 
     render() {
-        let { suggestions, value } = this.state;
+        const { suggestions, value } = this.state;
 
         const inputProps = {
             placeholder: this.props.placeholder || _("Player name"),

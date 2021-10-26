@@ -29,7 +29,7 @@ import { event } from "d3";
 interface Events {
     "subscription_changed": void;
 }
-let event_emiter = new TypedEventEmitter<Events>();
+const event_emiter = new TypedEventEmitter<Events>();
 
 let chat_subscriptions = {};
 data.watch("chat-indicator.chat-subscriptions", onChatSubscriptionUpdate);
@@ -133,11 +133,11 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
 
     onChatSubscriptionUpdate = () => {
         // Join new chats
-        let join = (channel: string) => {
+        const join = (channel: string) => {
             if (!(channel in this.channels) &&
                     getUnreadChatPreference(channel) ||
                     getMentionedChatPreference(channel)) {
-                let channelProxy = chat_manager.join(channel);
+                const channelProxy = chat_manager.join(channel);
                 channelProxy.on("unread-count-changed", this.onUnreadCountChange);
                 this.channels[channel] = channelProxy;
             }
@@ -171,7 +171,7 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
         //console.warn("updateStats");
         let unread_ct = 0;
         let mentioned = false;
-        let add_count = (channel: string) => {
+        const add_count = (channel: string) => {
             if (channel in this.channels) {
                 if (getUnreadChatPreference(channel)) {
                     unread_ct = unread_ct + this.channels[channel].channel.unread_ct;

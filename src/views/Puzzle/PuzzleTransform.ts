@@ -43,7 +43,7 @@ export class PuzzleTransform {
 
     transformMoveText(puzzle, txt) {
         if (this.settings.transform_color) {
-            let colors = {
+            const colors = {
                 "White" : "Black",
                 "Musta" : "Valkoinen",
                 "Negro" : "Blanco",
@@ -52,36 +52,36 @@ export class PuzzleTransform {
                 "Svart" : "Vit",
             };
 
-            let utf8_colors = {
+            const utf8_colors = {
                 "Schwarz" : "Weiß",
                 "黑" : "白",
                 "Черные" : "Белые",
             };
 
 
-            let tt = "tttttttttttt";
-            let Tt = "Tttttttttttt";
-            let TT = "TTTTTTTTTTTT";
-            let ttr = /tttttttttttt/g;
-            let Ttr = /Tttttttttttt/g;
-            let TTr = /TTTTTTTTTTTT/g;
-            for (let c1 in colors) {
-                let c2 = colors[c1];
+            const tt = "tttttttttttt";
+            const Tt = "Tttttttttttt";
+            const TT = "TTTTTTTTTTTT";
+            const ttr = /tttttttttttt/g;
+            const Ttr = /Tttttttttttt/g;
+            const TTr = /TTTTTTTTTTTT/g;
+            for (const c1 in colors) {
+                const c2 = colors[c1];
 
                 // Replace first-letter-capitalized color.
-                let c1r = new RegExp("\\b" + c1 + "\\b", "gm");
-                let c2r = new RegExp("\\b" + c2 + "\\b", "gm");
+                const c1r = new RegExp("\\b" + c1 + "\\b", "gm");
+                const c2r = new RegExp("\\b" + c2 + "\\b", "gm");
 
                 // Replace all caps color.
-                let c1ru = new RegExp("\\b" + c1.toUpperCase() + "\\b", "gm");
-                let c2ru = new RegExp("\\b" + c2.toUpperCase() + "\\b", "gm");
+                const c1ru = new RegExp("\\b" + c1.toUpperCase() + "\\b", "gm");
+                const c2ru = new RegExp("\\b" + c2.toUpperCase() + "\\b", "gm");
 
                 // Replace any other type of capitalization with all lowercase color.
-                let c1caser = new RegExp("\\b" + c1 + "\\b", "gmi");
-                let c2caser = new RegExp("\\b" + c2 + "\\b", "gmi");
+                const c1caser = new RegExp("\\b" + c1 + "\\b", "gmi");
+                const c2caser = new RegExp("\\b" + c2 + "\\b", "gmi");
 
-                let c1case = c1.toLowerCase();
-                let c2case = c2.toLowerCase();
+                const c1case = c1.toLowerCase();
+                const c2case = c2.toLowerCase();
 
                 txt = txt
                         .replace(c1r, Tt)
@@ -96,8 +96,8 @@ export class PuzzleTransform {
                         .replace(TTr, c2.toUpperCase())
                         .replace(Ttr, c2);
             }
-            for (let c1 in utf8_colors) {
-                let c2 = utf8_colors[c1];
+            for (const c1 in utf8_colors) {
+                const c2 = utf8_colors[c1];
 
                 txt = txt
                         .replace(c1, TT)
@@ -107,9 +107,9 @@ export class PuzzleTransform {
         }
 
         txt = txt.replace(/\b([a-zA-Z][0-9]{1,2})\b/g, (match, contents, offset, s) => {
-            let dec = GoMath.decodeMoves(contents, puzzle.width, puzzle.height);
+            const dec = GoMath.decodeMoves(contents, puzzle.width, puzzle.height);
             this.transformCoordinate(puzzle, dec[0], puzzle.width, puzzle.height);
-            let ret = GoMath.prettyCoords(dec[0].x, dec[0].y, puzzle.height);
+            const ret = GoMath.prettyCoords(dec[0].x, dec[0].y, puzzle.height);
             if (/[a-z]/.test(contents)) {
                 return ret.toLowerCase();
             } else {
@@ -133,7 +133,7 @@ export class PuzzleTransform {
         if (coord.x < 0) { return; }
 
         if (this.settings.transform_x) {
-            let t = coord.y;
+            const t = coord.y;
             coord.y = coord.x;
             coord.x = t;
         }
@@ -159,8 +159,8 @@ export class PuzzleTransform {
     }
 
     transformPuzzle(puzzle) {
-        let width = puzzle.width;
-        let height = puzzle.height;
+        const width = puzzle.width;
+        const height = puzzle.height;
 
         if (puzzle.initial_state && puzzle.initial_state.black && puzzle.initial_state.black.length) {
             puzzle.initial_state.black = GoMath.encodeMoves(this.transformCoordinates(puzzle, GoMath.decodeMoves(puzzle.initial_state.black, width, height), width, height));
@@ -173,7 +173,7 @@ export class PuzzleTransform {
         }
 
         if (this.settings.transform_color) {
-            let t = puzzle.initial_state.black;
+            const t = puzzle.initial_state.black;
             puzzle.initial_state.black = puzzle.initial_state.white;
             puzzle.initial_state.white = t;
 

@@ -157,7 +157,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
     };
     setPageSize = (ev) => {
         if (ev.target.value && parseInt(ev.target.value) >= 3 && parseInt(ev.target.value) <= 100) {
-            let ct: number = parseInt(ev.target.value);
+            const ct: number = parseInt(ev.target.value);
             this.namespacedPreferenceSet("observed-games-page-size", ct);
             this.setState({
                 page_size: ct,
@@ -170,7 +170,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
         }
     };
     refresh = () => {
-        let now = Date.now();
+        const now = Date.now();
         if (this.last_refresh != null && (now - this.last_refresh < 1000.0)) {
             if (!this.next_refresh) {
                 this.next_refresh = setTimeout(() => {
@@ -182,7 +182,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
         }
         this.last_refresh = now;
 
-        let filter = dup(this.namespacedPreferenceGet("observed-games-filter"));
+        const filter = dup(this.namespacedPreferenceGet("observed-games-filter"));
         if (filter.friend_games_only) {
             delete filter.friend_games_only;
             try {
@@ -201,7 +201,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
             channel: this.channel,
         },
         (res) => {
-            let state_update: any = {
+            const state_update: any = {
                 num_pages: Math.ceil(res.size / this.state.page_size),
                 game_list: res.results,
                 page: Math.max(1, Math.min(this.state.page, this.state.num_pages)),
@@ -264,7 +264,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
     };
 
     render() {
-        let n_filters = Object.keys(this.state.filters).length;
+        const n_filters = Object.keys(this.state.filters).length;
 
         return (
             <div className="ObserveGamesComponent">
@@ -325,10 +325,10 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
     }
 
     private filterOption(filter_field: string, name: string): JSX.Element {
-        let self = this;
+        const self = this;
 
         function toggle(ev) {
-            let new_filters = dup(self.state.filters);
+            const new_filters = dup(self.state.filters);
 
             if (!new_filters[filter_field]) {
                 new_filters[filter_field] = true;
@@ -342,7 +342,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
             self.refresh();
         }
 
-        let hide_mode = filter_field.indexOf('hide') === 0;
+        const hide_mode = filter_field.indexOf('hide') === 0;
 
         return (
             <div className='filter-option'>

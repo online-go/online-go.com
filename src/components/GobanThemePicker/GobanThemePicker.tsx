@@ -41,7 +41,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
     constructor(props) {
         super(props);
 
-        let selected = getSelectedThemes();
+        const selected = getSelectedThemes();
 
         this.state = {
             size: props.size || 44,
@@ -55,10 +55,10 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
             urlCustom: this.getCustom("url")
         };
 
-        for (let k in GoThemesSorted) {
+        for (const k in GoThemesSorted) {
             this.canvases[k] = [];
             this.selectTheme[k] = {};
-            for (let theme of GoThemesSorted[k]) {
+            for (const theme of GoThemesSorted[k]) {
                 this.canvases[k].push($("<canvas>").attr("width", this.state.size).attr("height", this.state.size));
                 theme.styles = Object.assign(
                     {
@@ -70,7 +70,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
 
                 this.selectTheme[k][theme.theme_name] = () => {
                     preferences.set(`goban-theme-${k}`, theme.theme_name);
-                    let up = {};
+                    const up = {};
                     up[k] = theme.theme_name;
                     this.setState(up);
                 };
@@ -96,7 +96,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
         } else {
             data.remove(`custom.${key}`);
         }
-        let up = {};
+        const up = {};
         up[`${key}Custom`] = this.getCustom(key);
         this.setState(up);
         this.renderPickers();
@@ -112,8 +112,8 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
     }
 
     render() {
-        let inputStyle = {height: `${this.state.size}px`, width: `${this.state.size * 1.5}px`};
-        let {boardCustom, lineCustom, whiteCustom, blackCustom, urlCustom} = this.state;
+        const inputStyle = {height: `${this.state.size}px`, width: `${this.state.size * 1.5}px`};
+        const {boardCustom, lineCustom, whiteCustom, blackCustom, urlCustom} = this.state;
 
         return (
             <div className="GobanThemePicker">
@@ -191,13 +191,13 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
     }
 
     renderPickers() {
-        let start = new Date();
-        let square_size = this.state.size;
+        const start = new Date();
+        const square_size = this.state.size;
 
         for (let i = 0; i < GoThemesSorted.board.length; ++i) {
-            let theme = GoThemesSorted.board[i];
-            let canvas = this.canvases.board[i];
-            let ctx = canvas[0].getContext("2d");
+            const theme = GoThemesSorted.board[i];
+            const canvas = this.canvases.board[i];
+            const ctx = canvas[0].getContext("2d");
             ctx.clearRect(0, 0, square_size, square_size);
 
             ctx.beginPath();
@@ -214,34 +214,34 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
             ctx.font = "bold " + (square_size / 4) + "px Verdana,Courier,Arial,serif";
             ctx.fillStyle = theme.getLabelTextColor();
             ctx.textBaseline = "middle";
-            let metrics = ctx.measureText("A");
-            let xx = square_size / 2 - metrics.width / 2;
-            let yy = (square_size / 4);
+            const metrics = ctx.measureText("A");
+            const xx = square_size / 2 - metrics.width / 2;
+            const yy = (square_size / 4);
             ctx.fillText("A", xx + 0.5, yy + 0.5);
         }
 
-        let plain_board = new (GoThemes["board"]["Plain"])();
+        const plain_board = new (GoThemes["board"]["Plain"])();
         for (let i = 0; i < GoThemesSorted.white.length; ++i) {
-            let theme = GoThemesSorted.white[i];
-            let canvas = this.canvases.white[i];
-            let ctx = canvas[0].getContext("2d");
-            let radius = Math.round(square_size / 2.2);
-            let stones = theme.preRenderWhite(radius, 23434);
+            const theme = GoThemesSorted.white[i];
+            const canvas = this.canvases.white[i];
+            const ctx = canvas[0].getContext("2d");
+            const radius = Math.round(square_size / 2.2);
+            const stones = theme.preRenderWhite(radius, 23434);
             ctx.clearRect(0, 0, square_size, square_size);
             theme.placeWhiteStone(ctx, ctx, stones[0], square_size / 2, square_size / 2, radius);
         }
 
         for (let i = 0; i < GoThemesSorted.black.length; ++i) {
-            let theme = GoThemesSorted.black[i];
-            let canvas = this.canvases.black[i];
-            let ctx = canvas[0].getContext("2d");
-            let radius = Math.round(square_size / 2.2);
-            let stones = theme.preRenderBlack(radius, 23434);
+            const theme = GoThemesSorted.black[i];
+            const canvas = this.canvases.black[i];
+            const ctx = canvas[0].getContext("2d");
+            const radius = Math.round(square_size / 2.2);
+            const stones = theme.preRenderBlack(radius, 23434);
             ctx.clearRect(0, 0, square_size, square_size);
             theme.placeBlackStone(ctx, ctx, stones[0], square_size / 2, square_size / 2, radius);
         }
 
-        let end = new Date();
+        const end = new Date();
         //console.info("Render time: ", (end.getTime() - start.getTime()))
     }
 }

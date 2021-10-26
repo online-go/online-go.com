@@ -47,8 +47,8 @@ export interface Announcement {
     text: string;
 }
 
-export let announcement_event_emitter = new TypedEventEmitter<Events>();
-export let active_announcements: {[id: number]: Announcement} = {};
+export const announcement_event_emitter = new TypedEventEmitter<Events>();
+export const active_announcements: {[id: number]: Announcement} = {};
 
 export function announcementTypeMuted(announcement: Announcement): boolean {
     if (announcement.type === 'stream' && preferences.get("mute-stream-announcements")) {
@@ -63,10 +63,10 @@ export function announcementTypeMuted(announcement: Announcement): boolean {
 interface AnnouncementsProperties {
 }
 
-let announced: {[id: number]: Announcement} = {};
+const announced: {[id: number]: Announcement} = {};
 // Holds the expirations dates of cleared announcements
-let cleared_announcements: {[id: number]: number} = data.get("announcements.cleared", {});
-for (let k in cleared_announcements) {
+const cleared_announcements: {[id: number]: number} = data.get("announcements.cleared", {});
+for (const k in cleared_announcements) {
     if (cleared_announcements[k] < Date.now()) {
         delete cleared_announcements[k];
     }
@@ -92,7 +92,7 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
             /* Defer this get so we can load whatever page we're on first */
             get("announcements")
             .then((announcements) => {
-                for (let announcement of announcements) {
+                for (const announcement of announcements) {
                     this.announce(announcement);
                 }
             })
@@ -132,7 +132,7 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
                 }, moment(announcement.expiration).toDate().getTime() - Date.now()
             );
         } else {
-            let t = moment(announcement.expiration).toDate().getTime() - Date.now();
+            const t = moment(announcement.expiration).toDate().getTime() - Date.now();
             if (t > 0 && t < 30 * 60 * 1000) {
                 data.set("active-tournament", announcement);
             }
@@ -149,7 +149,7 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
         }
 
         for (let i = 0; i < this.state.announcements.length; ++i) {
-            let announcement = this.state.announcements[i];
+            const announcement = this.state.announcements[i];
             if (announcement.id === id) {
                 this.state.announcements.splice(i, 1);
                 break;
@@ -169,8 +169,8 @@ export class Announcements extends React.PureComponent<AnnouncementsProperties, 
                 <UIPush event="announcement" action={this.announce}/>
 
                 {this.state.announcements.map((announcement, idx) => {
-                    let creator_blocked = getBlocks(announcement.creator.id).block_announcements;
-                    let type_muted = announcementTypeMuted(announcement);
+                    const creator_blocked = getBlocks(announcement.creator.id).block_announcements;
+                    const type_muted = announcementTypeMuted(announcement);
 
                     if (creator_blocked || type_muted) {
                         return (null);

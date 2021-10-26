@@ -59,7 +59,7 @@ export class TournamentListMainView extends React.PureComponent<TournamentListPr
     }
 
     render() {
-        let tab = this.state.tab;
+        const tab = this.state.tab;
 
         return (
 
@@ -215,7 +215,7 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
     }
 
     render() {
-        let filter = this.props.filter;
+        const filter = this.props.filter;
 
         return (
             <div className="TournamentList">
@@ -271,7 +271,7 @@ function mk32icon(path) {
     return path.replace(/-[0-9]+.png/, "-32.png");
 }
 function speedIcon(e) {
-    let tpm = computeAverageMoveTime(e.time_control_parameters);
+    const tpm = computeAverageMoveTime(e.time_control_parameters);
     if (tpm === 0 || tpm > 3600) {
         return "ogs-turtle";
     }
@@ -291,13 +291,13 @@ function timeIcon(time_per_move) {
 }
 
 function rrule_description(entry) {
-    let m = moment(new Date(entry.next_run)).add(entry.lead_time_seconds, "seconds");
+    const m = moment(new Date(entry.next_run)).add(entry.lead_time_seconds, "seconds");
 
-    let rrule = entry.rrule;
+    const rrule = entry.rrule;
     let interval = 1;
     let unit = "error";
     if (/interval.\s*([0-9]+)/i.test(rrule)) {
-        let matches = rrule.match(/interval.\s*([0-9]+)/i);
+        const matches = rrule.match(/interval.\s*([0-9]+)/i);
         interval = parseInt(matches[1]);
     } else {
         console.log("error parsing rrule interval:", rrule);
@@ -356,8 +356,8 @@ function fromNow(d, offset?) {
 }
 function when(t) {
     if (t) {
-        let d = new Date(t);
-        let diff = Math.round((d.getTime() - Date.now()) / 1000.0);
+        const d = new Date(t);
+        const diff = Math.round((d.getTime() - Date.now()) / 1000.0);
 
         //if (Math.abs(diff) > 7*86400) {
         if (diff > 7 * 86400) {

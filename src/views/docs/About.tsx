@@ -48,7 +48,7 @@ export class About extends React.Component<{}, any> {
     }
 
     render() {
-        let server_version = data.get("config.version");
+        const server_version = data.get("config.version");
 
         return (
             <div className="About container">

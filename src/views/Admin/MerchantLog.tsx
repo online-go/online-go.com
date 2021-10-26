@@ -71,7 +71,7 @@ export class MerchantLog extends React.PureComponent<{}, any> {
 }
 
 function clean_meta(str: string): string {
-    let obj = JSON.parse(str);
+    const obj = JSON.parse(str);
     return JSON.stringify(obj, Object.keys(obj).sort(), 1);
 }
 function clean_body(str: string): string {
@@ -122,10 +122,10 @@ function orderedJsonStringify(obj) {
 
 
 function parseQuery(queryString) {
-    let query = {};
-    let pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
+    const query = {};
+    const pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
     for (let i = 0; i < pairs.length; i++) {
-        let pair = pairs[i].split('=');
+        const pair = pairs[i].split('=');
         query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
     }
     return query;

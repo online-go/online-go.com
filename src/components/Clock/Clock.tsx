@@ -22,7 +22,7 @@ import {_, pgettext, interpolate, ngettext} from "translate";
 
 type clock_color = 'black' | 'white' | 'stone-removal';
 
-let ct = 0;
+const ct = 0;
 
 
 export function Clock({goban, color, className, compact}: {goban: Goban; color: clock_color; className?: string; compact?: boolean}): JSX.Element {
@@ -49,8 +49,8 @@ export function Clock({goban, color, className, compact}: {goban: Goban; color: 
     if (color === 'stone-removal') {
         return <span> ({prettyTime(clock.stone_removal_time_left)})</span>;
     } else {
-        let player_clock: JGOFPlayerClock = color === 'black' ? clock.black_clock : clock.white_clock;
-        let player_id: number = color === 'black' ? goban.engine.players.black.id : goban.engine.players.white.id;
+        const player_clock: JGOFPlayerClock = color === 'black' ? clock.black_clock : clock.white_clock;
+        const player_id: number = color === 'black' ? goban.engine.players.black.id : goban.engine.players.white.id;
 
         let clock_className = 'Clock ' + color;
         if (clock.pause_state) {
@@ -129,7 +129,7 @@ export function Clock({goban, color, className, compact}: {goban: Goban; color: 
 
 function ClockPauseReason({clock, player_id}: {clock: JGOFClock; player_id: number}): JSX.Element {
     let pause_text = _("Paused");
-    let pause_state = clock.pause_state;
+    const pause_state = clock.pause_state;
 
     if (pause_state.weekend) {
         pause_text = _("Weekend");
@@ -150,9 +150,9 @@ function prettyTime(ms: number): string {
     //return shortDurationString(Math.round(ms / 1000));
 
     let seconds = Math.ceil((ms - 1) / 1000);
-    let days = Math.floor(seconds / 86400); seconds -= days * 86400;
-    let hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
-    let minutes = Math.floor(seconds / 60); seconds -= minutes * 60;
+    const days = Math.floor(seconds / 86400); seconds -= days * 86400;
+    const hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
+    const minutes = Math.floor(seconds / 60); seconds -= minutes * 60;
 
     let ret = "";
     if (ms <= 0 || isNaN(ms)) {

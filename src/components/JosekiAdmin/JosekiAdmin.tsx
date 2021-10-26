@@ -96,7 +96,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
 
     revertAllSelectedChanges = () => {
         // set up to revert each selected change one at a time...
-        let reversions = new Map();
+        const reversions = new Map();
         this.state.selections.forEach((selected, selection) => {
             if (selected) {
                 const target_id = selection.substring(7);
@@ -109,7 +109,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
 
     //  Call the server to revert each selected item in turn (one at a time, for ease of understanding what happened)
     revertSelectedChanges = (current_selections) => {
-        let selections = current_selections.keys();
+        const selections = current_selections.keys();
         let {value: next_selection, done: done} = selections.next();
 
         // Find next actually selected item.
@@ -129,9 +129,9 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
             .then (body => {
                 // Display the result of what happened
                 // console.log("reversion result", body);
-                let next_selections = new Map(current_selections);
+                const next_selections = new Map(current_selections);
                 next_selections.set(next_selection, false);
-                let next_reversions = new Map(this.state.reversions);
+                const next_reversions = new Map(this.state.reversions);
                 next_reversions.set(next_selection, `Reversion of audit ${target_id} status: ${body.result}`);
                 this.setState({
                     selections: next_selections,
@@ -173,7 +173,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         .then(res => res.json())
         .then(body => {
             // initialise selections, so we have the full list of them for select-all operations
-            let selections = new Map();
+            const selections = new Map();
             for (const a of body.content) {
                 const key = `select-${a._id}`;
                 selections.set(key, false);
@@ -263,7 +263,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         const AuditTable = this.props.user_can_administer ?
             SelectTable : ReactTable;
 
-        let audit_type_selections = Object.keys(AuditTypes).map((selection, i) => (
+        const audit_type_selections = Object.keys(AuditTypes).map((selection, i) => (
             <option key={i} value={AuditTypes[selection]}>{AuditTypes[selection].toLowerCase()}</option>
         ));
 
@@ -313,13 +313,13 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                     manual
                     selectType={'checkbox'}
                     isSelected={(key) => {
-                        let key_string = `select-${key}`;
-                        let result = this.state.selections.has(key_string) && this.state.selections.get(key_string);
+                        const key_string = `select-${key}`;
+                        const result = this.state.selections.has(key_string) && this.state.selections.get(key_string);
                         //console.log(`check for ${key_string}:`, result);
                         return result;
                     }}
                     toggleSelection={(key) => {
-                        let selections = new Map(this.state.selections);
+                        const selections = new Map(this.state.selections);
                         selections.set(key, selections.has(key) ? !selections.get(key) : true);
                         this.setState({
                             any_selected: Array.from(selections.values()).includes(true),
@@ -329,7 +329,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                     selectAll={this.state.all_selected}
                     toggleAll={() => {
                         const all_selected = !this.state.all_selected;
-                        let selections = new Map(this.state.selections);
+                        const selections = new Map(this.state.selections);
                         selections.forEach((value, key) => {
                             selections.set(key, all_selected);
                         });

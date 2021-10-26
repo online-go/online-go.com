@@ -19,7 +19,7 @@ import * as data from "data";
 import {GoThemes} from "goban";
 import {current_language} from "translate";
 
-let defaults = {
+const defaults = {
     "ai-review-enabled": true,
     "ai-review-use-score": false,
     "always-disable-analysis": false,
@@ -113,7 +113,7 @@ let defaults = {
 defaults['profanity-filter'][current_language] = true;
 
 
-for (let k in defaults) {
+for (const k in defaults) {
     data.setDefault(`preferences.${k}`, defaults[k]);
 }
 
@@ -146,7 +146,7 @@ export function dump(): void {
 
 export function getSelectedThemes(): {"board": string; "black": string; "white": string} {
     //let default_plain = $.browser.mobile || ($(window).width() * (window.devicePixelRatio || 1)) <= 768;
-    let default_plain = ($(window).width() * (window.devicePixelRatio || 1)) <= 768;
+    const default_plain = ($(window).width() * (window.devicePixelRatio || 1)) <= 768;
 
     let board = get("goban-theme-board") || (default_plain ? "Plain" : "Kaya");
     let white = get("goban-theme-white") || (default_plain ? "Plain" : "Shell");
@@ -165,7 +165,7 @@ export function getSelectedThemes(): {"board": string; "black": string; "white":
 
 export function watchSelectedThemes(cb) {
     let dont_call_right_away = true;
-    let call_cb = () => {
+    const call_cb = () => {
         if (dont_call_right_away) {
             return;
         }

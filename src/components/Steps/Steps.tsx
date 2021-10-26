@@ -30,7 +30,7 @@ interface StepsProperties {
 }
 
 export const Steps = (props: StepsProperties) => {
-    let children = (Array.isArray(props.children) ? props.children : (props.children ? [props.children] : [])).concat([]);
+    const children = (Array.isArray(props.children) ? props.children : (props.children ? [props.children] : [])).concat([]);
     if (props.total) {
         while (children.length < props.total) {
             children.push(<span/>);

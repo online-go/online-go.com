@@ -64,8 +64,8 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
     };
 
     render() {
-        let challenge = this.props.challenge;
-        let time_control_description = timeControlDescription(challenge.time_control_parameters);
+        const challenge = this.props.challenge;
+        const time_control_description = timeControlDescription(challenge.time_control_parameters);
         let player_color = _(challenge.challenger_color);
 
         if (challenge.challenger_color === "black") {

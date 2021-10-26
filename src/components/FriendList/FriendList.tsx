@@ -59,10 +59,10 @@ export class FriendList extends React.PureComponent<{}, any> {
         this.setState({"friends": this.sortFriends(this.state.friends)});
     };
     sortFriends(lst) {
-        let ret = [].concat(lst);
+        const ret = [].concat(lst);
         ret.sort((a, b) => {
-            let a_online = online_status.is_player_online(a.id);
-            let b_online = online_status.is_player_online(b.id);
+            const a_online = online_status.is_player_online(a.id);
+            const b_online = online_status.is_player_online(b.id);
             if (a_online && !b_online) {
                 return -1;
             }

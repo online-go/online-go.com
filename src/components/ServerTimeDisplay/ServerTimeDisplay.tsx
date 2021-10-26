@@ -50,10 +50,10 @@ export class ServerTimeDisplay extends React.Component<ServerTimeDisplayProperti
     }
 
     weekendTransitionText() {
-        let day = new Date().getUTCDay();
+        const day = new Date().getUTCDay();
 
         if (day === 6 || day === 0) { /* Saturday or Sunday */
-            let midnight_sunday = day === 6
+            const midnight_sunday = day === 6
                 ?  moment().utcOffset(0).add(1, 'day').endOf('day')
                 :  moment().utcOffset(0).endOf('day')
             ;

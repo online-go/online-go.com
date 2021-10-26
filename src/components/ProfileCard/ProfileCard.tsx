@@ -37,8 +37,8 @@ export class ProfileCard extends React.Component<ProfileCardInterface, any> {
     }
 
     render() {
-        let user = this.props.user;
-        let rating = !preferences.get("hide-ranks") && user ? getUserRating(user, 'overall', 0) : null;
+        const user = this.props.user;
+        const rating = !preferences.get("hide-ranks") && user ? getUserRating(user, 'overall', 0) : null;
 
         return (
             <div className='ProfileCard'>

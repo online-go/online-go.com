@@ -18,10 +18,10 @@
 import * as preferences from "preferences";
 
 let filters: { [key: string]: boolean} = {};
-export let profanity_regex: { [key: string]: RegExp } = {};
+export const profanity_regex: { [key: string]: RegExp } = {};
 
 export function profanity_filter(str: string) {
-    for (let lang in filters) {
+    for (const lang in filters) {
         str = str.replace(profanity_regex[lang], "$*!%");
     }
     return str;
@@ -43,7 +43,7 @@ profanity_regex["zh_CN"] = new RegExp(atob("KFxi5oiQ5Lq6XGIpfChcYuWkhOWls1xiKXwo
 /* this needs to be declared after profanity_regex has been populated */
 preferences.watch("profanity-filter", (_filters) => {
     filters = {};
-    for (let lang in _filters) {
+    for (const lang in _filters) {
         if (_filters[lang] && lang in profanity_regex) {
             filters[lang] = true;
         }

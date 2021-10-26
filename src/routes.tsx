@@ -132,17 +132,17 @@ export const routes = (
                 <Route path="/chat/:channel/**/*" component={ChatView}/>
                 <Route path="/chat" render={() => {
                     let channel = data.get('chat.active_channel');
-                    let joined = data.get("chat.joined") || {};
+                    const joined = data.get("chat.joined") || {};
 
                     if (!channel) {
                         if (Object.keys(joined).length) {
-                            for (let key of Object.keys(joined)) {
+                            for (const key of Object.keys(joined)) {
                                 channel = key;
                                 break;
                             }
                         } else {
                             channel = "global-english";
-                            for (let chan of global_channels) {
+                            for (const chan of global_channels) {
                                 if (chan.primary_language) {
                                     channel = chan.id;
                                 }

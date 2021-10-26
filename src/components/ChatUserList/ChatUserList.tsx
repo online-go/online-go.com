@@ -72,14 +72,14 @@ export class ChatUserList extends ChatUsers<ChatUserListProperties> {
     }
 
     toggleSortOrder = () => {
-        let new_sort_order = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
+        const new_sort_order = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
         preferences.set("chat.user-sort-order", new_sort_order);
         this.setState({"user_sort_order": new_sort_order});
     };
 
 
     render() {
-        let sorted_users: Array<any> = this.state.user_sort_order === "alpha" ? this.proxy.channel.users_by_name : this.proxy.channel.users_by_rank;
+        const sorted_users: Array<any> = this.state.user_sort_order === "alpha" ? this.proxy.channel.users_by_name : this.proxy.channel.users_by_rank;
 
         return (
             <div className="ChatUserList">

@@ -51,7 +51,7 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
 
     updateFriendCount = () => {
         let ct = 0;
-        for (let friend of this.friend_list) {
+        for (const friend of this.friend_list) {
             if (!(friend.id in this.online_subscriptions)) {
                 this.online_subscriptions[friend.id] = true;
                 setTimeout(() => {

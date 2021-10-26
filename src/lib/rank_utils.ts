@@ -42,8 +42,8 @@ class Rating {
     partial_bounded_rank_label: string;
 }
 
-export const MinRank: number = 5;
-export const MaxRank: number = 38;
+export const MinRank = 5;
+export const MaxRank = 38;
 export const PROVISIONAL_RATING_CUTOFF = 160;
 
 
@@ -80,17 +80,17 @@ export function is_novice(user_or_rank: any): boolean {
     return overall_rank(user_or_rank) < MinRank;
 }
 export function is_rank_bounded(user_or_rank: any): boolean {
-    let rank = overall_rank(user_or_rank);
+    const rank = overall_rank(user_or_rank);
     return rank < MinRank || rank > MaxRank;
 }
 export function bounded_rank(user_or_rank: any): number {
-    let rank = overall_rank(user_or_rank);
+    const rank = overall_rank(user_or_rank);
     return Math.min(MaxRank, Math.max(MinRank, rank));
 }
 export function is_provisional(user: any): boolean {
-    let ratings = user.ratings || {};
+    const ratings = user.ratings || {};
 
-    let rating = ratings['overall'] || {
+    const rating = ratings['overall'] || {
         rating: 1500,
         deviation: 350,
         volatility: 0.06,
@@ -101,8 +101,8 @@ export function is_provisional(user: any): boolean {
 
 
 export function getUserRating(user: any, speed: 'overall' | 'blitz' | 'live' | 'correspondence' = 'overall', size: 0 | 9 | 13 | 19 = 0) {
-    let ret = new Rating();
-    let ratings = user.ratings || {};
+    const ret = new Rating();
+    const ratings = user.ratings || {};
     ret.professional = user.pro || user.professional;
 
     let key: string = speed;
@@ -168,7 +168,7 @@ export function rankString(r, with_tenths?: boolean) {
     if (typeof(r) === "object") {
         provisional = is_provisional(r);
 
-        let ranking = "ranking" in r ? r.ranking : r.rank;
+        const ranking = "ranking" in r ? r.ranking : r.rank;
         if (r.pro || r.professional) {
             if (ranking > 900) {
                 return interpolate(pgettext("Pro", "%sp"), [(((ranking - 1000) - 36))]);
@@ -217,7 +217,7 @@ export function longRankString(r) {
     if (typeof(r) === "object") {
         provisional = is_provisional(r);
 
-        let ranking = "ranking" in r ? r.ranking : r.rank;
+        const ranking = "ranking" in r ? r.ranking : r.rank;
         if (r.pro || r.professional) {
             return interpolate(_("%s Pro"), [((ranking - 36))]);
         }
@@ -246,7 +246,7 @@ export function longRankString(r) {
 
 
 export function rankList(minRank: number = 0, maxRank: number = MaxRank, usePlusOnLast: boolean = false): Array<IRankInfo> {
-    let result = [];
+    const result = [];
     for (let i = minRank; i <= maxRank; ++i) {
         let label = longRankString(i);
         if (usePlusOnLast && i === maxRank) { label += "+"; }
@@ -259,7 +259,7 @@ export function rankList(minRank: number = 0, maxRank: number = MaxRank, usePlus
 }
 
 export function proRankList(bigranknums: boolean = true): Array<IRankInfo> {
-    let result = [];
+    const result = [];
     for (let i = 37; i <= 45; ++i) {
         result.push ({
             rank: i + (bigranknums ? 1000 : 0),
@@ -295,8 +295,8 @@ export interface EffectiveOutcome {
 
 export function effective_outcome(black_rating: number, white_rating: number, handicap: number): EffectiveOutcome {
     //let res: EffectiveOutcome = new EffectiveOutcome;
-    let black_effective_rating: number = black_rating + get_handicap_adjustment(black_rating, handicap);
-    let white_effective_rating: number = white_rating;
+    const black_effective_rating: number = black_rating + get_handicap_adjustment(black_rating, handicap);
+    const white_effective_rating: number = white_rating;
     return {
         black_real_rating: black_rating,
         white_real_rating: white_rating,

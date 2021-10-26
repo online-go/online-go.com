@@ -30,8 +30,8 @@ import {Markdown} from "Markdown";
 
 function shuffleArray(array) {
     for (let i = array.length - 1; i >= 0; i--) {
-        let j = Math.floor(Math.random() * (i + 1));
-        let temp = array[i];
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = array[i];
         array[i] = array[j];
         array[j] = temp;
     }
@@ -42,29 +42,29 @@ function scramble(...args) {
     return shuffleArray(args);
 }
 
-export let GoResources = (props) => {
+export const GoResources = (props) => {
     window.document.title = _("Other Go Resources");
 
-    let country = data.get("user").country || "us";
-    let fr = getLanguageFlag("french", country, "fr");
-    let en = getLanguageFlag("english", country, "us");
-    let es = getLanguageFlag("spanish", country, "es");
-    let de = getLanguageFlag("german", country, "de");
-    let cn = getLanguageFlag("chinese", country, "cn");
-    let jp = getLanguageFlag("japanese", country, "jp");
-    let kr = getLanguageFlag("korean", country, "kr");
-    let un = getLanguageFlag("un", country, "un");
-    let us = getLanguageFlag("us", country, "us");
-    let eu = getLanguageFlag("eu", country, "eu");
-    let it = getLanguageFlag("italian", country, "it");
-    let nl = getLanguageFlag("dutch", country, "nl");
-    let gb = getLanguageFlag("gb", country, "gb");
-    let au = getLanguageFlag("au", country, "au");
-    let ca = getLanguageFlag("ca", country, "ca");
-    let ru = getLanguageFlag("ru", country, "ru");
-    let gr = "gr";
-    let br = "br";
-    let ar = getLanguageFlag("spanish", country, "ar");
+    const country = data.get("user").country || "us";
+    const fr = getLanguageFlag("french", country, "fr");
+    const en = getLanguageFlag("english", country, "us");
+    const es = getLanguageFlag("spanish", country, "es");
+    const de = getLanguageFlag("german", country, "de");
+    const cn = getLanguageFlag("chinese", country, "cn");
+    const jp = getLanguageFlag("japanese", country, "jp");
+    const kr = getLanguageFlag("korean", country, "kr");
+    const un = getLanguageFlag("un", country, "un");
+    const us = getLanguageFlag("us", country, "us");
+    const eu = getLanguageFlag("eu", country, "eu");
+    const it = getLanguageFlag("italian", country, "it");
+    const nl = getLanguageFlag("dutch", country, "nl");
+    const gb = getLanguageFlag("gb", country, "gb");
+    const au = getLanguageFlag("au", country, "au");
+    const ca = getLanguageFlag("ca", country, "ca");
+    const ru = getLanguageFlag("ru", country, "ru");
+    const gr = "gr";
+    const br = "br";
+    const ar = getLanguageFlag("spanish", country, "ar");
 
 
     return (

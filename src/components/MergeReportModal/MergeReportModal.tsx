@@ -46,8 +46,8 @@ export class MergeReportModal extends Modal<Events, MergeReportModalProperties, 
                     {this.props.error && <h3>{this.props.error}</h3>}
                     <div className='lines'>
                         {this.props.report.map((e, idx) => {
-                            let cls = 'error' in e ? 'error' : ('warn' in e ? 'warn' : 'info');
-                            let msg = e[cls];
+                            const cls = 'error' in e ? 'error' : ('warn' in e ? 'warn' : 'info');
+                            const msg = e[cls];
 
                             return (<div key={idx} className={`line merge-${cls}`}><span className='fixed'>{idx + 1}</span>{msg}</div>);
                         })}

@@ -93,7 +93,7 @@ interface PuzzleState {
     label_positioning: string;
 }
 
-let ranks = rankList(0, 38, false);
+const ranks = rankList(0, 38, false);
 
 export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     refs: {
@@ -232,7 +232,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         }
     };
     recenterGoban() {
-        let m = this.goban.computeMetrics();
+        const m = this.goban.computeMetrics();
         $(this.refs.goban_container).css({
             top: Math.ceil(this.refs.goban_container.offsetHeight - m.height) / 2,
             left: Math.ceil(this.refs.goban_container.offsetWidth - m.width) / 2,
@@ -310,7 +310,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     }
 
     reset(editing?: boolean) {
-        let opts: GobanCanvasConfig = this.editor.reset(this.goban_div, editing, this.replacementSettingFunction.bind(this));
+        const opts: GobanCanvasConfig = this.editor.reset(this.goban_div, editing, this.replacementSettingFunction.bind(this));
 
         opts.move_tree_container = this.ref_move_tree_container;
         this.goban_opts = opts;
@@ -334,14 +334,14 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
     removeHints() {
         if (this.goban) {
-            let move = this.goban.engine.cur_move;
+            const move = this.goban.engine.cur_move;
             move.branches.forEach(item => this.goban.deleteCustomMark(item.x, item.y, "hint", true));
         }
         this.setState({hintsOn: false});
     }
 
     sync_state() {
-        let new_state: any = {};
+        const new_state: any = {};
 
         new_state.analyze_tool = this.goban.analyze_tool;
         new_state.analyze_subtool = this.goban.analyze_subtool;
@@ -373,13 +373,13 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             show_wrong: false,
         });
         setTimeout(() => {
-            let position = $(window).scrollTop();
+            const position = $(window).scrollTop();
             $(this.refs.next_link).focus();
             $(window).scrollTop(position);
         }, 1);
     };
     jumpToPuzzle = (ev) => {
-        let next_puzzle_id = ev.target.value;
+        const next_puzzle_id = ev.target.value;
         browserHistory.push(`/puzzle/${next_puzzle_id}`);
     };
     undo = () => {
@@ -411,7 +411,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         });
     };
     setTransformation(what): void {
-        let state = this.transform.stateForTransformation(what);
+        const state = this.transform.stateForTransformation(what);
         if (state) {
             this.setState(state);
             if (state.zoom) {
@@ -444,7 +444,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     save = () => {
         //this.setState({editing: false})
 
-        let puzzle = this.goban.engine.exportAsPuzzle();
+        const puzzle = this.goban.engine.exportAsPuzzle();
         puzzle.name = this.state.name;
         puzzle.puzzle_description = this.state.puzzle.puzzle_description;
         puzzle.puzzle_collection = this.state.puzzle.puzzle_collection;
@@ -486,10 +486,10 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     };
 
     openPuzzleSettings = (ev) => {
-        let puzzle_settings = openPuzzleSettingsControls(ev);
+        const puzzle_settings = openPuzzleSettingsControls(ev);
 
-        let randomize_transform = preferences.get("puzzle.randomize.transform");
-        let randomize_color = preferences.get("puzzle.randomize.color");
+        const randomize_transform = preferences.get("puzzle.randomize.transform");
+        const randomize_color = preferences.get("puzzle.randomize.color");
 
         this.ref_settings_button.current.blur();
 
@@ -568,7 +568,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         this.setState({setup_color: color});
     };
     setPuzzleSize = (ev) => {
-        let size = parseInt(ev.target.value);
+        const size = parseInt(ev.target.value);
         this.setState({puzzle: Object.assign({}, this.state.puzzle, {width: size, height: size})});
         this.goban_opts.width = size;
         this.goban_opts.height = size;
@@ -579,7 +579,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         this.setState({puzzle: Object.assign({}, this.state.puzzle, {puzzle_rank: parseInt(ev.target.value)})});
     };
     setInitialPlayer = (ev) => {
-        let color = ev.target.value;
+        const color = ev.target.value;
 
         this.goban.engine.jumpTo(this.goban.engine.move_tree);
         this.goban.engine.config.initial_player = color;
@@ -635,7 +635,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         if (this.state.hintsOn) {
             this.removeHints();
         } else if (!this.goban.engine.cur_move.correct_answer) {
-            let branches = this.goban.engine.cur_move.findBranchesWithCorrectAnswer();
+            const branches = this.goban.engine.cur_move.findBranchesWithCorrectAnswer();
             branches.forEach(branch => {
                 this.goban.setCustomMark(branch.x, branch.y, "hint", true);
             });
@@ -649,7 +649,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         }
     };
     toggleCoordinates = () => {
-        let goban = this.goban;
+        const goban = this.goban;
 
         let label_position = preferences.get("label-positioning-puzzles");
         switch (label_position) {
@@ -684,11 +684,11 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             return <div/>;
         }
 
-        let view_mode = this.state.view_mode;
-        let squashed = this.state.squashed;
-        let puzzle = this.state;
-        let goban = this.goban;
-        let difficulty = longRankString(puzzle.rank);
+        const view_mode = this.state.view_mode;
+        const squashed = this.state.squashed;
+        const puzzle = this.state;
+        const goban = this.goban;
+        const difficulty = longRankString(puzzle.rank);
 
         let show_correct = this.state.show_correct;
         if (this.goban.engine.move_tree.findBranchesWithCorrectAnswer().length === 0) {
@@ -748,8 +748,8 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         );
     }
     frag_puzzle_info() {
-        let puzzle = this.state;
-        let difficulty = longRankString(puzzle.rank);
+        const puzzle = this.state;
+        const difficulty = longRankString(puzzle.rank);
 
         return (
             <dl className="horizontal">
@@ -773,7 +773,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         );
     }
     frag_layout_buttons() {
-        let puzzle = this.state;
+        const puzzle = this.state;
 
         return (
             <div className="btn-container">
@@ -851,7 +851,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         );
     }
     frag_undo_reset_buttons() {
-        let goban = this.goban;
+        const goban = this.goban;
 
         return (
             <div style={{visibility: goban.engine.cur_move.parent ? "visible" : "hidden"}}>
@@ -861,9 +861,9 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         );
     }
     frag_puzzle_content() {
-        let puzzle = this.state;
-        let goban = this.goban;
-        let show_correct = this.state.show_correct;
+        const puzzle = this.state;
+        const goban = this.goban;
+        const show_correct = this.state.show_correct;
 
         let next_id = 0;
         for (let i = 0; i < this.state.puzzle_collection_summary.length - 1; ++i) {
@@ -916,12 +916,12 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             return <div/>;
         }
 
-        let view_mode = this.state.view_mode;
-        let squashed = this.state.squashed;
-        let puzzle = this.state;
-        let goban = this.goban;
-        let difficulty = longRankString(puzzle.rank);
-        let show_warning = false;
+        const view_mode = this.state.view_mode;
+        const squashed = this.state.squashed;
+        const puzzle = this.state;
+        const goban = this.goban;
+        const difficulty = longRankString(puzzle.rank);
+        const show_warning = false;
 
         let next_id = 0;
         for (let i = 0; i < this.state.puzzle_collection_summary.length - 1; ++i) {
@@ -1144,8 +1144,8 @@ import {PopOver, popover} from "popover";
 import {PuzzleSettingsModal} from './PuzzleSettingsModal';
 
 export function openPuzzleSettingsControls(ev): PopOver {
-    let elt = $(ev.target);
-    let offset = elt.offset();
+    const elt = $(ev.target);
+    const offset = elt.offset();
 
     return popover({
         elt: (<PuzzleSettingsModal />),

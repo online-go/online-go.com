@@ -72,7 +72,7 @@ export class ChallengesList extends React.PureComponent<{onAccept: () => void}, 
     }
 
     render() {
-        let user = data.get('user');
+        const user = data.get('user');
 
         return (
             <div className="ChallengesList">
@@ -81,7 +81,7 @@ export class ChallengesList extends React.PureComponent<{onAccept: () => void}, 
                 }
                 <div className='challenge-cards'>
                     {this.state.challenges.map((challenge) => {
-                        let opponent = challenge.challenger.id === user.id ? challenge.challenged : challenge.challenger;
+                        const opponent = challenge.challenger.id === user.id ? challenge.challenged : challenge.challenger;
 
                         return (
                             <Card key={challenge.id}>

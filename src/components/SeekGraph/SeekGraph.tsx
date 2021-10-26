@@ -38,7 +38,7 @@ interface Events {
     "challenges": Array<any>;
 }
 
-let MAX_RATIO = 0.99;
+const MAX_RATIO = 0.99;
 
 interface SeekGraphConfig  {
     canvas: any;
@@ -47,8 +47,8 @@ interface SeekGraphConfig  {
 
 
 function dist(C, pos) {
-    let dx = C.cx - pos.x;
-    let dy = C.cy - pos.y;
+    const dx = C.cx - pos.x;
+    const dy = C.cy - pos.y;
     return Math.sqrt(dx * dx + dy * dy);
 }
 
@@ -150,7 +150,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     }
 
     userRank() {
-        let user = data.get('user');
+        const user = data.get('user');
         if (!user || user.anonymous) {
             return 18;
         }
@@ -167,12 +167,12 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     };
     onSeekgraphGlobal = (lst) => {
         for (let i = 0; i < lst.length; ++i) {
-            let e = lst[i];
+            const e = lst[i];
             if ("game_started" in e) {
                 //console.log(e);
             } else if ("delete" in e) {
                 if (e.challenge_id in this.challenges) {
-                    let uid = this.challenges[e.challenge_id].system_message_id;
+                    const uid = this.challenges[e.challenge_id].system_message_id;
                     delete this.challenges[e.challenge_id];
                     if (uid) {
                         //console.log("#line-" + (uid.replace(".", "\\.")));
@@ -206,7 +206,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 this.challenges[e.challenge_id] = e;
 
                 try {
-                    let move_time = computeAverageMoveTime(e.time_control_parameters);
+                    const move_time = computeAverageMoveTime(e.time_control_parameters);
                 } catch (err) {
                     console.log(err.stack);
                 }
@@ -229,7 +229,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
     };
     onPointerMove = (ev) => {
-        let new_list = this.getHits(ev);
+        const new_list = this.getHits(ev);
         new_list.sort(list_hit_sorter);
         if (!lists_are_equal(new_list, this.list_hits)) {
             this.closeChallengeList();
@@ -242,7 +242,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
     };
     onPointerDown = (ev) => {
-        let new_list = this.getHits(ev);
+        const new_list = this.getHits(ev);
         new_list.sort(list_hit_sorter);
         if (!lists_are_equal(new_list, this.list_hits)) {
             this.list_locked = false;
@@ -276,7 +276,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         this.socket.send("gamelist/subscribe", {"gamelist": "gamelist/global"});
     }
     setShowLiveGames(tf) {
-        let changed = (tf !== this.show_live_games);
+        const changed = (tf !== this.show_live_games);
         this.show_live_games = tf;
         if (changed) {
             if (tf) {
@@ -304,23 +304,23 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     }
 
     getHits(ev) {
-        let pos = getRelativeEventPosition(ev);
-        let ret = [];
+        const pos = getRelativeEventPosition(ev);
+        const ret = [];
 
         if (!pos) {
             return ret;
         }
 
-        for (let id in this.challenges) {
-            let C = this.challenges[id];
+        for (const id in this.challenges) {
+            const C = this.challenges[id];
             if (dist(C, pos) < this.square_size * 2) {
                 ret.push(C);
             }
         }
 
         if (this.show_live_games) {
-            for (let id in this.live_games) {
-                let C = this.live_games[id];
+            for (const id in this.live_games) {
+                const C = this.live_games[id];
                 if (dist(C, pos) < this.square_size * 2) {
                     ret.push(C);
                 }
@@ -330,24 +330,24 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         return ret;
     }
     redraw() {
-        let ctx = this.canvas[0].getContext("2d");
-        let w = this.canvas.width();
-        let h = this.canvas.height();
-        let padding = this.padding;
-        let blitz_line = Math.round(SeekGraph.blitz_line_ratio * (w - padding) + padding);
-        let live_line = Math.round(SeekGraph.live_line_ratio * (w - padding) + padding);
+        const ctx = this.canvas[0].getContext("2d");
+        const w = this.canvas.width();
+        const h = this.canvas.height();
+        const padding = this.padding;
+        const blitz_line = Math.round(SeekGraph.blitz_line_ratio * (w - padding) + padding);
+        const live_line = Math.round(SeekGraph.live_line_ratio * (w - padding) + padding);
 
         ctx.clearRect(0, 0, w, h);
         this.drawAxes();
 
 
 
-        let plot_ct = {};
+        const plot_ct = {};
         this.challenge_points = {};
 
 
-        let sorted = [];
-        for (let id in this.challenges) {
+        const sorted = [];
+        for (const id in this.challenges) {
             sorted.push(this.challenges[id]);
         }
         sorted.sort((A, B) => {
@@ -363,7 +363,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             return B.challenge_id - A.challenge_id;
         });
         if (this.show_live_games) {
-            for (let id in this.live_games) {
+            for (const id in this.live_games) {
                 sorted.push(this.live_games[id]);
             }
         }
@@ -371,21 +371,21 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         /* Plot our challenges */
         for (let j = 0; j < sorted.length; ++j) {
-            let C = sorted[j];
+            const C = sorted[j];
 
-            let rank_ratio = (Math.min(MAX_RATIO, (C.rank + 1) / 40));
+            const rank_ratio = (Math.min(MAX_RATIO, (C.rank + 1) / 40));
 
             let time_ratio = 0;
             let last_tpm = 0;
             for (let i = 0; i < SeekGraph.time_columns.length; ++i) {
-                let col = SeekGraph.time_columns[i];
+                const col = SeekGraph.time_columns[i];
                 if (C.time_per_move <= col.time_per_move) {
                     if (C.time_per_move === 0) {
                         time_ratio = col.ratio;
                         break;
                     }
 
-                    let alpha = (C.time_per_move - last_tpm) / (-last_tpm + col.time_per_move);
+                    const alpha = (C.time_per_move - last_tpm) / (-last_tpm + col.time_per_move);
                     time_ratio = lerp(time_ratio, col.ratio, alpha);
                     break;
                 }
@@ -393,17 +393,17 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 time_ratio = col.ratio;
             }
 
-            let cx = Math.round(padding + ((w - padding) * time_ratio));
-            let cy = Math.round(h - (padding + ((h - padding) * rank_ratio)));
+            const cx = Math.round(padding + ((w - padding) * time_ratio));
+            const cy = Math.round(h - (padding + ((h - padding) * rank_ratio)));
 
             C.cx = cx;
             C.cy = cy;
 
-            let plot_ct_pos = time_ratio + "," + rank_ratio;
+            const plot_ct_pos = time_ratio + "," + rank_ratio;
             if (!(plot_ct_pos in plot_ct)) {
                 plot_ct[plot_ct_pos] = 0;
             }
-            let ct = ++plot_ct[plot_ct_pos];
+            const ct = ++plot_ct[plot_ct_pos];
 
             /* Draw */
             let d = this.square_size;
@@ -443,7 +443,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 ctx.fillRect(sx, sy, d, d);
             }
             if (ct > 1) {
-                let cc = Math.min((this.width < 200 ? 2 : 4), ct - 1);
+                const cc = Math.min((this.width < 200 ? 2 : 4), ct - 1);
                 sx -= cc;
                 sy -= cc;
                 d += cc * 2;
@@ -477,27 +477,27 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         this.redraw();
     }
     drawAxes() {
-        let ctx = this.canvas[0].getContext("2d");
-        let w = this.canvas.width();
-        let h = this.canvas.height();
+        const ctx = this.canvas[0].getContext("2d");
+        const w = this.canvas.width();
+        const h = this.canvas.height();
         if (w < 30 || h < 30) { return; }
 
 
         ctx.font = "bold " + this.text_size + "px Verdana,Courier,Arial,serif";
-        let padding = this.padding;
+        const padding = this.padding;
         ctx.strokeStyle = "#666666";
         ctx.lineWidth = 1;
 
         // assumes "accessible" is similar to "dark"
-        let axis_color = $(document.body).hasClass("light") ? "#000000" : "#dddddd";
+        const axis_color = $(document.body).hasClass("light") ? "#000000" : "#dddddd";
 
         /* Rank */
         ctx.save();
 
         ctx.fillStyle = axis_color;
-        let word = _("Rank");
-        let metrics = ctx.measureText(word);
-        let yy = h / 2 + (metrics.width / 2);
+        const word = _("Rank");
+        const metrics = ctx.measureText(word);
+        const yy = h / 2 + (metrics.width / 2);
 
         ctx.translate(padding - 4 + 0.5, yy + 0.5);
         ctx.rotate(-Math.PI / 2);
@@ -513,8 +513,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         /* player rank line */
         if (!data.get("user").anonymous) {
-            let rank_ratio = (Math.min(MAX_RATIO, (this.userRank() + 1) / 40));
-            let cy = Math.round(h - (padding + ((h - padding) * rank_ratio)));
+            const rank_ratio = (Math.min(MAX_RATIO, (this.userRank() + 1) / 40));
+            const cy = Math.round(h - (padding + ((h - padding) * rank_ratio)));
             ctx.beginPath();
             ctx.strokeStyle = "#ccccff";
             ctx.moveTo(padding + 0.5, cy + 0.5);
@@ -524,8 +524,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
 
         /* Time */
-        let blitz_line = Math.round(SeekGraph.blitz_line_ratio * (w - padding) + padding);
-        let live_line = Math.round(SeekGraph.live_line_ratio * (w - padding) + padding);
+        const blitz_line = Math.round(SeekGraph.blitz_line_ratio * (w - padding) + padding);
+        const live_line = Math.round(SeekGraph.live_line_ratio * (w - padding) + padding);
 
 
         /* primary line */
@@ -573,19 +573,19 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         this.popupChallengeList(ev);
         if (this.list_locked) { return; }
 
-        let pos = getRelativeEventPosition(ev);
-        let offset = $(ev.target).offset();
+        const pos = getRelativeEventPosition(ev);
+        const offset = $(ev.target).offset();
         pos.x += offset.left + 10;
         pos.y += offset.top + 5;
 
 
-        let win_top = window.pageYOffset || document.documentElement.scrollTop;
-        let win_left = window.pageXOffset || document.documentElement.scrollLeft;
-        let win_right = $(window).width() + win_left;
-        let win_bottom = $(window).height() + win_top - 5;
+        const win_top = window.pageYOffset || document.documentElement.scrollTop;
+        const win_left = window.pageXOffset || document.documentElement.scrollLeft;
+        const win_right = $(window).width() + win_left;
+        const win_bottom = $(window).height() + win_top - 5;
 
-        let list_width = this.list.width();
-        let list_height = this.list.height();
+        const list_width = this.list.width();
+        const list_height = this.list.height();
 
         if (pos.x + list_width > win_right) {
             pos.x -= (list_width + 10);
@@ -606,10 +606,10 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         if (this.list_hits.length === 0) { return; }
 
-        let list = this.list = $("<div>").addClass("SeekGraph-challenge-list");
+        const list = this.list = $("<div>").addClass("SeekGraph-challenge-list");
 
-        let first_hit = this.list_hits[0];
-        let header = $("<div>").addClass("header");
+        const first_hit = this.list_hits[0];
+        const header = $("<div>").addClass("header");
         header.append($("<span>").html(rankString({"ranking": first_hit.rank, "pro": first_hit.pro})));
         header.append($("<i>").addClass("fa fa-times pull-right").click(() => {
             this.list_locked = false;
@@ -624,13 +624,13 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
 
         for (let i = 0; i < this.list_hits.length; ++i) {
-            let C = this.list_hits[i];
+            const C = this.list_hits[i];
             if (i >= 5 && !C.user_challenge) {
                 continue;
             }
 
             /* process hit */
-            let e = $("<div>").addClass("challenge");
+            const e = $("<div>").addClass("challenge");
             if (C.eligible) {
                 e.addClass("eligible");
             }
@@ -645,7 +645,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             }
 
             if (C.live_game) {
-                let anchor = $("<span>").addClass("fakelink").click((ev) => {
+                const anchor = $("<span>").addClass("fakelink").click((ev) => {
                     console.log("Should be closing challenge list");
                     this.list_locked = false;
                     this.closeChallengeList();
@@ -687,9 +687,9 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 e.append(f);
                 ReactDOM.render((<Player user={{ "user_id": 0, "ranking": C.white_rank, "username": C.white_username }} rank nolink />), f[0]);
             } else {
-                let f = $("<span>");
+                const f = $("<span>");
                 e.append(f);
-                let U = player_cache.lookup(C.user_id) || {"user_id": C.user_id, "ranking": C.rank, "username": C.username};
+                const U = player_cache.lookup(C.user_id) || {"user_id": C.user_id, "ranking": C.rank, "username": C.username};
                 ReactDOM.render((<Player user={U} rank disableCacheUpdate />), f[0]);
 
                 let details_html = ", " +
@@ -777,9 +777,9 @@ function createModal(close_callback, priority) {
         priority = 900; /* matches default modal z-index */
     }
 
-    let elt = $("<div>").addClass("ogs-modal");
+    const elt = $("<div>").addClass("ogs-modal");
     elt.click(onClose);
-    let binding = kb_bind("escape", onClose, priority);
+    const binding = kb_bind("escape", onClose, priority);
     modal = {"modal": elt, "binding": binding};
     elt.css("zIndex", priority);
     $(document.body).append(elt);

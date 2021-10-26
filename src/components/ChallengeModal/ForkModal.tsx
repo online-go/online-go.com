@@ -36,7 +36,7 @@ export class ForkModal extends Modal<Events, ForkModalProperties, any> {
         super(props);
 
 
-        let goban = this.props.goban;
+        const goban = this.props.goban;
         this.state = {
             player: null,
             fork_preview: {

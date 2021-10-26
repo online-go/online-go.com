@@ -80,10 +80,10 @@ class AutomatchToast extends React.PureComponent<{}, any> {
 
     componentDidMount() {
         this.timer = setInterval(() => {
-            let elapsed = Math.floor((Date.now() - this.state.start) / 1000);
-            let seconds = elapsed % 60;
-            let minutes = Math.floor((elapsed - seconds) / 60);
-            let display = seconds < 10 ? `${minutes}:0${seconds}` : `${minutes}:${seconds}`;
+            const elapsed = Math.floor((Date.now() - this.state.start) / 1000);
+            const seconds = elapsed % 60;
+            const minutes = Math.floor((elapsed - seconds) / 60);
+            const display = seconds < 10 ? `${minutes}:0${seconds}` : `${minutes}:${seconds}`;
             this.setState({elapsed: display});
         }, 1000);
     }
@@ -127,7 +127,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
             entry.timestamp = Date.now();
         }
 
-        for (let opt of entry.size_speed_options) {
+        for (const opt of entry.size_speed_options) {
             if (opt.speed === 'correspondence') {
                 this.active_correspondence_automatchers[entry.uuid] = entry;
             } else {

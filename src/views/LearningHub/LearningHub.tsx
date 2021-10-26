@@ -51,7 +51,7 @@ export class LearningHub extends React.PureComponent<LearningHubProperties, any>
     }
 
     render() {
-        let section = this._render();
+        const section = this._render();
 
         if (section) {
             return (
@@ -71,7 +71,7 @@ export class LearningHub extends React.PureComponent<LearningHubProperties, any>
         }
     }
     _render() {
-        let section_name = (this.props.match.params.section || "index").toLowerCase();
+        const section_name = (this.props.match.params.section || "index").toLowerCase();
         let section;
         let next_section_name = '';
 
@@ -85,7 +85,7 @@ export class LearningHub extends React.PureComponent<LearningHubProperties, any>
         }
 
         if (section) {
-            let S = section;
+            const S = section;
             return <S
                 page={this.props.match.params.page}
                 nextSection={next_section_name}
@@ -106,7 +106,7 @@ class Index extends React.PureComponent<{}, any>  {
 
     render() {
         const progress = 9;
-        let user = data.get('user');
+        const user = data.get('user');
         return (
             <div id='LearningHub-Index'>
 
@@ -116,9 +116,9 @@ class Index extends React.PureComponent<{}, any>  {
                             <h2>{arr[0]}</h2>
                             <div className='contents'>
                                 {arr[1].map((S) => {
-                                    let className = getSectionClassName(S.section());
-                                    let p = (new (S.pages()[0]));
-                                    let config = p.config();
+                                    const className = getSectionClassName(S.section());
+                                    const p = (new (S.pages()[0]));
+                                    const config = p.config();
                                     if (!config.width) {
                                         config.width = 9;
                                         config.height = 9;
@@ -182,7 +182,7 @@ class Index extends React.PureComponent<{}, any>  {
     }
 
     ribbonText(section_name: string) {
-        let sc = getSectionCompletion(section_name);
+        const sc = getSectionCompletion(section_name);
         if (sc.completed) {
             return (
                 <span>
@@ -211,10 +211,10 @@ class SectionNav extends React.Component<{}, any>  {
     }
 
     render() {
-        let pathname = window.location.pathname;
-        let m = window.location.pathname.match(/\/learn-to-play-go(\/([^\/]+))?(\/([0-9]+))?/);
-        let section_name = (m && m[2]) || "";
-        let page = (m && m[4]) || 0;
+        const pathname = window.location.pathname;
+        const m = window.location.pathname.match(/\/learn-to-play-go(\/([^\/]+))?(\/([0-9]+))?/);
+        const section_name = (m && m[2]) || "";
+        const page = (m && m[4]) || 0;
         console.log(m, section_name, page);
 
         return (
@@ -257,7 +257,7 @@ class SectionNav extends React.Component<{}, any>  {
     };
 
     getProgressText(section_name: string) {
-        let sc = getSectionCompletion(section_name);
+        const sc = getSectionCompletion(section_name);
 
         if (sc.completed) {
             return (
@@ -275,9 +275,9 @@ class SectionNav extends React.Component<{}, any>  {
 }
 
 function getSectionClassName(section_name: string): string {
-    let sc = getSectionCompletion(section_name);
+    const sc = getSectionCompletion(section_name);
 
-    let S = getSectionByName(section_name);
+    const S = getSectionByName(section_name);
     if (S.pages()[0].underConstruction()) {
         return 'under-construction';
     }

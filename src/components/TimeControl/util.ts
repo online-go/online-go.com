@@ -57,22 +57,22 @@ function mktime(t) {
         return interpolate(t === 1 ? _("1 second") : _("%s seconds"), [t]);
     }
     if (t < 3600) {
-        let t1 = Math.floor(t / 60);
-        let t2 = t % 60;
+        const t1 = Math.floor(t / 60);
+        const t2 = t % 60;
 
         return interpolate(t1 === 1 ? _("1 minute") : _("%s minutes"), [t1]) +
                 (t2 ? " " + interpolate(_("%s seconds"), [t2]) : "");
     }
     if (t < 86400) {
-        let t1 = Math.floor(t / 3600);
-        let t2 = (t % 3600) / 60;
+        const t1 = Math.floor(t / 3600);
+        const t2 = (t % 3600) / 60;
 
         return interpolate(t1 === 1 ? _("1 hour") : _("%s hours"), [t1]) +
                 (t2 ?  (" " + interpolate(_("%s minutes"), [t2])) : "");
     }
 
-    let t1 = Math.floor(t / 86400);
-    let t2 = (t % 86400) / 3600;
+    const t1 = Math.floor(t / 86400);
+    const t2 = (t % 86400) / 3600;
 
     return interpolate(t1 === 1 ? _("1 day") : _("%s days"), [t1]) +
             (t2 ?  (" " + interpolate(_("%s hours"), [t2])) : "");
@@ -84,7 +84,7 @@ const zero = {
 };
 
 function gen(min, max) {
-    let ret = [];
+    const ret = [];
     for (let i = 0; i < times.length; ++i) {
         if (times[i] >= min && times[i] <= max) {
             ret.push({
@@ -164,8 +164,8 @@ export const time_options = {
 
 
 export function makeTimeControlParameters(tc: any): TimeControl {
-    let tpm = computeAverageMoveTime(tc);
-    let speed: TimeControlTypes.TimeControlSpeed = tpm === 0 || tpm > 3600 ? "correspondence" : (tpm < 10 ? "blitz" : "live");
+    const tpm = computeAverageMoveTime(tc);
+    const speed: TimeControlTypes.TimeControlSpeed = tpm === 0 || tpm > 3600 ? "correspondence" : (tpm < 10 ? "blitz" : "live");
 
     switch (tc.time_control || tc.system) {
         case "fischer":
@@ -414,7 +414,7 @@ export function timeControlSystemText(system) {
 export function validateTimeControl(tc: TimeControl): boolean {
     let error = false;
 
-    for (let k in tc) {
+    for (const k in tc) {
         if (typeof(tc[k]) === "number" && isNaN(tc[k])) {
             return false;
         }
@@ -448,25 +448,25 @@ export function validateTimeControl(tc: TimeControl): boolean {
     }
 }
 export function isLiveGame(time_control) {
-    let average_move_time = computeAverageMoveTime(time_control);
+    const average_move_time = computeAverageMoveTime(time_control);
     return average_move_time > 0 && average_move_time < 3600;
 }
 
 export function durationString(seconds: number): string {
-    let weeks = Math.floor(seconds / (86400 * 7)); seconds -= weeks * 86400 * 7;
-    let days = Math.floor(seconds / 86400); seconds -= days * 86400;
-    let hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
-    let minutes = Math.floor(seconds / 60); seconds -= minutes * 60;
+    const weeks = Math.floor(seconds / (86400 * 7)); seconds -= weeks * 86400 * 7;
+    const days = Math.floor(seconds / 86400); seconds -= days * 86400;
+    const hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
+    const minutes = Math.floor(seconds / 60); seconds -= minutes * 60;
 
-    let coarse_fine_time_template = pgettext("Duration strings using two units (e.g. \"1 week 3 days\", \"2 hours 45 minutes\"). This is localizable because some languages may need to change the order of the coarse and fine times.",
+    const coarse_fine_time_template = pgettext("Duration strings using two units (e.g. \"1 week 3 days\", \"2 hours 45 minutes\"). This is localizable because some languages may need to change the order of the coarse and fine times.",
         "{{coarse}} {{fine}}");
-    let weeks_string = ngettext("%s week", "%s weeks", weeks);
-    let days_string = ngettext("%s day", "%s days", days);
-    let hours_string = ngettext("%s hour", "%s hours", hours);
-    let minutes_string = ngettext("%s minute", "%s minutes", minutes);
-    let seconds_string = ngettext("%s second", "%s seconds", seconds);
+    const weeks_string = ngettext("%s week", "%s weeks", weeks);
+    const days_string = ngettext("%s day", "%s days", days);
+    const hours_string = ngettext("%s hour", "%s hours", hours);
+    const minutes_string = ngettext("%s minute", "%s minutes", minutes);
+    const seconds_string = ngettext("%s second", "%s seconds", seconds);
 
-    let coarsest_to_finest: {value: number; template: string}[] =
+    const coarsest_to_finest: {value: number; template: string}[] =
         [
             {value: weeks, template: weeks_string},
             {value: days, template: days_string},
@@ -476,8 +476,8 @@ export function durationString(seconds: number): string {
         ];
 
     for (let i = 0; i < coarsest_to_finest.length - 1; i++) {
-        let coarse = coarsest_to_finest[i];
-        let fine = coarsest_to_finest[i + 1];
+        const coarse = coarsest_to_finest[i];
+        const fine = coarsest_to_finest[i + 1];
 
         if (!coarse.value) { continue; }
 
@@ -493,17 +493,17 @@ export function durationString(seconds: number): string {
 }
 
 export function daysOnlyDurationString(seconds): string {
-    let days = Math.floor(seconds / 86400);
+    const days = Math.floor(seconds / 86400);
 
-    let ret: string = "";
+    let ret = "";
     ret += interpolate(_("{{number_of_days}} {{day_or_days_plurality}}"), {number_of_days: days, day_or_days_plurality: ngettext("Day", "Days", days)});
     return ret.trim();
 }
 export function shortDurationString(seconds) {
-    let weeks = Math.floor(seconds / (86400 * 7)); seconds -= weeks * 86400 * 7;
-    let days = Math.floor(seconds / 86400); seconds -= days * 86400;
-    let hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
-    let minutes = Math.floor(seconds / 60); seconds -= minutes * 60;
+    const weeks = Math.floor(seconds / (86400 * 7)); seconds -= weeks * 86400 * 7;
+    const days = Math.floor(seconds / 86400); seconds -= days * 86400;
+    const hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
+    const minutes = Math.floor(seconds / 60); seconds -= minutes * 60;
     seconds = Math.round(seconds * 10) / 10.0;
     return "" +
         (weeks ? " " + interpolate(pgettext("Short time (weeks)", "%swk"), [weeks]) : "") +

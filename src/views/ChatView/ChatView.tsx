@@ -36,12 +36,12 @@ interface ChatViewProperties {
 
 
 export function ChatView(props: ChatViewProperties): JSX.Element {
-    let channel = props.match.params.channel;
+    const channel = props.match.params.channel;
 
     data.set('chat.active_channel', channel);
 
-    let [showing_channels, set_showing_channels]: [boolean, (tf: boolean) => void] = useState(false as boolean);
-    let [showing_users, set_showing_users]: [boolean, (tf: boolean) => void] = useState(false as boolean);
+    const [showing_channels, set_showing_channels]: [boolean, (tf: boolean) => void] = useState(false as boolean);
+    const [showing_users, set_showing_users]: [boolean, (tf: boolean) => void] = useState(false as boolean);
 
     useEffect(() => {
         set_showing_channels(false);
@@ -63,7 +63,7 @@ export function ChatView(props: ChatViewProperties): JSX.Element {
     }, [channel, showing_users]);
 
 
-    let subprops = {
+    const subprops = {
         channel: channel,
         showingChannels: showing_channels,
         showingUsers: showing_users,

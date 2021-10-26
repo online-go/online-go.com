@@ -28,7 +28,7 @@ export interface MessageProps {
 export function format_message(props: MessageProps): string {
     let message_id: MessageId;
     if (props.message) {
-        let message = props.message;
+        const message = props.message;
         message_id = message.message_id;
     } else if (props.message_id) {
         message_id = props.message_id;
@@ -64,10 +64,10 @@ export function format_message(props: MessageProps): string {
         case "move_is_suicidal":
         case "illegal_ko_move":
         case "illegal_board_repetition": {
-            let m: GobanMoveErrorMessageObject = props.message as GobanMoveErrorMessageObject;
-            let coords = m?.coords || "ERR";
-            let move_number = m?.move_number || -1;
-            let suffix = ": #" + move_number.toString() + " @" + coords;
+            const m: GobanMoveErrorMessageObject = props.message as GobanMoveErrorMessageObject;
+            const coords = m?.coords || "ERR";
+            const move_number = m?.move_number || -1;
+            const suffix = ": #" + move_number.toString() + " @" + coords;
             switch (message_id) {
                 case "stone_already_placed_here":
                     return _('A stone has already been placed here') + suffix;

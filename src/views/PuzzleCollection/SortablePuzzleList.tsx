@@ -68,7 +68,7 @@ export class SortablePuzzleList extends React.Component<SortablePuzzleListProper
             return;
         }
 
-        let after = oldIndex < newIndex ? newIndex : newIndex - 1;
+        const after = oldIndex < newIndex ? newIndex : newIndex - 1;
 
         put(`puzzles/${this.state.entries[oldIndex].id}/order`, {
             after: newIndex ? this.state.entries[after].id : 0

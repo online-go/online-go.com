@@ -39,7 +39,7 @@ export class VerifyEmail extends React.PureComponent<VerifyEmailProps, any> {
     }
 
     componentDidMount() {
-        let q = parse(this.props.location.search);
+        const q = parse(this.props.location.search);
 
         post("me/validateEmail", {
             id: q['id'],
@@ -47,7 +47,7 @@ export class VerifyEmail extends React.PureComponent<VerifyEmailProps, any> {
         })
         .then(() => {
             this.setState({verifying: false, message: _("Great, your email address has been verified!")});
-            let user = data.get('user');
+            const user = data.get('user');
             user.email_validated = new Date().toString();
             data.set('user', user);
         })

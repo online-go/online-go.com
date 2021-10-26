@@ -64,8 +64,8 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
 
     constructor(props) {
         super(props);
-        let user = data.get('config.user');
-        let viewed_user = typeof(props.user) === "object" ? props.user : null;
+        const user = data.get('config.user');
+        const viewed_user = typeof(props.user) === "object" ? props.user : null;
         this.state = {
             is_online: false,
             user: viewed_user,
@@ -74,17 +74,17 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
     }
 
     componentDidMount() {
-        let user = data.get('config.user');
+        const user = data.get('config.user');
         if (!this.props.disableCacheUpdate) {
             if (this.state.user && this.state.user.id > 0) {
                 player_cache.update(this.state.user);
             }
 
-            let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
-            let username = typeof(this.props.user) !== "object" ? null : this.props.user.username ;
+            const player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
+            const username = typeof(this.props.user) !== "object" ? null : this.props.user.username ;
             if (player_id && player_id > 0) {
                 player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
-                    let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
+                    const player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
                     if (this.unmounted) {
                         return;
                     }
@@ -119,8 +119,8 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
     }
 
     updateHasNotes = () => {
-        let user = data.get('config.user');
-        let tf = !!data.get(`player-notes.${user.id}.${this.props.user.id}`);
+        const user = data.get('config.user');
+        const tf = !!data.get(`player-notes.${user.id}.${this.props.user.id}`);
         if (tf !== this.state.has_notes) {
             this.setState({has_notes: tf});
         }
@@ -134,7 +134,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
     };
 
     syncUpdateOnline(user_or_id) {
-        let id = typeof(user_or_id) === "number" ? user_or_id : ((typeof(user_or_id) === "object" && user_or_id) ? user_or_id.id : null);
+        const id = typeof(user_or_id) === "number" ? user_or_id : ((typeof(user_or_id) === "object" && user_or_id) ? user_or_id.id : null);
 
         if (!this.props.online || id !== this.online_subscription_user_id) {
             if (this.online_subscription_user_id) {
@@ -150,7 +150,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
     }
 
     UNSAFE_componentWillReceiveProps(new_props) {
-        let user = data.get('config.user');
+        const user = data.get('config.user');
         if (this.props.shownotesindicator) {
             data.unwatch(`player-notes.${user.id}.${this.state.user.id}`, this.updateHasNotes);
         }
@@ -166,8 +166,8 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         }
 
         if (!new_props.disableCacheUpdate) {
-            let player_id = typeof(new_props.user) !== "object" ? new_props.user : (new_props.user.id || new_props.user.player_id) ;
-            let username = typeof(new_props.user) !== "object" ? null : new_props.user.username ;
+            const player_id = typeof(new_props.user) !== "object" ? new_props.user : (new_props.user.id || new_props.user.player_id) ;
+            const username = typeof(new_props.user) !== "object" ? null : new_props.user.username ;
 
             if (typeof(new_props.user) === "object" && new_props.user.id > 0) {
                 player_cache.update(new_props.user);
@@ -175,7 +175,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
 
             if (player_id && player_id > 0) {
                 player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
-                    let player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
+                    const player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
                     if (this.unmounted) {
                         return;
                     }
@@ -209,7 +209,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         this.syncUpdateOnline(this.props.user);
     }
     componentWillUnmount() {
-        let user = data.get('config.user');
+        const user = data.get('config.user');
         this.unmounted = true;
         this.syncUpdateOnline(null);
         if (this.props.shownotesindicator) {
@@ -230,14 +230,14 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             }
         }
 
-        let props = this.props;
-        let player = this.state.user;
-        let player_id = player.id || player.player_id;
-        let nolink = !!this.props.nolink;
+        const props = this.props;
+        const player = this.state.user;
+        const player_id = player.id || player.player_id;
+        const nolink = !!this.props.nolink;
         let rank: JSX.Element = null;
 
 
-        let main_attrs: any = {
+        const main_attrs: any = {
             "className": "Player",
             "data-player-id": player_id,
         };
@@ -268,7 +268,7 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
 
 
         if (this.props.rank !== false) {
-            let rating = getUserRating(player, 'overall', 0);
+            const rating = getUserRating(player, 'overall', 0);
             let rank_text = 'E';
 
             if (player.pro || player.professional) {
@@ -295,8 +295,8 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
             main_attrs.className += this.state.is_online ? " online" : " offline";
         }
 
-        let username_string = unicodeFilter(player.username || player.name);
-        let username = <span className='Player-username'>{username_string}</span>;
+        const username_string = unicodeFilter(player.username || player.name);
+        const username = <span className='Player-username'>{username_string}</span>;
 
         const player_note_indicator = (this.props.shownotesindicator && this.state.has_notes)
             ? <i className={"Player fa fa-clipboard"} onClick={this.openPlayerNotes} data-id={player.id} />
@@ -312,8 +312,8 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
                 </span>
             );
         } else {
-            let player_id = this.state.user.id || this.state.user.player_id;
-            let uri: string = `/player/${player_id}/${encodeURIComponent(username_string)}`;
+            const player_id = this.state.user.id || this.state.user.player_id;
+            const uri = `/player/${player_id}/${encodeURIComponent(username_string)}`;
 
             return (
                 // if only we could put {...main_attrs} on the span, we could put the styles in .Player.  But router seems to hate that.
@@ -350,10 +350,10 @@ export class Player extends React.PureComponent<PlayerProperties, any> {
         event.stopPropagation();
         event.preventDefault();
 
-        let player_id = this.state.user.id || this.state.user.player_id;
+        const player_id = this.state.user.id || this.state.user.player_id;
         if (shouldOpenNewTab(event)) {
             let uri = `/player/${player_id}`;
-            let player = player_cache.lookup(player_id);
+            const player = player_cache.lookup(player_id);
             if (player) {
                 uri += "/" + encodeURIComponent(unicodeFilter(player.username));
             }

@@ -42,7 +42,7 @@ export class GobanTest extends React.Component<{}, any> {
         this.goban_div = document.createElement('div');
         this.goban_div.className = 'Goban';
 
-        let opts: GobanConfig = {
+        const opts: GobanConfig = {
             "board_div": this.goban_div,
             "interactive": true,
             "mode": "puzzle",
@@ -61,11 +61,11 @@ export class GobanTest extends React.Component<{}, any> {
 
     /* This is called every time a move is played or anything else changes about the state of the board */
     onUpdate = () => {
-        let mvs = GoMath.decodeMoves(
+        const mvs = GoMath.decodeMoves(
             this.goban.engine.cur_move.getMoveStringToThisPoint(),
             this.goban.width,
             this.goban.height);
-        let move_string = mvs.map((p) => GoMath.prettyCoords(p.x, p.y, this.goban.height)).join(",");
+        const move_string = mvs.map((p) => GoMath.prettyCoords(p.x, p.y, this.goban.height)).join(",");
         this.setState({ move_string });
     };
 

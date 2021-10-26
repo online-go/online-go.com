@@ -50,12 +50,12 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
 
 
     save = (ev) => {
-        let config = this.props.config;
-        let review_id = config.review_id;
-        let game_id = config.game_id;
+        const config = this.props.config;
+        const review_id = config.review_id;
+        const game_id = config.game_id;
 
         if (game_id) {
-            let settings = {
+            const settings = {
                 moderation_note: "Update game name",
                 name: config.game_name
             };
@@ -68,7 +68,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         }
 
         if (review_id) {
-            let settings = {
+            const settings = {
                 'name': config.game_name,
                 'outcome': config.outcome,
             };
@@ -92,7 +92,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
     };
 
     deleteReview = (ev) => {
-        let review_id = this.props.config.review_id;
+        const review_id = this.props.config.review_id;
 
         if (review_id) {
             swal({
@@ -123,8 +123,8 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
     };
     updateBlackRank = (ev) => {
         console.log(ev.target.value);
-        let rank = parseInt(ev.target.value);
-        let pro = ev.target.value.indexOf(".1") > 0;
+        const rank = parseInt(ev.target.value);
+        const pro = ev.target.value.indexOf(".1") > 0;
         console.log(rank, pro);
         this.props.config.players.black.rank = rank;
         this.props.config.players.black.pro = pro;
@@ -138,8 +138,8 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
     };
     updateWhiteRank = (ev) => {
         console.log(ev.target.value);
-        let rank = parseInt(ev.target.value);
-        let pro = ev.target.value.indexOf(".1") > 0;
+        const rank = parseInt(ev.target.value);
+        const pro = ev.target.value.indexOf(".1") > 0;
         this.props.config.players.white.rank = rank;
         this.props.config.players.white.pro = pro;
         this.props.white.rank = rank;
@@ -152,11 +152,11 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
     };
 
     render() {
-        let config = this.props.config;
-        let user = data.get('user');
-        let review_id = config.review_id;
-        let game_id = config.game_id;
-        let editable = ((review_id && this.props.creatorId === user.id) || user.is_moderator) || null;
+        const config = this.props.config;
+        const user = data.get('user');
+        const review_id = config.review_id;
+        const game_id = config.game_id;
+        const editable = ((review_id && this.props.creatorId === user.id) || user.is_moderator) || null;
 
         if (config && config.pause_on_weekends) {
             /* There was a bug in our tournament creation code that didn't
@@ -164,9 +164,9 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
              * display on those games. */
             config.time_control.pause_on_weekends = config.pause_on_weekends;
         }
-        let time_control_description = timeControlDescription(config.time_control);
+        const time_control_description = timeControlDescription(config.time_control);
 
-        let ranks = [];
+        const ranks = [];
         for (let i = 0; i < 39; ++i) {
             ranks.push({value: i + ".0", label: rankString({ranking: i, professional: false})});
         }
