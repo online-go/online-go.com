@@ -1,7 +1,7 @@
 'use strict';
 
 // Which backend server would you like to use today? ...
-let BACKEND = 'BETA';
+let BACKEND = process.env.OGS_BACKEND || 'BETA';
 //BACKEND = 'PRODUCTION';
 //BACKEND = 'LOCAL';
 
