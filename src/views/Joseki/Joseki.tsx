@@ -451,7 +451,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         // Prefetch the next nodes, by calling the prefetch API, unless we already have a pre-fetch in flight
         // (no point in driving server load up with overlapping and expensive prefetches!)
         if (!this.prefetching) {
-            console.log("checking if we alreay prefetched at", node_id, this.prefetched[node_id]);
+            console.log("checking if we already prefetched at", node_id, this.prefetched[node_id]);
             if (!this.prefetched[node_id]) {
                 this.prefetching = true;
                 console.log("... prefetching", node_id);
