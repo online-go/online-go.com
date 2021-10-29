@@ -940,12 +940,8 @@ class NotificationEntry extends React.Component<{notification}, any> {
 
             case "lateChatReceivedInGame":
                 return <div className="late-notification">
-                    <Player user={notification.from}/>
-                    <span className="late-notification-text">
-                        {_(" added chat to your finished ")}
-                    </span>
                     <a href={`/game/${notification.game_id}`}>
-                        {_("game")}
+                        {interpolate(_("{{username}} added chat to your finished game"), {username: notification.from.username})}
                     </a>
                 </div>;
 
