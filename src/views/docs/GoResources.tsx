@@ -248,6 +248,7 @@ export const GoResources = (props) => {
                             <span><Flag country={cn}/> <a rel="noopener" href="https://www.youtube.com/channel/UC9BYxg8ZakiOvbDyO2eGLZw">围棋TV</a></span>,
                             <span><Flag country={au}/> <a rel="noopener" href="https://www.twitch.tv/lumbertruck">Lumbertruck Twitch</a></span>,
                             <span><Flag country={ru}/> <a rel="noopener" href="https://www.twitch.tv/alone_go">Alone Go</a></span>,
+                            <span><Flag country={en}/> <a rel="noopener" href="https://www.twitch.tv/gogogooplet">Gooplet</a></span>,
                             <span><Flag country={"tr"}/> <a rel="noopener" href="https://www.youtube.com/channel/UCwTy0RGxDD2ZkQv-qCuWrAQ">Şibumi Go Okulu</a></span>,
                             <span><Flag country={"tr"}/> <a rel="noopener" href="https://www.youtube.com/channel/UCzxYMKMGX_ZXXzBiLE9FVfw">Istanbul Go Association</a></span>,
 
