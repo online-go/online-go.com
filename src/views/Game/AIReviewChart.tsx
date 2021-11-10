@@ -319,7 +319,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             variation_entries = this.props.variation_entries.map((x, i) => {
                 return {
                     win_rate: x.win_rate,
-                    score: x.score === 0 && use_score_safe ? this.props.ai_review.scores[i] : x.score,
+                    score: x.score,
                     move_number: x.move_number,
                     num_variations: x.num_variations,
                 };
