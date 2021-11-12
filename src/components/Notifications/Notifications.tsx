@@ -453,7 +453,7 @@ class NotificationManager {
                 if (getCurrentGameId() === notification.game_id) {
                     this.deleteNotification(notification, true);
                 } else {
-                    emitNotification(_("Chat add to finished game"), _("Someone added some chat to your finished game"));
+                    emitNotification(_("Chat added to finished game"), _("Someone added some chat to your finished game"));
                 }
             }
 

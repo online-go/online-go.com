@@ -143,12 +143,6 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
 
 
         this.x_axis = this.prediction_graph.append("g");
-        this.x_axis
-            .attr("transform", "translate(0," + this.height + ")")
-            .call(d3.axisBottom(this.x))
-            .select(".domain")
-            .remove();
-
         this.y_axis = this.prediction_graph.append("g");
 
         this.highlighted_move_circle_container = this.prediction_graph.append("g");
@@ -211,19 +205,26 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
                 // eslint-disable-next-line @typescript-eslint/no-invalid-this
                 const x0 = self.x.invert(d3.mouse(this as d3.ContainerElement)[0]);
 
-                const i = bisector(self.props.entries, x0, 1);
-                const d0 = self.props.entries[i - 1];
-                const d1 = self.props.entries[i];
+                let i = bisector(self.props.entries, x0, 1);
+                let d0 = self.props.entries[i - 1];
+                let d1 = self.props.entries[i];
+                let variation = false;
 
                 if (!d0 || !d1) {
-                    return;
+                    variation = true;
+                    i = bisector(self.props.variation_entries, x0, 1);
+                    d0 = self.props.variation_entries[i - 1];
+                    d1 = self.props.variation_entries[i];
+                    if (!d0 || !d1) {
+                        return;
+                    }
                 }
 
                 const d = x0 - d0.move_number > d1.move_number - x0 ? d1 : d0;
                 self.cursor_crosshair?.attr('transform', 'translate(' + self.x(d.move_number) + ', 0)');
                 self.full_crosshair?.attr('transform', 'translate(0, ' + self.y(self.props.use_score ? d.score : d.win_rate * 100.0) + ')');
 
-                if (mouse_down) {
+                if (mouse_down && !variation) {
                     if (d.move_number !== last_move) {
                         last_move = d.move_number;
                         self.props.setmove(d.move_number);
@@ -237,17 +238,27 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
                 // eslint-disable-next-line @typescript-eslint/no-invalid-this
                 const x0 = self.x.invert(d3.mouse(this as d3.ContainerElement)[0]);
 
-                const i = bisector(self.props.entries, x0, 1);
-                const d0 = self.props.entries[i - 1];
-                const d1 = self.props.entries[i];
+                let i = bisector(self.props.entries, x0, 1);
+                let d0 = self.props.entries[i - 1];
+                let d1 = self.props.entries[i];
+                let variation = false;
 
                 if (!d0 || !d1) {
-                    return;
+                    variation = true;
+                    i = bisector(self.props.variation_entries, x0, 1);
+                    d0 = self.props.variation_entries[i - 1];
+                    d1 = self.props.variation_entries[i];
+                    if (!d0 || !d1) {
+                        return;
+                    }
                 }
 
                 const d = x0 - d0.move_number > d1.move_number - x0 ? d1 : d0;
                 last_move = d.move_number;
                 self.props.setmove(d.move_number);
+                if (variation) {
+                    self.onResize();
+                }
             })
             .on('mouseup', () => {
                 mouse_down = false;
@@ -308,7 +319,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             variation_entries = this.props.variation_entries.map((x, i) => {
                 return {
                     win_rate: x.win_rate,
-                    score: x.score === 0 && use_score_safe ? this.props.ai_review.scores[i] : x.score,
+                    score: x.score,
                     move_number: x.move_number,
                     num_variations: x.num_variations,
                 };
@@ -322,7 +333,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             });
         }
 
-        this.x.domain(d3.extent([0, entries[entries.length - 1].move_number]) as [number, number]);
+        this.x.domain(d3.extent([0, Math.max(entries[entries.length - 1].move_number, this.props.variation_move_number)]) as [number, number]);
         if (use_score_safe) {
             this.max_score = Math.max(0, Math.max(... entries.map(e => e.score)));
             this.min_score = Math.min(0, Math.min(... entries.map(e => e.score)));
@@ -411,6 +422,14 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .attr("stop-color", d => d.color)
         ;
 
+        this.x_axis.remove();
+        this.x_axis = this.prediction_graph.append("g");
+        this.x_axis
+            .attr("transform", "translate(0," + this.height + ")")
+            .call(d3.axisBottom(this.x))
+            .select(".domain")
+            .remove();
+
         this.y_axis.remove();
         this.y_axis = this.prediction_graph.append("g");
         if (use_score_safe) {
@@ -441,6 +460,8 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             .attr('r', d => 3)
             .attr('fill', d => '#FF0000');
 
+        this.move_crosshair?.attr('transform', 'translate(' + this.x(this.props.move_number) + ', 0)');
+        this.variation_move_crosshair?.attr('transform', 'translate(' + this.x(this.props.variation_move_number) + ', 0)');
 
         try {
             // I'm not sure why this is needed, but without it, the first pass
@@ -512,20 +533,11 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
             ?.datum(variation_entries)
             .attr('d', this.win_rate_line as any);
 
-        this.x_axis
-            ?.attr("transform", "translate(0," + this.height + ")")
-            .call(d3.axisBottom(this.x))
-            .select(".domain")
-            .remove();
-
         this.mouse_rect
             ?.attr('transform', 'translate(' + MARGIN.left + ',' + MARGIN.top + ')')
             .attr('width', this.width);
 
         this.full_crosshair?.attr('x1', this.width);
-
-        this.move_crosshair?.attr('transform', 'translate(' + this.x(this.props.move_number) + ', 0)');
-        this.variation_move_crosshair?.attr('transform', 'translate(' + this.x(this.props.variation_move_number) + ', 0)');
 
         this.plot();
     };
