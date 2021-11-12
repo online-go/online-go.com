@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* A page for looking up and playing against josekis */
+/* A page for looking up and playing against josekis stored in the OGS OJE*/
 
 import * as React from "react";
 import { Link } from "react-router-dom";
@@ -23,6 +23,7 @@ import ReactResizeDetector from 'react-resize-detector';
 import * as queryString from "query-string";
 
 import * as data from "data";
+import { getCookie } from "requests";
 import { _, interpolate, npgettext } from "translate";
 import { KBShortcut } from "KBShortcut";
 import { PersistentElement } from "PersistentElement";
@@ -111,7 +112,8 @@ const godojo_headers = (): {} => ({
     'Accept': 'application/json',
     'Content-Type': 'application/json',
     'X-Godojo-Auth-Token': 'foofer',
-    'X-User-Info' : getOGSJWT()       // re-load this every time, in case they change identity via login/logout
+    'X-User-Info' : getOGSJWT(),       // old server uses this for id: re-load this every time, in case they change identity via login/logout
+    'X-CSRFToken': getCookie('csrftoken')
 }
 );
 
@@ -159,7 +161,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
     current_marks: [];           // the marks on the board - from the server, or from editing
     load_sequence_to_board = false; // True if we need to load the stones from the whole sequence received from the server onto the board
-    show_comments_requested = false;  //  If there is a "show_comments parameter in the URL
+    show_comments_requested = false;  //  If there is a "show_comments" parameter in the URL
     previous_position = {} as any; // Saving the information of the node we have moved from, so we can get back to it
     backstepping = false;   // Set to true when the person clicks the back arrow, to indicate we need to fetch the position information
     played_mistake = false;
@@ -296,7 +298,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     getUserJosekiPermissions = () => {
         fetch(server_url + "user-permissions", {
             mode: 'cors',
-            headers: godojo_headers()   // server gets user id from here
+            headers: godojo_headers()
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
@@ -314,6 +316,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     getJosekiTag = () => {
         // The "Joseki Tag" has to be the one at group 0 seq 0.  That's the deal.
+        // We need it because we want to offer it as the default, during editing.
         fetch(server_url + "tag?group=0&seq=0", {
             mode: 'cors',
             headers: godojo_headers()
@@ -1467,7 +1470,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                 method: 'post',
                 mode: 'cors',
                 headers: godojo_headers(),
-                body: this.state.next_comment
+                body: JSON.stringify({'comment': this.state.next_comment})
             })
             .then(res => res.json())
             .then(body => {
