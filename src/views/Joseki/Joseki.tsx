@@ -1413,7 +1413,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         // console.log(commentary_dto);
         const commentary = commentary_dto.commentary.map((comment) => (
             {
-                user_id: comment.userId,
+                user_id: comment.user_id,
                 date: new Date(comment.date),
                 comment: comment.comment
             }
@@ -1549,7 +1549,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                                 {this.state.audit_log.map((audit, idx) =>
                                     <div className="audit-entry" key={idx}>
                                         <div className="audit-header">
-                                            <Player user={audit.userId}></Player>
+                                            <Player user={audit.user_id}></Player>
                                             <div className="audit-date">{new Date(audit.date).toDateString()}</div>
                                         </div>
                                         {audit.comment}
