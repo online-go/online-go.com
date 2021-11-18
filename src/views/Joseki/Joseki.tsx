@@ -1286,7 +1286,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         } else {
             // Here the person has added one or more moves then clicked "save"
             // First we save the new position(s)
-            fetch(server_url + "positions/", {
+            fetch(server_url + "positions", {
                 method: 'post',
                 mode: 'cors',
                 headers: godojo_headers(),
