@@ -306,7 +306,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
             this.setState({
                 user_can_edit: body.can_edit,
-                user_can_administer: body.is_admin,
+                user_can_administer: body.can_admin,
                 user_can_comment: body.can_comment
             });
         }).catch((r) => {

@@ -78,12 +78,13 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
     }
 
     componentDidMount = () => {
-        fetch(this.props.server_url + "appinfo/", {
+        fetch(this.props.server_url + "appinfo", {
             mode: 'cors',
             headers: this.props.godojo_headers
         })
         .then(res => res.json())
         .then(body => {
+            console.log("App info", body)
             this.setState({
                 schema_version: body.schema_version,
                 page_visits: body.page_visits,
@@ -120,7 +121,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         if (current_selections.get(next_selection)) {
             const target_id = next_selection.substring(7);  //  get rid of the wierd "select-" from SelectTable
             // console.log("Revert requested for ", target_id);
-            fetch(this.props.server_url + "revert/", {
+            fetch(this.props.server_url + "revert", {
                 method: 'post',
                 mode: 'cors',
                 headers: this.props.godojo_headers,

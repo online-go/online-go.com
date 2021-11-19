@@ -59,7 +59,7 @@ export class JosekiPermissionsPanel extends React.PureComponent<any, any> {
             this.setState({
                 can_comment: body.can_comment,
                 can_edit: body.can_edit,
-                can_admin: body.is_admin,
+                can_admin: body.can_admin,
                 throb: false
             });
         }).catch((r) => {
