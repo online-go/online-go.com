@@ -15,11 +15,11 @@ let plugins = [];
 plugins.push(
     new ForkTsCheckerWebpackPlugin({
         typescript: {
-            diagnosticOptions: { 
-                syntactic: true, 
-                semantic: true, 
-                declaration: true, 
-                global: true 
+            diagnosticOptions: {
+                syntactic: true,
+                semantic: true,
+                declaration: true,
+                global: true
             }
         }
     })
@@ -128,7 +128,7 @@ module.exports = (env, argv) => {
 
         optimization: {
             splitChunks: {
-                cacheGroups: {   
+                cacheGroups: {
                     "vendor": {
                         test: /[\\/]node_modules[\\/]/,   // <-- use the test property to specify which deps go here
                         name: "vendor",
@@ -160,7 +160,7 @@ module.exports = (env, argv) => {
         // dependencies, which allows browsers to cache those libraries between builds.
         externals: {
             "goban": "goban",
-            "swal": "swal", // can't seem to import anyways
+            "sweetalert2": "swal",
         },
 
         devServer: {
