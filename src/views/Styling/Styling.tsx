@@ -31,8 +31,7 @@ import {PersistentElement} from "PersistentElement";
 import {Steps} from "Steps";
 import {errcodeAlerter} from "ErrcodeModal";
 import * as moment from "moment";
-
-declare let swal;
+import swal from 'sweetalert2';
 
 export class Styling extends React.PureComponent<{}, any> {
     ccinput = null;
@@ -483,7 +482,7 @@ function swal_popup() {
         text: "Some text here",
         input: "text",
         showCancelButton: true,
-    });
+    }).catch(swal.noop);
 }
 
 

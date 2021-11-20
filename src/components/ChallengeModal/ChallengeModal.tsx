@@ -32,8 +32,7 @@ import * as preferences from "preferences";
 import {notification_manager} from "Notifications";
 import {one_bot, bot_count, bots_list} from "bots";
 import {openForkModal} from "./ForkModal";
-
-declare let swal;
+import swal from 'sweetalert2';
 
 type ChallengeModes = "open" | "computer" | "player" | "demo";
 
@@ -367,7 +366,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         const next = this.next();
 
         if (!this.validateBoardSize()) {
-            swal(_("Invalid board size, please correct and try again"));
+            swal(_("Invalid board size, please correct and try again")).catch(swal.noop);
             return;
         }
         /*
@@ -378,7 +377,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         const conf = next.conf;
 
         if (next.challenge.game.komi_auto === 'custom' && next.challenge.game.komi === null) {
-            swal(_("Invalid custom komi, please correct and try again"));
+            swal(_("Invalid custom komi, please correct and try again")).catch(swal.noop);
             return;
         }
 
@@ -490,9 +489,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 active_check();
             } else {
                 if (this.props.mode === "open") {
-                    swal(_("Challenge created!"));
+                    swal(_("Challenge created!")).catch(swal.noop);
                 } else if (this.props.mode === "player") {
-                    swal(_("Challenge sent!"));
+                    swal(_("Challenge sent!")).catch(swal.noop);
                 }
             }
 
@@ -519,7 +518,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 swal.close();
                 swal({
                     text: message || _("Game offer was rejected"),
-                });
+                }).catch(swal.noop);
             }
 
             function off() {

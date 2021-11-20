@@ -25,8 +25,7 @@ import { longRankString, rankString } from "rank_utils";
 import { StarRating } from "StarRating";
 import { Player } from "Player";
 import { MiniGoban } from "MiniGoban";
-
-declare let swal;
+import swal from 'sweetalert2';
 
 export function PuzzleCollectionList({match:{params:{player_id}}}: {match: {params: {player_id: number}}}): JSX.Element {
     return (

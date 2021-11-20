@@ -31,8 +31,7 @@ import {rankString, bounded_rank} from "rank_utils";
 import {kb_bind, kb_unbind} from "KBShortcut";
 import {Player} from "Player";
 import * as player_cache from "player_cache";
-
-declare let swal;
+import swal from 'sweetalert2';
 
 interface Events {
     "challenges": Array<any>;

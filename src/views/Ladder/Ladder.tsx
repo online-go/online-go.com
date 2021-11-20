@@ -29,10 +29,7 @@ import tooltip from "tooltip";
 import {PlayerAutocomplete} from "PlayerAutocomplete";
 import {close_all_popovers, popover} from "popover";
 import {browserHistory} from "ogsHistory";
-
-
-
-declare let swal;
+import swal from 'sweetalert2';
 
 interface LadderProperties {
     match: {

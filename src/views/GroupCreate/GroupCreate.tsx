@@ -21,8 +21,6 @@ import {post, get} from "requests";
 import {errorAlerter} from "misc";
 import {browserHistory} from "ogsHistory";
 
-declare let swal;
-
 interface GroupCreateProperties {
 }
 

@@ -42,8 +42,7 @@ import {
     computeWorstMoves,
     AIReviewWorstMoveEntry,
 } from 'goban';
-
-declare let swal;
+import swal from 'sweetalert2';
 
 export interface AIReviewEntry {
     move_number: number;
@@ -240,7 +239,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const user = data.get('user');
 
         if (user.anonymous) {
-            swal(_("Please sign in first"));
+            swal(_("Please sign in first")).catch(swal.noop);
         } else {
 
             if (user.supporter || user.professional || user.is_moderator) {
@@ -250,7 +249,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 })
                 .then((res) => {
                     sanityCheck(res);
-                    swal("Analysis started");
+                    swal("Analysis started").catch(swal.noop);
                 })
                 .catch(errorAlerter);
             } else {

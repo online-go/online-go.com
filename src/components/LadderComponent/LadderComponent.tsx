@@ -27,8 +27,7 @@ import {PaginatedTable} from "PaginatedTable";
 import {UIPush} from "UIPush";
 import * as data from "data";
 import tooltip from "tooltip";
-
-declare let swal;
+import swal from 'sweetalert2';
 
 interface LadderComponentProperties {
     ladderId: number;
