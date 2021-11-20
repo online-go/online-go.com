@@ -266,7 +266,7 @@ export class Play extends React.Component<PlayProperties, any> {
 
     newComputerGame = () => {
         if (bot_count() === 0) {
-            swal(_("Sorry, all bots seem to be offline, please try again later."));
+            swal(_("Sorry, all bots seem to be offline, please try again later.")).catch(swal.noop);
             return;
         }
         challengeComputer();
