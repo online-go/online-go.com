@@ -363,7 +363,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     updatePlayerJosekiRecord = (node_id) => {
         if (!data.get("user").anonymous) {
-            fetch(server_url + "playrecord/", {
+            fetch(server_url + "playrecord", {
                 method: 'put',
                 mode: 'cors',
                 headers: godojo_headers(),
