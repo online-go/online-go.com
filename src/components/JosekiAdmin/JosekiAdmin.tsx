@@ -84,7 +84,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         })
         .then(res => res.json())
         .then(body => {
-            console.log("App info", body)
+            console.log("App info", body);
             this.setState({
                 schema_version: body.schema_version,
                 page_visits: body.page_visits,
@@ -152,8 +152,9 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         }
     };
 
+    // note: django back-end pager starts at page 1, our paged display component starts at page zero
     reloadData = () => {
-        let audits_url = this.props.server_url + `changes?page=${this.state.current_page}&size=${this.state.current_pageSize}`;
+        let audits_url = this.props.server_url + `changes?page=${this.state.current_page + 1}&page_size=${this.state.current_pageSize}`;
 
         if (this.state.filter_position_id !== "") {
             audits_url += `&position_id=${this.state.filter_position_id}`;
@@ -175,14 +176,14 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         .then(body => {
             // initialise selections, so we have the full list of them for select-all operations
             const selections = new Map();
-            for (const a of body.content) {
+            for (const a of body.results) {
                 const key = `select-${a._id}`;
                 selections.set(key, false);
             }
             this.setState({
                 selections,
-                data: body.content,
-                pages: body.totalPages,
+                data: body.results,
+                pages: body.num_pages,
                 all_selected: false,
                 loading: false
             });
