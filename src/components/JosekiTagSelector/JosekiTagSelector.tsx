@@ -22,7 +22,7 @@ import Select, { components } from 'react-select';
 import { _, pgettext, interpolate } from "translate";
 
 interface JosekiTagSelectorProps {
-    godojo_headers: any;
+    oje_headers: any;
     tag_list_url: string;
     selected_tags: number[];
     on_tag_update: any;
@@ -40,7 +40,7 @@ export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProp
     componentDidMount = () => {
         fetch(this.props.tag_list_url, {
             mode: 'cors',
-            headers: this.props.godojo_headers
+            headers: this.props.oje_headers
         })
         .then(res => res.json())
         .then(body => {

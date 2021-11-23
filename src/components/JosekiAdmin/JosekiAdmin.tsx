@@ -30,7 +30,7 @@ import { JosekiStatsModal } from "JosekiStatsModal";
 
 
 interface JosekiAdminProps {
-    godojo_headers: any;
+    oje_headers: any;
     server_url: string;
     user_can_administer: boolean; // allows them to revert changes, give permissions etc
     user_can_edit: boolean;       // allows them to filter
@@ -80,7 +80,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
     componentDidMount = () => {
         fetch(this.props.server_url + "appinfo", {
             mode: 'cors',
-            headers: this.props.godojo_headers
+            headers: this.props.oje_headers
         })
         .then(res => res.json())
         .then(body => {
@@ -124,7 +124,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
             fetch(this.props.server_url + "revert", {
                 method: 'post',
                 mode: 'cors',
-                headers: this.props.godojo_headers,
+                headers: this.props.oje_headers,
                 body: JSON.stringify({ audit_id: target_id})
             }).then (res => res.json())
             .then (body => {
@@ -170,7 +170,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
 
         fetch(audits_url, {
             mode: 'cors',
-            headers: this.props.godojo_headers
+            headers: this.props.oje_headers
         })
         .then(res => res.json())
         .then(body => {
@@ -248,7 +248,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         fetch(lockdown_url, {
             method: 'put',
             mode: 'cors',
-            headers: this.props.godojo_headers
+            headers: this.props.oje_headers
         })
         .then(() => {
             this.props.updateDBLockStatus(!this.props.db_locked_down);
@@ -386,7 +386,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                     <div className="user-admin">
                         <div>{_("Permissions Admin")}</div>
                         <JosekiPermissionsPanel
-                            godojo_headers={this.props.godojo_headers}
+                            oje_headers={this.props.oje_headers}
                             server_url={this.props.server_url}
                         />
                     </div>
