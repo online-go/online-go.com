@@ -65,8 +65,6 @@ interface AIReviewState {
     ai_reviews: Array<JGOFAIReview>;
     selected_ai_review?: JGOFAIReview;
     updatecount: number;
-    top_moves: Array<JGOFAIReviewMove>;
-    worst_move_delta_filter: number;
 }
 
 export class AIReview extends React.Component<AIReviewProperties, AIReviewState> {
@@ -82,8 +80,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             reviewing: false,
             ai_reviews: [],
             updatecount: 0,
-            top_moves: [],
-            worst_move_delta_filter: 0.1,
             use_score: preferences.get('ai-review-use-score'),
         };
         this.state = state;
@@ -982,27 +978,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         </span>
                     }
                 </div>
-
-                {/*
-                <span className='filter'>
-                    <select
-                        value={this.state.worst_move_delta_filter}
-                        onChange={this.setWorstMoveDeltaFilter}
-                        >
-                        <option value={0.1}>10</option>
-                        <option value={0.4}>40</option>
-                        <option value={0.5}>50</option>
-                    </select>
-                </span>
-                */}
-
             </div>
         );
     }
-
-    setWorstMoveDeltaFilter = (ev) => {
-        this.setState({worst_move_delta_filter: parseFloat(ev.target.value)});
-    };
 }
 
 function sanityCheck(ai_review: JGOFAIReview) {
