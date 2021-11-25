@@ -39,7 +39,8 @@ import {
     JGOFIntersection,
     JGOFNumericPlayerColor,
     ColoredCircle,
-    computeWorstMoves
+    computeWorstMoves,
+    MarkInterface
 } from 'goban';
 import swal from 'sweetalert2';
 
@@ -430,8 +431,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             next_score = scores[move_number + 1] || score;
         }
 
-        const marks: any = {};
-        const colored_circles = [];
+        const marks: MarkInterface = {};
+        const colored_circles: ColoredCircle[] = [];
         let heatmap: Array<Array<number>> | null = null;
         try {
             if ((cur_move.trunk || have_variation_results) && ai_review_move) { /* if we are on a trunk move that was AI reviewed */
@@ -633,7 +634,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
      * remaining AI sequence.
      * @returns true if we found some data, false otherwise
      */
-    private fillAIMarksBacktracking(cur_move: MoveTree, trunk_move: MoveTree, marks): boolean {
+    private fillAIMarksBacktracking(cur_move: MoveTree, trunk_move: MoveTree, marks: MarkInterface): boolean {
         for (let j = 0; j <= trunk_move.move_number; j++) { /* for each of the trunk moves starting from the nearest */
             const ai_review_move = this.ai_review.moves[trunk_move.move_number - j];
             if (!ai_review_move) {
