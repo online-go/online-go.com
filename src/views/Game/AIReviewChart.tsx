@@ -16,14 +16,13 @@
  */
 
 import * as d3 from "d3";
-import * as moment from "moment";
 import * as React from "react";
 import * as JSNoise from 'js-noise';
 import * as data from "data";
 import ReactResizeDetector from 'react-resize-detector';
 import { AIReviewEntry } from './AIReview';
 import { PersistentElement } from 'PersistentElement';
-import { deepCompare, errorAlerter, dup, errorLogger } from 'misc';
+import { deepCompare } from 'misc';
 import { JGOFAIReview, } from 'goban';
 
 interface AIReviewChartProperties {

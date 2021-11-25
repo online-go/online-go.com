@@ -23,11 +23,11 @@ import Select, { components } from 'react-select';
 import { UIPush } from "UIPush";
 import { AIReviewStream, ai_request_variation_analysis } from "AIReviewStream";
 import { openBecomeASiteSupporterModal } from "Supporter";
-import { deepCompare, errorAlerter, dup, errorLogger, Timeout } from 'misc';
+import { errorAlerter, errorLogger, Timeout } from 'misc';
 import { get, post } from 'requests';
 import { _, pgettext, interpolate } from "translate";
 import { Game } from './Game';
-import { close_all_popovers, popover } from "popover";
+import { close_all_popovers } from "popover";
 import { Errcode } from 'Errcode';
 import { AIReviewChart } from './AIReviewChart';
 import { Toggle } from 'Toggle';
@@ -39,8 +39,7 @@ import {
     JGOFIntersection,
     JGOFNumericPlayerColor,
     ColoredCircle,
-    computeWorstMoves,
-    AIReviewWorstMoveEntry,
+    computeWorstMoves
 } from 'goban';
 import swal from 'sweetalert2';
 
