@@ -20,8 +20,7 @@ import {post} from "requests";
 import {errcodeAlerter} from 'ErrcodeModal';
 import {browserHistory} from "ogsHistory";
 import * as preferences from "preferences";
-
-declare let swal;
+import swal from 'sweetalert2';
 
 export type Timeout = ReturnType<typeof setTimeout>;
 
@@ -364,7 +363,7 @@ export function errorAlerter(...args) {
         swal({
             title: _(err.substring(0, 128)),
             type: "error"
-        });
+        }).catch(swal.noop);
     }
     console.error(err);
 }
@@ -460,7 +459,7 @@ export function alertModerator(obj) {
         obj.note = description;
         post("moderation/incident", obj)
         .then(() => {
-            swal({text: _("Thanks for the report!")});
+            swal({text: _("Thanks for the report!")}).catch(swal.noop);
         })
         .catch(errorAlerter)
         ;

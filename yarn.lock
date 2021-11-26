@@ -1417,11 +1417,6 @@
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.0.tgz#7036640b4e21cc2f259ae826ce843d277dad8cff"
   integrity sha512-RJJrrySY7A8havqpGObOB4W92QXKJo63/jFLLgpvOtsGUqbQZ9Sbgl35KMm1DjC6j7AvmmU2bIno+3IyEaemaw==
 
-"@types/sweetalert@^1.1.27":
-  version "1.1.28"
-  resolved "https://registry.yarnpkg.com/@types/sweetalert/-/sweetalert-1.1.28.tgz#c4d16036622f01411a60af420b9f19ab3ea12821"
-  integrity sha512-5A90pxXPIb+TwN/WhS5VBb6QQgIN6ArSXJrr7L8HcqgwiYwL0pIueZ302H5VVK43/uit+KICS6HfrJxm61x4dA==
-
 "@types/yargs-parser@*":
   version "15.0.0"
   resolved "https://registry.yarnpkg.com/@types/yargs-parser/-/yargs-parser-15.0.0.tgz#cb3f9f741869e20cce330ffbeb9271590483882d"
@@ -9422,6 +9417,11 @@ svgo@^2.3.0:
     css-tree "^1.1.2"
     csso "^4.2.0"
     stable "^0.1.8"
+
+sweetalert2@^6.11.5:
+  version "6.11.5"
+  resolved "https://registry.yarnpkg.com/sweetalert2/-/sweetalert2-6.11.5.tgz#a1ede34089225eb864898f4b613db4fec5dbe334"
+  integrity sha512-8Otu1SlWGS/u3e31cOg+uqrwyoQbByEScKp7UupmCfwEZE9St3coO1e6CXv83YzZtzdDgowdK1hBPKPW7SRp4Q==
 
 symbol-observable@^1.0.3:
   version "1.2.0"

@@ -22,8 +22,6 @@ import * as player_cache from "player_cache";
 import {User} from './User';
 
 
-declare let swal;
-
 interface UserByNameProperties {
     match: {
         params: any;

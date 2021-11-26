@@ -50,8 +50,7 @@ import {browserHistory} from "ogsHistory";
 import {chat_markup} from "Chat";
 import {Toggle} from 'Toggle';
 import {AchievementList} from 'Achievements';
-
-declare let swal;
+import swal from 'sweetalert2';
 
 interface UserProperties {
     match: {
@@ -364,7 +363,7 @@ export class User extends React.PureComponent<UserProperties, any> {
     saveBot() {
         put("ui/bot/saveBotInfo", { "bot_id": this.state.user.id, "bot_ai": this.state.bot_ai })
         .then(() => {
-            swal("Bot Engine updated");
+            swal("Bot Engine updated").catch(swal.noop);
             this.resolve(this.props);
         })
         .catch(errorAlerter);

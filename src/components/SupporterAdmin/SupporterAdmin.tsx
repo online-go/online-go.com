@@ -32,7 +32,7 @@ interface SupporterAdminProperties {
     playerId?: number;
 }
 
-declare let swal;
+import swal from 'sweetalert2';
 
 
 export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any> {

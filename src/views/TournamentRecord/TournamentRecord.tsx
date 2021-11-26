@@ -33,7 +33,7 @@ import {createDemoBoard} from "ChallengeModal";
 
 window['dup'] = dup;
 
-declare let swal;
+import swal from 'sweetalert2';
 const ranks = allRanks();
 
 
@@ -238,7 +238,7 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
             })
             .catch(errorAlerter);
         })
-        .cach(ignore);
+        .catch(swal.noop);
     }
 
 

@@ -31,8 +31,8 @@ import { SiteSupporterText } from './SiteSupporterText';
 import {Flag} from "Flag";
 import Select from 'react-select';
 import * as preferences from "preferences";
+import swal from 'sweetalert2';
 
-declare let swal;
 declare let ogs_release;
 declare let StripeCheckout;
 declare let MODE;
@@ -443,7 +443,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
             .catch((err) => {
                 this.setState({processing: false});
                 console.error(err);
-                swal("Error canceling subscription, please contact billing@online-go.com");
+                swal("Error canceling subscription, please contact billing@online-go.com").catch(swal.noop);
             });
         })
         .catch(errorAlerter);
@@ -518,7 +518,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
     cancelPaypal = () => {
         swal({
             html: "PayPal requires that you cancel PayPal subscriptions from within their interface. Please sign in to <a href='https://paypal.com/'>paypal.com</a> to cancel the support. Sorry for the inconvenience, and thank you for the support you've given us!"
-        });
+        }).catch(swal.noop);
     };
 
     createPaymentAccountAndMethod(vendor, details) {

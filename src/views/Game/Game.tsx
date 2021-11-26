@@ -55,8 +55,7 @@ import {toast} from "toast";
 import {Clock} from "Clock";
 import {JGOFClock} from "goban";
 import {GameTimings} from "./GameTimings";
-
-declare let swal;
+import swal from 'sweetalert2';
 
 const win = $(window);
 
@@ -2023,9 +2022,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
         )
         .then(() => {
             if (tf) {
-                swal({text: _("Game has been annulled")});
+                swal({text: _("Game has been annulled")}).catch(swal.noop);
             } else {
-                swal({text: _("Game ranking has been restored")});
+                swal({text: _("Game ranking has been restored")}).catch(swal.noop);
             }
             this.setState({annulled: tf});
         })
@@ -2114,7 +2113,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
 
         if (this.goban.engine.cur_move.trunk) {
-            swal({text: _("The current position is not an explored branch, so there is nothing to delete")});
+            swal({ text: _("The current position is not an explored branch, so there is nothing to delete") })
+            .catch(swal.noop);
         } else {
             swal({text: _("Are you sure you wish to remove this move branch?"), showCancelButton: true})
             .then(() => {

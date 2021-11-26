@@ -28,9 +28,7 @@ import {getSectionCompletion, getSectionByName} from './util';
 import {ignore, errorAlerter, getPrintableError} from "misc";
 import {browserHistory} from "ogsHistory";
 import {MiniGoban} from "MiniGoban";
-
-
-declare let swal;
+import swal from 'sweetalert2';
 
 interface LearningHubProperties {
     match: {

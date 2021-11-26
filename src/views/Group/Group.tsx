@@ -37,9 +37,7 @@ import * as moment from "moment";
 import {PlayerAutocomplete} from "PlayerAutocomplete";
 import {EmbeddedChatCard} from "Chat";
 import { localize_time_strings } from 'localize-time';
-
-
-declare let swal;
+import swal from 'sweetalert2';
 
 interface GroupProperties {
     match: {

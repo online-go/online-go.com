@@ -27,8 +27,6 @@ import {_, pgettext, interpolate} from "translate";
 import {Modal, openModal} from "Modal";
 import { NumberFormatValues } from "react-number-format";
 
-declare let swal;
-
 interface Events {
 }
 

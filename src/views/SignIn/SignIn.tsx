@@ -28,7 +28,7 @@ import cached from 'cached';
 import {Md5} from 'ts-md5/dist/md5';
 
 window['Md5'] = Md5;
-declare let swal;
+import swal from 'sweetalert2';
 
 export function get_bid() {
     const bid = data.get("bid") || `${Math.random()}`.split(".")[1];
@@ -152,7 +152,7 @@ export class SignIn extends React.PureComponent<{}, any> {
                 post("/api/v0/reset", {username: username})
                     .then((res) => {
                         if (res.success) {
-                            swal(_("An email with your new password has been emailed to you."));
+                            swal(_("An email with your new password has been emailed to you.")).catch(swal.noop);
                         } else {
                             console.error(res);
                             errorAlerter(res);

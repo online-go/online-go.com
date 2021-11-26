@@ -22,9 +22,7 @@ import {ignore, errorAlerter, navigateTo, unitify } from "misc";
 import { get, del, put, abort_requests_in_flight } from "requests";
 import { SortablePuzzleList } from './SortablePuzzleList';
 import { openACLModal } from 'ACLModal';
-
-
-declare let swal;
+import swal from 'sweetalert2';
 
 export function PuzzleCollection({match:{params:{collection_id}}}: {match: {params: {collection_id: number}}}): JSX.Element {
     const [collection, setCollection] = React.useState(null);
