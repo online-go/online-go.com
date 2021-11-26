@@ -40,7 +40,8 @@ import {
     JGOFNumericPlayerColor,
     ColoredCircle,
     computeWorstMoves,
-    MarkInterface
+    MarkInterface,
+    AIReviewWorstMoveEntry
 } from 'goban';
 import swal from 'sweetalert2';
 
@@ -760,6 +761,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const move_number = trunk_move.move_number;
         const variation_move_number = cur_move.move_number !== trunk_move.move_number ? cur_move.move_number : -1;
 
+        const worst_move_list = this.getWorstMoveList();
+
         return (
             <div className='AIReview'>
                 <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
@@ -903,7 +906,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                         }}>{pgettext("Display the game score that the AI estimates", "Score")}</span>
                                     </div>
                                 }
-                                {this.renderWorstMoveList()}
+                                {this.renderWorstMoveList(worst_move_list)}
                             </React.Fragment>
                         }
 
@@ -948,13 +951,35 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             </div>
         );
     }
-    public renderWorstMoveList(): JSX.Element {
-        if (!this.props.game.goban?.engine?.move_tree || !this.ai_review) {
+
+    public getWorstMoveList(): AIReviewWorstMoveEntry[] {
+        const move_tree = this.props.game.goban.engine.move_tree;
+        let worst_moves: AIReviewWorstMoveEntry[];
+        let threshhold: number;
+
+        if (this.ai_review?.scores) {
+            worst_moves = computeWorstMoves(move_tree, this.ai_review, /*use_score=*/true);
+            threshhold = -5.0;
+        } else {
+            worst_moves = computeWorstMoves(move_tree, this.ai_review);
+            threshhold = -0.2;
+        }
+
+        const filtered_worst_moves = worst_moves.filter(de => de.delta <= -5.0);
+
+        if (filtered_worst_moves.length >= 3) {
+            return filtered_worst_moves;
+        }
+
+        return worst_moves.slice(0, 3);
+    }
+
+    public renderWorstMoveList(lst: AIReviewWorstMoveEntry[]): JSX.Element {
+        if (!this.props.game.goban.engine.move_tree || !this.ai_review) {
             return null;
         }
 
-        const lst = computeWorstMoves(this.props.game.goban.engine.move_tree, this.ai_review);
-        const more_ct = Math.max(0, lst.filter(de => de.delta <= -0.2).length - 3);
+        const more_ct = Math.max(0, lst.length - 3);
 
         return (
             <div className='worst-move-list-container'>
