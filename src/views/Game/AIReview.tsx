@@ -83,6 +83,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             ai_reviews: [],
             updatecount: 0,
             use_score: preferences.get('ai-review-use-score'),
+            // TODO: allow users to view more than 3 of these key moves
+            // See https://forums.online-go.com/t/top-3-moves-score-a-better-metric/32702/15
             worst_moves_shown: 3,
         };
         this.state = state;
