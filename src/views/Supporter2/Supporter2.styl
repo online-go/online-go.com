@@ -1,0 +1,64 @@
+.Supporter2 {
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    h3 {
+        width: 100vw;
+        max-width: 40rem;
+    }
+
+
+    .Payment {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        .fa-check, .fa-lock {
+            color: green;
+        }
+        .fa-times {
+            color: red;
+        }
+
+        .date {
+            display: inline-block;
+            width: 12rem;
+            text-align: right;
+        }
+        
+        .amount {
+            display: inline-block;
+            width: 6rem;
+            text-align: right;
+            margin-right: 3rem;
+        }
+
+        span {
+            display: inline-block;
+            height: 1.5rem;
+            margin: 0.5rem;
+        }
+
+        .last4, .expiration {
+            themed background-color shade5
+            border-radius: 0.3rem;
+            padding-right: 0.3rem;
+            padding-left: 0.3rem;
+        }
+    }
+
+
+    .stripe, .paddle, .paypal {
+        border-radius: 0.3rem;
+        background-repeat: no-repeat;
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+        display: inline-block;
+        height: 1rem;
+        width: 2rem;
+    }
+
+}
