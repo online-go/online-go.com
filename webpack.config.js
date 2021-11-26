@@ -160,7 +160,6 @@ module.exports = (env, argv) => {
         // dependencies, which allows browsers to cache those libraries between builds.
         externals: {
             "goban": "goban",
-            "sweetalert2": "swal",
         },
 
         devServer: {
