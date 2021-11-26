@@ -187,10 +187,16 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         if (!ai_review.win_rates) {
             ai_review.win_rates = [];
         }
+        if (!ai_review.scores) {
+            ai_review.scores = [];
+        }
 
         for (const k in ai_review.moves) {
             const move = ai_review.moves[k];
             ai_review.win_rates[move.move_number] = move.win_rate;
+            if (move.score !== undefined) {
+                ai_review.scores[move.move_number] = move.score;
+            }
         }
 
         /* For old reviews, we might not have all win rates, so fill in the missing entries */
