@@ -120,9 +120,9 @@ export const time_options = {
     },
     "live": {
         "fischer": {
-            "initial_time": gen(30, 3600),
+            "initial_time": gen(30, 3600 * 4),
             "time_increment": gen(10, 1800),
-            "max_time": gen(30, 3600),
+            "max_time": gen(30, 3600 * 4).concat(gen(86400 * 28, 86400 * 28)),
         },
         "simple": {
             "per_move": gen(10, 3600),
