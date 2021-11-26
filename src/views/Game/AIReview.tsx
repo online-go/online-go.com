@@ -66,6 +66,7 @@ interface AIReviewState {
     ai_reviews: Array<JGOFAIReview>;
     selected_ai_review?: JGOFAIReview;
     updatecount: number;
+    worst_moves_shown: number;
 }
 
 export class AIReview extends React.Component<AIReviewProperties, AIReviewState> {
@@ -82,6 +83,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             ai_reviews: [],
             updatecount: 0,
             use_score: preferences.get('ai-review-use-score'),
+            worst_moves_shown: 3,
         };
         this.state = state;
         window['aireview'] = this;
@@ -891,6 +893,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                     variation_move_number={variation_move_number}
                                     setmove={this.props.game.nav_goto_move}
                                     use_score={this.state.use_score}
+                                    highlighted_moves={
+                                        worst_move_list
+                                            .slice(0, this.state.worst_moves_shown)
+                                            .map(m => m.move_number - 1)
+                                    }
                                 />
                                 {this.ai_review.scores &&
                                     <div className='win-score-toggler'>
