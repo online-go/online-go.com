@@ -39,8 +39,7 @@ import * as preferences from "preferences";
 import {close_friend_list} from 'FriendList/FriendIndicator';
 import cached from 'cached';
 import {openPlayerNotesModal} from 'PlayerNotesModal';
-
-declare let swal;
+import swal from 'sweetalert2';
 
 interface PlayerDetailsProperties {
     playerId: number;

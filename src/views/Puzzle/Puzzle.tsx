@@ -43,8 +43,7 @@ import {TransformSettings, PuzzleTransform} from './PuzzleTransform';
 import {PuzzleNavigation} from './PuzzleNavigation';
 import {PuzzleEditor} from './PuzzleEditing';
 import {MoveTree} from 'goban';
-
-declare let swal;
+import swal from 'sweetalert2';
 
 interface PuzzleProperties {
     match: {

@@ -27,8 +27,7 @@ import {handicapText} from "GameAcceptModal";
 import {errorAlerter, ignore, rulesText} from "misc";
 import {rankString} from 'rank_utils';
 import {browserHistory} from "ogsHistory";
-
-declare let swal;
+import swal from 'sweetalert2';
 
 interface Events {
 }

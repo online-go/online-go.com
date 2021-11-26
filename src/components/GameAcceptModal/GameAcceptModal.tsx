@@ -22,8 +22,7 @@ import {openModal, Modal} from "Modal";
 import {timeControlDescription, usedForCheating} from "TimeControl";
 import {Player} from "Player";
 import {errorAlerter} from "misc";
-
-declare let swal;
+import swal from 'sweetalert2';
 
 interface Events {
 }
@@ -49,7 +48,7 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
             showCancelButton: false,
             showConfirmButton: false,
             allowEscapeKey: false,
-        });
+        }).catch(swal.noop);
 
         post("challenges/%%/accept", this.props.challenge.challenge_id, {})
         .then(() => {

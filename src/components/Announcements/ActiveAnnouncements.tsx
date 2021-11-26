@@ -26,7 +26,7 @@ import { getBlocks, setAnnouncementBlock } from "../BlockPlayer";
 import * as data from 'data';
 import * as preferences from "preferences";
 
-declare let swal;
+import swal from 'sweetalert2';
 
 interface ActiveAnnouncementsProperties {
 
@@ -92,18 +92,6 @@ export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncements
                     const announcement_actions: PopupMenuItem[] = [
                         {title: _('Hide this announcement'), onClick: () => {
                             this.clearAnnouncement(announcement.id);
-                            /*
-                            swal({
-                                "text": _("Are you sure you want to hide this announement? This action cannot be undone."),
-                                "showCancelButton": true,
-                                "confirmButtonText": _("Hide"),
-                                "cancelButtonText": _("Cancel"),
-                            })
-                            .then(() => {
-                                this.clearAnnouncement(announcement.id);
-                            })
-                            .catch(() => 0);
-                            */
                             return;
                         }}];
 

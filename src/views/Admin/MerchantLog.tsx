@@ -27,8 +27,6 @@ import {SearchInput} from "misc-ui";
 import {Player} from "Player";
 import * as moment from "moment";
 
-declare let swal;
-
 
 export class MerchantLog extends React.PureComponent<{}, any> {
 

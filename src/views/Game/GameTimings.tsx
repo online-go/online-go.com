@@ -22,8 +22,6 @@ import 'moment-duration-format';
 import * as React from "react";
 import { _, pgettext, interpolate } from "translate";
 
-declare let swal;
-
 interface GameTimingProperties {
     moves: any;
     start_time: number;

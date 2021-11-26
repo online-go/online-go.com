@@ -30,7 +30,7 @@ interface ModerateUserProperties {
     playerId?: number;
 }
 
-declare let swal;
+import swal from 'sweetalert2';
 
 const pro_ranks = proRankList(false);
 

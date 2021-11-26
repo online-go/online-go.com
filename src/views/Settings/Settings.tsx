@@ -48,9 +48,8 @@ import { object } from "prop-types";
 import { Player } from "Player";
 import { PaginatedTable } from "PaginatedTable";
 import { SocialLoginButtons } from "SignIn";
+import swal from 'sweetalert2';
 
-
-declare let swal;
 export const MAX_DOCK_DELAY = 3.0;
 
 ITC.register('logout', (device_uuid) => {
@@ -476,7 +475,7 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
             .then((obj) => {
                 props.refresh();
                 refreshAccountSettings();
-                swal(_("Password updated successfully!"));
+                swal(_("Password updated successfully!")).catch(swal.noop);
             })
             .catch(errorAlerter);
         } else {
@@ -489,7 +488,7 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
                     "new_password": password1,
                 })
                 .then((obj) => {
-                    swal(_("Password updated successfully!"));
+                    swal(_("Password updated successfully!")).catch(swal.noop);
                 })
                 .catch(errorAlerter);
             }).catch(errorAlerter);
@@ -499,7 +498,7 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
     function resendValidationEmail() {
         post("me/validateEmail", {})
         .then(() => {
-            swal("Validation email sent! Please check your email and click the validation link.");
+            swal("Validation email sent! Please check your email and click the validation link.").catch(swal.noop);
         })
         .catch(errorAlerter);
     }

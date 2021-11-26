@@ -28,10 +28,7 @@ import * as moment from "moment";
 import {emitNotification} from "Notifications";
 import {browserHistory} from "ogsHistory";
 import {openReportedConversationModal} from "ReportedConversationModal";
-
-
-
-declare let swal;
+import swal from 'sweetalert2';
 
 interface IncidentReportTrackerProperties {
 }
@@ -95,7 +92,7 @@ export class IncidentReportTracker extends React.PureComponent<IncidentReportTra
                 post("moderation/incident/%%", report.id, {"id": report.id, "action": "claim"})
                 .then((res) => {
                     if (res.vanished) {
-                        swal("Report was removed");
+                        swal("Report was removed").catch(swal.noop);
                     }
                 })
                 .catch(errorAlerter);

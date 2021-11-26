@@ -27,8 +27,6 @@ import * as preferences from "preferences";
 import * as data from "data";
 import {bot_count} from "bots";
 
-declare let swal;
-
 interface Events {
 }
 
