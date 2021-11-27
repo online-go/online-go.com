@@ -39,8 +39,7 @@ import {
     JGOFIntersection,
     JGOFNumericPlayerColor,
     ColoredCircle,
-    computeWorstMoves,
-    MarkInterface,
+    getWorstMoves,
     AIReviewWorstMoveEntry
 } from 'goban';
 import swal from 'sweetalert2';
@@ -771,7 +770,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const move_number = trunk_move.move_number;
         const variation_move_number = cur_move.move_number !== trunk_move.move_number ? cur_move.move_number : -1;
 
-        const worst_move_list = this.getWorstMoveList();
+        const worst_move_list = getWorstMoves(this.props.game.goban.engine.move_tree, this.ai_review);
 
         return (
             <div className='AIReview'>
@@ -965,28 +964,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 }
             </div>
         );
-    }
-
-    public getWorstMoveList(): AIReviewWorstMoveEntry[] {
-        const move_tree = this.props.game.goban.engine.move_tree;
-        let worst_moves: AIReviewWorstMoveEntry[];
-        let threshhold: number;
-
-        if (this.ai_review?.scores) {
-            worst_moves = computeWorstMoves(move_tree, this.ai_review, /*use_score=*/true);
-            threshhold = -5.0;
-        } else {
-            worst_moves = computeWorstMoves(move_tree, this.ai_review);
-            threshhold = -0.2;
-        }
-
-        const filtered_worst_moves = worst_moves.filter(de => de.delta <= -5.0);
-
-        if (filtered_worst_moves.length >= 3) {
-            return filtered_worst_moves;
-        }
-
-        return worst_moves.slice(0, 3);
     }
 
     public renderWorstMoveList(lst: AIReviewWorstMoveEntry[]): JSX.Element {
