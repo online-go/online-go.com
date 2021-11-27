@@ -1030,6 +1030,16 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.setState({db_locked_down: new_status});
     };
 
+    toggleBackend = () => {
+        if (data.get('joseki-url') === '/godojo/') {
+            data.set('joseki-url', '/oje/');
+        } else {
+            data.set('joseki-url', '/godojo/');
+        }
+
+        window.location.assign('/joseki/')
+    }
+
     render() {
         // console.log("Joseki app rendering ", this.state.move_string, this.state.current_move_category);
 
@@ -1051,6 +1061,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     <span>{tag['description']}</span>
                 </div>
             ));
+
+        const backend = (data.get('joseki-url') === '/oje/')  ? 'new' : 'old';
 
         return (
             <div className={"Joseki"}>
@@ -1085,6 +1097,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
                             <a href="https://github.com/online-go/online-go.com/wiki/OGS-Joseki-Explorer" className="joseki-help">
                                 <i className="fa fa-question-circle-o"></i>
                             </a>
+                            <div className="backend-control">
+                                <i className="fa fa-exchange" onClick={this.toggleBackend}></i>
+                                <span>{backend}</span>
+                            </div>
                         </div>
                     </div>
 
