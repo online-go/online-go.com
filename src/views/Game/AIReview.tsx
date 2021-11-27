@@ -438,7 +438,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             next_score = scores[move_number + 1] || score;
         }
 
-        const marks: MarkInterface = {};
+        const marks: {[mark: string]: string} = {};
         const colored_circles: ColoredCircle[] = [];
         let heatmap: Array<Array<number>> | null = null;
         try {
@@ -641,7 +641,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
      * remaining AI sequence.
      * @returns true if we found some data, false otherwise
      */
-    private fillAIMarksBacktracking(cur_move: MoveTree, trunk_move: MoveTree, marks: MarkInterface): boolean {
+    private fillAIMarksBacktracking(cur_move: MoveTree, trunk_move: MoveTree, marks: {[mark: string]: string}): boolean {
         for (let j = 0; j <= trunk_move.move_number; j++) { /* for each of the trunk moves starting from the nearest */
             const ai_review_move = this.ai_review.moves[trunk_move.move_number - j];
             if (!ai_review_move) {
