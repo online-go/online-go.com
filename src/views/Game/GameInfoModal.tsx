@@ -24,7 +24,7 @@ import {openModal, Modal, ModalConstructorInput} from "Modal";
 import {timeControlDescription} from "TimeControl";
 import {Player} from "Player";
 import {handicapText} from "GameAcceptModal";
-import {errorAlerter, ignore, rulesText} from "misc";
+import {errorAlerter, ignore, rulesText, yesno} from "misc";
 import {rankString} from 'rank_utils';
 import {browserHistory} from "ogsHistory";
 import swal from 'sweetalert2';
@@ -263,8 +263,4 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
 
 export function openGameInfoModal(config: any, black: any, white: any, annulled: boolean, creator_id: number): void {
     openModal(<GameInfoModal config={config} black={black} white={white} annulled={annulled} creatorId={creator_id} fastDismiss />);
-}
-
-function yesno(tf: boolean) {
-    return tf ? _("Yes") : _("No");
 }
