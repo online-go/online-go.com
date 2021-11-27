@@ -18,8 +18,8 @@
 import * as React from "react";
 import * as moment from "moment";
 import * as data from "data";
-import {_, pgettext, interpolate} from "translate";
-import {post, get, patch, del} from "requests";
+import {_} from "translate";
+import {post, patch, del} from "requests";
 import {openModal, Modal, ModalConstructorInput} from "Modal";
 import {timeControlDescription} from "TimeControl";
 import {Player} from "Player";
