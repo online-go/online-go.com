@@ -1224,6 +1224,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
         } else if (this.state.mode === PageMode.Explore ||
             (this.state.mode === PageMode.Edit && this.state.move_string === "" )// you can't edit the empty board
         ) {
+            // hacklily lock down comments on the old server, because (1) it is old and (2) the comment PUT route changed.
+            const allow_comments = server_url.includes('oje') ? this.state.user_can_comment : false;
             return (
                 <ExplorePane
                     description={this.state.position_description}
