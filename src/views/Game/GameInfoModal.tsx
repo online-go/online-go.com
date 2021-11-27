@@ -28,14 +28,15 @@ import {errorAlerter, ignore, rulesText} from "misc";
 import {rankString} from 'rank_utils';
 import {browserHistory} from "ogsHistory";
 import swal from 'sweetalert2';
+import { GoEnginePlayerEntry } from "goban";
 
 interface Events {
 }
 
 interface GameInfoModalProperties {
     config: any;
-    black: any;
-    white: any;
+    black: GoEnginePlayerEntry;
+    white: GoEnginePlayerEntry;
     annulled: boolean;
     creatorId: number;
 }
