@@ -40,14 +40,12 @@ interface GameInfoModalProperties {
     annulled: boolean;
     creatorId: number;
 }
-
-
 export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
     constructor(props: ModalConstructorInput<GameInfoModalProperties>) {
         super(props);
     }
 
-    save = (ev) => {
+    save = () => {
         const config = this.props.config;
         const review_id = config.review_id;
         const game_id = config.game_id;
@@ -89,7 +87,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         }
     };
 
-    deleteReview = (ev) => {
+    deleteReview = () => {
         const review_id = this.props.config.review_id;
 
         if (review_id) {
@@ -111,15 +109,15 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         }
     };
 
-    updateName = (ev) => {
+    updateName = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.props.config.game_name = ev.target.value;
         this.forceUpdate();
     };
-    updateBlackName = (ev) => {
+    updateBlackName = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.props.config.players.black.name = ev.target.value;
         this.forceUpdate();
     };
-    updateBlackRank = (ev) => {
+    updateBlackRank = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         console.log(ev.target.value);
         const rank = parseInt(ev.target.value);
         const pro = ev.target.value.indexOf(".1") > 0;
@@ -130,11 +128,11 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         this.props.black.pro = pro;
         this.forceUpdate();
     };
-    updateWhiteName = (ev) => {
+    updateWhiteName = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.props.config.players.white.name = ev.target.value;
         this.forceUpdate();
     };
-    updateWhiteRank = (ev) => {
+    updateWhiteRank = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         console.log(ev.target.value);
         const rank = parseInt(ev.target.value);
         const pro = ev.target.value.indexOf(".1") > 0;
@@ -144,7 +142,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         this.props.white.pro = pro;
         this.forceUpdate();
     };
-    updateOutcome = (ev) => {
+    updateOutcome = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.props.config.outcome = ev.target.value;
         this.forceUpdate();
     };
