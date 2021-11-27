@@ -426,7 +426,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             })
             .then(response => response.json()) // wait for the body of the response
             .then(body => {
-                console.log("Server response:", body);
+                // console.log("Server response:", body);
                 const target_node = body; // the one we're after comes in the first slot of the array
 
 
@@ -437,7 +437,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     // caching this one is important, because node_id could be "root", which needs to be cached this way
                     this.cached_positions = { [node_id]: target_node, ...this.cached_positions };
                 } else {
-                    console.log("Ignoring server response ", target_node, " looking for ", this.waiting_for);
+                    // console.log("Ignoring server response ", target_node, " looking for ", this.waiting_for);
                 }
 
             }).catch((r) => {
@@ -677,7 +677,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 'pass' :
             "root";
 
-        //console.log("Processing placement at:", placement, move_string);
+        console.log("Processing placement at:", placement, move_string);
 
         if (this.backstepping) {
             const play = ".root." + move_string.replace(/,/g, '.');
@@ -771,6 +771,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 }
                 this.next_moves = [];
                 this.setState({
+                    current_node_id: null,
                     position_description: "", // Blank default description
                     current_move_category: "new",
                     child_count: 0,
@@ -1789,6 +1790,7 @@ class EditPane extends React.Component<EditProps, any> {
 
     static getDerivedStateFromProps = (nextProps, prevState) => {
         // Detect node changes (resulting from clicking on the board), so we can update
+        // console.log("gdsfp:", nextProps.node_id, prevState.node_id);
         if (nextProps.node_id !== prevState.node_id) {
             // console.log("Updating from props...");
             // console.log("gdsfp: ", nextProps, prevState);
@@ -1896,7 +1898,7 @@ class EditPane extends React.Component<EditProps, any> {
     };
 
     render = () => {
-        //console.log("rendering EditPane with ", this.state.move_type, this.state.new_description, this.state.variation_label);
+        console.log("rendering EditPane with ", this.state.move_type, this.state.new_description, this.state.variation_label);
 
         // create the set of select option elements from the valid MoveCategory items, with the current one at the top
         const selections = Object.keys(MoveCategory).map((selection, i) => (
