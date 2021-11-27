@@ -20,7 +20,7 @@ import * as moment from "moment";
 import * as data from "data";
 import {_, pgettext, interpolate} from "translate";
 import {post, get, patch, del} from "requests";
-import {openModal, Modal} from "Modal";
+import {openModal, Modal, ModalConstructorInput} from "Modal";
 import {timeControlDescription} from "TimeControl";
 import {Player} from "Player";
 import {handicapText} from "GameAcceptModal";
@@ -43,11 +43,9 @@ interface GameInfoModalProperties {
 
 
 export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
-    constructor(props) {
+    constructor(props: ModalConstructorInput<GameInfoModalProperties>) {
         super(props);
     }
-
-
 
     save = (ev) => {
         const config = this.props.config;

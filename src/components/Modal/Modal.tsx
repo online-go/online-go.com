@@ -20,8 +20,11 @@ import {TypedEventEmitterPureComponent} from "TypedEventEmitterPureComponent";
 import {dup} from "misc";
 
 let current_modal = null;
+
+type ModalProps<P> = P & { fastDismiss?: boolean };
+export type ModalConstructorInput<P> = ModalProps<P> | Readonly<ModalProps<P>>;
 export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<Events & {"close": never; "open": never}, P&{fastDismiss?: boolean}, S> {
-    constructor(props) {
+    constructor(props: ModalConstructorInput<P>) {
         super(props);
         current_modal = this;
     }
