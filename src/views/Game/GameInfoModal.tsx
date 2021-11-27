@@ -28,13 +28,13 @@ import {errorAlerter, ignore, rulesText, yesno} from "misc";
 import {rankString} from 'rank_utils';
 import {browserHistory} from "ogsHistory";
 import swal from 'sweetalert2';
-import { GoEnginePlayerEntry } from "goban";
+import { GobanConfig, GoEnginePlayerEntry } from "goban";
 
 interface Events {
 }
 
 interface GameInfoModalProperties {
-    config: any;
+    config: GobanConfig;
     black: GoEnginePlayerEntry;
     white: GoEnginePlayerEntry;
     annulled: boolean;
@@ -151,15 +151,8 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         const config = this.props.config;
         const user = data.get('user');
         const review_id = config.review_id;
-        const game_id = config.game_id;
         const editable = ((review_id && this.props.creatorId === user.id) || user.is_moderator) || null;
 
-        if (config && config.pause_on_weekends) {
-            /* There was a bug in our tournament creation code that didn't
-             * stick this value in the time_control object, so this helps with
-             * display on those games. */
-            config.time_control.pause_on_weekends = config.pause_on_weekends;
-        }
         const time_control_description = timeControlDescription(config.time_control);
 
         const ranks = [];
@@ -238,7 +231,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                             ? <input value={config.outcome} onChange={this.updateOutcome} />
                             : <span>{config.outcome}</span>
                         }</dd>
-                        <dt>{_("Komi")}</dt><dd>{parseFloat(config.komi).toFixed(1)}</dd>
+                        <dt>{_("Komi")}</dt><dd>{config.komi.toFixed(1)}</dd>
                         <dt>{_("Analysis")}</dt><dd>{(config.original_disable_analysis ? _("Analysis and conditional moves disabled") : _("Analysis and conditional moves enabled"))}</dd>
                         <dt>{_("Time Control")}</dt><dd>{time_control_description}</dd>
                     </dl>
@@ -261,6 +254,6 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
 }
 
 
-export function openGameInfoModal(config: any, black: any, white: any, annulled: boolean, creator_id: number): void {
+export function openGameInfoModal(config: GobanConfig, black: GoEnginePlayerEntry, white: GoEnginePlayerEntry, annulled: boolean, creator_id: number): void {
     openModal(<GameInfoModal config={config} black={black} white={white} annulled={annulled} creatorId={creator_id} fastDismiss />);
 }
