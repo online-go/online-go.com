@@ -139,10 +139,10 @@ import * as player_cache from "player_cache";
 import {toast} from 'toast';
 import cached from 'cached';
 import * as moment from 'moment';
+import swal from 'sweetalert2';
 
 import "debug";
 
-declare const swal;
 
 
 /*** Initialize moment in our current language ***/

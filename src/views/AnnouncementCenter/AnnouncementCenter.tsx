@@ -28,8 +28,6 @@ import {Player} from "Player";
 import Datetime from "react-datetime";
 import * as moment from "moment";
 
-declare let swal;
-
 interface AnnouncementCenterProperties {
 }
 

@@ -22,8 +22,6 @@ import {_, pgettext, interpolate} from "translate";
 import * as data from "data";
 import { parse } from 'query-string';
 
-declare let swal;
-
 interface VerifyEmailProps {
     params: any;
     location: any;

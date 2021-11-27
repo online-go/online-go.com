@@ -21,8 +21,6 @@ import * as ValidUrl from "valid-url";
 import { _ } from 'translate';
 import { Modal, openModal } from "Modal";
 
-declare let swal;
-
 interface Events {
 }
 

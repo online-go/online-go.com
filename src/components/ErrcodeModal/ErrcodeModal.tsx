@@ -22,8 +22,6 @@ import {Errcode} from 'Errcode';
 import { MessageId } from 'messages';
 
 
-declare let swal;
-
 interface Events {
 }
 

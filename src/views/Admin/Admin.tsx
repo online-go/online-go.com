@@ -22,8 +22,8 @@ import {post, get} from "requests";
 import {termination_socket} from "sockets";
 import {ignore, errorAlerter, getPrintableError} from "misc";
 import {SupporterGoals} from 'SupporterGoals';
+import swal from 'sweetalert2';
 
-declare let swal;
 declare let ogs_release;
 declare let ogs_version;
 declare let ogs_language_version;

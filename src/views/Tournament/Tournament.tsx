@@ -45,9 +45,7 @@ import {computeAverageMoveTime} from 'goban';
 import {openMergeReportModal} from 'MergeReportModal';
 import * as d3 from "d3";
 import * as Dropzone from "react-dropzone";
-
-
-declare let swal;
+import swal from 'sweetalert2';
 
 let logspam_debounce: any;
 
@@ -755,7 +753,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 }
             }
             if (not_laid_out) {
-                swal("Warning: " + not_laid_out + " matches not laid out");
+                swal("Warning: " + not_laid_out + " matches not laid out").catch(swal.noop);
             }
 
 
@@ -976,25 +974,25 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
 
         if (tournament.name.length < 5) {
             this.refs.tournament_name.focus();
-            swal(_("Please provide a name for the tournament"));
+            swal(_("Please provide a name for the tournament")).catch(swal.noop);
             return;
         }
 
         if (tournament.description.length < 5) {
             this.refs.description.focus();
-            swal(_("Please provide a description for the tournament"));
+            swal(_("Please provide a description for the tournament")).catch(swal.noop);
             return;
         }
 
         const max_players = parseInt(tournament.settings.maximum_players);
         if (max_players > 10 && tournament.tournament_type === "roundrobin") {
             this.refs.max_players.focus();
-            swal(_("Round Robin tournaments are limited to a maximum of 10 players"));
+            swal(_("Round Robin tournaments are limited to a maximum of 10 players")).catch(swal.noop);
             return;
         }
         if (max_players < 2) {
             this.refs.max_players.focus();
-            swal(_("You need at least two players in a tournament"));
+            swal(_("You need at least two players in a tournament")).catch(swal.noop);
             return;
         }
 

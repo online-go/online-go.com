@@ -170,7 +170,6 @@ let profanity_dictionary = decode(
 
 
 for (let lang in profanity_dictionary) {
-console.log("(" + profanity_dictionary[lang].map(s => "\\b" + s + "\\b").join("|") + ")");
     profanity_regex[lang] = new RegExp(
         "(" + profanity_dictionary[lang].map(s => "\\b" + s + "\\b").join("|") + ")"
         , "gui"

@@ -30,9 +30,6 @@ import { browserHistory } from "ogsHistory";
 import { termination_socket } from "sockets";
 import { GoMath } from "goban";
 
-
-declare let swal;
-
 interface Events {
 }
 

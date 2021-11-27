@@ -24,8 +24,6 @@ import * as data from "data";
 import { _ } from 'translate';
 import { Modal, openModal } from "Modal";
 
-declare let swal;
-
 interface Events {
 }
 

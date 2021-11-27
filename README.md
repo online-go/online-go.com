@@ -23,6 +23,7 @@ Online-go provides several resources that allows you to interact with the projec
 * https://online-go.com/developer to access documentation.
 * https://github.com/online-go/online-go.com/wiki to get started and how to use the website.
 * https://ogs.docs.apiary.io/# for API documentation.
+* https://ogs.readme.io/docs/real-time-api for real time API documentation
 * https://online-go.com/oauth2/applications/ OAuth2 Application Manager (you must be signed into an account on OGS.)
 
 # Social Media

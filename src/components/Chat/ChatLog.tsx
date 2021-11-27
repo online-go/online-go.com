@@ -46,10 +46,7 @@ import { ObserveGamesComponent } from "ObserveGamesComponent";
 import { profanity_filter } from "profanity_filter";
 import { popover } from "popover";
 import { ChatDetails } from "Chat";
-
-
-
-declare let swal;
+import swal from 'sweetalert2';
 
 interface ChatLogState {
     chat_log: Array<ChatMessage>;
@@ -499,7 +496,7 @@ function ChatInput({channel, autoFocus}: InternalChatLogProperties): JSX.Element
         if (event.charCode === 13) {
             const input = event.target as HTMLInputElement;
             if (!comm_socket.connected) {
-                swal(_("Connection to server lost"));
+                void swal(_("Connection to server lost"));
                 return false;
             }
 
