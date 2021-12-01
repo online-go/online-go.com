@@ -43,6 +43,7 @@ import {
     AIReviewWorstMoveEntry,
 } from 'goban';
 import swal from 'sweetalert2';
+import { element } from "prop-types";
 
 export interface AIReviewEntry {
     move_number: number;
@@ -684,6 +685,57 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         return false;
     }
 
+    private AiSummaryMovesList(){
+        let summary_moves_list = [ ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""] ];
+        if (!this.ai_review || this.state.loading){
+            return summary_moves_list;
+        }
+        /*if (true){
+            return summary_moves_list;
+        }*/
+
+        let movecounters = Array(10).fill(0);
+        let othercounters = Array(2).fill(0);
+        let wtotal = 0;
+        let btotal = 0;
+
+        for (let j = 0; j < Object.keys( this.ai_review?.moves ).length - 1; j++ ){
+            let playermove = this.ai_review?.moves[j + 1].move;
+            let bluemove = this.ai_review?.moves[j].branches[0].moves[0];
+            let offset = (j % 2 === 0) ? 0 : 5;
+            let scorediff = this.ai_review?.moves[j + 1].score - this.ai_review?.moves[j].score;
+            scorediff = (j % 2 === 0) ? scorediff : (-1) * scorediff;
+            console.log(playermove);
+            console.log(bluemove);
+            console.log(scorediff);
+
+            if (bluemove == undefined ){
+                othercounters[offset % 2] += 1;
+            } else {
+                if(isEqualMoveIntersection(bluemove,playermove)){
+                    movecounters[offset] += 1;
+                }else{
+                    movecounters[offset + 1] += 1;
+                }
+            }
+        }
+
+        for (let j = 0; j < 5; j++ ){
+            btotal += movecounters[j];
+            wtotal += movecounters[5 + j];
+        }
+
+        for (let j = 0; j < 5; j++ ){
+            summary_moves_list[j][0] = movecounters[j].toString();
+            summary_moves_list[j][1] = (btotal > 0) ? (Math.round(1000 * movecounters[j] / btotal) / 10).toString() : "";
+            summary_moves_list[j][2] = movecounters[5 + j].toString();
+            summary_moves_list[j][4] = (wtotal > 0) ? (Math.round(1000 * movecounters[5 + j] / wtotal) / 10).toString() : "";
+        }
+
+
+        return summary_moves_list;
+    }
+
     public render(): JSX.Element {
         if (this.state.loading) {
             return null;
@@ -763,6 +815,16 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const trunk_move = cur_move.getBranchPoint();
         const move_number = trunk_move.move_number;
         const variation_move_number = cur_move.move_number !== trunk_move.move_number ? cur_move.move_number : -1;
+        const ai_table_headings = ["Type", "Black", "%", "White", "%"];
+        let ai_table_rows = [["Excellent"], ["Great"], ["Inaccuracy"], ["Mistake"], ["Blunder"]];
+        let ai_summary_list = this.AiSummaryMovesList();
+        
+        for (let j = 0; j < ai_table_rows.length; j++){
+            ai_table_rows[j] = ai_table_rows[j].concat(ai_summary_list[j]);
+        }
+        console.log(ai_summary_list);
+        console.log(ai_table_rows);
+        //this.ai_review?.scores?
 
         return (
             <div className='AIReview'>
@@ -949,6 +1011,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         </span>
                     </div>
                 }
+                <div>
+                    <AiSummaryTable headinglist = {ai_table_headings} bodylist = {ai_table_rows}/>
+                </div>
             </div>
         );
     }
@@ -1063,4 +1128,48 @@ function extractShortNetworkVersion(network: string): string {
         network = network.match(/[^-]*[-]([^-]*)/)[1];
     }
     return network.substr(0, 6);
+}
+
+class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummaryTableState>{
+
+    render(): JSX.Element {
+
+        return(
+            <div>
+                <table>
+                    <thead>
+                        <tr>
+                        {this.props.headinglist.map( (head,index) => {
+                                return <th key={index}>{head}</th>;
+                        })}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {this.props.bodylist.map(
+                            (body, bindex) => {
+                                return <tr key = { bindex }>{
+                                body.map(
+                                    (element, eindex) => { 
+                                        return <td key = { eindex } >{element}</td>;
+                                    })
+                                    }</tr>;
+                                }
+                            )
+                        }
+                    </tbody>
+                </table>
+            </div>
+        );
+
+    }
+
+}
+
+interface AiSummaryTableState {
+
+}
+
+interface AiSummaryTableProperties {
+    headinglist: string[];
+    bodylist: string[][];
 }
