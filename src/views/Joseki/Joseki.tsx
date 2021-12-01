@@ -1038,8 +1038,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
             data.set('joseki-url', '/godojo/');
         }
 
-        window.location.assign('/joseki/')
-    }
+        window.location.assign('/joseki/');
+    };
 
     render() {
         // console.log("Joseki app rendering ", this.state.move_string, this.state.current_move_category);

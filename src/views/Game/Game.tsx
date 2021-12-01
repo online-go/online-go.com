@@ -441,9 +441,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             /* } */
         }
 
-
         this.bindAudioEvents();
-
 
         this.goban.on("clock", (clock: JGOFClock) => {
             /* This is the code that draws the count down number on the "hover
@@ -569,6 +567,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         });
 
         this.goban.on("gamedata", (gamedata) => {
+            console.log("On game data:", gamedata);
             try {
                 if (isLiveGame(gamedata.time_control)) {
                     this.goban.one_click_submit = preferences.get("one-click-submit-live");
@@ -678,6 +677,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         if (this.game_id) {
             get("games/%%", this.game_id)
             .then((game) => {
+                console.log("got game:", game);
                 if (game.players.white.id) {
                     player_cache.update(game.players.white, true);
                     this.white_username = game.players.white.username;
@@ -1728,6 +1728,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             new_state.paused = goban.pause_control && !!goban.pause_control.paused;
             new_state.analyze_tool = goban.analyze_tool;
             new_state.analyze_subtool = goban.analyze_subtool;
+
 
             if (goban.engine.gameCanBeCanceled()) {
                 new_state.resign_text = _("Cancel game");

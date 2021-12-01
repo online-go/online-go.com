@@ -174,6 +174,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             },
             //time_control: recallTimeControlSettings(speed),
             challenge: challenge,
+            rengo: false,
+
             demo: data.get("demo.settings", {
                 name: "",
                 rules: "japanese",
@@ -362,9 +364,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         }
         return true;
     }
+
     createChallenge = () => {
         const next = this.next();
 
+        console.log("next ", next);
         if (!this.validateBoardSize()) {
             swal(_("Invalid board size, please correct and try again")).catch(swal.noop);
             return;
@@ -446,6 +450,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         if (challenge.game.initial_state && Object.keys(challenge.game.initial_state).length === 0) {
             challenge.game.initial_state = null;
         }
+
+        challenge.game.rengo = next.rengo;
 
         this.saveSettings();
         this.close();
@@ -983,6 +989,23 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         </div>;
     };
 
+    toggleRengo = () => {
+        this.setState({rengo: !(this.state.rengo)});
+    };
+
+    rengoOptions = () => {
+        return (
+            <div className = "rengo-options">
+                <div className="controls">
+                    <label className="control-label">{_("Rengo")}</label>
+                    <div className="checkbox">
+                        <input checked={this.state.rengo} onChange={this.toggleRengo} type="checkbox"/>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     render() {
         const mode = this.props.mode;
         const player_id = this.props.playerId;
@@ -1015,6 +1038,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         <hr/>
                         {(mode !== "demo" || null) &&
                         this.advancedSettings()
+                        }
+                        {(mode !== "demo" || null) &&
+                        this.rengoOptions()
                         }
                         {(mode === "demo" || null) &&
                         this.advancedDemoSettings()
