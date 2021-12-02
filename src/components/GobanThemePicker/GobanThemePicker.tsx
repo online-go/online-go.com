@@ -27,13 +27,22 @@ interface GobanThemePickerProperties {
     size?: number;
 }
 
+interface GobanThemePickerState {
+    size: number;
+    board: string;
+    white: string;
+    black: string;
+    boardCustom: string;
+    lineCustom: string;
+    whiteCustom: string;
+    blackCustom: string;
+    urlCustom: string;
+}
+export class GobanThemePicker extends React.PureComponent<GobanThemePickerProperties, GobanThemePickerState> {
+    canvases: {[k: string]: JQuery[]} = {};
+    selectTheme: {[k: string]: {[k: string]: () => void}} = {};
 
-
-export class GobanThemePicker extends React.PureComponent<GobanThemePickerProperties, any> {
-    canvases: any = {};
-    selectTheme: any = {};
-
-    constructor(props) {
+    constructor(props: GobanThemePickerProperties) {
         super(props);
 
         const selected = getSelectedThemes();
@@ -81,11 +90,11 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
     componentWillUnmount() {
     }
 
-    getCustom(key) {
+    getCustom(key: string): string {
         return data.get(`custom.${key}`);
     }
-    setCustom(key, event) {
-        if (event.target.value) {
+    setCustom(key: string, event: React.MouseEvent<HTMLButtonElement, MouseEvent> | React.ChangeEvent<HTMLInputElement>) {
+        if ('value' in event.target) {
             data.set(`custom.${key}`, event.target.value);
         } else {
             data.remove(`custom.${key}`);
@@ -190,7 +199,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
         for (let i = 0; i < GoThemesSorted.board.length; ++i) {
             const theme = GoThemesSorted.board[i];
             const canvas = this.canvases.board[i];
-            const ctx = canvas[0].getContext("2d");
+            const ctx = (canvas[0] as HTMLCanvasElement).getContext("2d");
             ctx.clearRect(0, 0, square_size, square_size);
 
             ctx.beginPath();
@@ -213,11 +222,10 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
             ctx.fillText("A", xx + 0.5, yy + 0.5);
         }
 
-        const plain_board = new (GoThemes["board"]["Plain"])();
         for (let i = 0; i < GoThemesSorted.white.length; ++i) {
             const theme = GoThemesSorted.white[i];
             const canvas = this.canvases.white[i];
-            const ctx = canvas[0].getContext("2d");
+            const ctx = (canvas[0] as HTMLCanvasElement).getContext("2d");
             const radius = Math.round(square_size / 2.2);
             const stones = theme.preRenderWhite(radius, 23434);
             ctx.clearRect(0, 0, square_size, square_size);

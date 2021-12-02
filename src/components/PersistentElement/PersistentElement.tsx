@@ -18,7 +18,7 @@
 import * as React from "react";
 
 interface PersistentElementProps {
-    elt: HTMLElement;
+    elt: HTMLElement | JQuery;
     className?: string;
     extra_props?: object;  // hash of new props to put on the element
 }
