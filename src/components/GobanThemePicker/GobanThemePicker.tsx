@@ -16,19 +16,14 @@
  */
 
 import * as React from "react";
-import {_, pgettext, interpolate} from "translate";
-import {post, get} from "requests";
-import {errorAlerter} from "misc";
-import {GoThemes, GoThemesSorted} from "goban";
+import {_, pgettext} from "translate";
+import {GoThemesSorted} from "goban";
 import {getSelectedThemes} from "preferences";
 import * as preferences from "preferences";
 import {PersistentElement} from "PersistentElement";
 import * as data from "data";
 
 interface GobanThemePickerProperties {
-    // id?: any,
-    // user?: any,
-    // callback?: ()=>any,
     size?: number;
 }
 
@@ -82,8 +77,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
     componentDidMount() {
         setTimeout(() => this.renderPickers(), 50);
     }
-    //UNSAFE_componentWillReceiveProps(next_props) { }
-    //componentDidUpdate(old_props, old_state) { }
+
     componentWillUnmount() {
     }
 
@@ -191,7 +185,6 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
     }
 
     renderPickers() {
-        const start = new Date();
         const square_size = this.state.size;
 
         for (let i = 0; i < GoThemesSorted.board.length; ++i) {
@@ -234,14 +227,11 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
         for (let i = 0; i < GoThemesSorted.black.length; ++i) {
             const theme = GoThemesSorted.black[i];
             const canvas = this.canvases.black[i];
-            const ctx = canvas[0].getContext("2d");
+            const ctx = (canvas[0] as HTMLCanvasElement).getContext("2d");
             const radius = Math.round(square_size / 2.2);
             const stones = theme.preRenderBlack(radius, 23434);
             ctx.clearRect(0, 0, square_size, square_size);
             theme.placeBlackStone(ctx, ctx, stones[0], square_size / 2, square_size / 2, radius);
         }
-
-        const end = new Date();
-        //console.info("Render time: ", (end.getTime() - start.getTime()))
     }
 }
