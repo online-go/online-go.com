@@ -122,7 +122,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
             <div className="GobanThemePicker">
                 <div className="theme-set">
                     {GoThemesSorted.board.map((theme, idx) => (
-                        <div key={theme.theme_name}
+                        <div key={theme.theme_name} title={_(theme.theme_name)}
                             className={"selector" + (this.state.board === theme.theme_name ? " active" : "")}
                             style={{
                                 ...theme.styles,
@@ -156,7 +156,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
 
                 <div className="theme-set">
                     {GoThemesSorted.white.map((theme, idx) => (
-                        <div key={theme.theme_name}
+                        <div key={theme.theme_name} title={_(theme.theme_name)}
                             className={"selector" + (this.state.white === theme.theme_name ? " active" : "")}
                             style={theme.styles}
                             onClick={this.selectTheme["white"][theme.theme_name]}
@@ -174,7 +174,7 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
 
                 <div className="theme-set">
                     {GoThemesSorted.black.map((theme, idx) => (
-                        <div key={theme.theme_name}
+                        <div key={theme.theme_name} title={_(theme.theme_name)}
                             className={"selector" + (this.state.black === theme.theme_name ? " active" : "")}
                             style={theme.styles}
                             onClick={this.selectTheme["black"][theme.theme_name]}
