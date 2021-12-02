@@ -21,7 +21,7 @@ import {post} from "requests";
 import {openModal, Modal} from "Modal";
 import {timeControlDescription, usedForCheating} from "TimeControl";
 import {Player} from "Player";
-import {errorAlerter} from "misc";
+import {errorAlerter, yesno} from "misc";
 import swal from 'sweetalert2';
 
 interface Events {
@@ -136,7 +136,5 @@ export function handicapText(handicap) {
     if (handicap === 0) { return _("None"); }
     return handicap;
 }
-function yesno(tf: boolean) {
-    return tf ? _("Yes") : _("No");
-}
+
 
