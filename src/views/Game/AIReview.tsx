@@ -67,6 +67,7 @@ interface AIReviewState {
     selected_ai_review?: JGOFAIReview;
     updatecount: number;
     worst_moves_shown: number;
+    table_set: boolean;
 }
 
 export class AIReview extends React.Component<AIReviewProperties, AIReviewState> {
@@ -74,6 +75,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     // selected_ai_review which will just contain some metadata from the
     // postgres database
     ai_review?: JGOFAIReview;
+    table_rows: string[][];
 
     constructor(props: AIReviewProperties) {
         super(props);
@@ -86,6 +88,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             // TODO: allow users to view more than 3 of these key moves
             // See https://forums.online-go.com/t/top-3-moves-score-a-better-metric/32702/15
             worst_moves_shown: 3,
+            table_set: false,
         };
         this.state = state;
         window['aireview'] = this;
@@ -93,10 +96,14 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
     componentDidMount() {
         this.getAIReviewList();
+        this.table_rows = this.AiSummaryTableRowList();
     }
     componentDidUpdate(prevProps: AIReviewProperties, prevState: any) {
         if (this.getGameId() !== this.getGameId(prevProps)) {
             this.getAIReviewList();
+        }
+        if (!this.state.table_set) {
+            this.table_rows = this.AiSummaryTableRowList();
         }
     }
     componentWillUnmount() {
@@ -238,6 +245,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         this.updateAIReviewMetadata(ai_review);
         this.setState({
             selected_ai_review: ai_review,
+            table_set: false,
         });
         this.props.onAIReviewSelected(ai_review);
         this.syncAIReview();
@@ -691,37 +699,78 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         return false;
     }
 
-    private AiSummaryMovesList(){
-        let summary_moves_list = [ ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""] ];
-        if (!this.ai_review || this.state.loading){
-            return summary_moves_list;
-        }
-        /*if (true){
-            return summary_moves_list;
-        }*/
+    private AiSummaryTableRowList(){
+        const summary_moves_list = [ ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""] ];
+        const ai_table_rows = [["Excellent"], ["Great"], ["Inaccuracy"], ["Mistake"], ["Blunder"]];
+        const default_table_rows = [["", "", "", "", ""]];
+        const hoffset = this.handicapOffset();
+        const bplayer = (hoffset > 0) ? 1 : 0;
 
-        let movecounters = Array(10).fill(0);
-        let othercounters = Array(2).fill(0);
+        if (!this.ai_review ) {
+            return default_table_rows;
+        }
+
+        if (this.ai_review?.type !== "full"){
+            this.setState({
+                table_set: true
+            });
+            return default_table_rows;
+        }
+
+        const movekeys = Object.keys( this.ai_review?.moves);
+        const checkmoves = parseInt(movekeys[movekeys.length - 1]) !== ((movekeys).length - 1);
+        if (this.state.loading || checkmoves ){
+            for (let j = 0; j < ai_table_rows.length; j++){
+                ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
+            }
+            return ai_table_rows;
+        }
+
+        const movecounters = Array(10).fill(0);
+        const othercounters = Array(2).fill(0);
         let wtotal = 0;
         let btotal = 0;
 
-        for (let j = 0; j < Object.keys( this.ai_review?.moves ).length - 1; j++ ){
-            let playermove = this.ai_review?.moves[j + 1].move;
-            let bluemove = this.ai_review?.moves[j].branches[0].moves[0];
-            let offset = (j % 2 === 0) ? 0 : 5;
-            let scorediff = this.ai_review?.moves[j + 1].score - this.ai_review?.moves[j].score;
-            scorediff = (j % 2 === 0) ? scorediff : (-1) * scorediff;
+        for (let j = hoffset; j < Object.keys( this.ai_review?.moves ).length - 1; j++ ){
+            console.log(j);
+            const playermove = this.ai_review?.moves[j + 1].move;
             console.log(playermove);
-            console.log(bluemove);
+            const current_branches = this.ai_review?.moves[j].branches;
+            const bluemove = current_branches[0].moves[0];
+            //console.log(bluemove);
+            const offset = ((j - hoffset) % 2 === bplayer) ? 0 : 5;
+            let scorediff = this.ai_review?.moves[j + 1].score - this.ai_review?.moves[j].score;
+            scorediff = ((j - hoffset) % 2 === bplayer) ? (-1) * scorediff : scorediff;
             console.log(scorediff);
 
-            if (bluemove == undefined ){
+            if (bluemove === undefined ){
                 othercounters[offset % 2] += 1;
+                console.log("no blue");
             } else {
-                if(isEqualMoveIntersection(bluemove,playermove)){
+                if (isEqualMoveIntersection(bluemove, playermove)){
                     movecounters[offset] += 1;
-                }else{
+                    console.log("blue");
+                } else if (current_branches.some(
+                    (branch, index) => {
+                        //console.log(`Index ${index}, Ai move ${JSON.stringify(branch.moves[0])}, player move ${JSON.stringify(playermove)}, visits ${branch.visits}.`);
+                        const check = index > 0 && isEqualMoveIntersection(branch.moves[0], playermove) && (branch.visits >= Math.min(50, 0.1 * this.ai_review?.strength));
+                        //console.log(check);
+                        return check;
+                    })
+                ) {
                     movecounters[offset + 1] += 1;
+                    console.log("green");
+                } else if (scorediff < 2) {
+                    movecounters[offset + 2] += 1;
+                    console.log("inaccuracy");
+                } else if (scorediff < 5) {
+                    movecounters[offset + 3] += 1;
+                    console.log("mistake");
+                } else if (scorediff >= 5) {
+                    movecounters[offset + 4] += 1;
+                    console.log("blunder");
+                } else{
+                    othercounters[offset % 2] += 1;
                 }
             }
         }
@@ -735,11 +784,20 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             summary_moves_list[j][0] = movecounters[j].toString();
             summary_moves_list[j][1] = (btotal > 0) ? (Math.round(1000 * movecounters[j] / btotal) / 10).toString() : "";
             summary_moves_list[j][2] = movecounters[5 + j].toString();
-            summary_moves_list[j][4] = (wtotal > 0) ? (Math.round(1000 * movecounters[5 + j] / wtotal) / 10).toString() : "";
+            summary_moves_list[j][3] = (wtotal > 0) ? (Math.round(1000 * movecounters[5 + j] / wtotal) / 10).toString() : "";
         }
 
+        for (let j = 0; j < ai_table_rows.length; j++){
+            ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
+        }
 
-        return summary_moves_list;
+        //console.log(summary_moves_list);
+        //console.log(ai_table_rows);
+        //this.ai_review?.scores?
+        this.setState({
+            table_set: true
+        });
+        return ai_table_rows;
     }
 
     public render(): JSX.Element {
@@ -821,17 +879,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const trunk_move = cur_move.getBranchPoint();
         const move_number = trunk_move.move_number;
         const variation_move_number = cur_move.move_number !== trunk_move.move_number ? cur_move.move_number : -1;
-        const ai_table_headings = ["Type", "Black", "%", "White", "%"];
-        let ai_table_rows = [["Excellent"], ["Great"], ["Inaccuracy"], ["Mistake"], ["Blunder"]];
-        let ai_summary_list = this.AiSummaryMovesList();
-        
-        for (let j = 0; j < ai_table_rows.length; j++){
-            ai_table_rows[j] = ai_table_rows[j].concat(ai_summary_list[j]);
-        }
-        console.log(ai_summary_list);
-        console.log(ai_table_rows);
-        //this.ai_review?.scores?
-
         const worst_move_list = getWorstMoves(this.props.game.goban.engine.move_tree, this.ai_review);
 
         return (
@@ -1024,9 +1071,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         </span>
                     </div>
                 }
+                { (this.ai_review?.type === "full" && this.ai_review?.engine === "katago") &&
                 <div>
-                    <AiSummaryTable headinglist = {ai_table_headings} bodylist = {ai_table_rows}/>
+                    <AiSummaryTable headinglist = {["Type", "Black", "%", "White", "%"]} bodylist = {this.table_rows}/>
                 </div>
+                }
             </div>
         );
     }
@@ -1130,26 +1179,26 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
     render(): JSX.Element {
 
         return(
-            <div>
-                <table>
+            <div className = "ai-summary-container">
+                <table className = "ai-summary-table">
                     <thead>
                         <tr>
-                        {this.props.headinglist.map( (head,index) => {
+                            {this.props.headinglist.map( (head, index) => {
                                 return <th key={index}>{head}</th>;
-                        })}
+                            })}
                         </tr>
                     </thead>
                     <tbody>
                         {this.props.bodylist.map(
                             (body, bindex) => {
                                 return <tr key = { bindex }>{
-                                body.map(
-                                    (element, eindex) => { 
-                                        return <td key = { eindex } >{element}</td>;
-                                    })
-                                    }</tr>;
-                                }
-                            )
+                                    body.map(
+                                        (element, eindex) => {
+                                            return <td key = { eindex } >{element}</td>;
+                                        })
+                                }</tr>;
+                            }
+                        )
                         }
                     </tbody>
                 </table>
