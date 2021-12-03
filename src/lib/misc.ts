@@ -783,3 +783,7 @@ export function insert_into_sorted_list<T>(sorted_list: Array<T>, comparator: (a
 
     sorted_list.splice(insertion_index, 0, new_item);
 }
+
+export function yesno(tf: boolean) {
+    return tf ? _("Yes") : _("No");
+}
