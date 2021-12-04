@@ -18,37 +18,34 @@
 import * as React from "react";
 import * as moment from "moment";
 import * as data from "data";
-import {_, pgettext, interpolate} from "translate";
-import {post, get, patch, del} from "requests";
-import {openModal, Modal} from "Modal";
+import {_} from "translate";
+import {post, patch, del} from "requests";
+import {openModal, Modal, ModalConstructorInput} from "Modal";
 import {timeControlDescription} from "TimeControl";
 import {Player} from "Player";
 import {handicapText} from "GameAcceptModal";
-import {errorAlerter, ignore, rulesText} from "misc";
+import {errorAlerter, ignore, rulesText, yesno} from "misc";
 import {rankString} from 'rank_utils';
 import {browserHistory} from "ogsHistory";
 import swal from 'sweetalert2';
+import { GobanConfig, GoEnginePlayerEntry } from "goban";
 
 interface Events {
 }
 
 interface GameInfoModalProperties {
-    config: any;
-    black: any;
-    white: any;
+    config: GobanConfig;
+    black: GoEnginePlayerEntry;
+    white: GoEnginePlayerEntry;
     annulled: boolean;
     creatorId: number;
 }
-
-
 export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
-    constructor(props) {
+    constructor(props: ModalConstructorInput<GameInfoModalProperties>) {
         super(props);
     }
 
-
-
-    save = (ev) => {
+    save = () => {
         const config = this.props.config;
         const review_id = config.review_id;
         const game_id = config.game_id;
@@ -90,7 +87,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         }
     };
 
-    deleteReview = (ev) => {
+    deleteReview = () => {
         const review_id = this.props.config.review_id;
 
         if (review_id) {
@@ -112,15 +109,15 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         }
     };
 
-    updateName = (ev) => {
+    updateName = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.props.config.game_name = ev.target.value;
         this.forceUpdate();
     };
-    updateBlackName = (ev) => {
+    updateBlackName = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.props.config.players.black.name = ev.target.value;
         this.forceUpdate();
     };
-    updateBlackRank = (ev) => {
+    updateBlackRank = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         console.log(ev.target.value);
         const rank = parseInt(ev.target.value);
         const pro = ev.target.value.indexOf(".1") > 0;
@@ -131,11 +128,11 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         this.props.black.pro = pro;
         this.forceUpdate();
     };
-    updateWhiteName = (ev) => {
+    updateWhiteName = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.props.config.players.white.name = ev.target.value;
         this.forceUpdate();
     };
-    updateWhiteRank = (ev) => {
+    updateWhiteRank = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         console.log(ev.target.value);
         const rank = parseInt(ev.target.value);
         const pro = ev.target.value.indexOf(".1") > 0;
@@ -145,7 +142,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         this.props.white.pro = pro;
         this.forceUpdate();
     };
-    updateOutcome = (ev) => {
+    updateOutcome = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.props.config.outcome = ev.target.value;
         this.forceUpdate();
     };
@@ -154,15 +151,8 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         const config = this.props.config;
         const user = data.get('user');
         const review_id = config.review_id;
-        const game_id = config.game_id;
         const editable = ((review_id && this.props.creatorId === user.id) || user.is_moderator) || null;
 
-        if (config && config.pause_on_weekends) {
-            /* There was a bug in our tournament creation code that didn't
-             * stick this value in the time_control object, so this helps with
-             * display on those games. */
-            config.time_control.pause_on_weekends = config.pause_on_weekends;
-        }
         const time_control_description = timeControlDescription(config.time_control);
 
         const ranks = [];
@@ -241,7 +231,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                             ? <input value={config.outcome} onChange={this.updateOutcome} />
                             : <span>{config.outcome}</span>
                         }</dd>
-                        <dt>{_("Komi")}</dt><dd>{parseFloat(config.komi).toFixed(1)}</dd>
+                        <dt>{_("Komi")}</dt><dd>{config.komi.toFixed(1)}</dd>
                         <dt>{_("Analysis")}</dt><dd>{(config.original_disable_analysis ? _("Analysis and conditional moves disabled") : _("Analysis and conditional moves enabled"))}</dd>
                         <dt>{_("Time Control")}</dt><dd>{time_control_description}</dd>
                     </dl>
@@ -264,10 +254,6 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
 }
 
 
-export function openGameInfoModal(config: any, black: any, white: any, annulled: boolean, creator_id: number): void {
+export function openGameInfoModal(config: GobanConfig, black: GoEnginePlayerEntry, white: GoEnginePlayerEntry, annulled: boolean, creator_id: number): void {
     openModal(<GameInfoModal config={config} black={black} white={white} annulled={annulled} creatorId={creator_id} fastDismiss />);
-}
-
-function yesno(tf: boolean) {
-    return tf ? _("Yes") : _("No");
 }

@@ -160,7 +160,3 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
 export function openACLModal(props: ACLModalProperties): void {
     openModal(<ACLModal {...props} />);
 }
-
-function yesno(tf: boolean) {
-    return tf ? _("Yes") : _("No");
-}
