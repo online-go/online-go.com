@@ -305,7 +305,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
     getLocation(): string {
         return window.location.pathname;
     }
+
     autoadvance = () => {
+        console.log(" ** Autoadvance...");
+
         const user = data.get('user');
 
         if (!user.anonymous && /^\/game\//.test(this.getLocation())) {
@@ -319,6 +322,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             }
         }
     };
+
     deinitialize() {
         this.chat_proxy.part();
         this.chat_log = [];
@@ -567,7 +571,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         });
 
         this.goban.on("gamedata", (gamedata) => {
-            console.log("On game data:", gamedata);
+            console.log(" ** Game data:", gamedata);
             try {
                 if (isLiveGame(gamedata.time_control)) {
                     this.goban.one_click_submit = preferences.get("one-click-submit-live");
@@ -1687,6 +1691,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
     }
     sync_state() {
+        console.log(" ** Sync state...");
+
         const new_state: any = {
             game_id: this.game_id,
             review_id: this.review_id,
@@ -2974,6 +2980,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
         const engine = goban.engine;
 
+        console.log(" ** Frag players...", engine.players);
+        console.log("historical black:", this.state['historical_black']);
         return (
             <div ref={el => this.ref_players = el} className="players">
                 {["black", "white"].map((color: 'black' | 'white', idx) => {
@@ -3006,7 +3014,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                             {((goban.engine.players[color] && goban.engine.players[color].rank !== -1) || null) &&
                             <div className={`${color} player-name-container`}>
-                                <Player user={ this.state[`historical_${color}`] || goban.engine.players[color] } disableCacheUpdate />
+                                <Player user={ this.state[`historical_${color}`] || goban.engine.players[color] }  />
                             </div>
                             }
 
