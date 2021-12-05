@@ -16,14 +16,13 @@
  */
 
 import * as d3 from "d3";
-import * as moment from "moment";
 import * as React from "react";
 import * as JSNoise from 'js-noise';
 import * as data from "data";
 import ReactResizeDetector from 'react-resize-detector';
 import { AIReviewEntry } from './AIReview';
 import { PersistentElement } from 'PersistentElement';
-import { deepCompare, errorAlerter, dup, errorLogger } from 'misc';
+import { deepCompare } from 'misc';
 import { JGOFAIReview, } from 'goban';
 
 interface AIReviewChartProperties {
@@ -35,6 +34,7 @@ interface AIReviewChartProperties {
     variation_entries: Array<AIReviewEntry>;
     setmove: (move_number: number) => void;
     use_score: boolean;
+    highlighted_moves?: number[];
 }
 
 const bisector = d3.bisector((d: AIReviewEntry) => { return d.move_number; }).left;
@@ -371,13 +371,24 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties, any>
 
         const show_all = Object.keys(this.props.ai_review.moves).length <= 3;
         const circle_coords = entries.filter((x) => {
-            if (this.props.ai_review.moves[x.move_number]
-                && (show_all || (
-                    !this.props.ai_review.moves[x.move_number + 1]
-                        && x.move_number !== this.props.ai_review.win_rates.length - 1)
-                )
-            ) {
-                return true;
+            if (this.props.ai_review.moves[x.move_number]) {
+                // This was a fast review, so mark only the 3 key moves provided
+                // by the backend
+                if (show_all) {
+                    return true;
+                }
+
+                // The review is in progress, so mark discontinuities
+                if (!this.props.ai_review.moves[x.move_number + 1]
+                    && x.move_number !== this.props.ai_review.win_rates.length - 1) {
+                    return true;
+                }
+
+                // Highlighted moves are passed in. This is in the case of a
+                // full review where key moves have been calculated client-side
+                if (this.props.highlighted_moves?.includes(x.move_number)) {
+                    return true;
+                }
             }
 
             return false;

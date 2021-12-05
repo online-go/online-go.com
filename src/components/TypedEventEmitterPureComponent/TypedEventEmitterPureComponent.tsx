@@ -22,7 +22,7 @@ import {TypedEventEmitter} from "TypedEventEmitter";
 export class TypedEventEmitterPureComponent<Events, Props, State> extends React.PureComponent<Props, State> {
     event_emitter: TypedEventEmitter<Events>;
 
-    constructor(props) {
+    constructor(props: Props | Readonly<Props>) {
         super(props);
     }
 

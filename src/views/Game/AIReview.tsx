@@ -23,11 +23,11 @@ import Select, { components } from 'react-select';
 import { UIPush } from "UIPush";
 import { AIReviewStream, ai_request_variation_analysis } from "AIReviewStream";
 import { openBecomeASiteSupporterModal } from "Supporter";
-import { deepCompare, errorAlerter, dup, errorLogger, Timeout } from 'misc';
+import { errorAlerter, errorLogger, Timeout } from 'misc';
 import { get, post } from 'requests';
 import { _, pgettext, interpolate } from "translate";
 import { Game } from './Game';
-import { close_all_popovers, popover } from "popover";
+import { close_all_popovers } from "popover";
 import { Errcode } from 'Errcode';
 import { AIReviewChart } from './AIReviewChart';
 import { Toggle } from 'Toggle';
@@ -39,8 +39,8 @@ import {
     JGOFIntersection,
     JGOFNumericPlayerColor,
     ColoredCircle,
-    computeWorstMoves,
-    AIReviewWorstMoveEntry,
+    getWorstMoves,
+    AIReviewWorstMoveEntry
 } from 'goban';
 import swal from 'sweetalert2';
 
@@ -65,8 +65,7 @@ interface AIReviewState {
     ai_reviews: Array<JGOFAIReview>;
     selected_ai_review?: JGOFAIReview;
     updatecount: number;
-    top_moves: Array<JGOFAIReviewMove>;
-    worst_move_delta_filter: number;
+    worst_moves_shown: number;
 }
 
 export class AIReview extends React.Component<AIReviewProperties, AIReviewState> {
@@ -82,9 +81,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             reviewing: false,
             ai_reviews: [],
             updatecount: 0,
-            top_moves: [],
-            worst_move_delta_filter: 0.1,
             use_score: preferences.get('ai-review-use-score'),
+            // TODO: allow users to view more than 3 of these key moves
+            // See https://forums.online-go.com/t/top-3-moves-score-a-better-metric/32702/15
+            worst_moves_shown: 3,
         };
         this.state = state;
         window['aireview'] = this;
@@ -190,10 +190,16 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         if (!ai_review.win_rates) {
             ai_review.win_rates = [];
         }
+        if (!ai_review.scores) {
+            ai_review.scores = [];
+        }
 
         for (const k in ai_review.moves) {
             const move = ai_review.moves[k];
             ai_review.win_rates[move.move_number] = move.win_rate;
+            if (move.score !== undefined) {
+                ai_review.scores[move.move_number] = move.score;
+            }
         }
 
         /* For old reviews, we might not have all win rates, so fill in the missing entries */
@@ -431,8 +437,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             next_score = scores[move_number + 1] || score;
         }
 
-        const marks: any = {};
-        const colored_circles = [];
+        const marks: {[mark: string]: string} = {};
+        const colored_circles: ColoredCircle[] = [];
         let heatmap: Array<Array<number>> | null = null;
         try {
             if ((cur_move.trunk || have_variation_results) && ai_review_move) { /* if we are on a trunk move that was AI reviewed */
@@ -634,7 +640,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
      * remaining AI sequence.
      * @returns true if we found some data, false otherwise
      */
-    private fillAIMarksBacktracking(cur_move: MoveTree, trunk_move: MoveTree, marks): boolean {
+    private fillAIMarksBacktracking(cur_move: MoveTree, trunk_move: MoveTree, marks: {[mark: string]: string}): boolean {
         for (let j = 0; j <= trunk_move.move_number; j++) { /* for each of the trunk moves starting from the nearest */
             const ai_review_move = this.ai_review.moves[trunk_move.move_number - j];
             if (!ai_review_move) {
@@ -764,6 +770,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const move_number = trunk_move.move_number;
         const variation_move_number = cur_move.move_number !== trunk_move.move_number ? cur_move.move_number : -1;
 
+        const worst_move_list = getWorstMoves(this.props.game.goban.engine.move_tree, this.ai_review);
+
         return (
             <div className='AIReview'>
                 <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
@@ -886,6 +894,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                     variation_move_number={variation_move_number}
                                     setmove={this.props.game.nav_goto_move}
                                     use_score={this.state.use_score}
+                                    highlighted_moves={
+                                        worst_move_list
+                                            .slice(0, this.state.worst_moves_shown)
+                                            .map(m => m.move_number - 1)
+                                    }
                                 />
                                 {this.ai_review.scores &&
                                     <div className='win-score-toggler'>
@@ -907,7 +920,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                         }}>{pgettext("Display the game score that the AI estimates", "Score")}</span>
                                     </div>
                                 }
-                                {this.renderWorstMoveList()}
+                                {this.renderWorstMoveList(worst_move_list)}
                             </React.Fragment>
                         }
 
@@ -952,13 +965,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             </div>
         );
     }
-    public renderWorstMoveList(): JSX.Element {
-        if (!this.props.game.goban?.engine?.move_tree || !this.ai_review) {
+
+    public renderWorstMoveList(lst: AIReviewWorstMoveEntry[]): JSX.Element {
+        if (!this.props.game.goban.engine.move_tree || !this.ai_review) {
             return null;
         }
 
-        const lst = computeWorstMoves(this.props.game.goban.engine.move_tree, this.ai_review);
-        const more_ct = Math.max(0, lst.filter(de => de.delta <= -0.2).length - 3);
+        const more_ct = Math.max(0, lst.length - 3);
 
         return (
             <div className='worst-move-list-container'>
@@ -982,27 +995,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         </span>
                     }
                 </div>
-
-                {/*
-                <span className='filter'>
-                    <select
-                        value={this.state.worst_move_delta_filter}
-                        onChange={this.setWorstMoveDeltaFilter}
-                        >
-                        <option value={0.1}>10</option>
-                        <option value={0.4}>40</option>
-                        <option value={0.5}>50</option>
-                    </select>
-                </span>
-                */}
-
             </div>
         );
     }
-
-    setWorstMoveDeltaFilter = (ev) => {
-        this.setState({worst_move_delta_filter: parseFloat(ev.target.value)});
-    };
 }
 
 function sanityCheck(ai_review: JGOFAIReview) {
