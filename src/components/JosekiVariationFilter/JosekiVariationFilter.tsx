@@ -22,7 +22,7 @@ import * as player_cache from "player_cache";
 import { JosekiTagSelector } from "../JosekiTagSelector";
 
 interface JosekiVariationFilterProps {
-    oje_headers: any;
+    oje_headers: HeadersInit;
     contributor_list_url: string;
     tag_list_url: string;
     source_list_url: string;
