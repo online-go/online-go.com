@@ -29,7 +29,7 @@ import {challenge, createOpenChallenge, challengeComputer} from "ChallengeModal"
 import {openGameAcceptModal} from "GameAcceptModal";
 import {errorAlerter, rulesText, timeControlSystemText, dup, uuid, ignore} from "misc";
 import {Player} from "Player";
-import {openNewGameModal} from "NewGameModal";
+import {openRengoAdminModal} from "RengoAdminModal";
 import {openAutomatchSettings, getAutomatchSettings} from "AutomatchSettings";
 import * as data from "data";
 import * as preferences from "preferences";
@@ -761,7 +761,47 @@ export class Play extends React.Component<PlayProperties, any> {
     }
 
     adminRengoChallenge = (C) => {
+        openRengoAdminModal(C).then((ev) => {
 
+        }).catch(errorAlerter);
+    };
+
+    nominateForRengoChallenge = (C) => {
+        swal({
+            text: _("Joining..."),   // translator: the server is processing their request to join a rengo game
+            type: "info",
+            showCancelButton: false,
+            showConfirmButton: false,
+            allowEscapeKey: false,
+        }).catch(swal.noop);
+
+        post("challenges/%%/join", C.challenge_id, {})
+        .then(() => {
+            swal.close();
+        })
+        .catch((err) => {
+            swal.close();
+            errorAlerter(err);
+        });
+    };
+
+    unNominateForRengoChallenge = (C) => {
+        swal({
+            text: _("Withdrawing..."),   // translator: the server is processing their request to withdraw from a rengo challenge
+            type: "info",
+            showCancelButton: false,
+            showConfirmButton: false,
+            allowEscapeKey: false,
+        }).catch(swal.noop);
+
+        post("challenges/%%/withdraw", C.challenge_id, {})
+        .then(() => {
+            swal.close();
+        })
+        .catch((err) => {
+            swal.close();
+            errorAlerter(err);
+        });
     };
 
     rengoList = () => {
@@ -777,6 +817,8 @@ export class Play extends React.Component<PlayProperties, any> {
 
         const user = data.get("user");
 
+        console.log(this.state.rengo_list);
+
         return this.state.rengo_list.map((C) => (
             (((C.eligible || C.user_challenge || this.state.show_all_challenges)
              && ((this.state.show_unranked_challenges && !C.ranked) || (this.state.show_ranked_challenges && C.ranked))
@@ -786,10 +828,14 @@ export class Play extends React.Component<PlayProperties, any> {
                             {user.is_moderator &&
                                 <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left "><i className='fa fa-trash' /></button>}
 
-                            {(C.eligible && !C.removed || null) &&
-                                <button onClick={this.acceptOpenChallenge.bind(this, C)} className="btn success xs">{_("Accept")}</button>}
+                            {(C.user_challenge || null) &&
+                                <button onClick={this.adminRengoChallenge.bind(this, C)} className="btn success xs">{_("Admin")}</button>}
 
-                            {(C.user_challenge || null) && <button onClick={this.adminRengoChallenge.bind(this, C)} className="btn success xs">{_("Admin")}</button>}
+                            {(C.eligible && !C.removed && !C.user_challenge && !C.rengo_nominees.includes(user.id) || null) &&
+                                <button onClick={this.nominateForRengoChallenge.bind(this, C)} className="btn success xs">{_("Join")}</button>}
+
+                            {(C.eligible && !C.removed && !C.user_challenge && C.rengo_nominees.includes(user.id) || null) &&
+                                <button onClick={this.unNominateForRengoChallenge.bind(this, C)} className="btn success xs">{_("Withdraw")}</button>}
 
                             { /* Mark eligible suspect games with a warning icon and warning explanation popup.
                                  We do let users see the warning for their own challenges. */
