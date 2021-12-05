@@ -195,9 +195,8 @@ export class Play extends React.Component<PlayProperties, any> {
         this.unfreezeChallenges();
     }
 
-    cancelActiveLiveChallenges = () => {
-        // In theory there should only be one, but cancel them all anyhow...
-        this.state.live_list.forEach((c) => {
+    cancelOwnChallenges = (challenge_list) => {
+        challenge_list.forEach((c) => {
             if (c.user_challenge) {
                 this.cancelOpenChallenge(c);
             }
@@ -342,6 +341,11 @@ export class Play extends React.Component<PlayProperties, any> {
     liveOwnChallengePending = () => {
         const locp = this.state.live_list.some((c) => (c.user_challenge));
         return locp;
+    };
+
+    ownRengoChallengePending = () => {
+        const orcp = this.state.rengo_list.some((c) => (c.user_challenge));
+        return orcp;
     };
 
     freezeChallenges = () => {
@@ -559,7 +563,25 @@ export class Play extends React.Component<PlayProperties, any> {
                         </div>
                     </div>
                     <div className='automatch-settings'>
-                        <button className='danger sm' onClick={this.cancelActiveLiveChallenges}>{pgettext("Cancel challenge", "Cancel")}</button>
+                        <button className='danger sm' onClick={this.cancelOwnChallenges.bind(self, this.state.live_list)}>{pgettext("Cancel challenge", "Cancel")}</button>
+                    </div>
+                </div>
+            );
+        } else if (this.ownRengoChallengePending()) {
+            return(
+                <div className='automatch-container'>
+                    <div className='automatch-header'>
+                        {_("Waiting for Rengo players...")}
+                        <div className="small-spinner">
+                            <div className="double-bounce1"></div>
+                            <div className="double-bounce2"></div>
+                        </div>
+                    </div>
+                    <div className='automatch-row-container'>
+
+                    </div>
+                    <div className='automatch-settings'>
+                        <button className='danger sm' onClick={this.cancelOwnChallenges.bind(self, this.state.rengo_list)}>{pgettext("Cancel challenge", "Cancel")}</button>
                     </div>
                 </div>
             );
@@ -828,8 +850,8 @@ export class Play extends React.Component<PlayProperties, any> {
                             {user.is_moderator &&
                                 <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left "><i className='fa fa-trash' /></button>}
 
-                            {(C.user_challenge || null) &&
-                                <button onClick={this.adminRengoChallenge.bind(this, C)} className="btn success xs">{_("Admin")}</button>}
+
+                            {(C.user_challenge || null) && <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">{_("Remove")}</button>}
 
                             {(C.eligible && !C.removed && !C.user_challenge && !C.rengo_nominees.includes(user.id) || null) &&
                                 <button onClick={this.nominateForRengoChallenge.bind(this, C)} className="btn success xs">{_("Join")}</button>}
