@@ -1714,6 +1714,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 console.error(e.stack);
             }
 
+            console.log(this.goban);
             /* Game state */
             new_state.mode = goban.mode;
             new_state.phase = engine.phase;
@@ -1810,6 +1811,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
             new_state.review_owner_id = goban.review_owner_id;
             new_state.review_controller_id = goban.review_controller_id;
             new_state.review_out_of_sync = engine.cur_move && engine.cur_review_move && (engine.cur_move.id !== engine.cur_review_move.id);
+
+            /* rengo stuff */
+
+
         }
 
         this.setState(new_state);
@@ -2981,7 +2986,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         const engine = goban.engine;
 
         console.log(" ** Frag players...", engine.players);
-        console.log("historical black:", this.state['historical_black']);
+
         return (
             <div ref={el => this.ref_players = el} className="players">
                 {["black", "white"].map((color: 'black' | 'white', idx) => {
@@ -3014,7 +3019,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
 
                             {((goban.engine.players[color] && goban.engine.players[color].rank !== -1) || null) &&
                             <div className={`${color} player-name-container`}>
-                                <Player user={ this.state[`historical_${color}`] || goban.engine.players[color] }  />
+                                <Player user={ (!engine.rengo && this.state[`historical_${color}`]) || goban.engine.players[color] } disableCacheUpdate />
                             </div>
                             }
 
