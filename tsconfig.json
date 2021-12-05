@@ -43,5 +43,6 @@
     },
     "files": [
         "./src/main.tsx"
-    ]
+    ],
+    "include": ["src"]
 }
