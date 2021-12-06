@@ -700,8 +700,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     }
 
     private AiSummaryTableRowList(){
-        const summary_moves_list = [ ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""] ];
-        const ai_table_rows = [["Excellent"], ["Great"], ["Inaccuracy"], ["Mistake"], ["Blunder"]];
+        const summary_moves_list = [ ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""] ];
+        const ai_table_rows = [["Excellent"], ["Great"], ["Good"], ["Inaccuracy"], ["Mistake"], ["Blunder"]];
         const default_table_rows = [["", "", "", "", ""]];
         const hoffset = this.handicapOffset();
         const bplayer = (hoffset > 0) ? 1 : 0;
@@ -710,94 +710,161 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             return default_table_rows;
         }
 
-        if (this.ai_review?.type !== "full"){
+        /*if (this.ai_review?.type === "fast" ){
             this.setState({
                 table_set: true
             });
             return default_table_rows;
-        }
+        }*/
 
-        const movekeys = Object.keys( this.ai_review?.moves);
-        const checkmoves = parseInt(movekeys[movekeys.length - 1]) !== ((movekeys).length - 1);
-        if (this.state.loading || checkmoves ){
-            for (let j = 0; j < ai_table_rows.length; j++){
-                ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
+        if (this.ai_review?.type === "fast" ){
+            const scores = this.ai_review?.scores;
+
+            if (scores === undefined){
+                return default_table_rows;
             }
-            return ai_table_rows;
-        }
 
-        const movecounters = Array(10).fill(0);
-        const othercounters = Array(2).fill(0);
-        let wtotal = 0;
-        let btotal = 0;
-
-        for (let j = hoffset; j < Object.keys( this.ai_review?.moves ).length - 1; j++ ){
-            console.log(j);
-            const playermove = this.ai_review?.moves[j + 1].move;
-            console.log(playermove);
-            const current_branches = this.ai_review?.moves[j].branches;
-            const bluemove = current_branches[0].moves[0];
-            //console.log(bluemove);
-            const offset = ((j - hoffset) % 2 === bplayer) ? 0 : 5;
-            let scorediff = this.ai_review?.moves[j + 1].score - this.ai_review?.moves[j].score;
-            scorediff = ((j - hoffset) % 2 === bplayer) ? (-1) * scorediff : scorediff;
-            console.log(scorediff);
-
-            if (bluemove === undefined ){
-                othercounters[offset % 2] += 1;
-                console.log("no blue");
-            } else {
-                if (isEqualMoveIntersection(bluemove, playermove)){
+            ai_table_rows.splice(0,2);
+            summary_moves_list.splice(0,2);
+            const num_rows = ai_table_rows.length;
+            const movecounters = Array(2*num_rows).fill(0);
+            const othercounters = Array(2).fill(0);
+            let wtotal = 0;
+            let btotal = 0;
+            for (let j = hoffset; j < scores.length -1; j++ ){
+                let scorediff = scores[j + 1] - scores[j];
+                const offset = ((j - hoffset) % 2 === bplayer) ? 0 : num_rows;
+                if (scorediff < 1) {
                     movecounters[offset] += 1;
-                    console.log("blue");
-                } else if (current_branches.some(
-                    (branch, index) => {
-                        //console.log(`Index ${index}, Ai move ${JSON.stringify(branch.moves[0])}, player move ${JSON.stringify(playermove)}, visits ${branch.visits}.`);
-                        const check = index > 0 && isEqualMoveIntersection(branch.moves[0], playermove) && (branch.visits >= Math.min(50, 0.1 * this.ai_review?.strength));
-                        //console.log(check);
-                        return check;
-                    })
-                ) {
-                    movecounters[offset + 1] += 1;
-                    console.log("green");
+                    console.log("good");
                 } else if (scorediff < 2) {
-                    movecounters[offset + 2] += 1;
+                    movecounters[offset + 1] += 1;
                     console.log("inaccuracy");
-                } else if (scorediff < 5) {
-                    movecounters[offset + 3] += 1;
+                }else if (scorediff < 5) {
+                    movecounters[offset + 2] += 1;
                     console.log("mistake");
                 } else if (scorediff >= 5) {
-                    movecounters[offset + 4] += 1;
+                    movecounters[offset + 3] += 1;
                     console.log("blunder");
                 } else{
                     othercounters[offset % 2] += 1;
                 }
+                
             }
-        }
 
-        for (let j = 0; j < 5; j++ ){
-            btotal += movecounters[j];
-            wtotal += movecounters[5 + j];
-        }
+            for (let j = 0; j < num_rows; j++ ){
+                btotal += movecounters[j];
+                wtotal += movecounters[num_rows + j];
+            }
 
-        for (let j = 0; j < 5; j++ ){
-            summary_moves_list[j][0] = movecounters[j].toString();
-            summary_moves_list[j][1] = (btotal > 0) ? (Math.round(1000 * movecounters[j] / btotal) / 10).toString() : "";
-            summary_moves_list[j][2] = movecounters[5 + j].toString();
-            summary_moves_list[j][3] = (wtotal > 0) ? (Math.round(1000 * movecounters[5 + j] / wtotal) / 10).toString() : "";
-        }
+            for (let j = 0; j < num_rows; j++ ){
+                summary_moves_list[j][0] = movecounters[j].toString();
+                summary_moves_list[j][1] = (btotal > 0) ? (Math.round(1000 * movecounters[j] / btotal) / 10).toString() : "";
+                summary_moves_list[j][2] = movecounters[num_rows + j].toString();
+                summary_moves_list[j][3] = (wtotal > 0) ? (Math.round(1000 * movecounters[num_rows + j] / wtotal) / 10).toString() : "";
+            }
 
-        for (let j = 0; j < ai_table_rows.length; j++){
-            ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
-        }
+            for (let j = 0; j < ai_table_rows.length; j++){
+                ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
+            }
 
-        //console.log(summary_moves_list);
-        //console.log(ai_table_rows);
-        //this.ai_review?.scores?
-        this.setState({
-            table_set: true
-        });
-        return ai_table_rows;
+            this.setState({
+                table_set: true
+            });
+
+            return ai_table_rows;
+
+        } else if (this.ai_review?.type === "full" ) {
+            const num_rows = ai_table_rows.length;
+            const movekeys = Object.keys( this.ai_review?.moves);
+            const checkmoves = parseInt(movekeys[movekeys.length - 1]) !== ((movekeys).length - 1);
+            if (this.state.loading || checkmoves ){
+                for (let j = 0; j < ai_table_rows.length; j++){
+                    ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
+                }
+                return ai_table_rows;
+            }
+
+            const movecounters = Array(2*num_rows).fill(0);
+            const othercounters = Array(2).fill(0);
+            let wtotal = 0;
+            let btotal = 0;
+            const scores = this.ai_review?.scores;
+
+            for (let j = hoffset; j < Object.keys( this.ai_review?.moves ).length - 1; j++ ){
+                console.log(j);
+                const playermove = this.ai_review?.moves[j + 1].move;
+                console.log(playermove);
+                const current_branches = this.ai_review?.moves[j].branches;
+                const bluemove = current_branches[0].moves[0];
+                console.log(bluemove);
+                const offset = ((j - hoffset) % 2 === bplayer) ? 0 : num_rows;
+                //let scorediff = this.ai_review?.moves[j + 1].score - this.ai_review?.moves[j].score;
+                let scorediff = scores[j + 1] - scores[j];
+                scorediff = ((j - hoffset) % 2 === bplayer) ? (-1) * scorediff : scorediff;
+                console.log(scorediff);
+
+                if (bluemove === undefined ){
+                    othercounters[offset % 2] += 1;
+                    console.log("no blue");
+                } else {
+                    if (isEqualMoveIntersection(bluemove, playermove) && playermove.x !== -1){
+                        movecounters[offset] += 1;
+                        console.log("blue");
+                    } else if (current_branches.some(
+                        (branch, index) => {
+                            //console.log(`Index ${index}, Ai move ${JSON.stringify(branch.moves[0])}, player move ${JSON.stringify(playermove)}, visits ${branch.visits}.`);
+                            const check = index > 0 && isEqualMoveIntersection(branch.moves[0], playermove) && (branch.visits >= Math.min(50, 0.1 * this.ai_review?.strength));
+                            //console.log(check);
+                            return check;
+                        })
+                    ) {
+                        movecounters[offset + 1] += 1;
+                        console.log("green");
+                    } else if (scorediff < 1) {
+                        movecounters[offset + 2] += 1;
+                        console.log("good");
+                    } else if (scorediff < 2) {
+                        movecounters[offset + 3] += 1;
+                        console.log("inaccuracy");
+                    } else if (scorediff < 5) {
+                        movecounters[offset + 4] += 1;
+                        console.log("mistake");
+                    } else if (scorediff >= 5) {
+                        movecounters[offset + 5] += 1;
+                        console.log("blunder");
+                    } else{
+                        othercounters[offset % 2] += 1;
+                    }
+                }
+            }
+
+            for (let j = 0; j < num_rows; j++ ){
+                btotal += movecounters[j];
+                wtotal += movecounters[num_rows + j];
+            }
+
+            for (let j = 0; j < num_rows; j++ ){
+                summary_moves_list[j][0] = movecounters[j].toString();
+                summary_moves_list[j][1] = (btotal > 0) ? (Math.round(1000 * movecounters[j] / btotal) / 10).toString() : "";
+                summary_moves_list[j][2] = movecounters[num_rows + j].toString();
+                summary_moves_list[j][3] = (wtotal > 0) ? (Math.round(1000 * movecounters[num_rows + j] / wtotal) / 10).toString() : "";
+            }
+
+            for (let j = 0; j < ai_table_rows.length; j++){
+                ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
+            }
+
+            //console.log(summary_moves_list);
+            //console.log(ai_table_rows);
+            //this.ai_review?.scores?
+            this.setState({
+                table_set: true
+            });
+            return ai_table_rows;
+        } else {
+            return default_table_rows;
+        }
     }
 
     public render(): JSX.Element {
@@ -1071,7 +1138,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         </span>
                     </div>
                 }
-                { (this.ai_review?.type === "full" && this.ai_review?.engine === "katago") &&
+                { (((this.ai_review?.type === "full" ) || (this.ai_review?.type === "fast" )) && this.ai_review?.engine === "katago") &&
                 <div>
                     <AiSummaryTable headinglist = {["Type", "Black", "%", "White", "%"]} bodylist = {this.table_rows}/>
                 </div>
