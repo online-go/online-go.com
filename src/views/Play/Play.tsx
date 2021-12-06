@@ -331,19 +331,19 @@ export class Play extends React.Component<PlayProperties, any> {
         this.setState({show_other_boardsize_challenges: !this.state.show_other_boardsize_challenges});
     };
 
-    anyChallengesToShow = (challenge_list) => {
+    anyChallengesToShow = (challenge_list): boolean => {
 
         return this.state.show_all_challenges && challenge_list.length || challenge_list.reduce( (prev, current) => {
             return prev || current.eligible || current.user_challenge;
         }, false );
     };
 
-    liveOwnChallengePending = () => {
+    liveOwnChallengePending = (): boolean => {
         const locp = this.state.live_list.some((c) => (c.user_challenge));
         return locp;
     };
 
-    ownRengoChallengePending = () => {
+    ownRengoChallengePending = (): boolean => {
         const orcp = this.state.rengo_list.some((c) => (c.user_challenge));
         return orcp;
     };
@@ -577,8 +577,8 @@ export class Play extends React.Component<PlayProperties, any> {
                             <div className="double-bounce2"></div>
                         </div>
                     </div>
-                    <div className='automatch-row-container'>
-
+                    <div className='rengo-admin-container'>
+                        {this.renderRengoAdminPane()}
                     </div>
                     <div className='automatch-settings'>
                         <button className='danger sm' onClick={this.cancelOwnChallenges.bind(self, this.state.rengo_list)}>{pgettext("Cancel challenge", "Cancel")}</button>
@@ -782,12 +782,6 @@ export class Play extends React.Component<PlayProperties, any> {
         </div>;
     }
 
-    adminRengoChallenge = (C) => {
-        openRengoAdminModal(C).then((ev) => {
-
-        }).catch(errorAlerter);
-    };
-
     nominateForRengoChallenge = (C) => {
         swal({
             text: _("Joining..."),   // translator: the server is processing their request to join a rengo game
@@ -838,8 +832,6 @@ export class Play extends React.Component<PlayProperties, any> {
         }
 
         const user = data.get("user");
-
-        console.log(this.state.rengo_list);
 
         return this.state.rengo_list.map((C) => (
             (((C.eligible || C.user_challenge || this.state.show_all_challenges)
@@ -906,6 +898,50 @@ export class Play extends React.Component<PlayProperties, any> {
                     </div> :
                     null
             ) ));
+    };
+
+    renderRengoAdminPane = () => {
+        const our_challenge = this.state.rengo_list.find((c) => c.user_challenge);
+
+        // this should not be called if the user doesn't have a rengo challenge open...
+        if (our_challenge === undefined) {
+            return <div>(oops - if you had a rengo challenge open, the details would be showing here!)</div>;
+        }
+
+        if (our_challenge['rengo_nominees'].length === 0) {
+            // This should be at most transitory, since the creator is added as a nominee on creation!
+            return <div className="no-rengo-players-to-admin">{_("(none yet - standby!)")}</div>;
+        }
+
+        // protection in case the challenge doesn't have these fields, though it should.
+        const black_players = our_challenge['rengo-black-players'] ? our_challenge['rengo-black-players'] : [];
+        const white_players = our_challenge['rengo-black-players'] ? our_challenge['rengo-black-players'] : [];
+
+        return (
+            <React.Fragment>
+                <div className='rengo-admin-header'>
+                    {_("Nominated:")}
+                </div>
+                {our_challenge['rengo_nominees'].map((n, i) => (
+                    <div className='rengo-assignment-row'>
+                        <Player user={n} rank={true} key={i}/>
+                    </div>
+                ))}
+                <div className='rengo-admin-header'>
+                    {_("Black:")}
+                </div>
+                {(black_players.length === 0 || null) &&
+                    <div className="no-rengo-players-to-admin">{_("(none yet)")}</div>
+                }
+                <div className='rengo-admin-header'>
+                    {_("White:")}
+                </div>
+                {(white_players.length === 0 || null) &&
+                    <div className="no-rengo-players-to-admin">{_("(none yet)")}</div>
+                }
+
+            </React.Fragment>
+        );
     };
 }
 
