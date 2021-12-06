@@ -75,7 +75,7 @@ function livereload_server(done) {
     done();
 }
 function watch_eslint(done) {
-    gulp.watch(ts_sources, eslint);
+    gulp.watch(ts_sources, { ignoreInitial: false }, eslint);
     done();
 }
 
