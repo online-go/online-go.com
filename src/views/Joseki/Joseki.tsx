@@ -1064,7 +1064,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 </div>
             ));
 
-        let backend = "?"
+        let backend = "?";
         const current_setting = data.get('joseki-url');
         if (current_setting === "/oje/" || current_setting === undefined) {
             backend = "new";
