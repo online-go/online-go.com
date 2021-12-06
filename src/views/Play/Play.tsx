@@ -924,6 +924,9 @@ export class Play extends React.Component<PlayProperties, any> {
                 </div>
                 {our_challenge['rengo_nominees'].map((n, i) => (
                     <div className='rengo-assignment-row'>
+                        <i className="fa fa-lg fa-arrow-circle-down black"/>
+                        <i className="fa fa-lg fa-arrow-circle-down white"/>
+                        <i className="fa fa-lg fa-times-circle-o white"/>
                         <Player user={n} rank={true} key={i}/>
                     </div>
                 ))}
