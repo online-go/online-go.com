@@ -30,7 +30,7 @@ import { JosekiStatsModal } from "JosekiStatsModal";
 
 
 interface JosekiAdminProps {
-    oje_headers: any;
+    oje_headers: HeadersInit;
     server_url: string;
     user_can_administer: boolean; // allows them to revert changes, give permissions etc
     user_can_edit: boolean;       // allows them to filter

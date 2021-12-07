@@ -22,7 +22,7 @@ import Select, { components } from 'react-select';
 import { _, pgettext, interpolate } from "translate";
 
 interface JosekiTagSelectorProps {
-    oje_headers: any;
+    oje_headers: HeadersInit;
     tag_list_url: string;
     selected_tags: number[];
     on_tag_update: any;

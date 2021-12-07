@@ -1032,10 +1032,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
     };
 
     toggleBackend = () => {
-        if (data.get('joseki-url') === '/godojo/') {
-            data.set('joseki-url', '/oje/');
-        } else {
+        const current_setting = data.get('joseki-url', "unset");
+        if (current_setting === '/oje/' || current_setting === "unset") {
             data.set('joseki-url', '/godojo/');
+        } else {
+            data.set('joseki-url', '/oje/');
         }
 
         window.location.assign('/joseki/');
@@ -1063,7 +1064,14 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 </div>
             ));
 
-        const backend = (data.get('joseki-url') === '/oje/')  ? 'new' : 'old';
+        let backend = "?";
+        const current_setting = data.get('joseki-url');
+        if (current_setting === "/oje/" || current_setting === undefined) {
+            backend = "new";
+        }
+        if (current_setting === "/godojo/") {
+            backend = "old";
+        }
 
         return (
             <div className={"Joseki"}>

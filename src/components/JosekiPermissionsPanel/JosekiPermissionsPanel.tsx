@@ -23,7 +23,7 @@ import * as data from "data";
 import { Player } from "Player";
 
 interface JosekiAdminProps {
-    oje_headers: any;
+    oje_headers: HeadersInit;
     server_url: string;
 }
 
