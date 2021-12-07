@@ -349,6 +349,12 @@ export class Play extends React.Component<PlayProperties, any> {
         return orcp;
     };
 
+    joinedRengoChallengePending = (): boolean => {
+        const user_id = data.get('config.user').id
+        const jrcp = this.state.rengo_list.some((c) => (c['rengo_participants'].includes(user_id)));
+        return jrcp;
+    };
+
     freezeChallenges = () => {
         if (this.list_freeze_timeout) {
             clearTimeout(this.list_freeze_timeout);
@@ -568,7 +574,7 @@ export class Play extends React.Component<PlayProperties, any> {
                     </div>
                 </div>
             );
-        } else if (this.ownRengoChallengePending()) {
+        } else if (this.ownRengoChallengePending() || this.joinedRengoChallengePending()) {
             return(
                 <div className='automatch-container'>
                     <div className='automatch-header'>
@@ -579,11 +585,13 @@ export class Play extends React.Component<PlayProperties, any> {
                         </div>
                     </div>
                     <div className={'rengo-admin-container' + (this.state.admin_pending ? " pending" : "")}>
-                        {this.renderRengoAdminPane()}
+                        {this.renderRengoChallengePane()}
                     </div>
-                    <div className='automatch-settings'>
-                        <button className='danger sm' onClick={this.cancelOwnChallenges.bind(self, this.state.rengo_list)}>{pgettext("Cancel challenge", "Cancel")}</button>
-                    </div>
+                    { (this.ownRengoChallengePending() || null) &&
+                        <div className='automatch-settings'>
+                            <button className='danger sm' onClick={this.cancelOwnChallenges.bind(self, this.state.rengo_list)}>{pgettext("Cancel challenge", "Cancel")}</button>
+                        </div>
+                    }
                 </div>
             );
         } else if (this.state.showLoadingSpinnerForCorrespondence) {
@@ -941,10 +949,12 @@ export class Play extends React.Component<PlayProperties, any> {
         });
     };
 
-    renderRengoAdminPane = () => {
-        const our_challenge = this.state.rengo_list.find((c) => c.user_challenge);
+    renderRengoChallengePane = () => {
+        const our_challenge =
+            this.state.rengo_list.find((c) => c.user_challenge) ||
+            this.state.rengo_list.find((c) => c['rengo_participants'].includes(data.get('config.user').id));
 
-        console.log("rengo admin:", our_challenge);
+        console.log("rengo pane:", our_challenge);
 
         // this function should not be called if the user doesn't have a rengo challenge open...
         if (our_challenge === undefined) {
@@ -971,10 +981,14 @@ export class Play extends React.Component<PlayProperties, any> {
                 }
                 {nominees.map((n, i) => (
                     <div className='rengo-assignment-row' key={i}>
-                        <i className="fa fa-lg fa-arrow-circle-down black"
-                            onClick={this.assignToTeam.bind(self, n, 'rengo_black_team', our_challenge)}/>
-                        <i className="fa fa-lg fa-arrow-circle-down white"
-                            onClick={this.assignToTeam.bind(self, n, 'rengo_white_team', our_challenge)}/>
+                        {(our_challenge.user_challenge || null) &&
+                            <React.Fragment>
+                                <i className="fa fa-lg fa-arrow-circle-down black"
+                                    onClick={this.assignToTeam.bind(self, n, 'rengo_black_team', our_challenge)}/>
+                                <i className="fa fa-lg fa-arrow-circle-down white"
+                                    onClick={this.assignToTeam.bind(self, n, 'rengo_white_team', our_challenge)}/>
+                            </React.Fragment>
+                        }
                         <Player user={n} rank={true} key={i}/>
                     </div>
                 ))}
@@ -986,8 +1000,10 @@ export class Play extends React.Component<PlayProperties, any> {
                 }
                 {black_team.map((n, i) => (
                     <div className='rengo-assignment-row' key={i}>
-                        <i className="fa fa-lg fa-times-circle-o red"
-                            onClick={this.unassignTeam.bind(self, n, our_challenge)}/>
+                        {(our_challenge.user_challenge || null) &&
+                            <i className="fa fa-lg fa-times-circle-o red"
+                                onClick={this.unassignTeam.bind(self, n, our_challenge)}/>
+                        }
                         <Player user={n} rank={true} key={i}/>
                     </div>
                 ))}
@@ -999,8 +1015,10 @@ export class Play extends React.Component<PlayProperties, any> {
                 }
                 {white_team.map((n, i) => (
                     <div className='rengo-assignment-row' key={i}>
-                        <i className="fa fa-lg fa-times-circle-o red"
-                            onClick={this.unassignTeam.bind(self, n, our_challenge)}/>
+                        {(our_challenge.user_challenge || null) &&
+                            <i className="fa fa-lg fa-times-circle-o red"
+                                onClick={this.unassignTeam.bind(self, n, our_challenge)}/>
+                        }
                         <Player user={n} rank={true} key={i}/>
                     </div>
                 ))}
