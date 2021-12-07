@@ -164,9 +164,11 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             this.connectToLiveGameList();
         }
     };
+
     onSeekgraphGlobal = (lst) => {
         for (let i = 0; i < lst.length; ++i) {
             const e = lst[i];
+            console.log(e);
             if ("game_started" in e) {
                 //console.log(e);
             } else if ("delete" in e) {
@@ -215,6 +217,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         this.redraw();
         this.emit("challenges", this.challenges);
     };
+
     onTouchEnd = (ev) => {
         if (ev.target === this.canvas[0]) {
             this.onPointerDown(ev);

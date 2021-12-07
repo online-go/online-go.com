@@ -134,6 +134,10 @@
         align-items: flex-start;
     }
 
+    .rengo-admin-container.pending {
+        cursor: wait !important;
+    }
+
     .no-rengo-players-to-admin {
         font-style: italic;
         font-size: smaller;
@@ -150,6 +154,7 @@
 
         .fa {
             margin: 0 0.8rem 0 0 ;
+            cursor: pointer;
         }
 
         // fiddly parameters to hack these to look about right
@@ -165,6 +170,11 @@
             background-color: black;
             border-radius: 0.5rem;
             transform: scale(1.2);
+        }
+
+        .fa.red {
+            color: red;
+            border-radius: 0.5rem;
         }
     }
 

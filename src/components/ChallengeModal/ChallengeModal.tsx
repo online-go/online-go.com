@@ -458,7 +458,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
         post(player_id ? "players/%%/challenge" : "challenges", player_id, challenge)
         .then((res) => {
-            console.log("Challenge response: ", res);
+            // console.log("Challenge response: ", res);
             const challenge_id = res.challenge;
             const game_id = typeof(res.game) === "object" ? res.game.id : res.game;
             let keepalive_interval;

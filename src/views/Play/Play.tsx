@@ -21,7 +21,7 @@ import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {Card} from "material";
-import {post, get, del} from "requests";
+import {put, post, get, del} from "requests";
 import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";
 import {shortShortTimeControl, usedForCheating} from "TimeControl";
@@ -71,6 +71,7 @@ export class Play extends React.Component<PlayProperties, any> {
             automatch_size_options: data.get('automatch.size_options', ['19x19']),
             freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
             pending_challenges: [], // challenges received while frozen
+            admin_pending: false, // used to change cursor while waiting for rengo admin actions
         };
         this.canvas = document.createElement("canvas");
         this.list_freeze_timeout = null;
@@ -577,7 +578,7 @@ export class Play extends React.Component<PlayProperties, any> {
                             <div className="double-bounce2"></div>
                         </div>
                     </div>
-                    <div className='rengo-admin-container'>
+                    <div className={'rengo-admin-container' + (this.state.admin_pending ? " pending" : "")}>
                         {this.renderRengoAdminPane()}
                     </div>
                     <div className='automatch-settings'>
@@ -791,7 +792,7 @@ export class Play extends React.Component<PlayProperties, any> {
             allowEscapeKey: false,
         }).catch(swal.noop);
 
-        post("challenges/%%/join", C.challenge_id, {})
+        put("challenges/%%/join", C.challenge_id, {})
         .then(() => {
             swal.close();
         })
@@ -900,49 +901,109 @@ export class Play extends React.Component<PlayProperties, any> {
             ) ));
     };
 
+    assignToTeam = (player_id: number, team: string, challenge) => {
+        const new_team = [...challenge[team], player_id];
+        const new_nominees = challenge['rengo_nominees'].filter((n) => (n !== player_id));
+
+        this.setState({admin_pending: true});
+
+        put("challenges/%%/team", challenge.challenge_id, {
+            [team]: new_team,
+            'rengo_nominees': new_nominees
+        })
+        .then(() => {
+            this.setState({admin_pending: false});
+        })
+        .catch((err) => {
+            this.setState({admin_pending: false});
+            errorAlerter(err);
+        });
+    };
+
+    unassignTeam = (player_id: number, challenge) => {
+        const new_black_team = challenge['rengo_black_team'].filter((n) => (n !== player_id));
+        const new_white_team = challenge['rengo_white_team'].filter((n) => (n !== player_id));
+        const new_nominees = [... challenge['rengo_nominees'], player_id];
+
+        this.setState({admin_pending: true});
+
+        put("challenges/%%/team", challenge.challenge_id, {
+            'rengo_black_team': new_black_team,
+            'rengo_white_team': new_white_team,
+            'rengo_nominees': new_nominees
+        })
+        .then(() => {
+            this.setState({admin_pending: false});
+        })
+        .catch((err) => {
+            this.setState({admin_pending: false});
+            errorAlerter(err);
+        });
+    };
+
     renderRengoAdminPane = () => {
         const our_challenge = this.state.rengo_list.find((c) => c.user_challenge);
 
-        // this should not be called if the user doesn't have a rengo challenge open...
+        console.log("rengo admin:", our_challenge);
+
+        // this function should not be called if the user doesn't have a rengo challenge open...
         if (our_challenge === undefined) {
             return <div>(oops - if you had a rengo challenge open, the details would be showing here!)</div>;
         }
 
-        if (our_challenge['rengo_nominees'].length === 0) {
+        const nominees = our_challenge['rengo_nominees'];
+        const black_team = our_challenge['rengo_black_team'];
+        const white_team = our_challenge['rengo_white_team'];
+
+
+        if (nominees.length + black_team.length + white_team.length === 0) {
             // This should be at most transitory, since the creator is added as a nominee on creation!
             return <div className="no-rengo-players-to-admin">{_("(none yet - standby!)")}</div>;
         }
-
-        // protection in case the challenge doesn't have these fields, though it should.
-        const black_players = our_challenge['rengo-black-players'] ? our_challenge['rengo-black-players'] : [];
-        const white_players = our_challenge['rengo-black-players'] ? our_challenge['rengo-black-players'] : [];
 
         return (
             <React.Fragment>
                 <div className='rengo-admin-header'>
                     {_("Nominated:")}
                 </div>
-                {our_challenge['rengo_nominees'].map((n, i) => (
-                    <div className='rengo-assignment-row'>
-                        <i className="fa fa-lg fa-arrow-circle-down black"/>
-                        <i className="fa fa-lg fa-arrow-circle-down white"/>
-                        <i className="fa fa-lg fa-times-circle-o white"/>
+                {(nominees.length === 0 || null) &&
+                    <div className="no-rengo-players-to-admin">{_("(none left)")}</div>
+                }
+                {nominees.map((n, i) => (
+                    <div className='rengo-assignment-row' key={i}>
+                        <i className="fa fa-lg fa-arrow-circle-down black"
+                            onClick={this.assignToTeam.bind(self, n, 'rengo_black_team', our_challenge)}/>
+                        <i className="fa fa-lg fa-arrow-circle-down white"
+                            onClick={this.assignToTeam.bind(self, n, 'rengo_white_team', our_challenge)}/>
                         <Player user={n} rank={true} key={i}/>
                     </div>
                 ))}
                 <div className='rengo-admin-header'>
                     {_("Black:")}
                 </div>
-                {(black_players.length === 0 || null) &&
+                {(black_team.length === 0 || null) &&
                     <div className="no-rengo-players-to-admin">{_("(none yet)")}</div>
                 }
+                {black_team.map((n, i) => (
+                    <div className='rengo-assignment-row' key={i}>
+                        <i className="fa fa-lg fa-times-circle-o red"
+                            onClick={this.unassignTeam.bind(self, n, our_challenge)}/>
+                        <Player user={n} rank={true} key={i}/>
+                    </div>
+                ))}
                 <div className='rengo-admin-header'>
                     {_("White:")}
                 </div>
-                {(white_players.length === 0 || null) &&
+                {(white_team.length === 0 || null) &&
                     <div className="no-rengo-players-to-admin">{_("(none yet)")}</div>
                 }
-
+                {white_team.map((n, i) => (
+                    <div className='rengo-assignment-row' key={i}>
+                        <i className="fa fa-lg fa-times-circle-o red"
+                            onClick={this.unassignTeam.bind(self, n, our_challenge)}/>
+                        <Player user={n} rank={true} key={i}/>
+                    </div>
+                ))}
             </React.Fragment>
         );
     };
