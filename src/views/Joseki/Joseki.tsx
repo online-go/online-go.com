@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* A page for looking up and playing against josekis */
+/* A page for looking up and playing against josekis stored in the OGS OJE*/
 
 import * as React from "react";
 import { Link } from "react-router-dom";
@@ -23,6 +23,7 @@ import ReactResizeDetector from 'react-resize-detector';
 import * as queryString from "query-string";
 
 import * as data from "data";
+import { getCookie } from "requests";
 import { _, interpolate, npgettext } from "translate";
 import { KBShortcut } from "KBShortcut";
 import { PersistentElement } from "PersistentElement";
@@ -39,7 +40,7 @@ import {JosekiVariationFilter} from "JosekiVariationFilter";
 import {JosekiTagSelector} from "JosekiTagSelector";
 import {Throbber} from "Throbber";
 
-const server_url = data.get("joseki-url", "/godojo/");
+const server_url = data.get("joseki-url", "/oje/");
 
 const prefetch_url = (node_id: string, variation_filter?: any, mode?: string) => {
     let prefetch_url = server_url + "positions?id=" + node_id;
@@ -107,11 +108,12 @@ const getOGSJWT = (): string => {
 };
 
 // Headers needed to talk to the godojo server.
-const godojo_headers = (): {} => ({
+const oje_headers = (): {} => ({
     'Accept': 'application/json',
     'Content-Type': 'application/json',
     'X-Godojo-Auth-Token': 'foofer',
-    'X-User-Info' : getOGSJWT()       // re-load this every time, in case they change identity via login/logout
+    'X-User-Info' : getOGSJWT(),       // old server uses this for id: re-load this every time, in case they change identity via login/logout
+    'X-CSRFToken': getCookie('csrftoken')
 }
 );
 
@@ -159,7 +161,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
     current_marks: [];           // the marks on the board - from the server, or from editing
     load_sequence_to_board = false; // True if we need to load the stones from the whole sequence received from the server onto the board
-    show_comments_requested = false;  //  If there is a "show_comments parameter in the URL
+    show_comments_requested = false;  //  If there is a "show_comments" parameter in the URL
     previous_position = {} as any; // Saving the information of the node we have moved from, so we can get back to it
     backstepping = false;   // Set to true when the person clicks the back arrow, to indicate we need to fetch the position information
     played_mistake = false;
@@ -296,7 +298,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
     getUserJosekiPermissions = () => {
         fetch(server_url + "user-permissions", {
             mode: 'cors',
-            headers: godojo_headers()   // server gets user id from here
+            headers: oje_headers()
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
@@ -304,7 +306,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
             this.setState({
                 user_can_edit: body.can_edit,
-                user_can_administer: body.is_admin,
+                user_can_administer: body.can_admin,
                 user_can_comment: body.can_comment
             });
         }).catch((r) => {
@@ -314,9 +316,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     getJosekiTag = () => {
         // The "Joseki Tag" has to be the one at group 0 seq 0.  That's the deal.
+        // We need it because we want to offer it as the default, during editing.
         fetch(server_url + "tag?group=0&seq=0", {
             mode: 'cors',
-            headers: godojo_headers()
+            headers: oje_headers()
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
@@ -360,10 +363,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
     updatePlayerJosekiRecord = (node_id) => {
         if (!data.get("user").anonymous) {
-            fetch(server_url + "playrecord/", {
+            fetch(server_url + "playrecord", {
                 method: 'put',
                 mode: 'cors',
-                headers: godojo_headers(),
+                headers: oje_headers(),
                 body: JSON.stringify({
                     position_id: node_id,
                     errors: this.state.joseki_errors
@@ -419,11 +422,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
             // First, get the required position from the server as soon as possible
             fetch(position_url(node_id, variation_filter, this.state.mode), {
                 mode: 'cors',
-                headers: godojo_headers()
+                headers: oje_headers()
             })
             .then(response => response.json()) // wait for the body of the response
             .then(body => {
-                console.log("Server response:", body);
+                // console.log("Server response:", body);
                 const target_node = body; // the one we're after comes in the first slot of the array
 
 
@@ -434,7 +437,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     // caching this one is important, because node_id could be "root", which needs to be cached this way
                     this.cached_positions = { [node_id]: target_node, ...this.cached_positions };
                 } else {
-                    console.log("Ignoring server response ", target_node, " looking for ", this.waiting_for);
+                    // console.log("Ignoring server response ", target_node, " looking for ", this.waiting_for);
                 }
 
             }).catch((r) => {
@@ -457,7 +460,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 console.log("... prefetching", node_id);
                 fetch(prefetch_url(node_id, variation_filter, this.state.mode), {
                     mode: 'cors',
-                    headers: godojo_headers()
+                    headers: oje_headers()
                 })
                 .then(response => response.json()) // wait for the body of the response
                 .then(body => {
@@ -674,7 +677,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 'pass' :
             "root";
 
-        //console.log("Processing placement at:", placement, move_string);
+        console.log("Processing placement at:", placement, move_string);
 
         if (this.backstepping) {
             const play = ".root." + move_string.replace(/,/g, '.');
@@ -768,6 +771,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 }
                 this.next_moves = [];
                 this.setState({
+                    current_node_id: null,
                     position_description: "", // Blank default description
                     current_move_category: "new",
                     child_count: 0,
@@ -872,7 +876,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.setState({extra_throb: true});
         fetch(results_url, {
             mode: 'cors',
-            headers: godojo_headers()
+            headers: oje_headers()
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
@@ -997,7 +1001,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
 
         fetch(tagscount_url(node_id), {
             mode: 'cors',
-            headers: godojo_headers()
+            headers: oje_headers()
         })
         .then(res => res.json())
         .then(body => {
@@ -1027,6 +1031,17 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.setState({db_locked_down: new_status});
     };
 
+    toggleBackend = () => {
+        const current_setting = data.get('joseki-url', "unset");
+        if (current_setting === '/oje/' || current_setting === "unset") {
+            data.set('joseki-url', '/godojo/');
+        } else {
+            data.set('joseki-url', '/oje/');
+        }
+
+        window.location.assign('/joseki/');
+    };
+
     render() {
         // console.log("Joseki app rendering ", this.state.move_string, this.state.current_move_category);
 
@@ -1048,6 +1063,15 @@ export class Joseki extends React.Component<JosekiProps, any> {
                     <span>{tag['description']}</span>
                 </div>
             ));
+
+        let backend = "?";
+        const current_setting = data.get('joseki-url');
+        if (current_setting === "/oje/" || current_setting === undefined) {
+            backend = "new";
+        }
+        if (current_setting === "/godojo/") {
+            backend = "old";
+        }
 
         return (
             <div className={"Joseki"}>
@@ -1082,6 +1106,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
                             <a href="https://github.com/online-go/online-go.com/wiki/OGS-Joseki-Explorer" className="joseki-help">
                                 <i className="fa fa-question-circle-o"></i>
                             </a>
+                            <div className="backend-control">
+                                <i className="fa fa-exchange" onClick={this.toggleBackend}></i>
+                                <span>{backend}</span>
+                            </div>
                         </div>
                     </div>
 
@@ -1192,7 +1220,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         if (this.state.mode === PageMode.Admin) {
             return (
                 <JosekiAdmin
-                    godojo_headers={godojo_headers()}
+                    oje_headers={oje_headers()}
                     server_url={server_url}
                     user_can_administer={this.state.user_can_administer}
                     user_can_edit={this.state.user_can_edit}
@@ -1204,6 +1232,8 @@ export class Joseki extends React.Component<JosekiProps, any> {
         } else if (this.state.mode === PageMode.Explore ||
             (this.state.mode === PageMode.Edit && this.state.move_string === "" )// you can't edit the empty board
         ) {
+            // hacklily lock down comments on the old server, because (1) it is old and (2) the comment PUT route changed.
+            const allow_comments = server_url.includes('oje') ? this.state.user_can_comment : false;
             return (
                 <ExplorePane
                     description={this.state.position_description}
@@ -1262,7 +1292,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             fetch(position_url(this.state.current_node_id), {
                 method: 'put',
                 mode: 'cors',
-                headers: godojo_headers(),
+                headers: oje_headers(),
                 body: JSON.stringify({
                     description: description,
                     variation_label: variation_label,
@@ -1283,10 +1313,10 @@ export class Joseki extends React.Component<JosekiProps, any> {
         } else {
             // Here the person has added one or more moves then clicked "save"
             // First we save the new position(s)
-            fetch(server_url + "positions/", {
+            fetch(server_url + "positions", {
                 method: 'post',
                 mode: 'cors',
-                headers: godojo_headers(),
+                headers: oje_headers(),
                 body: JSON.stringify({
                     sequence: this.state.move_string,
                     category: move_type })
@@ -1301,7 +1331,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 fetch(position_url(this.state.current_node_id), {
                     method: 'put',
                     mode: 'cors',
-                    headers: godojo_headers(),
+                    headers: oje_headers(),
                     body: JSON.stringify({
                         description: description,
                         variation_label: variation_label,
@@ -1388,12 +1418,12 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         // Possible optimisation: don't re-fetch if we already have them for this node
         const comments_url = server_url + "commentary?id=" + this.props.position_id;
         // console.log("Fetching comments ", comments_url);
-        // console.log(godojo_headers);
+        // console.log(oje_headers);
         this.setState({extra_throb: true});
 
         fetch(comments_url, {
             mode: 'cors',
-            headers: godojo_headers()
+            headers: oje_headers()
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
@@ -1410,7 +1440,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         // console.log(commentary_dto);
         const commentary = commentary_dto.commentary.map((comment) => (
             {
-                user_id: comment.userId,
+                user_id: comment.user_id,
                 date: new Date(comment.date),
                 comment: comment.comment
             }
@@ -1434,7 +1464,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
         this.setState({extra_throb: true});
         fetch(audits_url, {
             mode: 'cors',
-            headers: godojo_headers()
+            headers: oje_headers()
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
@@ -1466,8 +1496,8 @@ class ExplorePane extends React.Component<ExploreProps, any> {
             fetch(comment_url, {
                 method: 'post',
                 mode: 'cors',
-                headers: godojo_headers(),
-                body: this.state.next_comment
+                headers: oje_headers(),
+                body: JSON.stringify({'comment': this.state.next_comment})
             })
             .then(res => res.json())
             .then(body => {
@@ -1546,7 +1576,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                                 {this.state.audit_log.map((audit, idx) =>
                                     <div className="audit-entry" key={idx}>
                                         <div className="audit-header">
-                                            <Player user={audit.userId}></Player>
+                                            <Player user={audit.user_id}></Player>
                                             <div className="audit-date">{new Date(audit.date).toDateString()}</div>
                                         </div>
                                         {audit.comment}
@@ -1562,7 +1592,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
                                     tag_list_url = {server_url + "tags"}
                                     source_list_url = {server_url + "josekisources"}
                                     current_filter = {this.props.current_filter}
-                                    godojo_headers={godojo_headers()}
+                                    oje_headers={oje_headers()}
                                     set_variation_filter={this.props.set_variation_filter}
                                 />
                             </div>
@@ -1709,7 +1739,7 @@ class PlayPane extends React.Component<PlayProps, any> {
                                     tag_list_url = {server_url + "tags"}
                                     source_list_url = {server_url + "josekisources"}
                                     current_filter = {this.props.current_filter}
-                                    godojo_headers={godojo_headers()}
+                                    oje_headers={oje_headers()}
                                     set_variation_filter={this.props.set_variation_filter}
                                 />
                             </div>
@@ -1757,7 +1787,7 @@ class EditPane extends React.Component<EditProps, any> {
         // Get the list of joseki sources
         fetch(joseki_sources_url, {
             mode: 'cors',
-            headers: godojo_headers()
+            headers: oje_headers()
         })
         .then(res => res.json())
         .then(body => {
@@ -1770,6 +1800,7 @@ class EditPane extends React.Component<EditProps, any> {
 
     static getDerivedStateFromProps = (nextProps, prevState) => {
         // Detect node changes (resulting from clicking on the board), so we can update
+        // console.log("gdsfp:", nextProps.node_id, prevState.node_id);
         if (nextProps.node_id !== prevState.node_id) {
             // console.log("Updating from props...");
             // console.log("gdsfp: ", nextProps, prevState);
@@ -1855,7 +1886,7 @@ class EditPane extends React.Component<EditProps, any> {
         fetch(server_url + "josekisources/", {
             method: 'post',
             mode: 'cors',
-            headers: godojo_headers(),
+            headers: oje_headers(),
             body: JSON.stringify({ source: {description: description, url: url, contributor: this.props.contributor}})
         })
         .then(res => res.json())
@@ -1877,7 +1908,7 @@ class EditPane extends React.Component<EditProps, any> {
     };
 
     render = () => {
-        //console.log("rendering EditPane with ", this.state.move_type, this.state.new_description, this.state.variation_label);
+        console.log("rendering EditPane with ", this.state.move_type, this.state.new_description, this.state.variation_label);
 
         // create the set of select option elements from the valid MoveCategory items, with the current one at the top
         const selections = Object.keys(MoveCategory).map((selection, i) => (
@@ -1930,7 +1961,7 @@ class EditPane extends React.Component<EditProps, any> {
                     <div className="tag-edit">
                         <div>{_("Tags")}:</div>
                         <JosekiTagSelector
-                            godojo_headers={godojo_headers()}
+                            oje_headers={oje_headers()}
                             tag_list_url = {server_url + "tags"}
                             selected_tags= {this.state.tags}
                             on_tag_update={this.onTagChange}

@@ -30,7 +30,7 @@ import { JosekiStatsModal } from "JosekiStatsModal";
 
 
 interface JosekiAdminProps {
-    godojo_headers: any;
+    oje_headers: HeadersInit;
     server_url: string;
     user_can_administer: boolean; // allows them to revert changes, give permissions etc
     user_can_edit: boolean;       // allows them to filter
@@ -78,12 +78,13 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
     }
 
     componentDidMount = () => {
-        fetch(this.props.server_url + "appinfo/", {
+        fetch(this.props.server_url + "appinfo", {
             mode: 'cors',
-            headers: this.props.godojo_headers
+            headers: this.props.oje_headers
         })
         .then(res => res.json())
         .then(body => {
+            console.log("App info", body);
             this.setState({
                 schema_version: body.schema_version,
                 page_visits: body.page_visits,
@@ -120,10 +121,10 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         if (current_selections.get(next_selection)) {
             const target_id = next_selection.substring(7);  //  get rid of the wierd "select-" from SelectTable
             // console.log("Revert requested for ", target_id);
-            fetch(this.props.server_url + "revert/", {
+            fetch(this.props.server_url + "revert", {
                 method: 'post',
                 mode: 'cors',
-                headers: this.props.godojo_headers,
+                headers: this.props.oje_headers,
                 body: JSON.stringify({ audit_id: target_id})
             }).then (res => res.json())
             .then (body => {
@@ -151,8 +152,9 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         }
     };
 
+    // note: django back-end pager starts at page 1, our paged display component starts at page zero
     reloadData = () => {
-        let audits_url = this.props.server_url + `changes?page=${this.state.current_page}&size=${this.state.current_pageSize}`;
+        let audits_url = this.props.server_url + `changes?page=${this.state.current_page + 1}&page_size=${this.state.current_pageSize}`;
 
         if (this.state.filter_position_id !== "") {
             audits_url += `&position_id=${this.state.filter_position_id}`;
@@ -168,20 +170,20 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
 
         fetch(audits_url, {
             mode: 'cors',
-            headers: this.props.godojo_headers
+            headers: this.props.oje_headers
         })
         .then(res => res.json())
         .then(body => {
             // initialise selections, so we have the full list of them for select-all operations
             const selections = new Map();
-            for (const a of body.content) {
+            for (const a of body.results) {
                 const key = `select-${a._id}`;
                 selections.set(key, false);
             }
             this.setState({
                 selections,
-                data: body.content,
-                pages: body.totalPages,
+                data: body.results,
+                pages: body.num_pages,
                 all_selected: false,
                 loading: false
             });
@@ -246,7 +248,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
         fetch(lockdown_url, {
             method: 'put',
             mode: 'cors',
-            headers: this.props.godojo_headers
+            headers: this.props.oje_headers
         })
         .then(() => {
             this.props.updateDBLockStatus(!this.props.db_locked_down);
@@ -384,7 +386,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
                     <div className="user-admin">
                         <div>{_("Permissions Admin")}</div>
                         <JosekiPermissionsPanel
-                            godojo_headers={this.props.godojo_headers}
+                            oje_headers={this.props.oje_headers}
                             server_url={this.props.server_url}
                         />
                     </div>
