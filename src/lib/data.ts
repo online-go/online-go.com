@@ -194,15 +194,29 @@ export function removeAll(): void {
     }
 }
 
-export function get(key: "cached.groups", default_value?: GroupList): GroupList;
-export function get(key: "cached.active_tournaments", default_value?: ActiveTournamentList): ActiveTournamentList;
-export function get(key: string, default_value?: any): any | undefined;
-export function get(key, default_value?): any | undefined {
+
+// Needed for type widening
+// See: https://stackoverflow.com/questions/67057855/wrong-automatic-return-type-deduction-in-typescript
+export type ValueType<T> = T extends string
+    ? string
+    : T extends number
+    ? number
+    : T extends boolean
+    ? boolean
+    : T extends undefined
+    ? undefined
+    : [T] extends [any]
+    ? T
+    : object;
+
+export function get<T>(key: string, default_value: T): ValueType<T>;
+export function get(key: string): any;
+export function get<T = any>(key: string, default_value?: T): T | undefined {
     if (key in store) {
         return store[key];
     }
     if (remote_get(key)) {
-        return remote_get(key);
+        return remote_get(key) as unknown as T;
     }
     if (key in defaults) {
         return defaults[key];

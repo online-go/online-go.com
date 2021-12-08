@@ -122,7 +122,7 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
     constructor(props) {
         super(props);
         this.state = {
-            tab: data.get("automatch.last-tab", 'live'),
+            tab: data.get("automatch.last-tab", 'live') as Speed,
             blitz_settings: data.get("automatch.blitz", default_blitz),
             live_settings: data.get("automatch.live", default_live),
             correspondence_settings: data.get("automatch.correspondence", default_correspondence),
