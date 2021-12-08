@@ -374,6 +374,7 @@ export const GoResources = (props) => {
                             <span><Flag country={de}/> <a rel="noopener" href="http://dgob.de/">Deutscher Go-Bund</a></span>,
                             <span><Flag country={au}/> <a rel="noopener" href="http://www.australiango.asn.au/">Australian Go Association</a></span>,
                             <span><Flag country={un}/> <a rel="noopener" href="http://intergofed.org/">International Go Federation</a></span>,
+                            <span><Flag country={"rs"}/> <a rel="noopener" href="http://goss.rs/">Go Savez Srbije</a></span>,
                             <span><Flag country={eu}/> <a rel="noopener" href="http://www.eurogofed.org/">European Go Federation</a></span>,
                             <span><Flag country={"cy"}/> <a rel="noopener" href="http://www.cyprus-go.org/">Cyprus Go Association</a></span>,
                             <span><Flag country={"ar"}/> <a rel="noopener" href="http://www.go.org.ar/">Asociación Argentina de Go</a></span>,
