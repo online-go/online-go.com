@@ -47,6 +47,7 @@ import { profanity_filter } from "profanity_filter";
 import { popover } from "popover";
 import { ChatDetails } from "Chat";
 import swal from 'sweetalert2';
+import { GroupList } from "src/lib/types";
 
 interface ChatLogState {
     chat_log: Array<ChatMessage>;
@@ -188,7 +189,7 @@ function ChannelTopic(
     const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
     const [title_hover, set_title_hover]: [string, (s: string) => void] = useState("");
 
-    const groups = data.get('cached.groups', []);
+    const groups = data.get<GroupList>('cached.groups', []);
 
     // member of group, or a moderator, or a tournament channel
     const topic_editable = user.is_moderator
