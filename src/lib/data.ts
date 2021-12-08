@@ -211,7 +211,7 @@ export type ValueType<T> = T extends string
 
 export function get<T>(key: string, default_value: T): ValueType<T>;
 export function get(key: string): any;
-export function get<T = any>(key: string, default_value?: T): T | undefined {
+export function get<T>(key: string, default_value?: T): T | undefined {
     if (key in store) {
         return store[key];
     }
