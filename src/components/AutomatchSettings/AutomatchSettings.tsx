@@ -16,16 +16,11 @@
  */
 
 import * as React from "react";
-import {browserHistory} from "ogsHistory";
-import {_, pgettext, interpolate} from "translate";
+import {_} from "translate";
 import {Modal, openModal} from "Modal";
-import {challenge, challengeComputer, createCorrespondence, createBlitz,
-    createLive, blitz_config, live_config, correspondence_config} from "ChallengeModal";
-import {shortShortTimeControl} from "TimeControl";
-import {errorAlerter, ignore, dup} from "misc";
-import * as preferences from "preferences";
+import {dup} from "misc";
 import * as data from "data";
-import {bot_count} from "bots";
+import { AutomatchPreferencesBase, Size, Speed } from "src/lib/types";
 
 interface Events {
 }
@@ -34,7 +29,17 @@ interface AutomatchSettingsProperties {
 }
 
 
-const default_blitz = {
+type AutomatchPreferences = AutomatchPreferencesBase & { size_options: Size[] };
+
+interface AutomatchSettingsState {
+    tab: Speed;
+    blitz_settings: AutomatchPreferences;
+    live_settings: AutomatchPreferences;
+    correspondence_settings: AutomatchPreferences;
+}
+
+
+const default_blitz: AutomatchPreferences = {
     upper_rank_diff: 3,
     lower_rank_diff: 3,
     size_options: ['19x19'],
@@ -53,7 +58,7 @@ const default_blitz = {
         value: 'disabled',
     },
 };
-const default_live = {
+const default_live: AutomatchPreferences = {
     upper_rank_diff: 3,
     lower_rank_diff: 3,
     size_options: ['19x19'],
@@ -72,7 +77,7 @@ const default_live = {
         value: 'enabled',
     },
 };
-const default_correspondence = {
+const default_correspondence: AutomatchPreferences = {
     upper_rank_diff: 3,
     lower_rank_diff: 3,
     size_options: ['19x19'],
@@ -113,7 +118,7 @@ export function getAutomatchSettings(speed: 'blitz'|'live'|'correspondence') {
     }
 }
 
-export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties, any> {
+export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties, AutomatchSettingsState> {
     constructor(props) {
         super(props);
         this.state = {
