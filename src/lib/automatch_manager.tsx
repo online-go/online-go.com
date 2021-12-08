@@ -19,15 +19,9 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {termination_socket} from "sockets";
 import {TypedEventEmitter} from "TypedEventEmitter";
-import {sfx} from "sfx";
 import {browserHistory} from "ogsHistory";
-import * as data from "data";
-import * as preferences from "preferences";
 import {Toast, toast} from 'toast';
-
-export type Speed = 'blitz' | 'live' | 'correspondence';
-export type Size = '9x9' | '13x13' | '19x19';
-export type AutomatchCondition = 'required' | 'preferred' | 'no-preference';
+import { AutomatchPreferencesBase, Size, Speed } from "./types";
 
 interface Events {
     'start': any;
@@ -35,37 +29,10 @@ interface Events {
     'cancel': any;
 }
 
-export interface AutomatchPreferences {
+export type AutomatchPreferences = AutomatchPreferencesBase & {
     uuid: string;
-    timestamp?: number;
-    size_speed_options: Array<{speed: Speed; size: Size}>;
-    lower_rank_diff: number;
-    upper_rank_diff: number;
-    rules: {
-        condition: AutomatchCondition;
-        value: 'japanese' | 'chinese' | 'aga' | 'korean' | 'nz' | 'ing';
-    };
-    time_control: {
-        condition: AutomatchCondition;
-        value: {
-            system: 'byoyomi' | 'fischer' | 'simple' | 'canadian';
-            initial_time?: number;
-            time_increment?: number;
-            max_time?: number;
-            main_time?: number;
-            period_time?: number;
-            periods?: number;
-            stones_per_period?: number;
-            per_move?: number;
-            pause_on_weekends?: boolean;
-        };
-    };
-    handicap: {
-        condition: AutomatchCondition;
-        value: 'enabled' | 'disabled';
-    };
-}
-
+    size_speed_options: Array<{ size: Size; speed: Speed }>;
+};
 
 class AutomatchToast extends React.PureComponent<{}, any> {
     timer: any;
