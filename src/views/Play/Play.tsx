@@ -39,6 +39,7 @@ import {SupporterGoals} from "SupporterGoals";
 import {boundedRankString} from "rank_utils";
 import * as player_cache from "player_cache";
 import swal from 'sweetalert2';
+import { parseSemver } from "@sentry/utils";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 
@@ -355,6 +356,27 @@ export class Play extends React.Component<PlayProperties, any> {
         return jrcp;
     };
 
+    startOwnRengoChallenge  = () => {
+        const our_challenge = this.state.rengo_list.find((c) => (c.user_challenge));
+
+        swal({
+            text: "Starting...",
+            type: "info",
+            showCancelButton: false,
+            showConfirmButton: false,
+            allowEscapeKey: false,
+        }).catch(swal.noop);
+
+        post("challenges/%%/start", our_challenge.challenge_id, {})
+        .then(() => {
+            swal.close();
+        })
+        .catch((err) => {
+            swal.close();
+            errorAlerter(err);
+        });
+    };
+
     freezeChallenges = () => {
         if (this.list_freeze_timeout) {
             clearTimeout(this.list_freeze_timeout);
@@ -540,6 +562,14 @@ export class Play extends React.Component<PlayProperties, any> {
             return this.state.automatch_size_options.indexOf(size) >= 0;
         };
 
+        const own_rengo_challenge_pending = this.ownRengoChallengePending();
+
+        let own_rengo_challenge;
+
+        if (own_rengo_challenge_pending) {
+            own_rengo_challenge = this.state.rengo_list.find((c) => (c.user_challenge));
+        }
+
         if (automatch_manager.active_live_automatcher) {
             return (
                 <div className='automatch-container'>
@@ -574,7 +604,7 @@ export class Play extends React.Component<PlayProperties, any> {
                     </div>
                 </div>
             );
-        } else if (this.ownRengoChallengePending() || this.joinedRengoChallengePending()) {
+        } else if (own_rengo_challenge_pending || this.joinedRengoChallengePending()) {
             return(
                 <div className='automatch-container'>
                     <div className='automatch-header'>
@@ -587,9 +617,16 @@ export class Play extends React.Component<PlayProperties, any> {
                     <div className={'rengo-admin-container' + (this.state.admin_pending ? " pending" : "")}>
                         {this.renderRengoChallengePane()}
                     </div>
-                    { (this.ownRengoChallengePending() || null) &&
-                        <div className='automatch-settings'>
-                            <button className='danger sm' onClick={this.cancelOwnChallenges.bind(self, this.state.rengo_list)}>{pgettext("Cancel challenge", "Cancel")}</button>
+                    { (own_rengo_challenge_pending || null) &&
+                        <div className="rengo-challenge-buttons">
+                            <div className='automatch-settings'>
+                                <button className='danger sm' onClick={this.cancelOwnChallenges.bind(self, this.state.rengo_list)}>{pgettext("Cancel challenge", "Cancel")}</button>
+                            </div>
+                            {((own_rengo_challenge.rengo_black_team.length > 0 && own_rengo_challenge.rengo_white_team.length > 0) || null) &&
+                                <div className='automatch-settings'>
+                                    <button className='success sm' onClick={this.startOwnRengoChallenge}>{pgettext("Start game", "Start")}</button>
+                                </div>
+                            }
                         </div>
                     }
                 </div>
