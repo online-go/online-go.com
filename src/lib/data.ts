@@ -197,7 +197,7 @@ export function removeAll(): void {
 
 // Needed for type widening
 // See: https://stackoverflow.com/questions/67057855/wrong-automatic-return-type-deduction-in-typescript
-export type ValueType<T> = T extends string
+type ValueType<T> = T extends string
     ? string
     : T extends number
     ? number
