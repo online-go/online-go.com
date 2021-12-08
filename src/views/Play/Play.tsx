@@ -350,7 +350,7 @@ export class Play extends React.Component<PlayProperties, any> {
     };
 
     joinedRengoChallengePending = (): boolean => {
-        const user_id = data.get('config.user').id
+        const user_id = data.get('config.user').id;
         const jrcp = this.state.rengo_list.some((c) => (c['rengo_participants'].includes(user_id)));
         return jrcp;
     };
@@ -819,7 +819,7 @@ export class Play extends React.Component<PlayProperties, any> {
             allowEscapeKey: false,
         }).catch(swal.noop);
 
-        post("challenges/%%/withdraw", C.challenge_id, {})
+        del("challenges/%%/join", C.challenge_id, {})
         .then(() => {
             swal.close();
         })
@@ -854,10 +854,10 @@ export class Play extends React.Component<PlayProperties, any> {
 
                             {(C.user_challenge || null) && <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">{_("Remove")}</button>}
 
-                            {(C.eligible && !C.removed && !C.user_challenge && !C.rengo_nominees.includes(user.id) || null) &&
+                            {(C.eligible && !C.removed && !C.user_challenge && !C.rengo_participants.includes(user.id) || null) &&
                                 <button onClick={this.nominateForRengoChallenge.bind(this, C)} className="btn success xs">{_("Join")}</button>}
 
-                            {(C.eligible && !C.removed && !C.user_challenge && C.rengo_nominees.includes(user.id) || null) &&
+                            {(C.eligible && !C.removed && !C.user_challenge && C.rengo_participants.includes(user.id) || null) &&
                                 <button onClick={this.unNominateForRengoChallenge.bind(this, C)} className="btn success xs">{_("Withdraw")}</button>}
 
                             { /* Mark eligible suspect games with a warning icon and warning explanation popup.
