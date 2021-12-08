@@ -983,9 +983,9 @@ export class Play extends React.Component<PlayProperties, any> {
                     <div className='rengo-assignment-row' key={i}>
                         {(our_challenge.user_challenge || null) &&
                             <React.Fragment>
-                                <i className="fa fa-lg fa-arrow-circle-down black"
+                                <i className="fa fa-lg fa-arrow-down black"
                                     onClick={this.assignToTeam.bind(self, n, 'rengo_black_team', our_challenge)}/>
-                                <i className="fa fa-lg fa-arrow-circle-down white"
+                                <i className="fa fa-lg fa-arrow-down white"
                                     onClick={this.assignToTeam.bind(self, n, 'rengo_white_team', our_challenge)}/>
                             </React.Fragment>
                         }
