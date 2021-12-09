@@ -23,7 +23,7 @@ import * as data from "data";
 import { Player } from "Player";
 
 interface JosekiAdminProps {
-    godojo_headers: any;
+    oje_headers: HeadersInit;
     server_url: string;
 }
 
@@ -50,7 +50,7 @@ export class JosekiPermissionsPanel extends React.PureComponent<any, any> {
         this.setState({ throb: true });
         fetch(this.props.server_url + "permissions?id=" + e.target.value, {
             mode: 'cors',
-            headers: this.props.godojo_headers
+            headers: this.props.oje_headers
         })
         .then(response => response.json()) // wait for the body of the response
         .then(body => {
@@ -59,7 +59,7 @@ export class JosekiPermissionsPanel extends React.PureComponent<any, any> {
             this.setState({
                 can_comment: body.can_comment,
                 can_edit: body.can_edit,
-                can_admin: body.is_admin,
+                can_admin: body.can_admin,
                 throb: false
             });
         }).catch((r) => {
@@ -96,7 +96,7 @@ export class JosekiPermissionsPanel extends React.PureComponent<any, any> {
         fetch(this.props.server_url + "permissions?id=" + this.state.userid, {
             method: 'put',
             mode: 'cors',
-            headers: this.props.godojo_headers,
+            headers: this.props.oje_headers,
             body: JSON.stringify(new_permissions)
         }).then (res => res.json())
         .then (body => {

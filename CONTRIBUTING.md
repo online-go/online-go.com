@@ -20,7 +20,7 @@ connects to the beta server for testing.
 
 If you want to work on Joseki Explorer front-end code, you also need to point to the beta Joseki Explorer server.
 
-Do this by executing `data.set("joseki-url", "https:beta.online-go.com/godojo/")` in the javascript console of your browser,
+Do this by executing `data.set("joseki-url", "https:beta.online-go.com/oje/")` in the javascript console of your browser,
 after confirming that the dev server loaded as above.
 
 ## Getting Started

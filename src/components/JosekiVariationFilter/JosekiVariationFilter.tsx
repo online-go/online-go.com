@@ -22,7 +22,7 @@ import * as player_cache from "player_cache";
 import { JosekiTagSelector } from "../JosekiTagSelector";
 
 interface JosekiVariationFilterProps {
-    godojo_headers: any;
+    oje_headers: HeadersInit;
     contributor_list_url: string;
     tag_list_url: string;
     source_list_url: string;
@@ -49,7 +49,7 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         // Get the list of contributors to chose from
         fetch(this.props.contributor_list_url, {
             mode: 'cors',
-            headers: this.props.godojo_headers
+            headers: this.props.oje_headers
         })
         .then(res => res.json())
         .then(body => {
@@ -79,7 +79,7 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
 
         fetch(this.props.source_list_url, {
             mode: 'cors',
-            headers: this.props.godojo_headers
+            headers: this.props.oje_headers
         })
         .then(res => res.json())
         .then(body => {
@@ -149,7 +149,7 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
                 <div className="filter-set">
                     <div className="filter-label">{_("Filter by Tag")}</div>
                     <JosekiTagSelector
-                        godojo_headers={this.props.godojo_headers}
+                        oje_headers={this.props.oje_headers}
                         tag_list_url={this.props.tag_list_url}
                         selected_tags={this.state.selected_filter.tags}
                         on_tag_update={this.onTagChange}

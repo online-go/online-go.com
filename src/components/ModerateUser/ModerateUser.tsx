@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as data from 'data';
 import {_} from "translate";
 import {put, get, del} from "requests";
 import {errorAlerter, ignore} from "misc";
@@ -104,7 +105,6 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     setUiClassExtra = (ev) => this.setState({ui_class_extra: ev.target.value});
 
 
-    /*
     deleteAccount = (ev) => {
         const user_id = this.props.playerId;
         const username = lookup(user_id)?.username || "";
@@ -114,15 +114,15 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
             del(`players/${user_id}`, {
             })
             .then((obj) => {
-                swal("Done");
+                swal("Done").catch(swal.noop);
             })
             .catch(errorAlerter);
         })
         .catch(ignore);
-    }
-    */
+    };
 
     render() {
+        const moderator = data.get('user');
         const user = this.state;
 
         return (
@@ -131,7 +131,6 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                     <h1>
                         {this.state.username}
                     </h1>
-                    {/* <button className='reject' onClick={this.deleteAccount}>Delete account</button> */}
                 </div>
                 {(this.state.loading === false || null) &&
                     <div className="body">
@@ -197,6 +196,11 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                                 </dl>
                             </div>
                         </div>
+                        {moderator.is_superuser &&
+                            <div style={{'textAlign': 'center'}}>
+                                <button className='reject' onClick={this.deleteAccount}>Delete account</button>
+                            </div>
+                        }
                     </div>
                 }
                 <div className="buttons">
