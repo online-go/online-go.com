@@ -728,12 +728,16 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         if (this.ai_review?.type === "fast" ){
             const scores = this.ai_review?.scores;
+            const is_uploaded = (this.props.game.goban.config.original_sgf !== undefined);
+            //one more ai review point than moves in the game, since initial board gets a score.
+            const check1 = !is_uploaded &&
+            (this.props.game.goban.config.moves.length !== (this.ai_review?.scores.length - 1));
+            // extra initial ! in all_moves which matches extra empty board score, except in handicap games for some reason.
+            // so subtract 1 if black goes second == bplayer
+            const check2 = is_uploaded &&
+            ((this.props.game.goban.config["all_moves"].split("!").length - bplayer) !== this.ai_review?.scores.length);
 
-            if (scores === undefined || ((this.props.game.goban.config.original_sgf === undefined) &&
-            (this.props.game.goban.config.moves.length !== (this.ai_review?.scores.length - 1))) ||
-            ((this.props.game.goban.config.original_sgf !== undefined) &&
-            ((this.props.game.goban.config["all_moves"].split("!").length - 1) !== this.ai_review?.scores.length))
-            ){
+            if (scores === undefined || check1 || check2){
                 return {"ai_table_rows" : default_table_rows, avg_score_loss};
             }
 
@@ -796,11 +800,16 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         } else if (this.ai_review?.type === "full" ) {
             const num_rows = ai_table_rows.length;
             const movekeys = Object.keys( this.ai_review?.moves);
-            const checkmoves = ((this.props.game.goban.config.original_sgf === undefined) &&
-            (this.props.game.goban.config.moves.length !== (movekeys.length - 1))) ||
-            ((this.props.game.goban.config.original_sgf !== undefined) &&
-            (this.props.game.goban.config["all_moves"].split("!").length !== (movekeys.length - 1)));
-            if (this.state.loading || checkmoves ){
+            const is_uploaded = (this.props.game.goban.config.original_sgf !== undefined);
+            // should be one more ai review score and move branches for empty board.
+            const check1 = !is_uploaded &&
+            (this.props.game.goban.config.moves.length !== (movekeys.length - 1));
+            // extra initial ! in all_moves which matches extra empty board score, except in handicap games for some reason.
+            // so subtract 1 if black goes second == bplayer
+            const check2 = is_uploaded &&
+            ((this.props.game.goban.config["all_moves"].split("!").length - bplayer) !== movekeys.length);
+
+            if (this.state.loading || check1 || check2 ){
                 for (let j = 0; j < ai_table_rows.length; j++){
                     ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
                 }
@@ -811,7 +820,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             const othercounters = Array(2).fill(0);
             let wtotal = 0;
             let btotal = 0;
-            const scores = this.ai_review?.scores;
 
             for (let j = hoffset; j < Object.keys( this.ai_review?.moves ).length - 1; j++ ){
                 const playermove = this.ai_review?.moves[j + 1].move;
