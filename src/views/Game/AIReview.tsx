@@ -41,11 +41,8 @@ import {
     ColoredCircle,
     getWorstMoves,
     AIReviewWorstMoveEntry,
-    Goban,
-    GoEngine
 } from 'goban';
 import swal from 'sweetalert2';
-import { element } from "prop-types";
 
 export interface AIReviewEntry {
     move_number: number;
@@ -102,6 +99,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const ai_table_out = this.AiSummaryTableRowList();
         this.table_rows = ai_table_out.ai_table_rows;
         this.avg_score_loss = ai_table_out.avg_score_loss;
+        if (!data.get("user").is_moderator){
+            this.setState({
+                table_set: true,
+            }
+            );
+        }
     }
     componentDidUpdate(prevProps: AIReviewProperties, prevState: any) {
         if (this.getGameId() !== this.getGameId(prevProps)) {
@@ -469,6 +472,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 // it was upon further analysis (use next move's win rate)
                 let found_next_move = false;
                 for (const branch of branches) {
+                    if (branch.moves.length === 0){
+                        continue;
+                    }
                     if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
                         found_next_move = true;
                         branch.win_rate = next_win_rate;
@@ -500,7 +506,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     const branch = branches[i];
                     const mv = branch.moves[0];
 
-                    if (mv.x === -1) {
+                    if (mv === undefined || mv.x === -1 ) {
                         continue;
                     }
 
@@ -711,28 +717,23 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const ai_table_rows = [["Excellent"], ["Great"], ["Good"], ["Inaccuracy"], ["Mistake"], ["Blunder"]];
         const default_table_rows = [["", "", "", "", ""]];
         const avg_score_loss = [0, 0];
-        //const first_player = this.props.game.goban.engine.config.initial_player;
-        //const game_rules = this.props.game.goban.engine.config.rules;
+        const handicap = this.props.game.goban.engine.handicap;
         let hoffset = this.handicapOffset();
         hoffset = (hoffset === 1) ? 0 : hoffset;
-        const bplayer = (hoffset > 0) ? 1 : 0;
+        const bplayer = (hoffset > 0 || handicap > 1) ? 1 : 0;
 
         if (!this.ai_review ) {
             return {"ai_table_rows" : default_table_rows, avg_score_loss};
         }
 
-        /*if (this.ai_review?.type === "fast" ){
-            this.setState({
-                table_set: true
-            });
-            return default_table_rows;
-        }*/
-
         if (this.ai_review?.type === "fast" ){
             const scores = this.ai_review?.scores;
 
-            if (scores === undefined || this.props.game.goban.config.moves.length !== (this.ai_review?.scores.length - 1) ){
-                console.log("no scores");
+            if (scores === undefined || ((this.props.game.goban.config.original_sgf === undefined) &&
+            (this.props.game.goban.config.moves.length !== (this.ai_review?.scores.length - 1))) ||
+            ((this.props.game.goban.config.original_sgf !== undefined) &&
+            ((this.props.game.goban.config["all_moves"].split("!").length - 1) !== this.ai_review?.scores.length))
+            ){
                 return {"ai_table_rows" : default_table_rows, avg_score_loss};
             }
 
@@ -750,19 +751,19 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 const player_index = (is_bplayer) ? 0 : 1;
                 scorediff = (is_bplayer) ? (-1) * scorediff : scorediff;
                 avg_score_loss[player_index] += scorediff;
-                console.log(scorediff);
+
                 if (scorediff < 1) {
                     movecounters[offset] += 1;
-                    console.log("good");
+                    //console.log("good");
                 } else if (scorediff < 2) {
                     movecounters[offset + 1] += 1;
-                    console.log("inaccuracy");
+                    //console.log("inaccuracy");
                 }else if (scorediff < 5) {
                     movecounters[offset + 2] += 1;
-                    console.log("mistake");
+                    //console.log("mistake");
                 } else if (scorediff >= 5) {
                     movecounters[offset + 3] += 1;
-                    console.log("blunder");
+                    //console.log("blunder");
                 } else{
                     othercounters[player_index] += 1;
                 }
@@ -790,13 +791,15 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             this.setState({
                 table_set: true
             });
-            console.log(avg_score_loss);
             return {ai_table_rows, avg_score_loss};
 
         } else if (this.ai_review?.type === "full" ) {
             const num_rows = ai_table_rows.length;
             const movekeys = Object.keys( this.ai_review?.moves);
-            const checkmoves = parseInt(movekeys[movekeys.length - 1]) !== ((movekeys).length - 1);
+            const checkmoves = ((this.props.game.goban.config.original_sgf === undefined) &&
+            (this.props.game.goban.config.moves.length !== (movekeys.length - 1))) ||
+            ((this.props.game.goban.config.original_sgf !== undefined) &&
+            (this.props.game.goban.config["all_moves"].split("!").length !== (movekeys.length - 1)));
             if (this.state.loading || checkmoves ){
                 for (let j = 0; j < ai_table_rows.length; j++){
                     ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
@@ -811,53 +814,46 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             const scores = this.ai_review?.scores;
 
             for (let j = hoffset; j < Object.keys( this.ai_review?.moves ).length - 1; j++ ){
-                console.log(j);
                 const playermove = this.ai_review?.moves[j + 1].move;
-                console.log(playermove);
-                const current_branches = this.ai_review?.moves[j].branches;
+                const current_branches = this.ai_review?.moves[j].branches.slice(0, 6);
                 const bluemove = current_branches[0].moves[0];
-                console.log(bluemove);
                 const is_bplayer = (j - hoffset) % 2 === bplayer;
                 const offset = (is_bplayer) ? 0 : num_rows;
                 const player_index = (is_bplayer) ? 0 : 1;
                 let scorediff = this.ai_review?.moves[j + 1].score - this.ai_review?.moves[j].score;
-                //let scorediff = scores[j + 1] - scores[j];
                 scorediff = (is_bplayer) ? (-1) * scorediff : scorediff;
-                console.log(scorediff);
                 avg_score_loss[player_index] += scorediff;
 
                 if (bluemove === undefined ){
                     othercounters[player_index] += 1;
-                    console.log("no blue");
                 } else if ( playermove.x === -1){
                     othercounters[player_index] += 1;
-                    console.log("pass");
+                    //console.log("pass etc");
                 } else {
                     if (isEqualMoveIntersection(bluemove, playermove)){
                         movecounters[offset] += 1;
-                        console.log("blue");
+                        //console.log("blue Excellent");
                     } else if (current_branches.some(
                         (branch, index) => {
-                            //console.log(`Index ${index}, Ai move ${JSON.stringify(branch.moves[0])}, player move ${JSON.stringify(playermove)}, visits ${branch.visits}.`);
-                            const check = index > 0 && isEqualMoveIntersection(branch.moves[0], playermove) && (branch.visits >= Math.min(50, 0.1 * this.ai_review?.strength));
-                            //console.log(check);
+                            const check = index > 0 && isEqualMoveIntersection(branch.moves[0], playermove) &&
+                            (branch.visits >= Math.min(50, 0.1 * this.ai_review?.strength));
                             return check;
                         })
                     ) {
                         movecounters[offset + 1] += 1;
-                        console.log("green");
+                        //console.log("green Great");
                     } else if (scorediff < 1) {
                         movecounters[offset + 2] += 1;
-                        console.log("good");
+                        //console.log("good");
                     } else if (scorediff < 2) {
                         movecounters[offset + 3] += 1;
-                        console.log("inaccuracy");
+                        //console.log("inaccuracy");
                     } else if (scorediff < 5) {
                         movecounters[offset + 4] += 1;
-                        console.log("mistake");
+                        //console.log("mistake");
                     } else if (scorediff >= 5) {
                         movecounters[offset + 5] += 1;
-                        console.log("blunder");
+                        //console.log("blunder");
                     } else{
                         othercounters[player_index] += 1;
                     }
@@ -883,14 +879,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
             }
 
-            //console.log(summary_moves_list);
-            //console.log(ai_table_rows);
-            //this.ai_review?.scores?
             this.setState({
                 table_set: true
             });
-            console.log(avg_score_loss);
-            console.log(this.props.game.goban.engine.config.initial_player);
+
             return {ai_table_rows, avg_score_loss};
         } else {
             return {default_table_rows, avg_score_loss};
@@ -1168,7 +1160,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         </span>
                     </div>
                 }
-                { (((this.ai_review?.type === "full" ) || (this.ai_review?.type === "fast" )) && this.ai_review?.engine === "katago") &&
+                { (data.get("user").is_moderator && ((this.ai_review?.type === "full" ) || (this.ai_review?.type === "fast" )) && this.ai_review?.engine === "katago") &&
                 <div>
                     <AiSummaryTable headinglist = {["Type", "Black", "%", "White", "%"]} bodylist = {this.table_rows} avg_loss = {this.avg_score_loss} />
                 </div>
@@ -1272,12 +1264,29 @@ function extractShortNetworkVersion(network: string): string {
 }
 
 class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummaryTableState>{
+    constructor(props: AiSummaryTableProperties) {
+        super(props);
+        const state: AiSummaryTableState = {
+            table_hidden : preferences.get('ai-summary-table-show'),
+        };
+        this.state = state;
+    }
 
     render(): JSX.Element {
 
         return(
             <div className = "ai-summary-container">
-                <table className = "ai-summary-table">
+                <div className = 'ai-summary-toggler'>
+                    <span>{((this.state.table_hidden) ? "Show" : "Hide") + " summary table " }</span>
+                    <span>
+                        <Toggle checked={this.state.table_hidden} onChange={b => {
+                            preferences.set('ai-summary-table-show', b);
+                            this.setState({table_hidden: b});
+                            //console.log(this.state.table_hidden);
+                        }}/>
+                    </span>
+                </div>
+                <table className = "ai-summary-table" style = {{display: this.state.table_hidden ? "block" : "none"}}>
                     <thead>
                         <tr>
                             {this.props.headinglist.map( (head, index) => {
@@ -1310,11 +1319,14 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
 }
 
 interface AiSummaryTableState {
-
+    table_hidden: boolean;
 }
 
 interface AiSummaryTableProperties {
+    /** headings for ai review table */
     headinglist: string[];
+    /** the body of the table excluding the average score loss part */
     bodylist: string[][];
+    /** values for the average score loss */
     avg_loss: number[];
 }
