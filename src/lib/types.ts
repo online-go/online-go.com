@@ -74,3 +74,38 @@ export interface ActiveTournament {
 }
 
 export type ActiveTournamentList = Array<ActiveTournament>;
+
+export type Speed = 'blitz' | 'live' | 'correspondence';
+export type Size = '9x9' | '13x13' | '19x19';
+export type AutomatchCondition = 'required' | 'preferred' | 'no-preference';
+
+// AutomatchSettings and automatch_manager handle size, speed and uuid
+// differently, but everything else is the same.  Hence a shared base.
+export interface AutomatchPreferencesBase {
+    timestamp?: number;
+    lower_rank_diff: number;
+    upper_rank_diff: number;
+    rules: {
+        condition: AutomatchCondition;
+        value: 'japanese' | 'chinese' | 'aga' | 'korean' | 'nz' | 'ing';
+    };
+    time_control: {
+        condition: AutomatchCondition;
+        value: {
+            system: 'byoyomi' | 'fischer' | 'simple' | 'canadian';
+            initial_time?: number;
+            time_increment?: number;
+            max_time?: number;
+            main_time?: number;
+            period_time?: number;
+            periods?: number;
+            stones_per_period?: number;
+            per_move?: number;
+            pause_on_weekends?: boolean;
+        };
+    };
+    handicap: {
+        condition: AutomatchCondition;
+        value: 'enabled' | 'disabled';
+    };
+}
