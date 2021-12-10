@@ -271,7 +271,7 @@ export class ColorTableToggle extends React.Component<{}, any> {
     }
 
     componentDidMount() {
-        const c = data.get("table-color-default-on", "");
+        const c = data.get("table-color-default-on", false);
         if (c === true) {
             this.setState(prevState => ({
                 onDefault: !prevState.onDefault

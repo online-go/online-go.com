@@ -184,6 +184,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
         this.state = {
             move_string: "",             // This is used for making sure we know what the current move is. It is the display value also.
             current_node_id: undefined as string,    // The server's ID for this node, so we can uniquely identify it and create our own route for it,
+            most_recent_known_node: undefined as string,  // the value of current_node_id when the person clicked on a node not in the db
             position_description: "",
             variation_label: '_',
             current_move_category: "",
@@ -706,7 +707,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
             } else if (play === this.last_server_position) {
                 //console.log("Arriving back at known moves...");
                 // We have back stepped back to known moves
-                this.fetchNextMovesFor(this.state.current_node_id);
+                this.fetchNextMovesFor(this.state.most_recent_known_node);
             } else {
                 this.backstepping = false; // nothing else to do
                 this.goban.enableStonePlacement();
@@ -771,6 +772,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 }
                 this.next_moves = [];
                 this.setState({
+                    most_recent_known_node: this.state.current_node_id,
                     current_node_id: null,
                     position_description: "", // Blank default description
                     current_move_category: "new",
@@ -1319,7 +1321,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 headers: oje_headers(),
                 body: JSON.stringify({
                     sequence: this.state.move_string,
-                    category: move_type })
+                    category: move_type.toUpperCase() })
             })
             .then(res => res.json())
             .then(body => {
@@ -1751,8 +1753,7 @@ class PlayPane extends React.Component<PlayProps, any> {
 }
 
 // This pane enables the user to edit the description and move attributes of the current position
-// It doesn't care what node we are on.  If the description or category of the node changes due to a click,
-// this component just updates what it is showing so they can edit it
+// It re-reads position Props on node_id change
 
 interface EditProps {
     node_id: number;
