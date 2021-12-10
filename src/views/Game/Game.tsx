@@ -55,6 +55,8 @@ import {toast} from "toast";
 import {Clock} from "Clock";
 import {JGOFClock} from "goban";
 import {GameTimings} from "./GameTimings";
+import {getPlayerIconURL} from "PlayerIcon";
+
 import swal from 'sweetalert2';
 
 const win = $(window);
@@ -2991,10 +2993,17 @@ export class Game extends React.PureComponent<GameProperties, any> {
             <div ref={el => this.ref_players = el} className="players">
                 {["black", "white"].map((color: 'black' | 'white', idx) => {
                     const player_bg: any = {};
-                    if (this.state[`historical_${color}`]) {
+
+                    // In rengo we always will have a player icon to show (after initialisation).
+                    // In other cases, we only have one if `historical` is set
+                    if (engine.rengo && engine.players[color] && engine.players[color]['icon-url']) {
+                        const icon = icon_size_url(engine.players[color]['icon-url'], 64);
+                        player_bg.backgroundImage = `url("${icon}")`;
+                    } else if (this.state[`historical_${color}`]) {
                         const icon = icon_size_url(this.state[`historical_${color}`]['icon'], 64);
                         player_bg.backgroundImage = `url("${icon}")`;
                     }
+                    console.log(player_bg);
                     return (
                         <div key={idx} className={`${color} player-container`}>
 
