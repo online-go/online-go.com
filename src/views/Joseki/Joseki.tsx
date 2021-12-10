@@ -1321,7 +1321,7 @@ export class Joseki extends React.Component<JosekiProps, any> {
                 headers: oje_headers(),
                 body: JSON.stringify({
                     sequence: this.state.move_string,
-                    category: move_type })
+                    category: move_type.toUpperCase() })
             })
             .then(res => res.json())
             .then(body => {
