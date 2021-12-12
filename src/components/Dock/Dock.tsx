@@ -19,8 +19,11 @@ import * as React from "react";
 import * as preferences from "preferences";
 import { MAX_DOCK_DELAY } from 'Settings';
 
-export class Dock extends React.Component<any, any> {
-    constructor(props) {
+interface DockProperties { className?: string }
+interface DockState { dock_delay: number }
+
+export class Dock extends React.Component<DockProperties, DockState> {
+    constructor(props: DockProperties) {
         super(props);
         this.state = {
             dock_delay: preferences.get("dock-delay")
