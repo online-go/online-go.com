@@ -147,7 +147,7 @@ export function emitNotification(title, body, cb?) {
              * watch for the associated 'storage' event in other tabs. We hope that we get this
              * before our timer is up to send the notification ourselves.
              *
-             * This is not a full proof system, but it doesn't need to be as duplicate notifications
+             * This is not a fool-proof system, but it doesn't need to be as duplicate notifications
              * are handled just fine by the browser, but this reduces flicker and reduces the chance
              * that the browser will cut us off from sending desktop notifications.
              */

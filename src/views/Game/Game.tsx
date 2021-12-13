@@ -1693,8 +1693,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
     }
     sync_state() {
-        console.log(" ** Sync state...");
-
         const new_state: any = {
             game_id: this.game_id,
             review_id: this.review_id,
@@ -1716,7 +1714,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 console.error(e.stack);
             }
 
-            console.log(this.goban);
+            // console.log("At sync state, goban:", this.goban);
             /* Game state */
             new_state.mode = goban.mode;
             new_state.phase = engine.phase;
@@ -1780,8 +1778,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
             } else {
                 new_state.score = engine.computeScore(true);
             }
-
-
 
             if (goban.mode === "conditional") {
                 const tree = $(this.conditional_move_tree);
@@ -2987,7 +2983,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
         const engine = goban.engine;
 
-        console.log(" ** Frag players...", engine.players);
+        // console.log(" ** Frag players...", engine.players);
 
         return (
             <div ref={el => this.ref_players = el} className="players">
@@ -3003,7 +2999,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
                         const icon = icon_size_url(this.state[`historical_${color}`]['icon'], 64);
                         player_bg.backgroundImage = `url("${icon}")`;
                     }
-                    console.log(player_bg);
+
                     return (
                         <div key={idx} className={`${color} player-container`}>
 
