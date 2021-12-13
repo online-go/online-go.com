@@ -32,7 +32,7 @@ interface LearningPageProperties {
     nextSection: string;
 }
 
-export abstract class LearningPage extends React.Component<LearningPageProperties, any> {
+export abstract class LearningPage extends React.Component<LearningPageProperties> {
     instructional_goban?: InstructionalGoban;
     _config: any;
     correct_answer_triggered: boolean = false;
@@ -63,6 +63,8 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
             },
 
         }, this.config());
+        // State appears to be unused.
+        // TODO: remove this and instances of SetState
         this.state = {
             show_reset: false,
             show_next: false,
