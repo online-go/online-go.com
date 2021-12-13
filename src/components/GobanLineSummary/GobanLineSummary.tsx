@@ -34,6 +34,9 @@ interface GobanLineSummaryProps {
     width?: number;
     height?: number;
 }
+
+// This state is very similar to MiniGobanState.
+// TODO (ben): Possibly pull shared members into a common type.
 interface GobanLineSummaryState {
     black_score: string;
     white_score: string;
@@ -45,7 +48,7 @@ interface GobanLineSummaryState {
     white_name?: string;
     paused?: string;
     // It looks like these (black|white)_pause_text are never used.
-    // TODO: Verify and remove.
+    // TODO (ben): Verify and remove.
     black_pause_text?: string;
     white_pause_text?: string;
 
