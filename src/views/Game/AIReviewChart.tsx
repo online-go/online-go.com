@@ -44,7 +44,7 @@ const INITIAL_WIDTH = 600 - MARGIN.left - MARGIN.right;
 const INITIAL_HEIGHT = 100 - MARGIN.top - MARGIN.bottom;
 const simplex = new JSNoise.Module.Simplex();
 
-export class AIReviewChart extends React.Component<AIReviewChartProperties, any> {
+export class AIReviewChart extends React.Component<AIReviewChartProperties> {
     container?: HTMLElement;
     chart_div: HTMLElement;
     svg?: d3.Selection<SVGSVGElement, unknown, null, undefined>;
