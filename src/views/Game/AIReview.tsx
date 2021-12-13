@@ -712,15 +712,32 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         return false;
     }
 
+    private getPlayerColorsMoveList(){
+        let init_move = this.props.game.goban.engine.move_tree;
+        let move_list = [];
+        let cur_move = init_move.trunk_next;
+
+        while (cur_move !== undefined){
+           move_list.push(cur_move.player);
+           cur_move = cur_move.trunk_next; 
+        }
+        return move_list;
+
+    }
+
     private AiSummaryTableRowList(){
         const summary_moves_list = [ ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""] ];
         const ai_table_rows = [["Excellent"], ["Great"], ["Good"], ["Inaccuracy"], ["Mistake"], ["Blunder"]];
         const default_table_rows = [["", "", "", "", ""]];
         const avg_score_loss = [0, 0];
         const handicap = this.props.game.goban.engine.handicap;
+        //only useful when there's free placement, handicap = 1 no offset needed.
         let hoffset = this.handicapOffset();
         hoffset = (hoffset === 1) ? 0 : hoffset;
         const bplayer = (hoffset > 0 || handicap > 1) ? 1 : 0;
+        const move_player_list = this.getPlayerColorsMoveList();
+        //forked games might have white stones on the board.
+        const other_game_type = this.props.game.goban.engine.initial_state.white !== "";
 
         if (!this.ai_review ) {
             return {"ai_table_rows" : default_table_rows, avg_score_loss};
@@ -740,7 +757,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             if (scores === undefined || check1 || check2){
                 return {"ai_table_rows" : default_table_rows, avg_score_loss};
             }
-
+            // we don't need the first two rows, as they're for full reviews.
             ai_table_rows.splice(0, 2);
             summary_moves_list.splice(0, 2);
             const num_rows = ai_table_rows.length;
@@ -750,7 +767,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             let btotal = 0;
             for (let j = hoffset; j < scores.length - 1; j++ ){
                 let scorediff = scores[j + 1] - scores[j];
-                const is_bplayer = (j - hoffset) % 2 === bplayer;
+                const is_bplayer = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
                 const offset = (is_bplayer) ? 0 : num_rows;
                 const player_index = (is_bplayer) ? 0 : 1;
                 scorediff = (is_bplayer) ? (-1) * scorediff : scorediff;
@@ -823,9 +840,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
             for (let j = hoffset; j < Object.keys( this.ai_review?.moves ).length - 1; j++ ){
                 const playermove = this.ai_review?.moves[j + 1].move;
+                //the current ai review shows top six playouts on the board, so matching that.
                 const current_branches = this.ai_review?.moves[j].branches.slice(0, 6);
                 const bluemove = current_branches[0].moves[0];
-                const is_bplayer = (j - hoffset) % 2 === bplayer;
+                const is_bplayer = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
                 const offset = (is_bplayer) ? 0 : num_rows;
                 const player_index = (is_bplayer) ? 0 : 1;
                 let scorediff = this.ai_review?.moves[j + 1].score - this.ai_review?.moves[j].score;
