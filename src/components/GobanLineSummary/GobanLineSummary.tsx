@@ -34,9 +34,31 @@ interface GobanLineSummaryProps {
     width?: number;
     height?: number;
 }
+interface GobanLineSummaryState {
+    black_score: string;
+    white_score: string;
 
-export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any> {
-    goban;
+    move_number?: number;
+    game_name?: string;
+
+    black_name?: string;
+    white_name?: string;
+    paused?: string;
+    // It looks like these (black|white)_pause_text are never used.
+    // TODO: Verify and remove.
+    black_pause_text?: string;
+    white_pause_text?: string;
+
+    current_users_move?: boolean;
+    black_to_move_cls?: string;
+    white_to_move_cls?: string;
+
+    in_stone_removal_phase?: boolean;
+    finished?: boolean;
+}
+
+export class GobanLineSummary extends React.Component<GobanLineSummaryProps, GobanLineSummaryState> {
+    goban: Goban;
 
     constructor(props) {
         super(props);
@@ -75,7 +97,13 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, any
             this.sync_state();
         });
 
-        this.goban.on("pause-text", (new_text) => this.setState({
+        // It appears "pause-text" is not part of the Goban event emitter.
+        // TODO: Verify and remove.
+        interface PauseText {
+            white_pause_text: string;
+            black_pause_text: string;
+        }
+        this.goban.on("pause-text" as any, (new_text: PauseText) => this.setState({
             "white_pause_text": new_text.white_pause_text,
             "black_pause_text": new_text.black_pause_text,
         }));
