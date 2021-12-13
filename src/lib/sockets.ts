@@ -57,7 +57,6 @@ if (window.location.hostname.indexOf('dev.beta') >= 0 && window['websocket_host'
 } else {
     ai_host = `${window.location.protocol}//${window.location.hostname}:13284`;
 }
-//ai_host = 'https://ai.online-go.com';
 
 export const ai_socket = ai_host ? io(ai_host, ai_config) : io(ai_config);
 

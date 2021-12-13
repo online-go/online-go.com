@@ -710,13 +710,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     }
 
     private getPlayerColorsMoveList(){
-        let init_move = this.props.game.goban.engine.move_tree;
-        let move_list = [];
+        const init_move = this.props.game.goban.engine.move_tree;
+        const move_list = [];
         let cur_move = init_move.trunk_next;
 
         while (cur_move !== undefined){
-           move_list.push(cur_move.player);
-           cur_move = cur_move.trunk_next; 
+            move_list.push(cur_move.player);
+            cur_move = cur_move.trunk_next;
         }
         return move_list;
 
@@ -727,6 +727,17 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const ai_table_rows = [["Excellent"], ["Great"], ["Good"], ["Inaccuracy"], ["Mistake"], ["Blunder"]];
         const default_table_rows = [["", "", "", "", ""]];
         const avg_score_loss = [0, 0];
+        if (!this.ai_review ) {
+            return {"ai_table_rows" : default_table_rows, avg_score_loss};
+        }
+
+        if (this.ai_review.engine !== "katago"){
+            this.setState({
+                table_set: true
+            });
+            return {"ai_table_rows" : default_table_rows, avg_score_loss};
+        }
+
         const handicap = this.props.game.goban.engine.handicap;
         //only useful when there's free placement, handicap = 1 no offset needed.
         let hoffset = this.handicapOffset();
@@ -736,24 +747,24 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         //forked games might have white stones on the board.
         const other_game_type = this.props.game.goban.engine.initial_state.white !== "";
 
-        if (!this.ai_review ) {
-            return {"ai_table_rows" : default_table_rows, avg_score_loss};
-        }
-
         if (this.ai_review?.type === "fast" ){
             const scores = this.ai_review?.scores;
             const is_uploaded = (this.props.game.goban.config.original_sgf !== undefined);
             //one more ai review point than moves in the game, since initial board gets a score.
+
+            if (scores === undefined){
+                return {"ai_table_rows" : default_table_rows, avg_score_loss};
+            }
             const check1 = !is_uploaded &&
             (this.props.game.goban.config.moves.length !== (this.ai_review?.scores.length - 1));
             // extra initial ! in all_moves which matches extra empty board score, except in handicap games for some reason.
             // so subtract 1 if black goes second == bplayer
             const check2 = is_uploaded &&
             ((this.props.game.goban.config["all_moves"].split("!").length - bplayer) !== this.ai_review?.scores.length);
-
-            if (scores === undefined || check1 || check2){
+            if (check1 || check2){
                 return {"ai_table_rows" : default_table_rows, avg_score_loss};
             }
+
             // we don't need the first two rows, as they're for full reviews.
             ai_table_rows.splice(0, 2);
             summary_moves_list.splice(0, 2);
