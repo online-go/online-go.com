@@ -140,6 +140,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 disable_analysis: false,
                 initial_state: null,
                 "private": false,
+                rengo: false,
             },
         });
 
@@ -451,7 +452,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             challenge.game.initial_state = null;
         }
 
-        challenge.game.rengo = next.rengo;
+        challenge.game.rengo = next.challenge.game.rengo;
 
         this.saveSettings();
         this.close();
@@ -555,6 +556,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     update_conf_bot_id          = (ev) => this.upstate("conf.bot_id", ev);
     update_challenge_game_name  = (ev) => this.upstate("challenge.game.name", ev);
     update_private              = (ev) => this.upstate([["challenge.game.private", ev], ["challenge.game.ranked", false]]);
+    update_rengo                = (ev) => this.upstate([["challenge.game.rengo", ev], ["challenge.game.ranked", false]]);
     update_demo_private         = (ev) => this.upstate("demo.private", ev);
     update_ranked               = (ev) => this.setRanked((ev.target as HTMLInputElement).checked);
     update_aga_ranked           = (ev) => {this.setAGARanked((ev.target as HTMLInputElement).checked); };
@@ -668,8 +670,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                             checked={this.state.demo.private} onChange={this.update_demo_private}/>
                     </div>
                     }
-
-
                 </div>
             </div>
 
@@ -681,7 +681,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     {(mode !== "demo" || null) && <div className="checkbox">
                         <input type="checkbox"
                             id="rengo-option"
-                            checked={this.state.rengo} onChange={this.toggleRengo}/>
+                            checked={this.state.challenge.game.rengo} onChange={this.update_rengo}/>
                     </div>
                     }
                 </div>
@@ -1002,10 +1002,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 </div>
             </div>
         </div>;
-    };
-
-    toggleRengo = () => {
-        this.setState({rengo: !(this.state.rengo)});
     };
 
     render() {

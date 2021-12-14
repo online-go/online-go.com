@@ -2989,7 +2989,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
             <div ref={el => this.ref_players = el} className="players">
                 {(engine.rengo || null) &&
                     <div className="rengo-header">
-                        {_("Rengo!  Next players:")}
+                        {_("Rengo!") + " " + (engine.phase === "play" ?  _("Next players:") : "")}
                     </div>
                 }
 
