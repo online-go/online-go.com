@@ -140,6 +140,7 @@ export class User extends React.PureComponent<UserProperties, any> {
             rating_graph_plot_by_games: preferences.get('rating-graph-plot-by-games'),
             show_graph_type_toggle: !preferences.get('rating-graph-always-use'),
             hovered_game_id: null,
+            show_rengo_game_history: false,
         };
 
         try {
@@ -559,6 +560,10 @@ export class User extends React.PureComponent<UserProperties, any> {
         this.setState({rating_chart_type_toggle_left: width + 30});  // eyeball enough extra left pad
     };
 
+    onToggleRengoHistorySelect = () => {
+        this.setState({show_rengo_game_history: !this.state.show_rengo_game_history});
+    };
+
     render() {
         const user = this.state.user;
         if (!user) {
@@ -720,6 +725,8 @@ export class User extends React.PureComponent<UserProperties, any> {
         const global_user = data.get("config.user");
         const cdn_release = data.get("config.cdn_release");
         const account_links = user.self_reported_account_linkages;
+
+        const game_history_query_url = this.state.show_rengo_game_history ? `players/${this.user_id}/rengogames/` : `players/${this.user_id}/games/`;
 
         return (
             <div className="User container">
@@ -954,16 +961,21 @@ export class User extends React.PureComponent<UserProperties, any> {
                                 <h2>{_("Game History")}</h2>
                                 <Card>
                                     <div>{/* loading-container="game_history.settings().$loading" */}
-                                        <div className="search">
-                                            <i className="fa fa-search"></i><PlayerAutocomplete onComplete={this.updateGameSearch}/>
+                                        <div className="game-options">
+                                            <div className="search">
+                                                <i className="fa fa-search"></i><PlayerAutocomplete onComplete={this.updateGameSearch}/>
+                                            </div>
+                                            <div className="rengo-selector">
+                                                <span>{_("Rengo")}</span>
+                                                <input type="checkbox" checked={this.state.show_rengo_game_history} onChange={this.onToggleRengoHistorySelect}/>
+                                            </div>
                                         </div>
-
                                         <PaginatedTable
                                             className="game-history-table"
                                             ref="game_table"
                                             name="game-history"
                                             method="get"
-                                            source={`players/${this.user_id}/games/`}
+                                            source={game_history_query_url}
                                             filter={{
                                                 "source": "play",
                                                 "ended__isnull": false,

@@ -1046,7 +1046,7 @@ export class Play extends React.Component<PlayProperties, any> {
                                     onClick={this.unassignTeam.bind(self, n, our_challenge)}/>
                                 <i className="fa fa-lg fa-arrow-up"
                                     onClick={this.assignToTeam.bind(self, n, 'rengo_black_team', our_challenge)}/>
-                        </React.Fragment>
+                            </React.Fragment>
                         }
                         <Player user={n} rank={true} key={i}/>
                     </div>
