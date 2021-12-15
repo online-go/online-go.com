@@ -32,6 +32,7 @@ import {Goban, GobanCanvas, GobanCanvasConfig, GoEngine, GoMath, MoveTree, Audio
 import {isLiveGame} from "TimeControl";
 import {termination_socket, get_network_latency, get_clock_drift} from "sockets";
 import {Dock} from "Dock";
+import tooltip from "tooltip";
 import {Player, setExtraActionCallback} from "Player";
 import {Flag} from "Flag";
 import * as player_cache from "player_cache";
@@ -2988,7 +2989,10 @@ export class Game extends React.PureComponent<GameProperties, any> {
         return (
             <div ref={el => this.ref_players = el} className="players">
                 {(engine.rengo || null) &&
-                    <div className="rengo-header">
+                    <div className="rengo-header"
+                        data-title={_("Sponsored by Gozart!") }
+                        onMouseOver={tooltip}
+                        onMouseOut={tooltip}>
                         {_("Rengo!") + " " + (engine.phase === "play" ?  _("Next players:") : "")}
                     </div>
                 }
