@@ -1011,25 +1011,6 @@ export class Play extends React.Component<PlayProperties, any> {
         return (
             <React.Fragment>
                 <div className='rengo-admin-header'>
-                    {_("Nominated:")}
-                </div>
-                {(nominees.length === 0 || null) &&
-                    <div className="no-rengo-players-to-admin">{_("(none left)")}</div>
-                }
-                {nominees.map((n, i) => (
-                    <div className='rengo-assignment-row' key={i}>
-                        {(our_challenge.user_challenge || null) &&
-                            <React.Fragment>
-                                <i className="fa fa-lg fa-arrow-down black"
-                                    onClick={this.assignToTeam.bind(self, n, 'rengo_black_team', our_challenge)}/>
-                                <i className="fa fa-lg fa-arrow-down white"
-                                    onClick={this.assignToTeam.bind(self, n, 'rengo_white_team', our_challenge)}/>
-                            </React.Fragment>
-                        }
-                        <Player user={n} rank={true} key={i}/>
-                    </div>
-                ))}
-                <div className='rengo-admin-header'>
                     {_("Black:")}
                 </div>
                 {(black_team.length === 0 || null) &&
@@ -1044,6 +1025,7 @@ export class Play extends React.Component<PlayProperties, any> {
                         <Player user={n} rank={true} key={i}/>
                     </div>
                 ))}
+
                 <div className='rengo-admin-header'>
                     {_("White:")}
                 </div>
@@ -1055,6 +1037,26 @@ export class Play extends React.Component<PlayProperties, any> {
                         {(our_challenge.user_challenge || null) &&
                             <i className="fa fa-lg fa-times-circle-o red"
                                 onClick={this.unassignTeam.bind(self, n, our_challenge)}/>
+                        }
+                        <Player user={n} rank={true} key={i}/>
+                    </div>
+                ))}
+
+                <div className='rengo-admin-header'>
+                    {_("Unassigned:")}
+                </div>
+                {(nominees.length === 0 || null) &&
+                    <div className="no-rengo-players-to-admin">{_("(none left)")}</div>
+                }
+                {nominees.map((n, i) => (
+                    <div className='rengo-assignment-row' key={i}>
+                        {(our_challenge.user_challenge || null) &&
+                            <React.Fragment>
+                                <i className="fa fa-lg fa-arrow-down black"
+                                    onClick={this.assignToTeam.bind(self, n, 'rengo_black_team', our_challenge)}/>
+                                <i className="fa fa-lg fa-arrow-down white"
+                                    onClick={this.assignToTeam.bind(self, n, 'rengo_white_team', our_challenge)}/>
+                            </React.Fragment>
                         }
                         <Player user={n} rank={true} key={i}/>
                     </div>
