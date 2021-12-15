@@ -29,7 +29,6 @@ import {challenge, createOpenChallenge, challengeComputer} from "ChallengeModal"
 import {openGameAcceptModal} from "GameAcceptModal";
 import {errorAlerter, rulesText, timeControlSystemText, dup, uuid, ignore} from "misc";
 import {Player} from "Player";
-import {openRengoAdminModal} from "RengoAdminModal";
 import {openAutomatchSettings, getAutomatchSettings} from "AutomatchSettings";
 import * as data from "data";
 import * as preferences from "preferences";
@@ -947,13 +946,16 @@ export class Play extends React.Component<PlayProperties, any> {
     };
 
     assignToTeam = (player_id: number, team: string, challenge) => {
+        const other_team = (team === 'rengo_black_team') ? 'rengo_white_team' : 'rengo_black_team';
         const new_team = [...challenge[team], player_id];
+        const new_other_team = challenge[other_team].filter((n) => (n !== player_id));
         const new_nominees = challenge['rengo_nominees'].filter((n) => (n !== player_id));
 
         this.setState({admin_pending: true});
 
         put("challenges/%%/team", challenge.challenge_id, {
             [team]: new_team,
+            [other_team]: new_other_team,
             'rengo_nominees': new_nominees
         })
         .then(() => {
@@ -1004,7 +1006,7 @@ export class Play extends React.Component<PlayProperties, any> {
 
 
         if (nominees.length + black_team.length + white_team.length === 0) {
-            // This should be at most transitory, since the creator is added as a nominee on creation!
+            // This should be at most transitory, since the creator is added as a player on creation!
             return <div className="no-rengo-players-to-admin">{_("(none yet - standby!)")}</div>;
         }
 
@@ -1019,8 +1021,12 @@ export class Play extends React.Component<PlayProperties, any> {
                 {black_team.map((n, i) => (
                     <div className='rengo-assignment-row' key={i}>
                         {(our_challenge.user_challenge || null) &&
-                            <i className="fa fa-lg fa-times-circle-o red"
-                                onClick={this.unassignTeam.bind(self, n, our_challenge)}/>
+                            <React.Fragment>
+                                <i className="fa fa-lg fa-times-circle-o red"
+                                    onClick={this.unassignTeam.bind(self, n, our_challenge)}/>
+                                <i className="fa fa-lg fa-arrow-down"
+                                    onClick={this.assignToTeam.bind(self, n, 'rengo_white_team', our_challenge)}/>
+                            </React.Fragment>
                         }
                         <Player user={n} rank={true} key={i}/>
                     </div>
@@ -1035,8 +1041,12 @@ export class Play extends React.Component<PlayProperties, any> {
                 {white_team.map((n, i) => (
                     <div className='rengo-assignment-row' key={i}>
                         {(our_challenge.user_challenge || null) &&
-                            <i className="fa fa-lg fa-times-circle-o red"
-                                onClick={this.unassignTeam.bind(self, n, our_challenge)}/>
+                            <React.Fragment>
+                                <i className="fa fa-lg fa-times-circle-o red"
+                                    onClick={this.unassignTeam.bind(self, n, our_challenge)}/>
+                                <i className="fa fa-lg fa-arrow-up"
+                                    onClick={this.assignToTeam.bind(self, n, 'rengo_black_team', our_challenge)}/>
+                        </React.Fragment>
                         }
                         <Player user={n} rank={true} key={i}/>
                     </div>
@@ -1052,9 +1062,9 @@ export class Play extends React.Component<PlayProperties, any> {
                     <div className='rengo-assignment-row' key={i}>
                         {(our_challenge.user_challenge || null) &&
                             <React.Fragment>
-                                <i className="fa fa-lg fa-arrow-down black"
+                                <i className="fa fa-lg fa-arrow-up black"
                                     onClick={this.assignToTeam.bind(self, n, 'rengo_black_team', our_challenge)}/>
-                                <i className="fa fa-lg fa-arrow-down white"
+                                <i className="fa fa-lg fa-arrow-up white"
                                     onClick={this.assignToTeam.bind(self, n, 'rengo_white_team', our_challenge)}/>
                             </React.Fragment>
                         }
