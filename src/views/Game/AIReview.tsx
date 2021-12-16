@@ -1194,7 +1194,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         </span>
                     </div>
                 }
-                { (data.get("user").is_moderator && ((this.ai_review?.type === "full" ) || (this.ai_review?.type === "fast" )) && this.ai_review?.engine === "katago") &&
+                { (data.get("user").is_moderator && this.ai_review?.engine === "katago") &&
                 <div>
                     <AiSummaryTable headinglist = {["Type", "Black", "%", "White", "%"]} bodylist = {this.table_rows} avg_loss = {this.avg_score_loss} />
                 </div>
