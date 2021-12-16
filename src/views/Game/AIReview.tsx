@@ -1196,7 +1196,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 }
                 { (data.get("user").is_moderator && this.ai_review?.engine === "katago") &&
                 <div>
-                    <AiSummaryTable headinglist = {["Type", "Black", "%", "White", "%"]} bodylist = {this.table_rows} avg_loss = {this.avg_score_loss} />
+                    <AiSummaryTable headinglist = {[_("Type"), _("Black"), "%", _("White"), "%"]} bodylist = {this.table_rows} avg_loss = {this.avg_score_loss} />
                 </div>
                 }
             </div>
