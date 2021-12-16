@@ -724,7 +724,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
     private AiSummaryTableRowList(){
         const summary_moves_list = [ ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""] ];
-        const ai_table_rows = [["Excellent"], ["Great"], ["Good"], ["Inaccuracy"], ["Mistake"], ["Blunder"]];
+        const ai_table_rows = [[_("Excellent")], [_("Great")], [_("Good")], [_("Inaccuracy")], [_("Mistake")], [_("Blunder")]];
         const default_table_rows = [["", "", "", "", ""]];
         const avg_score_loss = [0, 0];
         if (!this.ai_review ) {
