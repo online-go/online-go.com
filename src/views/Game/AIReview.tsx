@@ -1359,11 +1359,11 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                         }
                         {(this.props.pending_entries > 0) &&
                             <React.Fragment>
-                            <tr>
-                                <td colSpan={2}>{"Moves Pending"}</td><td colSpan={3}>{this.props.pending_entries}</td>
-                            </tr>
-                            <tr><td colSpan={5}><progress value = {this.props.max_entries - this.props.pending_entries} 
-                                max = {this.props.max_entries}></progress></td></tr>
+                                <tr>
+                                    <td colSpan={2}>{"Moves Pending"}</td><td colSpan={3}>{this.props.pending_entries}</td>
+                                </tr>
+                                <tr><td colSpan={5}><progress value = {this.props.max_entries - this.props.pending_entries}
+                                    max = {this.props.max_entries}></progress></td></tr>
                             </React.Fragment>}
                         <tr><td colSpan={5}>{"Average score loss per move"}</td></tr>
                         <tr><td colSpan={2}>{"Black"}</td><td colSpan={3}>{this.props.avg_loss[0]}</td></tr>
