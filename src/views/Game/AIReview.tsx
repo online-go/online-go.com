@@ -40,7 +40,7 @@ import {
     JGOFNumericPlayerColor,
     ColoredCircle,
     getWorstMoves,
-    AIReviewWorstMoveEntry
+    AIReviewWorstMoveEntry,
 } from 'goban';
 import swal from 'sweetalert2';
 
@@ -66,6 +66,8 @@ interface AIReviewState {
     selected_ai_review?: JGOFAIReview;
     updatecount: number;
     worst_moves_shown: number;
+    table_set: boolean;
+    table_hidden: boolean;
 }
 
 export class AIReview extends React.Component<AIReviewProperties, AIReviewState> {
@@ -73,6 +75,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     // selected_ai_review which will just contain some metadata from the
     // postgres database
     ai_review?: JGOFAIReview;
+    table_rows: string[][];
+    avg_score_loss: number[];
+    moves_pending: number;
+    max_entries: number;
 
     constructor(props: AIReviewProperties) {
         super(props);
@@ -85,6 +91,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             // TODO: allow users to view more than 3 of these key moves
             // See https://forums.online-go.com/t/top-3-moves-score-a-better-metric/32702/15
             worst_moves_shown: 3,
+            table_set: false,
+            table_hidden : preferences.get('ai-summary-table-show'),
         };
         this.state = state;
         window['aireview'] = this;
@@ -92,10 +100,28 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
     componentDidMount() {
         this.getAIReviewList();
+        const ai_table_out = this.AiSummaryTableRowList();
+        this.table_rows = ai_table_out.ai_table_rows;
+        this.avg_score_loss = ai_table_out.avg_score_loss;
+        this.moves_pending = ai_table_out.moves_pending;
+        this.max_entries = ai_table_out.max_entries;
+        if (!data.get("user").is_moderator){
+            this.setState({
+                table_set: true,
+            }
+            );
+        }
     }
     componentDidUpdate(prevProps: AIReviewProperties, prevState: any) {
         if (this.getGameId() !== this.getGameId(prevProps)) {
             this.getAIReviewList();
+        }
+        if (!this.state.table_set) {
+            const ai_table_out = this.AiSummaryTableRowList();
+            this.table_rows = ai_table_out.ai_table_rows;
+            this.avg_score_loss = ai_table_out.avg_score_loss;
+            this.moves_pending = ai_table_out.moves_pending;
+            this.max_entries = ai_table_out.max_entries;
         }
     }
     componentWillUnmount() {
@@ -234,6 +260,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         this.updateAIReviewMetadata(ai_review);
         this.setState({
             selected_ai_review: ai_review,
+            table_set: false,
         });
         this.props.onAIReviewSelected(ai_review);
         this.syncAIReview();
@@ -450,6 +477,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 // it was upon further analysis (use next move's win rate)
                 let found_next_move = false;
                 for (const branch of branches) {
+                    if (branch.moves.length === 0){
+                        continue;
+                    }
                     if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
                         found_next_move = true;
                         branch.win_rate = next_win_rate;
@@ -481,7 +511,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     const branch = branches[i];
                     const mv = branch.moves[0];
 
-                    if (mv.x === -1) {
+                    if (mv === undefined || mv.x === -1 ) {
                         continue;
                     }
 
@@ -687,6 +717,230 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         return false;
     }
 
+    private getPlayerColorsMoveList(){
+        const init_move = this.props.game.goban.engine.move_tree;
+        const move_list = [];
+        let cur_move = init_move.trunk_next;
+
+        while (cur_move !== undefined){
+            move_list.push(cur_move.player);
+            cur_move = cur_move.trunk_next;
+        }
+        return move_list;
+
+    }
+
+    private AiSummaryTableRowList(){
+        const summary_moves_list = [ ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""] ];
+        const ai_table_rows = [[_("Excellent")], [_("Great")], [_("Good")], [_("Inaccuracy")], [_("Mistake")], [_("Blunder")]];
+        const default_table_rows = [["", "", "", "", ""]];
+        const avg_score_loss = [0, 0];
+        let moves_missing = 0;
+        let max_entries = 0;
+
+        if (!this.ai_review ) {
+            return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
+        }
+
+        if (this.ai_review.engine !== "katago"){
+            this.setState({
+                table_set: true
+            });
+            return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
+        }
+
+        const handicap = this.props.game.goban.engine.handicap;
+        //only useful when there's free placement, handicap = 1 no offset needed.
+        let hoffset = this.handicapOffset();
+        hoffset = (hoffset === 1) ? 0 : hoffset;
+        const bplayer = (hoffset > 0 || handicap > 1) ? 1 : 0;
+        const move_player_list = this.getPlayerColorsMoveList();
+        //forked games might have white stones on the board.
+        const other_game_type = this.props.game.goban.engine.initial_state.white !== "";
+
+        if (this.ai_review?.type === "fast" ){
+            const scores = this.ai_review?.scores;
+            const is_uploaded = (this.props.game.goban.config.original_sgf !== undefined);
+            //one more ai review point than moves in the game, since initial board gets a score.
+
+            if (scores === undefined){
+                return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
+            }
+            const check1 = !is_uploaded &&
+            (this.props.game.goban.config.moves.length !== (this.ai_review?.scores.length - 1));
+            // extra initial ! in all_moves which matches extra empty board score, except in handicap games for some reason.
+            // so subtract 1 if black goes second == bplayer
+            const check2 = is_uploaded &&
+            ((this.props.game.goban.config["all_moves"].split("!").length - bplayer) !== this.ai_review?.scores.length);
+            if (check1 || check2){
+                return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
+            }
+
+            // we don't need the first two rows, as they're for full reviews.
+            ai_table_rows.splice(0, 2);
+            summary_moves_list.splice(0, 2);
+            const num_rows = ai_table_rows.length;
+            const movecounters = Array(2 * num_rows).fill(0);
+            const othercounters = Array(2).fill(0);
+            let wtotal = 0;
+            let btotal = 0;
+            for (let j = hoffset; j < scores.length - 1; j++ ){
+                let scorediff = scores[j + 1] - scores[j];
+                const is_bplayer = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
+                const offset = (is_bplayer) ? 0 : num_rows;
+                const player_index = (is_bplayer) ? 0 : 1;
+                scorediff = (is_bplayer) ? (-1) * scorediff : scorediff;
+                avg_score_loss[player_index] += scorediff;
+
+                if (scorediff < 1) {
+                    movecounters[offset] += 1;
+                    //console.log("good");
+                } else if (scorediff < 2) {
+                    movecounters[offset + 1] += 1;
+                    //console.log("inaccuracy");
+                }else if (scorediff < 5) {
+                    movecounters[offset + 2] += 1;
+                    //console.log("mistake");
+                } else if (scorediff >= 5) {
+                    movecounters[offset + 3] += 1;
+                    //console.log("blunder");
+                } else{
+                    othercounters[player_index] += 1;
+                }
+            }
+
+            for (let j = 0; j < num_rows; j++ ){
+                btotal += movecounters[j];
+                wtotal += movecounters[num_rows + j];
+            }
+
+            avg_score_loss[0] = (btotal > 0) ? Math.round(10 * avg_score_loss[0] / btotal) / 10 : 0;
+            avg_score_loss[1] = (wtotal > 0) ? Math.round(10 * avg_score_loss[1] / wtotal) / 10 : 0;
+
+            for (let j = 0; j < num_rows; j++ ){
+                summary_moves_list[j][0] = movecounters[j].toString();
+                summary_moves_list[j][1] = (btotal > 0) ? (Math.round(1000 * movecounters[j] / btotal) / 10).toString() : "";
+                summary_moves_list[j][2] = movecounters[num_rows + j].toString();
+                summary_moves_list[j][3] = (wtotal > 0) ? (Math.round(1000 * movecounters[num_rows + j] / wtotal) / 10).toString() : "";
+            }
+
+            for (let j = 0; j < ai_table_rows.length; j++){
+                ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
+            }
+
+            this.setState({
+                table_set: true
+            });
+            return {ai_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
+
+        } else if (this.ai_review?.type === "full" ) {
+            const num_rows = ai_table_rows.length;
+            const movekeys = Object.keys( this.ai_review?.moves);
+            const is_uploaded = (this.props.game.goban.config.original_sgf !== undefined);
+            // should be one more ai review score and move branches for empty board.
+            const check1 = !is_uploaded &&
+            (this.props.game.goban.config.moves.length !== (movekeys.length - 1));
+            // extra initial ! in all_moves which matches extra empty board score, except in handicap games for some reason.
+            // so subtract 1 if black goes second == bplayer
+            const check2 = is_uploaded &&
+            ((this.props.game.goban.config["all_moves"].split("!").length - bplayer) !== movekeys.length);
+
+            if (this.state.loading || this.ai_review.scores === undefined ){
+                for (let j = 0; j < ai_table_rows.length; j++){
+                    ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
+                }
+                return {ai_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
+            }
+
+            max_entries = this.ai_review.scores.length;
+            const movecounters = Array(2 * num_rows).fill(0);
+            const othercounters = Array(2).fill(0);
+            let wtotal = 0;
+            let btotal = 0;
+
+            for (let j = hoffset; j < this.ai_review?.scores.length - 1; j++ ){
+                if (this.ai_review?.moves[j] === undefined || this.ai_review?.moves[j + 1] === undefined ){
+                    moves_missing += 1;
+                    continue;
+                }
+                const playermove = this.ai_review?.moves[j + 1].move;
+                //the current ai review shows top six playouts on the board, so matching that.
+                const current_branches = this.ai_review?.moves[j].branches.slice(0, 6);
+                const bluemove = current_branches[0].moves[0];
+                const is_bplayer = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
+                const offset = (is_bplayer) ? 0 : num_rows;
+                const player_index = (is_bplayer) ? 0 : 1;
+                let scorediff = this.ai_review?.moves[j + 1].score - this.ai_review?.moves[j].score;
+                scorediff = (is_bplayer) ? (-1) * scorediff : scorediff;
+                avg_score_loss[player_index] += scorediff;
+
+                if (bluemove === undefined ){
+                    othercounters[player_index] += 1;
+                } else if ( playermove.x === -1){
+                    othercounters[player_index] += 1;
+                    //console.log("pass etc");
+                } else {
+                    if (isEqualMoveIntersection(bluemove, playermove)){
+                        movecounters[offset] += 1;
+                        //console.log("blue Excellent");
+                    } else if (current_branches.some(
+                        (branch, index) => {
+                            const check = index > 0 && isEqualMoveIntersection(branch.moves[0], playermove) &&
+                            (branch.visits >= Math.min(50, 0.1 * this.ai_review?.strength));
+                            return check;
+                        })
+                    ) {
+                        movecounters[offset + 1] += 1;
+                        //console.log("green Great");
+                    } else if (scorediff < 1) {
+                        movecounters[offset + 2] += 1;
+                        //console.log("good");
+                    } else if (scorediff < 2) {
+                        movecounters[offset + 3] += 1;
+                        //console.log("inaccuracy");
+                    } else if (scorediff < 5) {
+                        movecounters[offset + 4] += 1;
+                        //console.log("mistake");
+                    } else if (scorediff >= 5) {
+                        movecounters[offset + 5] += 1;
+                        //console.log("blunder");
+                    } else{
+                        othercounters[player_index] += 1;
+                    }
+                }
+            }
+
+            for (let j = 0; j < num_rows; j++ ){
+                btotal += movecounters[j];
+                wtotal += movecounters[num_rows + j];
+            }
+
+            avg_score_loss[0] = (btotal > 0) ? Math.round(10 * avg_score_loss[0] / btotal) / 10 : 0;
+            avg_score_loss[1] = (wtotal > 0) ? Math.round(10 * avg_score_loss[1] / wtotal) / 10 : 0;
+
+            for (let j = 0; j < num_rows; j++ ){
+                summary_moves_list[j][0] = movecounters[j].toString();
+                summary_moves_list[j][1] = (btotal > 0) ? (Math.round(1000 * movecounters[j] / btotal) / 10).toString() : "";
+                summary_moves_list[j][2] = movecounters[num_rows + j].toString();
+                summary_moves_list[j][3] = (wtotal > 0) ? (Math.round(1000 * movecounters[num_rows + j] / wtotal) / 10).toString() : "";
+            }
+
+            for (let j = 0; j < ai_table_rows.length; j++){
+                ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
+            }
+
+            if (!check1 && !check2 ){
+                this.setState({
+                    table_set: true
+                });
+            }
+
+            return {ai_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
+        } else {
+            return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
+        }
+    }
+
     public render(): JSX.Element {
         if (this.state.loading) {
             return null;
@@ -766,7 +1020,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const trunk_move = cur_move.getBranchPoint();
         const move_number = trunk_move.move_number;
         const variation_move_number = cur_move.move_number !== trunk_move.move_number ? cur_move.move_number : -1;
-
         const worst_move_list = getWorstMoves(this.props.game.goban.engine.move_tree, this.ai_review);
 
         return (
@@ -917,23 +1170,34 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                         }}>{pgettext("Display the game score that the AI estimates", "Score")}</span>
                                     </div>
                                 }
-                                {this.renderWorstMoveList(worst_move_list)}
+                                <div className = "worst-moves-summary-toggle-container">
+                                    {this.renderWorstMoveList(worst_move_list)}
+                                    <div className = 'ai-summary-toggler'>
+                                        <span><i className="fa fa-table"></i></span>
+                                        <span>
+                                            <Toggle checked={this.state.table_hidden} onChange={b => {
+                                                preferences.set('ai-summary-table-show', b);
+                                                this.setState({table_hidden: b});
+                                                //console.log(this.state.table_hidden);
+                                            }}/>
+                                        </span>
+                                    </div>
+                                </div>
                             </React.Fragment>
                         }
 
                         {((this.ai_review?.type === 'fast') || null) &&
-                            <div className='key-moves'>
-                                {show_full_ai_review_button &&
-                                    <div>
-                                        <button
-                                            className='primary'
-                                            onClick={() => this.startNewAIReview("full", "katago")}>
-                                            {_("Full AI Review")}
-                                        </button>
-                                    </div>
-                                }
-                            </div>
-                        }
+                        <div className='key-moves'>
+                            {show_full_ai_review_button &&
+                                <div>
+                                    <button
+                                        className='primary'
+                                        onClick={() => this.startNewAIReview("full", "katago")}>
+                                        {_("Full AI Review")}
+                                    </button>
+                                </div>
+                            }
+                        </div>}
                     </React.Fragment>
                 }
 
@@ -958,6 +1222,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                             } {Math.abs(next_move_delta_p).toFixed(1)}pp
                         </span>
                     </div>
+                }
+                { (data.get("user").is_moderator && this.ai_review?.engine === "katago") &&
+                <div>
+                    <AiSummaryTable headinglist = {[_("Type"), _("Black"), "%", _("White"), "%"]} bodylist = {this.table_rows}
+                        avg_loss = {this.avg_score_loss} table_hidden = {this.state.table_hidden} pending_entries = {this.moves_pending}
+                        max_entries = {this.max_entries} />
+                </div>
                 }
             </div>
         );
@@ -1055,4 +1326,68 @@ function extractShortNetworkVersion(network: string): string {
         network = network.match(/[^-]*[-]([^-]*)/)[1];
     }
     return network.substr(0, 6);
+}
+
+class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummaryTableState>{
+    constructor(props: AiSummaryTableProperties) {
+        super(props);
+    }
+
+    render(): JSX.Element {
+
+        return(
+            <div className = "ai-summary-container">
+                <table className = "ai-summary-table" style = {{display: this.props.table_hidden ? "block" : "none"}}>
+                    <thead>
+                        <tr>
+                            {this.props.headinglist.map( (head, index) => {
+                                return <th key={index}>{head}</th>;
+                            })}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {this.props.bodylist.map(
+                            (body, bindex) => {
+                                return <tr key = { bindex }>{
+                                    body.map(
+                                        (element, eindex) => {
+                                            return <td key = { eindex } >{element}</td>;
+                                        })
+                                }</tr>;
+                            }
+                        )
+                        }
+                        {(this.props.pending_entries > 0) &&
+                            <React.Fragment>
+                                <tr>
+                                    <td colSpan={2}>{"Moves Pending"}</td><td colSpan={3}>{this.props.pending_entries}</td>
+                                </tr>
+                                <tr><td colSpan={5}><progress value = {this.props.max_entries - this.props.pending_entries}
+                                    max = {this.props.max_entries}></progress></td></tr>
+                            </React.Fragment>}
+                        <tr><td colSpan={5}>{"Average score loss per move"}</td></tr>
+                        <tr><td colSpan={2}>{"Black"}</td><td colSpan={3}>{this.props.avg_loss[0]}</td></tr>
+                        <tr><td colSpan={2}>{"White"}</td><td colSpan={3}>{this.props.avg_loss[1]}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        );
+
+    }
+
+}
+
+interface AiSummaryTableState {
+}
+
+interface AiSummaryTableProperties {
+    /** headings for ai review table */
+    headinglist: string[];
+    /** the body of the table excluding the average score loss part */
+    bodylist: string[][];
+    /** values for the average score loss */
+    avg_loss: number[];
+    table_hidden: boolean;
+    pending_entries: number;
+    max_entries: number;
 }
