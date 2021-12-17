@@ -19,8 +19,7 @@ import * as React from "react";
 import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {PopOver, popover, close_all_popovers} from "popover";
-import {getBlocks, setIgnore, setGameBlock, setAnnouncementBlock} from "./BlockPlayer";
-
+import {BlockState, getBlocks, setIgnore, setGameBlock, setAnnouncementBlock} from "./BlockPlayer";
 
 
 interface BlockPlayerModalProperties {
@@ -29,7 +28,7 @@ interface BlockPlayerModalProperties {
     onlyAnnouncements?: boolean; // only show block announcements line
 }
 
-export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProperties, any> {
+export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProperties, BlockState> {
     constructor(props) {
         super(props);
 

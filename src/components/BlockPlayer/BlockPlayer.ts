@@ -22,7 +22,7 @@ import ITC from "ITC";
 import cached from 'cached';
 import * as player_cache from "player_cache";
 
-class BlockState {
+export class BlockState {
     blocked: number; // player id
     username?: string;
 
