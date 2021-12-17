@@ -23,7 +23,7 @@ interface PersistentElementProps {
     extra_props?: object;  // hash of new props to put on the element
 }
 
-export class PersistentElement extends React.Component<PersistentElementProps, any> {
+export class PersistentElement extends React.Component<PersistentElementProps> {
     container: HTMLDivElement;
 
     componentDidMount() {

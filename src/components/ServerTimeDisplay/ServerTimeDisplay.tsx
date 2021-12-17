@@ -19,9 +19,10 @@ import * as React from "react";
 import * as moment from "moment";
 import {_, interpolate} from "translate";
 
-interface ServerTimeDisplayProperties {}
-
-export class ServerTimeDisplay extends React.Component<ServerTimeDisplayProperties, any> {
+interface ServerTimeState {
+    time: moment.Moment;
+}
+export class ServerTimeDisplay extends React.Component<{}, ServerTimeState> {
 
     intervalID;
 

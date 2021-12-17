@@ -29,7 +29,7 @@ interface InstructionalGobanProps {
     config: any;
 }
 
-export class InstructionalGoban extends React.Component<InstructionalGobanProps, any> {
+export class InstructionalGoban extends React.Component<InstructionalGobanProps> {
     goban_div: HTMLDivElement;
     goban: Goban;
 

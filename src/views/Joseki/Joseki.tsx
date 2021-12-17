@@ -141,6 +141,8 @@ const ColorMap = {
     "QUESTION": "#00ccff",
 };
 
+type MoveType = 'bad'|'good'|'computer'|'complete';
+
 interface JosekiProps {
     match: {
         params: any;
@@ -148,7 +150,58 @@ interface JosekiProps {
     location: any;
 }
 
-export class Joseki extends React.Component<JosekiProps, any> {
+interface MoveTypeWithComment { type: MoveType; comment: string }
+interface JosekiState {
+    move_string: string;
+    current_node_id?: string;
+    most_recent_known_node?: string;
+    position_description: string;
+    variation_label: string;
+    current_move_category: string;
+    pass_available: boolean;
+    contributor_id: number;
+    child_count: number;
+
+    throb: boolean;
+
+    mode: PageMode;
+    user_can_edit: boolean;
+    user_can_administer: boolean;
+    user_can_comment: boolean;
+
+    move_type_sequence: MoveTypeWithComment[];
+    joseki_errors: number;
+    josekis_played?: number;
+    josekis_completed?: number;
+    joseki_successes?: number;
+    joseki_best_attempt?: number;
+    joseki_tag_id?: number;
+
+    joseki_source?: {
+        url: string;
+        description: string;
+        id?: string|number;
+    };
+    tags: any[];
+
+    variation_filter: { contributor: number; tags: number[]; source: number };   // start with no filter defined
+
+    count_details_open: boolean;
+    tag_counts: {tagname: string; count: number}[];
+    counts_throb: boolean;
+
+    db_locked_down: boolean;
+
+    current_comment_count?: number;
+    played_mistake?: boolean; // Appears to be unused
+    computer_turn?: boolean; // Appears to be unused
+    count_display_open?: boolean; // Appears to be unused
+    extra_throb?: boolean; // Appears to be unused
+
+    position_type?: 'new'; // It seems this is never set
+}
+
+export class Joseki extends React.Component<JosekiProps, JosekiState> {
 
     goban: Goban;
     goban_div: HTMLDivElement;
@@ -199,9 +252,9 @@ export class Joseki extends React.Component<JosekiProps, any> {
             user_can_administer: false,
             user_can_comment: false,
 
-            move_type_sequence: [],   // This is the sequence of "move types" that is passed to the Play pane to display
+            move_type_sequence: [] as MoveTypeWithComment[],   // This is the sequence of "move types" that is passed to the Play pane to display
             joseki_errors: 0,         // How many errors made by the player in the current sequence in Play mode.
-            josekis_played: undefined as string,    // The player's joseki playing record...
+            josekis_played: undefined,    // The player's joseki playing record...
             josekis_completed: undefined as number,
             joseki_successes: undefined as number,
             joseki_best_attempt: undefined as number,
@@ -1254,11 +1307,11 @@ export class Joseki extends React.Component<JosekiProps, any> {
         } else if (this.state.mode === PageMode.Edit) {
             return (
                 <EditPane
-                    node_id={this.state.current_node_id}
+                    node_id={this.state.current_node_id as any} // node_id appears to be unused inside EditPane
                     category={this.state.current_move_category}
                     description={this.state.position_description}
                     variation_label={this.state.variation_label}
-                    joseki_source_id={this.state.joseki_source ? this.state.joseki_source.id : 'none'}
+                    joseki_source_id={(this.state.joseki_source ? this.state.joseki_source.id : 'none') as number} // joseki_source_id appears to be unused within EditPane
                     tags={this.state.tags}
                     contributor={this.state.contributor_id}
                     save_new_info={this.saveNewPositionInfo}
@@ -1372,7 +1425,21 @@ interface ExploreProps {
     show_comments: boolean;
 }
 
-class ExplorePane extends React.Component<ExploreProps, any> {
+interface Comment {
+    user_id: string;
+    date: Date;
+    comment: string;
+}
+interface ExploreState {
+    extra_info_selected: string;
+    current_position: string;
+    commentary: Comment[];
+    forum_thread: string;
+    audit_log: Comment[];
+    next_comment: string;
+    extra_throb: boolean;
+}
+class ExplorePane extends React.Component<ExploreProps, ExploreState> {
 
     constructor(props) {
         super(props);
@@ -1607,7 +1674,7 @@ class ExplorePane extends React.Component<ExploreProps, any> {
 
 // We should display entertaining gamey encouragement for playing Josekies correctly here...
 interface PlayProps {
-    move_type_sequence: [];
+    move_type_sequence: MoveTypeWithComment[];
     joseki_errors: number;
     josekis_played: number;
     josekis_completed: number;
@@ -1618,7 +1685,12 @@ interface PlayProps {
     current_filter: {contributor: number; tags: number[]; source: number};
 }
 
-class PlayPane extends React.Component<PlayProps, any> {
+interface PlayState {
+    extra_info_selected: string;
+    extra_throb: boolean;
+    forced_filter: boolean;
+}
+class PlayPane extends React.Component<PlayProps, PlayState> {
     constructor(props) {
         super(props);
         this.state = {
@@ -1767,7 +1839,21 @@ interface EditProps {
     update_marks: ({}) => void;
 }
 
-class EditPane extends React.Component<EditProps, any> {
+interface EditState {
+    move_type: string;
+    new_description: string;
+    preview: string;
+    node_id: number;
+    joseki_source_list: {id: number; description: string}[];
+    joseki_source: string|number;
+    available_tag_list: any[]; // Appears to be unused
+    // 'tags' is the value of the multi-select.  It has to have keys of 'label' and 'value' apparently.
+    // ('valueKey' and 'labelKey' aren't working for me)
+    tags: {label: string; value: number}[];
+    variation_label: string;
+}
+
+class EditPane extends React.Component<EditProps, EditState> {
     constructor(props) {
         super(props);
 
@@ -1964,7 +2050,7 @@ class EditPane extends React.Component<EditProps, any> {
                         <JosekiTagSelector
                             oje_headers={oje_headers()}
                             tag_list_url = {server_url + "tags"}
-                            selected_tags= {this.state.tags}
+                            selected_tags= {this.state.tags as any} // selected_tags is typed as number[], I haven't figured out how to resolve yet.
                             on_tag_update={this.onTagChange}
                         />
                     </div>

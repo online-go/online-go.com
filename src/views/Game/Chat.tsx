@@ -357,7 +357,7 @@ function unhighlight_position(event) {
     }
 }
 
-export class GameChatLine extends React.Component<GameChatLineProperties, any> {
+export class GameChatLine extends React.Component<GameChatLineProperties> {
     //scrolled_to_bottom:any = {"malkovich": true, "main": true};
 
     constructor(props) {
