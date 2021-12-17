@@ -77,6 +77,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     ai_review?: JGOFAIReview;
     table_rows: string[][];
     avg_score_loss: number[];
+    moves_pending: number;
 
     constructor(props: AIReviewProperties) {
         super(props);
@@ -101,6 +102,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const ai_table_out = this.AiSummaryTableRowList();
         this.table_rows = ai_table_out.ai_table_rows;
         this.avg_score_loss = ai_table_out.avg_score_loss;
+        this.moves_pending = ai_table_out.moves_pending;
         if (!data.get("user").is_moderator){
             this.setState({
                 table_set: true,
@@ -116,6 +118,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             const ai_table_out = this.AiSummaryTableRowList();
             this.table_rows = ai_table_out.ai_table_rows;
             this.avg_score_loss = ai_table_out.avg_score_loss;
+            this.moves_pending = ai_table_out.moves_pending;
         }
     }
     componentWillUnmount() {
@@ -729,15 +732,17 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const ai_table_rows = [[_("Excellent")], [_("Great")], [_("Good")], [_("Inaccuracy")], [_("Mistake")], [_("Blunder")]];
         const default_table_rows = [["", "", "", "", ""]];
         const avg_score_loss = [0, 0];
+        let moves_missing = 0;
+
         if (!this.ai_review ) {
-            return {"ai_table_rows" : default_table_rows, avg_score_loss};
+            return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing};
         }
 
         if (this.ai_review.engine !== "katago"){
             this.setState({
                 table_set: true
             });
-            return {"ai_table_rows" : default_table_rows, avg_score_loss};
+            return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing};
         }
 
         const handicap = this.props.game.goban.engine.handicap;
@@ -755,7 +760,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             //one more ai review point than moves in the game, since initial board gets a score.
 
             if (scores === undefined){
-                return {"ai_table_rows" : default_table_rows, avg_score_loss};
+                return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing};
             }
             const check1 = !is_uploaded &&
             (this.props.game.goban.config.moves.length !== (this.ai_review?.scores.length - 1));
@@ -764,7 +769,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             const check2 = is_uploaded &&
             ((this.props.game.goban.config["all_moves"].split("!").length - bplayer) !== this.ai_review?.scores.length);
             if (check1 || check2){
-                return {"ai_table_rows" : default_table_rows, avg_score_loss};
+                return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing};
             }
 
             // we don't need the first two rows, as they're for full reviews.
@@ -822,7 +827,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             this.setState({
                 table_set: true
             });
-            return {ai_table_rows, avg_score_loss};
+            return {ai_table_rows, avg_score_loss, "moves_pending":moves_missing};
 
         } else if (this.ai_review?.type === "full" ) {
             const num_rows = ai_table_rows.length;
@@ -836,11 +841,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             const check2 = is_uploaded &&
             ((this.props.game.goban.config["all_moves"].split("!").length - bplayer) !== movekeys.length);
 
-            if (this.state.loading || check1 || check2 ){
+            if (this.state.loading || this.ai_review.scores === undefined ){
                 for (let j = 0; j < ai_table_rows.length; j++){
                     ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
                 }
-                return {ai_table_rows, avg_score_loss};
+                return {ai_table_rows, avg_score_loss, "moves_pending":moves_missing};
             }
 
             const movecounters = Array(2 * num_rows).fill(0);
@@ -848,7 +853,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             let wtotal = 0;
             let btotal = 0;
 
-            for (let j = hoffset; j < Object.keys( this.ai_review?.moves ).length - 1; j++ ){
+            for (let j = hoffset; j < this.ai_review?.scores.length - 1; j++ ){
+                if (this.ai_review?.moves[j] === undefined || this.ai_review?.moves[j + 1] === undefined ){
+                    moves_missing += 1;
+                    continue;
+                }
                 const playermove = this.ai_review?.moves[j + 1].move;
                 //the current ai review shows top six playouts on the board, so matching that.
                 const current_branches = this.ai_review?.moves[j].branches.slice(0, 6);
@@ -915,13 +924,15 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
             }
 
-            this.setState({
-                table_set: true
-            });
+            if (!check1 && !check2 ){
+                this.setState({
+                    table_set: true
+                });
+            }
 
-            return {ai_table_rows, avg_score_loss};
+            return {ai_table_rows, avg_score_loss, "moves_pending":moves_missing};
         } else {
-            return {default_table_rows, avg_score_loss};
+            return {default_table_rows, avg_score_loss, "moves_pending":moves_missing};
         }
     }
 
@@ -1209,7 +1220,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 }
                 { (data.get("user").is_moderator && this.ai_review?.engine === "katago") &&
                 <div>
-                    <AiSummaryTable headinglist = {[_("Type"), _("Black"), "%", _("White"), "%"]} bodylist = {this.table_rows} avg_loss = {this.avg_score_loss} table_hidden = {this.state.table_hidden} />
+                    <AiSummaryTable headinglist = {[_("Type"), _("Black"), "%", _("White"), "%"]} bodylist = {this.table_rows}
+                        avg_loss = {this.avg_score_loss} table_hidden = {this.state.table_hidden} pending_entries = {this.moves_pending} />
                 </div>
                 }
             </div>
@@ -1339,6 +1351,10 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                             }
                         )
                         }
+                        {(this.props.pending_entries > 0) &&
+                            <tr>
+                                <td colSpan={2}>{"Moves Pending"}</td><td colSpan={3}>{this.props.pending_entries}</td>
+                            </tr>}
                         <tr><td colSpan={5}>{"Average score loss per move"}</td></tr>
                         <tr><td colSpan={2}>{"Black"}</td><td colSpan={3}>{this.props.avg_loss[0]}</td></tr>
                         <tr><td colSpan={2}>{"White"}</td><td colSpan={3}>{this.props.avg_loss[1]}</td></tr>
@@ -1362,4 +1378,5 @@ interface AiSummaryTableProperties {
     /** values for the average score loss */
     avg_loss: number[];
     table_hidden: boolean;
+    pending_entries: number;
 }
