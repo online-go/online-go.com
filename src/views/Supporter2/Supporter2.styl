@@ -1,5 +1,4 @@
 .Supporter2 {
-
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -10,13 +9,18 @@
         max-width: 40rem;
     }
 
+    .Payments {
+        display: grid;
+    }
+
 
     .Payment {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
-        .fa-check, .fa-lock {
+        //display: grid-row;
+        //display: flex;
+        //flex-direction: row;
+        //justify-content: center;
+        //align-items: center;
+        .fa-check {
             color: green;
         }
         .fa-times {
@@ -35,30 +39,176 @@
             text-align: right;
             margin-right: 3rem;
         }
+    }
+
+    .PaymentMethod {
+        display: inline-flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        .fa-lock {
+            color: green;
+        }
 
         span {
             display: inline-block;
             height: 1.5rem;
-            margin: 0.5rem;
+            margin-left: 0.5rem;
+            margin-right: 0.5rem;
+        }
+
+        .stripe, .paddle, .paypal {
+            border-radius: 0.3rem;
+            background-repeat: no-repeat;
+            margin-left: 0.5rem;
+            margin-right: 0.5rem;
+            display: inline-block;
+            width: 2rem;
         }
 
         .last4, .expiration {
+            display: inline-block;
             themed background-color shade5
+            width: 4rem;
+            text-align: center;
             border-radius: 0.3rem;
             padding-right: 0.3rem;
             padding-left: 0.3rem;
         }
     }
 
+    .Subscription {
+        text-align: center;
 
-    .stripe, .paddle, .paypal {
-        border-radius: 0.3rem;
-        background-repeat: no-repeat;
-        margin-left: 0.5rem;
-        margin-right: 0.5rem;
-        display: inline-block;
-        height: 1rem;
-        width: 2rem;
     }
 
+    .Prices {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+
+    }
+
+    .PriceBox {
+        display: inline-flex;
+        flex-direction: column;
+        width: 20rem;
+        max-width: 95vw;
+        //themed background-color shade3
+        margin: 1rem;
+        //padding: 0.5rem;
+        text-align: center;
+        border-radius: 0.7rem;
+        font-family: "Tahoma", sans-serif;
+        background-color: #0097C7;
+        color: #ffffff;
+
+        box-shadow: 0.2rem 0.2rem 0.7rem #000;
+        /body.light .PriceBox {
+            box-shadow: 0.2rem 0.2rem 0.9rem #888 !important;
+        }
+        //body.dark {
+        //}
+
+
+        h3, p {
+            width: 100%;
+        }
+
+        p {
+            flex: 1;
+        }
+
+        ul {
+            flex: 1;
+            max-width: 15rem;
+            text-align: left;
+
+            li {
+                list-style-type: none;
+                margin: 0.5rem;
+
+                &:before {
+                    font-family: "FontAwesome";
+                    content: "\f00c";
+                    margin-left: -2rem;
+                    position: absolute;
+                }
+            }
+            
+        }
+
+        > h1 {
+            font-size: 1.6rem;
+            background-color: #007CA3;
+            color: #ffffff;
+            margin: 0;
+            border-top-left-radius: 0.7rem;
+            border-top-right-radius: 0.7rem;
+            padding: 0.7rem;
+        }
+
+        b.green {
+            color: #99FB21;
+        }
+    }
+
+    .SiteSupporterText {
+        width: 100vw;
+        max-width: 50rem;
+        text-align: justify;
+        p {
+            padding: 1.0rem;
+        }
+    }
+
+    .price-increase-note {
+        font-style: italic;
+    }
+
+    .annual-billing {
+        display: flex;
+        align-items: center;
+        justify-items: center;
+        align-content: center;
+        label {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-right: 1rem;
+        }
+    }
+
+    .payment-buttons {
+        button {
+            display: inline-flex;
+            align-items: center;
+            justify-items: center;
+            align-content: center;
+            width: 8rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background-color: #FFC439;
+            i {
+                margin-left: 0.5rem;
+            }
+
+            &.sign-up {
+                background-color: #67478A;
+                color: #fff;
+            }
+        }
+        padding-bottom: 1rem;
+    }
+
+    .developer-options {
+        text-align: center;
+        color: #fff;
+        padding: 1rem
+        width: 100%;
+        max-width: 40rem;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        background-image: repeating-linear-gradient(135deg, #888, #888 30px, #FFA100 30px, #FFA100 60px);
+    }
 }
+
