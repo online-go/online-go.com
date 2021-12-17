@@ -35,7 +35,14 @@ interface GameListProps {
     forceList?: boolean;
 }
 
-export class GameList extends React.PureComponent<GameListProps, any> {
+type SortOrder = 'clock'|'move-number'|'name'|'opponent'|'opponent-clock'|'size';
+type DescendingSortOrder = `-${SortOrder}`;
+
+interface GameListState {
+    sort_order: SortOrder | DescendingSortOrder;
+}
+
+export class GameList extends React.PureComponent<GameListProps, GameListState> {
     constructor(props) {
         super(props);
         this.state = {
@@ -43,10 +50,10 @@ export class GameList extends React.PureComponent<GameListProps, any> {
         };
     }
 
-    sortBy(name: string) {
+    sortBy(name: SortOrder) {
         return () => {
             if (this.state.sort_order === name) {
-                this.setState({ sort_order: '-' + name });
+                this.setState({ sort_order: ('-' + name) as DescendingSortOrder });
             } else {
                 this.setState({ sort_order: name });
             }
