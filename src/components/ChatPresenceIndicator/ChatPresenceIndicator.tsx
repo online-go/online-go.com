@@ -28,7 +28,14 @@ interface ChatPresenceIndicatorProperties {
     userId: number;
 }
 
-export class ChatPresenceIndicator extends React.PureComponent<ChatPresenceIndicatorProperties, any> {
+interface ChatPresenceIndicatorState {
+    online: boolean;
+    // user_sort_order does not appear to be used in this class.
+    // TODO: Verify and remove.
+    user_sort_order?: "alpha"|"rank";
+}
+
+export class ChatPresenceIndicator extends React.PureComponent<ChatPresenceIndicatorProperties, ChatPresenceIndicatorState> {
     proxy: ChatChannelProxy;
 
     constructor(props) {
@@ -67,6 +74,9 @@ export class ChatPresenceIndicator extends React.PureComponent<ChatPresenceIndic
             this.setState({online: online});
         }
     };
+
+    // This function does not appear to be used.
+    // TODO: Verify and remove.
     toggleSortOrder = () => {
         const new_sort_order = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
         preferences.set("chat.user-sort-order", new_sort_order);
