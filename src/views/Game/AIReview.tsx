@@ -67,6 +67,7 @@ interface AIReviewState {
     updatecount: number;
     worst_moves_shown: number;
     table_set: boolean;
+    table_hidden: boolean;
 }
 
 export class AIReview extends React.Component<AIReviewProperties, AIReviewState> {
@@ -89,6 +90,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             // See https://forums.online-go.com/t/top-3-moves-score-a-better-metric/32702/15
             worst_moves_shown: 3,
             table_set: false,
+            table_hidden : preferences.get('ai-summary-table-show'),
         };
         this.state = state;
         window['aireview'] = this;
@@ -1152,23 +1154,34 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                         }}>{pgettext("Display the game score that the AI estimates", "Score")}</span>
                                     </div>
                                 }
-                                {this.renderWorstMoveList(worst_move_list)}
+                                <div className = "worst-moves-summary-toggle-container">
+                                    {this.renderWorstMoveList(worst_move_list)}
+                                    <div className = 'ai-summary-toggler'>
+                                        <span><i className="fa fa-table"></i></span>
+                                        <span>
+                                            <Toggle checked={this.state.table_hidden} onChange={b => {
+                                                preferences.set('ai-summary-table-show', b);
+                                                this.setState({table_hidden: b});
+                                                //console.log(this.state.table_hidden);
+                                            }}/>
+                                        </span>
+                                    </div>
+                                </div>
                             </React.Fragment>
                         }
 
                         {((this.ai_review?.type === 'fast') || null) &&
-                            <div className='key-moves'>
-                                {show_full_ai_review_button &&
-                                    <div>
-                                        <button
-                                            className='primary'
-                                            onClick={() => this.startNewAIReview("full", "katago")}>
-                                            {_("Full AI Review")}
-                                        </button>
-                                    </div>
-                                }
-                            </div>
-                        }
+                        <div className='key-moves'>
+                            {show_full_ai_review_button &&
+                                <div>
+                                    <button
+                                        className='primary'
+                                        onClick={() => this.startNewAIReview("full", "katago")}>
+                                        {_("Full AI Review")}
+                                    </button>
+                                </div>
+                            }
+                        </div>}
                     </React.Fragment>
                 }
 
@@ -1196,7 +1209,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 }
                 { (data.get("user").is_moderator && this.ai_review?.engine === "katago") &&
                 <div>
-                    <AiSummaryTable headinglist = {[_("Type"), _("Black"), "%", _("White"), "%"]} bodylist = {this.table_rows} avg_loss = {this.avg_score_loss} />
+                    <AiSummaryTable headinglist = {[_("Type"), _("Black"), "%", _("White"), "%"]} bodylist = {this.table_rows} avg_loss = {this.avg_score_loss} table_hidden = {this.state.table_hidden} />
                 </div>
                 }
             </div>
@@ -1300,27 +1313,13 @@ function extractShortNetworkVersion(network: string): string {
 class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummaryTableState>{
     constructor(props: AiSummaryTableProperties) {
         super(props);
-        const state: AiSummaryTableState = {
-            table_hidden : preferences.get('ai-summary-table-show'),
-        };
-        this.state = state;
     }
 
     render(): JSX.Element {
 
         return(
             <div className = "ai-summary-container">
-                <div className = 'ai-summary-toggler'>
-                    <span>{((this.state.table_hidden) ? "Show" : "Hide") + " summary table " }</span>
-                    <span>
-                        <Toggle checked={this.state.table_hidden} onChange={b => {
-                            preferences.set('ai-summary-table-show', b);
-                            this.setState({table_hidden: b});
-                            //console.log(this.state.table_hidden);
-                        }}/>
-                    </span>
-                </div>
-                <table className = "ai-summary-table" style = {{display: this.state.table_hidden ? "block" : "none"}}>
+                <table className = "ai-summary-table" style = {{display: this.props.table_hidden ? "block" : "none"}}>
                     <thead>
                         <tr>
                             {this.props.headinglist.map( (head, index) => {
@@ -1353,7 +1352,6 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
 }
 
 interface AiSummaryTableState {
-    table_hidden: boolean;
 }
 
 interface AiSummaryTableProperties {
@@ -1363,4 +1361,5 @@ interface AiSummaryTableProperties {
     bodylist: string[][];
     /** values for the average score loss */
     avg_loss: number[];
+    table_hidden: boolean;
 }
