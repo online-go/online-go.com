@@ -52,12 +52,18 @@ interface PaginatedTableProperties {
     startingPage?: number;
     fillBlankRows?: boolean;
     hidePageControls?: boolean;
-    // id?: any,
-    // user?: any,
-    // callback?: ()=>any,
 }
 
-export class PaginatedTable extends React.Component<PaginatedTableProperties, any> {
+interface PaginatedTableState {
+    rows: any[];
+    total: number;
+    page: number;
+    num_pages: number;
+    page_size: number;
+    orderBy: string[];
+}
+
+export class PaginatedTable extends React.Component<PaginatedTableProperties, PaginatedTableState> {
     filter: any = {};
     sorting: Array<string> = [];
     source_url: string;
@@ -212,7 +218,9 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, an
 
     _setPage = (ev) => {
         if ((ev.target as any).value === "") {
-            this.setState({page: ""});
+            // TODO (bpj): investigate whether "" is really an appropriate for
+            // `page`, which is usually treated as a number.
+            this.setState({page: "" as any});
             return;
         }
         const n = parseInt(ev.target.value);

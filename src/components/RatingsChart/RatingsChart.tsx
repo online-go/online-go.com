@@ -45,6 +45,13 @@ interface RatingsChartProperties {
     updateChartSize: (height: number, width: number) => void; // callback with actual chart size on resize
 }
 
+interface RatingsChartState {
+    loading: boolean;
+    nodata: boolean;
+    hovered_date?: Date;
+    hovered_month?: Date;
+    date_extents: Date[];
+}
 
 const date_bisector = d3.bisector((d: RatingEntry) => { return d.ended; }).left;
 const format_date = (d: Date) => moment(d).format('ll');
@@ -59,7 +66,7 @@ const win_loss_bars_height = 65;
 const height   = chart_height - margin.top - margin.bottom;
 const secondary_charts_height  = chart_height - margin2.top - margin2.bottom;
 
-export class RatingsChart extends React.Component<RatingsChartProperties, any> {
+export class RatingsChart extends React.Component<RatingsChartProperties, RatingsChartState> {
     container = null;
     chart_div;
     svg;

@@ -249,7 +249,17 @@ interface LadderRowProperties {
     invalidationCount: number;
 }
 
-export class LadderRow extends React.Component<LadderRowProperties, any> {
+interface LadderRowState {
+    row?: {
+        incoming_challenges;
+        outgoing_challenges;
+        can_challenge: {challengeable: boolean};
+        rank: number;
+        player;
+    };
+}
+
+export class LadderRow extends React.Component<LadderRowProperties, LadderRowState> {
     unmounted: boolean = false;
 
     constructor(props) {

@@ -28,9 +28,10 @@ interface ProfileCardInterface {
     user: any;
 }
 
-export class ProfileCard extends React.Component<ProfileCardInterface, any> {
+export class ProfileCard extends React.Component<ProfileCardInterface> {
     constructor(props) {
         super(props);
+        // TODO: Remove this
         this.state = {
 
         };
