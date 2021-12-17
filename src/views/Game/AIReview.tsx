@@ -78,6 +78,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     table_rows: string[][];
     avg_score_loss: number[];
     moves_pending: number;
+    max_entries: number;
 
     constructor(props: AIReviewProperties) {
         super(props);
@@ -103,6 +104,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         this.table_rows = ai_table_out.ai_table_rows;
         this.avg_score_loss = ai_table_out.avg_score_loss;
         this.moves_pending = ai_table_out.moves_pending;
+        this.max_entries = ai_table_out.max_entries;
         if (!data.get("user").is_moderator){
             this.setState({
                 table_set: true,
@@ -119,6 +121,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             this.table_rows = ai_table_out.ai_table_rows;
             this.avg_score_loss = ai_table_out.avg_score_loss;
             this.moves_pending = ai_table_out.moves_pending;
+            this.max_entries = ai_table_out.max_entries;
         }
     }
     componentWillUnmount() {
@@ -733,16 +736,17 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const default_table_rows = [["", "", "", "", ""]];
         const avg_score_loss = [0, 0];
         let moves_missing = 0;
+        let max_entries = 0;
 
         if (!this.ai_review ) {
-            return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing};
+            return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
         }
 
         if (this.ai_review.engine !== "katago"){
             this.setState({
                 table_set: true
             });
-            return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing};
+            return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
         }
 
         const handicap = this.props.game.goban.engine.handicap;
@@ -760,7 +764,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             //one more ai review point than moves in the game, since initial board gets a score.
 
             if (scores === undefined){
-                return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing};
+                return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
             }
             const check1 = !is_uploaded &&
             (this.props.game.goban.config.moves.length !== (this.ai_review?.scores.length - 1));
@@ -769,7 +773,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             const check2 = is_uploaded &&
             ((this.props.game.goban.config["all_moves"].split("!").length - bplayer) !== this.ai_review?.scores.length);
             if (check1 || check2){
-                return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing};
+                return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
             }
 
             // we don't need the first two rows, as they're for full reviews.
@@ -827,7 +831,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             this.setState({
                 table_set: true
             });
-            return {ai_table_rows, avg_score_loss, "moves_pending":moves_missing};
+            return {ai_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
 
         } else if (this.ai_review?.type === "full" ) {
             const num_rows = ai_table_rows.length;
@@ -845,9 +849,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 for (let j = 0; j < ai_table_rows.length; j++){
                     ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
                 }
-                return {ai_table_rows, avg_score_loss, "moves_pending":moves_missing};
+                return {ai_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
             }
 
+            max_entries = this.ai_review.scores.length;
             const movecounters = Array(2 * num_rows).fill(0);
             const othercounters = Array(2).fill(0);
             let wtotal = 0;
@@ -930,9 +935,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 });
             }
 
-            return {ai_table_rows, avg_score_loss, "moves_pending":moves_missing};
+            return {ai_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
         } else {
-            return {default_table_rows, avg_score_loss, "moves_pending":moves_missing};
+            return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
         }
     }
 
@@ -1221,7 +1226,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 { (data.get("user").is_moderator && this.ai_review?.engine === "katago") &&
                 <div>
                     <AiSummaryTable headinglist = {[_("Type"), _("Black"), "%", _("White"), "%"]} bodylist = {this.table_rows}
-                        avg_loss = {this.avg_score_loss} table_hidden = {this.state.table_hidden} pending_entries = {this.moves_pending} />
+                        avg_loss = {this.avg_score_loss} table_hidden = {this.state.table_hidden} pending_entries = {this.moves_pending}
+                        max_entries = {this.max_entries} />
                 </div>
                 }
             </div>
@@ -1352,9 +1358,13 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                         )
                         }
                         {(this.props.pending_entries > 0) &&
+                            <React.Fragment>
                             <tr>
                                 <td colSpan={2}>{"Moves Pending"}</td><td colSpan={3}>{this.props.pending_entries}</td>
-                            </tr>}
+                            </tr>
+                            <tr><td colSpan={5}><progress value = {this.props.max_entries - this.props.pending_entries} 
+                                max = {this.props.max_entries}></progress></td></tr>
+                            </React.Fragment>}
                         <tr><td colSpan={5}>{"Average score loss per move"}</td></tr>
                         <tr><td colSpan={2}>{"Black"}</td><td colSpan={3}>{this.props.avg_loss[0]}</td></tr>
                         <tr><td colSpan={2}>{"White"}</td><td colSpan={3}>{this.props.avg_loss[1]}</td></tr>
@@ -1379,4 +1389,5 @@ interface AiSummaryTableProperties {
     avg_loss: number[];
     table_hidden: boolean;
     pending_entries: number;
+    max_entries: number;
 }
