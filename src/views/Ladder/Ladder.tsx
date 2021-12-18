@@ -37,7 +37,22 @@ interface LadderProperties {
     };
 }
 
-export class Ladder extends React.PureComponent<LadderProperties, any> {
+interface LadderState {
+    ladder_id: number;
+    ladder: {
+        group: any; // doesn't appear this member is used
+        name: string;
+        player_is_member_of_group: boolean;
+        player_rank: number;
+    };
+    ladder_size: number;
+    topVisibleEntry: number;
+    highlight_rank: number;
+    scrollToIndex?: number;
+    invalidationCount: number;
+}
+
+export class Ladder extends React.PureComponent<LadderProperties, LadderState> {
     constructor(props) {
         super(props);
         this.state = {
