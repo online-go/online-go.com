@@ -17,17 +17,15 @@
 
 import * as React from "react";
 import {Link} from "react-router-dom";
-import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
-import {post, get} from "requests";
-import {Card} from "material";
+import {get} from "requests";
 import * as preferences from "preferences";
 import {errorAlerter} from "misc";
 import {shortTimeControl, shortShortTimeControl} from "TimeControl";
 import {computeAverageMoveTime} from 'goban';
 import {PaginatedTable} from "PaginatedTable";
 import * as moment from "moment";
-import {TOURNAMENT_TYPE_NAMES, TOURNAMENT_PAIRING_METHODS, rankRestrictionText, shortRankRestrictionText} from "Tournament";
+import {TOURNAMENT_TYPE_NAMES, shortRankRestrictionText} from "Tournament";
 import tooltip from "tooltip";
 
 interface TournamentListProperties {
@@ -212,9 +210,6 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
 
     constructor(props) {
         super(props);
-        // TODO: remove this.
-        this.state = {
-        };
     }
 
     render() {
@@ -230,8 +225,10 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
                     filter={filter}
                     orderBy={["-started", "time_start", "name"]}
                     columns={[
-                        {header: _("Tournament"),  className: () => "name",
-                            render: (tournament) => (
+                        {
+                            header: _("Tournament"),
+                            className: () => "name",
+                            render: (tournament: rest_api.Tournament) => (
                                 <div className="tournament-name">
                                     <i className={timeIcon(tournament.time_per_move) + (tournament.group ? " group-tourny" : " site-tourny")} />
                                     {tournament.group
