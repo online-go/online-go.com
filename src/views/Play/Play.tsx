@@ -38,14 +38,27 @@ import {SupporterGoals} from "SupporterGoals";
 import {boundedRankString} from "rank_utils";
 import * as player_cache from "player_cache";
 import swal from 'sweetalert2';
-import { parseSemver } from "@sentry/utils";
+import { Size } from "src/lib/types";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 
-interface PlayProperties {
+interface PlayState {
+    live_list: Array<any>;
+    correspondence_list: Array<any>;
+    showLoadingSpinnerForCorrespondence: boolean;
+    show_all_challenges: boolean;
+    show_ranked_challenges: boolean;
+    show_unranked_challenges: boolean;
+    show_19x19_challenges: boolean;
+    show_13x13_challenges: boolean;
+    show_9x9_challenges: boolean;
+    show_other_boardsize_challenges: boolean;
+    automatch_size_options: Size[];
+    freeze_challenge_list: boolean; // Don't change the challenge list while they are trying to point the mouse at it
+    pending_challenges: Array<any>; // challenges received while frozen
 }
 
-export class Play extends React.Component<PlayProperties, any> {
+export class Play extends React.Component<{}, PlayState> {
     ref_container: HTMLDivElement;
     canvas: HTMLCanvasElement;
 
@@ -196,8 +209,9 @@ export class Play extends React.Component<PlayProperties, any> {
         this.unfreezeChallenges();
     }
 
-    cancelOwnChallenges = (challenge_list) => {
-        challenge_list.forEach((c) => {
+    cancelActiveLiveChallenges = () => {
+        // In theory there should only be one, but cancel them all anyhow...
+        this.state.live_list.forEach((c) => {
             if (c.user_challenge) {
                 this.cancelOpenChallenge(c);
             }

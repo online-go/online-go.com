@@ -111,7 +111,7 @@ class UIPushManager {
 
 export const push_manager = new UIPushManager();
 
-export class UIPush extends React.Component<UIPushProperties, any> {
+export class UIPush extends React.Component<UIPushProperties> {
     handler: Handler = null;
     channel: string = null; // I'm here
 

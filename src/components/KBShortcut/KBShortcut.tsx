@@ -40,7 +40,7 @@ interface KBProps {
     priority?: number;
 }
 
-export class KBShortcut extends React.Component<KBProps, any> {
+export class KBShortcut extends React.Component<KBProps> {
     binding: Binding;
 
     constructor(props) {

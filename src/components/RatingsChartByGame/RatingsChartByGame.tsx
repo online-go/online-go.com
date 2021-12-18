@@ -48,6 +48,16 @@ interface RatingsChartProperties {
     updateChartSize: (height: number, width: number) => void;   // callback with the size of the actual chart within this component (for client to position stuff relative to that)
 }
 
+// This is similar to RatingsChartState (from RatingsChart)
+// TODO (bpj): investigate sharing the interface
+interface RatingsChartState {
+    loading: boolean;
+    nodata: boolean;
+    subselect_extents: number[];
+    hovered_game_id?: number;
+    show_pie?: boolean;
+}
+
 const margin   = {top: 30, right: 20, bottom: 110, left: 20}; // Margins around the rating chart with respect to the whole space
 const margin2  = {top: 320, right: 20, bottom: 30, left: 20}; // Margins around the subselect chart with respect to the whole space
 
@@ -66,7 +76,7 @@ const pie_restore_delay = 1500;  // long enough to go click on the minigoban if 
 
 const format_date = (d: Date) => moment(d).format('ll');
 
-export class RatingsChartByGame extends React.Component<RatingsChartProperties, any> {
+export class RatingsChartByGame extends React.Component<RatingsChartProperties, RatingsChartState> {
     container = null;
     chart_div;
     svg;
@@ -80,7 +90,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     dateLegend;   //  We use this to tell them what date was associated with the game they moused over
     dateLegendBackground;
     dateLegendText;
-    subselect_extents;
+    subselect_extents: number[];
     range_label;
     legend_label;
 
@@ -796,7 +806,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     }
 
     computeWinLossNumbers() {
-        let subselect_extents = [];
+        let subselect_extents: number[] = [];
 
         if (this.state.subselect_extents && this.state.subselect_extents.length === 2) {
             subselect_extents = this.state.subselect_extents;

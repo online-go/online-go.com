@@ -19,14 +19,17 @@ import * as React from "react";
 import * as data from "data";
 
 
-export interface DismissableNotificationInterface {
+interface DismissableNotificationProperties {
     dismissedKey: string;
     className?: string;
-    children: any;
 }
 
-export class DismissableNotification extends React.Component<DismissableNotificationInterface, any> {
-    constructor(props) {
+interface DismissableNotificationState {
+    dismissed: boolean;
+}
+
+export class DismissableNotification extends React.Component<DismissableNotificationProperties, DismissableNotificationState> {
+    constructor(props: DismissableNotificationProperties) {
         super(props);
         this.state = {
             dismissed: data.get(`dismissed.${props.dismissedKey}`, false)

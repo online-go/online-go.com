@@ -58,7 +58,6 @@ if (window.location.hostname.indexOf('dev.beta') >= 0 && window['websocket_host'
     ai_host = `${window.location.protocol}//${window.location.hostname}:13284`;
 }
 
-
 export const ai_socket = ai_host ? io(ai_host, ai_config) : io(ai_config);
 
 termination_socket.send = termination_socket.emit;
