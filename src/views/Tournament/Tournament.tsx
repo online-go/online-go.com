@@ -24,7 +24,7 @@ import {abort_requests_in_flight, del, put, post, get} from "requests";
 import {ignore, errorAlerter, rulesText, dup} from "misc";
 import {bounded_rank, longRankString, rankString, amateurRanks} from "rank_utils";
 import {handicapText} from "GameAcceptModal";
-import {timeControlDescription} from "TimeControl";
+import {TimeControl, timeControlDescription} from "TimeControl";
 import {Markdown} from "Markdown";
 import {Player, setExtraActionCallback} from "Player";
 import * as moment from "moment";
@@ -41,7 +41,7 @@ import * as player_cache from "player_cache";
 import {Steps} from "Steps";
 import {TimeControlPicker} from "TimeControl";
 import {close_all_popovers} from "popover";
-import {computeAverageMoveTime} from 'goban';
+import {computeAverageMoveTime, GoEngineRules} from 'goban';
 import {openMergeReportModal} from 'MergeReportModal';
 import * as d3 from "d3";
 import * as Dropzone from "react-dropzone";
@@ -55,6 +55,63 @@ interface TournamentProperties {
     match: {
         params: any;
     };
+}
+
+interface TournamentState {
+        new_tournament_group_id: number;
+        tournament_id: number;
+        loading: boolean;
+        tournament: {
+            id: number;
+            name: string;
+            director: player_cache.PlayerCacheEntry;
+            time_start: string;
+
+            board_size: string|number;
+            rules: GoEngineRules;
+            description: string;
+            handicap: string;
+            time_control_parameters: TimeControl;
+            tournament_type: string;
+            min_ranking: number | string;
+            max_ranking: number | string;
+            analysis_enabled: boolean;
+            exclude_provisional: boolean;
+            auto_start_on_max: boolean;
+            exclusivity: string;
+            first_pairing_method: string;
+            subsequent_pairing_method: string;
+            players_start: number;
+            settings: {
+                lower_bar: string;
+                upper_bar: string;
+                num_rounds: string;
+                group_size: string;
+                maximum_players: number|string;
+            };
+            lead_time_seconds: number;
+            base_points: number;
+            started?: string;
+            ended?: string;
+            player_is_member_of_group?: boolean;
+            is_open?: boolean;
+            can_administer?: boolean;
+            start_waiting?: boolean;
+            group?: any;
+            opengotha_standings?: boolean;
+        };
+        rounds: any[];
+        editing: boolean;
+        raw_rounds: any[];
+        selected_round: number|string;
+        sorted_players: any[];
+        players: {};
+        is_joined?: boolean;
+        invite_result: any;
+        elimination_tree: any;
+        use_elimination_trees?: boolean;
+        user_to_invite?: player_cache.PlayerCacheEntry;
+        group?: { id: number };
 }
 
 function sortDropoutsToBottom(player_a, player_b) {
@@ -76,7 +133,7 @@ function sortDropoutsToBottom(player_a, player_b) {
 
 /* TODO: Implement me TD Options */
 
-export class Tournament extends React.PureComponent<TournamentProperties, any> {
+export class Tournament extends React.PureComponent<TournamentProperties, TournamentState> {
     refs: {
         player_list;
         time_control_picker;
@@ -114,7 +171,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                     initial_time: 3 * 86400,
                     max_time: 7 * 86400,
                     time_increment: 86400,
-                },
+                } as TimeControl,
                 tournament_type: "mcmahon",
                 min_ranking: "5",
                 max_ranking: "38",
@@ -1182,7 +1239,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                 min_bar = rankString(parseInt(tournament.settings.lower_bar));
                 max_bar = rankString(parseInt(tournament.settings.upper_bar));
             } catch (e) { }
-            try { maximum_players = parseInt(tournament.settings.maximum_players); } catch (e) { console.error(e); }
+            try { maximum_players = parseInt(tournament.settings.maximum_players as string); } catch (e) { console.error(e); }
             try { num_rounds = parseInt(tournament.settings.num_rounds); } catch (e) { }
             try { group_size = parseInt(tournament.settings.group_size); } catch (e) { }
 
@@ -1729,7 +1786,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 <Steps
                                     completed={this.state.rounds.length}
                                     total={this.state.rounds.length}
-                                    selected={this.state.selected_round}
+                                    selected={this.state.selected_round as number}
                                     onChange={this.setSelectedRound}
                                 />
 
@@ -1740,8 +1797,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                     ? <OpenGothaStandings tournament={tournament} />
                                     : <OpenGothaTournamentRound
                                         tournament={tournament}
-                                        roundNotes={tournament.settings['notes-round-' + (this.state.selected_round + 1)] || ""}
-                                        selectedRound={this.state.selected_round + 1}
+                                        roundNotes={tournament.settings['notes-round-' + ((this.state.selected_round as number) + 1)] || ""}
+                                        selectedRound={(this.state.selected_round as number) + 1}
                                         players={this.state.sorted_players}
                                         rounds={this.state.rounds}
                                     />
@@ -1764,7 +1821,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                 <Steps
                                     completed={this.state.rounds.length}
                                     total={this.state.rounds.length}
-                                    selected={this.state.selected_round}
+                                    selected={this.state.selected_round as number}
                                     onChange={this.setSelectedRound}
                                 />
                             }
@@ -1972,8 +2029,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, any> {
                                         {raw_selected_round.matches.map((m, idx) => (
                                             <MiniGoban key={idx}
                                                 id={m.gameid}
-                                                width={tournament.board_size}
-                                                height={tournament.board_size}
+                                                width={tournament.board_size as number}
+                                                height={tournament.board_size as number}
                                                 black={players[m.black]}
                                                 white={players[m.white]}
                                             />
