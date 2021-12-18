@@ -30,17 +30,14 @@ import {navigateTo, unitify} from "misc";
 import * as data from "data";
 import * as moment from "moment";
 
-interface PuzzleListProperties {
-}
-
-
-export class PuzzleList extends React.PureComponent<PuzzleListProperties, any> {
+export class PuzzleList extends React.PureComponent {
     refs: {
         table;
     };
 
     constructor(props) {
         super(props);
+        // TODO: Delete this.
         this.state = { };
     }
     componentDidMount() {
