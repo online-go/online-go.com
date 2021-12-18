@@ -29,10 +29,17 @@ _("Site 19x19 Ladder");
 _("Site 13x13 Ladder");
 _("Site 9x9 Ladder");
 
-interface LadderListProperties {
+interface LadderListState {
+    ladders: Array<{
+        id: number;
+        board_size: number;
+        name: string;
+        player_rank: number;
+        size: number;
+    }>;
 }
 
-export class LadderList extends React.PureComponent<LadderListProperties, any> {
+export class LadderList extends React.PureComponent<{}, LadderListState> {
     constructor(props) {
         super(props);
         this.state = {
