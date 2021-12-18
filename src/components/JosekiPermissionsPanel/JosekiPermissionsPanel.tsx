@@ -37,7 +37,7 @@ interface JosekiAdminState {
     throb: boolean;
 }
 
-export class JosekiPermissionsPanel extends React.PureComponent<JosekiAdminProps, any> {
+export class JosekiPermissionsPanel extends React.PureComponent<JosekiAdminProps, any /*JosekiAdminState*/> {
     constructor(props) {
         super(props);
         this.state = {
