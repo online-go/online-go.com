@@ -21,10 +21,14 @@ import {post, get} from "requests";
 import {errorAlerter} from "misc";
 import {browserHistory} from "ogsHistory";
 
-interface GroupCreateProperties {
+interface GroupCreateState {
+    name: string;
+    require_invitation: boolean;
+    is_public: boolean;
+    hide_details: boolean;
 }
 
-export class GroupCreate extends React.PureComponent<GroupCreateProperties, any> {
+export class GroupCreate extends React.PureComponent<{}, GroupCreateState> {
     refs: {
         name;
     };
