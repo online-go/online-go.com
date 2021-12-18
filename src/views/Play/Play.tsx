@@ -732,7 +732,7 @@ export class Play extends React.Component<PlayProperties, any> {
             (((C.eligible || C.user_challenge || this.state.show_all_challenges)
              && ((this.state.show_unranked_challenges && !C.ranked) || (this.state.show_ranked_challenges && C.ranked))
              && ((this.state.show_19x19_challenges && C.width === 19 && C.height === 19) || (this.state.show_13x13_challenges && C.width === 13 && C.height === 13) || (this.state.show_9x9_challenges && C.width === 9 && C.height === 9) || (this.state.show_other_boardsize_challenges && (C.width !== C.height || (C.width !== 19 && C.width !== 13 && C.width !== 9)))) ) ?
-                    <div key={C.challenge_id} className={"challenge-row" + (C.rengo ? " rengo" : "")}>
+                    <div key={C.challenge_id} className={"challenge-row"}>
                         <span className={"cell"}  style={{textAlign: "center"}}>
                             {user.is_moderator &&
                                 <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left "><i className='fa fa-trash' /></button>}
@@ -882,7 +882,7 @@ export class Play extends React.Component<PlayProperties, any> {
             (((C.eligible || C.user_challenge || this.state.show_all_challenges)
              && ((this.state.show_unranked_challenges && !C.ranked) || (this.state.show_ranked_challenges && C.ranked))
              && ((this.state.show_19x19_challenges && C.width === 19 && C.height === 19) || (this.state.show_13x13_challenges && C.width === 13 && C.height === 13) || (this.state.show_9x9_challenges && C.width === 9 && C.height === 9) || (this.state.show_other_boardsize_challenges && (C.width !== C.height || (C.width !== 19 && C.width !== 13 && C.width !== 9)))) ) ?
-                    <div key={C.challenge_id} className={"challenge-row" + (C.rengo ? " rengo" : "")}>
+                    <div key={C.challenge_id} className={"challenge-row"}>
                         <span className={"cell"}  style={{textAlign: "center"}}>
                             {user.is_moderator &&
                                 <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left "><i className='fa fa-trash' /></button>}
