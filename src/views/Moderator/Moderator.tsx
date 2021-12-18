@@ -35,10 +35,8 @@ const greylist = ["yopmail.com", "vsprint.com", "xplanningzx.com", "mailsac.com"
 
 const greylist2 = [".xyz", ".life", ".website"];
 
-interface ModeratorProperties {
-}
 
-export class Moderator extends React.PureComponent<ModeratorProperties, any> {
+export class Moderator extends React.PureComponent {
     refs: {
         modlog;
         userlog;

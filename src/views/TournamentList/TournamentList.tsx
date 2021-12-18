@@ -30,13 +30,15 @@ import * as moment from "moment";
 import {TOURNAMENT_TYPE_NAMES, TOURNAMENT_PAIRING_METHODS, rankRestrictionText, shortRankRestrictionText} from "Tournament";
 import tooltip from "tooltip";
 
-interface TournamentListMainViewProperties {
-}
 interface TournamentListProperties {
     filter: any;
 }
 
-export class TournamentListMainView extends React.PureComponent<TournamentListProperties, any> {
+interface TournamentListMainViewState {
+    tab: 'schedule'|'live'|'archive'|'correspondence';
+}
+
+export class TournamentListMainView extends React.PureComponent<{}, TournamentListMainViewState> {
     constructor(props) {
         super(props);
         this.state = {
@@ -203,13 +205,14 @@ class Schedule extends React.PureComponent<{}, any> {
         );
     }
 }
-export class TournamentList extends React.PureComponent<TournamentListProperties, any> {
+export class TournamentList extends React.PureComponent<TournamentListProperties> {
     refs: {
         table;
     };
 
     constructor(props) {
         super(props);
+        // TODO: remove this.
         this.state = {
         };
     }

@@ -100,7 +100,89 @@ function openUrlIfALinkWasNotClicked(ev, url: string) {
     }
 }
 
-export class User extends React.PureComponent<UserProperties, any> {
+// API: players/%%/full
+interface UserInfo {
+    id: number;
+    on_vacation: boolean;
+    vacation_left: number;
+    supporter: boolean;
+    is_moderator: boolean;
+    is_superuser: boolean;
+    last_ip: string;
+    last_name: string;
+    first_name: string;
+    username: string;
+    about: string;
+    website: string;
+    country: string;
+    real_name_is_private: boolean;
+    is_bot: boolean;
+    self_reported_account_linkages: any;
+    is_watched: boolean;
+    ui_class_extra: any;
+    timeout_provisional: boolean;  // deprecated
+    is_tournament_moderator: boolean;
+    name: string;
+    bot_ai: string;
+    bot_owner: player_cache.PlayerCacheEntry;
+    professional: boolean;
+    ip_shadowbanned?: boolean;
+}
+
+interface UserState {
+    user: UserInfo;
+    vs: {
+        total?: number;
+        wins?: number;
+        losses?: number;
+        draws?: number;
+        winPercent?: number;
+        lossPercent?: number;
+        drawPercent?: number;
+        recent5?: any[];
+    };
+    ratings: {};
+    ip?: {
+        country: string;
+        subdivisions: string[];
+        location: string[];
+    };
+    vacation_left?: number;
+    vacation_left_text: string;
+    ranks: [];
+    syncRating: null;
+    host_ip_settings?: {
+        id: number;
+        address: string;
+        clients_limit: string;
+        ban_affects_all: boolean;
+        chatban_affects_all: boolean;
+    };
+    new_icon: {preview: string};
+    bot_apikey: null;
+    bot_ai?: string;
+    editing: boolean;
+    selected_speed: 'overall';
+    selected_size: 0;
+    resolved: boolean;
+    temporary_show_ratings: boolean;
+    show_ratings_in_rating_grid: boolean;
+    rating_graph_plot_by_games: boolean;
+    show_graph_type_toggle: boolean;
+    rating_chart_type_toggle_left?: number;
+    hovered_game_id?: number;
+    friend_request_sent?: boolean;
+    friend_request_received?: boolean;
+    is_friend?: boolean;
+    active_games?: any[];
+    achievements?: any[];
+    titles?: any[];
+    trophies?: any[];
+    ladders?: any[];
+    tournaments?: any[];
+    groups?: any[];
+}
+export class User extends React.PureComponent<UserProperties, UserState> {
     refs: {
         vacation_left;
         bot_ai;
@@ -177,7 +259,7 @@ export class User extends React.PureComponent<UserProperties, any> {
     }
 
     isSpecialUser() {
-        if (this.state.user.supporter || this.state.user.is_moderator || this.state.user.is_superUser) {
+        if (this.state.user.supporter || this.state.user.is_moderator || this.state.user.is_superuser) {
             return true;
         }
         return false;
@@ -1126,7 +1208,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                             <div><b>Country</b><span> {this.state.ip.country} / {cc_to_country_name(this.state.ip.country)}</span></div>
                             <div><b>Region</b>{this.state.ip.subdivisions.map((sd, idx) => (<span key={idx} > {sd} </span>))}</div>
                             <div><b>Map</b><span> <a href={`https://maps.google.com/maps?ll=${this.state.ip.location[0]},${this.state.ip.location[1]}`} target="_blank">map</a></span></div>
-                            <div><b>IP Shadowbanned</b> <span>{parseInt(user.ip_shadowbanned) === 1 ? _("Yes") : _("No")}</span></div>
+                            <div><b>IP Shadowbanned</b> <span>{parseInt(user.ip_shadowbanned as any) === 1 ? _("Yes") : _("No")}</span></div>
                             {(this.state.host_ip_settings) && <div >
                                 <form className="form-horizontal" role="form">
                                     <div className="form-group" style={marginBottom0}>
@@ -1140,7 +1222,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                     <div className="form-group" style={marginBottom0}>
                                         <label className="col-xs-7" htmlFor="ban-affects-all">Ban affects all</label>
                                         <div className="col-xs-5">
-                                            <input type="checkbox" id="ban-affects-all" value={this.state.host_ip_settings.ban_affects_all}
+                                            <input type="checkbox" id="ban-affects-all" value={this.state.host_ip_settings.ban_affects_all as any}
                                                 onChange={(event) => this.setState({"host_ip_settings": updateDup(this.state.host_ip_settings, "ban_affects_all", (event.target as HTMLInputElement).checked)})}
                                             />
                                         </div>
@@ -1148,7 +1230,7 @@ export class User extends React.PureComponent<UserProperties, any> {
                                     <div className="form-group" style={marginBottom0}>
                                         <label className="col-xs-7" htmlFor="chatban-affects-all">Chatban affects all</label>
                                         <div className="col-xs-5">
-                                            <input type="checkbox" id="chatban-affects-all" value={this.state.host_ip_settings.chatban_affects_all}
+                                            <input type="checkbox" id="chatban-affects-all" value={this.state.host_ip_settings.chatban_affects_all as any}
                                                 onChange={(event) => this.setState({"host_ip_settings": updateDup(this.state.host_ip_settings, "chatban_affects_all", (event.target as HTMLInputElement).checked)})}
                                             />
                                         </div>

@@ -39,7 +39,7 @@ interface LearningHubProperties {
     };
 }
 
-export class LearningHub extends React.PureComponent<LearningHubProperties, any> {
+export class LearningHub extends React.PureComponent<LearningHubProperties> {
     constructor(props) {
         super(props);
     }

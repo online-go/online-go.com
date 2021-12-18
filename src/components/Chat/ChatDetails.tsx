@@ -30,8 +30,14 @@ interface ChatDetailsProperties {
     subscribable?: boolean;
 }
 
+interface ChatDetailsState {
+    channelId: string;
+    subscribable: boolean;
+    notify_unread: boolean;
+    notify_mentioned: boolean;
+}
 
-export class ChatDetails extends React.PureComponent<ChatDetailsProperties, any> {
+export class ChatDetails extends React.PureComponent<ChatDetailsProperties, ChatDetailsState> {
     constructor(props) {
         super(props);
         const channel = this.props.chatChannelId;

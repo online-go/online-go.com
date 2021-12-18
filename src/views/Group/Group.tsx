@@ -38,6 +38,7 @@ import {PlayerAutocomplete} from "PlayerAutocomplete";
 import {EmbeddedChatCard} from "Chat";
 import { localize_time_strings } from 'localize-time';
 import swal from 'sweetalert2';
+import { PlayerCacheEntry } from "player_cache";
 
 interface GroupProperties {
     match: {
@@ -45,7 +46,63 @@ interface GroupProperties {
     };
 }
 
-export class Group extends React.PureComponent<GroupProperties, any> {
+// API: group/%id%/
+interface GroupInfo {
+    id: number;
+    admins: any[];
+    ladder_ids: any[];
+    name: string;
+    has_banner: boolean;
+    website: string;
+    location: string;
+    is_public: boolean;
+    require_invitation: boolean;
+    hide_details: boolean;
+    invitation_requests: any[];
+    banner?: string;
+    icon?: string;
+    is_member?: boolean;
+    founder?: PlayerCacheEntry;
+    description?: string;
+    short_description?: string;
+    bulletin?: string;
+    has_tournament_records?: boolean;
+    has_open_tournaments?: boolean;
+    has_active_tournaments?: boolean;
+    has_finished_tournaments?: boolean;
+}
+
+// API: group/%id%/news
+interface GroupNews {
+    "id": number;
+    "group": Partial<GroupInfo>;
+    "author": PlayerCacheEntry;
+    "posted": Date;
+    "title": string;
+    "content": string;
+}
+
+interface GroupState {
+    group: GroupInfo;
+    group_loaded: boolean;
+    is_admin: boolean;
+    invitation_request_pending: boolean;
+    news: any[];
+    members: any[];
+    group_id: number;
+    editing: boolean;
+    show_new_news_post: boolean;
+    new_icon: {preview: string};
+    new_banner?: {preview: string};
+    new_news_title: string;
+    new_news_body: string;
+    invite_result?: string;
+    editing_news: GroupNews;
+    refresh: number;
+    user_to_invite?: PlayerCacheEntry;
+}
+
+export class Group extends React.PureComponent<GroupProperties, GroupState> {
     refs: {
         members;
         news;
@@ -109,7 +166,7 @@ export class Group extends React.PureComponent<GroupProperties, any> {
     resolve(group_id: number) {
         const user = data.get("user");
 
-        get("groups/%%", group_id).then((group) => {
+        get("groups/%%", group_id).then((group: GroupInfo) => {
             window.document.title = group.name;
 
             let is_admin = false;

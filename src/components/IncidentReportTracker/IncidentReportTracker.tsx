@@ -30,10 +30,15 @@ import {browserHistory} from "ogsHistory";
 import {openReportedConversationModal} from "ReportedConversationModal";
 import swal from 'sweetalert2';
 
-interface IncidentReportTrackerProperties {
+
+interface IncidentReportTrackerState {
+    show_incident_list: boolean;
+    reports: any[];
+    normal_ct: number;
+    sandbag_ct: number;
 }
 
-export class IncidentReportTracker extends React.PureComponent<IncidentReportTrackerProperties, any> {
+export class IncidentReportTracker extends React.PureComponent<{}, IncidentReportTrackerState> {
     active_incident_reports = {};
 
     constructor(props) {

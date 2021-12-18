@@ -50,8 +50,15 @@ interface GameChatLineProperties {
     gameview: Game;
 }
 
+interface GameChatState {
+    chat_log: 'main'|'malkovich'|'moderator';
+    show_player_list: boolean;
+    qc_visible: boolean;
+    qc_editing: boolean;
+}
+
 /* Chat  */
-export class GameChat extends React.PureComponent<GameChatProperties, any> {
+export class GameChat extends React.PureComponent<GameChatProperties, GameChatState> {
     ref_chat_log;
     qc_editableMsgs = null;
 

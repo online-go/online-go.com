@@ -60,9 +60,6 @@ export function announcementTypeMuted(announcement: Announcement): boolean {
     return false;
 }
 
-interface AnnouncementsProperties {
-}
-
 const announced: {[id: number]: Announcement} = {};
 // Holds the expirations dates of cleared announcements
 const cleared_announcements: {[id: number]: number} = data.get("announcements.cleared", {});
@@ -73,8 +70,10 @@ for (const k in cleared_announcements) {
 }
 data.set("announcements.cleared", cleared_announcements);
 
-
-export class Announcements extends React.PureComponent<AnnouncementsProperties, any> {
+interface AnnouncementsState {
+    announcements: Announcement[];
+}
+export class Announcements extends React.PureComponent<{}, AnnouncementsState> {
     constructor(props) {
         super(props);
         this.state = {

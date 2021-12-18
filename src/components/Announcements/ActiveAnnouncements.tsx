@@ -28,10 +28,6 @@ import * as preferences from "preferences";
 
 import swal from 'sweetalert2';
 
-interface ActiveAnnouncementsProperties {
-
-}
-
 // Holds the expirations dates of cleared announcements
 const hard_cleared_announcements: {[id: number]: number} = data.get("announcements.hard_cleared", {});
 for (const k in hard_cleared_announcements) {
@@ -41,8 +37,8 @@ for (const k in hard_cleared_announcements) {
 }
 data.set("announcements.hard_cleared", hard_cleared_announcements);
 
-export class ActiveAnnouncements extends React.PureComponent<ActiveAnnouncementsProperties, any> {
-    constructor(props) {
+export class ActiveAnnouncements extends React.PureComponent {
+    constructor(props: {}) {
         super(props);
     }
 

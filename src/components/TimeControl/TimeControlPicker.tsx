@@ -29,7 +29,13 @@ interface TimeControlPickerProperties {
     onChange?: (tc: TimeControl) => void;
 }
 
-export class TimeControlPicker extends React.PureComponent<TimeControlPickerProperties, any> {
+// TODO: add TimeControl as the state for this component.
+// However, it will require some extra TLC. There are many checks like this:
+//     if (this.state.system === "fischer") { doSomething(this.state.initial_time; }
+// that TypeScript would have a better time with if we were a little more
+// precise in what properties we're looking for:
+//     if ("initial_time" in this.state) { doSomething(this.state.initial_time; }
+export class TimeControlPicker extends React.PureComponent<TimeControlPickerProperties, any /*TimeControl*/> {
     time_control: TimeControl;
 
     constructor(props) {

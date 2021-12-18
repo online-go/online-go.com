@@ -53,7 +53,21 @@ interface GameListWhere {
     players?: Array<number>;
 }
 
-export class ObserveGamesComponent extends React.PureComponent<ObserveGamesComponentProperties, any> {
+interface ObserveGamesComponentState {
+    page: number|'';  // this is sometimes set to the empty string when the user enters invalid input
+    num_pages: number;
+    page_size: number;
+    page_size_text_input: number;
+    viewing: 'live'|'corr';
+    game_list: [];
+    live_game_count: number;
+    corr_game_count: number;
+    show_filters: boolean;
+    force_list: boolean;
+    filters: GameListWhere;
+}
+
+export class ObserveGamesComponent extends React.PureComponent<ObserveGamesComponentProperties, ObserveGamesComponentState> {
     private last_refresh: number;
     private next_refresh: any;
     private auto_refresh: number;
@@ -196,15 +210,17 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
             list: this.state.viewing,
             sort_by: "rank",
             where: filter,
-            from: (this.state.page - 1) * this.state.page_size,
+            from: (this.state.page as number - 1) * this.state.page_size,
             limit: this.state.page_size,
             channel: this.channel,
         },
         (res) => {
+            console.log(res);
+
             const state_update: any = {
                 num_pages: Math.ceil(res.size / this.state.page_size),
                 game_list: res.results,
-                page: Math.max(1, Math.min(this.state.page, this.state.num_pages)),
+                page: Math.max(1, Math.min(this.state.page as number, this.state.num_pages)),
             };
 
             if (res.where) {
@@ -222,7 +238,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
         );
     };
     prevPage = () => {
-        this.setPage(this.state.page - 1);
+        this.setPage(this.state.page as number - 1);
     };
     nextPage = () => {
         if (typeof(this.state.page) === "number") {

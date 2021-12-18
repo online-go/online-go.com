@@ -19,10 +19,12 @@ import * as React from "react";
 import * as preferences from "preferences";
 import {_} from "translate";
 
-interface PuzzleSettingsModalProperties {
+interface PuzzleSettingsModalState {
+    randomize_transform: boolean;
+    randomize_color: boolean;
 }
 
-export class PuzzleSettingsModal extends React.PureComponent<PuzzleSettingsModalProperties, any> {
+export class PuzzleSettingsModal extends React.PureComponent<{},  PuzzleSettingsModalState> {
     constructor(props) {
         super(props);
         this.state = {
