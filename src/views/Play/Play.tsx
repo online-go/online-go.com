@@ -45,6 +45,7 @@ const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this per
 interface PlayState {
     live_list: Array<any>;
     correspondence_list: Array<any>;
+    rengo_list: Array<any>;
     showLoadingSpinnerForCorrespondence: boolean;
     show_all_challenges: boolean;
     show_ranked_challenges: boolean;
@@ -56,6 +57,7 @@ interface PlayState {
     automatch_size_options: Size[];
     freeze_challenge_list: boolean; // Don't change the challenge list while they are trying to point the mouse at it
     pending_challenges: Array<any>; // challenges received while frozen
+    admin_pending: boolean;  // used to change cursor while waiting for rengo admin actions
 }
 
 export class Play extends React.Component<{}, PlayState> {
@@ -84,7 +86,7 @@ export class Play extends React.Component<{}, PlayState> {
             automatch_size_options: data.get('automatch.size_options', ['19x19']),
             freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
             pending_challenges: [], // challenges received while frozen
-            admin_pending: false, // used to change cursor while waiting for rengo admin actions
+            admin_pending: false,
         };
         this.canvas = document.createElement("canvas");
         this.list_freeze_timeout = null;
@@ -209,9 +211,8 @@ export class Play extends React.Component<{}, PlayState> {
         this.unfreezeChallenges();
     }
 
-    cancelActiveLiveChallenges = () => {
-        // In theory there should only be one, but cancel them all anyhow...
-        this.state.live_list.forEach((c) => {
+    cancelOwnChallenges = (challenge_list) => {
+        challenge_list.forEach((c) => {
             if (c.user_challenge) {
                 this.cancelOpenChallenge(c);
             }
