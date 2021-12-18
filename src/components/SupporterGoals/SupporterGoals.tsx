@@ -24,9 +24,11 @@ interface SupporterGoalsProperties {
     alwaysShow?: boolean;
 }
 
-export class SupporterGoals extends React.PureComponent<SupporterGoalsProperties, any> {
+export class SupporterGoals extends React.PureComponent<SupporterGoalsProperties> {
     constructor(props) {
         super(props);
+
+        // TODO: remove this
         this.state = {
         };
     }
