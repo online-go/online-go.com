@@ -40,6 +40,7 @@ import {close_friend_list} from 'FriendList/FriendIndicator';
 import cached from 'cached';
 import {openPlayerNotesModal} from 'PlayerNotesModal';
 import swal from 'sweetalert2';
+import { PlayerCacheEntry } from "player_cache";
 
 interface PlayerDetailsProperties {
     playerId: number;
@@ -60,7 +61,20 @@ data.watch(cached.friends, (friends_arr) => {
 
 let extraActionCallback: (user_id: number, user: any) => JSX.Element = null;
 
-export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, any> {
+interface PlayerDetailsState {
+    id?: PlayerCacheEntry["id"];
+    resolved: boolean;
+    username: string | PlayerCacheEntry["username"];
+    icon: PlayerCacheEntry["icon"];
+    ranking: string | PlayerCacheEntry["ranking"];
+    rating: string | PlayerCacheEntry["rating"];
+    ratings?: PlayerCacheEntry["ratings"];
+    ui_class: string | PlayerCacheEntry["ui_class"];
+    country: string | PlayerCacheEntry ["country"];
+    error?: string;
+}
+
+export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, PlayerDetailsState> {
     constructor(props) {
         super(props);
         this.state = this.blankState();
