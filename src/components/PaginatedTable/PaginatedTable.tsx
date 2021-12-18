@@ -35,17 +35,17 @@ interface PaginatedTableColumnProperties<EntryT> {
 type PaginatedObject<EntryT> = { results: EntryT[]; count: number };
 type SourceFunction<EntryT> = (filter: any, sorting: Array<string>) => Promise<PaginatedObject<EntryT>>;
 
-interface PaginatedTableProperties<EntryT> {
-    source: string | SourceFunction<EntryT>;
+interface PaginatedTableProperties<RawEntryT, GroomedEntryT = RawEntryT> {
+    source: string | SourceFunction<RawEntryT>;
     method?: "get" | "post";
     pageSize?: number;
-    columns: Array<PaginatedTableColumnProperties<EntryT>>;
+    columns: Array<PaginatedTableColumnProperties<GroomedEntryT>>;
     aliases?: string;
     name?: string;
     className: string;
     filter?: any;
     orderBy?: Array<string>;
-    groom?: ((data: Array<EntryT>) => Array<EntryT>);
+    groom?: ((data: Array<RawEntryT>) => Array<GroomedEntryT>);
     onRowClick?: (row, ev) => any;
     debug?: boolean;
     pageSizeOptions?: Array<number>;
@@ -63,12 +63,12 @@ interface PaginatedTableState {
     orderBy: string[];
 }
 
-export class PaginatedTable<EntryT = any> extends React.Component<PaginatedTableProperties<EntryT>, PaginatedTableState> {
+export class PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT> extends React.Component<PaginatedTableProperties<RawEntryT, GroomedEntryT>, PaginatedTableState> {
     filter: any = {};
     sorting: Array<string> = [];
     source_url: string;
     source_method: string;
-    source_function: SourceFunction<EntryT>;
+    source_function: SourceFunction<RawEntryT>;
 
     constructor(props) {
         super(props);
@@ -122,7 +122,7 @@ export class PaginatedTable<EntryT = any> extends React.Component<PaginatedTable
         this.setPage(Math.max(0, ((this.state.page - 1) * old_page_size) / page_size) + 1, true);
     }
 
-    ajax_loader(filter: any, sorting: Array<string>): Promise<EntryT> {
+    ajax_loader(filter: any, sorting: Array<string>): Promise<RawEntryT> {
         const query = {
             page_size: this.state.page_size,
             page: this.state.page,

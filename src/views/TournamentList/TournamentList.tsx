@@ -217,7 +217,7 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
 
         return (
             <div className="TournamentList">
-                <PaginatedTable
+                <PaginatedTable<rest_api.Tournament>
                     className="TournamentList-table"
                     ref="table"
                     name="game-history"
