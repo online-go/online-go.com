@@ -27,9 +27,16 @@ import { Modal, openModal } from "Modal";
 interface Events {
 }
 
+export interface JosekiPageVisits {
+    date: string;
+    pageVisits: number;
+    explorePageVisits: number;
+    playPageVisits: number;
+    guestPageVisits: number;
+}
+
 interface JosekiStatsModalProperties {
-    daily_page_visits: Array<{date: string; pageVisits: number;
-        explorePageVisits: number; playPageVisits: number; guestPageVisits: number; }>;
+    daily_page_visits: Array<JosekiPageVisits>;
 }
 
 function StatsChart(props: JosekiStatsModalProperties) {
