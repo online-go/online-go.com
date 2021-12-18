@@ -53,8 +53,13 @@ interface PlayerProperties {
     disableCacheUpdate?: boolean;
 }
 
+interface PlayerState {
+    is_online: boolean;
+    user: any;
+    has_notes: boolean;
+}
 
-export class Player extends React.PureComponent<PlayerProperties, any> {
+export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
     refs: {
         elt;
     };
