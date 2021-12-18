@@ -21,9 +21,9 @@ import {post, get} from "requests";
 import {deepCompare} from "misc";
 import * as data from "data";
 
-interface PaginatedTableColumnProperties {
+interface PaginatedTableColumnProperties<EntryT> {
     cellProps?: any;
-    render: (row) => any | string;
+    render: (row: EntryT) => JSX.Element | string | number;
     header: string;
     headerProps?: any;
     sortable?: boolean;
@@ -32,20 +32,20 @@ interface PaginatedTableColumnProperties {
     orderBy?: Array<string>;
 }
 
-type SourceFunction = (filter: any, sorting: Array<string>) => Promise<any>;
-type GroupFunction = (data: Array<any>) => Array<any>;
+type PaginatedObject<EntryT> = { results: EntryT[]; count: number };
+type SourceFunction<EntryT> = (filter: any, sorting: Array<string>) => Promise<PaginatedObject<EntryT>>;
 
-interface PaginatedTableProperties {
-    source: string | SourceFunction;
+interface PaginatedTableProperties<EntryT> {
+    source: string | SourceFunction<EntryT>;
     method?: "get" | "post";
     pageSize?: number;
-    columns: Array<PaginatedTableColumnProperties>;
+    columns: Array<PaginatedTableColumnProperties<EntryT>>;
     aliases?: string;
     name?: string;
     className: string;
     filter?: any;
     orderBy?: Array<string>;
-    groom?: ((data: Array<any>) => Array<any>);
+    groom?: ((data: Array<EntryT>) => Array<EntryT>);
     onRowClick?: (row, ev) => any;
     debug?: boolean;
     pageSizeOptions?: Array<number>;
@@ -63,12 +63,12 @@ interface PaginatedTableState {
     orderBy: string[];
 }
 
-export class PaginatedTable extends React.Component<PaginatedTableProperties, PaginatedTableState> {
+export class PaginatedTable<EntryT = any> extends React.Component<PaginatedTableProperties<EntryT>, PaginatedTableState> {
     filter: any = {};
     sorting: Array<string> = [];
     source_url: string;
     source_method: string;
-    source_function: SourceFunction;
+    source_function: SourceFunction<EntryT>;
 
     constructor(props) {
         super(props);
@@ -104,7 +104,7 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, Pa
             this.source_method = this.props.method || "get";
             this.source_function = this.ajax_loader.bind(this);
         } else {
-            this.source_function = this.props.source as SourceFunction;
+            this.source_function = this.props.source;
         }
     };
 
@@ -122,7 +122,7 @@ export class PaginatedTable extends React.Component<PaginatedTableProperties, Pa
         this.setPage(Math.max(0, ((this.state.page - 1) * old_page_size) / page_size) + 1, true);
     }
 
-    ajax_loader(filter: any, sorting: Array<string>): Promise<any> {
+    ajax_loader(filter: any, sorting: Array<string>): Promise<EntryT> {
         const query = {
             page_size: this.state.page_size,
             page: this.state.page,
