@@ -58,60 +58,60 @@ interface TournamentProperties {
 }
 
 interface TournamentState {
-        new_tournament_group_id: number;
-        tournament_id: number;
-        loading: boolean;
-        tournament: {
-            id: number;
-            name: string;
-            director: player_cache.PlayerCacheEntry;
-            time_start: string;
+    new_tournament_group_id: number;
+    tournament_id: number;
+    loading: boolean;
+    tournament: {
+        id: number;
+        name: string;
+        director: player_cache.PlayerCacheEntry;
+        time_start: string;
 
-            board_size: string|number;
-            rules: GoEngineRules;
-            description: string;
-            handicap: string;
-            time_control_parameters: TimeControl;
-            tournament_type: string;
-            min_ranking: number | string;
-            max_ranking: number | string;
-            analysis_enabled: boolean;
-            exclude_provisional: boolean;
-            auto_start_on_max: boolean;
-            exclusivity: string;
-            first_pairing_method: string;
-            subsequent_pairing_method: string;
-            players_start: number;
-            settings: {
-                lower_bar: string;
-                upper_bar: string;
-                num_rounds: string;
-                group_size: string;
-                maximum_players: number|string;
-            };
-            lead_time_seconds: number;
-            base_points: number;
-            started?: string;
-            ended?: string;
-            player_is_member_of_group?: boolean;
-            is_open?: boolean;
-            can_administer?: boolean;
-            start_waiting?: boolean;
-            group?: any;
-            opengotha_standings?: boolean;
+        board_size: string | number;
+        rules: GoEngineRules;
+        description: string;
+        handicap: string;
+        time_control_parameters: TimeControl;
+        tournament_type: string;
+        min_ranking: number | string;
+        max_ranking: number | string;
+        analysis_enabled: boolean;
+        exclude_provisional: boolean;
+        auto_start_on_max: boolean;
+        exclusivity: string;
+        first_pairing_method: string;
+        subsequent_pairing_method: string;
+        players_start: number;
+        settings: {
+            lower_bar: string;
+            upper_bar: string;
+            num_rounds: string;
+            group_size: string;
+            maximum_players: number | string;
         };
-        rounds: any[];
-        editing: boolean;
-        raw_rounds: any[];
-        selected_round: number|string;
-        sorted_players: any[];
-        players: {};
-        is_joined?: boolean;
-        invite_result: any;
-        elimination_tree: any;
-        use_elimination_trees?: boolean;
-        user_to_invite?: player_cache.PlayerCacheEntry;
-        group?: { id: number };
+        lead_time_seconds: number;
+        base_points: number;
+        started?: string;
+        ended?: string;
+        player_is_member_of_group?: boolean;
+        is_open?: boolean;
+        can_administer?: boolean;
+        start_waiting?: boolean;
+        group?: any;
+        opengotha_standings?: boolean;
+    };
+    rounds: any[];
+    editing: boolean;
+    raw_rounds: any[];
+    selected_round: number | string;
+    sorted_players: any[];
+    players: {};
+    is_joined?: boolean;
+    invite_result: any;
+    elimination_tree: any;
+    use_elimination_trees?: boolean;
+    user_to_invite?: player_cache.PlayerCacheEntry;
+    group?: { id: number };
 }
 
 function sortDropoutsToBottom(player_a, player_b) {
