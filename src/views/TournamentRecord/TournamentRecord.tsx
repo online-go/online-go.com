@@ -43,7 +43,29 @@ interface TournamentRecordProperties {
     };
 }
 
-export class TournamentRecord extends React.PureComponent<TournamentRecordProperties, any> {
+interface Round {
+    updated: boolean;
+    id: number;
+    name: string;
+    notes: string;
+    entries: any[];
+}
+interface TournamentRecordState {
+    editing: boolean;
+    tournament_record_id: number;
+    loading: boolean;
+    name: string;
+    new_round_name: string;
+    rounds: Array<Round>;
+    new_player_name: string;
+    new_player_rank: number;
+    description?: string;
+    location?: string;
+    players?: {name: string; rank: number}[];
+    editable_by_current_user?: boolean;
+}
+
+export class TournamentRecord extends React.PureComponent<TournamentRecordProperties, TournamentRecordState> {
     loaded_state: any = {};
     refs: {
         players_table;
@@ -219,7 +241,7 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
         .catch(errorAlerter);
     }
 
-    deleteRound(round) {
+    deleteRound(round: Round) {
         swal({
             title: _("Are you sure you wish to delete this round?"),
             text: round.name,
@@ -242,7 +264,7 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
     }
 
 
-    linkGame(round) {
+    linkGame(round: Round) {
         swal({
             text: _("Please provide the link to the game, review, or demo board"),
             input: "text",
@@ -263,7 +285,7 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
         .catch(ignore);
     }
 
-    recordGame(round) {
+    recordGame(round: Round) {
         createDemoBoard(this.state.players, this.state.tournament_record_id, round.id);
     }
 
