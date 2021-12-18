@@ -27,13 +27,21 @@ import {errorAlerter} from "misc";
 import {Player} from "Player";
 import Datetime from "react-datetime";
 import * as moment from "moment";
+import { Announcement } from "src/components/Announcements";
 
-interface AnnouncementCenterProperties {
+interface AnnouncementCenterState {
+    announcements: Announcement[];
+    type: string;
+    expiration_date: Date;
+    expiration: string;
+    expiration_message?: string;
+    text: string;
+    link: string;
 }
 
 const MAX_ANNOUNCEMENT_DURATION = 6 * 3600 * 1000; /* 6 hours */
 
-export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterProperties, any> {
+export class AnnouncementCenter extends React.PureComponent<{}, AnnouncementCenterState> {
 
     constructor(props) {
         super(props);
@@ -61,7 +69,7 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
     };
     setExpiration = (moment_date) => {
 
-        let message = null;
+        let message: string = null;
         const announcement_duration = moment_date.toDate().getTime() - Date.now();
         if (announcement_duration > MAX_ANNOUNCEMENT_DURATION && !data.get('user').is_superuser) {
             message = _("Announcement durations must be 6 hours or less");
@@ -121,7 +129,8 @@ export class AnnouncementCenter extends React.PureComponent<AnnouncementCenterPr
     render() {
         const user = data.get("user");
 
-        let can_create = (this.state.expiration && this.state.text) ;
+        // TODO: cast to boolean
+        let can_create: string|boolean = (this.state.expiration && this.state.text);
         const announcement_duration = moment(this.state.expiration).toDate().getTime() - Date.now();
         if (announcement_duration > MAX_ANNOUNCEMENT_DURATION && !data.get('user').is_superuser) {
             can_create = false;
