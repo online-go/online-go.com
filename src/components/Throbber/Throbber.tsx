@@ -23,8 +23,11 @@ import * as React from "react";
 interface ThrobberProps {
     throb: boolean;
 }
+interface ThrobberState {
+    throbbing: boolean;
+}
 
-export class Throbber extends React.PureComponent<ThrobberProps, any> {
+export class Throbber extends React.PureComponent<ThrobberProps, ThrobberState> {
 
     throb_delay_timer: any;
 
