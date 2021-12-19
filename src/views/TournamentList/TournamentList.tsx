@@ -93,6 +93,7 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
                         <div>
                             <h3>{_("Open Tournaments")}</h3>
                             <TournamentList filter={{
+                                time_start__gte: (new Date()).toISOString(),
                                 started__isnull: true,
                                 ended__isnull: true,
                                 time_per_move__lt: 3600,
@@ -112,6 +113,7 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
                         <div>
                             <h3>{_("Open Tournaments")}</h3>
                             <TournamentList filter={{
+                                time_start__gte: (new Date()).toISOString(),
                                 started__isnull: true,
                                 ended__isnull: true,
                                 time_per_move__gte: 3600,
@@ -217,7 +219,7 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
 
         return (
             <div className="TournamentList">
-                <PaginatedTable<rest_api.Tournament>
+                <PaginatedTable
                     className="TournamentList-table"
                     ref="table"
                     name="game-history"
