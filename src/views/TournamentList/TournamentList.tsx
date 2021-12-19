@@ -42,6 +42,11 @@ interface TournamentListMainViewState {
     show_all: boolean;
 }
 
+
+interface TournamentListMainViewState {
+    tab: 'schedule'|'live'|'archive'|'correspondence';
+}
+
 export class TournamentListMainView extends React.PureComponent<{}, TournamentListMainViewState> {
     constructor(props) {
         super(props);
@@ -215,8 +220,6 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
 
     constructor(props) {
         super(props);
-
-
     }
 
     static makeFilter(

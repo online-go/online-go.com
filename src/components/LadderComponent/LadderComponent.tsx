@@ -40,8 +40,19 @@ interface LadderComponentProperties {
     showTitle?: boolean;
 }
 
+interface Ladder {
+    player_rank: number;
+    name: string;
+    size: number;
+}
 
-export class LadderComponent extends React.PureComponent<LadderComponentProperties, any> {
+interface LadderComponentState {
+    ladder_id: number;
+    page_size: number;
+    ladder?: Ladder;
+}
+
+export class LadderComponent extends React.PureComponent<LadderComponentProperties, LadderComponentState> {
     refs: {
         ladder;
     };

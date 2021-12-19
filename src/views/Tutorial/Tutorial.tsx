@@ -36,7 +36,7 @@ interface TutorialProperties {
 const NUM_PAGES = 12;
 declare let ogs_current_language;
 
-export class Tutorial extends React.PureComponent<TutorialProperties, any> {
+export class Tutorial extends React.PureComponent<TutorialProperties> {
     constructor(props) {
         super(props);
     }
@@ -63,10 +63,12 @@ export class Tutorial extends React.PureComponent<TutorialProperties, any> {
     }
 }
 
-interface TutorialPageProperties {
+interface TutorialPageState {
+        show_reset: boolean;
+        show_next: boolean;
 }
 
-abstract class TutorialPage extends React.PureComponent<TutorialPageProperties, any> {
+abstract class TutorialPage extends React.PureComponent<{}, TutorialPageState> {
     refs: {
         igoban;
     };

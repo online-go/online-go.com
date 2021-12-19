@@ -211,7 +211,7 @@ function scaledAmountToFloat(amount: number, currency: string) {
     return amount / Math.pow(10, getCurrencyDecimals(currency));
 }
 
-function guessCurrency() {
+function guessCurrency(): string {
     const currency = preferences.get('supporter.currency');
     if (currency !== 'auto') {
         return currency;
@@ -271,8 +271,41 @@ try {
 }
 /**** END DEPRECATED BRAINTREE CODE ****/
 
+// "card_type": method.card_type,
+// "interval": interval,
+// "last_four": method.card_number,
+// "month": method.expiration_month,
+// "year": method.expiration_year,
+interface RecurringDonation {
+    price: number|string;  // TODO: figure out which one it is!
+    currency: string;
+    interval: string;
+    vendor: string;
+    account: { payment_vendor: string };
+    method: {
+        card_type: string;
+        card_number: string;
+        expiration_month: string;
+        expiration_year: string;
+    };
+    id?: number;
+    order_id?: string;
+}
+interface SupporterState {
+    loading: boolean;
+    processing?: boolean;
+    disable_payment_buttons?: boolean;
+    show_update_cc?: boolean;
+    amount: number;
+    custom_amount: number;
+    currency: string;
+    interval: string;
+    last_transaction?: any;
+    recurring_donations?: RecurringDonation[];
+    amount_step?: number;
+}
 
-export class Supporter extends React.PureComponent<SupporterProperties, any> {
+export class Supporter extends React.PureComponent<SupporterProperties, SupporterState> {
     refs: {
         ccnum;
         cccvc;
@@ -816,7 +849,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                                                 : "<ERROR: amount = {{amount}} interval = {{interval}}>"
                                             ),
                                             {
-                                                "amount": formatMoney(currency, price),
+                                                "amount": formatMoney(currency, price as number),
                                                 "card_type": method.card_type,
                                                 "interval": interval,
                                                 "last_four": method.card_number,
@@ -852,7 +885,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                                                 : "<ERROR: amount = {{amount}} interval = {{interval}}>"
                                             ),
                                             {
-                                                "amount": formatMoney(currency, price),
+                                                "amount": formatMoney(currency, price as number),
                                             })
                                         }
                                     </p>
@@ -868,7 +901,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, any> {
                                     <p>
                                         {interpolate(_("You are currently supporting us with ${{amount}} per month from your {{card_type}} card ending in {{last_four}} and expiring on {{month}}/{{year}}, thanks!"),
                                             {
-                                                "amount": toFixedWithLocale(parseFloat(price)),
+                                                "amount": toFixedWithLocale(parseFloat(price as string)),
                                                 "card_type": method.card_type,
                                                 "last_four": method.card_number,
                                                 "month": method.expiration_month,

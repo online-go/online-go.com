@@ -34,7 +34,27 @@ interface LibraryPlayerProperties {
     };
 }
 
-export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, any> {
+interface Collection {
+    id: number;
+    name: string;
+    private: string;
+    parent_id: number;
+    parent?: Collection;
+    collections: Collection[];
+    games: any[];
+    game_ct?: number;
+}
+
+interface LibraryPlayerState {
+    player_id: number;
+    collection_id: number;
+    collections?: {[id: number]: Collection};
+    games_checked: {};
+    new_collection_name: string;
+    new_collection_private: boolean;
+}
+
+export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, LibraryPlayerState> {
     refs: {
         dropzone;
     };

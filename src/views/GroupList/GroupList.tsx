@@ -25,10 +25,7 @@ import {SearchInput} from "misc-ui";
 import {navigateTo} from "misc";
 
 
-interface GroupListProperties {
-}
-
-export class GroupList extends React.PureComponent<GroupListProperties, any> {
+export class GroupList extends React.PureComponent {
     refs: {
         table;
     };

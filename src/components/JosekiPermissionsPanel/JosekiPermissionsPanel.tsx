@@ -27,7 +27,17 @@ interface JosekiAdminProps {
     server_url: string;
 }
 
-export class JosekiPermissionsPanel extends React.PureComponent<any, any> {
+// This state is accurate, but updatePermissions needs to be slightly modified
+// to be able to use it.
+interface JosekiAdminState {
+    userid: string;
+    can_comment: boolean;
+    can_edit: boolean;
+    can_admin: boolean;
+    throb: boolean;
+}
+
+export class JosekiPermissionsPanel extends React.PureComponent<JosekiAdminProps, any /*JosekiAdminState*/> {
     constructor(props) {
         super(props);
         this.state = {
@@ -81,6 +91,8 @@ export class JosekiPermissionsPanel extends React.PureComponent<any, any> {
 
     updatePermission = (permission, value) => {
         this.setState({
+            // TypeScript has trouble with this
+            // TODO: modify, and then use JosekiAdminState as template arg for the component.
             [permission] : value,
             throb: true
         });

@@ -20,6 +20,7 @@ import { _, pgettext, interpolate } from "translate";
 
 import * as player_cache from "player_cache";
 import { JosekiTagSelector } from "../JosekiTagSelector";
+import { PlayerCacheEntry } from "player_cache";
 
 interface JosekiVariationFilterProps {
     oje_headers: HeadersInit;
@@ -30,7 +31,21 @@ interface JosekiVariationFilterProps {
     current_filter: {contributor: number; tags: number[]; source: number};
 }
 
-export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFilterProps, any> {
+type ResolvedContributor = {resolved: true; player: PlayerCacheEntry};
+type UnresolvedContributor = {resolved: false; player: number};
+
+interface JosekiVariationFilterState {
+    contributor_list: (ResolvedContributor|UnresolvedContributor)[];
+    tag_list: [];
+    source_list: {id: string; description: string}[];
+    selected_filter: {
+        tags: number[];
+        contributor: number;
+        source: number;
+    };
+}
+
+export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFilterProps, JosekiVariationFilterState> {
     constructor(props) {
         super(props);
         this.state = {
@@ -125,8 +140,10 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         // console.log("sources", this.state.source_list);
         // console.log(" filter", this.state.selected_filter);
 
+        console.log(this.state.contributor_list);
+
         const contributors = this.state.contributor_list.map((c, i) => {
-            if (c.resolved) {
+            if (c.resolved === true) {
                 return <option key={i} value={c.player.id}>{c.player.username}</option>;
             } else {
                 return <option key={i} value={c.player}>{"(player " + c.player + ")"}</option>;

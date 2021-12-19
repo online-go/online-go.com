@@ -28,13 +28,18 @@ interface PlayerAutocompleteProperties {
     ladderId?: number;
 }
 
+interface PlayerAutocompleteState {
+    value: string;
+    suggestions: any[];
+}
+
 const getSuggestionValue = (suggestion) => {
     return suggestion.username;
 };
 
 const renderSuggestion = suggestion => ( <div>{suggestion.username}</div>);
 
-export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompleteProperties, any> {
+export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompleteProperties, PlayerAutocompleteState> {
     last_on_complete_username = null;
     current_search = null;
     tabbed_out = false;
