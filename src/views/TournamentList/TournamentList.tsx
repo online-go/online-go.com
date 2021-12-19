@@ -27,9 +27,14 @@ import {PaginatedTable} from "PaginatedTable";
 import * as moment from "moment";
 import {TOURNAMENT_TYPE_NAMES, shortRankRestrictionText} from "Tournament";
 import tooltip from "tooltip";
+import { Toggle } from "Toggle";
 
 interface TournamentListProperties {
-    filter: any;
+    phase: 'open'|'active'|'finished';
+    speed?: 'live'|'correspondence';
+    hide_stale?: boolean;     // Hides tournaments that were supposed to have started already
+    hide_exclusive?: boolean; // Hides tournaments that are invite-only or members-only
+    group?: number;
 }
 
 interface TournamentListMainViewState {
@@ -57,37 +62,15 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
 
     setTab(tab) {
         this.setState({tab: tab});
-        preferences.set("tournaments-tab", tab);
+        preferences.set("tournaments-show-all", tab);
+    }
+    toggleShowAll(show_all: boolean) {
+        this.setState({show_all: show_all});
+        preferences.set("tournaments-show-all", show_all);
     }
 
     render() {
         const tab = this.state.tab;
-
-        const open_tournaments_filters: {live: object; correspondence: object} = {
-            live: {
-                started__isnull: true,
-                ended__isnull: true,
-                time_per_move__lt: 3600,
-                time_per_move__gt: 0,
-            },
-            correspondence: {
-                started__isnull: true,
-                ended__isnull: true,
-                time_per_move__gte: 3600,
-            }
-        };
-
-        if (!this.state.show_all) {
-            for (const key in open_tournaments_filters) {
-                Object.assign(
-                    open_tournaments_filters[key],
-                    {
-                        time_start__gte: (new Date()).toISOString(),
-                        exclusivity: "open",
-                    }
-                );
-            }
-        }
 
         return (
 
@@ -120,37 +103,37 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
                     {tab === "live" && (
                         <div>
                             <h3>{_("Open Tournaments")}</h3>
-                            <TournamentList filter={open_tournaments_filters.live}/>
+                            <Toggle checked={this.state.show_all} onChange={tf => this.toggleShowAll(tf)} />
+                            <TournamentList
+                                phase='open'
+                                speed='live'
+                                hide_stale={!this.state.show_all}
+                                hide_exclusive={!this.state.show_all}
+                            />
 
                             <h3>{_("Active Tournaments")}</h3>
-                            <TournamentList filter={{
-                                started__isnull: false,
-                                ended__isnull: true,
-                                time_per_move__lt: 3600,
-                                time_per_move__gt: 0,
-                            }}/>
+                            <TournamentList phase='active' speed='live'/>
                         </div>
                     )}
                     {tab === "correspondence" && (
                         <div>
                             <h3>{_("Open Tournaments")}</h3>
-                            <TournamentList filter={open_tournaments_filters.correspondence}/>
+                            <Toggle checked={this.state.show_all} onChange={tf => this.toggleShowAll(tf)} />
+                            <TournamentList
+                                phase='open'
+                                speed='correspondence'
+                                hide_stale={!this.state.show_all}
+                                hide_exclusive={!this.state.show_all}
+                            />
 
                             <h3>{_("Active Tournaments")}</h3>
-                            <TournamentList filter={{
-                                started__isnull: false,
-                                ended__isnull: true,
-                                time_per_move__gte: 3600,
-                            }}/>
+                            <TournamentList phase='active' speed='correspondence'/>
                         </div>
                     )}
                     {tab === "archive" && (
                         <div>
                             <h3>{_("Finished Tournaments")}</h3>
-                            <TournamentList filter={{
-                                started__isnull: false,
-                                ended__isnull: false,
-                            }}/>
+                            <TournamentList phase='finished'/>
                         </div>
                     )}
                 </div>
@@ -229,10 +212,67 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
 
     constructor(props) {
         super(props);
+
+
+    }
+
+    static makeFilter(
+        phase: "open" | "active" | "finished",
+        speed?: "live" | "correspondence",
+        hide_stale?: boolean,
+        hide_exclusive?: boolean,
+        group?: number) {
+
+        const filter: { [key: string]: any } = {};
+        switch (phase) {
+            case "open":
+                filter["started__isnull"] = true;
+                filter["ended__isnull"] = true;
+                break;
+            case "active":
+                filter["started__isnull"] = false;
+                filter["ended__isnull"] = true;
+                break;
+            case "finished":
+                filter["started__isnull"] = false;
+                filter["ended__isnull"] = false;
+                break;
+        }
+
+        if (speed !== undefined) {
+            switch (speed) {
+                case "live":
+                    filter["time_per_move__lt"] = 3600;
+                    filter["time_per_move__gt"] = 0;
+                    break;
+                case "correspondence":
+                    filter["time_per_move__gte"] = 3600;
+                    break;
+            }
+        }
+
+        if (hide_stale) {
+            filter["time_start__gte"] = (new Date()).toISOString();
+        }
+
+        if (hide_exclusive) {
+            filter["exclusivity"] = "open";
+        }
+
+        if (group !== undefined) {
+            filter["group"] = group;
+        }
+
+        return filter;
     }
 
     render() {
-        const filter = this.props.filter;
+        const filter = TournamentList.makeFilter(
+            this.props.phase,
+            this.props.speed,
+            this.props.hide_stale,
+            this.props.hide_exclusive,
+            this.props.group);
 
         return (
             <div className="TournamentList">
