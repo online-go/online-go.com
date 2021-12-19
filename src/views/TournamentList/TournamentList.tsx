@@ -34,13 +34,15 @@ interface TournamentListProperties {
 
 interface TournamentListMainViewState {
     tab: 'schedule'|'live'|'archive'|'correspondence';
+    show_all: boolean;
 }
 
 export class TournamentListMainView extends React.PureComponent<{}, TournamentListMainViewState> {
     constructor(props) {
         super(props);
         this.state = {
-            tab: preferences.get("tournaments-tab")
+            tab: preferences.get("tournaments-tab"),
+            show_all: false,
         };
     }
 
@@ -60,6 +62,32 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
 
     render() {
         const tab = this.state.tab;
+
+        const open_tournaments_filters: {live: object; correspondence: object} = {
+            live: {
+                started__isnull: true,
+                ended__isnull: true,
+                time_per_move__lt: 3600,
+                time_per_move__gt: 0,
+            },
+            correspondence: {
+                started__isnull: true,
+                ended__isnull: true,
+                time_per_move__gte: 3600,
+            }
+        };
+
+        if (!this.state.show_all) {
+            for (const key in open_tournaments_filters) {
+                Object.assign(
+                    open_tournaments_filters[key],
+                    {
+                        time_start__gte: (new Date()).toISOString(),
+                        exclusivity: "open",
+                    }
+                );
+            }
+        }
 
         return (
 
@@ -92,13 +120,7 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
                     {tab === "live" && (
                         <div>
                             <h3>{_("Open Tournaments")}</h3>
-                            <TournamentList filter={{
-                                time_start__gte: (new Date()).toISOString(),
-                                started__isnull: true,
-                                ended__isnull: true,
-                                time_per_move__lt: 3600,
-                                time_per_move__gt: 0,
-                            }}/>
+                            <TournamentList filter={open_tournaments_filters.live}/>
 
                             <h3>{_("Active Tournaments")}</h3>
                             <TournamentList filter={{
@@ -112,12 +134,7 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
                     {tab === "correspondence" && (
                         <div>
                             <h3>{_("Open Tournaments")}</h3>
-                            <TournamentList filter={{
-                                time_start__gte: (new Date()).toISOString(),
-                                started__isnull: true,
-                                ended__isnull: true,
-                                time_per_move__gte: 3600,
-                            }}/>
+                            <TournamentList filter={open_tournaments_filters.correspondence}/>
 
                             <h3>{_("Active Tournaments")}</h3>
                             <TournamentList filter={{
