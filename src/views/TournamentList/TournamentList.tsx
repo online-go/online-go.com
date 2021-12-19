@@ -72,6 +72,23 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
     render() {
         const tab = this.state.tab;
 
+        const frag_open_tournament = (speed: 'live'|'correspondence') => (
+            <React.Fragment>
+                <div className="open-tourney-header">
+                    <h3>{_("Open Tournaments")}</h3>
+                    <div>
+                        {_("Show all")}
+                        <Toggle height={14} width={30} checked={this.state.show_all} onChange={tf => this.toggleShowAll(tf)} />
+                    </div>
+                </div>
+                <TournamentList
+                    phase='open'
+                    speed={speed}
+                    hide_stale={!this.state.show_all}
+                    hide_exclusive={!this.state.show_all}
+                />
+            </React.Fragment>);
+
         return (
 
             <div className="page-width">
@@ -102,14 +119,7 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
                     {tab === "schedule" && <Schedule/>}
                     {tab === "live" && (
                         <div>
-                            <h3>{_("Open Tournaments")}</h3>
-                            <Toggle checked={this.state.show_all} onChange={tf => this.toggleShowAll(tf)} />
-                            <TournamentList
-                                phase='open'
-                                speed='live'
-                                hide_stale={!this.state.show_all}
-                                hide_exclusive={!this.state.show_all}
-                            />
+                            {frag_open_tournament('live')}
 
                             <h3>{_("Active Tournaments")}</h3>
                             <TournamentList phase='active' speed='live'/>
@@ -117,14 +127,7 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
                     )}
                     {tab === "correspondence" && (
                         <div>
-                            <h3>{_("Open Tournaments")}</h3>
-                            <Toggle checked={this.state.show_all} onChange={tf => this.toggleShowAll(tf)} />
-                            <TournamentList
-                                phase='open'
-                                speed='correspondence'
-                                hide_stale={!this.state.show_all}
-                                hide_exclusive={!this.state.show_all}
-                            />
+                            {frag_open_tournament('correspondence')}
 
                             <h3>{_("Active Tournaments")}</h3>
                             <TournamentList phase='active' speed='correspondence'/>
