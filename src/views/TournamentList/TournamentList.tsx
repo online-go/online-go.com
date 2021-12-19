@@ -47,7 +47,7 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
         super(props);
         this.state = {
             tab: preferences.get("tournaments-tab"),
-            show_all: false,
+            show_all: preferences.get("tournaments-show-all"),
         };
     }
 
