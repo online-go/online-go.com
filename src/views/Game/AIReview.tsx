@@ -885,6 +885,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         //console.log("blue Excellent");
                     } else if (current_branches.some(
                         (branch, index) => {
+                            if (!branch.moves.length) {
+                                return false;
+                            }
+
                             const check = index > 0 && isEqualMoveIntersection(branch.moves[0], playermove) &&
                             (branch.visits >= Math.min(50, 0.1 * this.ai_review?.strength));
                             return check;
