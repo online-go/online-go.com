@@ -55,7 +55,15 @@ function initialize() {
 }
 
 
-const requests_in_flight = {};
+interface Request {
+    promise?: Promise<any>;
+    url: string;
+    type: Method;
+    data: object;
+    request?: JQueryXHR;
+}
+
+const requests_in_flight: {[id: string]: Request} = {};
 let last_request_id = 0;
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -117,7 +125,7 @@ export function request(method: Method): RequestFunction {
 
 
         requests_in_flight[request_id].promise = new Promise((resolve, reject) => {
-            const opts = {
+            const opts: JQueryAjaxSettings = {
                 url: api1ify(real_url),
                 type: method,
                 data: undefined,
@@ -147,8 +155,8 @@ export function request(method: Method): RequestFunction {
                             opts.data.append("file", file);
                         }
                     }
-                    (opts as any).processData = false;
-                    (opts as any).contentType = false;
+                    opts.processData = false;
+                    opts.contentType = false;
                 } else {
                     if (method === "GET") {
                         opts.data = real_data;

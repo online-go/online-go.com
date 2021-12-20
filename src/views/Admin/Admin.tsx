@@ -28,10 +28,12 @@ declare let ogs_release;
 declare let ogs_version;
 declare let ogs_language_version;
 
-interface AdminProperties {
+interface AdminState {
+    results: any[];
+    notifications_player_id: string;
 }
 
-export class Admin extends React.PureComponent<AdminProperties, any> {
+export class Admin extends React.PureComponent<{}, AdminState> {
     results = [];
 
     constructor(props) {

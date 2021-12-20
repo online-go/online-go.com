@@ -19,12 +19,10 @@ import * as React from "react";
 import * as data from "data";
 import {_, pgettext, interpolate} from "translate";
 
-interface DeveloperProperties {
-}
-
-export class Developer extends React.PureComponent<DeveloperProperties, any> {
+export class Developer extends React.PureComponent {
     constructor(props) {
         super(props);
+        // TODO: remove this
         this.state = { };
     }
 

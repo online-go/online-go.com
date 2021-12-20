@@ -27,7 +27,7 @@ interface LearningHubSectionProperties {
     pages: Array<typeof LearningPage>;
 }
 
-export abstract class LearningHubSection extends React.PureComponent<LearningHubSectionProperties, any> {
+export abstract class LearningHubSection extends React.PureComponent<LearningHubSectionProperties> {
     constructor(props) {
         super(props);
     }

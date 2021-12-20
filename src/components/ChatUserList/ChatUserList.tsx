@@ -33,12 +33,16 @@ interface ChatUserCountProperties extends ChatUserListProperties {
     active: boolean;
 }
 
-export class ChatUsers<T extends ChatUserListProperties> extends React.PureComponent<T, any> {
+interface ChatUsersState {
+    tick: number;
+}
+
+export class ChatUsers<P extends ChatUserListProperties, S extends ChatUsersState> extends React.PureComponent<P, S> {
     proxy: ChatChannelProxy;
 
     constructor(props) {
         super(props);
-        this.state = {tick: 0};
+        (this.state as ChatUsersState) = {tick: 0};
     }
     UNSAFE_componentWillMount() {
         this.init(this.props.channel);
@@ -65,7 +69,11 @@ export class ChatUsers<T extends ChatUserListProperties> extends React.PureCompo
     }
 }
 
-export class ChatUserList extends ChatUsers<ChatUserListProperties> {
+interface ChatUserListState extends ChatUsersState {
+    user_sort_order: 'alpha'|'rank';
+}
+
+export class ChatUserList extends ChatUsers<ChatUserListProperties, ChatUserListState> {
     constructor(props) {
         super(props);
         (this.state as any).user_sort_order = preferences.get("chat.user-sort-order");
@@ -96,7 +104,7 @@ export class ChatUserList extends ChatUsers<ChatUserListProperties> {
     }
 }
 
-export class ChatUserCount extends ChatUsers<ChatUserCountProperties> {
+export class ChatUserCount extends ChatUsers<ChatUserCountProperties, ChatUsersState> {
     render() {
         return (
             <button

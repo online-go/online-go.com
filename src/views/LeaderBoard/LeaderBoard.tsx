@@ -22,10 +22,11 @@ import {errorAlerter} from "misc";
 import {Player} from "Player";
 import {Card} from "material";
 
-interface LeaderBoardProperties {
+interface LeaderBoardState {
+    leaderboards: Array<Array<{name: string; userlist: any[]}>>;
 }
 
-export class LeaderBoard extends React.PureComponent<LeaderBoardProperties, any> {
+export class LeaderBoard extends React.PureComponent<{}, LeaderBoardState> {
     constructor(props) {
         super(props);
         this.state = {

@@ -997,9 +997,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
 
         let show_full_ai_review_button: null | true = null;
+        const user = data.get('user');
 
         try {
-            const user = data.get('user');
             if (
                 user.id === this.props.game.creator_id ||
                 user.id === this.props.game.goban.engine.players.black.id ||
@@ -1194,16 +1194,18 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 }
                                 <div className = "worst-moves-summary-toggle-container">
                                     {this.renderWorstMoveList(worst_move_list)}
-                                    <div className = 'ai-summary-toggler'>
-                                        <span><i className="fa fa-table"></i></span>
-                                        <span>
-                                            <Toggle checked={this.state.table_hidden} onChange={b => {
-                                                preferences.set('ai-summary-table-show', b);
-                                                this.setState({table_hidden: b});
-                                                //console.log(this.state.table_hidden);
-                                            }}/>
-                                        </span>
-                                    </div>
+                                    {(user.is_moderator || null) &&
+                                        <div className = 'ai-summary-toggler'>
+                                            <span><i className="fa fa-table"></i></span>
+                                            <span>
+                                                <Toggle checked={this.state.table_hidden} onChange={b => {
+                                                    preferences.set('ai-summary-table-show', b);
+                                                    this.setState({table_hidden: b});
+                                                    //console.log(this.state.table_hidden);
+                                                }}/>
+                                            </span>
+                                        </div>
+                                    }
                                 </div>
                             </React.Fragment>
                         }

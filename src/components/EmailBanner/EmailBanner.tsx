@@ -22,13 +22,11 @@ import {_, pgettext, interpolate} from "translate";
 import * as data from "data";
 import {Card} from 'material';
 
-interface EmailBannerProperties {
-}
 
-
-export class EmailBanner extends React.PureComponent<EmailBannerProperties, any> {
+export class EmailBanner extends React.PureComponent {
     constructor(props) {
         super(props);
+        // TODO: Remove this
         this.state = {
 
         };
