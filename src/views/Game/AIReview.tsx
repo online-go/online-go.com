@@ -837,7 +837,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         } else if (this.ai_review?.type === "full" ) {
             const num_rows = ai_table_rows.length;
             const movekeys = Object.keys( this.ai_review?.moves);
-            console.log(movekeys);
             const is_uploaded = (this.props.game.goban.config.original_sgf !== undefined);
             // should be one more ai review score and move branches for empty board.
             const check1 = !is_uploaded &&
