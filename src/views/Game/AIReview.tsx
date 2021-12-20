@@ -41,8 +41,11 @@ import {
     ColoredCircle,
     getWorstMoves,
     AIReviewWorstMoveEntry,
+    ScoreEstimator,
 } from 'goban';
 import swal from 'sweetalert2';
+import { users_by_rank } from "src/lib/chat_manager";
+import { keys } from "d3";
 
 export interface AIReviewEntry {
     move_number: number;
@@ -100,23 +103,24 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
     componentDidMount() {
         this.getAIReviewList();
-        const ai_table_out = this.AiSummaryTableRowList();
-        this.table_rows = ai_table_out.ai_table_rows;
-        this.avg_score_loss = ai_table_out.avg_score_loss;
-        this.moves_pending = ai_table_out.moves_pending;
-        this.max_entries = ai_table_out.max_entries;
         if (!data.get("user").is_moderator){
             this.setState({
                 table_set: true,
             }
             );
+        }else{
+            const ai_table_out = this.AiSummaryTableRowList();
+            this.table_rows = ai_table_out.ai_table_rows;
+            this.avg_score_loss = ai_table_out.avg_score_loss;
+            this.moves_pending = ai_table_out.moves_pending;
+            this.max_entries = ai_table_out.max_entries;
         }
     }
     componentDidUpdate(prevProps: AIReviewProperties, prevState: any) {
         if (this.getGameId() !== this.getGameId(prevProps)) {
             this.getAIReviewList();
         }
-        if (!this.state.table_set) {
+        if (!this.state.table_set && data.get("user").is_moderator) {
             const ai_table_out = this.AiSummaryTableRowList();
             this.table_rows = ai_table_out.ai_table_rows;
             this.avg_score_loss = ai_table_out.avg_score_loss;
@@ -845,7 +849,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             const check2 = is_uploaded &&
             ((this.props.game.goban.config["all_moves"].split("!").length - bplayer) !== movekeys.length);
 
-            if (this.state.loading || this.ai_review.scores === undefined ){
+            if (this.state.loading || this.ai_review.scores === undefined || this.ai_review.moves === undefined){
                 for (let j = 0; j < ai_table_rows.length; j++){
                     ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
                 }
@@ -865,16 +869,29 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 }
                 const playermove = this.ai_review?.moves[j + 1].move;
                 //the current ai review shows top six playouts on the board, so matching that.
+                if (this.ai_review?.moves[j].branches === undefined){
+                    moves_missing += 1;
+                    continue;
+                }
                 const current_branches = this.ai_review?.moves[j].branches.slice(0, 6);
+                if (current_branches[0].moves === undefined){
+                    moves_missing += 1;
+                    continue;
+                }
                 const bluemove = current_branches[0].moves[0];
                 const is_bplayer = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
                 const offset = (is_bplayer) ? 0 : num_rows;
                 const player_index = (is_bplayer) ? 0 : 1;
                 let scorediff = this.ai_review?.moves[j + 1].score - this.ai_review?.moves[j].score;
+                if (isNaN(scorediff)){
+                    moves_missing += 1;
+                    continue;
+                }
                 scorediff = (is_bplayer) ? (-1) * scorediff : scorediff;
                 avg_score_loss[player_index] += scorediff;
 
-                if (bluemove === undefined ){
+                if (bluemove === undefined || playermove === undefined || !keys(bluemove).includes("x") || !keys(bluemove).includes("y") ||
+                 !keys(playermove).includes("x") || !keys(playermove).includes("y")){
                     othercounters[player_index] += 1;
                 } else if ( playermove.x === -1){
                     othercounters[player_index] += 1;
@@ -885,6 +902,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         //console.log("blue Excellent");
                     } else if (current_branches.some(
                         (branch, index) => {
+                            if (!branch.moves.length || !keys(branch.moves[0]).includes("x") || !keys(branch.moves[0]).includes("y")) {
+                                return false;
+                            }
                             const check = index > 0 && isEqualMoveIntersection(branch.moves[0], playermove) &&
                             (branch.visits >= Math.min(50, 0.1 * this.ai_review?.strength));
                             return check;
@@ -929,11 +949,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
             }
 
-            if (!check1 && !check2 ){
+            if ((!check1 && !check2)){
                 this.setState({
                     table_set: true
                 });
             }
+
+            console.log(othercounters);
 
             return {ai_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
         } else {
