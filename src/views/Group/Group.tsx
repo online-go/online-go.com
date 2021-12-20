@@ -697,33 +697,21 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                             {(group.has_open_tournaments || null) &&
                             <div>
                                 <h3>{_("Open Tournaments")}</h3>
-                                <TournamentList filter={{
-                                    started__isnull: true,
-                                    ended__isnull: true,
-                                    group: this.props.match.params.group_id,
-                                }}/>
+                                <TournamentList phase='open' group={this.props.match.params.group_id}/>
                             </div>
                             }
 
                             {(group.has_active_tournaments || null) &&
                             <div>
                                 <h3>{_("Active Tournaments")}</h3>
-                                <TournamentList filter={{
-                                    started__isnull: false,
-                                    ended__isnull: true,
-                                    group: this.props.match.params.group_id,
-                                }}/>
+                                <TournamentList phase='active' group={this.props.match.params.group_id}/>
                             </div>
                             }
 
                             {(group.has_finished_tournaments || null) &&
                             <div>
                                 <h3>{_("Finished Tournaments")}</h3>
-                                <TournamentList filter={{
-                                    started__isnull: false,
-                                    ended__isnull: false,
-                                    group: this.props.match.params.group_id,
-                                }}/>
+                                <TournamentList phase='finished' group={this.props.match.params.group_id}/>
                             </div>
                             }
                         </Card>
