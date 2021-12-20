@@ -41,11 +41,8 @@ import {
     ColoredCircle,
     getWorstMoves,
     AIReviewWorstMoveEntry,
-    ScoreEstimator,
 } from 'goban';
 import swal from 'sweetalert2';
-import { users_by_rank } from "src/lib/chat_manager";
-import { keys } from "d3";
 
 export interface AIReviewEntry {
     move_number: number;
@@ -840,6 +837,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         } else if (this.ai_review?.type === "full" ) {
             const num_rows = ai_table_rows.length;
             const movekeys = Object.keys( this.ai_review?.moves);
+            console.log(movekeys);
             const is_uploaded = (this.props.game.goban.config.original_sgf !== undefined);
             // should be one more ai review score and move branches for empty board.
             const check1 = !is_uploaded &&
@@ -890,8 +888,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 scorediff = (is_bplayer) ? (-1) * scorediff : scorediff;
                 avg_score_loss[player_index] += scorediff;
 
-                if (bluemove === undefined || playermove === undefined || !keys(bluemove).includes("x") || !keys(bluemove).includes("y") ||
-                 !keys(playermove).includes("x") || !keys(playermove).includes("y")){
+                if (bluemove === undefined || playermove === undefined || !Object.keys(bluemove).includes("x") || !Object.keys(bluemove).includes("y") ||
+                 !Object.keys(playermove).includes("x") || !Object.keys(playermove).includes("y")){
                     othercounters[player_index] += 1;
                 } else if ( playermove.x === -1){
                     othercounters[player_index] += 1;
@@ -902,7 +900,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         //console.log("blue Excellent");
                     } else if (current_branches.some(
                         (branch, index) => {
-                            if (!branch.moves.length || !keys(branch.moves[0]).includes("x") || !keys(branch.moves[0]).includes("y")) {
+                            if (!branch.moves.length || !Object.keys(branch.moves[0]).includes("x") || !Object.keys(branch.moves[0]).includes("y")) {
                                 return false;
                             }
                             const check = index > 0 && isEqualMoveIntersection(branch.moves[0], playermove) &&
@@ -954,8 +952,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     table_set: true
                 });
             }
-
-            console.log(othercounters);
 
             return {ai_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
         } else {
