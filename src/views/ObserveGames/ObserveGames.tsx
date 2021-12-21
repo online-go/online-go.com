@@ -19,10 +19,8 @@ import * as React from "react";
 import {_} from "translate";
 import { ObserveGamesComponent } from 'ObserveGamesComponent';
 
-interface ObserveGamesProperties {
-}
 
-export class ObserveGames extends React.PureComponent<ObserveGamesProperties, any> {
+export class ObserveGames extends React.PureComponent {
     constructor(props) {
         super(props);
     }

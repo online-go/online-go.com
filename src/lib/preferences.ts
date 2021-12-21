@@ -93,7 +93,8 @@ const defaults = {
 
     "supporter.currency": "auto",
     "supporter.interval": "month",
-    "tournaments-tab": "correspondence",
+    "tournaments-tab": "schedule",
+    "tournaments-show-all": false,
     "translation-dialog-dismissed": 0,
     "translation-dialog-never-show": false,
     "unicode-filter": false,

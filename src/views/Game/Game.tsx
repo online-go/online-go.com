@@ -28,7 +28,21 @@ import {KBShortcut} from "KBShortcut";
 import {UIPush} from "UIPush";
 import {alertModerator, errorAlerter, ignore, getOutcomeTranslation} from "misc";
 import {challengeFromBoardPosition, challengeRematch} from "ChallengeModal";
-import {Goban, GobanCanvas, GobanCanvasConfig, GoEngine, GoMath, MoveTree, AudioClockEvent} from "goban";
+import {
+    Goban,
+    GobanCanvas,
+    GobanCanvasConfig,
+    GoEngine,
+    GoMath,
+    MoveTree,
+    AudioClockEvent,
+    Score,
+    GoEnginePhase,
+    GobanModes,
+    GoEngineRules,
+    AnalysisTool,
+    GoEnginePlayerEntry,
+} from "goban";
 import {isLiveGame} from "TimeControl";
 import {termination_socket, get_network_latency, get_clock_drift} from "sockets";
 import {Dock} from "Dock";
@@ -72,9 +86,66 @@ interface GameProperties {
     };
 }
 
+interface GameState {
+    view_mode: ViewMode;
+    squashed: boolean;
+    undo_requested: boolean;
+    estimating_score: boolean;
+    analyze_pencil_color: string;
+    show_submit: boolean;
+    user_is_player: boolean;
+    zen_mode: boolean;
+    autoplaying: boolean;
+    portrait_tab: 'game'|'chat'|'dock';
+    review_list: any[];
+    chat_log: 'main'|'malkovich';
+    variation_name: string;
+    strict_seki_mode: boolean;
+    player_icons: {};
+    volume: number;
+    historical_black?: GoEnginePlayerEntry;
+    historical_white?: GoEnginePlayerEntry;
+    annulled: boolean;
+    black_auto_resign_expiration?: Date;
+    white_auto_resign_expiration?: Date;
+    ai_review_enabled: boolean;
+    show_score_breakdown: boolean;
+    selected_ai_review_uuid?: string;
+    show_game_timing: boolean;
+    title?: string;
+    score?: Score;
+    paused?: boolean;
+    phase?: GoEnginePhase;
+    mode?: GobanModes;
+    move_text?: string;
+    resign_mode?: 'cancel'|'resign';
+    resign_text?: string;
+    cur_move_number?: number;
+    game_id?: number;
+    review_id?: number;
+    score_estimate?: { winner?: string };
+    show_undo_requested?: boolean;
+    show_accept_undo?: boolean;
+    show_title?: boolean;
+    player_to_move?: number;
+    player_not_to_move?: number;
+    is_my_move?: boolean;
+    winner?: 'black'|'white';
+    official_move_number?: number;
+    rules?: GoEngineRules;
+    analyze_tool?: AnalysisTool;
+    analyze_subtool?: string;
+    stone_removals?: string;
+    black_accepted?: boolean;
+    white_accepted?: boolean;
+    review_owner_id?: number;
+    review_controller_id?: number;
+    review_out_of_sync?: boolean;
+}
+
 export type ViewMode = "portrait"|"wide"|"square";
 
-export class Game extends React.PureComponent<GameProperties, any> {
+export class Game extends React.PureComponent<GameProperties, GameState> {
     ref_goban;
     ref_goban_container: HTMLElement;
     ref_players;
@@ -310,8 +381,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
     }
 
     autoadvance = () => {
-        console.log(" ** Autoadvance...");
-
         const user = data.get('user');
 
         if (!user.anonymous && /^\/game\//.test(this.getLocation())) {
@@ -574,7 +643,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         });
 
         this.goban.on("gamedata", (gamedata) => {
-            console.log(" ** Game data:", gamedata);
             try {
                 if (isLiveGame(gamedata.time_control)) {
                     this.goban.one_click_submit = preferences.get("one-click-submit-live");
@@ -684,7 +752,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
         if (this.game_id) {
             get("games/%%", this.game_id)
             .then((game) => {
-                console.log("got game:", game);
                 if (game.players.white.id) {
                     player_cache.update(game.players.white, true);
                     this.white_username = game.players.white.username;
@@ -1694,7 +1761,7 @@ export class Game extends React.PureComponent<GameProperties, any> {
         }
     }
     sync_state() {
-        const new_state: any = {
+        const new_state: Partial<GameState> = {
             game_id: this.game_id,
             review_id: this.review_id,
             user_is_player: false,
@@ -1715,7 +1782,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
                 console.error(e.stack);
             }
 
-            // console.log("At sync state, goban:", this.goban);
             /* Game state */
             new_state.mode = goban.mode;
             new_state.phase = engine.phase;
@@ -1736,7 +1802,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
             new_state.paused = goban.pause_control && !!goban.pause_control.paused;
             new_state.analyze_tool = goban.analyze_tool;
             new_state.analyze_subtool = goban.analyze_subtool;
-
 
             if (goban.engine.gameCanBeCanceled()) {
                 new_state.resign_text = _("Cancel game");
@@ -1810,13 +1875,9 @@ export class Game extends React.PureComponent<GameProperties, any> {
             new_state.review_owner_id = goban.review_owner_id;
             new_state.review_controller_id = goban.review_controller_id;
             new_state.review_out_of_sync = engine.cur_move && engine.cur_review_move && (engine.cur_move.id !== engine.cur_review_move.id);
-
-            /* rengo stuff */
-
-
         }
 
-        this.setState(new_state);
+        this.setState(new_state as GameState);
     }
 
     createConditionalMoveTreeDisplay(root, cpath, blacks_move) {
@@ -2518,7 +2579,8 @@ export class Game extends React.PureComponent<GameProperties, any> {
                             {state.winner
                                 ?
                                 (interpolate(pgettext("Game winner", "{{color}} wins by {{outcome}}"), {
-                                    "color": (state.winner === this.goban.engine.players.black.id || state.winner === "black" ? _("Black") : _("White")),
+                                    // When is winner an id?
+                                    "color": (state.winner as any === this.goban.engine.players.black.id || state.winner === "black" ? _("Black") : _("White")),
                                     "outcome": getOutcomeTranslation(this.goban.engine.outcome)
                                 }))
                                 :
@@ -2983,8 +3045,6 @@ export class Game extends React.PureComponent<GameProperties, any> {
             return null;
         }
         const engine = goban.engine;
-
-        console.log(" ** Frag players... goban:", goban);
 
         return (
             <div ref={el => this.ref_players = el} className="players">

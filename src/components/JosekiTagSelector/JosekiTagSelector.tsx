@@ -28,7 +28,12 @@ interface JosekiTagSelectorProps {
     on_tag_update: any;
 }
 
-export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProps, any> {
+interface JosekiTagSelectorState {
+    tag_list: [];
+    tag_map: {};
+}
+
+export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProps, JosekiTagSelectorState> {
     constructor(props) {
         super(props);
         this.state = {

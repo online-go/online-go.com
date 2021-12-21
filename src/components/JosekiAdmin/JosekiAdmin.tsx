@@ -26,7 +26,7 @@ import {openModal} from 'Modal';
 import { Player } from "Player";
 
 import { JosekiPermissionsPanel } from "JosekiPermissionsPanel";
-import { JosekiStatsModal } from "JosekiStatsModal";
+import { JosekiPageVisits, JosekiStatsModal } from "JosekiStatsModal";
 
 
 interface JosekiAdminProps {
@@ -37,6 +37,25 @@ interface JosekiAdminProps {
     db_locked_down: boolean;
     loadPositionToBoard(pos: string);
     updateDBLockStatus(value: boolean);
+}
+
+interface JosekiAdminState{
+    data: any[];
+    pages: number;
+    current_page: number;
+    current_pageSize: number;
+    loading: boolean;
+    all_selected: boolean;
+    any_selected: boolean;
+    server_status: string;
+    selections: Map<string, boolean>;
+    reversions: Map<string, string>;
+    schema_version: string;
+    filter_user_id: string;
+    filter_position_id: string;
+    filter_audit_type: string;
+    page_visits?: string;
+    daily_visits: JosekiPageVisits[];
 }
 
 const AuditTypes = [
@@ -54,7 +73,7 @@ const AuditTypes = [
 
 const SelectTable = selectTableHOC(ReactTable) ;
 
-export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
+export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdminState> {
     constructor(props) {
         super(props);
         this.state = {
@@ -109,7 +128,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, any> {
     };
 
     //  Call the server to revert each selected item in turn (one at a time, for ease of understanding what happened)
-    revertSelectedChanges = (current_selections) => {
+    revertSelectedChanges = (current_selections: Map<string, boolean>) => {
         const selections = current_selections.keys();
         let {value: next_selection, done: done} = selections.next();
 

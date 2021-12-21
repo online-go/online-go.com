@@ -16,8 +16,7 @@
                 "src/lib/*",
                 "src/components/*",
                 "src/views/*",
-                "src/data/*",
-                "src/compatibility/*",
+                "src/models/*",
                 "src/*"
             ],
             "requests": [
@@ -26,7 +25,7 @@
         },
 
         "forceConsistentCasingInFileNames": true,
-        
+
         "noImplicitAny": false,
         "noImplicitReturns": false,
         "noImplicitThis": false,

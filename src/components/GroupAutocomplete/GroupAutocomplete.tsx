@@ -25,15 +25,24 @@ interface GroupAutocompleteProperties {
     placeholder?: string;
 }
 
-const getSuggestionValue = (suggestion) => {
+interface Suggestion {
+    name: string;
+}
+
+const getSuggestionValue = (suggestion: Suggestion) => {
     return suggestion.name;
 };
 
-const renderSuggestion = suggestion => ( <div>{suggestion.name}</div>);
+const renderSuggestion = (suggestion: Suggestion) => ( <div>{suggestion.name}</div>);
 
 const groups_by_name = {};
 
-export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProperties, any> {
+interface GroupAutocompleteState {
+    value: string;
+    suggestions: Suggestion[];
+}
+
+export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProperties, GroupAutocompleteState> {
     last_on_complete_username = null;
     current_search = null;
     tabbed_out = false;
@@ -77,7 +86,7 @@ export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProp
 
         if (value.length > 1) {
             get("groups/", {name__istartswith: value, page_size: 10})
-            .then((res) => {
+            .then((res: { results: Suggestion[] }) => {
                 for (const group of res.results) {
                     groups_by_name[group.name] = group;
                 }

@@ -25,7 +25,7 @@ interface PrettyTransactionInfoProperties {
     transaction: any;
 }
 
-export class PrettyTransactionInfo extends React.PureComponent<PrettyTransactionInfoProperties, any> {
+export class PrettyTransactionInfo extends React.PureComponent<PrettyTransactionInfoProperties> {
     constructor(props) {
         super(props);
     }

@@ -28,7 +28,9 @@ interface UserByNameProperties {
     };
 }
 
-export class UserByName extends React.PureComponent<UserByNameProperties, any> {
+interface UserByNameState { user_id?: number }
+
+export class UserByName extends React.PureComponent<UserByNameProperties, UserByNameState> {
     constructor(props) {
         super(props);
 

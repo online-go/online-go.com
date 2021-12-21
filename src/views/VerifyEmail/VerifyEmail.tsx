@@ -27,7 +27,12 @@ interface VerifyEmailProps {
     location: any;
 }
 
-export class VerifyEmail extends React.PureComponent<VerifyEmailProps, any> {
+interface VerifyEmailState {
+    verifying: boolean;
+    message: string;
+}
+
+export class VerifyEmail extends React.PureComponent<VerifyEmailProps, VerifyEmailState> {
     constructor(props) {
         super(props);
         this.state = {
