@@ -171,6 +171,7 @@ interface UserState {
     show_graph_type_toggle: boolean;
     rating_chart_type_toggle_left?: number;
     hovered_game_id?: number;
+    show_rengo_game_history: boolean;
     friend_request_sent?: boolean;
     friend_request_received?: boolean;
     is_friend?: boolean;
@@ -808,7 +809,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         const cdn_release = data.get("config.cdn_release");
         const account_links = user.self_reported_account_linkages;
 
-        const game_history_query_url = this.state.show_rengo_game_history ? `players/${this.user_id}/rengogames/` : `players/${this.user_id}/games/`;
+        const game_history_query_url = `players/${this.user_id}/games/`;
 
         return (
             <div className="User container">
@@ -1061,6 +1062,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                             filter={{
                                                 "source": "play",
                                                 "ended__isnull": false,
+                                                "rengo__isnull" : !this.state.show_rengo_game_history
                                             }}
                                             orderBy={["-ended"]}
                                             groom={game_history_groomer}

@@ -3120,7 +3120,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                                     {((goban.engine.phase !== "finished" && goban.engine.phase !== "stone removal" || null) || goban.mode === "analyze" ||
                                     goban.engine.outcome === "Timeout" || goban.engine.outcome === "Resignation" || goban.engine.outcome === "Cancellation") &&
                                     <div className="komi">
-                                        {this.state.score[color].komi === 0 ? "" : `+ ${parseFloat(this.state.score[color].komi).toFixed(1)}`}
+                                        {this.state.score[color].komi === 0 ? "" : `+ ${parseFloat(this.state.score[color].komi as any).toFixed(1)}`}
                                     </div>
                                     }
                                     <div id={`${color}-score-details`} className="score-details"/>
