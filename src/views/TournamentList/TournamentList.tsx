@@ -68,7 +68,7 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
 
     setTab(tab) {
         this.setState({tab: tab});
-        preferences.set("tournaments-tab", tab)
+        preferences.set("tournaments-tab", tab);
     }
     toggleShowAll(show_all: boolean) {
         this.setState({show_all: show_all});
