@@ -1062,7 +1062,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                             filter={{
                                                 "source": "play",
                                                 "ended__isnull": false,
-                                                "rengo__isnull" : !this.state.show_rengo_game_history
+                                                "rengo" : this.state.show_rengo_game_history
                                             }}
                                             orderBy={["-ended"]}
                                             groom={game_history_groomer}
