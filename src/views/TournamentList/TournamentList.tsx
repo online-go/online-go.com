@@ -53,7 +53,7 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
         this.state = {
             tab: preferences.get("tournaments-tab"),
             //show_all: preferences.get("tournaments-show-all"),
-            show_all: true,
+            show_all: false,
         };
     }
 
@@ -68,7 +68,7 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
 
     setTab(tab) {
         this.setState({tab: tab});
-        preferences.set("tournaments-show-all", tab);
+        preferences.set("tournaments-tab", tab)
     }
     toggleShowAll(show_all: boolean) {
         this.setState({show_all: show_all});
