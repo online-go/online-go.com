@@ -64,6 +64,7 @@ interface PaginatedTableState {
 }
 
 export class PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT> extends React.Component<PaginatedTableProperties<RawEntryT, GroomedEntryT>, PaginatedTableState> {
+    filter: any = {};
     sorting: Array<string> = [];
     source_url: string;
     source_method: string;
@@ -85,6 +86,7 @@ export class PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT> extends 
         this.setState({
             page_size: this.props.pageSize || (this.props.name ? data.get(`paginated-table.${this.props.name}.page_size`) : 0) || 10,
         });
+        this.filter = this.props.filter || {};
         this.update_source();
         setTimeout(() => this.update(), 1);
     }
@@ -170,7 +172,7 @@ export class PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT> extends 
         }
         this.updating = true;
         this.needs_another_update = false;
-        this.source_function(this.props.filter, this.sorting)
+        this.source_function(this.filter, this.sorting)
         .then((res) => {
             const new_rows = this.props.groom ? this.props.groom(res.results || []) : res.results || [];
 

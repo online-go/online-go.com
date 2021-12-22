@@ -52,7 +52,8 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
         super(props);
         this.state = {
             tab: preferences.get("tournaments-tab"),
-            show_all: preferences.get("tournaments-show-all"),
+            //show_all: preferences.get("tournaments-show-all"),
+            show_all: false,
         };
     }
 
@@ -67,7 +68,7 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
 
     setTab(tab) {
         this.setState({tab: tab});
-        preferences.set("tournaments-show-all", tab);
+        preferences.set("tournaments-tab", tab);
     }
     toggleShowAll(show_all: boolean) {
         this.setState({show_all: show_all});
@@ -81,10 +82,12 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
             <React.Fragment>
                 <div className="open-tourney-header">
                     <h3>{_("Open Tournaments")}</h3>
+                    {/*
                     <div>
                         {_("Show all")}
                         <Toggle height={14} width={30} checked={this.state.show_all} onChange={tf => this.toggleShowAll(tf)} />
                     </div>
+                    */}
                 </div>
                 <TournamentList
                     phase='open'
