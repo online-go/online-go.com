@@ -154,17 +154,7 @@ export class PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT> extends 
         return post(this.source_url, query); // TODO: Check the URLs and typify the result again
     }
 
-
     needs_another_update: boolean = false;
-    filter_updated() {
-        this.setPage(1);
-        if (this.updating) {
-            this.needs_another_update = true;
-        } else {
-            this.update();
-        }
-    }
-
     updating: boolean = false;
     update() {
         if (this.updating) {
@@ -172,7 +162,7 @@ export class PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT> extends 
         }
         this.updating = true;
         this.needs_another_update = false;
-        this.source_function(this.filter, this.sorting)
+        this.source_function(this.props.filter, this.sorting)
         .then((res) => {
             const new_rows = this.props.groom ? this.props.groom(res.results || []) : res.results || [];
 

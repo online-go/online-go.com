@@ -35,8 +35,12 @@ const greylist = ["yopmail.com", "vsprint.com", "xplanningzx.com", "mailsac.com"
 
 const greylist2 = [".xyz", ".life", ".website"];
 
+interface ModeratorState {
+    newuserany_filter: string;
+    playerusernameistartswith_filter: string;
+}
 
-export class Moderator extends React.PureComponent {
+export class Moderator extends React.PureComponent<{}, ModeratorState> {
     refs: {
         modlog;
         userlog;
@@ -45,6 +49,8 @@ export class Moderator extends React.PureComponent {
     constructor(props) {
         super(props);
         this.state = {
+            newuserany_filter: "",
+            playerusernameistartswith_filter: "",
         };
     }
     componentDidMount() {
@@ -70,9 +76,7 @@ export class Moderator extends React.PureComponent {
                         <SearchInput
                             placeholder={_("Search")}
                             onChange={(event) => {
-                            //this.refs.userlog.filter.username__istartswith = (event.target as HTMLInputElement).value.trim();
-                                this.refs.userlog.filter.newuserany = (event.target as HTMLInputElement).value.trim();
-                                this.refs.userlog.filter_updated();
+                                this.setState({newuserany_filter: (event.target as HTMLInputElement).value.trim()});
                             }}
                         />
                     </div>
@@ -87,7 +91,9 @@ export class Moderator extends React.PureComponent {
                         name="userlog"
                         source={`moderation/recent_users`}
                         orderBy={["-timestamp"]}
-                        filter={{ "newuserany": "" }}
+                        filter={{
+                            ...(this.state.newuserany_filter !== "" && {newuserany: this.state.newuserany_filter})
+                        }}
                         columns={[
                             {header: _("Time"),  className: () => "timestamp",
                                 render: (X) => (moment(new Date(X.registration_date)).format("YYYY-MM-DD HH:mm")) },
@@ -122,9 +128,7 @@ export class Moderator extends React.PureComponent {
                             className="pull-right"
                             placeholder={_("Search")}
                             onChange={(event) => {
-                                this.refs.modlog.filter.playerusernameistartswith = (event.target as HTMLInputElement).value.trim();
-                                //this.refs.modlog.filter.useruserany = (event.target as HTMLInputElement).value.trim();
-                                this.refs.modlog.filter_updated();
+                                this.setState({playerusernameistartswith_filter: (event.target as HTMLInputElement).value.trim()});
                             }}
                         />
                     </div>
@@ -135,7 +139,9 @@ export class Moderator extends React.PureComponent {
                         name="modlog"
                         source={`moderation/`}
                         orderBy={["-timestamp"]}
-                        filter={{ "playerusernameistartswith": "" }}
+                        filter={{
+                            ...(this.state.playerusernameistartswith_filter !== "" && {playernameistartswith: this.state.playerusernameistartswith_filter}),
+                        }}
                         columns={[
                             {header: _("Time"),  className: () => "timestamp ",
                                 render: (X) => (moment(new Date(X.timestamp)).format("YYYY-MM-DD HH:mm")) },
