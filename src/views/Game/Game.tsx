@@ -2629,7 +2629,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                 }
                 {(this.state.phase === "finished" || null) &&  /* { */
                     <div className="analyze-mode-buttons">     {/* not really analyze mode, but equivalent button position and look*/}
-                        {(this.state.user_is_player && this.state.mode !== "score estimation" || null) &&
+                        {(this.state.user_is_player && this.state.mode !== "score estimation" && !this.goban.engine.rengo || null) &&
                             <button
                                 onClick={this.rematch}
                                 className="primary">
