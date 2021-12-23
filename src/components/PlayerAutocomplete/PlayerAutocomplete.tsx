@@ -124,7 +124,8 @@ export class PlayerAutocomplete extends React.PureComponent<PlayerAutocompletePr
                 }
             })
             .catch((err) => {
-                console.log(err);
+                // I'm not sure these logs are helpful: we get to here if they type ahead fast
+                // console.log(err);
             });
         } else {
             this.setState({

@@ -182,7 +182,10 @@ interface UserState {
     ladders?: any[];
     tournaments?: any[];
     groups?: any[];
+    games_alt_player_filter: number;
+    reviews_alt_player_filter: number;
 }
+
 export class User extends React.PureComponent<UserProperties, UserState> {
     refs: {
         vacation_left;
@@ -223,6 +226,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             rating_graph_plot_by_games: preferences.get('rating-graph-plot-by-games'),
             show_graph_type_toggle: !preferences.get('rating-graph-always-use'),
             hovered_game_id: null,
+            games_alt_player_filter: null,
+            reviews_alt_player_filter: null,
             show_rengo_game_history: false,
         };
 
@@ -599,24 +604,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             this.resolve(this.props);
         });
     };
-
-    updateGameSearch = (player) => {
-        if (player) {
-            this.refs.game_table.filter.alt_player = player.id;
-        } else {
-            delete this.refs.game_table.filter.alt_player;
-        }
-        this.refs.game_table.filter_updated();
-    };
-    updateReviewSearch = (player) => {
-        if (player) {
-            this.refs.review_table.filter.alt_player = player.id;
-        } else {
-            delete this.refs.review_table.filter.alt_player;
-        }
-        this.refs.review_table.filter_updated();
-    };
-
 
     addModeratorNote = () => {
         const txt = this.moderator_note.value.trim();
@@ -1044,6 +1031,12 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                 <h2>{_("Game History")}</h2>
                                 <Card>
                                     <div>{/* loading-container="game_history.settings().$loading" */}
+                                        <div className="search">
+                                            <i className="fa fa-search"></i>
+                                            <PlayerAutocomplete onComplete={(player) => {
+                                                // happily, and importantly, if there isn't a player, then we get null
+                                                this.setState({games_alt_player_filter: player?.id});
+                                            }}/>
                                         <div className="game-options">
                                             <div className="search">
                                                 <i className="fa fa-search"></i><PlayerAutocomplete onComplete={this.updateGameSearch}/>
@@ -1062,6 +1055,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                             filter={{
                                                 "source": "play",
                                                 "ended__isnull": false,
+                                                ...(this.state.games_alt_player_filter !== null && {"alt_player": this.state.games_alt_player_filter})
                                                 "rengo" : this.state.show_rengo_game_history
                                             }}
                                             orderBy={["-ended"]}
@@ -1089,7 +1083,11 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                 <Card>
                                     <div>{/* loading-container="game_history.settings().$loading" */}
                                         <div className="search">
-                                            <i className="fa fa-search"></i><PlayerAutocomplete onComplete={this.updateReviewSearch}/>
+                                            <i className="fa fa-search"></i>
+                                            <PlayerAutocomplete onComplete={(player) => {
+                                                // happily, and importantly, if there isn't a player, then we get null
+                                                this.setState({reviews_alt_player_filter: player?.id});
+                                            }}/>
                                         </div>
 
                                         <PaginatedTable
@@ -1100,6 +1098,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                             source={`reviews/`}
                                             filter={{
                                                 "owner_id": this.user_id,
+                                                ...(this.state.reviews_alt_player_filter !== null && {"alt_player": this.state.reviews_alt_player_filter})
                                             }}
                                             orderBy={["-created"]}
                                             groom={review_history_groomer}
