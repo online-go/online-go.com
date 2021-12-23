@@ -1008,7 +1008,7 @@ export class Play extends React.Component<{}, PlayState> {
             this.state.rengo_list.find((c) => c.user_challenge) ||
             this.state.rengo_list.find((c) => c['rengo_participants'].includes(data.get('config.user').id));
 
-        console.log("rengo pane:", our_challenge);
+        //console.log("rengo pane:", our_challenge);
 
         // this function should not be called if the user doesn't have a rengo challenge open...
         if (our_challenge === undefined) {

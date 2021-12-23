@@ -1002,7 +1002,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                         sfx.play('white_wins');
                     }
                 } else {
-                    console.log("winner: ", winner, " color ", color);
+                    //console.log("winner: ", winner, " color ", color);
                     if (winner === color) {
                         sfx.play('you_have_won');
                     } else {
