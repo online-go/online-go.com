@@ -38,7 +38,9 @@ interface SuggestionEntry {
 }
 
 
-export function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Element {
+export const PlayerAutocomplete = React.forwardRef<PlayerAutocompleteRef, PlayerAutocompleteProperties>(_PlayerAutocomplete);
+
+function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Element {
     const [value, setValue]: [string, (x: string) => void] = React.useState(player_cache.lookup(props.playerId || 0)?.username || "");
     const [suggestions, setSuggestions]: [SuggestionEntry[], (x: SuggestionEntry[]) => void] = React.useState([] as SuggestionEntry[]);
     const tabbed_out = React.useRef(false as boolean);
@@ -59,7 +61,6 @@ export function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): J
         setValue(player_cache.lookup(props.playerId || 0)?.username || "");
         setSuggestions([]);
     }, [props.playerId]);
-
 
 
     function onBlur(ev: unknown, {highlightedSuggestion}: {highlightedSuggestion: SuggestionEntry}): void {
@@ -87,6 +88,11 @@ export function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): J
         setValue(newValue);
         //complete(newValue);
         console.log("on change fired");
+    }
+
+    function onSuggestionSelected(event: unknown, { suggestion }: { suggestion: SuggestionEntry }): void {
+        setValue(getSuggestionValue(suggestion));
+        complete(getSuggestionValue(suggestion));
     }
 
     function complete(username: string): void {
@@ -172,6 +178,7 @@ export function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): J
                 suggestions={suggestions}
                 onSuggestionsFetchRequested={onSuggestionsFetchRequested}
                 onSuggestionsClearRequested={onSuggestionsClearRequested}
+                onSuggestionSelected={onSuggestionSelected}
                 getSuggestionValue={getSuggestionValue}
                 renderSuggestion={renderSuggestion}
                 highlightFirstSuggestion={true}
@@ -190,6 +197,3 @@ function getSuggestionValue(suggestion: SuggestionEntry): string {
 function renderSuggestion(suggestion: SuggestionEntry): JSX.Element {
     return <div>{suggestion.username}</div>;
 }
-
-
-export const PlayerAutocomplete = React.forwardRef<PlayerAutocompleteRef, PlayerAutocompleteProperties>(_PlayerAutocomplete);
