@@ -1452,7 +1452,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         goban.redraw(true);
     }
     showGameInfo() {
-        for (const k of ['komi', 'rules', 'handicap']) {
+        for (const k of ['komi', 'rules', 'handicap', 'rengo', 'rengo_teams']) {
             this.goban.config[k] = this.goban.engine.config[k];
         }
         openGameInfoModal(
