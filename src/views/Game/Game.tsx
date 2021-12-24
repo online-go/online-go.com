@@ -1771,16 +1771,14 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
 
         if (this.goban) {
             /* Is player? */
-            try {
-                for (const color in this.goban.engine.players) {
-                    if (this.goban.engine.players[color].id === data.get("user").id) {
-                        new_state.user_is_player = true;
-                        break;
-                    }
-                }
-            } catch (e) {
-                console.error(e.stack);
-            }
+
+            const players = engine.rengo ?
+                engine.rengo_teams.black.concat(this.goban.engine.rengo_teams.white) :
+                [engine.players.black, engine.players.white];
+
+            const player_ids = players.map((p) => p.id);
+
+            new_state.user_is_player = player_ids.includes(data.get("user").id);
 
             /* Game state */
             new_state.mode = goban.mode;
