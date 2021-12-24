@@ -101,6 +101,7 @@ export const global_channels: Array<ChannelInformation> = [
     {"id": "global-english"    , "name": "English"    , "country": "us"           , language: "en"}    ,
     {"id": "global-help"       , "name": "Help"       , "country": "un"}          ,
     {"id": "global-offtopic"   , "name": "Off Topic"  , "country": "un"}          ,
+    {"id": "global-rengo"      , "name": "Rengo"      , "country": "un"}          ,
     {"id": "global-japanese"   , "name": "日本語 "    , "country": "jp"           , language: "ja"}    ,
     {"id": "global-zh-hans"    , "name": "中文"       , "country": "cn"           , language: ["zh", "zh_hans", "zh_cn"]}    ,
     {"id": "global-zh-hant"    , "name": "廣東話"     , "country": "hk"           , language: ["zh-hk", "zh_hk", "zh_hant", "zh_tw"]} ,
