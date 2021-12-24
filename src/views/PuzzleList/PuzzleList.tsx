@@ -35,10 +35,6 @@ interface PuzzleListState {
 }
 
 export class PuzzleList extends React.PureComponent<{}, PuzzleListState> {
-    refs: {
-        table;
-    };
-
     constructor(props) {
         super(props);
         this.state = {
@@ -78,7 +74,6 @@ export class PuzzleList extends React.PureComponent<{}, PuzzleListState> {
 
                         <PaginatedTable
                             className=""
-                            ref="table"
                             source={`puzzles/collections/`}
                             orderBy={[
                                 "-rating",

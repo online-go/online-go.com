@@ -24,7 +24,7 @@ import {errorAlerter, ignore, slugify} from "misc";
 import * as data from "data";
 import {Card} from "material";
 import {Player, setExtraActionCallback} from "Player";
-import {PaginatedTable} from "PaginatedTable";
+import {PaginatedTable, PaginatedTableRef} from "PaginatedTable";
 import {Markdown} from "Markdown";
 import {LadderComponent} from "LadderComponent";
 import {UIPush} from "UIPush";
@@ -104,12 +104,13 @@ interface GroupState {
 
 export class Group extends React.PureComponent<GroupProperties, GroupState> {
     refs: {
-        members;
-        news;
         new_news_title;
         new_news_body;
-        tournament_record_table;
     };
+
+    members_ref?: PaginatedTableRef;
+    news_ref?: PaginatedTableRef;
+    tournament_ref?: PaginatedTableRef;
 
     constructor(props) {
         super(props);
@@ -223,7 +224,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
         this.resolve(this.state.group_id);
     };
     refreshPlayerList = () => {
-        this.refs.members.update();
+        this.members_ref?.refresh();
     };
 
     toggleEdit = () => {
@@ -342,11 +343,14 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
             content: this.state.new_news_body,
         })
         .then(() => {
+            this.news_ref?.refresh();
+            /* Since the removal of the refs I don't think we need to worry about this? - anoek 2021-12-23
             if (this.refs.news) {
-                this.refs.news.update();
+                this.setState({news_refresh: Date.now()});
             } else {
                 this.resolve(this.state.group_id);
             }
+            */
         })
         .catch(errorAlerter);
     };
@@ -370,11 +374,14 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                 'delete': true
             })
             .then(() => {
+                this.news_ref?.refresh();
+                /* Since the removal of the refs I don't think we need to worry about this? - anoek 2021-12-23
                 if (this.refs.news) {
-                    this.refs.news.update();
+                    this.setState({news_refresh: Date.now()});
                 } else {
                     this.resolve(this.state.group_id);
                 }
+                */
             })
             .catch(errorAlerter);
         })
@@ -382,17 +389,22 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
     }
     editNewsPost(entry) {
         this.setState({editing_news: entry});
-        this.refs.news.forceUpdate();
+        this.news_ref?.refresh();
     }
     updateNewsPost = () => {
         put(`group/${this.state.group_id}/news/`, this.state.editing_news)
         .then(() => {
-            this.setState({editing_news: null});
+            this.setState({
+                editing_news: null,
+            });
+            this.news_ref?.refresh();
+            /* Since the removal of the refs I don't think we need to worry about this? - anoek 2021-12-23
             if (this.refs.news) {
-                this.refs.news.update();
+                this.setState({news_refresh: Date.now()});
             } else {
                 this.resolve(this.state.group_id);
             }
+            */
         })
         .catch(errorAlerter);
     };
@@ -404,7 +416,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                 {content: ev.target.value}
             )
         });
-        this.refs.news.forceUpdate();
+        this.news_ref?.refresh();
     };
     updateNewsTitle = (ev) => {
         this.setState({
@@ -414,7 +426,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                 {title: ev.target.value}
             )
         });
-        this.refs.news.forceUpdate();
+        this.news_ref?.refresh();
     };
 
     inviteUser = (ev) => {
@@ -634,9 +646,9 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                         {(this.state.news.length > 0 || null) &&
                         <Card style={{minHeight: "12rem"}}>
                             <PaginatedTable
-                                ref="news"
                                 className="news"
                                 name="news"
+                                ref={ref => this.news_ref = ref}
                                 source={`groups/${group.id}/news`}
                                 pageSize={1}
                                 columns={[
@@ -677,8 +689,8 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
 
                                 <PaginatedTable
                                     className="TournamentRecord-table"
-                                    ref="tournament_record_table"
                                     name="tournament-record-table"
+                                    ref={ref => this.tournament_ref = ref}
                                     source={`tournament_records/?group=${group.id}`}
                                     orderBy={["-created"]}
                                     columns={[
@@ -732,9 +744,9 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                             }
 
                             <PaginatedTable
-                                ref="members"
                                 className="members"
                                 name="members"
+                                ref={ref => this.members_ref = ref}
                                 source={`groups/${group.id}/members`}
                                 groom={(u_arr) => u_arr.map((u) => player_cache.update(u.user))}
                                 columns={[

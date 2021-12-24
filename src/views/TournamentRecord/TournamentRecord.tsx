@@ -22,7 +22,7 @@ import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {abort_requests_in_flight, del, put, post, get} from "requests";
 import {Markdown} from "Markdown";
-import {PaginatedTable} from "PaginatedTable";
+import {PaginatedTable, PaginatedTableRef} from "PaginatedTable";
 import {Player} from "Player";
 import * as moment from "moment";
 import * as data from "data";
@@ -67,9 +67,7 @@ interface TournamentRecordState {
 
 export class TournamentRecord extends React.PureComponent<TournamentRecordProperties, TournamentRecordState> {
     loaded_state: any = {};
-    refs: {
-        players_table;
-    };
+    player_table_ref?: PaginatedTableRef;
 
 
     constructor(props) {
@@ -198,8 +196,8 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
 
         post(`tournament_records/${this.state.tournament_record_id}/players/`, new_player)
         .then((res) => {
-            this.refs.players_table.update();
             this.state.players.push(res);
+            this.player_table_ref?.refresh();
         })
         .catch(errorAlerter);
     };
@@ -213,7 +211,7 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
         .then(() => {
             del(`tournament_records/${this.state.tournament_record_id}/players/${player.id}`)
             .then(() => {
-                this.refs.players_table.update();
+                this.player_table_ref?.refresh();
             })
             .catch(errorAlerter);
         })
@@ -343,7 +341,7 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
 
                         <PaginatedTable
                             className="TournamentRecord-table"
-                            ref="players_table"
+                            ref={ref => this.player_table_ref = ref}
                             name="game-history"
                             source={`tournament_records/${this.props.match.params.tournament_record_id}/players`}
                             orderBy={["-rank", "name"]}

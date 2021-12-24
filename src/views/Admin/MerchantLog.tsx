@@ -29,7 +29,6 @@ import * as moment from "moment";
 
 
 export class MerchantLog extends React.PureComponent<{}, any> {
-
     constructor(props) {
         super(props);
     }
@@ -39,7 +38,6 @@ export class MerchantLog extends React.PureComponent<{}, any> {
             <div id='MerchantLog'>
                 <PaginatedTable
                     className="merchantlog"
-                    ref="merchantlog"
                     name="merchantlog"
                     source={`supporter_center/merchant_callback_log`}
                     orderBy={["-timestamp"]}

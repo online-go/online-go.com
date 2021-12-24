@@ -23,7 +23,7 @@ import {_, pgettext, interpolate} from "translate";
 import {post, get} from "requests";
 import {errorAlerter} from "misc";
 import {Player} from "Player";
-import {PaginatedTable} from "PaginatedTable";
+import {PaginatedTable, PaginatedTableRef} from "PaginatedTable";
 import {UIPush} from "UIPush";
 import * as data from "data";
 import tooltip from "tooltip";
@@ -53,16 +53,14 @@ interface LadderComponentState {
 }
 
 export class LadderComponent extends React.PureComponent<LadderComponentProperties, LadderComponentState> {
-    refs: {
-        ladder;
-    };
+    ladder_table_ref?: PaginatedTableRef;
 
     constructor(props) {
         super(props);
         this.state = {
             ladder_id: props.ladderId,
             page_size: props.pageSize || 20,
-            ladder: null
+            ladder: null,
         };
     }
 
@@ -90,9 +88,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
     };
 
     updatePlayers = () => {
-        if (this.refs.ladder) {
-            this.refs.ladder.update();
-        }
+        this.ladder_table_ref?.refresh();
     };
 
     challenge(ladder_player) {
@@ -109,7 +105,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
                 "player_id": ladder_player.player.id,
             })
             .then((res) => {
-                this.refs.ladder.update();
+                this.updatePlayers();
             })
             .catch(errorAlerter);
         })
@@ -213,9 +209,9 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
 
 
                 <PaginatedTable
-                    ref="ladder"
                     className="ladder"
                     name="ladder"
+                    ref={ref => this.ladder_table_ref = ref}
                     source={`ladders/${this.props.ladderId}/players` + (full_view ? '' : '?no_challenge_information=1')}
                     startingPage={startingPage}
                     pageSize={this.state.page_size}

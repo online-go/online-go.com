@@ -19,7 +19,7 @@ import * as React from "react";
 import {Link} from "react-router-dom";
 import {_, cc_to_country_name} from "translate";
 import {post, put} from "requests";
-import {PaginatedTable} from "PaginatedTable";
+import {PaginatedTable, PaginatedTableRef} from "PaginatedTable";
 import {Card} from "material";
 import {UIPush} from "UIPush";
 import {SearchInput} from "misc-ui";
@@ -41,10 +41,8 @@ interface ModeratorState {
 }
 
 export class Moderator extends React.PureComponent<{}, ModeratorState> {
-    refs: {
-        modlog;
-        userlog;
-    };
+    modlog_ref?: PaginatedTableRef;
+    userlog_ref?: PaginatedTableRef;
 
     constructor(props) {
         super(props);
@@ -58,10 +56,10 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
     }
 
     refreshModlog = () => {
-        this.refs.modlog.update();
+        this.modlog_ref?.refresh();
     };
     refreshUserlog = () => {
-        this.refs.userlog.update();
+        this.userlog_ref?.refresh();
     };
 
     render() {
@@ -87,9 +85,9 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
 
                     <PaginatedTable
                         className="userlog"
-                        ref="userlog"
                         name="userlog"
                         source={`moderation/recent_users`}
+                        ref={ref => this.userlog_ref = ref}
                         orderBy={["-timestamp"]}
                         filter={{
                             ...(this.state.newuserany_filter !== "" && {newuserany: this.state.newuserany_filter})
@@ -135,9 +133,9 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
 
                     <PaginatedTable
                         className=""
-                        ref="modlog"
                         name="modlog"
                         source={`moderation/`}
+                        ref={ref => this.modlog_ref = ref}
                         orderBy={["-timestamp"]}
                         filter={{
                             ...(this.state.playerusernameistartswith_filter !== "" && {playernameistartswith: this.state.playerusernameistartswith_filter}),

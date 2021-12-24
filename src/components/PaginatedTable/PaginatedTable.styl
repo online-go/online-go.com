@@ -16,6 +16,7 @@
  */
 
 .PaginatedTable {
+    position: relative;
     max-width: 100vw;
     overflow-x: auto;
     table {
@@ -30,6 +31,28 @@
             text-align: left;
             color: #919191;
             font-weight: normal;
+        }
+    }
+
+    .loading-overlay {
+        display: none;
+        user-select: none;
+    }
+
+    &.loading {
+        .loading-overlay {
+            display: flex;
+            width: 100%;
+            top: 1.5rem;;
+            bottom: 2rem;
+            position: absolute;
+            background-color: white;
+            opacity: 0.5;
+            align-items: center;
+            align-content: center;
+            justify-content: center;
+            font-size: 2rem;
+            z-index: 1;
         }
     }
 
