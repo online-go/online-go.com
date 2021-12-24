@@ -381,6 +381,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
                 <div className='filter-group'>
                     {this.filterOption('hide_ranked', pgettext("Filter games list", "Ranked"))}
                     {this.filterOption('hide_unranked', pgettext("Filter games list", "Unranked"))}
+                    {this.filterOption('rengo_only', pgettext("Filter games list", "Rengo only"))}
                     {this.filterOption('friend_games_only', pgettext("Filter games list", "Friend games only"))}
                 </div>
 
