@@ -162,13 +162,13 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
             <div className="rengo-team-list">
                 <span className='team-title'>Black Team</span>
                 {this.props.config.rengo_teams.black.map((player) =>
-                     <Player disableCacheUpdate icon rank user={player}/>)
+                    <Player disableCacheUpdate icon rank user={player}/>)
                 }
             </div>
             <div className="rengo-team-list">
-            <span className='team-title'>White Team</span>
+                <span className='team-title'>White Team</span>
                 {this.props.config.rengo_teams.white.map((player) =>
-                     <Player disableCacheUpdate icon rank user={player}/>)
+                    <Player disableCacheUpdate icon rank user={player}/>)
                 }
             </div>
         </div>
