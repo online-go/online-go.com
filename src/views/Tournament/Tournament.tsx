@@ -1294,6 +1294,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             null
             );
 
+            if (this.state.loading)
+                return "";
+
             return (
                 <div className="Tournament page-width">
                     <UIPush event="players-updated" channel={`tournament-${this.state.tournament_id}`} action={this.reloadTournament}/>
