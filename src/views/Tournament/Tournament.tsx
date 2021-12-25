@@ -1294,8 +1294,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             null
             );
 
-            if (this.state.loading)
+            if (this.state.loading && !this.state.editing)
+            {
                 return "";
+            }
 
             return (
                 <div className="Tournament page-width">
