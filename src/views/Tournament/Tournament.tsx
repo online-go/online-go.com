@@ -1449,22 +1449,37 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                         <tr>
                             <th >{_("Players")}</th>
                             <td>
-                                {!editing
-                                    ? <span>
-                                        {tournament.players_start}
-                                        {!tournament.settings.maximum_players
+                                {editing ?
+                                 <span>
+                                     <input ref="players_start" type="number" value={tournament.players_start} onChange={this.setPlayersStart} />
+                                         -
+                                     <input ref="max_players" type="number" value={tournament.settings.maximum_players} onChange={this.setMaximumPlayers} />
+                                 </span>
+                                 :
+                                 (!tournament.started ?
+                                 <span>
+                                     {tournament.players_start}
+                                     {!tournament.settings.maximum_players
                                              ? "+"
                                              : (
                                                  tournament.settings.maximum_players > tournament.players_start
                                                  ? "-" + tournament.settings.maximum_players
                                                  : ""
                                              )}
-                                    </span>
-                                    : <span>
-                                        <input ref="players_start" type="number" value={tournament.players_start} onChange={this.setPlayersStart} />
-                                         -
-                                        <input ref="max_players" type="number" value={tournament.settings.maximum_players} onChange={this.setMaximumPlayers} />
-                                    </span>
+                                 </span>
+                                 :
+                                     <span>
+                                         {this.state.sorted_players.length} (was {tournament.players_start}
+                                         {!tournament.settings.maximum_players
+                                             ? "+"
+                                             : (
+                                                 tournament.settings.maximum_players > tournament.players_start
+                                                 ? "-" + tournament.settings.maximum_players
+                                                 : ""
+                                             )}
+                                                             )
+                                     </span>
+                                   )
                                 }
                             </td>
                         </tr>
