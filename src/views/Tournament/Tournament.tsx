@@ -1709,9 +1709,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                             <img className="trophy" src={`${cdn_release}/img/trophies/${trophyFilename(tournament, player.rank)}`} title="" />
                                             {nthPlace(player.rank)}
                                         </span>
-                                        <span>
-                                            <Player icon user={player} />
-                                        </span>
+                                        <Player icon user={player} />
                                     </div>
                                 )
                                 )
