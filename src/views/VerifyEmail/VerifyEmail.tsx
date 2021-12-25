@@ -15,25 +15,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import {Link} from "react-router-dom";
-import {post} from "requests";
-import {_, pgettext, interpolate} from "translate";
 import * as data from "data";
 import { parse } from 'query-string';
-
-interface VerifyEmailProps {
-    params: any;
-    location: any;
-}
+import * as React from "react";
+import { RouteComponentProps } from "react-router-dom";
+import { post } from "requests";
+import { _ } from "translate";
 
 interface VerifyEmailState {
     verifying: boolean;
     message: string;
 }
 
-export class VerifyEmail extends React.PureComponent<VerifyEmailProps, VerifyEmailState> {
-    constructor(props) {
+export class VerifyEmail extends React.PureComponent<RouteComponentProps, VerifyEmailState> {
+    constructor(props: RouteComponentProps) {
         super(props);
         this.state = {
             verifying: true,

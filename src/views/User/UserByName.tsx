@@ -20,13 +20,10 @@ import {get} from 'requests';
 import {errorAlerter} from "misc";
 import * as player_cache from "player_cache";
 import {User} from './User';
+import { RouteComponentProps } from "react-router";
 
 
-interface UserByNameProperties {
-    match: {
-        params: any;
-    };
-}
+type UserByNameProperties = RouteComponentProps<{username: string}>;
 
 interface UserByNameState { user_id?: number }
 
@@ -75,7 +72,10 @@ export class UserByName extends React.PureComponent<UserByNameProperties, UserBy
 
     render() {
         if (this.state.user_id) {
-            return <User match={{params: {user_id: this.state.user_id}}}/>;
+            return <User
+                match={{params: {user_id: this.state.user_id.toString()}}}
+                location={this.props.location}
+            />;
         }
         return null;
     }

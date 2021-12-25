@@ -51,15 +51,13 @@ import {chat_markup} from "Chat";
 import {Toggle} from 'Toggle';
 import {AchievementList} from 'Achievements';
 import swal from 'sweetalert2';
+import * as History from 'history';
 
 interface UserProperties {
     match: {
-        params: any;
+        params: {user_id: string};
     };
-    location?: any;
-    // id?: any,
-    // user?: any,
-    // callback?: ()=>any,
+    location: History.Location;
 }
 
 const inlineBlock = {display: "inline-flex", "alignItems": "center"};
