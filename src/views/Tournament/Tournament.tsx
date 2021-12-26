@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import {LoadingPage} from 'Loading';
 import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
@@ -1295,7 +1296,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             );
 
             if (this.state.loading && !this.state.editing) {
-                return "";
+                return <LoadingPage />;
             }
 
             return (
