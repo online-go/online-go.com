@@ -312,7 +312,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                 </section>
                 :
                 <section className="right">
-                    <IncidentReportTracker />
+                    { !preferences.get("hide-incident-reports") && <IncidentReportTracker /> }
                     { preferences.get("show-tournament-indicator") && <TournamentIndicator /> }
                     <ChatIndicator />
                     <FriendIndicator />
