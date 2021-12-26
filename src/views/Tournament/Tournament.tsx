@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import {LoadingPage} from 'Loading';
 import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
@@ -1294,6 +1295,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             tournament.tournament_type === "opengotha" ||
             null
             );
+
+            if (this.state.loading && !this.state.editing) {
+                return <LoadingPage />;
+            }
 
             return (
                 <div className="Tournament page-width">
