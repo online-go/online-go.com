@@ -190,7 +190,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         vacation_left;
         bot_ai;
     };
-    moderator_log_table_ref?: PaginatedTableRef;
+    moderator_log_table_ref = React.createRef<PaginatedTableRef>();
     user_id: number;
     vacation_left: string;
     original_username: string;
@@ -970,7 +970,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                             />
 
                             <b>Mod log</b>
-                            <UIPush event={`modlog-${this.user_id}-updated`} channel="moderators" action={() => this.moderator_log_table_ref?.refresh()} />
+                            <UIPush event={`modlog-${this.user_id}-updated`} channel="moderators" action={() => this.moderator_log_table_ref.current?.refresh()} />
                             <div id='leave-moderator-note' ref={this.moderator_log_anchor}>
                                 <textarea ref={(x) => this.moderator_note = x} placeholder="Leave note" id="moderator-note" />
                                 <button onClick={this.addModeratorNote}>Add note</button>
@@ -979,7 +979,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                 className="moderator-log"
                                 name="moderator-log"
                                 source={`moderation?player_id=${this.user_id}`}
-                                ref={ref => this.moderator_log_table_ref = ref}
+                                ref={this.moderator_log_table_ref}
                                 columns={[
                                     {header: "", className: "date", render: (X) => moment(X.timestamp).format("YYYY-MM-DD HH:mm:ss")},
                                     {header: "", className: "",     render: (X) => <Player user={X.moderator} />},

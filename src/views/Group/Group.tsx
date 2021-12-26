@@ -108,9 +108,9 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
         new_news_body;
     };
 
-    members_ref?: PaginatedTableRef;
-    news_ref?: PaginatedTableRef;
-    tournament_ref?: PaginatedTableRef;
+    members_ref = React.createRef<PaginatedTableRef>();
+    news_ref = React.createRef<PaginatedTableRef>();
+    tournament_ref = React.createRef<PaginatedTableRef>();
 
     constructor(props) {
         super(props);
@@ -224,7 +224,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
         this.resolve(this.state.group_id);
     };
     refreshPlayerList = () => {
-        this.members_ref?.refresh();
+        this.members_ref.current?.refresh();
     };
 
     toggleEdit = () => {
@@ -343,7 +343,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
             content: this.state.new_news_body,
         })
         .then(() => {
-            this.news_ref?.refresh();
+            this.news_ref.current?.refresh();
             /* Since the removal of the refs I don't think we need to worry about this? - anoek 2021-12-23
             if (this.refs.news) {
                 this.setState({news_refresh: Date.now()});
@@ -374,7 +374,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                 'delete': true
             })
             .then(() => {
-                this.news_ref?.refresh();
+                this.news_ref.current?.refresh();
                 /* Since the removal of the refs I don't think we need to worry about this? - anoek 2021-12-23
                 if (this.refs.news) {
                     this.setState({news_refresh: Date.now()});
@@ -389,7 +389,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
     }
     editNewsPost(entry) {
         this.setState({editing_news: entry});
-        this.news_ref?.refresh();
+        this.news_ref.current?.refresh();
     }
     updateNewsPost = () => {
         put(`group/${this.state.group_id}/news/`, this.state.editing_news)
@@ -397,7 +397,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
             this.setState({
                 editing_news: null,
             });
-            this.news_ref?.refresh();
+            this.news_ref.current?.refresh();
             /* Since the removal of the refs I don't think we need to worry about this? - anoek 2021-12-23
             if (this.refs.news) {
                 this.setState({news_refresh: Date.now()});
@@ -416,7 +416,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                 {content: ev.target.value}
             )
         });
-        this.news_ref?.refresh();
+        this.news_ref.current?.refresh();
     };
     updateNewsTitle = (ev) => {
         this.setState({
@@ -426,7 +426,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                 {title: ev.target.value}
             )
         });
-        this.news_ref?.refresh();
+        this.news_ref.current?.refresh();
     };
 
     inviteUser = (ev) => {
@@ -648,7 +648,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                             <PaginatedTable
                                 className="news"
                                 name="news"
-                                ref={ref => this.news_ref = ref}
+                                ref={this.news_ref}
                                 source={`groups/${group.id}/news`}
                                 pageSize={1}
                                 columns={[
@@ -690,7 +690,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                 <PaginatedTable
                                     className="TournamentRecord-table"
                                     name="tournament-record-table"
-                                    ref={ref => this.tournament_ref = ref}
+                                    ref={this.tournament_ref}
                                     source={`tournament_records/?group=${group.id}`}
                                     orderBy={["-created"]}
                                     columns={[
@@ -746,7 +746,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                             <PaginatedTable
                                 className="members"
                                 name="members"
-                                ref={ref => this.members_ref = ref}
+                                ref={this.members_ref}
                                 source={`groups/${group.id}/members`}
                                 groom={(u_arr) => u_arr.map((u) => player_cache.update(u.user))}
                                 columns={[

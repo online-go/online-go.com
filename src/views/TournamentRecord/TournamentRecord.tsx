@@ -67,7 +67,7 @@ interface TournamentRecordState {
 
 export class TournamentRecord extends React.PureComponent<TournamentRecordProperties, TournamentRecordState> {
     loaded_state: any = {};
-    player_table_ref?: PaginatedTableRef;
+    player_table_ref = React.createRef<PaginatedTableRef>();
 
 
     constructor(props) {
@@ -197,7 +197,7 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
         post(`tournament_records/${this.state.tournament_record_id}/players/`, new_player)
         .then((res) => {
             this.state.players.push(res);
-            this.player_table_ref?.refresh();
+            this.player_table_ref.current?.refresh();
         })
         .catch(errorAlerter);
     };
@@ -211,7 +211,7 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
         .then(() => {
             del(`tournament_records/${this.state.tournament_record_id}/players/${player.id}`)
             .then(() => {
-                this.player_table_ref?.refresh();
+                this.player_table_ref.current?.refresh();
             })
             .catch(errorAlerter);
         })
@@ -341,7 +341,7 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
 
                         <PaginatedTable
                             className="TournamentRecord-table"
-                            ref={ref => this.player_table_ref = ref}
+                            ref={this.player_table_ref}
                             name="game-history"
                             source={`tournament_records/${this.props.match.params.tournament_record_id}/players`}
                             orderBy={["-rank", "name"]}

@@ -41,8 +41,8 @@ interface ModeratorState {
 }
 
 export class Moderator extends React.PureComponent<{}, ModeratorState> {
-    modlog_ref?: PaginatedTableRef;
-    userlog_ref?: PaginatedTableRef;
+    modlog_ref = React.createRef<PaginatedTableRef>();
+    userlog_ref = React.createRef<PaginatedTableRef>();
 
     constructor(props) {
         super(props);
@@ -56,10 +56,10 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
     }
 
     refreshModlog = () => {
-        this.modlog_ref?.refresh();
+        this.modlog_ref.current?.refresh();
     };
     refreshUserlog = () => {
-        this.userlog_ref?.refresh();
+        this.userlog_ref.current?.refresh();
     };
 
     render() {
@@ -87,7 +87,7 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                         className="userlog"
                         name="userlog"
                         source={`moderation/recent_users`}
-                        ref={ref => this.userlog_ref = ref}
+                        ref={this.userlog_ref}
                         orderBy={["-timestamp"]}
                         filter={{
                             ...(this.state.newuserany_filter !== "" && {newuserany: this.state.newuserany_filter})
@@ -135,7 +135,7 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                         className=""
                         name="modlog"
                         source={`moderation/`}
-                        ref={ref => this.modlog_ref = ref}
+                        ref={this.modlog_ref}
                         orderBy={["-timestamp"]}
                         filter={{
                             ...(this.state.playerusernameistartswith_filter !== "" && {playernameistartswith: this.state.playerusernameistartswith_filter}),

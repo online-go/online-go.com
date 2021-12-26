@@ -35,8 +35,8 @@ type ACLModalProperties =
 
 
 export class ACLModal extends Modal<Events, ACLModalProperties, any> {
-    player_autocomplete_ref: PlayerAutocompleteRef;
-    group_autocomplete_ref: GroupAutocomplete;
+    player_autocomplete_ref = React.createRef<PlayerAutocompleteRef>();
+    group_autocomplete_ref = React.createRef<GroupAutocomplete>();
     url: string;
     del_url: string;
 
@@ -99,8 +99,8 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
         const player_id = this.state.selected_player && this.state.selected_player.id;
         const group_id = this.state.selected_group && this.state.selected_group.id;
 
-        this.player_autocomplete_ref.clear();
-        this.group_autocomplete_ref.clear();
+        this.player_autocomplete_ref.current?.clear();
+        this.group_autocomplete_ref.current?.clear();
 
         const obj: any = {};
         if (player_id) {
@@ -128,8 +128,8 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
                 </div>
                 <div className="body">
                     <div className="grant">
-                        <PlayerAutocomplete ref={(ref) => this.player_autocomplete_ref = ref} onComplete={this.playerComplete} />
-                        <GroupAutocomplete ref={(ref) => this.group_autocomplete_ref = ref} onComplete={this.groupComplete} />
+                        <PlayerAutocomplete ref={this.player_autocomplete_ref} onComplete={this.playerComplete} />
+                        <GroupAutocomplete ref={this.group_autocomplete_ref} onComplete={this.groupComplete} />
                         <button className="primary sm" onClick={this.grantAccess} >{_("Grant access")}</button>
                     </div>
 

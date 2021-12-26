@@ -53,7 +53,7 @@ interface LadderComponentState {
 }
 
 export class LadderComponent extends React.PureComponent<LadderComponentProperties, LadderComponentState> {
-    ladder_table_ref?: PaginatedTableRef;
+    ladder_table_ref = React.createRef<PaginatedTableRef>();
 
     constructor(props) {
         super(props);
@@ -88,7 +88,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
     };
 
     updatePlayers = () => {
-        this.ladder_table_ref?.refresh();
+        this.ladder_table_ref.current?.refresh();
     };
 
     challenge(ladder_player) {
@@ -211,7 +211,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
                 <PaginatedTable
                     className="ladder"
                     name="ladder"
-                    ref={ref => this.ladder_table_ref = ref}
+                    ref={this.ladder_table_ref}
                     source={`ladders/${this.props.ladderId}/players` + (full_view ? '' : '?no_challenge_information=1')}
                     startingPage={startingPage}
                     pageSize={this.state.page_size}
