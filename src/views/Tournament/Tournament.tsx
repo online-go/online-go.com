@@ -1696,12 +1696,12 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                 </div>
                     }
 
-                    {!loading && tournament.ended &&
+                    {!loading && tournament.tournament_type !== "opengotha" && tournament.ended &&
                             <div className="final-results">
                                 <h2>{_("Final results")}:</h2>
                                 {
                                     Object.keys(players).map((id) => players[id])
-                                .filter((p) => p.rank <= 3)
+                                .filter((p) => p.rank > 0 && p.rank <= 3)
                                 .sort((a, b) => (a.rank > b.rank) ? 1 : -1)
                                 .map((player) => (
                                     <div>
