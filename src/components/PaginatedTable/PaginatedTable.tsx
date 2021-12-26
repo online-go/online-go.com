@@ -36,8 +36,12 @@ interface Filter {
     [key: string]: string | number | boolean;
 }
 
-type PaginatedObject<EntryT> = { results: EntryT[]; count: number };
-type SourceFunction<EntryT> = (filter: Filter, sorting: Array<string>) => Promise<PaginatedObject<EntryT>>;
+interface PagedResults<EntryT = any> {
+    count: number; // total results
+    results: Array<any>;
+}
+
+type SourceFunction<EntryT> = (filter: Filter, sorting: Array<string>) => Promise<PagedResults<EntryT>>;
 
 interface PaginatedTableProperties<RawEntryT, GroomedEntryT = RawEntryT> {
     source: string | SourceFunction<RawEntryT>;
@@ -58,15 +62,10 @@ interface PaginatedTableProperties<RawEntryT, GroomedEntryT = RawEntryT> {
     hidePageControls?: boolean;
 }
 
-
-interface PagedResults {
-    count: number; // total results
-    results: Array<any>;
-}
-
 export interface PaginatedTableRef {
     refresh: () => void;
 }
+
 
 export const PaginatedTable = React.forwardRef<PaginatedTableRef, PaginatedTableProperties<any> >(_PaginatedTable);
 
