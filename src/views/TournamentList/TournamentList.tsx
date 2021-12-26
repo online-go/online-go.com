@@ -52,8 +52,8 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
         super(props);
         this.state = {
             tab: preferences.get("tournaments-tab"),
-            //show_all: preferences.get("tournaments-show-all"),
-            show_all: false,
+            show_all: preferences.get("tournaments-show-all"),
+            //show_all: false,
         };
     }
 
@@ -82,12 +82,10 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
             <React.Fragment>
                 <div className="open-tourney-header">
                     <h3>{_("Open Tournaments")}</h3>
-                    {/*
                     <div>
                         {_("Show all")}
                         <Toggle height={14} width={30} checked={this.state.show_all} onChange={tf => this.toggleShowAll(tf)} />
                     </div>
-                    */}
                 </div>
                 <TournamentList
                     phase='open'
@@ -217,10 +215,6 @@ class Schedule extends React.PureComponent<{}, any> {
     }
 }
 export class TournamentList extends React.PureComponent<TournamentListProperties> {
-    refs: {
-        table;
-    };
-
     constructor(props) {
         super(props);
     }
@@ -287,7 +281,6 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
             <div className="TournamentList">
                 <PaginatedTable
                     className="TournamentList-table"
-                    ref="table"
                     name="game-history"
                     source={`tournaments/`}
                     filter={filter}

@@ -33,7 +33,7 @@ import {updateDup, getGameResultText, ignore} from "misc";
 import {longRankString, rankString, getUserRating, humble_rating, effective_outcome, rating_to_rank, boundedRankString, rank_deviation} from "rank_utils";
 import {durationString, daysOnlyDurationString} from "TimeControl";
 import {openModerateUserModal} from "ModerateUser";
-import {PaginatedTable} from "PaginatedTable";
+import {PaginatedTable, PaginatedTableRef} from "PaginatedTable";
 import {errorAlerter, shouldOpenNewTab} from "misc";
 import * as player_cache from "player_cache";
 import {getPrivateChat} from "PrivateChat";
@@ -181,20 +181,21 @@ interface UserState {
     ladders?: any[];
     tournaments?: any[];
     groups?: any[];
+    games_alt_player_filter: number;
+    reviews_alt_player_filter: number;
 }
+
 export class User extends React.PureComponent<UserProperties, UserState> {
     refs: {
         vacation_left;
         bot_ai;
-        game_table;
-        review_table;
     };
+    moderator_log_table_ref = React.createRef<PaginatedTableRef>();
     user_id: number;
     vacation_left: string;
     original_username: string;
     vacation_update_interval: any;
     moderator_note: any = null;
-    moderator_log: any = null;
     moderator_log_anchor: any = React.createRef();
     show_mod_log: boolean;
 
@@ -222,6 +223,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             rating_graph_plot_by_games: preferences.get('rating-graph-plot-by-games'),
             show_graph_type_toggle: !preferences.get('rating-graph-always-use'),
             hovered_game_id: null,
+            games_alt_player_filter: null,
+            reviews_alt_player_filter: null,
         };
 
         try {
@@ -598,24 +601,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         });
     };
 
-    updateGameSearch = (player) => {
-        if (player) {
-            this.refs.game_table.filter.alt_player = player.id;
-        } else {
-            delete this.refs.game_table.filter.alt_player;
-        }
-        this.refs.game_table.filter_updated();
-    };
-    updateReviewSearch = (player) => {
-        if (player) {
-            this.refs.review_table.filter.alt_player = player.id;
-        } else {
-            delete this.refs.review_table.filter.alt_player;
-        }
-        this.refs.review_table.filter_updated();
-    };
-
-
     addModeratorNote = () => {
         const txt = this.moderator_note.value.trim();
 
@@ -639,6 +624,37 @@ export class User extends React.PureComponent<UserProperties, UserState> {
 
     updateTogglePosition = ( _height: number, width: number) => {
         this.setState({rating_chart_type_toggle_left: width + 30});  // eyeball enough extra left pad
+    };
+
+    review_history_groomer = (results) => {
+        const ret = [];
+
+        for (let i = 0; i < results.length; ++i) {
+            const r = results[i];
+            const item: any = {
+                "id": r.id,
+            };
+
+            item.width = r.width;
+            item.height = r.height;
+            item.date = r.created ? new Date(r.created) : null;
+            item.black = r.players.black;
+            item.black_won = !r.black_lost && r.white_lost;
+            item.black_class = item.black_won ? (item.black.id === this.user_id ? "library-won" : "library-lost") : "";
+            item.white = r.players.white;
+            item.white_won = !r.white_lost && r.black_lost;
+            item.white_class = item.white_won ? (item.white.id === this.user_id ? "library-won" : "library-lost") : "";
+            item.name = r.name;
+            item.href = "/review/" + item.id;
+            item.historical = r.game.historical_ratings || { 'black': item.black, 'white': item.white };
+
+            if (!item.name || item.name.trim() === "") {
+                item.name = item.href;
+            }
+
+            ret.push(item);
+        }
+        return ret;
     };
 
     render() {
@@ -719,7 +735,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
 
                 if ("time_control_parameters" in r) {
                     const tcp = JSON.parse(r.time_control_parameters);
-                    if ("speed" in tcp) {
+                    if (tcp && "speed" in tcp) {
                         item.speed = tcp.speed[0].toUpperCase() + tcp.speed.slice(1); // capitalize string
                     }
                 }
@@ -758,36 +774,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             return ret;
         };
 
-        const review_history_groomer = (results) => {
-            const ret = [];
-
-            for (let i = 0; i < results.length; ++i) {
-                const r = results[i];
-                const item: any = {
-                    "id": r.id,
-                };
-
-                item.width = r.width;
-                item.height = r.height;
-                item.date = r.created ? new Date(r.created) : null;
-                item.black = r.players.black;
-                item.black_won = !r.black_lost && r.white_lost;
-                item.black_class = item.black_won ? (item.black.id === this.user_id ? "library-won" : "library-lost") : "";
-                item.white = r.players.white;
-                item.white_won = !r.white_lost && r.black_lost;
-                item.white_class = item.white_won ? (item.white.id === this.user_id ? "library-won" : "library-lost") : "";
-                item.name = r.name;
-                item.href = "/review/" + item.id;
-                item.historical = r.game.historical_ratings || { 'black': item.black, 'white': item.white };
-
-                if (!item.name || item.name.trim() === "") {
-                    item.name = item.href;
-                }
-
-                ret.push(item);
-            }
-            return ret;
-        };
 
         let cleaned_website = "";
         if (user && user.website) {
@@ -984,7 +970,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                             />
 
                             <b>Mod log</b>
-                            <UIPush event={`modlog-${this.user_id}-updated`} channel="moderators" action={() => this.moderator_log.update()}/>
+                            <UIPush event={`modlog-${this.user_id}-updated`} channel="moderators" action={() => this.moderator_log_table_ref.current?.refresh()} />
                             <div id='leave-moderator-note' ref={this.moderator_log_anchor}>
                                 <textarea ref={(x) => this.moderator_note = x} placeholder="Leave note" id="moderator-note" />
                                 <button onClick={this.addModeratorNote}>Add note</button>
@@ -992,8 +978,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                             <PaginatedTable
                                 className="moderator-log"
                                 name="moderator-log"
-                                ref={(x) => this.moderator_log = x}
                                 source={`moderation?player_id=${this.user_id}`}
+                                ref={this.moderator_log_table_ref}
                                 columns={[
                                     {header: "", className: "date", render: (X) => moment(X.timestamp).format("YYYY-MM-DD HH:mm:ss")},
                                     {header: "", className: "",     render: (X) => <Player user={X.moderator} />},
@@ -1037,18 +1023,22 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                 <Card>
                                     <div>{/* loading-container="game_history.settings().$loading" */}
                                         <div className="search">
-                                            <i className="fa fa-search"></i><PlayerAutocomplete onComplete={this.updateGameSearch}/>
+                                            <i className="fa fa-search"></i>
+                                            <PlayerAutocomplete onComplete={(player) => {
+                                                // happily, and importantly, if there isn't a player, then we get null
+                                                this.setState({games_alt_player_filter: player?.id});
+                                            }}/>
                                         </div>
 
                                         <PaginatedTable
                                             className="game-history-table"
-                                            ref="game_table"
                                             name="game-history"
-                                            method="get"
+                                            method="GET"
                                             source={`players/${this.user_id}/games/`}
                                             filter={{
                                                 "source": "play",
                                                 "ended__isnull": false,
+                                                ...(this.state.games_alt_player_filter !== null && {"alt_player": this.state.games_alt_player_filter})
                                             }}
                                             orderBy={["-ended"]}
                                             groom={game_history_groomer}
@@ -1075,20 +1065,24 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                 <Card>
                                     <div>{/* loading-container="game_history.settings().$loading" */}
                                         <div className="search">
-                                            <i className="fa fa-search"></i><PlayerAutocomplete onComplete={this.updateReviewSearch}/>
+                                            <i className="fa fa-search"></i>
+                                            <PlayerAutocomplete onComplete={(player) => {
+                                                // happily, and importantly, if there isn't a player, then we get null
+                                                this.setState({reviews_alt_player_filter: player?.id});
+                                            }}/>
                                         </div>
 
                                         <PaginatedTable
                                             className="review-history-table"
-                                            ref="review_table"
                                             name="review-history"
-                                            method="get"
+                                            method="GET"
                                             source={`reviews/`}
                                             filter={{
                                                 "owner_id": this.user_id,
+                                                ...(this.state.reviews_alt_player_filter !== null && {"alt_player": this.state.reviews_alt_player_filter})
                                             }}
                                             orderBy={["-created"]}
-                                            groom={review_history_groomer}
+                                            groom={this.review_history_groomer}
                                             onRowClick={(ref, ev) => openUrlIfALinkWasNotClicked(ev, ref.href)}
                                             columns={[
                                                 {header: _("Date"),   className: () => "date",                            render: (X) => moment(X.date).format("YYYY-MM-DD")},
