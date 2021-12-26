@@ -1228,6 +1228,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             const rank_restriction_text = rankRestrictionText(tournament.min_ranking, tournament.max_ranking);
             const provisional_players_text = tournament.exclude_provisional ? _("Not allowed") : _("Allowed");
             const analysis_mode_text = tournament.analysis_enabled ? _("Allowed") : _("Not allowed");
+            const cdn_release = data.get("config.cdn_release");
             //let scheduled_rounds_text = tournament.scheduled_rounds ? pgettext("In a tournament, rounds will be scheduled to start at specific times", "Rounds are scheduled") : pgettext("In a tournament, the next round will start when the last finishes", "Rounds will automatically start when the last round finishes");
 
             let min_bar = "";
@@ -1695,7 +1696,26 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                 </div>
                     }
 
-
+                    {!loading && tournament.tournament_type !== "opengotha" && tournament.ended &&
+                            <div className="final-results">
+                                <h2>{_("Final results")}:</h2>
+                                {
+                                    Object.keys(players).map((id) => players[id])
+                                .filter((p) => p.rank > 0 && p.rank <= 3)
+                                .sort((a, b) => (a.rank > b.rank) ? 1 : -1)
+                                .map((player) => (
+                                    <div>
+                                        <span className="final-results-place">
+                                            <img className="trophy" src={`${cdn_release}/img/trophies/${trophyFilename(tournament, player.rank)}`} title="" />
+                                            {nthPlace(player.rank)}
+                                        </span>
+                                        <Player icon user={player} />
+                                    </div>
+                                )
+                                )
+                                }
+                            </div>
+                    }
 
                     {!loading && !tournament.started &&
                 <div className={"bottom-details not-started"}>
@@ -2461,4 +2481,27 @@ function fromNow(t) {
         return pgettext("Tournament begins very shortly", "very shortly");
     }
     return moment(d).fromNow();
+}
+
+function nthPlace(n) {
+    switch (n) {
+        case 1:
+            return _("First place");
+        case 2:
+            return _("Second place");
+        case 3:
+            return _("Third place");
+    }
+}
+
+function trophyFilename(tournament, rank) {
+    const size = tournament.board_size;
+    switch (rank) {
+        case 1:
+            return `gold_tourn_${size}.png`;
+        case 2:
+            return `silver_tourn_${size}.png`;
+        case 3:
+            return `bronze_tourn_${size}.png`;
+    }
 }
