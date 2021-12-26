@@ -1294,8 +1294,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             null
             );
 
-            if (this.state.loading && !this.state.editing)
-            {
+            if (this.state.loading && !this.state.editing) {
                 return "";
             }
 
