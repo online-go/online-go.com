@@ -630,7 +630,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
 
     onToggleRengoHistorySelect = () => {
         this.setState({show_rengo_game_history: !this.state.show_rengo_game_history});
-    }
+    };
 
     review_history_groomer = (results) => {
         const ret = [];
@@ -1039,7 +1039,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                             <div className="rengo-selector">
                                                 <span>{_("Rengo")}</span>
                                                 <input type="checkbox" checked={this.state.show_rengo_game_history} onChange={this.onToggleRengoHistorySelect}/>
-                                             </div>
+                                            </div>
                                         </div>
 
                                         <PaginatedTable
