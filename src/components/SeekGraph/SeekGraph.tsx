@@ -168,7 +168,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     onSeekgraphGlobal = (lst) => {
         for (let i = 0; i < lst.length; ++i) {
             const e = lst[i];
-            console.log(e);
+            // console.log(e);
             if ("game_started" in e) {
                 //console.log(e);
             } else if ("delete" in e) {
