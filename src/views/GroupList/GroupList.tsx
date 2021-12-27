@@ -29,10 +29,6 @@ interface GroupListState {
 }
 
 export class GroupList extends React.PureComponent<{}, GroupListState> {
-    refs: {
-        table;
-    };
-
     constructor(props) {
         super(props);
         this.state = {
@@ -65,7 +61,6 @@ export class GroupList extends React.PureComponent<{}, GroupListState> {
                     <div className="group-list-container">
                         <PaginatedTable
                             className=""
-                            ref="table"
                             name="game-history"
                             source={`groups/`}
                             orderBy={["-member_count"]}
