@@ -630,6 +630,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
 
     onToggleRengoHistorySelect = () => {
         this.setState({show_rengo_game_history: !this.state.show_rengo_game_history});
+    }
+
     review_history_groomer = (results) => {
         const ret = [];
 
@@ -792,8 +794,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         const global_user = data.get("config.user");
         const cdn_release = data.get("config.cdn_release");
         const account_links = user.self_reported_account_linkages;
-
-        const game_history_query_url = `players/${this.user_id}/games/`;
 
         return (
             <div className="User container">
@@ -1028,12 +1028,18 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                 <h2>{_("Game History")}</h2>
                                 <Card>
                                     <div>{/* loading-container="game_history.settings().$loading" */}
-                                        <div className="search">
-                                            <i className="fa fa-search"></i>
-                                            <PlayerAutocomplete onComplete={(player) => {
-                                                // happily, and importantly, if there isn't a player, then we get null
-                                                this.setState({games_alt_player_filter: player?.id});
-                                            }}/>
+                                        <div className="game-options">
+                                            <div className="search">
+                                                <i className="fa fa-search"></i>
+                                                <PlayerAutocomplete onComplete={(player) => {
+                                                    // happily, and importantly, if there isn't a player, then we get null
+                                                    this.setState({games_alt_player_filter: player?.id});
+                                                }}/>
+                                            </div>
+                                            <div className="rengo-selector">
+                                                <span>{_("Rengo")}</span>
+                                                <input type="checkbox" checked={this.state.show_rengo_game_history} onChange={this.onToggleRengoHistorySelect}/>
+                                             </div>
                                         </div>
 
                                         <PaginatedTable
@@ -1044,7 +1050,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                             filter={{
                                                 "source": "play",
                                                 "ended__isnull": false,
-                                                ...(this.state.games_alt_player_filter !== null && {"alt_player": this.state.games_alt_player_filter})
+                                                ...(this.state.games_alt_player_filter !== null && {"alt_player": this.state.games_alt_player_filter}),
+                                                "rengo": this.state.show_rengo_game_history,
                                             }}
                                             orderBy={["-ended"]}
                                             groom={game_history_groomer}
