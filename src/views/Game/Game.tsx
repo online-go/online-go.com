@@ -3271,7 +3271,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                 }
                 {(goban && this.state.user_is_player && goban.engine.phase !== "finished" || null) &&
                     <a style={{visibility: goban.mode === "play" && goban && goban.engine.playerToMove() !== data.get("user").id ? "visible" : "hidden"}}
-                        className={goban && goban.engine.phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""}
+                        className={goban && goban.engine.phase !== "finished" && (goban.isAnalysisDisabled() || goban.engine.rengo) ? "disabled" : ""}
                         onClick={this.enterConditionalMovePlanner}>
                         <i className="fa fa-exchange"></i> {_("Plan conditional moves")}
                     </a>
