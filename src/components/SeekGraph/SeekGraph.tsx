@@ -168,9 +168,12 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     onSeekgraphGlobal = (lst) => {
         for (let i = 0; i < lst.length; ++i) {
             const e = lst[i];
-            // console.log(e);
             if ("game_started" in e) {
-                //console.log(e);
+                if (e.rengo) {
+                    if (e.rengo_black_team.concat(e.rengo_white_team).includes(data.get("user").id)) {
+                        browserHistory.push(`/game/${e.game_id}`);
+                    }
+                }
             } else if ("delete" in e) {
                 if (e.challenge_id in this.challenges) {
                     const uid = this.challenges[e.challenge_id].system_message_id;
