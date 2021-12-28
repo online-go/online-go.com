@@ -3145,7 +3145,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                             <div className={'rengo-team-members ' + color} key={idx}>
                                 {engine.rengo_teams[color].slice(1).map((player, idx) => (
                                     <div className={'rengo-team-member'} key={idx}>
-                                        {<Player user={player}/>}
+                                        {<Player user={player} icon rank/>}
                                     </div>
                                 ))}
                             </div>
