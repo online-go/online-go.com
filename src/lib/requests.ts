@@ -141,7 +141,6 @@ export function request(method: Method): RequestFunction {
                         console.warn(api1ify(real_url), err.status, err.statusText);
                         console.warn(traceback.stack);
                     }
-                    console.error(err);
                     reject(err);
                 }
             };

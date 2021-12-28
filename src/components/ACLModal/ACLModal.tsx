@@ -20,7 +20,7 @@ import {_} from "translate";
 import {post, get, del} from "requests";
 import {openModal, Modal} from "Modal";
 import {Player} from "Player";
-import {PlayerAutocomplete} from "PlayerAutocomplete";
+import {PlayerAutocomplete, PlayerAutocompleteRef} from "PlayerAutocomplete";
 import {GroupAutocomplete} from "GroupAutocomplete";
 import {errorAlerter, rulesText} from "misc";
 
@@ -35,11 +35,8 @@ type ACLModalProperties =
 
 
 export class ACLModal extends Modal<Events, ACLModalProperties, any> {
-    refs: {
-        player_autocomplete;
-        group_autocomplete;
-    };
-
+    player_autocomplete_ref = React.createRef<PlayerAutocompleteRef>();
+    group_autocomplete_ref = React.createRef<GroupAutocomplete>();
     url: string;
     del_url: string;
 
@@ -102,8 +99,8 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
         const player_id = this.state.selected_player && this.state.selected_player.id;
         const group_id = this.state.selected_group && this.state.selected_group.id;
 
-        this.refs.player_autocomplete.clear();
-        this.refs.group_autocomplete.clear();
+        this.player_autocomplete_ref.current?.clear();
+        this.group_autocomplete_ref.current?.clear();
 
         const obj: any = {};
         if (player_id) {
@@ -131,8 +128,8 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
                 </div>
                 <div className="body">
                     <div className="grant">
-                        <PlayerAutocomplete ref="player_autocomplete" onComplete={this.playerComplete} />
-                        <GroupAutocomplete ref="group_autocomplete" onComplete={this.groupComplete} />
+                        <PlayerAutocomplete ref={this.player_autocomplete_ref} onComplete={this.playerComplete} />
+                        <GroupAutocomplete ref={this.group_autocomplete_ref} onComplete={this.groupComplete} />
                         <button className="primary sm" onClick={this.grantAccess} >{_("Grant access")}</button>
                     </div>
 

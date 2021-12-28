@@ -19,7 +19,7 @@ import * as React from "react";
 import {Link} from "react-router-dom";
 import {_, cc_to_country_name} from "translate";
 import {post, put} from "requests";
-import {PaginatedTable} from "PaginatedTable";
+import {PaginatedTable, PaginatedTableRef} from "PaginatedTable";
 import {Card} from "material";
 import {UIPush} from "UIPush";
 import {SearchInput} from "misc-ui";
@@ -35,16 +35,20 @@ const greylist = ["yopmail.com", "vsprint.com", "xplanningzx.com", "mailsac.com"
 
 const greylist2 = [".xyz", ".life", ".website"];
 
+interface ModeratorState {
+    newuserany_filter: string;
+    playerusernameistartswith_filter: string;
+}
 
-export class Moderator extends React.PureComponent {
-    refs: {
-        modlog;
-        userlog;
-    };
+export class Moderator extends React.PureComponent<{}, ModeratorState> {
+    modlog_ref = React.createRef<PaginatedTableRef>();
+    userlog_ref = React.createRef<PaginatedTableRef>();
 
     constructor(props) {
         super(props);
         this.state = {
+            newuserany_filter: "",
+            playerusernameistartswith_filter: "",
         };
     }
     componentDidMount() {
@@ -52,10 +56,10 @@ export class Moderator extends React.PureComponent {
     }
 
     refreshModlog = () => {
-        this.refs.modlog.update();
+        this.modlog_ref.current?.refresh();
     };
     refreshUserlog = () => {
-        this.refs.userlog.update();
+        this.userlog_ref.current?.refresh();
     };
 
     render() {
@@ -70,9 +74,7 @@ export class Moderator extends React.PureComponent {
                         <SearchInput
                             placeholder={_("Search")}
                             onChange={(event) => {
-                            //this.refs.userlog.filter.username__istartswith = (event.target as HTMLInputElement).value.trim();
-                                this.refs.userlog.filter.newuserany = (event.target as HTMLInputElement).value.trim();
-                                this.refs.userlog.filter_updated();
+                                this.setState({newuserany_filter: (event.target as HTMLInputElement).value.trim()});
                             }}
                         />
                     </div>
@@ -83,11 +85,13 @@ export class Moderator extends React.PureComponent {
 
                     <PaginatedTable
                         className="userlog"
-                        ref="userlog"
                         name="userlog"
                         source={`moderation/recent_users`}
+                        ref={this.userlog_ref}
                         orderBy={["-timestamp"]}
-                        filter={{ "newuserany": "" }}
+                        filter={{
+                            ...(this.state.newuserany_filter !== "" && {newuserany: this.state.newuserany_filter})
+                        }}
                         columns={[
                             {header: _("Time"),  className: () => "timestamp",
                                 render: (X) => (moment(new Date(X.registration_date)).format("YYYY-MM-DD HH:mm")) },
@@ -122,20 +126,20 @@ export class Moderator extends React.PureComponent {
                             className="pull-right"
                             placeholder={_("Search")}
                             onChange={(event) => {
-                                this.refs.modlog.filter.playerusernameistartswith = (event.target as HTMLInputElement).value.trim();
-                                //this.refs.modlog.filter.useruserany = (event.target as HTMLInputElement).value.trim();
-                                this.refs.modlog.filter_updated();
+                                this.setState({playerusernameistartswith_filter: (event.target as HTMLInputElement).value.trim()});
                             }}
                         />
                     </div>
 
                     <PaginatedTable
                         className=""
-                        ref="modlog"
                         name="modlog"
                         source={`moderation/`}
+                        ref={this.modlog_ref}
                         orderBy={["-timestamp"]}
-                        filter={{ "playerusernameistartswith": "" }}
+                        filter={{
+                            ...(this.state.playerusernameistartswith_filter !== "" && {playernameistartswith: this.state.playerusernameistartswith_filter}),
+                        }}
                         columns={[
                             {header: _("Time"),  className: () => "timestamp ",
                                 render: (X) => (moment(new Date(X.timestamp)).format("YYYY-MM-DD HH:mm")) },

@@ -140,7 +140,9 @@ export function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry 
     return cache[id];
 }
 
-export function lookup(player_id: number): PlayerCacheEntry {
+/** Returns the PlayerCacheEntry if we have it loaded already, else null. Does
+ *  not perform a fetch or anything heavy. */
+export function lookup(player_id: number): PlayerCacheEntry | null {
     if (player_id in cache) {
         return cache[player_id];
     }
@@ -148,6 +150,8 @@ export function lookup(player_id: number): PlayerCacheEntry {
     return null;
 }
 
+/** Returns the PlayerCacheEntry if we have it loaded already, else null. Does
+ *  not perform a fetch or anything heavy. */
 export function lookup_by_username(username: string): PlayerCacheEntry | null {
     if (username in cache_by_username) {
         return cache_by_username[username];

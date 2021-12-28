@@ -312,7 +312,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                 </section>
                 :
                 <section className="right">
-                    <IncidentReportTracker />
+                    { !preferences.get("hide-incident-reports") && <IncidentReportTracker /> }
                     { preferences.get("show-tournament-indicator") && <TournamentIndicator /> }
                     <ChatIndicator />
                     <FriendIndicator />
@@ -492,7 +492,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                                 <h3>{_("Site")}</h3>
                                 {this.state.omnisearch_sitemap.map((e, idx) => (
                                     <div key={idx}>
-                                        {e[1][0] === "/"
+                                        {e?.[1]?.[0] === "/"
                                             ? <Link to={e[1]}>{e[0]}</Link>
                                             : <a href={e[1]} target="_blank">{e[0]}</a>
                                         }
@@ -587,7 +587,6 @@ omnisearch_sitemap[_("Terms of Service")] = [_("Terms of Service"), "/docs/terms
 omnisearch_sitemap["ToS"] = [_("Terms of Service"), "/docs/terms-of-service"];
 omnisearch_sitemap[_("Privacy Policy")] = [_("Privacy Policy"), "/docs/privacy-policy"];
 omnisearch_sitemap[_("Contact Information")] = [_("Contact Information"), "/docs/contact-information"];
-omnisearch_sitemap[_("Version")] = [_("Version") + " " + ogs_version];
 
 
 function match_sitemap(q) {

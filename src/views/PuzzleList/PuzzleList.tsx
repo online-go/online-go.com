@@ -30,16 +30,18 @@ import {navigateTo, unitify} from "misc";
 import * as data from "data";
 import * as moment from "moment";
 
-export class PuzzleList extends React.PureComponent {
-    refs: {
-        table;
-    };
+interface PuzzleListState {
+    name_contains_filter: string;  // string to be used for filtering search results by name
+}
 
+export class PuzzleList extends React.PureComponent<{}, PuzzleListState> {
     constructor(props) {
         super(props);
-        // TODO: Delete this.
-        this.state = { };
+        this.state = {
+            'name_contains_filter': "",
+        };
     }
+
     componentDidMount() {
         window.document.title = _("Puzzles");
     }
@@ -64,8 +66,7 @@ export class PuzzleList extends React.PureComponent {
                                 <SearchInput
                                     placeholder={_("Search")}
                                     onChange={(event) => {
-                                        this.refs.table.filter.name__icontains = (event.target as HTMLInputElement).value.trim();
-                                        this.refs.table.filter_updated();
+                                        this.setState({name_contains_filter: (event.target as HTMLInputElement).value.trim()});
                                     }}
                                 />
                             </div>
@@ -73,7 +74,6 @@ export class PuzzleList extends React.PureComponent {
 
                         <PaginatedTable
                             className=""
-                            ref="table"
                             source={`puzzles/collections/`}
                             orderBy={[
                                 "-rating",
@@ -81,7 +81,8 @@ export class PuzzleList extends React.PureComponent {
                             ]}
                             filter={{
                                 "puzzle_count__gt": "0",
-                                "name__istartswith": ""
+                                "name__istartswith": "",
+                                ...(this.state.name_contains_filter !== "" && {'name__icontains': this.state.name_contains_filter})
                             }}
                             groom={
                                 (arr) => {

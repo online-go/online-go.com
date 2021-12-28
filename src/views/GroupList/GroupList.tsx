@@ -24,15 +24,15 @@ import {PaginatedTable} from "PaginatedTable";
 import {SearchInput} from "misc-ui";
 import {navigateTo} from "misc";
 
+interface GroupListState {
+    name_contains_filter: string;
+}
 
-export class GroupList extends React.PureComponent {
-    refs: {
-        table;
-    };
-
+export class GroupList extends React.PureComponent<{}, GroupListState> {
     constructor(props) {
         super(props);
         this.state = {
+            name_contains_filter: "",
         };
     }
     componentDidMount() {
@@ -52,8 +52,7 @@ export class GroupList extends React.PureComponent {
                             <SearchInput
                                 placeholder={_("Search")}
                                 onChange={(event) => {
-                                    this.refs.table.filter.name__icontains = (event.target as HTMLInputElement).value.trim();
-                                    this.refs.table.filter_updated();
+                                    this.setState({name_contains_filter: (event.target as HTMLInputElement).value.trim()});
                                 }}
                             />
                         </div>
@@ -62,11 +61,12 @@ export class GroupList extends React.PureComponent {
                     <div className="group-list-container">
                         <PaginatedTable
                             className=""
-                            ref="table"
                             name="game-history"
                             source={`groups/`}
                             orderBy={["-member_count"]}
-                            filter={{ "name__icontains": "" }}
+                            filter={{
+                                ...(this.state.name_contains_filter !== "" && {'name__icontains': this.state.name_contains_filter})
+                            }}
                             onRowClick={(row, ev) => navigateTo(`/group/${row.id}`, ev)}
                             columns={[
                                 {header: "",  className: "group-icon-header",
