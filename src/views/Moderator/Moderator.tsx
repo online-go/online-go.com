@@ -138,7 +138,7 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                         ref={this.modlog_ref}
                         orderBy={["-timestamp"]}
                         filter={{
-                            ...(this.state.playerusernameistartswith_filter !== "" && {playernameistartswith: this.state.playerusernameistartswith_filter}),
+                            ...(this.state.playerusernameistartswith_filter !== "" && {playerusernameistartswith: this.state.playerusernameistartswith_filter}),
                         }}
                         columns={[
                             {header: _("Time"),  className: () => "timestamp ",
