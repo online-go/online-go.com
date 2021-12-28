@@ -163,7 +163,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
         this.destroy();
     }
     updateCounts = (counts) => {
-        console.log(counts);
+        // console.log("updateCounts:". counts);
         this.setState({
             live_game_count: counts.live,
             corr_game_count: counts.correspondence,
@@ -215,7 +215,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
             channel: this.channel,
         },
         (res) => {
-            console.log(res);
+            // console.log("gamelist/query res:", res);
 
             const state_update: any = {
                 num_pages: Math.ceil(res.size / this.state.page_size),
