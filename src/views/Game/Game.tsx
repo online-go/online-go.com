@@ -2536,7 +2536,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                                 </span>
                                 :
                                 <span>
-                                    {(state.show_title || null) && <span>{state.title}</span>}
+                                    {(state.show_title && !this.goban?.engine?.rengo || null) && <span>{state.title}</span>}
                                 </span>
                             }
                         </span>
@@ -3047,11 +3047,16 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         return (
             <div ref={el => this.ref_players = el} className="players">
                 {(engine.rengo || null) &&
-                    <div className="rengo-header"
-                        data-title={_("Sponsored by Gozart!") }
-                        onMouseOver={tooltip}
-                        onMouseOut={tooltip}>
-                        {_("Rengo!") + " " + (engine.phase === "play" ?  _("Next players:") : "")}
+                    <div className="rengo-header-block">
+                        <div className="rengo-header"
+                            data-title={_("Sponsored by Gozart!") }
+                            onMouseOver={tooltip}
+                            onMouseOut={tooltip}>
+                            {_("Rengo!")}
+                        </div>
+                        {(this.state.show_title && this.goban?.engine?.rengo || null) &&
+                            <div className="game-state">{this.state.title}</div>
+                        }
                     </div>
                 }
 
