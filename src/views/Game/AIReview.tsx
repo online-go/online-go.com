@@ -1083,8 +1083,22 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                         ? (this.state.use_score && this.ai_review.scores
                                             ? <div className="progress">
                                                 {(score > 0
-                                                  ? <div className="progress-bar black-background" style={{width: "100%"}}>B+{score.toFixed(1)}</div>
-                                                  : <div className="progress-bar white-background" style={{width: "100%"}}>W+{(-score).toFixed(1)}</div>
+                                                  ? <div className="progress-bar black-background" style={{width: "100%"}}>{
+                                                      interpolate(
+                                                          pgettext(
+                                                              "AI Review: Black ahead by {score}",
+                                                              "B+{{score}}"
+                                                          ),
+                                                          { "score": score.toFixed(1) }
+                                                      )}</div>
+                                                  : <div className="progress-bar white-background" style={{width: "100%"}}>{
+                                                      interpolate(
+                                                          pgettext(
+                                                              "AI Review: White ahead by {score}",
+                                                              "W+{{score}}"
+                                                          ),
+                                                          { "score": (-score).toFixed(1) }
+                                                      )}</div>
                                                 )}
                                             </div>
                                             : <div className="progress">
