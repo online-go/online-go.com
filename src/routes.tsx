@@ -185,7 +185,7 @@ export const routes = (
                 <Route path="/user/view/:user_id/*" component={User}/>
                 <Route path="/user/view/:user_id/**/*" component={User}/>
                 <Route path="/user/supporter" component={Supporter}/>
-                <Route path="/user/supporter2/:user_id" component={Supporter2}/>
+                <Route path="/user/supporter2/:account_id" component={Supporter2}/>
                 <Route path="/user/supporter2" component={Supporter2}/>
                 <Route path="/user/verifyEmail" component={VerifyEmail}/>
                 <Route path="/u/:username" component={UserByName}/>

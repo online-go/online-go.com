@@ -179,10 +179,14 @@
     }
 
     .payment-buttons {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        align-content: center;
+
         button {
             display: inline-flex;
             align-items: center;
-            justify-items: center;
             align-content: center;
             width: 8rem;
             font-size: 1.2rem;
@@ -196,19 +200,50 @@
                 background-color: #67478A;
                 color: #fff;
             }
+            &.paddle-sign-up {
+                themed background-color success
+                color: #fff;
+            }
         }
         padding-bottom: 1rem;
     }
 
     .developer-options {
         text-align: center;
-        color: #fff;
+        color: #000;
         padding: 1rem
         width: 100%;
+        font-weight: bold;
         max-width: 40rem;
         margin-top: 2rem;
         margin-bottom: 2rem;
         background-image: repeating-linear-gradient(135deg, #888, #888 30px, #FFA100 30px, #FFA100 60px);
+
+        label {
+            margin-left: 0.5rem;
+            padding-right: 0.5rem;
+            min-width: 3rem;
+            display: inline-block;
+        }
+        dl {
+            text-align: left;
+            background-color: rgba(255, 255, 255, 0.5);
+            padding: 0.5rem;
+        }
+
+        input[type="text"] {
+            width: 4rem;
+            margin-left: 0.5rem;
+        }
+    }
+
+    .Service {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        margin-top: 1rem;
     }
 }
 

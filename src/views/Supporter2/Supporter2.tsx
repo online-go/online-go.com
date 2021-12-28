@@ -18,28 +18,29 @@
 import * as React from 'react';
 import * as data from 'data';
 import * as moment from "moment";
-import { get, post } from 'requests';
-import { _, pgettext, interpolate } from "translate";
+import { get, post, put } from 'requests';
+import { _, pgettext, interpolate, sorted_locale_countries } from "translate";
 import swal from 'sweetalert2';
 import { ignore, errorAlerter } from "misc";
 import { currencies } from "./currencies";
 import { Toggle } from 'Toggle';
-
-declare let StripeCheckout;
+import { LoadingPage } from 'Loading';
 
 interface Supporter2Properties {
     match?: {
         params?: {
-            user_id?: string;
+            account_id?: string;
         };
     };
 }
 
-let stripe_checkout_js_promise;
-const checkout = null;
+let stripe_checkout_js_promise: Promise<void>;
+let paddle_js_promise: Promise<void>;
+//const checkout = null;
 
-declare let Stripe;
-let stripe;
+declare let Stripe: any;
+declare let Paddle: any;
+let stripe: any;
 
 interface Payment {
     "id": number;
@@ -84,6 +85,7 @@ interface Service {
     "key": string;
     "hard_expiration": string | null;
     "soft_expiration": string;
+    "in_grace_period": boolean;
     "active": boolean;
     "level": number;
     "slug": string | null;
@@ -91,44 +93,65 @@ interface Service {
     "parameters": string | null;
 }
 
+interface SupporterOverrides {
+    "currency"?: string;
+    "country"?: string;
+    "plan"?: {
+        [slug: string]: {
+            "month"?: number;
+            "year"?: number;
+        };
+    };
+    "payment_methods"?: "stripe_and_paypal" | "paddle";
+}
 
-interface Summary {
+
+/* This is really more than just a config, it's the billing configuration +
+ * config of subscriptions and whatnot. */
+interface Config {
+    sandbox: boolean;
     payments: Array<Payment>;
     subscriptions: Array<Subscription>;
+    country_currency_list: {
+        [country: string]: string;
+    };
     services: Array<Service>;
     loading?: boolean;
+    paddle_vendor_id?: number;
+    country_code: string;
+    email?: string;
+    plans: Array<Price>;
 }
 
 interface Price {
     active: boolean;
-    title: string;
-    description: Array<string | JSX.Element>;
-    review_level: 'kyu' | 'dan' | 'pro' | 'meijin';
-    amount: number;
-    currency: string;
-    interval: string;
-    //strength: string;
+    title?: string;
+    description?: Array<string | JSX.Element>;
+    //review_level: 'kyu' | 'dan' | 'pro' | 'meijin';
+    //amount: number;
+    //currency: string;
+    //interval: string;
+
+    slug: "hane" | "tenuki";
+    monthly_paddle_plan_id: string;
+    annual_paddle_plan_id: string;
+    price: {
+        [currency: string]: {
+            "month": number;
+            "year": number;
+            "xmonth": number;
+            "xyear": number;
+        };
+    };
 }
 
-export function Supporter2(props: Supporter2Properties): JSX.Element {
-    const user = data.get('user');
-    const [user_id, setUserId]: [number, (n: number) => void] = React.useState(parseInt(props?.match?.params?.user_id || user?.id || "0"));
-    const [summary, setSummary]: [Summary, (h: Summary) => void] = React.useState({
-        loading: true,
-        payments: [],
-        subscriptions: [],
-        services: [],
-    } as Summary);
-    const [error, setError]: [string, (e: string) => void] = React.useState("");
-    const [currency, setCurrency]: [string, (e: string) => void] = React.useState("USD");
-    const [annualBilling, setAnnualBilling]: [boolean, (b: boolean) => void] = React.useState(false as boolean);
-
+function load_checkout_libraries(): void {
     if (!stripe_checkout_js_promise) {
         stripe_checkout_js_promise = new Promise<void>((resolve, reject) => {
             const script = document.createElement("script");
             script.src = "https://js.stripe.com/v3";
             script.async = true;
-            script.charset = "utf-8";
+            //script.charset = "utf-8";
             script.onload = () => {
                 window['stripe'] = stripe = new Stripe(data.get('config').stripe_pk);
                 resolve();
@@ -140,36 +163,120 @@ export function Supporter2(props: Supporter2Properties): JSX.Element {
         });
     }
 
-    const max_service_level = Math.max(0, ...(summary.services.map(s => s.level)));
+    if (!paddle_js_promise) {
+        paddle_js_promise = new Promise<void>((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = "https://cdn.paddle.com/paddle/paddle.js";
+            script.async = true;
+            //script.charset = "utf-8";
+            script.onload = () => {
+                console.log("Paddle loaded");
+                resolve();
+            };
+            script.onerror = () => {
+                reject("Unable to load paddle.com library");
+            };
+            document.head.appendChild(script);
+        });
+
+        paddle_js_promise.then(() => {
+        })
+        .catch(ignore);
+    }
+}
+
+
+function guessCurrency(config: Config, country: string): string {
+    if (config && config.country_currency_list) {
+        if (country in config.country_currency_list) {
+            return config.country_currency_list[country];
+        }
+    }
+    return "USD";
+}
+
+export function Supporter2(props: Supporter2Properties): JSX.Element {
+    const user = data.get('user');
+    const account_id = parseInt(props?.match?.params?.account_id || user?.id || "0");
+    const [loading, setLoading] = React.useState(true);
+    const [config, setConfig]: [Config, (h: Config) => void] = React.useState({
+        loading: true,
+        country_code: "US",
+        payments: [],
+        subscriptions: [],
+        services: [],
+        plans: [],
+    } as Config);
+    const [error, setError]: [string, (e: string) => void] = React.useState("");
+    const [overrides, setOverrides]: [SupporterOverrides, (e: SupporterOverrides) => void] = React.useState({});
+    const [annualBilling, setAnnualBilling]: [boolean, (b: boolean) => void] = React.useState(false as boolean);
+
+    load_checkout_libraries();
+
+    const prices = config.plans;
+    const currency = overrides.currency || guessCurrency(config, overrides.country || config.country_code);
+    const interval = annualBilling ? "year" : "month";
+    const max_service_level = Math.max(0, ...(config.services.map(s => s.level)));
 
     React.useEffect(() => {
-        get(`/billing/summary/${user_id}`)
-            .then(setSummary)
-            .catch((err) => {
-                console.error(err);
-                setError("" + err);
-            });
-    }, [user_id]);
+        Promise.all([
+            get(`/billing/summary/${account_id}`)
+                .then((config: Config) => {
+                    paddle_js_promise.then(() => {
+                        if (config.sandbox) {
+                            console.log("Entering paddle.com sandbox mode");
+                            Paddle.Environment.set('sandbox');
+                        }
+                        Paddle.Setup({
+                            vendor: config.paddle_vendor_id,
+                            eventCallback: (obj: any) => {
+                                //console.log("Paddle event callback",  p1, p2, p3);
+                                console.log("Paddle event callback", obj);
+
+                                if (obj.event === "Checkout.Complete" || obj.event === "Checkout.Close") {
+                                    //console.log("Reloading config");
+                                }
+                            }
+                        });
+                    })
+                    .catch(ignore);
+
+                    setConfig(config);
+                })
+                .catch((err) => {
+                    console.error(err);
+                    setError("Failed to get billing configuration");
+                }),
+            get(`players/${account_id}/supporter_overrides`)
+                .then((overrides: SupporterOverrides) => {
+                    setOverrides(overrides);
+                    if (Object.keys(overrides).length > 0) {
+                        console.log("Supplementary supporter config: ", overrides);
+                    }
+                })
+                .catch((err) => {
+                    console.error(err);
+                    setError("Failed to get supplementary supporter config");
+                })
+        ])
+        .then(ignore)
+        .catch(ignore)
+        .finally(() => setLoading(false));
+    }, [account_id]);
 
     if (error) {
         return (
             <div className='Supporter2'>
                 Error loading page
+                <pre>{JSON.stringify(error)}</pre>
             </div>
         );
     }
 
-    console.log(summary);
 
-    const developer_options = user.id !== 1 ? null : (
-        <div className='developer-options'>
-            Currency:
-            <select onChange={(ev) => setCurrency(ev.target.value)}>
-                {Object.keys(currencies).map(c => <option key={c}>{c}</option>)}
-            </select>
-        </div>
-    );
-
+    if (loading) {
+        return <LoadingPage />;
+    }
 
 
     const common_description = [
@@ -178,62 +285,29 @@ export function Supporter2(props: Supporter2Properties): JSX.Element {
         _("Access to Site Supporters channel"),
         pgettext("Easily cancel the supporter subscription plan anytime", "Easily cancel anytime"),
         pgettext("Plan prices wont change unless the plan is canceled", "Locked in price until canceled"),
-        <b>{_("Automatic AI reviews for your games")}<sup>*</sup></b>,
-    ];
-    const prices: Array<Price> = [
-        {
-            "active": false,
-            "title": pgettext("Kyu Supporter", "Kyu"),
-            "description": [
-                ...common_description,
-            ],
-            "review_level": 'kyu',
-            "amount": 300,
-            "currency": currency,
-            "interval": annualBilling ? "year" : "month",
-        },
-        {
-            "active": true,
-            //"title": pgettext("Dan Supporter", "Dan"),
-            "title": _("Dan Supporter"),
-            "description": [
-                ...common_description,
-                <span>{interpolate(_("AI reviews are processed moderately deep using {{num}} playouts per move"), {"num": "1000"})}<sup>*</sup></span>,
-            ],
-            "review_level": 'dan',
-            "amount": 500,
-            "currency": currency,
-            "interval": annualBilling ? "year" : "month",
-        },
-        {
-            "active": true,
-            //"title": pgettext("Pro Supporter", "Pro"),
-            "title": _("Pro Supporter"),
-            "description": [
-                ...common_description,
-                <span>{interpolate(_("AI reviews are processed deeper using {{num}} playouts per move"), {"num": "3000"})}<sup>*</sup></span>,
-                <b className='green'>{_("3x more analysis done by the AI per move")}</b>,
-            ],
-            "review_level": 'pro',
-            "amount": 1000,
-            "currency": currency,
-            "interval": annualBilling ? "year" : "month",
-        },
-        {
-            "active": false,
-            "title": pgettext("Meijin is a Japanese word meaning master, expert, or virtuoso. It was reserved for the single strongest go player.", "Meijin"),
-            "description": [
-                ...common_description,
-                _("Very deep reading, intended for the most serious students"),
-            ],
-            "review_level": 'meijin',
-            "amount": 2500,
-            "currency": currency,
-            "interval": annualBilling ? "year" : "month",
-        },
     ];
 
-    //Hello Supporter2 {user_id}
+    const hane = prices.filter(x => x.slug === "hane")[0];
+    if (hane) {
+        hane.title = pgettext("Hane supporter plan", "Hane Plan");
+        hane.description = [
+            <b>{_("Automatic AI reviews for your games")}<sup>*</sup></b>,
+            <span>{interpolate(_("AI reviews are processed moderately deep using {{num}} playouts per move"), {"num": "1000"})}<sup>*</sup></span>,
+            ...common_description,
+        ];
+    }
+
+    const tenuki = prices.filter(x => x.slug === "tenuki")[0];
+    if (tenuki) {
+        tenuki.title = pgettext("Tenuki supporter plan", "Tenuki Plan");
+        tenuki.description = [
+            <b>{_("Automatic AI reviews for your games")}<sup>*</sup></b>,
+            <span>{interpolate(_("AI reviews are processed deeper using {{num}} playouts per move"), {"num": "3000"})}<sup>*</sup></span>,
+            <b className='green'>{_("3x the analysis done by the AI per move")}</b>,
+            ...common_description,
+        ];
+    }
+
     return (
         <div className='Supporter2'>
             <div className='SiteSupporterText'>
@@ -243,7 +317,16 @@ export function Supporter2(props: Supporter2Properties): JSX.Element {
             </div>
 
             <div className='Prices'>
-                {prices.map((price, idx) => <PriceBox key={idx} price={price} />)}
+                {prices.map((price, idx) =>
+                    <PriceBox
+                        key={idx}
+                        price={price}
+                        currency={currency}
+                        interval={interval}
+                        config={config}
+                        overrides={overrides}
+                        account_id={account_id}
+                    />)}
             </div>
 
             <div className='annual-billing'>
@@ -251,7 +334,8 @@ export function Supporter2(props: Supporter2Properties): JSX.Element {
                 <Toggle id="annual-billing" checked={annualBilling} onChange={(checked) => setAnnualBilling(checked)} />
             </div>
 
-            {developer_options}
+
+            <SupporterOverridesEditor account_id={account_id} overrides={overrides} config={config} onChange={setOverrides}/>
 
             <div className='SiteSupporterText'>
                 <p className='fineprint'>
@@ -260,31 +344,17 @@ export function Supporter2(props: Supporter2Properties): JSX.Element {
             </div>
 
 
-            {summary.services.length
-                ?
-                    <div className='Services'>
-                        {summary.services.map((s, idx) => (
-                            <div key={idx} className='Service'>
-                                level: {s.level}
-                                active: {s.active}
-                                until {s.soft_expiration}
-                            </div>
-                        ))}
-                    </div>
-                : null
-            }
-
-            {summary.subscriptions.length
+            {config.subscriptions.length
                 ?
                 <>
                     <div className='Subscriptions'>
-                        {summary.subscriptions.map((s, idx) => (
+                        {config.subscriptions.map((s, idx) => (
                             <Subscription key={s.id} subscription={s} />
                         ))}
                     </div>
                 </>
                 :
-                (summary.payments.length > 0
+                (config.payments.length > 0
                     ?
                     <div>
                         <h4>{_("You do not currently have an active supporter subscription")}</h4>
@@ -294,12 +364,12 @@ export function Supporter2(props: Supporter2Properties): JSX.Element {
                 )
             }
 
-            {summary.payments.length
+            {config.payments.length
                 ?
                     <>
                         <h3>{_("Recent Payments")}</h3>
                         <div className='Payments'>
-                            {summary.payments.map((p, idx) => (
+                            {config.payments.map((p, idx) => (
                                 <div key={idx} className='Payment'>
                                     <span className='date'>{moment(p.updated).format('lll')}</span>
                                     <span className='amount'>{formatMoney(p.currency, p.amount)}</span>
@@ -317,26 +387,62 @@ export function Supporter2(props: Supporter2Properties): JSX.Element {
                 : null
             }
 
+            {config.services.length
+                ?
+                    <div className='Services'>
+                        {config.services.map((s, idx) => (
+                            <ServiceLine key={s.id} service={s} />
+                        ))}
+                    </div>
+                : null
+            }
+
         </div>
     );
 }
 
-function PriceBox({price}: {price: Price}): JSX.Element {
-    const interval = price.interval;
-    const paypal_amount = zero_decimal_to_paypal_amount_string(price.currency, price.amount);
+interface PriceBoxProperties {
+    price: Price;
+    account_id: number;
+    currency: string;
+    config: Config;
+    overrides: SupporterOverrides;
+    interval: "month" | "year";
+}
+
+function PriceBox({price, currency, interval, config, account_id, overrides}: PriceBoxProperties): JSX.Element {
+    const [mor_locations, setMorLocations] = React.useState<string[]>(data.get('config.billing_mor_locations') || []);
+    const amount = overrides.plan?.[price.slug]?.[interval] || price.price[currency][interval];
+    const paypal_amount = zero_decimal_to_paypal_amount_string(currency, amount);
     const cdn_release = data.get("config.cdn_release");
+
+    if (!config) {
+        return <div>{_("Loading")}</div>;
+    }
 
     if (!price.active) {
         return null;
     }
 
+    React.useEffect(() => {
+        function updateMoreLocations() {
+            setMorLocations(data.get('config.billing_mor_locations') || []);
+        }
+        data.watch('config.billing_mor_locations', updateMoreLocations);
+        return () => data.unwatch('config.billing_mor_locations', updateMoreLocations);
+    }, []);
+
     function stripe_subscribe() {
         //this.setState({disable_payment_buttons: true});
+        if (!stripe) {
+            swal("Error", "Stripe is not configured", "error").catch(swal.noop);
+            return;
+        }
 
         post("/billing/stripe/checkout", {
             'interval': 'month',
-            'currency': price.currency,
-            'amount': price.amount,
+            'currency': currency,
+            'amount': amount,
             'review_level': 'kyu',
             'redirect_url': window.location.href,
             'name': _("Supporter"),
@@ -364,35 +470,43 @@ function PriceBox({price}: {price: Price}): JSX.Element {
         .catch(errorAlerter);
     }
 
-    function processPaypal() {
+    function paddle_subscribe() {
+        console.log("Paddle Checkout");
+        if (!Paddle) {
+            swal("Error", "Paddle is not loaded. Please try again later.", "error").catch(swal.noop);
+            return;
+        }
 
-        //<input id='paypal-purchase-id' type="hidden" name="invoice" value="" />
-        this.createPaymentAccountAndMethod("paypal", null)
-        .then((obj) => {
-            console.log("Preparing paypal purchase", obj);
-            const payment_account = obj.payment_account;
-            const payment_method = obj.payment_method;
-            const currency = price.currency;
-            const interval = price.interval;
-            console.error("CODE TO HANDLE PAYPAL NOT PORTED YET");
-            /*
-            this.processSupporterSignup('paypal', payment_method, paypal_amount, currency, interval)
-            .then(() => {
-                console.log("Navigating to paypal purchase page");
-            })
-            .catch(ignore);
-            */
-        })
-        .catch(errorAlerter);
-    };
+        const paddle_config: any = {
+            product: interval === "month" ? price.monthly_paddle_plan_id : price.annual_paddle_plan_id,
+            passthrough: account_id,
+            country: config.country_code,
+            email: config.email,
+        };
 
+        if (!paddle_config.email) {
+            delete paddle_config.email;
+        }
 
+        console.log("Paddle config", JSON.parse(JSON.stringify(paddle_config)));
+
+        Paddle.Checkout.open(paddle_config);
+    }
+
+    const country = overrides.country || config.country_code;
+    const mor_only = mor_locations.includes(country);
+
+    const show_paypal = overrides.payment_methods === "stripe_and_paypal" || (!overrides.payment_methods && !mor_only);
+    const show_stripe = overrides.payment_methods === "stripe_and_paypal" || (!overrides.payment_methods && !mor_only);
+    const show_paddle = overrides.payment_methods === "paddle" || (!overrides.payment_methods && mor_only);
+
+    console.log({show_paypal, show_stripe, show_paddle, mor_only, country});
 
     return (
         <div className='PriceBox'>
             <h1>{price.title}</h1>
 
-            <ul>{price.description.map(s => <li>{s}</li>)}</ul>
+            <ul>{price.description.map((s, idx) => <li key={idx}>{s}</li>)}</ul>
 
             <div className='price-increase-note'>
                 {interpolate(
@@ -401,33 +515,43 @@ function PriceBox({price}: {price: Price}): JSX.Element {
                 )}
             </div>
 
-            <h3>{formatMoney(price.currency, price.amount)} / {price.interval === 'month' ? _("month") : _("year")}</h3>
+            <h3>{formatMoney(currency, amount)} / {interval === 'month' ? _("month") : _("year")}</h3>
             <div className='payment-buttons'>
-                <button className='sign-up'onClick={stripe_subscribe}>{_("Sign up")} <i className='fa fa-credit-card' /></button>
-                <button className='paypal-button' onClick={processPaypal}>
-                    <img src={`${cdn_release}/img/new_paypal.png`} />
-                </button>
+                {(show_stripe || null) &&
+                    <button className='sign-up' onClick={stripe_subscribe}>{_("Sign up")} <i className='fa fa-credit-card' /></button>
+                }
+
+                {(show_paypal || null) &&
+                    <form id="paypal-form" action={data.get("config.paypal_server")} method="post" target="_top">
+                        <input type="hidden" name="cmd" value={"_xclick-subscriptions"} />
+                        <input type="hidden" name="business" value={data.get("config.paypal_email")} />
+                        <input type="hidden" name="item_name" value="Supporter Account" />
+                        <input type="hidden" name="a3" value={paypal_amount} />
+                        <input type="hidden" name="p3" value="1" />
+                        <input type="hidden" name="t3" value={interval === "month" ? "M" : "Y"} />
+
+                        <input type="hidden" name="src" value="1" />
+                        <input type="hidden" name="no_note" value="1" />
+                        <input type="hidden" name="currency_code" value={currency} />
+                        <input type="hidden" name="custom" value={data.get("user").id} />
+                        <input type="hidden" name="modify" value="0" />
+                        <input type="hidden" name="notify_url" value={`https://${data.get("config.paypal_this_server")}/billing/paypal/ipn`} />
+
+                        <button type="submit" className='paypal-button'>
+                            <img src={`${cdn_release}/img/new_paypal.png`} />
+                        </button>
+                    </form>
+                }
+
+                {(show_paddle || null) &&
+                    <button className='paddle-sign-up' onClick={paddle_subscribe}>{_("Sign up")}</button>
+                }
             </div>
 
-            <form id="paypal-form" action={data.get("config.paypal_server")} method="post" target="_top">
-                <input type="hidden" name="cmd" value={interval === 'one time' ? "_donations" : "_xclick-subscriptions"} />
-                <input type="hidden" name="business" value={data.get("config.paypal_email")} />
-                <input type="hidden" name="item_name" value="Supporter Account" />
-                {interval !== "one time" && <input type="hidden" name="a3" value={paypal_amount} />}
-                {interval !== "one time" && <input type="hidden" name="p3" value="1" />}
-                {interval !== "one time" && <input type="hidden" name="t3" value={interval === "month" ? "M" : "Y"} />}
-
-                {interval === "one time" && <input type="hidden" name="amount" value={paypal_amount} />}
-                <input type="hidden" name="src" value="1" />
-                <input type="hidden" name="no_note" value="1" />
-                <input type="hidden" name="currency_code" value={price.currency} />
-                <input type="hidden" name="custom" value={data.get("user").id} />
-                <input id="paypal-purchase-id" type="hidden" name="invoice" value="" />
-                <input type="hidden" name="modify" value="0" />
-                <input type="hidden" name="notify_url" value={`https://${data.get("config.server_name")}/merchant/paypal_postback`} />
-            </form>
         </div>
     );
+
+    //            <input id="paypal-purchase-id" type="hidden" name="invoice" value="" />
 }
 
 
@@ -444,7 +568,7 @@ function Subscription({subscription}: {subscription: Subscription}): JSX.Element
             text = _("You are currently supporting us with {{amount}} per year, thanks!");
             break;
         default:
-            text = "{{amount}}";
+            text = _("You are currently supporting us with {{amount}} every {{period_in_months}} months, thanks!");
             break;
     }
 
@@ -456,26 +580,73 @@ function Subscription({subscription}: {subscription: Subscription}): JSX.Element
             focusCancel: true
         })
         .then(() => {
+            let promise;
+
+            switch (subscription.payment_processor) {
+                case "stripe":
+                    promise = post(`/billing/stripe/cancel_subscription`, {'ref_id': subscription.ref_id});
+                    break;
+
+                case "paypal":
+                    promise = post(`/billing/paypal/cancel_subscription`, {'ref_id': subscription.ref_id});
+                    break;
+
+                case "paddle":
+                    //promise = post(`/billing/paddle/cancel_subscription`, {'ref_id': subscription.ref_id});
+                    break;
+
+                case "braintree":
+                    //promise = post(`/billing/braintree/cancel_subscription`, {'ref_id': subscription.ref_id});
+                    break;
+
+                default:
+                    swal("Error canceling subscription, please contact billing@online-go.com").catch(swal.noop);
+                    break;
+            }
+
             //this.setState({processing: true});
-            post(`/billing/stripe/cancel_subscription`, {'ref_id': subscription.ref_id})
-            .then(() => {
-                window.location.reload();
-            })
-            .catch((err) => {
-                //this.setState({processing: false});
-                console.error(err);
-                swal("Error canceling subscription, please contact billing@online-go.com").catch(swal.noop);
-            });
+            if (promise) {
+                promise
+                .then(() => {
+                    window.location.reload();
+                })
+                .catch((err) => {
+                    //this.setState({processing: false});
+                    console.error(err);
+                    swal("Error canceling subscription [2], please contact billing@online-go.com").catch(swal.noop);
+                });
+            } else {
+                swal("Error canceling subscription [3], please contact billing@online-go.com").catch(swal.noop);
+            }
         })
         .catch(errorAlerter);
     }
 
+    if (!subscription?.plan?.amount) {
+        console.log("No plan amount", subscription);
+        return (
+            <div className='Subscription'>
+                <h3>error loading plan information</h3>
+            </div>
+        );
+    }
+
     return (
         <div className='Subscription'>
-            <h3>{interpolate(text, {amount: formatMoney(subscription.plan.currency, subscription.plan.amount)})}</h3>
+            <h3>{
+                interpolate(
+                    text,
+                    {
+                        amount: formatMoney(subscription.plan.currency, subscription.plan.amount),
+                        period_in_months: subscription.period_duration_months,
+                    }
+                )
+            }</h3>
+
+            <button onClick={cancel}>{_("Cancel")}</button>
+
             {subscription.last_payment &&
                 <>
-                    <button onClick={cancel}>{_("Cancel")}</button>
                     <PaymentMethod payment={subscription.last_payment} />
                 </>
             }
@@ -515,6 +686,14 @@ function PaymentMethod({payment}: {payment: Payment}): JSX.Element {
                 {details}
             </span>
         );
+    } else if (payment.payment_processor === "braintree") {
+        ret = (
+            <span className='PaymentMethod'>
+                <i className="fa fa-lock"/>
+                <span>BrainTree</span>
+                {details}
+            </span>
+        );
     } else if (payment.payment_processor === "paddle") {
         ret = (
             <span className='PaymentMethod'>
@@ -546,6 +725,32 @@ function PaymentMethod({payment}: {payment: Payment}): JSX.Element {
     return ret;
 }
 
+function ServiceLine({service}: {service: Service}): JSX.Element {
+    const user = data.get('user');
+    const [active, setActive] = React.useState(service.active);
+
+    if (!user.is_superuser) {
+        return null;
+    }
+
+    function toggleActive() {
+        put(`/billing/service/${service.id}`, {active: !active})
+        .then((res: any) => console.log(res))
+        .catch((err: any) => console.error(err));
+        setActive(!active);
+    }
+
+    return (
+        <div className='Service developer-options'>
+            <span>Level: {service.level}</span>
+            <span>Soft Expiration: {service.soft_expiration}</span>
+            <span>Hard Expiration: {service.hard_expiration}</span>
+            <span>In Grace Period : {service.in_grace_period.toString()}</span>
+            <button className={active ? 'success' : 'reject'} onClick={toggleActive}>{active ? _("Active") : _("Inactive")}</button>
+        </div>
+    );
+}
+
 
 function zero_decimal_to_float(currency_code: string, amount: number): number {
     const currency = currencies[currency_code];
@@ -557,7 +762,7 @@ function zero_decimal_to_paypal_amount_string(currency_code: string, amount: num
     return (amount / Math.pow(10, currency.decimal_digits)).toFixed(currency.decimal_digits);
 }
 
-function formatMoney(currency_code: string, amount: number, no_fraction_digits: boolean = false): string {
+function formatMoney(currency_code: string, amount: number): string {
     const currency = currencies[currency_code];
     const ret = Intl.NumberFormat(
         navigator.language,
@@ -573,3 +778,192 @@ function formatMoney(currency_code: string, amount: number, no_fraction_digits: 
     return ret;
 }
 
+
+interface SupporterOverridesProperties {
+    account_id: number;
+    overrides: SupporterOverrides;
+    config: Config;
+    onChange: (overrides: SupporterOverrides) => void;
+}
+
+function SupporterOverridesEditor({account_id, overrides, onChange, config}: SupporterOverridesProperties): JSX.Element {
+    const user = data.get('user');
+    const prices = config.plans;
+    const currency = overrides.currency;
+
+    if (!user.is_superuser) {
+        return null;
+    }
+
+    function save() {
+        console.log("save", overrides);
+        put(`players/${account_id}/supporter_overrides`, overrides).then(() => console.log("saved")).catch(console.error);
+    }
+
+    function up(key: string, value: any): void {
+        overrides[key] = value;
+        onChange({...overrides}); // copy to force re-render
+    }
+
+    function upprice(slug: string, interval: string, value: any): void {
+        if (!value) {
+            delete overrides.plan[slug][interval];
+        } else {
+            value = parseInt(value);
+            if (!overrides.plan) {
+                overrides.plan = {
+                    hane: {},
+                    tenuki: {},
+                };
+            }
+            overrides.plan[slug][interval] = value;
+        }
+        let found = false;
+        for (const _slug of ['hane', 'tenuki']) {
+            for (const _interval of ['month', 'year']) {
+                if (overrides?.plan?.[_slug]?.[_interval]) {
+                    found = true;
+                }
+            }
+        }
+        if (!found) {
+            delete overrides.plan;
+        }
+        onChange({...overrides}); // copy to force re-render
+    }
+
+    return (
+        <div className='developer-options'>
+            <dl>
+                <dt><label htmlFor="payment_methods">Payment Methods</label></dt>
+                <dd>
+                    <label htmlFor="auto">Auto</label>
+                    <input type="radio" name="payment_methods" id="auto" value={""}
+                        checked={!overrides.payment_methods}
+                        onChange={(ev) => up('payment_methods', ev.target.value || undefined)} />
+                    <label htmlFor="stripe">Stripe + Paypal</label>
+                    <input type="radio" name="payment_methods" id="stripe" value={"stripe_and_paypal"}
+                        checked={overrides.payment_methods === "stripe_and_paypal"}
+                        onChange={(ev) => up('payment_methods', ev.target.value || undefined)} />
+                    <label htmlFor="paddle">Paddle</label>
+                    <input type="radio" name="payment_methods" id="paddle" value={"paddle"}
+                        checked={overrides.payment_methods === "paddle"}
+                        onChange={(ev) => up('payment_methods', ev.target.value || undefined)} />
+                </dd>
+
+                <dt><label htmlFor="country">Country</label></dt>
+                <dd>
+                    <select id="country" value={overrides.country} onChange={(ev) => up('country', ev.target.value || undefined)}>
+                        <option value=''>Auto</option>
+                        {sorted_locale_countries.filter(is_country).map((e) => <option key={e.cc} value={e.cc.toUpperCase()}>{e.name}</option>)}
+                    </select>
+                </dd>
+
+                <dt><label htmlFor="currency">Currency</label></dt>
+                <dd>
+                    <select id="currency" value={currency} onChange={(ev) => up('currency', ev.target.value || undefined)}>
+                        <option value=''>Default</option>
+                        {Object.keys(currencies).filter(currency => prices[0]?.price[currency]).map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                </dd>
+
+                <dt><label>Price</label></dt>
+                <dd>
+                    <label htmlFor="hane">Hane</label>
+                    <input
+                        id="hane"
+                        type="text"
+                        placeholder="Monthly"
+                        value={overrides.plan?.hane?.month}
+                        onChange={(ev) => upprice('hane', 'month', ev.target.value || undefined)}
+                    />
+                    <input
+                        placeholder="Yearly"
+                        type="text"
+                        value={overrides.plan?.hane?.year}
+                        onChange={(ev) => upprice('hane', 'year', ev.target.value || undefined)}
+                    />
+                </dd>
+                <dd>
+                    <label htmlFor="tenuki">Tenuki</label>
+                    <input
+                        id="tenuki"
+                        type="text"
+                        placeholder="Monthly"
+                        value={overrides.plan?.tenuki?.month}
+                        onChange={(ev) => upprice('tenuki', 'month', ev.target.value || undefined)}
+                    />
+                    <input
+                        type="text"
+                        placeholder="Yearly"
+                        value={overrides.plan?.tenuki?.year}
+                        onChange={(ev) => upprice('tenuki', 'year', ev.target.value || undefined)}
+                    />
+                </dd>
+            </dl>
+
+            <button className='success' onClick={save}>Save</button>
+        </div>
+    );
+}
+
+function is_country({cc}: {cc: string}): boolean {
+    cc = cc.toLowerCase();
+    return cc.length === 2 && !/[0-9]/.test(cc) && cc !== "eu";
+}
+
+
+/*
+const prices: Array<Price> = [
+    {
+        "active": false,
+        "title": pgettext("Kyu Supporter", "Kyu"),
+        "description": [
+            ...common_description,
+        ],
+        "review_level": 'kyu',
+        "amount": 300,
+        "currency": currency,
+        "interval": annualBilling ? "year" : "month",
+    },
+    {
+        "active": true,
+        //"title": pgettext("Dan Supporter", "Dan"),
+        "title": _("Dan Supporter"),
+        "description": [
+            ...common_description,
+            <span>{interpolate(_("AI reviews are processed moderately deep using {{num}} playouts per move"), {"num": "1000"})}<sup>*</sup></span>,
+        ],
+        "review_level": 'dan',
+        "amount": 500,
+        "currency": currency,
+        "interval": annualBilling ? "year" : "month",
+    },
+    {
+        "active": true,
+        //"title": pgettext("Pro Supporter", "Pro"),
+        "title": _("Pro Supporter"),
+        "description": [
+            ...common_description,
+            <span>{interpolate(_("AI reviews are processed deeper using {{num}} playouts per move"), {"num": "3000"})}<sup>*</sup></span>,
+            <b className='green'>{_("3x the analysis done by the AI per move")}</b>,
+        ],
+        "review_level": 'pro',
+        "amount": 1000,
+        "currency": currency,
+        "interval": annualBilling ? "year" : "month",
+    },
+    {
+        "active": false,
+        "title": pgettext("Meijin is a Japanese word meaning master, expert, or virtuoso. It was reserved for the single strongest go player.", "Meijin"),
+        "description": [
+            ...common_description,
+            _("Very deep reading, intended for the most serious students"),
+        ],
+        "review_level": 'meijin',
+        "amount": 2500,
+        "currency": currency,
+        "interval": annualBilling ? "year" : "month",
+    },
+];
+*/
