@@ -1066,6 +1066,8 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
         = React.useState(preferences.get("rating-graph-plot-by-games"));
     const [incident_report_notifications, setIncidentReportNotifications]: [boolean, (x: boolean) => void]
         = React.useState(preferences.get("notify-on-incident-report"));
+    const [hide_incident_reports, setHideIncidentReports]: [boolean, (x: boolean) => void]
+        = React.useState(preferences.get("hide-incident-reports"));
 
     const user = data.get("user");
     const desktop_notifications_enableable: boolean = typeof(Notification) !== "undefined";
@@ -1200,6 +1202,11 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
         setIncidentReportNotifications(checked);
     }
 
+    function updateHideIncidentReports(checked) {
+        preferences.set("hide-incident-reports", checked);
+        setHideIncidentReports(checked);
+    }
+
     const language_options = Object.entries(languages).map(lang_entry => ({
         'value': lang_entry[0], 'label': lang_entry[1]
     }));
@@ -1290,9 +1297,14 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
             </PreferenceLine>
 
             {(user.is_moderator || null) &&
-                <PreferenceLine title={_("Notify me when an incident is submitted for moderation")}>
-                    <Toggle checked={incident_report_notifications} onChange={updateIncidentReportNotifications} />
-                </PreferenceLine>
+                <>
+                    <PreferenceLine title={_("Notify me when an incident is submitted for moderation")}>
+                        <Toggle checked={incident_report_notifications} onChange={updateIncidentReportNotifications} />
+                    </PreferenceLine>
+                    <PreferenceLine title="Hide incident reports">
+                        <Toggle checked={hide_incident_reports} onChange={updateHideIncidentReports} />
+                    </PreferenceLine>
+                </>
             }
         </div>
     );

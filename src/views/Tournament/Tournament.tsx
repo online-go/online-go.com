@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import {LoadingPage} from 'Loading';
 import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
@@ -1228,6 +1229,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             const rank_restriction_text = rankRestrictionText(tournament.min_ranking, tournament.max_ranking);
             const provisional_players_text = tournament.exclude_provisional ? _("Not allowed") : _("Allowed");
             const analysis_mode_text = tournament.analysis_enabled ? _("Allowed") : _("Not allowed");
+            const cdn_release = data.get("config.cdn_release");
             //let scheduled_rounds_text = tournament.scheduled_rounds ? pgettext("In a tournament, rounds will be scheduled to start at specific times", "Rounds are scheduled") : pgettext("In a tournament, the next round will start when the last finishes", "Rounds will automatically start when the last round finishes");
 
             let min_bar = "";
@@ -1293,6 +1295,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             tournament.tournament_type === "opengotha" ||
             null
             );
+
+            if (this.state.loading && !this.state.editing) {
+                return <LoadingPage />;
+            }
 
             return (
                 <div className="Tournament page-width">
@@ -1449,22 +1455,37 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                         <tr>
                             <th >{_("Players")}</th>
                             <td>
-                                {!editing
-                                    ? <span>
-                                        {tournament.players_start}
-                                        {!tournament.settings.maximum_players
+                                {editing ?
+                                 <span>
+                                     <input ref="players_start" type="number" value={tournament.players_start} onChange={this.setPlayersStart} />
+                                         -
+                                     <input ref="max_players" type="number" value={tournament.settings.maximum_players} onChange={this.setMaximumPlayers} />
+                                 </span>
+                                 :
+                                 (!tournament.started ?
+                                 <span>
+                                     {tournament.players_start}
+                                     {!tournament.settings.maximum_players
                                              ? "+"
                                              : (
                                                  tournament.settings.maximum_players > tournament.players_start
                                                  ? "-" + tournament.settings.maximum_players
                                                  : ""
                                              )}
-                                    </span>
-                                    : <span>
-                                        <input ref="players_start" type="number" value={tournament.players_start} onChange={this.setPlayersStart} />
-                                         -
-                                        <input ref="max_players" type="number" value={tournament.settings.maximum_players} onChange={this.setMaximumPlayers} />
-                                    </span>
+                                 </span>
+                                 :
+                                     <span>
+                                         {this.state.sorted_players.length} (was {tournament.players_start}
+                                         {!tournament.settings.maximum_players
+                                             ? "+"
+                                             : (
+                                                 tournament.settings.maximum_players > tournament.players_start
+                                                 ? "-" + tournament.settings.maximum_players
+                                                 : ""
+                                             )}
+                                                             )
+                                     </span>
+                                   )
                                 }
                             </td>
                         </tr>
@@ -1695,7 +1716,26 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                 </div>
                     }
 
-
+                    {!loading && tournament.tournament_type !== "opengotha" && tournament.ended &&
+                            <div className="final-results">
+                                <h2>{_("Final results")}:</h2>
+                                {
+                                    Object.keys(players).map((id) => players[id])
+                                .filter((p) => p.rank > 0 && p.rank <= 3)
+                                .sort((a, b) => (a.rank > b.rank) ? 1 : -1)
+                                .map((player) => (
+                                    <div>
+                                        <span className="final-results-place">
+                                            <img className="trophy" src={`${cdn_release}/img/trophies/${trophyFilename(tournament, player.rank)}`} title="" />
+                                            {nthPlace(player.rank)}
+                                        </span>
+                                        <Player icon user={player} />
+                                    </div>
+                                )
+                                )
+                                }
+                            </div>
+                    }
 
                     {!loading && !tournament.started &&
                 <div className={"bottom-details not-started"}>
@@ -2461,4 +2501,27 @@ function fromNow(t) {
         return pgettext("Tournament begins very shortly", "very shortly");
     }
     return moment(d).fromNow();
+}
+
+function nthPlace(n) {
+    switch (n) {
+        case 1:
+            return _("First place");
+        case 2:
+            return _("Second place");
+        case 3:
+            return _("Third place");
+    }
+}
+
+function trophyFilename(tournament, rank) {
+    const size = tournament.board_size;
+    switch (rank) {
+        case 1:
+            return `gold_tourn_${size}.png`;
+        case 2:
+            return `silver_tourn_${size}.png`;
+        case 3:
+            return `bronze_tourn_${size}.png`;
+    }
 }
