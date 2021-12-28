@@ -3054,7 +3054,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                             onMouseOut={tooltip}>
                             {_("Rengo!")}
                         </div>
-                        {(this.state.show_title && this.goban?.engine?.rengo || null) &&
+                        {(!this.review_id && this.state.show_title && this.goban?.engine?.rengo || null) &&
                             <div className="game-state">{this.state.title}</div>
                         }
                     </div>
