@@ -96,6 +96,7 @@ interface Service {
 interface SupporterOverrides {
     "currency"?: string;
     "country"?: string;
+    "paddle_promo_code"?: string;
     "plan"?: {
         [slug: string]: {
             "month"?: number;
@@ -483,6 +484,10 @@ function PriceBox({price, currency, interval, config, account_id, overrides}: Pr
             country: config.country_code,
             email: config.email,
         };
+
+        if (overrides.paddle_promo_code) {
+            paddle_config.coupon = overrides.paddle_promo_code;
+        }
 
         if (!paddle_config.email) {
             delete paddle_config.email;
@@ -898,6 +903,17 @@ function SupporterOverridesEditor({account_id, overrides, onChange, config}: Sup
                         placeholder="Yearly"
                         value={overrides.plan?.tenuki?.year}
                         onChange={(ev) => upprice('tenuki', 'year', ev.target.value || undefined)}
+                    />
+                </dd>
+
+                <dt><label htmlFor="paddle_promo_code">Paddle Promo Code</label></dt>
+                <dd>
+                    <input
+                        type="text"
+                        id="paddle_promo_code"
+                        placeholder="Promo Code"
+                        value={overrides.paddle_promo_code}
+                        onChange={(ev) => up('paddle_promo_code', ev.target.value || undefined)}
                     />
                 </dd>
             </dl>
