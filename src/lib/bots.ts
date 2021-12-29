@@ -21,9 +21,6 @@ import {getUserRating} from 'rank_utils';
 let active_bots = {};
 let _bots_list = [];
 
-export function bots() {
-    return active_bots;
-}
 export function bots_list(): Array<any> {
     return _bots_list;
 }
