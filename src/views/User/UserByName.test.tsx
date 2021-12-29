@@ -62,7 +62,7 @@ test('Renders User page if not found', async() => {
         .mockImplementation(() => { return null; });
     jest.spyOn(requests, "get")
         .mockImplementation(() => {
-            return Promise.resolve({results: [{player_id: 12345}]});
+            return Promise.resolve({results: [{id: 12345}]});
         });
 
     await act(async() =>
@@ -79,7 +79,9 @@ test('Renders User page if not found', async() => {
     );
 
     expect(requests.get).toHaveBeenCalledTimes(1);
-    expect(container.children).toHaveLength(0);
+    expect(container.children).toHaveLength(1);
+    expect(container.children[0].className).toBe("UserMock");
+    expect((User as jest.Mock).mock.calls[0][0].match.params.user_id).toBe("12345");
 });
 
 test('Displays user not found if not found.', async() => {
