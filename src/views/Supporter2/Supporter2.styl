@@ -180,15 +180,24 @@
 
     .payment-buttons {
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: space-around;
         align-content: center;
+
+        .ruler {
+            background-color: #007CA3;
+            height: 0.1rem;
+            width: 100%;
+            margin-top: 0.4rem;
+            margin-bottom: 0.4rem;
+        }
 
         button {
             display: inline-flex;
             align-items: center;
             align-content: center;
-            width: 8rem;
+            //width: 8rem;
             font-size: 1.2rem;
             font-weight: bold;
             background-color: #FFC439;
@@ -196,13 +205,17 @@
                 margin-left: 0.5rem;
             }
 
-            &.sign-up {
+            &.sign-up, &.paddle-sign-up {
                 background-color: #67478A;
                 color: #fff;
+                &:hover {
+                    border-color: #67478A;
+                    background-color: lighten(#67478A, 10%);
+                }
             }
-            &.paddle-sign-up {
-                themed background-color success
-                color: #fff;
+
+            &.paypal-button {
+                margin-left: 0.5rem;
             }
         }
         padding-bottom: 1rem;
@@ -248,6 +261,37 @@
         justify-content: center;
         width: 100%;
         margin-top: 1rem;
+    }
+}
+
+
+
+.payment-method {
+    display: inline-block;
+    background-size: contain;
+    width: 2.0rem;
+    height: 2.0rem;
+    border-radius: 0.3rem;
+    margin: 0.3rem;
+    background-color: #fff;
+
+    &.card {
+        background-image: svg-load("../assets/payment_methods/card.svg");
+    }
+    &.apple {
+        background-image: svg-load("../assets/payment_methods/apple.svg");
+    }
+    &.google {
+        background-image: svg-load("../assets/payment_methods/google.svg");
+    }
+    &.alipay {
+        background-image: svg-load("../assets/payment_methods/alipay.svg");
+    }
+    &.bank {
+        background-image: svg-load("../assets/payment_methods/bank.svg");
+    }
+    &.sepa {
+        background-image: svg-load("../assets/payment_methods/sepa.svg");
     }
 }
 

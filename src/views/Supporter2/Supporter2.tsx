@@ -529,9 +529,23 @@ function PriceBox({price, currency, interval, config, account_id, overrides}: Pr
             <h3>{formatMoney(currency, amount)} / {interval === 'month' ? _("month") : _("year")}</h3>
             <div className='payment-buttons'>
                 {(show_stripe || null) &&
-                    <button className='sign-up' onClick={stripe_subscribe} disabled={disabled}>
-                        {_("Sign up")} <i className='fa fa-credit-card' />
-                    </button>
+                    <>
+                        <button className='sign-up' onClick={stripe_subscribe} disabled={disabled}>
+                            {_("Become a supporter")}
+                        </button>
+                        <div className='payment-methods'>
+                            <i className='payment-method card' />
+                            <i className='payment-method apple' />
+                            <i className='payment-method google' />
+                            <i className='payment-method alipay' />
+                            <i className='payment-method bank' />
+                            <i className='payment-method sepa' />
+                        </div>
+                    </>
+                }
+
+                {((show_stripe && show_paypal) || null) &&
+                    <div className='ruler' />
                 }
 
                 {(show_paypal || null) &&
@@ -550,6 +564,7 @@ function PriceBox({price, currency, interval, config, account_id, overrides}: Pr
                         <input type="hidden" name="modify" value="0" />
                         <input type="hidden" name="notify_url" value={`https://${data.get("config.paypal_this_server")}/billing/paypal/ipn`} />
 
+                        {pgettext("Or support with <paypal button>", "Or support with")}
                         <button type="submit" className='paypal-button' disabled={disabled}>
                             <img src={`${cdn_release}/img/new_paypal.png`} />
                         </button>
@@ -558,7 +573,7 @@ function PriceBox({price, currency, interval, config, account_id, overrides}: Pr
 
                 {(show_paddle || null) &&
                     <button className='paddle-sign-up' onClick={paddle_subscribe} disabled={disabled}>
-                        {_("Sign up")}
+                        {_("Become a supporter")}
                     </button>
                 }
             </div>
