@@ -393,7 +393,9 @@ export function Supporter2(props: Supporter2Properties): JSX.Element {
                 : null
             }
 
-            {config.services.length
+            <ManualServiceCreator account_id={account_id} config={config} />
+
+            {(config.services.length && user.is_superuser)
                 ?
                     <div className='Services'>
                         {config.services.map((s, idx) => (
@@ -601,6 +603,7 @@ function PriceBox({price, currency, interval, config, account_id, overrides}: Pr
 
     //            <input id="paypal-purchase-id" type="hidden" name="invoice" value="" />
 }
+
 
 
 function Subscription({subscription}: {subscription: Subscription}): JSX.Element {
@@ -814,6 +817,50 @@ function PaymentMethod({payment}: {payment: Payment}): JSX.Element {
     return ret;
 }
 
+
+interface ManualServiceCreatorProperties {
+    account_id: number;
+    config: Config;
+}
+
+function ManualServiceCreator({account_id, config}: ManualServiceCreatorProperties): JSX.Element {
+    const user = data.get('user');
+    const [level, setLevel]: [string, React.Dispatch<string>] = React.useState("");
+    const [months, setMonths]: [string, React.Dispatch<string>] = React.useState("");
+
+    if (!user.is_superuser) {
+        return null;
+    }
+
+    function create() {
+        console.log("create", parseInt(level), parseInt(months));
+        post(`/billing/service`, {
+            account_id: account_id,
+            level: parseInt(level),
+            months: parseInt(months),
+        })
+        .then((res: any) => console.log(res))
+        .catch((err: any) => console.error(err));
+    }
+
+    return (
+        <div className='developer-options'>
+            <h3>Manual Service Creation</h3>
+            <dl>
+                <dt>Level</dt>
+                <dd>
+                    <input placeholder='level' value={level} onChange={(ev) => setLevel(ev.target.value)} />
+                </dd>
+                <dt>Months</dt>
+                <dd>
+                    <input placeholder='months' value={months} onChange={(ev) => setMonths(ev.target.value)} />
+                </dd>
+            </dl>
+            <button onClick={create}>Create</button>
+        </div>
+    );
+}
+
 function ServiceLine({service}: {service: Service}): JSX.Element {
     const user = data.get('user');
     const [active, setActive] = React.useState(service.active);
@@ -838,33 +885,6 @@ function ServiceLine({service}: {service: Service}): JSX.Element {
             <button className={active ? 'success' : 'reject'} onClick={toggleActive}>{active ? _("Active") : _("Inactive")}</button>
         </div>
     );
-}
-
-
-function zero_decimal_to_float(currency_code: string, amount: number): number {
-    const currency = currencies[currency_code];
-    return amount / Math.pow(10, currency.decimal_digits);
-}
-
-function zero_decimal_to_paypal_amount_string(currency_code: string, amount: number): string {
-    const currency = currencies[currency_code];
-    return (amount / Math.pow(10, currency.decimal_digits)).toFixed(currency.decimal_digits);
-}
-
-function formatMoney(currency_code: string, amount: number): string {
-    const currency = currencies[currency_code];
-    const ret = Intl.NumberFormat(
-        navigator.language,
-        {
-            style: 'currency',
-            currency: currency_code
-        })
-        .format(zero_decimal_to_float(currency_code, amount));
-
-    if (currency.decimal_digits === 0) {
-        return ret.replace(/[.,].{2}$/, "");
-    }
-    return ret;
 }
 
 
@@ -1007,30 +1027,6 @@ function SupporterOverridesEditor({account_id, overrides, onChange, config}: Sup
     );
 }
 
-function is_country({cc}: {cc: string}): boolean {
-    cc = cc.toLowerCase();
-    return cc.length === 2 && !/[0-9]/.test(cc) && cc !== "eu";
-}
-
-function getCurentPlanSlug(config: Config): string {
-    const max_service_level = Math.max(0, ...(config.services.map(s => s.level)));
-    if (max_service_level >= 20) {
-        return "meijin";
-    }
-    if (max_service_level >= 10) {
-        return "tenuki";
-    }
-    if (max_service_level >= 5) {
-        return "hane";
-    }
-    if (max_service_level >= 3) {
-        return "kyu";
-    }
-
-    return "basic";
-}
-
-
 function DeprecatedPlanNote({slug}: {slug: string}): JSX.Element {
     if (slug === "hane" || slug === "tenuki") {
         return null;
@@ -1081,6 +1077,54 @@ function DeprecatedPlanNote({slug}: {slug: string}): JSX.Element {
     );
 }
 
+function is_country({cc}: {cc: string}): boolean {
+    cc = cc.toLowerCase();
+    return cc.length === 2 && !/[0-9]/.test(cc) && cc !== "eu";
+}
+
+function zero_decimal_to_float(currency_code: string, amount: number): number {
+    const currency = currencies[currency_code];
+    return amount / Math.pow(10, currency.decimal_digits);
+}
+
+function zero_decimal_to_paypal_amount_string(currency_code: string, amount: number): string {
+    const currency = currencies[currency_code];
+    return (amount / Math.pow(10, currency.decimal_digits)).toFixed(currency.decimal_digits);
+}
+
+function formatMoney(currency_code: string, amount: number): string {
+    const currency = currencies[currency_code];
+    const ret = Intl.NumberFormat(
+        navigator.language,
+        {
+            style: 'currency',
+            currency: currency_code
+        })
+        .format(zero_decimal_to_float(currency_code, amount));
+
+    if (currency.decimal_digits === 0) {
+        return ret.replace(/[.,].{2}$/, "");
+    }
+    return ret;
+}
+
+function getCurentPlanSlug(config: Config): string {
+    const max_service_level = Math.max(0, ...(config.services.map(s => s.level)));
+    if (max_service_level >= 20) {
+        return "meijin";
+    }
+    if (max_service_level >= 10) {
+        return "tenuki";
+    }
+    if (max_service_level >= 5) {
+        return "hane";
+    }
+    if (max_service_level >= 3) {
+        return "kyu";
+    }
+
+    return "basic";
+}
 
 
 /*
