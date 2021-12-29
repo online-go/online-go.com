@@ -777,7 +777,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, Supporte
                                 <div className='stripe'>
 
                                     <button className="stripe-button" onClick={this.processStripe} disabled={this.state.disable_payment_buttons || this.state.processing}>
-                                        { _("Support with Card")}
+                                        { _("Become a supporter") }
                                     </button>
 
                                     <div className='powered-by-stripe'>
@@ -807,7 +807,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, Supporte
                                     </form>
                                     <button className='paypal-button' disabled={!isPaypalEnabled(this.state.currency)} dir={getDirection(current_language)}
                                         onClick={isPaypalEnabled(this.state.currency) ? this.processPaypal : null} >
-                                        {_("Support with")} <img src={`${cdn_release}/img/new_paypal.png`} />
+                                        <img src={`${cdn_release}/img/new_paypal.png`} />
                                     </button>
                                 </div>
                             </div>
