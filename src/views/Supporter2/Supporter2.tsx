@@ -74,6 +74,8 @@ interface Subscription {
     "last_four": string | null;
     "period_duration_months": number;
     "canceled": string | null;
+    "paddle_cancel_url": string | null;
+    "paddle_update_url": string | null;
     "last_payment"?: Payment;
     "plan"?: Plan;
 }
@@ -309,6 +311,8 @@ export function Supporter2(props: Supporter2Properties): JSX.Element {
         ];
     }
 
+    const current_plan_slug = getCurentPlanSlug(config);
+
     return (
         <div className='Supporter2'>
             <div className='SiteSupporterText'>
@@ -335,6 +339,7 @@ export function Supporter2(props: Supporter2Properties): JSX.Element {
                 <Toggle id="annual-billing" checked={annualBilling} onChange={(checked) => setAnnualBilling(checked)} />
             </div>
 
+            <DeprecatedPlanNote slug={current_plan_slug} />
 
             <SupporterOverridesEditor account_id={account_id} overrides={overrides} config={config} onChange={setOverrides}/>
 
@@ -511,7 +516,8 @@ function PriceBox({price, currency, interval, config, account_id, overrides}: Pr
     const show_stripe = overrides.payment_methods === "stripe_and_paypal" || (!overrides.payment_methods && !mor_only);
     const show_paddle = overrides.payment_methods === "paddle" || (!overrides.payment_methods && mor_only);
 
-    console.log({show_paypal, show_stripe, show_paddle, mor_only, country});
+    const has_subscription = config.subscriptions.length > 0;
+    const current_plan_slug = getCurentPlanSlug(config);
 
     return (
         <div className='PriceBox'>
@@ -527,56 +533,68 @@ function PriceBox({price, currency, interval, config, account_id, overrides}: Pr
             </div>
 
             <h3>{formatMoney(currency, amount)} / {interval === 'month' ? _("month") : _("year")}</h3>
-            <div className='payment-buttons'>
-                {(show_stripe || null) &&
-                    <>
-                        <button className='sign-up' onClick={stripe_subscribe} disabled={disabled}>
+
+            {has_subscription
+                ? <div className='already-supporter'>
+                    {current_plan_slug === price.slug
+                      ? <>
+                          <h4>{_("Thank you for your support!")}</h4>
+                          <p>{_("You are on this plan.")}</p>
+                      </>
+                      : <p>{_("To change plans, please cancel your support below first")}</p>
+                    }
+                </div>
+                : <div className='payment-buttons'>
+                    {(show_stripe || null) &&
+                        <>
+                            <button className='sign-up' onClick={stripe_subscribe} disabled={disabled}>
+                                {_("Become a supporter")}
+                            </button>
+                            <div className='payment-methods'>
+                                <i className='payment-method card' />
+                                <i className='payment-method apple' />
+                                <i className='payment-method google' />
+                                <i className='payment-method alipay' />
+                                <i className='payment-method bank' />
+                                <i className='payment-method sepa' />
+                            </div>
+                        </>
+                    }
+
+                    {((show_stripe && show_paypal) || null) &&
+                        <div className='ruler' />
+                    }
+
+                    {(show_paypal || null) &&
+                        <form id="paypal-form" action={data.get("config.paypal_server")} method="post" target="_top">
+                            <input type="hidden" name="cmd" value={"_xclick-subscriptions"} />
+                            <input type="hidden" name="business" value={data.get("config.paypal_email")} />
+                            <input type="hidden" name="item_name" value="Supporter Account" />
+                            <input type="hidden" name="a3" value={paypal_amount} />
+                            <input type="hidden" name="p3" value="1" />
+                            <input type="hidden" name="t3" value={interval === "month" ? "M" : "Y"} />
+
+                            <input type="hidden" name="src" value="1" />
+                            <input type="hidden" name="no_note" value="1" />
+                            <input type="hidden" name="currency_code" value={currency} />
+                            <input type="hidden" name="custom" value={data.get("user").id} />
+                            <input type="hidden" name="modify" value="0" />
+                            <input type="hidden" name="notify_url" value={`https://${data.get("config.paypal_this_server")}/billing/paypal/ipn`} />
+
+                            {pgettext("Or support with <paypal button>", "Or support with")}
+                            <button type="submit" className='paypal-button' disabled={disabled}>
+                                <img src={`${cdn_release}/img/new_paypal.png`} />
+                            </button>
+                        </form>
+                    }
+
+                    {(show_paddle || null) &&
+                        <button className='paddle-sign-up' onClick={paddle_subscribe} disabled={disabled}>
                             {_("Become a supporter")}
                         </button>
-                        <div className='payment-methods'>
-                            <i className='payment-method card' />
-                            <i className='payment-method apple' />
-                            <i className='payment-method google' />
-                            <i className='payment-method alipay' />
-                            <i className='payment-method bank' />
-                            <i className='payment-method sepa' />
-                        </div>
-                    </>
-                }
-
-                {((show_stripe && show_paypal) || null) &&
-                    <div className='ruler' />
-                }
-
-                {(show_paypal || null) &&
-                    <form id="paypal-form" action={data.get("config.paypal_server")} method="post" target="_top">
-                        <input type="hidden" name="cmd" value={"_xclick-subscriptions"} />
-                        <input type="hidden" name="business" value={data.get("config.paypal_email")} />
-                        <input type="hidden" name="item_name" value="Supporter Account" />
-                        <input type="hidden" name="a3" value={paypal_amount} />
-                        <input type="hidden" name="p3" value="1" />
-                        <input type="hidden" name="t3" value={interval === "month" ? "M" : "Y"} />
-
-                        <input type="hidden" name="src" value="1" />
-                        <input type="hidden" name="no_note" value="1" />
-                        <input type="hidden" name="currency_code" value={currency} />
-                        <input type="hidden" name="custom" value={data.get("user").id} />
-                        <input type="hidden" name="modify" value="0" />
-                        <input type="hidden" name="notify_url" value={`https://${data.get("config.paypal_this_server")}/billing/paypal/ipn`} />
-
-                        {pgettext("Or support with <paypal button>", "Or support with")}
-                        <button type="submit" className='paypal-button' disabled={disabled}>
-                            <img src={`${cdn_release}/img/new_paypal.png`} />
-                        </button>
-                    </form>
-                }
-
-                {(show_paddle || null) &&
-                    <button className='paddle-sign-up' onClick={paddle_subscribe} disabled={disabled}>
-                        {_("Become a supporter")}
-                    </button>
-                }
-            </div>
+                    }
+                </div>
+            }
 
         </div>
     );
@@ -589,18 +607,21 @@ function Subscription({subscription}: {subscription: Subscription}): JSX.Element
     const user = data.get('user');
 
     let text: string;
+    const period_duration_months = subscription.period_duration_months;
 
-    switch (subscription.period_duration_months) {
+    switch (period_duration_months) {
         case 1:
-            text = _("You are currently supporting us with {{amount}} per month, thanks!");
+            text = _("You are currently supporting us with {{amount}} per month, thank you!");
             break;
         case 12:
-            text = _("You are currently supporting us with {{amount}} per year, thanks!");
+            text = _("You are currently supporting us with {{amount}} per year, thank you!");
             break;
         default:
-            text = _("You are currently supporting us with {{amount}} every {{period_in_months}} months, thanks!");
+            text = _("You're currently on the {{amount}} plan, thank you!");
             break;
     }
+
+    console.log("Subscription", subscription);
 
     function cancel() {
         console.log("cancel");
@@ -622,11 +643,13 @@ function Subscription({subscription}: {subscription: Subscription}): JSX.Element
                     break;
 
                 case "paddle":
+                    window.location.assign(subscription.paddle_cancel_url);
                     //promise = post(`/billing/paddle/cancel_subscription`, {'ref_id': subscription.ref_id});
                     break;
 
                 case "braintree":
                     //promise = post(`/billing/braintree/cancel_subscription`, {'ref_id': subscription.ref_id});
+                    swal("Please contact anoek@online-go.com to cancel your subscription").catch(swal.noop);
                     break;
 
                 default:
@@ -640,16 +663,53 @@ function Subscription({subscription}: {subscription: Subscription}): JSX.Element
                 .then(() => {
                     window.location.reload();
                 })
-                .catch((err) => {
+                .catch((err: any) => {
                     //this.setState({processing: false});
                     console.error(err);
                     swal("Error canceling subscription [2], please contact billing@online-go.com").catch(swal.noop);
                 });
-            } else {
-                swal("Error canceling subscription [3], please contact billing@online-go.com").catch(swal.noop);
             }
         })
         .catch(errorAlerter);
+    }
+
+    function updatePaymentMethod() {
+        console.log("update");
+        let promise;
+
+        switch (subscription.payment_processor) {
+            case "stripe":
+                promise = post("/billing/stripe/update_payment_method", {
+                    'ref_id': subscription.ref_id,
+                    'redirect_url': window.location.href,
+                });
+
+                promise
+                .then((session: any) => {
+                    stripe.redirectToCheckout({
+                        sessionId: session.session_id,
+                    });
+                })
+                .catch(errorAlerter);
+                break;
+
+            case "paypal":
+                //promise = post(`/billing/paypal/cancel_subscription`, {'ref_id': subscription.ref_id});
+                break;
+
+            case "paddle":
+                window.location.assign(subscription.paddle_update_url);
+                //promise = post(`/billing/paddle/cancel_subscription`, {'ref_id': subscription.ref_id});
+                break;
+
+            case "braintree":
+                //promise = post(`/billing/braintree/cancel_subscription`, {'ref_id': subscription.ref_id});
+                break;
+
+            default:
+                swal("Error canceling subscription, please contact billing@online-go.com").catch(swal.noop);
+                break;
+        }
     }
 
     if (!subscription?.plan?.amount) {
@@ -673,13 +733,12 @@ function Subscription({subscription}: {subscription: Subscription}): JSX.Element
                 )
             }</h3>
 
-            <button onClick={cancel}>{_("Cancel")}</button>
-
-            {subscription.last_payment &&
-                <>
-                    <PaymentMethod payment={subscription.last_payment} />
-                </>
+            {(subscription.payment_processor !== "paypal" || null) &&
+                <button onClick={updatePaymentMethod}>{_("Update Payment Method")}</button>
             }
+
+            <button onClick={cancel}>{_("Cancel Support")}</button>
+
         </div>
     );
 }
@@ -704,7 +763,7 @@ function PaymentMethod({payment}: {payment: Payment}): JSX.Element {
         ret = (
             <span className='PaymentMethod'>
                 <i className="fa fa-lock"/>
-                <span className='stripe'>stripe</span>
+                <span className='stripe'>via Stripe</span>
                 {details}
             </span>
         );
@@ -712,7 +771,7 @@ function PaymentMethod({payment}: {payment: Payment}): JSX.Element {
         ret = (
             <span className='PaymentMethod'>
                 <i className="fa fa-lock"/>
-                <span className='paypal'>paypal</span>
+                <span className='paypal'>via PayPal</span>
                 {details}
             </span>
         );
@@ -728,7 +787,7 @@ function PaymentMethod({payment}: {payment: Payment}): JSX.Element {
         ret = (
             <span className='PaymentMethod'>
                 <i className="fa fa-lock"/>
-                <span className='paddle'>paddle</span>
+                <span className='paddle'>via Paddle.com</span>
                 {details}
             </span>
         );
@@ -952,6 +1011,76 @@ function is_country({cc}: {cc: string}): boolean {
     cc = cc.toLowerCase();
     return cc.length === 2 && !/[0-9]/.test(cc) && cc !== "eu";
 }
+
+function getCurentPlanSlug(config: Config): string {
+    const max_service_level = Math.max(0, ...(config.services.map(s => s.level)));
+    if (max_service_level >= 20) {
+        return "meijin";
+    }
+    if (max_service_level >= 10) {
+        return "tenuki";
+    }
+    if (max_service_level >= 5) {
+        return "hane";
+    }
+    if (max_service_level >= 3) {
+        return "kyu";
+    }
+
+    return "basic";
+}
+
+
+function DeprecatedPlanNote({slug}: {slug: string}): JSX.Element {
+    if (slug === "hane" || slug === "tenuki") {
+        return null;
+    }
+
+    let name = "unknown";
+    let playouts = 125;
+
+    switch (slug) {
+        case "meijin":
+            name = "Meijin";
+            playouts = 12000;
+            break;
+
+        case "kyu":
+            name = "Kyu";
+            playouts = 400;
+            break;
+
+        case "basic":
+            name = "Basic";
+            playouts = 125;
+            break;
+
+        case "hane":
+            name = "Hane";
+            playouts = 1000;
+            break;
+
+        case "tenuki":
+            name = "Tenuki";
+            playouts = 3000;
+            break;
+    }
+
+    return (
+        <div className='DeprecatedPlanNote'>
+            <p>
+                {interpolate(
+                    pgettext(
+                        "Supporters using old plans will see this message",
+                        _("Note: You are currently on the {{name}} plan ({{playouts}} playouts), which we no longer support signing up for, however remains fully functional for you. If you cancel your plan, you will have to sign up to one of the currently offered plans if you want to become a supporter again.")
+                    ),
+                    {name, playouts}
+                )}
+            </p>
+        </div>
+    );
+}
+
 
 
 /*

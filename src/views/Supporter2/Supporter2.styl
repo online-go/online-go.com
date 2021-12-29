@@ -55,6 +55,7 @@
             height: 1.5rem;
             margin-left: 0.5rem;
             margin-right: 0.5rem;
+            word-wrap: nowrap;
         }
 
         .stripe, .paddle, .paypal {
@@ -63,7 +64,7 @@
             margin-left: 0.5rem;
             margin-right: 0.5rem;
             display: inline-block;
-            width: 2rem;
+            width: 8rem;
         }
 
         .last4, .expiration {
@@ -80,6 +81,13 @@
     .Subscription {
         text-align: center;
 
+        h3 {
+            text-align: left;
+        }
+
+        button { 
+            margin: 0.5rem;
+        }
     }
 
     .Prices {
@@ -119,6 +127,12 @@
             flex: 1;
         }
 
+        .already-supporter {
+            display: block;
+            margin: 0.5rem;
+            min-height: 6rem;
+        }
+
         ul {
             flex: 1;
             max-width: 15rem;
@@ -151,6 +165,17 @@
         b.green {
             color: #99FB21;
         }
+    }
+
+    .DeprecatedPlanNote {
+        background-color: #0097C7;
+        max-width: 40rem;
+        text-align: center;
+        border-radius: 0.7rem;
+        font-family: "Tahoma", sans-serif;
+        background-color: #0097C7;
+        color: #ffffff;
+        padding: 1rem;
     }
 
     .SiteSupporterText {
