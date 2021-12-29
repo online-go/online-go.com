@@ -412,7 +412,9 @@ interface PriceBoxProperties {
 }
 
 function PriceBox({price, currency, interval, config, account_id, overrides}: PriceBoxProperties): JSX.Element {
+    const user = data.get('user');
     const [mor_locations, setMorLocations] = React.useState<string[]>(data.get('config.billing_mor_locations') || []);
+    const [disabled, setDisabled]: [boolean, React.Dispatch<React.SetStateAction<boolean>>] = React.useState(user.id !== account_id);
     const amount = overrides.plan?.[price.slug]?.[interval] || price.price[currency][interval];
     const paypal_amount = zero_decimal_to_paypal_amount_string(currency, amount);
     const cdn_release = data.get("config.cdn_release");
@@ -439,6 +441,8 @@ function PriceBox({price, currency, interval, config, account_id, overrides}: Pr
             swal("Error", "Stripe is not configured", "error").catch(swal.noop);
             return;
         }
+
+        setDisabled(true);
 
         post("/billing/stripe/checkout", {
             'interval': 'month',
@@ -468,10 +472,12 @@ function PriceBox({price, currency, interval, config, account_id, overrides}: Pr
             });
             */
         })
-        .catch(errorAlerter);
+        .catch(errorAlerter)
+        .finally(() => setDisabled(false));
     }
 
     function paddle_subscribe() {
+        setDisabled(true);
         console.log("Paddle Checkout");
         if (!Paddle) {
             swal("Error", "Paddle is not loaded. Please try again later.", "error").catch(swal.noop);
@@ -523,7 +529,9 @@ function PriceBox({price, currency, interval, config, account_id, overrides}: Pr
             <h3>{formatMoney(currency, amount)} / {interval === 'month' ? _("month") : _("year")}</h3>
             <div className='payment-buttons'>
                 {(show_stripe || null) &&
-                    <button className='sign-up' onClick={stripe_subscribe}>{_("Sign up")} <i className='fa fa-credit-card' /></button>
+                    <button className='sign-up' onClick={stripe_subscribe} disabled={disabled}>
+                        {_("Sign up")} <i className='fa fa-credit-card' />
+                    </button>
                 }
 
                 {(show_paypal || null) &&
@@ -542,14 +550,16 @@ function PriceBox({price, currency, interval, config, account_id, overrides}: Pr
                         <input type="hidden" name="modify" value="0" />
                         <input type="hidden" name="notify_url" value={`https://${data.get("config.paypal_this_server")}/billing/paypal/ipn`} />
 
-                        <button type="submit" className='paypal-button'>
+                        <button type="submit" className='paypal-button' disabled={disabled}>
                             <img src={`${cdn_release}/img/new_paypal.png`} />
                         </button>
                     </form>
                 }
 
                 {(show_paddle || null) &&
-                    <button className='paddle-sign-up' onClick={paddle_subscribe}>{_("Sign up")}</button>
+                    <button className='paddle-sign-up' onClick={paddle_subscribe} disabled={disabled}>
+                        {_("Sign up")}
+                    </button>
                 }
             </div>
 
