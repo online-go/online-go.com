@@ -19,4 +19,5 @@ module.exports = {
         "src",
         "node_modules"
     ],
+    "setupFiles": ["./setup-jest.js"],
 }
