@@ -21,14 +21,13 @@ import {browserHistory} from "ogsHistory";
 import {_, pgettext} from "translate";
 import {post} from "requests";
 import {shouldOpenNewTab, errorAlerter, alertModerator, ignore} from "misc";
-import {rankString, getUserRating, is_novice, humble_rating} from "rank_utils";
+import {getUserRating, humble_rating} from "rank_utils";
 import * as player_cache from "player_cache";
 import {icon_size_url} from "PlayerIcon";
 import {termination_socket} from "sockets";
 import * as data from "data";
 import {close_all_popovers} from "popover";
 import {Flag} from "Flag";
-import {openModal} from 'Modal';
 import {ban, shadowban, remove_shadowban, remove_ban} from "Moderator";
 import {openSupporterAdminModal} from "SupporterAdmin";
 import {challenge} from "ChallengeModal";
@@ -75,7 +74,7 @@ interface PlayerDetailsState {
 }
 
 export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, PlayerDetailsState> {
-    constructor(props) {
+    constructor(props: PlayerDetailsProperties) {
         super(props);
         this.state = this.blankState();
         const player = player_cache.lookup(this.props.playerId);
@@ -101,7 +100,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
             error: null,
         };
     }
-    resolve(player_id) {
+    resolve(player_id: number) {
         this.setState({resolved: false});
         player_cache.fetch(
             this.props.playerId,
@@ -124,7 +123,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
             }
         });
     }
-    UNSAFE_componentWillReceiveProps(new_props) {
+    UNSAFE_componentWillReceiveProps(new_props: PlayerDetailsProperties) {
         if (new_props.playerId !== this.props.playerId) {
             const player = player_cache.lookup(new_props.playerId);
             let new_state = this.blankState();
@@ -145,7 +144,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
         close_friend_list();
     };
 
-    gotoPlayerView = (ev) => {
+    gotoPlayerView = (ev: React.MouseEvent<HTMLButtonElement>) => {
         this.close_all_modals_and_popovers();
 
         const url = `/player/${this.props.playerId}/${this.state.username}`;
@@ -155,39 +154,48 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
             browserHistory.push(url);
         }
     };
-    challenge = (_ev) => {
+    challenge = () => {
         challenge(this.props.playerId);
         this.close_all_modals_and_popovers();
     };
-    message = (_ev) => {
+    message = () => {
         getPrivateChat(this.props.playerId).open();
         this.close_all_modals_and_popovers();
     };
-    report = (_ev) => {
+    report = () => {
         alertModerator({user: this.props.playerId});
         this.close_all_modals_and_popovers();
     };
-    block = (ev) => {
+    block = (ev: React.MouseEvent<HTMLButtonElement>) => {
         const controls = openBlockPlayerControls(ev, this.props.playerId);
         controls.on("close", () => {
             this.close_all_modals_and_popovers();
         });
     };
-    ban = (_ev) => {
+    ban = () => {
         ban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     };
-    shadowban = (_ev) => {
+    shadowban = () => {
         shadowban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     };
-    removeShadowban = (_ev) => {
+    removeShadowban = () => {
         remove_shadowban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     };
-    removeBan = (_ev) => {
+    removeBan = () => {
         remove_ban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     };
     openSupporterAdmin = () => {
         this.close_all_modals_and_popovers();
         openSupporterAdminModal(this.props.playerId);
+    };
+    openSupporterPage = (ev: React.MouseEvent<HTMLButtonElement>) => {
+        this.close_all_modals_and_popovers();
+        const url = `/user/supporter2/${this.props.playerId}/${this.state.username}`;
+        if (shouldOpenNewTab(ev)) {
+            window.open(url, "_blank");
+        } else {
+            browserHistory.push(url);
+        }
     };
 
     editPlayerNotes = () => {
@@ -329,6 +337,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                 { ((user.is_superuser && this.props.playerId > 0) || null) &&
                     <div className="actions">
                         <button className="xs noshadow" onClick={this.openSupporterAdmin}><i className="fa fa-star"/>Supporter Admin</button>
+                        <button className="xs noshadow" onClick={this.openSupporterPage}><i className="fa fa-star"/>Supporter Page</button>
                     </div>
                 }
             </div>
