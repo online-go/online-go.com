@@ -18,10 +18,16 @@
 import {termination_socket} from "sockets";
 import {getUserRating} from 'rank_utils';
 
-let active_bots = {};
-let _bots_list = [];
 
-export function bots_list(): Array<any> {
+interface Bot {
+    id: number;
+    username: string;
+}
+
+let active_bots: {[id: string]: Bot} = {};
+let _bots_list: Bot[] = [];
+
+export function bots_list(): Array<Bot> {
     return _bots_list;
 }
 export function one_bot() {
@@ -34,7 +40,7 @@ export function bot_count() {
     return Object.keys(active_bots).length;
 }
 
-termination_socket.on("active-bots", (bots) => {
+termination_socket.on("active-bots", (bots: {[id: string]: Bot}) => {
     active_bots = bots;
     _bots_list = [];
     for (const id in bots) {
