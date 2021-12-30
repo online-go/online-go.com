@@ -25,21 +25,20 @@ import { RouteComponentProps } from "react-router";
 
 type UserByNameProperties = RouteComponentProps<{username: string}>;
 
-export function UserByName(props: UserByNameProperties) {
+export function UserByName(props: UserByNameProperties): JSX.Element {
     const username = props.match.params.username;
     const [user_id, set_user_id] = React.useState<number>(null);
 
-    const doFetch = async(username: string) => {
-        try {
-            const res = await get("players", { username: username });
+    const doFetch = (username: string) => {
+        get("players", {username: username})
+        .then((res) => {
             if (res.results.length) {
                 set_user_id(res.results[0].id);
             } else {
                 set_user_id(-1);
             }
-        } catch (args) {
-            return errorAlerter(args);
-        }
+        })
+        .catch(errorAlerter);
     };
 
     React.useEffect(() => {
@@ -49,7 +48,7 @@ export function UserByName(props: UserByNameProperties) {
             return;
         }
 
-        void doFetch(username);
+        doFetch(username);
     }, [username]);
 
     if (user_id) {
