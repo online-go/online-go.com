@@ -1026,6 +1026,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const variation_move_number = cur_move.move_number !== trunk_move.move_number ? cur_move.move_number : -1;
         const worst_move_list = getWorstMoves(this.props.game.goban.engine.move_tree, this.ai_review);
 
+        console.log(this.ai_review);
+        console.log(worst_move_list);
+
         return (
             <div className='AIReview'>
                 <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
