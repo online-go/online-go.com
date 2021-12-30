@@ -29,10 +29,7 @@ jest.mock("./User", () => {
 });
 
 test('Renders User page if found in cache', async() => {
-    // Mocking this because no easy way to clear and update player_cache without
-    // API fetches
-    jest.spyOn(player_cache, "lookup_by_username")
-        .mockImplementation(() => { return {id: 12345, username: "benjito"}; });
+    player_cache.update({id: 12345, username: "benjito"});
     jest.spyOn(requests, "get")
         .mockImplementation(() => { return Promise.resolve({results: [{player_id: 12345}]}); });
 
