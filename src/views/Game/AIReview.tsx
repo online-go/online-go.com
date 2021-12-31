@@ -1024,12 +1024,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const trunk_move = cur_move.getBranchPoint();
         const move_number = trunk_move.move_number;
         const variation_move_number = cur_move.move_number !== trunk_move.move_number ? cur_move.move_number : -1;
-        
+
         let black_moves = 0;
-        let white_moves = 0
+        let white_moves = 0;
 
         let worst_move_list = getWorstMoves(this.props.game.goban.engine.move_tree, this.ai_review, 100);
-        worst_move_list = worst_move_list.filter(move => move.player === 1 && black_moves++ < 3 || move.player === 2 && white_moves++ < 3)
+        worst_move_list = worst_move_list.filter(move => move.player === 1 && black_moves++ < 3 || move.player === 2 && white_moves++ < 3);
 
         return (
             <div className='AIReview'>
@@ -1173,7 +1173,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                             </span>
                                         </div>
                                     }
-                                </div>                                    
+                                </div>
                                 {this.ai_review.scores &&
                                     <div className='win-score-toggler'>
                                         <span className='win-toggle' onClick={() => {
@@ -1257,7 +1257,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         return (
             <div className='worst-move-list-container'>
                 <div className='move-list'>
-                    
                     {lst.slice(0, this.state.worst_moves_shown).map((de, idx) => {
                         const pretty_coords = this.props.game.goban.engine.prettyCoords(de.move.x, de.move.y);
                         return (
