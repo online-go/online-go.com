@@ -90,7 +90,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             use_score: preferences.get('ai-review-use-score'),
             // TODO: allow users to view more than 3 of these key moves
             // See https://forums.online-go.com/t/top-3-moves-score-a-better-metric/32702/15
-            worst_moves_shown: 3,
+            worst_moves_shown: 6,
             table_set: false,
             table_hidden : preferences.get('ai-summary-table-show'),
         };
@@ -1024,7 +1024,29 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const trunk_move = cur_move.getBranchPoint();
         const move_number = trunk_move.move_number;
         const variation_move_number = cur_move.move_number !== trunk_move.move_number ? cur_move.move_number : -1;
-        const worst_move_list = getWorstMoves(this.props.game.goban.engine.move_tree, this.ai_review);
+        
+        let worst_move_list = getWorstMoves(this.props.game.goban.engine.move_tree, this.ai_review, 100);
+
+        // let worst_move_list = new Array();
+
+        // let black_moves = 0;
+        // let white_moves = 0
+        // for (let i = 0; i < worst_move_list.length; i++) {
+        //     const move = worst_move_list[i];
+        //     if (move.player === 1 && black_moves < 3) {
+        //         worst_move_list.push(move)
+        //         black_moves++;
+        //     }
+        //     if (move.player === 2 && white_moves < 3) {
+        //         worst_move_list.push(move)
+        //         white_moves++;
+        //     }
+        // }
+
+        const worst_black_moves = worst_move_list.filter(move => (move.player === 1))
+        const worst_white_moves = worst_move_list.filter(move => move.player === 2)
+
+        worst_move_list = worst_black_moves.slice(0,3).concat(worst_white_moves.slice(0,3))
 
         console.log(this.ai_review);
         console.log(worst_move_list);
@@ -1248,13 +1270,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             return null;
         }
 
-        const more_ct = Math.max(0, lst.length - 3);
+        const more_ct = Math.max(0, lst.length - this.state.worst_moves_shown);
 
         return (
             <div className='worst-move-list-container'>
                 <div className='move-list'>
                     {pgettext("Moves that were the biggest mistakes, according to the AI", "Key moves")}:
-                    {lst.slice(0, 3).map((de, idx) => {
+                    {lst.slice(0, this.state.worst_moves_shown).map((de, idx) => {
                         const pretty_coords = this.props.game.goban.engine.prettyCoords(de.move.x, de.move.y);
                         return (
                             <span
