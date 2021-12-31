@@ -1179,6 +1179,21 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                             .map(m => m.move_number - 1)
                                     }
                                 />
+                                <div className = "worst-moves-summary-toggle-container">
+                                    {this.renderWorstMoveList(worst_move_list)}
+                                    {(user.is_moderator || null) &&
+                                        <div className = 'ai-summary-toggler'>
+                                            <span><i className="fa fa-table"></i></span>
+                                            <span>
+                                                <Toggle checked={this.state.table_hidden} onChange={b => {
+                                                    preferences.set('ai-summary-table-show', b);
+                                                    this.setState({table_hidden: b});
+                                                    //console.log(this.state.table_hidden);
+                                                }}/>
+                                            </span>
+                                        </div>
+                                    }
+                                </div>                                    
                                 {this.ai_review.scores &&
                                     <div className='win-score-toggler'>
                                         <span className='win-toggle' onClick={() => {
@@ -1199,21 +1214,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                         }}>{pgettext("Display the game score that the AI estimates", "Score")}</span>
                                     </div>
                                 }
-                                <div className = "worst-moves-summary-toggle-container">
-                                    {this.renderWorstMoveList(worst_move_list)}
-                                    {(user.is_moderator || null) &&
-                                        <div className = 'ai-summary-toggler'>
-                                            <span><i className="fa fa-table"></i></span>
-                                            <span>
-                                                <Toggle checked={this.state.table_hidden} onChange={b => {
-                                                    preferences.set('ai-summary-table-show', b);
-                                                    this.setState({table_hidden: b});
-                                                    //console.log(this.state.table_hidden);
-                                                }}/>
-                                            </span>
-                                        </div>
-                                    }
-                                </div>
                             </React.Fragment>
                         }
 
@@ -1272,10 +1272,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         const more_ct = Math.max(0, lst.length - this.state.worst_moves_shown);
 
+        /* {pgettext("Moves that were the biggest mistakes, according to the AI", "Key moves")}: */
+
         return (
             <div className='worst-move-list-container'>
                 <div className='move-list'>
-                    {pgettext("Moves that were the biggest mistakes, according to the AI", "Key moves")}:
+                    
                     {lst.slice(0, this.state.worst_moves_shown).map((de, idx) => {
                         const pretty_coords = this.props.game.goban.engine.prettyCoords(de.move.x, de.move.y);
                         return (
