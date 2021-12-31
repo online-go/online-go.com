@@ -1025,31 +1025,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const move_number = trunk_move.move_number;
         const variation_move_number = cur_move.move_number !== trunk_move.move_number ? cur_move.move_number : -1;
         
-        let orig_worst_move_list = getWorstMoves(this.props.game.goban.engine.move_tree, this.ai_review, 100);
-
-        let worst_move_list = new Array();
-
         let black_moves = 0;
         let white_moves = 0
-        for (let i = 0; i < orig_worst_move_list.length; i++) {
-            const move = orig_worst_move_list[i];
-            if (move.player === 1 && black_moves < 3) {
-                worst_move_list.push(move)
-                black_moves++;
-            }
-            if (move.player === 2 && white_moves < 3) {
-                worst_move_list.push(move)
-                white_moves++;
-            }
-        }
 
-        // const worst_black_moves = worst_move_list.filter(move => (move.player === 1))
-        // const worst_white_moves = worst_move_list.filter(move => move.player === 2)
-
-        // worst_move_list = worst_black_moves.slice(0,3).concat(worst_white_moves.slice(0,3))
-
-        console.log(this.ai_review);
-        console.log(worst_move_list);
+        let worst_move_list = getWorstMoves(this.props.game.goban.engine.move_tree, this.ai_review, 100);
+        worst_move_list = worst_move_list.filter(move => move.player === 1 && black_moves++ < 3 || move.player === 2 && white_moves++ < 3)
 
         return (
             <div className='AIReview'>
