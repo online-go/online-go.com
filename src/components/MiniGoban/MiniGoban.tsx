@@ -159,30 +159,9 @@ export class MiniGoban extends React.Component<MiniGobanProps, MiniGobanState> {
         }
 
         if (this.props.title) {
-
-            // we have to cook up a `result` object to pass to getGameResultText
-            let result: any;
-
-            if (this.goban.engine.winner === this.goban.engine.black_player_id) {
-                result = {
-                    black_lost: false,
-                    white_lost: true
-                };
-            } else if (this.goban.engine.winner === this.goban.engine.white_player_id) {
-                result = {
-                    black_lost: true,
-                    white_lost: false
-                };
-            } else {
-                result = {
-                    black_lost: true,
-                    white_lost: true
-                };
-            }
-
-            result.outcome = this.goban.engine.outcome;
-
-            const result_string = getGameResultText(result);
+            const result_string = getGameResultText(this.goban.engine.outcome,
+                this.goban.engine.winner !== this.goban.engine.white_player_id,
+                this.goban.engine.winner !== this.goban.engine.black_player_id);
 
             this.setState({
                 game_name: this.goban.engine.game_name || "",
