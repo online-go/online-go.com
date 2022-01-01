@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router-dom";
+import {Link, RouteComponentProps} from "react-router-dom";
 import {_, pgettext, interpolate, current_language} from "translate";
 import {del, put, post, get} from "requests";
 import {ignore, errorAlerter} from "misc";
@@ -37,9 +37,6 @@ declare let ogs_release;
 declare let StripeCheckout;
 declare let MODE;
 const ReactNumberFormat: any = NumberFormat;
-
-interface SupporterProperties {
-}
 
 const amount_steps = {
     'month': [
@@ -305,7 +302,7 @@ interface SupporterState {
     amount_step?: number;
 }
 
-export class Supporter extends React.PureComponent<SupporterProperties, SupporterState> {
+export class Supporter extends React.PureComponent<RouteComponentProps, SupporterState> {
     refs: {
         ccnum;
         cccvc;
@@ -315,7 +312,7 @@ export class Supporter extends React.PureComponent<SupporterProperties, Supporte
         email;
     };
 
-    constructor(props) {
+    constructor(props: RouteComponentProps) {
         super(props);
         if (data.get('user').anonymous) {
             this.state = {
