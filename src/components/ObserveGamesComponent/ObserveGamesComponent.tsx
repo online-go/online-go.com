@@ -128,7 +128,7 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
         if (this.props.updateTitle) {
             window.document.title = _("Games");
         }
-        console.log("Channel: ", this.channel);
+        //console.log("Channel: ", this.channel);
         if (this.channel) {
             comm_socket.on(`gamelist-count-${this.channel}`, this.updateCounts);
         } else {
@@ -373,7 +373,6 @@ export class ObserveGamesComponent extends React.PureComponent<ObserveGamesCompo
         );
 
     }
-
 
     private renderFilters(): JSX.Element {
         return (
