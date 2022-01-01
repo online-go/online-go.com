@@ -98,7 +98,6 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     refs: {
         goban;
         goban_container;
-        next_link;
 
         collection;
         name;
@@ -125,6 +124,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     transform = new PuzzleTransform(new TransformSettings());
     navigation = new PuzzleNavigation();
     editor: PuzzleEditor;
+    next_link: React.RefObject<HTMLAnchorElement>;
 
     set_analyze_tool: any = {};
 
@@ -132,6 +132,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         super(props);
 
         this.editor  = new PuzzleEditor(this, this.transform);
+        this.next_link = React.createRef<HTMLAnchorElement>();
 
         this.state = {
             view_mode: goban_view_mode(),
@@ -373,7 +374,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         });
         setTimeout(() => {
             const position = $(window).scrollTop();
-            $(this.refs.next_link).focus();
+            $(this.next_link.current).focus();
             $(window).scrollTop(position);
         }, 1);
     };
@@ -897,7 +898,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                 {(show_correct || null) &&
                 <div className='actions'>
                     {(next_id !== 0 && next_id !== puzzle.id || null) &&
-                    <Link ref="next_link" to={`/puzzle/${next_id}`} className="btn primary">{_("Next")}</Link>
+                    <Link ref={this.next_link} to={`/puzzle/${next_id}`} className="btn primary">{_("Next")}</Link>
                     }
                     {(next_id === 0 || null) &&
                         <div>
