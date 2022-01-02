@@ -20,64 +20,43 @@ import {get} from 'requests';
 import {errorAlerter} from "misc";
 import * as player_cache from "player_cache";
 import {User} from './User';
+import { RouteComponentProps } from "react-router";
 
 
-interface UserByNameProperties {
-    match: {
-        params: any;
-    };
-}
+type UserByNameProperties = RouteComponentProps<{username: string}>;
 
-interface UserByNameState { user_id?: number }
+export function UserByName(props: UserByNameProperties): JSX.Element {
+    const username = props.match.params.username;
+    const [user_id, set_user_id] = React.useState<number>(null);
 
-export class UserByName extends React.PureComponent<UserByNameProperties, UserByNameState> {
-    constructor(props) {
-        super(props);
-
-        const user = player_cache.lookup_by_username(props.match.params.username);
-
-        this.state = {
-            user_id: user ? user.id : null
-        };
-    }
-
-    componentDidMount() {
-        if (!this.state.user_id) {
-            this.doFetch(this.props.match.params.username);
-        }
-    }
-
-    UNSAFE_componentWillReceiveProps(next_props) {
-        if (next_props.match.params.username !== this.props.match.params.username) {
-            const user = player_cache.lookup_by_username(next_props.match.params.username);
-
-            this.setState({user_id: user ? user.id : null});
-
-            if (!user || !user.id) {
-                this.doFetch(next_props.match.params.username);
-            }
-        }
-    }
-
-    doFetch(username: string) {
+    const doFetch = (username: string) => {
         get("players", {username: username})
         .then((res) => {
             if (res.results.length) {
-                this.setState({
-                    user_id: res.results[0].id
-                });
+                set_user_id(res.results[0].id);
             } else {
-                this.setState({user_id: -1});
+                set_user_id(-1);
             }
         })
         .catch(errorAlerter);
-    }
+    };
 
-    render() {
-        if (this.state.user_id) {
-            return <User match={{params: {user_id: this.state.user_id}}}/>;
+    React.useEffect(() => {
+        const user_id = player_cache.lookup_by_username(username)?.id;
+        if (user_id != null) {
+            set_user_id(user_id);
+            return;
         }
-        return null;
+
+        doFetch(username);
+    }, [username]);
+
+    if (user_id) {
+        return <User
+            match={{ params: { user_id: user_id.toString() } }}
+            location={props.location}
+        />;
     }
+    return null;
 }
 
