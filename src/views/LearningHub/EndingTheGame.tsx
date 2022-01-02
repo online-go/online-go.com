@@ -16,22 +16,31 @@
  */
 
 import * as React from "react";
-import { PuzzleConfig, GoEngineConfig } from 'goban';
-import { LearningPage, DummyPage } from './LearningPage';
+import { PuzzleConfig, GoEngineConfig } from "goban";
+import { LearningPage, DummyPage } from "./LearningPage";
 import { _, pgettext, interpolate } from "translate";
-import { LearningHubSection } from './LearningHubSection';
+import { LearningHubSection } from "./LearningHubSection";
 
 export class EndingTheGame extends LearningHubSection {
     static pages(): Array<typeof LearningPage> {
-        return [
-            Page1,
-            Page2
-        ];
+        return [Page1, Page2];
     }
 
-    static section(): string { return "ending-the-game"; }
-    static title(): string { return pgettext("Tutorial section name on learning how to end the game", "End the game!"); }
-    static subtext(): string { return pgettext("Tutorial section subtext on learning how to end the game", "Pass and pass"); }
+    static section(): string {
+        return "ending-the-game";
+    }
+    static title(): string {
+        return pgettext(
+            "Tutorial section name on learning how to end the game",
+            "End the game!",
+        );
+    }
+    static subtext(): string {
+        return pgettext(
+            "Tutorial section subtext on learning how to end the game",
+            "Pass and pass",
+        );
+    }
 }
 
 class Page1 extends LearningPage {
@@ -42,20 +51,36 @@ class Page1 extends LearningPage {
     }
 
     text() {
-        return _("When you don't think there are any more good moves to make, to end the game both players pass their turns. This game is finished. Click pass to end it.");
+        return _(
+            "When you don't think there are any more good moves to make, to end the game both players pass their turns. This game is finished. Click pass to end it.",
+        );
     }
     button() {
-        return <div>
-            <button className='primary' onClick={() => { this.pass_pressed = true; this.onUpdate(); }}>{_("Pass")}</button>
-        </div>;
+        return (
+            <div>
+                <button
+                    className="primary"
+                    onClick={() => {
+                        this.pass_pressed = true;
+                        this.onUpdate();
+                    }}
+                >
+                    {_("Pass")}
+                </button>
+            </div>
+        );
     }
     config(): PuzzleConfig {
         return {
             mode: "puzzle",
-            initial_state: {black: "fafbgbhbgdhdcedeheiebfdfefgfhfagcgegfggg", white: "eahaebibbcccecfcgchcicadcdddfdidaebeeefegeafff"},
+            initial_state: {
+                black: "fafbgbhbgdhdcedeheiebfdfefgfhfagcgegfggg",
+                white: "eahaebibbcccecfcgchcicadcdddfdidaebeeefegeafff",
+            },
             move_tree: this.makePuzzleMoveTree(
-                [ "b6" /* dummy to trigger fail */ ], [ ]
-            )
+                ["b6" /* dummy to trigger fail */],
+                [],
+            ),
         };
     }
 
@@ -72,13 +97,18 @@ class Page2 extends LearningPage {
     }
 
     text() {
-        return _("After both players have passed, you enter a \"Stone Removal Phase\", where you can remove obviously dead stones from play. You could capture these in game as well, but most players opt not to because it's quicker. Remove the dead black stones by clicking them. ");
+        return _(
+            'After both players have passed, you enter a "Stone Removal Phase", where you can remove obviously dead stones from play. You could capture these in game as well, but most players opt not to because it\'s quicker. Remove the dead black stones by clicking them. ',
+        );
     }
     config(): PuzzleConfig | GoEngineConfig {
         return {
             mode: "play",
             phase: "stone removal",
-            initial_state: {black: "fafbgbhbgdhdcedeheiebfdfefgfhfagcgegfggg", white: "eahaebibbcccecfcgchcicadcdddfdidaebeeefegeafff"},
+            initial_state: {
+                black: "fafbgbhbgdhdcedeheiebfdfefgfhfagcgegfggg",
+                white: "eahaebibbcccecfcgchcicadcdddfdidaebeeefegeafff",
+            },
         };
     }
 

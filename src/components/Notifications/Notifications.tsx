@@ -16,20 +16,20 @@
  */
 
 import * as React from "react";
-import {comm_socket} from "sockets";
+import { comm_socket } from "sockets";
 import * as data from "data";
 import * as preferences from "preferences";
-import {_, interpolate, pgettext} from "translate";
-import {ogs_has_focus, shouldOpenNewTab, dup, deepEqual} from "misc";
-import {isLiveGame} from "TimeControl";
-import {post, del} from "requests";
-import {browserHistory} from "ogsHistory";
-import {challenge_text_description} from "ChallengeModal";
-import {Player} from "Player";
-import {FabX, FabCheck} from "material";
-import {TypedEventEmitter} from "TypedEventEmitter";
-import {toast} from 'toast';
-import {sfx} from 'sfx';
+import { _, interpolate, pgettext } from "translate";
+import { ogs_has_focus, shouldOpenNewTab, dup, deepEqual } from "misc";
+import { isLiveGame } from "TimeControl";
+import { post, del } from "requests";
+import { browserHistory } from "ogsHistory";
+import { challenge_text_description } from "ChallengeModal";
+import { Player } from "Player";
+import { FabX, FabCheck } from "material";
+import { TypedEventEmitter } from "TypedEventEmitter";
+import { toast } from "toast";
+import { sfx } from "sfx";
 import { Goban } from "goban";
 
 declare let Notification: any;
@@ -37,7 +37,7 @@ declare let Notification: any;
 interface Events {
     "turn-count": number;
     "total-count": number;
-    "notification": any;
+    notification: any;
     "notification-list-updated": never;
     "notification-count": number;
 }
@@ -52,9 +52,12 @@ function getCurrentGameId() {
 }
 
 function formatTime(seconds) {
-    const days = Math.floor(seconds / 86400); seconds -= days * 86400;
-    const hours = Math.floor(seconds / 3600); seconds -= hours * 3600;
-    const minutes = Math.floor(seconds / 60); seconds -= minutes * 60;
+    const days = Math.floor(seconds / 86400);
+    seconds -= days * 86400;
+    const hours = Math.floor(seconds / 3600);
+    seconds -= hours * 3600;
+    const minutes = Math.floor(seconds / 60);
+    seconds -= minutes * 60;
 
     function plurality(num, single, plural) {
         if (num > 0) {
@@ -71,7 +74,7 @@ function formatTime(seconds) {
     }
 
     if (hours > 4) {
-        return (hours + 1) + " " + _("hours");
+        return hours + 1 + " " + _("hours");
     }
 
     if (hours) {
@@ -102,32 +105,41 @@ $(window).on("storage", (event) => {
 
 export function emitNotification(title, body, cb?) {
     try {
-        if (!preferences.get('desktop-notifications')) {
+        if (!preferences.get("desktop-notifications")) {
             return;
         }
 
-        if (!preferences.get("asked-to-enable-desktop-notifications") && Notification.permission === "default") {
+        if (
+            !preferences.get("asked-to-enable-desktop-notifications") &&
+            Notification.permission === "default"
+        ) {
             preferences.set("asked-to-enable-desktop-notifications", true);
             const t = toast(
                 <div>
-                    {_("Hi! While you're using OGS, you can enable Desktop Notifications to be notified when your name is mentioned in chat or you receive a game challenge. Would you like to enable them? (You can always change your answer under settings)")}
+                    {_(
+                        "Hi! While you're using OGS, you can enable Desktop Notifications to be notified when your name is mentioned in chat or you receive a game challenge. Would you like to enable them? (You can always change your answer under settings)",
+                    )}
                     <div>
-                        <FabCheck onClick={() => {
-                            try {
-                                Notification.requestPermission().then((perm) => {
-                                    emitNotification(title, body, cb);
-                                }).catch((err) => console.error(err));
-                            } catch (e) {
-                                /* deprecated usage, but only way supported on safari currently */
-                                Notification.requestPermission((perm) => {
-                                    emitNotification(title, body, cb);
-                                });
-                            }
-                            t.close();
-                        }}/>
-                        <FabX onClick={() => t.close()}/>
+                        <FabCheck
+                            onClick={() => {
+                                try {
+                                    Notification.requestPermission()
+                                        .then((perm) => {
+                                            emitNotification(title, body, cb);
+                                        })
+                                        .catch((err) => console.error(err));
+                                } catch (e) {
+                                    /* deprecated usage, but only way supported on safari currently */
+                                    Notification.requestPermission((perm) => {
+                                        emitNotification(title, body, cb);
+                                    });
+                                }
+                                t.close();
+                            }}
+                        />
+                        <FabX onClick={() => t.close()} />
                     </div>
-                </div>
+                </div>,
             );
 
             return;
@@ -137,7 +149,7 @@ export function emitNotification(title, body, cb?) {
             //console.log('Not emitting notification, ogs has focus');
             return;
         }
-        if ((Date.now()) - boot_time > 5000) {
+        if (Date.now() - boot_time > 5000) {
             /* We're going to debounce floods of notifications by waiting a minimum of 1/20th
              * of a second before showing a notification. We then further debounce notifications
              * of the same thing coming from multiple tabs by delaying a random amount of time
@@ -154,10 +166,12 @@ export function emitNotification(title, body, cb?) {
             if (notification_timeout) {
                 clearTimeout(notification_timeout);
             }
-            const delay = Math.round((Math.random() * 0.2 + 0.05) * 1000); /* sleep 0.05-0.15 seconds */
+            const delay = Math.round(
+                (Math.random() * 0.2 + 0.05) * 1000,
+            ); /* sleep 0.05-0.15 seconds */
             notification_timeout = setTimeout(() => {
                 notification_timeout = null;
-                if ((title + body) in sent) {
+                if (title + body in sent) {
                     //console.log("Debouncing notification")
                     return;
                 }
@@ -168,15 +182,13 @@ export function emitNotification(title, body, cb?) {
                 }
 
                 try {
-                    const notification = new Notification(title,
-                        {
-                            body: body,
-                            icon: "https://cdn.online-go.com/favicon.ico",
-                            dir: "auto",
-                            lang: "",
-                            tag: "ogs"
-                        }
-                    );
+                    const notification = new Notification(title, {
+                        body: body,
+                        icon: "https://cdn.online-go.com/favicon.ico",
+                        dir: "auto",
+                        lang: "",
+                        tag: "ogs",
+                    });
 
                     if (cb) {
                         notification.onclick = cb;
@@ -205,7 +217,6 @@ function silenceNotificationsFor5Seconds() {
     boot_time = Date.now();
 }
 
-
 class NotificationManager {
     user;
     notifications;
@@ -230,7 +241,7 @@ class NotificationManager {
         browserHistory.listen(this.onNavigate);
     }
     setUser(user) {
-        if (this.user && (user.id === this.user.id)) {
+        if (this.user && user.id === this.user.id) {
             return;
         }
         if (user && user.id <= 0) {
@@ -259,9 +270,9 @@ class NotificationManager {
             return;
         }
 
-
-        board_ids.sort((a, b) => { return a - b; });
-
+        board_ids.sort((a, b) => {
+            return a - b;
+        });
 
         let idx = -1;
 
@@ -278,10 +289,12 @@ class NotificationManager {
 
         idx = (idx + 1 + this.turn_offset) % board_ids.length;
 
-
         // open a new tab if the user asked for it, or if we must protect against disconnection from a live game
         // (there's no point in opening a new tab if they only have one game, because it will be this same game)
-        if (ev && shouldOpenNewTab(ev) || (this.lookingAtOurLiveGame() && board_ids.length > 1)) {
+        if (
+            (ev && shouldOpenNewTab(ev)) ||
+            (this.lookingAtOurLiveGame() && board_ids.length > 1)
+        ) {
             ++this.turn_offset;
             window.open("/game/" + board_ids[idx], "_blank");
         } else {
@@ -299,11 +312,21 @@ class NotificationManager {
             return false;
         }
         const player_id = goban.config.player_id;
-        return (goban && goban.engine.phase !== "finished" && isLiveGame(goban.engine.time_control) && (player_id === goban.config.black_player_id || player_id === goban.config.white_player_id));
+        return (
+            goban &&
+            goban.engine.phase !== "finished" &&
+            isLiveGame(goban.engine.time_control) &&
+            (player_id === goban.config.black_player_id ||
+                player_id === goban.config.white_player_id)
+        );
     };
 
     deleteNotification(notification, dont_rebuild?: boolean) {
-        comm_socket.send("notification/delete", {"player_id": this.user.id, "auth": this.auth, "notification_id": notification.id});
+        comm_socket.send("notification/delete", {
+            player_id: this.user.id,
+            auth: this.auth,
+            notification_id: notification.id,
+        });
         delete this.notifications[notification.id];
         if (!dont_rebuild) {
             this.rebuildNotificationList();
@@ -322,13 +345,20 @@ class NotificationManager {
                     continue;
             }
             delete this.notifications[id];
-            comm_socket.send("notification/delete", {"player_id": this.user.id, "auth": this.auth, "notification_id": notification.id});
+            comm_socket.send("notification/delete", {
+                player_id: this.user.id,
+                auth: this.auth,
+                notification_id: notification.id,
+            });
         }
         this.rebuildNotificationList();
     }
     connect() {
         comm_socket.on("connect", () => {
-            comm_socket.send("notification/connect", {"player_id": this.user.id, "auth": this.auth});
+            comm_socket.send("notification/connect", {
+                player_id: this.user.id,
+                auth: this.auth,
+            });
         });
         comm_socket.on("disconnect", () => {
             //console.log("Notifier disconnected from " + server);
@@ -340,8 +370,11 @@ class NotificationManager {
             }
 
             if (game.phase === "stone removal") {
-                if ((game.black.id === data.get("user").id && !game.black.accepted)
-                    || (game.white.id === data.get("user").id && !game.white.accepted)
+                if (
+                    (game.black.id === data.get("user").id &&
+                        !game.black.accepted) ||
+                    (game.white.id === data.get("user").id &&
+                        !game.white.accepted)
                 ) {
                     this.boards_to_move_on[game.id] = game;
                 }
@@ -357,21 +390,35 @@ class NotificationManager {
 
             if (this.boards_to_move_on[game.id]) {
                 const current_game_id = getCurrentGameId();
-                if ((current_game_id !== game.id || !document.hasFocus())) {
-                    if (game.avg_move_time > 3600) { // don't notify for realtime games ever
-                        emitNotification(_("Your Turn"), interpolate("It's your turn in game {{game_id}}", {'game_id': game.id}),
+                if (current_game_id !== game.id || !document.hasFocus()) {
+                    if (game.avg_move_time > 3600) {
+                        // don't notify for realtime games ever
+                        emitNotification(
+                            _("Your Turn"),
+                            interpolate("It's your turn in game {{game_id}}", {
+                                game_id: game.id,
+                            }),
                             () => {
-                                if (window.location.pathname !== "/game/" + game.id) {
+                                if (
+                                    window.location.pathname !==
+                                    "/game/" + game.id
+                                ) {
                                     browserHistory.push("/game/" + game.id);
                                 }
-                            }
+                            },
                         );
                     }
                 }
             }
 
-            this.event_emitter.emit("turn-count", Object.keys(this.boards_to_move_on).length);
-            this.event_emitter.emit("total-count", Object.keys(this.active_boards).length);
+            this.event_emitter.emit(
+                "turn-count",
+                Object.keys(this.boards_to_move_on).length,
+            );
+            this.event_emitter.emit(
+                "total-count",
+                Object.keys(this.active_boards).length,
+            );
         });
 
         comm_socket.on("notification", (notification) => {
@@ -389,29 +436,48 @@ class NotificationManager {
             }
 
             if (notification.type === "challenge") {
-                emitNotification(_("Challenge Received"), interpolate("You have received a challenge from {{username}}", {'username':  notification.user.username}));
-                if ((Date.now()) - boot_time > 5000) {
+                emitNotification(
+                    _("Challenge Received"),
+                    interpolate(
+                        "You have received a challenge from {{username}}",
+                        { username: notification.user.username },
+                    ),
+                );
+                if (Date.now() - boot_time > 5000) {
                     sfx.play("challenge_received");
                 }
             }
 
             if (notification.type === "gameDeclined") {
-                emitNotification(_("Game Declined"), _("Your game request has been declined"));
+                emitNotification(
+                    _("Game Declined"),
+                    _("Your game request has been declined"),
+                );
             }
 
             if (notification.type === "friendRequest") {
-                emitNotification(_("Friend Request"), _("You have received a new friend request"));
+                emitNotification(
+                    _("Friend Request"),
+                    _("You have received a new friend request"),
+                );
             }
 
             if (notification.type === "friendAccepted") {
-                emitNotification(_("Friend Request Accepted"), _("Your friend request has been accepted"));
+                emitNotification(
+                    _("Friend Request Accepted"),
+                    _("Your friend request has been accepted"),
+                );
             }
 
             if (notification.type === "friendDeclined") {
-                emitNotification(_("Friend Request Declined"), _("Your friend request has been declined"));
+                emitNotification(
+                    _("Friend Request Declined"),
+                    _("Your friend request has been declined"),
+                );
             }
 
-            if (notification.type === "gameStarted" ||
+            if (
+                notification.type === "gameStarted" ||
                 notification.type === "gameEnded" ||
                 notification.type === "gameEnteredStoneRemoval" ||
                 notification.type === "gameResumedFromStoneRemoval"
@@ -426,34 +492,46 @@ class NotificationManager {
                         if (notification.type === "gameStarted") {
                             title = _("Game Started");
                             body = _("Your game has started");
-                            if ((Date.now()) - boot_time > 5000) {
+                            if (Date.now() - boot_time > 5000) {
                                 sfx.play("game_started");
                                 //sfx.play("setup-bowl");
                             }
                         } else if (notification.type === "gameEnded") {
                             title = _("Game Ended");
                             body = _("Your game has ended");
-                        } else if (notification.type === "gameEnteredStoneRemoval") {
+                        } else if (
+                            notification.type === "gameEnteredStoneRemoval"
+                        ) {
                             title = _("Game Entered Stone Removal");
-                            body = _("Your game has entered Stone Removal Phase");
-                        } else if (notification.type === "gameResumedFromStoneRemoval") {
+                            body = _(
+                                "Your game has entered Stone Removal Phase",
+                            );
+                        } else if (
+                            notification.type === "gameResumedFromStoneRemoval"
+                        ) {
                             title = _("Game Resume from Stone Removal");
-                            body = _("Your opponent has resumed from the stone removal phase");
+                            body = _(
+                                "Your opponent has resumed from the stone removal phase",
+                            );
                         } else {
                             title = _("Notification from Online Go");
-                            body = _("You have received a new notification from OGS");
+                            body = _(
+                                "You have received a new notification from OGS",
+                            );
                         }
                         emitNotification(title, body);
                     }
-                } catch (e) {
-                }
+                } catch (e) {}
             }
 
             if (notification.type === "lateChatReceivedInGame") {
                 if (getCurrentGameId() === notification.game_id) {
                     this.deleteNotification(notification, true);
                 } else {
-                    emitNotification(_("Chat added to finished game"), _("Someone added some chat to your finished game"));
+                    emitNotification(
+                        _("Chat added to finished game"),
+                        _("Someone added some chat to your finished game"),
+                    );
                 }
             }
 
@@ -485,15 +563,22 @@ class NotificationManager {
 
         this.unread_notification_count = 0;
         for (const k in this.notifications) {
-            this.unread_notification_count += !(this.notifications[k].read) ? 1 : 0;
+            this.unread_notification_count += !this.notifications[k].read
+                ? 1
+                : 0;
             this.ordered_notifications.push(this.notifications[k]);
         }
 
         this.ordered_notifications.sort((a, b) => {
-            return (b.timestamp || b.time) - (a.timestamp || a.time); /* wtf why is this not uniform */
+            return (
+                (b.timestamp || b.time) - (a.timestamp || a.time)
+            ); /* wtf why is this not uniform */
         });
 
-        this.event_emitter.emit("notification-count", this.unread_notification_count);
+        this.event_emitter.emit(
+            "notification-count",
+            this.unread_notification_count,
+        );
         this.event_emitter.emit("notification-list-updated");
     }
     anyYourMove() {
@@ -504,9 +589,8 @@ class NotificationManager {
     }
 }
 
-
-
-export const notification_manager: NotificationManager = new NotificationManager();
+export const notification_manager: NotificationManager =
+    new NotificationManager();
 
 export class TurnIndicator extends React.Component<{}, any> {
     constructor(props) {
@@ -519,11 +603,11 @@ export class TurnIndicator extends React.Component<{}, any> {
         this.advanceToNextBoard = this.advanceToNextBoard.bind(this);
 
         notification_manager.event_emitter.on("turn-count", (ct) => {
-            this.setState({count: ct});
+            this.setState({ count: ct });
         });
 
         notification_manager.event_emitter.on("total-count", (tt) => {
-            this.setState({total: tt});
+            this.setState({ total: tt });
         });
     }
 
@@ -533,8 +617,22 @@ export class TurnIndicator extends React.Component<{}, any> {
 
     render() {
         return (
-            <span className="turn-indicator" onAuxClick={this.advanceToNextBoard} onClick={this.advanceToNextBoard}>
-                <span className={this.state.total > 0 ? (this.state.count > 0 ? "active count" : "inactive count") : "count"}><span>{this.state.count}</span></span>
+            <span
+                className="turn-indicator"
+                onAuxClick={this.advanceToNextBoard}
+                onClick={this.advanceToNextBoard}
+            >
+                <span
+                    className={
+                        this.state.total > 0
+                            ? this.state.count > 0
+                                ? "active count"
+                                : "inactive count"
+                            : "count"
+                    }
+                >
+                    <span>{this.state.count}</span>
+                </span>
             </span>
         );
     }
@@ -544,27 +642,45 @@ export class NotificationIndicator extends React.Component<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
-            count: notification_manager.unread_notification_count
+            count: notification_manager.unread_notification_count,
         };
         this.setCount = this.setCount.bind(this);
     }
 
     setCount(ct) {
-        this.setState({count: ct});
+        this.setState({ count: ct });
     }
 
     componentDidMount() {
-        notification_manager.event_emitter.on("notification-count", this.setCount);
+        notification_manager.event_emitter.on(
+            "notification-count",
+            this.setCount,
+        );
     }
     componentWillUnmount() {
-        notification_manager.event_emitter.off("notification-count", this.setCount);
+        notification_manager.event_emitter.off(
+            "notification-count",
+            this.setCount,
+        );
     }
 
     render() {
         return (
             <span>
-                <span className={"notification-indicator " + (this.state.count ? "active" : "")}/>
-                <span className={"notification-indicator-count " + (this.state.count ? "active" : "")}>{this.state.count}</span>
+                <span
+                    className={
+                        "notification-indicator " +
+                        (this.state.count ? "active" : "")
+                    }
+                />
+                <span
+                    className={
+                        "notification-indicator-count " +
+                        (this.state.count ? "active" : "")
+                    }
+                >
+                    {this.state.count}
+                </span>
             </span>
         );
     }
@@ -574,20 +690,25 @@ export class NotificationList extends React.Component<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
-            list: dup(notification_manager.ordered_notifications)
+            list: dup(notification_manager.ordered_notifications),
         };
 
         let update_debounce = null;
-        notification_manager.event_emitter.on("notification-list-updated", () => {
-            if (update_debounce) {
-                return;
-            }
+        notification_manager.event_emitter.on(
+            "notification-list-updated",
+            () => {
+                if (update_debounce) {
+                    return;
+                }
 
-            update_debounce = setTimeout(() => {
-                update_debounce = null;
-                this.setState({list: dup(notification_manager.ordered_notifications)});
-            }, 10);
-        });
+                update_debounce = setTimeout(() => {
+                    update_debounce = null;
+                    this.setState({
+                        list: dup(notification_manager.ordered_notifications),
+                    });
+                }, 10);
+            },
+        );
 
         this.markAllAsRead = this.markAllAsRead.bind(this);
         this.clearNotifications = this.clearNotifications.bind(this);
@@ -604,41 +725,57 @@ export class NotificationList extends React.Component<{}, any> {
     render() {
         return (
             <div className="NotificationList">
-                {this.state.list.length === 0 && <div className="no-notifications">{_("No notifications")}</div>}
-                {this.state.list.length !== 0 &&
+                {this.state.list.length === 0 && (
+                    <div className="no-notifications">
+                        {_("No notifications")}
+                    </div>
+                )}
+                {this.state.list.length !== 0 && (
                     <div className="contents">
                         <div className="list">
                             {this.state.list.map((notification, idx) => (
-                                <NotificationEntry key={notification.id} notification={notification} />
+                                <NotificationEntry
+                                    key={notification.id}
+                                    notification={notification}
+                                />
                             ))}
                         </div>
-                        <div className="clear clickable" onClick={this.clearNotifications}>
-                            {pgettext("Clear notifications", "Clear Notifications")}
+                        <div
+                            className="clear clickable"
+                            onClick={this.clearNotifications}
+                        >
+                            {pgettext(
+                                "Clear notifications",
+                                "Clear Notifications",
+                            )}
                         </div>
                     </div>
-                }
+                )}
             </div>
         );
     }
 }
 
-class NotificationEntry extends React.Component<{notification}, any> {
+class NotificationEntry extends React.Component<{ notification }, any> {
     constructor(props) {
         super(props);
         this.state = {
-            message: null
+            message: null,
         };
 
         this.del = this.del.bind(this);
         this.onError = this.onError.bind(this);
 
-        if (this.props.notification.type === 'gameOfferRejected') {
+        if (this.props.notification.type === "gameOfferRejected") {
             setTimeout(this.del, 1);
         }
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        if (deepEqual(this.props, nextProps) && deepEqual(this.state, nextState)) {
+        if (
+            deepEqual(this.props, nextProps) &&
+            deepEqual(this.state, nextState)
+        ) {
             return false;
         }
         return true;
@@ -653,11 +790,9 @@ class NotificationEntry extends React.Component<{notification}, any> {
         if (err.status === 404) {
             notification_manager.deleteNotification(this.props.notification);
         } else {
-            this.setState({message: _("An error has occurred")});
+            this.setState({ message: _("An error has occurred") });
         }
     }
-
-
 
     open = (ev) => {
         if (!$(ev.target).hasClass("fab") && !$(ev.target).hasClass("fa")) {
@@ -680,7 +815,10 @@ class NotificationEntry extends React.Component<{notification}, any> {
             case "gameEnteredStoneRemoval":
             case "gameResumedFromStoneRemoval":
                 if (notification.game_id === undefined) {
-                    console.error("Notification Error: game_id not found", notification);
+                    console.error(
+                        "Notification Error: game_id not found",
+                        notification,
+                    );
                 }
                 return `/game/${notification.game_id}`;
 
@@ -719,19 +857,29 @@ class NotificationEntry extends React.Component<{notification}, any> {
             return null;
         }
 
-        return <div className={`notification ${this.props.notification.type} ${this.isClickable() ? "clickable" : ""}`} onClick={this.open} >
-            <i className="fa fa-times-circle" onClick={this.del} />
-            {inner}
-        </div>;
+        return (
+            <div
+                className={`notification ${this.props.notification.type} ${
+                    this.isClickable() ? "clickable" : ""
+                }`}
+                onClick={this.open}
+            >
+                <i className="fa fa-times-circle" onClick={this.del} />
+                {inner}
+            </div>
+        );
     }
-
 
     renderNotification() {
         const notification = this.props.notification;
 
         switch (notification.type) {
             case "test":
-                return <div dangerouslySetInnerHTML={{__html: notification.html}}/>;
+                return (
+                    <div
+                        dangerouslySetInnerHTML={{ __html: notification.html }}
+                    />
+                );
 
             case "yourMove":
                 console.warn("yourMove notification received");
@@ -740,40 +888,78 @@ class NotificationEntry extends React.Component<{notification}, any> {
             case "challenge":
                 return (
                     <div>
-                        {_("Challenge from")} <Player user={notification.user}/>
-                        <div className="description">{challenge_text_description(notification)}</div>
+                        {_("Challenge from")}{" "}
+                        <Player user={notification.user} />
+                        <div className="description">
+                            {challenge_text_description(notification)}
+                        </div>
                         <div className="buttons">
-                            <FabX onClick={() => {
-                                this.setState({message: _("Declining")});
-                                del("me/challenges/%%", notification.challenge_id)
-                                .then(this.del)
-                                .catch(this.onError);
-                            }}/>
-                            <FabCheck onClick={() => {
-                                this.setState({message: _("Accepting")});
-                                post("me/challenges/%%/accept", notification.challenge_id, {})
-                                .then(() => {
-                                    this.del();
-                                    if (isLiveGame(notification.time_control)) {
-                                        browserHistory.push("/game/" + notification.game_id);
-                                    }
-                                })
-                                .catch(this.onError);
-                            }}/>
+                            <FabX
+                                onClick={() => {
+                                    this.setState({ message: _("Declining") });
+                                    del(
+                                        "me/challenges/%%",
+                                        notification.challenge_id,
+                                    )
+                                        .then(this.del)
+                                        .catch(this.onError);
+                                }}
+                            />
+                            <FabCheck
+                                onClick={() => {
+                                    this.setState({ message: _("Accepting") });
+                                    post(
+                                        "me/challenges/%%/accept",
+                                        notification.challenge_id,
+                                        {},
+                                    )
+                                        .then(() => {
+                                            this.del();
+                                            if (
+                                                isLiveGame(
+                                                    notification.time_control,
+                                                )
+                                            ) {
+                                                browserHistory.push(
+                                                    "/game/" +
+                                                        notification.game_id,
+                                                );
+                                            }
+                                        })
+                                        .catch(this.onError);
+                                }}
+                            />
                         </div>
                     </div>
                 );
 
             case "gameStarted":
-                return <div>{_("Game has started")}: {notification.black} v {notification.white} - {notification.name}</div>;
+                return (
+                    <div>
+                        {_("Game has started")}: {notification.black} v{" "}
+                        {notification.white} - {notification.name}
+                    </div>
+                );
 
             case "gameEnded":
                 let outcome = notification.outcome;
                 if (notification.black_lost && !notification.white_lost) {
-                    outcome = interpolate(pgettext("Game outcome: <player that won> by <result>", "%s by %s"), [notification.white, outcome]);
+                    outcome = interpolate(
+                        pgettext(
+                            "Game outcome: <player that won> by <result>",
+                            "%s by %s",
+                        ),
+                        [notification.white, outcome],
+                    );
                 }
                 if (!notification.black_lost && notification.white_lost) {
-                    outcome = interpolate(pgettext("Game outcome: <player that won> by <result>", "%s by %s"), [notification.black, outcome]);
+                    outcome = interpolate(
+                        pgettext(
+                            "Game outcome: <player that won> by <result>",
+                            "%s by %s",
+                        ),
+                        [notification.black, outcome],
+                    );
                 }
                 if (notification.annulled) {
                     outcome += ", " + _("game annulled");
@@ -782,76 +968,124 @@ class NotificationEntry extends React.Component<{notification}, any> {
                 return (
                     <div>
                         <div>
-                            {_("Game has ended")}: {notification.black} v {notification.white} - {notification.name}
+                            {_("Game has ended")}: {notification.black} v{" "}
+                            {notification.white} - {notification.name}
                         </div>
-                        <div>
-                            {outcome}
-                        </div>
+                        <div>{outcome}</div>
                     </div>
                 );
 
             case "timecop":
-                const now = (Date.now()) / 1000;
+                const now = Date.now() / 1000;
                 const left = Math.floor(notification.time / 1000 - now);
-                return <div>{interpolate(_("You have {{time_left}} to make your move!"), {"time_left": formatTime(left)})}</div>;
+                return (
+                    <div>
+                        {interpolate(
+                            _("You have {{time_left}} to make your move!"),
+                            { time_left: formatTime(left) },
+                        )}
+                    </div>
+                );
 
             case "gameEnteredStoneRemoval":
-                return <div>{_("Game has entered the stone removal phase")}</div>;
+                return (
+                    <div>{_("Game has entered the stone removal phase")}</div>
+                );
 
             case "gameResumedFromStoneRemoval":
-                return <div>{_("Game has resumed from the stone removal phase")}</div>;
+                return (
+                    <div>
+                        {_("Game has resumed from the stone removal phase")}
+                    </div>
+                );
 
             case "gameDeclined":
                 return null;
-                //e.html(_("Game has been declined") + ": " +
-                //    notification.challenger + " " + _("vs") + " " + notification.challenged + (notification.name ? " - " + notification.name : ""));
+            //e.html(_("Game has been declined") + ": " +
+            //    notification.challenger + " " + _("vs") + " " + notification.challenged + (notification.name ? " - " + notification.name : ""));
 
             case "friendRequest":
                 return (
                     <div>
-                        {_("Friend request from") /* translators: friend request from <user> */} <Player user={notification.user}/>
-
+                        {
+                            _(
+                                "Friend request from",
+                            ) /* translators: friend request from <user> */
+                        }{" "}
+                        <Player user={notification.user} />
                         <div className="buttons">
-                            <FabX onClick={() => {
-                                this.setState({message: _("Declining")});
-                                post("me/friends/invitations", { "delete": true, "from_user": notification.user.id })
-                                .then(this.del)
-                                .catch(this.onError);
-                            }}/>
-                            <FabCheck onClick={() => {
-                                this.setState({message: _("Accepting")});
-                                post("me/friends/invitations", { "from_user": notification.user.id })
-                                .then(this.del)
-                                .catch(this.onError);
-                            }}/>
+                            <FabX
+                                onClick={() => {
+                                    this.setState({ message: _("Declining") });
+                                    post("me/friends/invitations", {
+                                        delete: true,
+                                        from_user: notification.user.id,
+                                    })
+                                        .then(this.del)
+                                        .catch(this.onError);
+                                }}
+                            />
+                            <FabCheck
+                                onClick={() => {
+                                    this.setState({ message: _("Accepting") });
+                                    post("me/friends/invitations", {
+                                        from_user: notification.user.id,
+                                    })
+                                        .then(this.del)
+                                        .catch(this.onError);
+                                }}
+                            />
                         </div>
                     </div>
                 );
 
             case "friendAccepted":
-                return <div>{_("Friend request accepted")}: <Player user={notification.user} /></div>;
+                return (
+                    <div>
+                        {_("Friend request accepted")}:{" "}
+                        <Player user={notification.user} />
+                    </div>
+                );
 
             case "friendDeclined":
-                return <div>{_("Friend request declined")}: <Player user={notification.user} /></div>;
+                return (
+                    <div>
+                        {_("Friend request declined")}:{" "}
+                        <Player user={notification.user} />
+                    </div>
+                );
 
             case "groupRequest":
                 return (
                     <div>
-                        {_("Group join request from") /* translators: Group join request from <user> */} <Player user={notification.user}/>
-
+                        {
+                            _(
+                                "Group join request from",
+                            ) /* translators: Group join request from <user> */
+                        }{" "}
+                        <Player user={notification.user} />
                         <div className="buttons">
-                            <FabX onClick={() => {
-                                this.setState({message: _("Declining")});
-                                post("me/groups/invitations", { "delete": true, request_id: notification.rqid })
-                                .then(this.del)
-                                .catch(this.onError);
-                            }}/>
-                            <FabCheck onClick={() => {
-                                this.setState({message: _("Accepting")});
-                                post("me/groups/invitations", { request_id: notification.rqid })
-                                .then(this.del)
-                                .catch(this.onError);
-                            }}/>
+                            <FabX
+                                onClick={() => {
+                                    this.setState({ message: _("Declining") });
+                                    post("me/groups/invitations", {
+                                        delete: true,
+                                        request_id: notification.rqid,
+                                    })
+                                        .then(this.del)
+                                        .catch(this.onError);
+                                }}
+                            />
+                            <FabCheck
+                                onClick={() => {
+                                    this.setState({ message: _("Accepting") });
+                                    post("me/groups/invitations", {
+                                        request_id: notification.rqid,
+                                    })
+                                        .then(this.del)
+                                        .catch(this.onError);
+                                }}
+                            />
                         </div>
                     </div>
                 );
@@ -865,21 +1099,35 @@ class NotificationEntry extends React.Component<{notification}, any> {
             case "groupInvitation":
                 return (
                     <div>
-                        {interpolate(_("You've received an invitation to join the group {{group_name}}"), {group_name: notification.groupname})}
+                        {interpolate(
+                            _(
+                                "You've received an invitation to join the group {{group_name}}",
+                            ),
+                            { group_name: notification.groupname },
+                        )}
 
                         <div className="buttons">
-                            <FabX onClick={() => {
-                                this.setState({message: _("Declining")});
-                                post("me/groups/invitations", { "delete": true, request_id: notification.grouprqid })
-                                .then(this.del)
-                                .catch(this.onError);
-                            }}/>
-                            <FabCheck onClick={() => {
-                                this.setState({message: _("Accepting")});
-                                post("me/groups/invitations", { request_id: notification.grouprqid })
-                                .then(this.del)
-                                .catch(this.onError);
-                            }}/>
+                            <FabX
+                                onClick={() => {
+                                    this.setState({ message: _("Declining") });
+                                    post("me/groups/invitations", {
+                                        delete: true,
+                                        request_id: notification.grouprqid,
+                                    })
+                                        .then(this.del)
+                                        .catch(this.onError);
+                                }}
+                            />
+                            <FabCheck
+                                onClick={() => {
+                                    this.setState({ message: _("Accepting") });
+                                    post("me/groups/invitations", {
+                                        request_id: notification.grouprqid,
+                                    })
+                                        .then(this.del)
+                                        .catch(this.onError);
+                                }}
+                            />
                         </div>
                     </div>
                 );
@@ -895,8 +1143,12 @@ class NotificationEntry extends React.Component<{notification}, any> {
             case "groupNews":
                 return (
                     <div>
-                        <div className="group-name">{notification.groupname}</div>
-                        <div className="news-title">{notification.newstitle}</div>
+                        <div className="group-name">
+                            {notification.groupname}
+                        </div>
+                        <div className="news-title">
+                            {notification.newstitle}
+                        </div>
                     </div>
                 );
 
@@ -906,51 +1158,100 @@ class NotificationEntry extends React.Component<{notification}, any> {
             case "tournamentInvitation":
                 return (
                     <div>
-                        {interpolate(_("{{username}} has sent you an invitation to join the tournament: {{tournament_name}}"),
-                            {username: notification.invitingUser, tournament_name: notification.tournamentname})}
+                        {interpolate(
+                            _(
+                                "{{username}} has sent you an invitation to join the tournament: {{tournament_name}}",
+                            ),
+                            {
+                                username: notification.invitingUser,
+                                tournament_name: notification.tournamentname,
+                            },
+                        )}
 
                         <div className="buttons">
-                            <FabX onClick={() => {
-                                this.setState({message: _("Declining")});
-                                post("me/tournaments/invitations", {"delete": true, "request_id": notification.tournamentrqid})
-                                .then(this.del)
-                                .catch(this.onError);
-                            }}/>
-                            <FabCheck onClick={() => {
-                                this.setState({message: _("Accepting")});
-                                post("me/tournaments/invitations", {"request_id": notification.tournamentrqid})
-                                .then(this.del)
-                                .catch(this.onError);
-                            }}/>
+                            <FabX
+                                onClick={() => {
+                                    this.setState({ message: _("Declining") });
+                                    post("me/tournaments/invitations", {
+                                        delete: true,
+                                        request_id: notification.tournamentrqid,
+                                    })
+                                        .then(this.del)
+                                        .catch(this.onError);
+                                }}
+                            />
+                            <FabCheck
+                                onClick={() => {
+                                    this.setState({ message: _("Accepting") });
+                                    post("me/tournaments/invitations", {
+                                        request_id: notification.tournamentrqid,
+                                    })
+                                        .then(this.del)
+                                        .catch(this.onError);
+                                }}
+                            />
                         </div>
                     </div>
                 );
 
             case "tournamentStarted":
-                return <div>{interpolate(_("Tournament {{tournament_name}} has started"), {tournament_name: notification.tournamentname})}</div>;
+                return (
+                    <div>
+                        {interpolate(
+                            _("Tournament {{tournament_name}} has started"),
+                            { tournament_name: notification.tournamentname },
+                        )}
+                    </div>
+                );
 
             case "tournamentEnded":
-                return <div>{interpolate(_("Tournament {{tournament_name}} has ended"), {tournament_name: notification.tournamentname})}</div>;
+                return (
+                    <div>
+                        {interpolate(
+                            _("Tournament {{tournament_name}} has ended"),
+                            { tournament_name: notification.tournamentname },
+                        )}
+                    </div>
+                );
 
             case "gameOfferRejected":
                 return null;
 
             case "aiReviewDone":
-                return <div>{interpolate(_("The computer has finished analyzing your game: {{game_name}}"), {game_name: notification.game_name})}</div>;
+                return (
+                    <div>
+                        {interpolate(
+                            _(
+                                "The computer has finished analyzing your game: {{game_name}}",
+                            ),
+                            { game_name: notification.game_name },
+                        )}
+                    </div>
+                );
 
             case "lateChatReceivedInGame":
-                return <div className="late-notification">
-                    <a href={`/game/${notification.game_id}`}>
-                        {interpolate(_("{{username}} added chat to your finished game"), {username: notification.from.username})}
-                    </a>
-                </div>;
+                return (
+                    <div className="late-notification">
+                        <a href={`/game/${notification.game_id}`}>
+                            {interpolate(
+                                _(
+                                    "{{username}} added chat to your finished game",
+                                ),
+                                { username: notification.from.username },
+                            )}
+                        </a>
+                    </div>
+                );
 
             default:
-                console.error("Unsupported notification: ", notification.type, notification);
+                console.error(
+                    "Unsupported notification: ",
+                    notification.type,
+                    notification,
+                );
                 break;
         }
     }
 }
-
 
 data.watch("config.user", (user) => notification_manager.setUser(user));

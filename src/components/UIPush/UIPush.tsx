@@ -15,21 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 import * as React from "react";
-import {_, pgettext, interpolate} from "translate";
-import {post, get} from "requests";
-import {comm_socket} from "sockets";
-import * as Sentry from '@sentry/browser';
-
+import { _, pgettext, interpolate } from "translate";
+import { post, get } from "requests";
+import { comm_socket } from "sockets";
+import * as Sentry from "@sentry/browser";
 
 interface UIPushProperties {
     event: string;
     channel?: string;
     action: (data: any) => any;
 }
-
-
 
 class Handler {
     id: number;
@@ -60,15 +56,14 @@ class UIPushManager {
         comm_socket.on("connect", () => {
             /* handle resubscriptions */
             for (const channel in this.subscriptions) {
-                comm_socket.send("ui-pushes/subscribe", {"channel": channel});
+                comm_socket.send("ui-pushes/subscribe", { channel: channel });
             }
         });
     }
 
     on(event, cb) {
         const handler = new Handler();
-        handler.id = ++last_handler_id,
-        handler.event = event;
+        (handler.id = ++last_handler_id), (handler.event = event);
         handler.cb = cb;
 
         if (!(event in this.handlers)) {
@@ -93,7 +88,7 @@ class UIPushManager {
         } else {
             this.subscriptions[channel] = 1;
             if ((comm_socket as any).connected) {
-                comm_socket.send("ui-pushes/subscribe", {"channel": channel});
+                comm_socket.send("ui-pushes/subscribe", { channel: channel });
             }
         }
     }
@@ -103,7 +98,7 @@ class UIPushManager {
         } else {
             delete this.subscriptions[channel];
             if ((comm_socket as any).connected) {
-                comm_socket.send("ui-pushes/unsubscribe", {"channel": channel});
+                comm_socket.send("ui-pushes/unsubscribe", { channel: channel });
             }
         }
     }
@@ -120,7 +115,8 @@ export class UIPush extends React.Component<UIPushProperties> {
     }
 
     shouldComponentUpdate(next) {
-        if (this.props.event === next.event &&
+        if (
+            this.props.event === next.event &&
             this.props.action === next.action &&
             this.props.channel === next.channel
         ) {
@@ -170,7 +166,6 @@ export class UIPush extends React.Component<UIPushProperties> {
         this.removeHandler();
         this.unsubscribe();
     }
-
 
     render() {
         return null;

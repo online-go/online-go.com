@@ -16,10 +16,9 @@
  */
 
 import * as React from "react";
-import {_, pgettext, interpolate} from "translate";
-import {errorAlerter} from "misc";
-import * as moment from 'moment';
-
+import { _, pgettext, interpolate } from "translate";
+import { errorAlerter } from "misc";
+import * as moment from "moment";
 
 interface PrettyTransactionInfoProperties {
     transaction: any;
@@ -36,29 +35,38 @@ export class PrettyTransactionInfo extends React.PureComponent<PrettyTransaction
             return null;
         }
 
-        if (transaction.method === 'wallet') {
-            console.log('Last payment transaction was GoogleWallet, very old');
+        if (transaction.method === "wallet") {
+            console.log("Last payment transaction was GoogleWallet, very old");
             return null;
         }
 
-
         let message = null;
-        const date = moment(transaction.created).format('ll');
+        const date = moment(transaction.created).format("ll");
 
-        if (transaction.method === 'braintree') {
+        if (transaction.method === "braintree") {
             switch (transaction.action) {
-                case 'subscription_went_active':
+                case "subscription_went_active":
                     break;
 
-                case 'subscription_charged_successfully':
+                case "subscription_charged_successfully":
                     break;
 
-                case 'subscription_charged_unsuccessfully':
-                    message = interpolate(_(`There was a problem processing your support on {{date}}`), {date: date});
+                case "subscription_charged_unsuccessfully":
+                    message = interpolate(
+                        _(
+                            `There was a problem processing your support on {{date}}`,
+                        ),
+                        { date: date },
+                    );
                     break;
 
-                case 'subscription_canceled':
-                    message = interpolate(_(`Your subscription was successfully canceled on {{date}}`), {date: date});
+                case "subscription_canceled":
+                    message = interpolate(
+                        _(
+                            `Your subscription was successfully canceled on {{date}}`,
+                        ),
+                        { date: date },
+                    );
                     break;
 
                 default:
@@ -66,23 +74,41 @@ export class PrettyTransactionInfo extends React.PureComponent<PrettyTransaction
                     break;
             }
         }
-        if (transaction.method === 'paypal') {
+        if (transaction.method === "paypal") {
             switch (transaction.action) {
-                case 'subscr_modify':
-                    message = interpolate(_(`Your subscription was successfully updated on {{date}}`), {date: date});
+                case "subscr_modify":
+                    message = interpolate(
+                        _(
+                            `Your subscription was successfully updated on {{date}}`,
+                        ),
+                        { date: date },
+                    );
                     break;
-                case 'subscr_cancel':
-                    message = interpolate(_(`Your subscription was successfully canceled on {{date}}`), {date: date});
+                case "subscr_cancel":
+                    message = interpolate(
+                        _(
+                            `Your subscription was successfully canceled on {{date}}`,
+                        ),
+                        { date: date },
+                    );
                     break;
-                case 'subscr_failed':
-                    message = interpolate(_(`There was a problem processing your support on {{date}}`), {date: date});
+                case "subscr_failed":
+                    message = interpolate(
+                        _(
+                            `There was a problem processing your support on {{date}}`,
+                        ),
+                        { date: date },
+                    );
                     break;
-                case 'subscr_eot':
-                    message = interpolate(_(`Your subscription expired on {{date}}`), {date: date});
+                case "subscr_eot":
+                    message = interpolate(
+                        _(`Your subscription expired on {{date}}`),
+                        { date: date },
+                    );
                     break;
-                case 'subscr_signup':
+                case "subscr_signup":
                     break;
-                case 'subscr_payment':
+                case "subscr_payment":
                     break;
 
                 default:
@@ -92,11 +118,9 @@ export class PrettyTransactionInfo extends React.PureComponent<PrettyTransaction
         }
 
         if (message) {
-            return (<div>{message}</div>);
+            return <div>{message}</div>;
         }
 
         return null;
     }
-
-
 }

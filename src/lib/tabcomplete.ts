@@ -11,7 +11,6 @@ import * as player_cache from "player_cache";
 
 declare let $;
 
-
 /*!
  * This function adapted from: https://github.com/localhost/jquery-fieldselection
  * jQuery plugin: fieldSelection - v0.1.1 - last change: 2006-12-16
@@ -21,15 +20,20 @@ function getSelection(field) {
     const e = field;
 
     return (
-
         /* mozilla / dom 3.0 */
-        ("selectionStart" in e && (() => {
-            const l = e.selectionEnd - e.selectionStart;
-            return { start: e.selectionStart, end: e.selectionEnd, length: l, text: e.value.substr(e.selectionStart, l) };
-        })) ||
-
-        /* exploder */
-        /*
+        (
+            ("selectionStart" in e &&
+                (() => {
+                    const l = e.selectionEnd - e.selectionStart;
+                    return {
+                        start: e.selectionStart,
+                        end: e.selectionEnd,
+                        length: l,
+                        text: e.value.substr(e.selectionStart, l),
+                    };
+                })) ||
+            /* exploder */
+            /*
         (document.selection && (() => {
 
             e.focus();
@@ -48,10 +52,12 @@ function getSelection(field) {
         })) ||
         */
 
-        /* browser not supported */
-        (() => { return null; })
-    )();
-
+            /* browser not supported */
+            (() => {
+                return null;
+            })
+        )()
+    );
 }
 
 /*!
@@ -186,12 +192,11 @@ function onKeyPress(e, options) {
             if (options.nick_match.test(text)) {
                 text = text.match(options.nick_match)[1];
 
-                if (typeof(options.nicknames) === "function") {
+                if (typeof options.nicknames === "function") {
                     match = matchName(text, options.nicknames());
                 } else {
                     match = matchName(text, options.nicknames);
                 }
-
 
                 completed_event = $.Event("nickname-complete");
                 $.extend(completed_event, match);
@@ -199,13 +204,25 @@ function onKeyPress(e, options) {
                 $this.trigger(completed_event);
 
                 if (match.value && !completed_event.isDefaultPrevented()) {
-                    first = val.substr(0, sel.start - text.length );
-                    last    = val.substr(sel.start);
+                    first = val.substr(0, sel.start - text.length);
+                    last = val.substr(sel.start);
                     /* Space should not be added when there is only 1 match
                             or if there is already a space following the caret position */
-                    const space = (match.matches.length > 1 || last.length && last.substr(0, 1) === " ") ? "" : (first.trim().length === 0 ? ": " : " ");
+                    const space =
+                        match.matches.length > 1 ||
+                        (last.length && last.substr(0, 1) === " ")
+                            ? ""
+                            : first.trim().length === 0
+                            ? ": "
+                            : " ";
                     $this.val(first + match.value + space + last);
-                    setCaretToPos(this, sel.start - text.length + match.value.length + space.length);
+                    setCaretToPos(
+                        this,
+                        sel.start -
+                            text.length +
+                            match.value.length +
+                            space.length,
+                    );
                 }
 
                 e.preventDefault();
@@ -215,7 +232,7 @@ function onKeyPress(e, options) {
             } else if (/( |: )$/.test(text)) {
                 const space = text.match(/( |: )$/)[1];
                 text = text.substring(0, text.length - space.length);
-                if (typeof(options.nicknames) === "function") {
+                if (typeof options.nicknames === "function") {
                     match = matchFullName(text, options.nicknames());
                 } else {
                     match = matchFullName(text, options.nicknames);
@@ -226,13 +243,32 @@ function onKeyPress(e, options) {
                 completed_event.caret = sel.start;
                 $this.trigger(completed_event);
 
-                if ((match.value && !completed_event.isDefaultPrevented())) {
-                    first = val.substr(0, sel.start - match.value.length - space.length);
-                    last    = val.substr(sel.start);
+                if (match.value && !completed_event.isDefaultPrevented()) {
+                    first = val.substr(
+                        0,
+                        sel.start - match.value.length - space.length,
+                    );
+                    last = val.substr(sel.start);
                     /* Space should not be added when there is only 1 match
                            or if there is already a space following the caret position */
-                    $this.val(first + '@"' + match.value + '/' + (player_cache.lookup_by_username(match.value)?.id ?? 0) + '"' + space + last);
-                    setCaretToPos(this, sel.start - match.value + match.value.length + space.length);
+                    $this.val(
+                        first +
+                            '@"' +
+                            match.value +
+                            "/" +
+                            (player_cache.lookup_by_username(match.value)?.id ??
+                                0) +
+                            '"' +
+                            space +
+                            last,
+                    );
+                    setCaretToPos(
+                        this,
+                        sel.start -
+                            match.value +
+                            match.value.length +
+                            space.length,
+                    );
                 }
 
                 e.preventDefault();
@@ -245,19 +281,21 @@ function onKeyPress(e, options) {
 }
 /* eslint-enable @typescript-eslint/no-invalid-this */
 
-$.fn.nicknameTabComplete = function(options) {
+$.fn.nicknameTabComplete = function (options) {
     options = $.extend({}, $.fn.nicknameTabComplete.defaults, options);
     this.bind("keydown.nickname", (e) => {
         onKeyPress.call(this, e, options);
-    }).bind("focus.nickname", () => {
-    // Part of a crazy hack for Opera
-        this.lastKey = 0;
-    }).bind("blur.nickname", () => {
-    // Part of a crazy hack for Opera
-        if (this.lastKey === 9) {
-            this.focus();
-        }
-    });
+    })
+        .bind("focus.nickname", () => {
+            // Part of a crazy hack for Opera
+            this.lastKey = 0;
+        })
+        .bind("blur.nickname", () => {
+            // Part of a crazy hack for Opera
+            if (this.lastKey === 9) {
+                this.focus();
+            }
+        });
 
     if (options.on_complete != null) {
         this.bind("nickname-complete", options.on_complete);
@@ -268,14 +306,13 @@ $.fn.nicknameTabComplete = function(options) {
 $.fn.nicknameTabComplete.defaults = {
     nicknames: () => player_cache.nicknames,
     nick_match: /([-_a-z0-9]+)$/i,
-    on_complete: null // Pass in a function as an alternate way of binding to this event
+    on_complete: null, // Pass in a function as an alternate way of binding to this event
 };
 
 $.fn.nicknameTabComplete.has_newline_bug = (() => {
     const textarea = $("<textarea>").val("Newline\nTest");
     return textarea[0].value === "Newline\r\nTest";
 })();
-
 
 export function init_tabcomplete() {
     /* hack to ensure this gets imported since it binds to jquery */

@@ -14,28 +14,43 @@
  * limitations under the License.
  */
 
-import {EventEmitter} from 'eventemitter3';
+import { EventEmitter } from "eventemitter3";
 
 export class TypedEventEmitter<T> {
     private emitter = new EventEmitter();
 
-    addListener<K extends Extract<keyof T, string>>(event: K, listener: (arg?: T[K]) => any): this {
+    addListener<K extends Extract<keyof T, string>>(
+        event: K,
+        listener: (arg?: T[K]) => any,
+    ): this {
         this.emitter.addListener(event, listener);
         return this;
     }
-    on<K extends Extract<keyof T, string>>(event: K, listener: (arg?: T[K]) => any): this {
+    on<K extends Extract<keyof T, string>>(
+        event: K,
+        listener: (arg?: T[K]) => any,
+    ): this {
         this.emitter.on(event, listener);
         return this;
     }
-    off<K extends Extract<keyof T, string>>(event: K, listener: (arg?: T[K]) => any): this {
+    off<K extends Extract<keyof T, string>>(
+        event: K,
+        listener: (arg?: T[K]) => any,
+    ): this {
         this.emitter.off(event, listener);
         return this;
     }
-    once<K extends Extract<keyof T, string>>(event: K, listener: (arg?: T[K]) => any): this {
+    once<K extends Extract<keyof T, string>>(
+        event: K,
+        listener: (arg?: T[K]) => any,
+    ): this {
         this.emitter.once(event, listener);
         return this;
     }
-    removeListener<K extends Extract<keyof T, string>>(event: K, listener: (arg?: T[K]) => any): this {
+    removeListener<K extends Extract<keyof T, string>>(
+        event: K,
+        listener: (arg?: T[K]) => any,
+    ): this {
         this.emitter.removeListener(event, listener);
         return this;
     }
@@ -43,7 +58,9 @@ export class TypedEventEmitter<T> {
         this.emitter.removeAllListeners(event);
         return this;
     }
-    listeners<K extends Extract<keyof T, string>>(event: K): ((arg: T[K]) => any)[] {
+    listeners<K extends Extract<keyof T, string>>(
+        event: K,
+    ): ((arg: T[K]) => any)[] {
         return this.emitter.listeners(event);
     }
     emit<K extends Extract<keyof T, string>>(event: K, arg?: T[K]): boolean {

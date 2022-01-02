@@ -38,13 +38,19 @@ export default class Debug {
         return `[${this.module}] ${message}`;
     }
     log = (message: string, ...rest: Array<any>) => {
-        debug[this.module] ? console.log(this.format(message), ...rest) : undefined;
+        debug[this.module]
+            ? console.log(this.format(message), ...rest)
+            : undefined;
     };
     trace = (message: string, ...rest: Array<any>) => {
-        debug[this.module] ? console.trace(this.format(message), ...rest) : undefined;
+        debug[this.module]
+            ? console.trace(this.format(message), ...rest)
+            : undefined;
     };
     info = (message: string, ...rest: Array<any>) => {
-        debug[this.module] ? console.info(this.format(message), ...rest) : undefined;
+        debug[this.module]
+            ? console.info(this.format(message), ...rest)
+            : undefined;
     };
     warn = (message: string, ...rest: Array<any>) => {
         console.warn(this.format(message), ...rest);
@@ -54,11 +60,13 @@ export default class Debug {
     };
 
     assert(assertion: boolean, message: string, ...rest: Array<any>) {
-        if (assertion) { return; }
+        if (assertion) {
+            return;
+        }
         console.error(this.format(message), ...rest);
 
         // TODO: Phone home to tell of our distress.
     }
 }
 
-window['debug'] = debug;
+window["debug"] = debug;

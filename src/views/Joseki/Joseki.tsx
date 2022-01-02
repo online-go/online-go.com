@@ -19,7 +19,7 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import ReactResizeDetector from 'react-resize-detector';
+import ReactResizeDetector from "react-resize-detector";
 import * as queryString from "query-string";
 
 import * as data from "data";
@@ -34,22 +34,28 @@ import { Player } from "Player";
 
 import { JosekiAdmin } from "JosekiAdmin";
 
-import {openModal} from 'Modal';
-import {JosekiSourceModal} from "JosekiSourceModal";
-import {JosekiVariationFilter} from "JosekiVariationFilter";
-import {JosekiTagSelector} from "JosekiTagSelector";
-import {Throbber} from "Throbber";
+import { openModal } from "Modal";
+import { JosekiSourceModal } from "JosekiSourceModal";
+import { JosekiVariationFilter } from "JosekiVariationFilter";
+import { JosekiTagSelector } from "JosekiTagSelector";
+import { Throbber } from "Throbber";
 
 const server_url = data.get("joseki-url", "/oje/");
 
-const prefetch_url = (node_id: string, variation_filter?: any, mode?: string) => {
+const prefetch_url = (
+    node_id: string,
+    variation_filter?: any,
+    mode?: string,
+) => {
     let prefetch_url = server_url + "positions?id=" + node_id;
     if (variation_filter) {
         if (variation_filter.contributor) {
             prefetch_url += "&cfilterid=" + variation_filter.contributor;
         }
         if (variation_filter.tags && variation_filter.tags.length !== 0) {
-            prefetch_url += "&tfilterid=" + variation_filter.tags.map(tag => tag.value).join(",");
+            prefetch_url +=
+                "&tfilterid=" +
+                variation_filter.tags.map((tag) => tag.value).join(",");
         }
         if (variation_filter.source) {
             prefetch_url += "&sfilterid=" + variation_filter.source;
@@ -61,14 +67,20 @@ const prefetch_url = (node_id: string, variation_filter?: any, mode?: string) =>
     return prefetch_url;
 };
 
-const position_url = (node_id: string, variation_filter?: any, mode?: string) => {
+const position_url = (
+    node_id: string,
+    variation_filter?: any,
+    mode?: string,
+) => {
     let position_url = server_url + "position?id=" + node_id;
     if (variation_filter) {
         if (variation_filter.contributor) {
             position_url += "&cfilterid=" + variation_filter.contributor;
         }
         if (variation_filter.tags && variation_filter.tags.length !== 0) {
-            position_url += "&tfilterid=" + variation_filter.tags.map(tag => tag.value).join(",");
+            position_url +=
+                "&tfilterid=" +
+                variation_filter.tags.map((tag) => tag.value).join(",");
         }
         if (variation_filter.source) {
             position_url += "&sfilterid=" + variation_filter.source;
@@ -83,39 +95,39 @@ const position_url = (node_id: string, variation_filter?: any, mode?: string) =>
 const joseki_sources_url = server_url + "josekisources";
 const tags_url = server_url + "tags";
 
-const tag_count_url = (node_id: number, tag_id: number): string => (
-    server_url + "position/tagcount?id=" + node_id + "&tfilterid=" + tag_id
-);
+const tag_count_url = (node_id: number, tag_id: number): string =>
+    server_url + "position/tagcount?id=" + node_id + "&tfilterid=" + tag_id;
 
-const tagscount_url = (node_id: string): string => (
-    server_url + "position/tagcounts?id=" + node_id
-);
+const tagscount_url = (node_id: string): string =>
+    server_url + "position/tagcounts?id=" + node_id;
 
 // Joseki specific markdown
 
 const applyJosekiMarkdown = (markdown: string): string => {
     // Highligh marks in the text
-    let result = markdown.replace(/<([A-Z]):([A-Z][0-9]{1,2})>/mg, '**$1**');
+    let result = markdown.replace(/<([A-Z]):([A-Z][0-9]{1,2})>/gm, "**$1**");
 
     // Transform position references into actual link
-    result = result.replace(/<position: *([0-9]+)>/img, '**[' + _("Position") + ' $1](/joseki/$1)**');
+    result = result.replace(
+        /<position: *([0-9]+)>/gim,
+        "**[" + _("Position") + " $1](/joseki/$1)**",
+    );
 
     return result;
 };
 
 const getOGSJWT = (): string => {
-    return data.get('config').user_jwt;
+    return data.get("config").user_jwt;
 };
 
 // Headers needed to talk to the godojo server.
 const oje_headers = (): {} => ({
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-    'X-Godojo-Auth-Token': 'foofer',
-    'X-User-Info' : getOGSJWT(),       // old server uses this for id: re-load this every time, in case they change identity via login/logout
-    'X-CSRFToken': getCookie('csrftoken')
-}
-);
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Godojo-Auth-Token": "foofer",
+    "X-User-Info": getOGSJWT(), // old server uses this for id: re-load this every time, in case they change identity via login/logout
+    "X-CSRFToken": getCookie("csrftoken"),
+});
 
 enum MoveCategory {
     // needs to match definition in BoardPosition.java
@@ -124,24 +136,27 @@ enum MoveCategory {
     GOOD = "Good",
     MISTAKE = "Mistake",
     TRICK = "Trick",
-    QUESTION = "Question"
+    QUESTION = "Question",
 }
 
-const bad_moves = ["MISTAKE", "QUESTION"] as any;  // moves the player is not allowed to play in Play mode
+const bad_moves = ["MISTAKE", "QUESTION"] as any; // moves the player is not allowed to play in Play mode
 
 enum PageMode {
-    Explore = "0", Play = "1", Edit = "2", Admin = "3"
+    Explore = "0",
+    Play = "1",
+    Edit = "2",
+    Admin = "3",
 }
 
 const ColorMap = {
-    "IDEAL": "#008300",
-    "GOOD": "#436600",
-    "MISTAKE": "#b3001e",
-    "TRICK": "#ffff00",
-    "QUESTION": "#00ccff",
+    IDEAL: "#008300",
+    GOOD: "#436600",
+    MISTAKE: "#b3001e",
+    TRICK: "#ffff00",
+    QUESTION: "#00ccff",
 };
 
-type MoveType = 'bad'|'good'|'computer'|'complete';
+type MoveType = "bad" | "good" | "computer" | "complete";
 
 interface JosekiProps {
     match: {
@@ -150,7 +165,10 @@ interface JosekiProps {
     location: any;
 }
 
-interface MoveTypeWithComment { type: MoveType; comment: string }
+interface MoveTypeWithComment {
+    type: MoveType;
+    comment: string;
+}
 interface JosekiState {
     move_string: string;
     current_node_id?: string;
@@ -180,14 +198,14 @@ interface JosekiState {
     joseki_source?: {
         url: string;
         description: string;
-        id?: string|number;
+        id?: string | number;
     };
     tags: any[];
 
-    variation_filter: { contributor: number; tags: number[]; source: number };   // start with no filter defined
+    variation_filter: { contributor: number; tags: number[]; source: number }; // start with no filter defined
 
     count_details_open: boolean;
-    tag_counts: {tagname: string; count: number}[];
+    tag_counts: { tagname: string; count: number }[];
     counts_throb: boolean;
 
     db_locked_down: boolean;
@@ -198,11 +216,10 @@ interface JosekiState {
     count_display_open?: boolean; // Appears to be unused
     extra_throb?: boolean; // Appears to be unused
 
-    position_type?: 'new'; // It seems this is never set
+    position_type?: "new"; // It seems this is never set
 }
 
 export class Joseki extends React.Component<JosekiProps, JosekiState> {
-
     goban: Goban;
     goban_div: HTMLDivElement;
     goban_opts: any = {};
@@ -212,21 +229,21 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
     last_server_position = ""; // the most recent position that the server returned to us, used in backstepping
     last_placement = "";
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
-    current_marks: [];           // the marks on the board - from the server, or from editing
+    current_marks: []; // the marks on the board - from the server, or from editing
     load_sequence_to_board = false; // True if we need to load the stones from the whole sequence received from the server onto the board
-    show_comments_requested = false;  //  If there is a "show_comments" parameter in the URL
+    show_comments_requested = false; //  If there is a "show_comments" parameter in the URL
     previous_position = {} as any; // Saving the information of the node we have moved from, so we can get back to it
-    backstepping = false;   // Set to true when the person clicks the back arrow, to indicate we need to fetch the position information
+    backstepping = false; // Set to true when the person clicks the back arrow, to indicate we need to fetch the position information
     played_mistake = false;
-    computer_turn = false;  // when we are placing the computer's stone in Play mode
-    filter_change = false;  // set to true when a position is being reloaded due to filter change
-    cached_positions = {};  // a hash by node-ide of position information we've received from the server
-    move_trace = [];   // the list of moves that we know the person clicked on to maximum depth, so we can forward-step
-    trace_index = -1;  // index into move_trace of the current node that we are on
-    waiting_for = "";  // what position is the most recent fetch to the server waiting to hear about.
+    computer_turn = false; // when we are placing the computer's stone in Play mode
+    filter_change = false; // set to true when a position is being reloaded due to filter change
+    cached_positions = {}; // a hash by node-ide of position information we've received from the server
+    move_trace = []; // the list of moves that we know the person clicked on to maximum depth, so we can forward-step
+    trace_index = -1; // index into move_trace of the current node that we are on
+    waiting_for = ""; // what position is the most recent fetch to the server waiting to hear about.
 
     prefetching = false; // if we have a prefetch of node positions in flight
-    prefetched = {};  // Nodes that we have already prefetched, so don't do it again
+    prefetched = {}; // Nodes that we have already prefetched, so don't do it again
 
     last_click: number; // most recent time (ms) we got a click from the goban
 
@@ -235,45 +252,49 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
 
         // console.log(props);
         this.state = {
-            move_string: "",             // This is used for making sure we know what the current move is. It is the display value also.
-            current_node_id: undefined as string,    // The server's ID for this node, so we can uniquely identify it and create our own route for it,
-            most_recent_known_node: undefined as string,  // the value of current_node_id when the person clicked on a node not in the db
+            move_string: "", // This is used for making sure we know what the current move is. It is the display value also.
+            current_node_id: undefined as string, // The server's ID for this node, so we can uniquely identify it and create our own route for it,
+            most_recent_known_node: undefined as string, // the value of current_node_id when the person clicked on a node not in the db
             position_description: "",
-            variation_label: '_',
+            variation_label: "_",
             current_move_category: "",
-            pass_available: false,   // Whether pass is one of the joseki moves or not.   Contains the category of the position resulting from pass, if present
-            contributor_id: -1,     // the person who created the node that we are displaying
+            pass_available: false, // Whether pass is one of the joseki moves or not.   Contains the category of the position resulting from pass, if present
+            contributor_id: -1, // the person who created the node that we are displaying
             child_count: 0,
 
-            throb: false,   // whether to show board-loading throbber
+            throb: false, // whether to show board-loading throbber
 
             mode: PageMode.Explore,
-            user_can_edit: false,       // Purely for rendering purposes, server won't let them do it anyhow if they aren't allowed.
+            user_can_edit: false, // Purely for rendering purposes, server won't let them do it anyhow if they aren't allowed.
             user_can_administer: false,
             user_can_comment: false,
 
-            move_type_sequence: [] as MoveTypeWithComment[],   // This is the sequence of "move types" that is passed to the Play pane to display
-            joseki_errors: 0,         // How many errors made by the player in the current sequence in Play mode.
-            josekis_played: undefined,    // The player's joseki playing record...
+            move_type_sequence: [] as MoveTypeWithComment[], // This is the sequence of "move types" that is passed to the Play pane to display
+            joseki_errors: 0, // How many errors made by the player in the current sequence in Play mode.
+            josekis_played: undefined, // The player's joseki playing record...
             josekis_completed: undefined as number,
             joseki_successes: undefined as number,
             joseki_best_attempt: undefined as number,
-            joseki_tag_id: undefined as number,       // the id of the "This is Joseki" tag, for use in setting default
+            joseki_tag_id: undefined as number, // the id of the "This is Joseki" tag, for use in setting default
 
-            joseki_source: undefined as {url: string; description: string}, // the source of the current position
-            tags: [],                  // the tags that are on the current position
+            joseki_source: undefined as { url: string; description: string }, // the source of the current position
+            tags: [], // the tags that are on the current position
 
-            variation_filter: {} as {contributor: number; tags: number[]; source: number},   // start with no filter defined
+            variation_filter: {} as {
+                contributor: number;
+                tags: number[];
+                source: number;
+            }, // start with no filter defined
 
             count_details_open: false,
-            tag_counts: [],  // A count of the number of continuations from this position that have each tag
+            tag_counts: [], // A count of the number of continuations from this position that have each tag
             counts_throb: false,
 
-            db_locked_down: true // pessimistic till it tells us otherwise
+            db_locked_down: true, // pessimistic till it tells us otherwise
         };
 
-        this.goban_div = document.createElement('div');
-        this.goban_div.className = 'Goban';
+        this.goban_div = document.createElement("div");
+        this.goban_div.className = "Goban";
     }
 
     initializeGoban = (initial_position?) => {
@@ -283,12 +304,12 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
         }
 
         const opts: GobanConfig = {
-            "board_div": this.goban_div,
-            "interactive": true,
-            "mode": "puzzle",
-            "player_id": 0,
-            "server_socket": null,
-            "square_size": 20,
+            board_div: this.goban_div,
+            interactive: true,
+            mode: "puzzle",
+            player_id: 0,
+            server_socket: null,
+            square_size: 20,
         };
 
         if (initial_position) {
@@ -337,7 +358,7 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
             move_type_sequence: [],
             joseki_errors: 0,
             joseki_successes: undefined,
-            joseki_best_attempt: undefined
+            joseki_best_attempt: undefined,
         });
         this.initializeGoban();
         this.onResize();
@@ -351,40 +372,42 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
 
     getUserJosekiPermissions = () => {
         fetch(server_url + "user-permissions", {
-            mode: 'cors',
-            headers: oje_headers()
+            mode: "cors",
+            headers: oje_headers(),
         })
-        .then(response => response.json()) // wait for the body of the response
-        .then(body => {
-            // console.log("Server response:", body);
+            .then((response) => response.json()) // wait for the body of the response
+            .then((body) => {
+                // console.log("Server response:", body);
 
-            this.setState({
-                user_can_edit: body.can_edit,
-                user_can_administer: body.can_admin,
-                user_can_comment: body.can_comment
+                this.setState({
+                    user_can_edit: body.can_edit,
+                    user_can_administer: body.can_admin,
+                    user_can_comment: body.can_comment,
+                });
+            })
+            .catch((r) => {
+                console.log("Permissions GET failed:", r);
             });
-        }).catch((r) => {
-            console.log("Permissions GET failed:", r);
-        });
     };
 
     getJosekiTag = () => {
         // The "Joseki Tag" has to be the one at group 0 seq 0.  That's the deal.
         // We need it because we want to offer it as the default, during editing.
         fetch(server_url + "tag?group=0&seq=0", {
-            mode: 'cors',
-            headers: oje_headers()
+            mode: "cors",
+            headers: oje_headers(),
         })
-        .then(response => response.json()) // wait for the body of the response
-        .then(body => {
-            //console.log("Server response:", body);
+            .then((response) => response.json()) // wait for the body of the response
+            .then((body) => {
+                //console.log("Server response:", body);
 
-            this.setState({
-                joseki_tag_id: body.tags[0].id
+                this.setState({
+                    joseki_tag_id: body.tags[0].id,
+                });
+            })
+            .catch((r) => {
+                console.log("Joseki tag GET failed:", r);
             });
-        }).catch((r) => {
-            console.log("Joseki tag GET failed:", r);
-        });
     };
 
     resetJosekiSequence = (pos: string) => {
@@ -394,7 +417,10 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
 
     onResize = () => {
         this.goban.setSquareSizeBasedOnDisplayWidth(
-            Math.min(this.goban_container.offsetWidth, this.goban_container.offsetHeight)
+            Math.min(
+                this.goban_container.offsetWidth,
+                this.goban_container.offsetHeight,
+            ),
         );
         this.goban.redraw();
         this.recenterGoban();
@@ -403,7 +429,10 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
     recenterGoban() {
         const m = this.goban.computeMetrics();
         if (this.goban_container.offsetWidth > 0 && m.width > 0) {
-            this.goban_persistent_element.container.style.left = Math.round(Math.ceil(this.goban_container.offsetWidth - m.width) / 2) + "px";
+            this.goban_persistent_element.container.style.left =
+                Math.round(
+                    Math.ceil(this.goban_container.offsetWidth - m.width) / 2,
+                ) + "px";
         }
     }
 
@@ -418,39 +447,39 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
     updatePlayerJosekiRecord = (node_id) => {
         if (!data.get("user").anonymous) {
             fetch(server_url + "playrecord", {
-                method: 'put',
-                mode: 'cors',
+                method: "put",
+                mode: "cors",
                 headers: oje_headers(),
                 body: JSON.stringify({
                     position_id: node_id,
-                    errors: this.state.joseki_errors
-                })
+                    errors: this.state.joseki_errors,
+                }),
             })
-            .then(res => res.json())
-            .then(body => {
-                // console.log("Server response to play record PUT:", body);
-                this.extractPlayResults(body);
-            }).catch((r) => {
-                console.log("Play record PUT failed:", r);
-            });
+                .then((res) => res.json())
+                .then((body) => {
+                    // console.log("Server response to play record PUT:", body);
+                    this.extractPlayResults(body);
+                })
+                .catch((r) => {
+                    console.log("Play record PUT failed:", r);
+                });
         }
     };
 
-   // Fetch the next moves based on the current filter
-   fetchNextMovesFor = (node_id: string) => {
-       this.fetchNextFilteredMovesFor(node_id, this.state.variation_filter);
-   };
+    // Fetch the next moves based on the current filter
+    fetchNextMovesFor = (node_id: string) => {
+        this.fetchNextFilteredMovesFor(node_id, this.state.variation_filter);
+    };
 
-   // Fetch the next moves based on the supplied filter
-   // Note that this is where a "position gets rendered" after the placement of a stone, or some other trigger.
-   // A trigger like placing a stone happens, then this gets called (from processPlacement etc), then the result gets rendered
-   // in the processing of the result of the fectch for that position.
+    // Fetch the next moves based on the supplied filter
+    // Note that this is where a "position gets rendered" after the placement of a stone, or some other trigger.
+    // A trigger like placing a stone happens, then this gets called (from processPlacement etc), then the result gets rendered
+    // in the processing of the result of the fectch for that position.
 
     private fetchNextFilteredMovesFor = (node_id: string, variation_filter) => {
         /* TBD: error handling, cancel on new route */
         /* Note that this routine is responsible for enabling stone placement when it has finished the fetch */
         this.waiting_for = node_id; // keep track of which position is the latest one that we're interested in
-
 
         // visual indication that we are processing their click
         this.setState({
@@ -459,7 +488,9 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
         });
 
         // We have to turn show_comments_requested off once we are done loading a first position...
-        this.show_comments_requested = this.load_sequence_to_board ? this.show_comments_requested : false;
+        this.show_comments_requested = this.load_sequence_to_board
+            ? this.show_comments_requested
+            : false;
 
         console.log("Fetch next moves for ", node_id);
         console.log("... cache: ", this.cached_positions);
@@ -467,7 +498,10 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
         // Because of tricky sequencing of state update from server responses, caching works only with
         // explore mode  ... the other modes need processNewMoves to happen after completion of fetchNextFilteredMovesFor() (IE this procedure)
         // which doesn't work with caching... needs some reorganisation to make that work
-        if (this.state.mode === PageMode.Explore && this.cached_positions.hasOwnProperty(node_id)) {
+        if (
+            this.state.mode === PageMode.Explore &&
+            this.cached_positions.hasOwnProperty(node_id)
+        ) {
             console.log("cached position:", node_id);
             this.processNewMoves(node_id, this.cached_positions[node_id]);
             this.prefetchFor(node_id, variation_filter);
@@ -475,32 +509,39 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
             console.log("fetching position for node", node_id, this.state.mode);
             // First, get the required position from the server as soon as possible
             fetch(position_url(node_id, variation_filter, this.state.mode), {
-                mode: 'cors',
-                headers: oje_headers()
+                mode: "cors",
+                headers: oje_headers(),
             })
-            .then(response => response.json()) // wait for the body of the response
-            .then(body => {
-                // console.log("Server response:", body);
-                const target_node = body; // the one we're after comes in the first slot of the array
+                .then((response) => response.json()) // wait for the body of the response
+                .then((body) => {
+                    // console.log("Server response:", body);
+                    const target_node = body; // the one we're after comes in the first slot of the array
 
-
-                // If this response we just got is the one we're waiting for now (rather than an old one) then process it
-                if ((this.waiting_for === "root" && target_node.placement === "root") ||
-                    (this.waiting_for === target_node.node_id.toString())) {
-                    this.processNewMoves(node_id, target_node);
-                    // caching this one is important, because node_id could be "root", which needs to be cached this way
-                    this.cached_positions = { [node_id]: target_node, ...this.cached_positions };
-                } else {
-                    // console.log("Ignoring server response ", target_node, " looking for ", this.waiting_for);
-                }
-
-            }).catch((r) => {
-                console.log("Node GET failed:", r);
-                this.setState({ throb: false });
-            });
+                    // If this response we just got is the one we're waiting for now (rather than an old one) then process it
+                    if (
+                        (this.waiting_for === "root" &&
+                            target_node.placement === "root") ||
+                        this.waiting_for === target_node.node_id.toString()
+                    ) {
+                        this.processNewMoves(node_id, target_node);
+                        // caching this one is important, because node_id could be "root", which needs to be cached this way
+                        this.cached_positions = {
+                            [node_id]: target_node,
+                            ...this.cached_positions,
+                        };
+                    } else {
+                        // console.log("Ignoring server response ", target_node, " looking for ", this.waiting_for);
+                    }
+                })
+                .catch((r) => {
+                    console.log("Node GET failed:", r);
+                    this.setState({ throb: false });
+                });
 
             // Then prefetch the next positions from this one, after a short pause to let the main fetch get underway
-            setTimeout( () => {this.prefetchFor(node_id, variation_filter); } , 100);
+            setTimeout(() => {
+                this.prefetchFor(node_id, variation_filter);
+            }, 100);
         }
     };
 
@@ -508,32 +549,45 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
         // Prefetch the next nodes, by calling the prefetch API, unless we already have a pre-fetch in flight
         // (no point in driving server load up with overlapping and expensive prefetches!)
         if (!this.prefetching) {
-            console.log("checking if we already prefetched at", node_id, this.prefetched[node_id]);
+            console.log(
+                "checking if we already prefetched at",
+                node_id,
+                this.prefetched[node_id],
+            );
             if (!this.prefetched[node_id]) {
                 this.prefetching = true;
                 console.log("... prefetching", node_id);
-                fetch(prefetch_url(node_id, variation_filter, this.state.mode), {
-                    mode: 'cors',
-                    headers: oje_headers()
-                })
-                .then(response => response.json()) // wait for the body of the response
-                .then(body => {
-                    this.prefetching = false;
-                    this.prefetched[node_id] = true;
-                    console.log("Prefetch Server response:", body);
-                    body.forEach((move_info) => {
-                        this.cached_positions = {[move_info['node_id']]: move_info, ...this.cached_positions};
+                fetch(
+                    prefetch_url(node_id, variation_filter, this.state.mode),
+                    {
+                        mode: "cors",
+                        headers: oje_headers(),
+                    },
+                )
+                    .then((response) => response.json()) // wait for the body of the response
+                    .then((body) => {
+                        this.prefetching = false;
+                        this.prefetched[node_id] = true;
+                        console.log("Prefetch Server response:", body);
+                        body.forEach((move_info) => {
+                            this.cached_positions = {
+                                [move_info["node_id"]]: move_info,
+                                ...this.cached_positions,
+                            };
+                        });
+                    })
+                    .catch((r) => {
+                        this.prefetching = false;
+                        console.log("Node Prefetch failed:", r);
+                        this.setState({ throb: false });
                     });
-                }).catch((r) => {
-                    this.prefetching = false;
-                    console.log("Node Prefetch failed:", r);
-                    this.setState({throb: false});
-                });
             } else {
                 console.log("(not prefetching, we already did this one)");
             }
         } else {
-            console.log("(not prefetching here, we have one already in flight)");
+            console.log(
+                "(not prefetching here, we have one already in flight)",
+            );
         }
     };
 
@@ -563,24 +617,32 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
         }
 
         if (this.state.mode === PageMode.Play) {
+            const good_moves = dto.next_moves.filter(
+                (move) => !bad_moves.includes(move.category),
+            );
 
-            const good_moves = dto.next_moves.filter( (move) => (!bad_moves.includes(move.category)));
-
-            if ((good_moves.length === 0) && !this.played_mistake) {
+            if (good_moves.length === 0 && !this.played_mistake) {
                 this.setState({
                     move_type_sequence: [
                         ...this.state.move_type_sequence,
-                        {type: 'complete', comment: _("Joseki!")}  // translators: the person completed a joseki sequence successfully
-                    ]});
+                        { type: "complete", comment: _("Joseki!") }, // translators: the person completed a joseki sequence successfully
+                    ],
+                });
                 this.updatePlayerJosekiRecord(node_id);
             }
 
             if (this.computer_turn) {
                 // obviously, we don't place another stone if we just placed one
                 this.computer_turn = false;
-            } else if (dto.next_moves.length > 0 && this.state.move_string !== "") {
+            } else if (
+                dto.next_moves.length > 0 &&
+                this.state.move_string !== ""
+            ) {
                 // the computer plays both good and bad moves
-                const next_play = dto.next_moves[Math.floor(Math.random() * dto.next_moves.length)];
+                const next_play =
+                    dto.next_moves[
+                        Math.floor(Math.random() * dto.next_moves.length)
+                    ];
                 // console.log("Will play: ", next_play);
 
                 this.computer_turn = true;
@@ -588,14 +650,16 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
                     this.goban.pass();
                     this.onBoardUpdate();
                 } else {
-                    const location = this.goban.engine.decodeMoves(next_play.placement)[0];
+                    const location = this.goban.engine.decodeMoves(
+                        next_play.placement,
+                    )[0];
                     this.goban.engine.place(location.x, location.y);
                     this.onBoardUpdate();
                 }
             }
         }
 
-        this.setState({throb: false});
+        this.setState({ throb: false });
         this.goban.enableStonePlacement();
     };
 
@@ -604,7 +668,10 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
         // Goban wants "K10L11..Q12"
         // console.log("Loading server supplied position", sequence);
 
-        const ogs_move_string = sequence.substr(6).replace(/\./g, '').replace(/pass/g, '..');
+        const ogs_move_string = sequence
+            .substr(6)
+            .replace(/\./g, "")
+            .replace(/pass/g, "..");
         this.initializeGoban(ogs_move_string);
         this.onBoardUpdate();
     };
@@ -619,24 +686,31 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
             contributor_id: position.contributor,
             variation_label: position.variation_label, // needed for when we edit this position
             current_move_category: position.category,
-            current_node_id: position.node_id + '',  // make sure it's a string - we don't care whether the server thinks its a number
+            current_node_id: position.node_id + "", // make sure it's a string - we don't care whether the server thinks its a number
             current_comment_count: position.comment_count,
             joseki_source: position.joseki_source,
             tags: position.tags,
             child_count: position.child_count,
-            db_locked_down: position.db_locked_down
+            db_locked_down: position.db_locked_down,
         });
         this.last_server_position = position.play;
         this.last_placement = position.placement;
         this.next_moves = position.next_moves;
         this.current_marks = JSON.parse(position.marks) || [];
         this.previous_position = position.parent;
-        if (this.state.mode !== PageMode.Play || this.state.move_string === "") {
+        if (
+            this.state.mode !== PageMode.Play ||
+            this.state.move_string === ""
+        ) {
             this.renderCurrentJosekiPosition();
         }
 
         // Give them the URL for this position in the URL bar
-        window.history.replaceState({}, document.title, '/joseki/' + position.node_id);
+        window.history.replaceState(
+            {},
+            document.title,
+            "/joseki/" + position.node_id,
+        );
     };
 
     // Draw all the variations that we know about from the server (array of moves from the server)
@@ -644,18 +718,21 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
         const next_moves = this.next_moves;
         const current_marks = this.current_marks;
         // console.log("rendering josekis ", next_moves, current_marks);
-        this.goban.engine.cur_move.clearMarks();  // these usually get removed when the person clicks ... but just in case.
+        this.goban.engine.cur_move.clearMarks(); // these usually get removed when the person clicks ... but just in case.
         let new_options = {};
         let pass_available = false;
         next_moves.forEach((option) => {
             new_options = {};
-            if (option['placement'] === 'pass') {
+            if (option["placement"] === "pass") {
                 pass_available = option["category"].toLowerCase(); // this is used as a css style for the button
             } else {
-                const label = option['variation_label'];
+                const label = option["variation_label"];
                 new_options[label] = {
-                    move: GoMath.encodePrettyCoord(option['placement'], this.goban.height),
-                    color: ColorMap[option["category"]]
+                    move: GoMath.encodePrettyCoord(
+                        option["placement"],
+                        this.goban.height,
+                    ),
+                    color: ColorMap[option["category"]],
                 };
             }
             // we have to do this one at a time in case there are more than one variation with the same label
@@ -663,15 +740,17 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
             this.goban.setColoredMarks(new_options);
         });
 
-
-        this.setState({pass_available});
+        this.setState({ pass_available });
         const new_marks = {};
         current_marks.forEach((mark: {}) => {
-            const label = mark['label'];
-            new_marks[label] = GoMath.encodePrettyCoord(mark['position'], this.goban.height);
+            const label = mark["label"];
+            new_marks[label] = GoMath.encodePrettyCoord(
+                mark["position"],
+                this.goban.height,
+            );
             this.goban.setMarks(new_marks);
         });
-        this.goban.redraw(true);  // stop it optimising away colour changes when mark doesn't change.
+        this.goban.redraw(true); // stop it optimising away colour changes when mark doesn't change.
     };
 
     /* This is called every time a move is played on the Goban
@@ -683,7 +762,8 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
         const mvs = GoMath.decodeMoves(
             this.goban.engine.cur_move.getMoveStringToThisPoint(),
             this.goban.width,
-            this.goban.height);
+            this.goban.height,
+        );
 
         let move_string;
         let the_move;
@@ -692,7 +772,7 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
         if (mvs.length > 0) {
             const move_string_array = mvs.map((p) => {
                 let coord = GoMath.prettyCoords(p.x, p.y, this.goban.height);
-                coord = coord === '' ? 'pass' : coord;  // if we put '--' here instead ... https://stackoverflow.com/questions/56822128/rtl-text-direction-displays-dashes-very-strangely-bug-or-misunderstanding#
+                coord = coord === "" ? "pass" : coord; // if we put '--' here instead ... https://stackoverflow.com/questions/56822128/rtl-text-direction-displays-dashes-very-strangely-bug-or-misunderstanding#
                 return coord;
             });
             // console.log("MSA", move_string_array);
@@ -706,16 +786,16 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
             the_move = undefined;
         }
         if (move_string !== this.state.move_string) {
-            this.goban.disableStonePlacement();  // we need to only have one click being processed at a time
+            this.goban.disableStonePlacement(); // we need to only have one click being processed at a time
             // console.log("Move placed: ", the_move);
             this.setState({ move_string });
-            this.processPlacement(the_move, move_string);   // this is responsible for making sure stone placement is turned back on
+            this.processPlacement(the_move, move_string); // this is responsible for making sure stone placement is turned back on
         } else {
-            this.backstepping = false;   // Needed for if they backstep twice at the empty board
+            this.backstepping = false; // Needed for if they backstep twice at the empty board
         }
     };
 
-    processPlacement(move: {x: number; y: number}, move_string: string) {
+    processPlacement(move: { x: number; y: number }, move_string: string) {
         /* They've either
             clicked a stone onto the board in a new position,
             or hit "back" to arrive at an old position,
@@ -725,16 +805,16 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
             ... otherwise stone placement will be left turned off.
             */
 
-        const placement = move ?
-            move.x !== -1 ?
-                GoMath.prettyCoords(move.x, move.y, this.goban.height) :
-                'pass' :
-            "root";
+        const placement = move
+            ? move.x !== -1
+                ? GoMath.prettyCoords(move.x, move.y, this.goban.height)
+                : "pass"
+            : "root";
 
         console.log("Processing placement at:", placement, move_string);
 
         if (this.backstepping) {
-            const play = ".root." + move_string.replace(/,/g, '.');
+            const play = ".root." + move_string.replace(/,/g, ".");
             //console.log("finishing backstep to ", play);
             //console.log("with category", this.state.current_move_category);
             this.backstepping = false;
@@ -748,11 +828,19 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
                 const stepping_back_to = this.previous_position.node_id;
                 this.fetchNextMovesFor(stepping_back_to);
                 this.trace_index--;
-                if (this.trace_index === -1) { // they might have started not at root, so they _can_ attempt to step backwards past zero
+                if (this.trace_index === -1) {
+                    // they might have started not at root, so they _can_ attempt to step backwards past zero
                     this.trace_index = 0;
                     this.move_trace.unshift(stepping_back_to);
-                } else if (this.move_trace[this.trace_index] !== stepping_back_to && this.move_trace[this.trace_index] !== "root") {
-                    console.log("** whoa, move trace out of sync", this.move_trace[this.trace_index], stepping_back_to);
+                } else if (
+                    this.move_trace[this.trace_index] !== stepping_back_to &&
+                    this.move_trace[this.trace_index] !== "root"
+                ) {
+                    console.log(
+                        "** whoa, move trace out of sync",
+                        this.move_trace[this.trace_index],
+                        stepping_back_to,
+                    );
                     this.trace_index = 0;
                     this.move_trace = [stepping_back_to];
                 }
@@ -771,15 +859,20 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
         } else if (this.load_sequence_to_board) {
             // console.log("loaded sequence: nothing to do in process placement");
             this.goban.enableStonePlacement();
-        } else { // they must have clicked a stone onto the board
-            const chosen_move = this.next_moves.find(move => move.placement === placement);
+        } else {
+            // they must have clicked a stone onto the board
+            const chosen_move = this.next_moves.find(
+                (move) => move.placement === placement,
+            );
 
             // console.log("chosen move:", chosen_move, this.computer_turn);
 
-            if (this.state.mode === PageMode.Play &&
-                !this.computer_turn &&  // computer is allowed/expected to play mistake moves to test the response to them
-                (chosen_move === undefined ||  // not in valid list of next_moves
-                bad_moves.includes(chosen_move.category))) {
+            if (
+                this.state.mode === PageMode.Play &&
+                !this.computer_turn && // computer is allowed/expected to play mistake moves to test the response to them
+                (chosen_move === undefined || // not in valid list of next_moves
+                    bad_moves.includes(chosen_move.category))
+            ) {
                 // console.log("mistake!");
                 this.played_mistake = true;
                 this.last_placement = placement;
@@ -787,7 +880,7 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
 
             if (chosen_move !== undefined && !this.played_mistake) {
                 /* The database already knows about this move, so we just get and display the new position information */
-                const node_id = chosen_move.node_id + '';
+                const node_id = chosen_move.node_id + "";
                 this.fetchNextMovesFor(node_id);
 
                 if (this.trace_index === this.move_trace.length - 1) {
@@ -808,16 +901,20 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
                 }
 
                 //console.log("trace:", this.move_trace, this.trace_index);
-
             } else if (chosen_move === undefined && !this.played_mistake) {
                 /* This isn't in the database */
                 // console.log("exploratory");
-                let next_variation_label = '1';
+                let next_variation_label = "1";
                 // pre-set the variation label for edit-mode with the number of children this new move's parent has.
                 if (this.next_moves.length > 0) {
-                    const labelled_here = this.next_moves.reduce((count, move) =>
-                        (("123456789".includes(move['variation_label']) && move['placement'] !== 'pass') ? count + 1 : count),
-                    0);
+                    const labelled_here = this.next_moves.reduce(
+                        (count, move) =>
+                            "123456789".includes(move["variation_label"]) &&
+                            move["placement"] !== "pass"
+                                ? count + 1
+                                : count,
+                        0,
+                    );
                     // Chose the next variation label to be the one afer the current count
                     // Note that '1' will never actually be chosen through this code.
                     next_variation_label = "123456789_".charAt(labelled_here);
@@ -833,25 +930,44 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
                     tag_counts: [],
                     variation_label: next_variation_label,
                     joseki_source: undefined,
-                    tags: []
+                    tags: [],
                 });
                 this.goban.enableStonePlacement();
             }
 
             if (this.state.mode === PageMode.Play) {
-                const move_type = this.computer_turn ? 'computer' :
-                    (chosen_move === undefined || bad_moves.includes(chosen_move.category)) ? 'bad' : 'good';
+                const move_type = this.computer_turn
+                    ? "computer"
+                    : chosen_move === undefined ||
+                      bad_moves.includes(chosen_move.category)
+                    ? "bad"
+                    : "good";
 
-                const comment = placement + ": " +
-                    ((chosen_move === undefined) ? _("That move isn't listed!") :  MoveCategory[chosen_move.category]);
+                const comment =
+                    placement +
+                    ": " +
+                    (chosen_move === undefined
+                        ? _("That move isn't listed!")
+                        : MoveCategory[chosen_move.category]);
 
                 this.setState({
-                    move_type_sequence: [...this.state.move_type_sequence, {type: move_type, comment: comment}],
-                    joseki_errors: (move_type === 'bad' ? this.state.joseki_errors + 1 : this.state.joseki_errors)
+                    move_type_sequence: [
+                        ...this.state.move_type_sequence,
+                        { type: move_type, comment: comment },
+                    ],
+                    joseki_errors:
+                        move_type === "bad"
+                            ? this.state.joseki_errors + 1
+                            : this.state.joseki_errors,
                 });
             }
 
-            if (this.state.mode === PageMode.Play && this.played_mistake && !this.backstepping && !this.computer_turn) {
+            if (
+                this.state.mode === PageMode.Play &&
+                this.played_mistake &&
+                !this.backstepping &&
+                !this.computer_turn
+            ) {
                 // They clicked a non-Joseki move
                 // console.log("Ooops: ", this.state.current_move_category);
 
@@ -869,12 +985,15 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
 
         this.renderCurrentJosekiPosition();
 
-        if (this.last_placement !== 'pass') {
+        if (this.last_placement !== "pass") {
             const new_options = {
-                'X': {
-                    move: GoMath.encodePrettyCoord(this.last_placement, this.goban.height),
-                    color: ColorMap['MISTAKE']
-                }
+                X: {
+                    move: GoMath.encodePrettyCoord(
+                        this.last_placement,
+                        this.goban.height,
+                    ),
+                    color: ColorMap["MISTAKE"],
+                },
             };
             this.goban.setColoredMarks(new_options);
         }
@@ -883,7 +1002,7 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
     componentDidUpdate(prevProps) {
         // console.log("did update...");
         if (prevProps.location.key !== this.props.location.key) {
-            this.componentDidMount();  // force reload of position if they click a position link
+            this.componentDidMount(); // force reload of position if they click a position link
         }
 
         // try to persuade goban to render at the correct size all the time
@@ -893,7 +1012,7 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
     setAdminMode = () => {
         this.resetBoard();
         this.setState({
-            mode: PageMode.Admin
+            mode: PageMode.Admin,
         });
     };
 
@@ -912,7 +1031,7 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
             joseki_errors: 0,
             joseki_successes: undefined,
             joseki_best_attempt: undefined,
-            count_display_open: false
+            count_display_open: false,
         });
         this.fetchPlayResults();
     };
@@ -928,19 +1047,20 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
         const results_url = server_url + "playrecord";
 
         // console.log("Fetching play record logs ", results_url);
-        this.setState({extra_throb: true});
+        this.setState({ extra_throb: true });
         fetch(results_url, {
-            mode: 'cors',
-            headers: oje_headers()
+            mode: "cors",
+            headers: oje_headers(),
         })
-        .then(response => response.json()) // wait for the body of the response
-        .then(body => {
-            this.setState({extra_throb: false});
-            // console.log("Server response: ", body);
-            this.extractPlayResults(body);
-        }).catch((r) => {
-            console.log("Play results GET failed:", r);
-        });
+            .then((response) => response.json()) // wait for the body of the response
+            .then((body) => {
+                this.setState({ extra_throb: false });
+                // console.log("Server response: ", body);
+                this.extractPlayResults(body);
+            })
+            .catch((r) => {
+                console.log("Play results GET failed:", r);
+            });
     };
 
     // results DTO can come from either a fetch of the overall player record, or a put of the results of a particular sequence
@@ -949,7 +1069,7 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
             josekis_played: results_dto.josekis_played,
             josekis_completed: results_dto.josekis_completed,
             joseki_best_attempt: results_dto.error_count,
-            joseki_successes: results_dto.successes
+            joseki_successes: results_dto.successes,
         });
     };
 
@@ -965,7 +1085,7 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
         // They clicked the back button ... tell goban and let it call us back with the result
         if (!this.backstepping && !this.state.throb) {
             // console.log("backstepping...");
-            this.backstepping = true;  // make sure we know the reason why the goban called us back
+            this.backstepping = true; // make sure we know the reason why the goban called us back
             this.goban.showPrevious();
         } else {
             // console.log("(ignoring back button click, still processing prior one)");
@@ -982,16 +1102,23 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
     forwardOneMove = () => {
         // They clicked the forwards arrow, so take them forwards the way they went before, if we can...
         // console.log("step forwards...");
-        if (this.move_trace.length < 2 || this.trace_index > this.move_trace.length - 2) {
+        if (
+            this.move_trace.length < 2 ||
+            this.trace_index > this.move_trace.length - 2
+        ) {
             // We don't have a saved move to step forwards to
 
             // Try to step them fowards into the best joseki choice at this position...
             // (but don't do passes, cause that's wierd for arrow keys, and more complicated to achieve :) )
 
             if (this.next_moves.length > 0) {
-                const best_move = this.next_moves.reduce((prev_move, next_move) => (
-                    ((prev_move.variation_label > next_move.variation_label) && next_move.placement !== "pass") ? next_move : prev_move
-                ));
+                const best_move = this.next_moves.reduce(
+                    (prev_move, next_move) =>
+                        prev_move.variation_label > next_move.variation_label &&
+                        next_move.placement !== "pass"
+                            ? next_move
+                            : prev_move,
+                );
                 // console.log("best move", best_move);
                 this.doPlacement(best_move.placement);
             }
@@ -1002,7 +1129,8 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
         if (this.cached_positions.hasOwnProperty(target_forward_move)) {
             // we should of course have it cached, since they visited it already
             // which is handy, because we need the placement from the node id - available in the cache
-            const step_to = this.cached_positions[target_forward_move].placement;
+            const step_to =
+                this.cached_positions[target_forward_move].placement;
             // console.log("going forwards back to:", step_to);
             this.doPlacement(step_to);
         }
@@ -1022,13 +1150,13 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
         this.goban.pass();
         this.goban.engine.cur_move.clearMarks();
         this.goban.redraw();
-        this.onBoardUpdate();  // seems like pass does not trigger this!
+        this.onBoardUpdate(); // seems like pass does not trigger this!
     };
 
     updateVariationFilter = (filter) => {
         // console.log("update filter:", filter);
         this.setState({
-            variation_filter: filter
+            variation_filter: filter,
         });
         this.cached_positions = {}; // dump cache because the filter changed, and the cache holds filtered results
         this.fetchNextFilteredMovesFor(this.state.current_node_id, filter);
@@ -1051,76 +1179,97 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
         this.setState({
             tag_counts: [],
             count_details_open: true,
-            counts_throb: true
+            counts_throb: true,
         });
 
         fetch(tagscount_url(node_id), {
-            mode: 'cors',
-            headers: oje_headers()
+            mode: "cors",
+            headers: oje_headers(),
         })
-        .then(res => res.json())
-        .then(body => {
-            // console.log("Tags Count GET:", body);
-            let tags = [];
-            if (body.tags) {
-                tags = body.tags.sort((t1, t2) => (t1.group !== t2.group ? Math.sign(t1.group - t2.group) : Math.sign(t1.seq - t2.seq)));
-            }
-            const counts = [];
-            tags.forEach(t => {
-                counts.push({tagname: t.description, count: t.continuationCount});
+            .then((res) => res.json())
+            .then((body) => {
+                // console.log("Tags Count GET:", body);
+                let tags = [];
+                if (body.tags) {
+                    tags = body.tags.sort((t1, t2) =>
+                        t1.group !== t2.group
+                            ? Math.sign(t1.group - t2.group)
+                            : Math.sign(t1.seq - t2.seq),
+                    );
+                }
+                const counts = [];
+                tags.forEach((t) => {
+                    counts.push({
+                        tagname: t.description,
+                        count: t.continuationCount,
+                    });
+                });
+                this.setState({
+                    tag_counts: counts,
+                    counts_throb: false,
+                });
+            })
+            .catch((r) => {
+                console.log("Continuation Counts GET failed:", r);
             });
-            this.setState({
-                tag_counts: counts,
-                counts_throb: false
-            });
-        }).catch((r) => {
-            console.log("Continuation Counts GET failed:", r);
-        });
     };
 
     hideVariationCounts = () => {
-        this.setState({count_details_open: false});
+        this.setState({ count_details_open: false });
     };
 
     updateDBLockStatus = (new_status) => {
-        this.setState({db_locked_down: new_status});
+        this.setState({ db_locked_down: new_status });
     };
 
     toggleBackend = () => {
-        const current_setting = data.get('joseki-url', "unset");
-        if (current_setting === '/oje/' || current_setting === "unset") {
-            data.set('joseki-url', '/godojo/');
+        const current_setting = data.get("joseki-url", "unset");
+        if (current_setting === "/oje/" || current_setting === "unset") {
+            data.set("joseki-url", "/godojo/");
         } else {
-            data.set('joseki-url', '/oje/');
+            data.set("joseki-url", "/oje/");
         }
 
-        window.location.assign('/joseki/');
+        window.location.assign("/joseki/");
     };
 
     render() {
         // console.log("Joseki app rendering ", this.state.move_string, this.state.current_move_category);
 
-        const tenuki_type = (this.state.pass_available && this.state.mode !== PageMode.Play && this.state.move_string !== "") ?
-            this.state.pass_available : "";
+        const tenuki_type =
+            this.state.pass_available &&
+            this.state.mode !== PageMode.Play &&
+            this.state.move_string !== ""
+                ? this.state.pass_available
+                : "";
 
-        const count_details = this.state.count_details_open ?
+        const count_details = this.state.count_details_open ? (
             <React.Fragment>
-                {this.state.tag_counts.filter((t) => (t.count > 0)).map((t, idx) => (
-                    <div className="variation-count-item" key={idx}>
-                        <span>{t.tagname}:</span><span>{t.count}</span></div>
-                ))}
+                {this.state.tag_counts
+                    .filter((t) => t.count > 0)
+                    .map((t, idx) => (
+                        <div className="variation-count-item" key={idx}>
+                            <span>{t.tagname}:</span>
+                            <span>{t.count}</span>
+                        </div>
+                    ))}
             </React.Fragment>
-            : "";
+        ) : (
+            ""
+        );
 
-        const tags = ! this.state.tags  ? "" :
-            this.state.tags.sort((a, b) => (Math.sign(a.group - b.group))).map((tag, idx) => (
-                <div className="position-tag" key={idx}>
-                    <span>{tag['description']}</span>
-                </div>
-            ));
+        const tags = !this.state.tags
+            ? ""
+            : this.state.tags
+                  .sort((a, b) => Math.sign(a.group - b.group))
+                  .map((tag, idx) => (
+                      <div className="position-tag" key={idx}>
+                          <span>{tag["description"]}</span>
+                      </div>
+                  ));
 
         let backend = "?";
-        const current_setting = data.get('joseki-url');
+        const current_setting = data.get("joseki-url");
         if (current_setting === "/oje/" || current_setting === undefined) {
             backend = "new";
         }
@@ -1134,35 +1283,88 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
                 <KBShortcut shortcut="left" action={this.backOneMoveKey} />
                 <KBShortcut shortcut="right" action={this.forwardOneMoveKey} />
 
-                <div className={"left-col" + (this.state.mode === PageMode.Admin ? " admin-mode" : "")}>
-                    <div ref={(e) => this.goban_container = e} className="goban-container">
-                        <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
-                        <PersistentElement ref={(e) => this.goban_persistent_element = e} className="Goban" elt={this.goban_div} />
+                <div
+                    className={
+                        "left-col" +
+                        (this.state.mode === PageMode.Admin
+                            ? " admin-mode"
+                            : "")
+                    }
+                >
+                    <div
+                        ref={(e) => (this.goban_container = e)}
+                        className="goban-container"
+                    >
+                        <ReactResizeDetector
+                            handleWidth
+                            handleHeight
+                            onResize={() => this.onResize()}
+                        />
+                        <PersistentElement
+                            ref={(e) => (this.goban_persistent_element = e)}
+                            className="Goban"
+                            elt={this.goban_div}
+                        />
                     </div>
                 </div>
                 <div className="right-col">
                     <div className="top-bar">
-                        <div className={"move-controls" + (this.played_mistake ? " highlight" : "")}>
-                            <i className="fa fa-fast-backward" onClick={this.resetBoard}></i>
-                            <i className={"fa fa-step-backward" + ((this.state.mode !== PageMode.Play || this.played_mistake) ? "" : " hide")} onClick={this.backOneMove}></i>
-                            <i className={"fa fa-step-forward" + ((this.state.mode !== PageMode.Play && ((this.move_trace.length > 1 && this.trace_index < this.move_trace.length - 1) || this.next_moves.length > 0)) ? "" : " hide")}
-                                onClick={this.forwardOneMove}></i>
+                        <div
+                            className={
+                                "move-controls" +
+                                (this.played_mistake ? " highlight" : "")
+                            }
+                        >
+                            <i
+                                className="fa fa-fast-backward"
+                                onClick={this.resetBoard}
+                            ></i>
+                            <i
+                                className={
+                                    "fa fa-step-backward" +
+                                    (this.state.mode !== PageMode.Play ||
+                                    this.played_mistake
+                                        ? ""
+                                        : " hide")
+                                }
+                                onClick={this.backOneMove}
+                            ></i>
+                            <i
+                                className={
+                                    "fa fa-step-forward" +
+                                    (this.state.mode !== PageMode.Play &&
+                                    ((this.move_trace.length > 1 &&
+                                        this.trace_index <
+                                            this.move_trace.length - 1) ||
+                                        this.next_moves.length > 0)
+                                        ? ""
+                                        : " hide")
+                                }
+                                onClick={this.forwardOneMove}
+                            ></i>
                             <button
                                 className={"pass-button " + tenuki_type}
-                                onClick={this.doPass}>
+                                onClick={this.doPass}
+                            >
                                 Tenuki
                             </button>
                             <div className="throbber-spacer">
-                                <Throbber throb={this.state.throb}/>
+                                <Throbber throb={this.state.throb} />
                             </div>
                         </div>
                         <div className="top-bar-other">
                             {this.renderModeControl()}
-                            <a href="https://github.com/online-go/online-go.com/wiki/OGS-Joseki-Explorer" className="joseki-help">
+                            <a
+                                href="https://github.com/online-go/online-go.com/wiki/OGS-Joseki-Explorer"
+                                className="joseki-help"
+                            >
                                 <i className="fa fa-question-circle-o"></i>
                             </a>
                             <div className="backend-control">
-                                <i className="fa fa-exchange" onClick={this.toggleBackend}></i>
+                                <i
+                                    className="fa fa-exchange"
+                                    onClick={this.toggleBackend}
+                                ></i>
                                 <span>{backend}</span>
                             </div>
                         </div>
@@ -1171,72 +1373,144 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
                     {this.renderModeMainPane()}
 
                     <div className="position-details">
-                        <div className={"status-info" + (this.state.move_string === "" ? " hide" : "")} >
-                            {this.state.position_type !== "new" &&
-                            <div className="position-other-info">
-                                {tags}
-                                {this.state.joseki_source && this.state.joseki_source.url.length > 0 &&
-                                <div className="position-joseki-source">
-                                    <span>{_("Source")}:</span><a href={this.state.joseki_source.url}>{this.state.joseki_source.description}</a>
-                                </div>}
-                                {this.state.joseki_source && this.state.joseki_source.url.length === 0 &&
-                                <div className="position-joseki-source">
-                                    <span>{_("Source")}:</span><span>{this.state.joseki_source.description}</span>
-                                </div>}
-                            </div>
+                        <div
+                            className={
+                                "status-info" +
+                                (this.state.move_string === "" ? " hide" : "")
                             }
+                        >
+                            {this.state.position_type !== "new" && (
+                                <div className="position-other-info">
+                                    {tags}
+                                    {this.state.joseki_source &&
+                                        this.state.joseki_source.url.length >
+                                            0 && (
+                                            <div className="position-joseki-source">
+                                                <span>{_("Source")}:</span>
+                                                <a
+                                                    href={
+                                                        this.state.joseki_source
+                                                            .url
+                                                    }
+                                                >
+                                                    {
+                                                        this.state.joseki_source
+                                                            .description
+                                                    }
+                                                </a>
+                                            </div>
+                                        )}
+                                    {this.state.joseki_source &&
+                                        this.state.joseki_source.url.length ===
+                                            0 && (
+                                            <div className="position-joseki-source">
+                                                <span>{_("Source")}:</span>
+                                                <span>
+                                                    {
+                                                        this.state.joseki_source
+                                                            .description
+                                                    }
+                                                </span>
+                                            </div>
+                                        )}
+                                </div>
+                            )}
                             <div className="move-category">
-                                {this.state.current_move_category === "" ? "" :
-                                    _("Last move") + ": " +
-                                    (this.state.current_move_category === "new" ? (
-                                        this.state.mode === PageMode.Explore ? _("Experiment") : _("Proposed Move")) :
-                                        this.state.current_move_category)}
+                                {this.state.current_move_category === ""
+                                    ? ""
+                                    : _("Last move") +
+                                      ": " +
+                                      (this.state.current_move_category ===
+                                      "new"
+                                          ? this.state.mode === PageMode.Explore
+                                              ? _("Experiment")
+                                              : _("Proposed Move")
+                                          : this.state.current_move_category)}
                             </div>
 
-                            <div className={"contributor" +
-                                ((this.state.current_move_category === "new") ? " hide" : "")}>
-
-                                <span>{_("Contributor")}:</span> <Player user={this.state.contributor_id} />
+                            <div
+                                className={
+                                    "contributor" +
+                                    (this.state.current_move_category === "new"
+                                        ? " hide"
+                                        : "")
+                                }
+                            >
+                                <span>{_("Contributor")}:</span>{" "}
+                                <Player user={this.state.contributor_id} />
                             </div>
                             <div>{_("Moves made")}:</div>
                             <div className="moves-made">
-                                {this.state.current_move_category !== "new" ?
-                                <Link className="moves-made-string" to={'/joseki/' + this.state.current_node_id}>{this.state.move_string}</Link> :
-                                <span className="moves-made-string">{this.state.move_string}</span>}
+                                {this.state.current_move_category !== "new" ? (
+                                    <Link
+                                        className="moves-made-string"
+                                        to={
+                                            "/joseki/" +
+                                            this.state.current_node_id
+                                        }
+                                    >
+                                        {this.state.move_string}
+                                    </Link>
+                                ) : (
+                                    <span className="moves-made-string">
+                                        {this.state.move_string}
+                                    </span>
+                                )}
                             </div>
                         </div>
                         <div className="continuations-pane">
-                            {!!this.state.child_count &&
-                            <React.Fragment>
-                                <button className="position-child-count" onClick={this.toggleContinuationCountDetail}>
-                                    {interpolate(_("This position leads to {{count}} others"), {count: this.state.child_count})}
-                                    {!this.state.count_details_open &&
-                                        <i className="fa fa-lg fa-caret-right"></i>
-                                    }
-                                    {this.state.count_details_open &&
-                                        <i className="fa fa-lg fa-caret-down"></i>
-                                    }
-                                </button>
-                                <div className={"child-count-details-pane" + (this.state.count_details_open ? " details-pane-open" : "")}>
-
-                                    {this.state.count_details_open &&
-                                    <div className="count-details">
-                                        <Throbber throb={this.state.counts_throb}/>
-                                        {count_details}
-                                    </div>
-                                    }
-                                </div>
-                            </React.Fragment>
-                            }
-                            {(!this.state.child_count) &&
+                            {!!this.state.child_count && (
                                 <React.Fragment>
-                                    <div className="position-child-count">
-                                        {_("This position has no continuations") + "."}
-                                    </div>
-                                    <div className="child-count-details-pane">
+                                    <button
+                                        className="position-child-count"
+                                        onClick={
+                                            this.toggleContinuationCountDetail
+                                        }
+                                    >
+                                        {interpolate(
+                                            _(
+                                                "This position leads to {{count}} others",
+                                            ),
+                                            { count: this.state.child_count },
+                                        )}
+                                        {!this.state.count_details_open && (
+                                            <i className="fa fa-lg fa-caret-right"></i>
+                                        )}
+                                        {this.state.count_details_open && (
+                                            <i className="fa fa-lg fa-caret-down"></i>
+                                        )}
+                                    </button>
+                                    <div
+                                        className={
+                                            "child-count-details-pane" +
+                                            (this.state.count_details_open
+                                                ? " details-pane-open"
+                                                : "")
+                                        }
+                                    >
+                                        {this.state.count_details_open && (
+                                            <div className="count-details">
+                                                <Throbber
+                                                    throb={
+                                                        this.state.counts_throb
+                                                    }
+                                                />
+                                                {count_details}
+                                            </div>
+                                        )}
                                     </div>
                                 </React.Fragment>
-                            }
+                            )}
+                            {!this.state.child_count && (
+                                <React.Fragment>
+                                    <div className="position-child-count">
+                                        {_(
+                                            "This position has no continuations",
+                                        ) + "."}
+                                    </div>
+                                    <div className="child-count-details-pane"></div>
+                                </React.Fragment>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -1246,25 +1520,50 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
 
     renderModeControl = () => (
         <div className="mode-control btn-group">
-            <button className={"btn s  " + (this.state.mode === PageMode.Explore ? "primary" : "")} onClick={this.setExploreMode}>
+            <button
+                className={
+                    "btn s  " +
+                    (this.state.mode === PageMode.Explore ? "primary" : "")
+                }
+                onClick={this.setExploreMode}
+            >
                 {_("Explore")}
             </button>
-            <button className={"btn s  " + (this.state.mode === PageMode.Play ? "primary" : "")} onClick={this.setPlayMode}>
+            <button
+                className={
+                    "btn s  " +
+                    (this.state.mode === PageMode.Play ? "primary" : "")
+                }
+                onClick={this.setPlayMode}
+            >
                 {_("Play")}
             </button>
-            {this.state.user_can_edit && !this.state.db_locked_down &&
+            {this.state.user_can_edit && !this.state.db_locked_down && (
+                <button
+                    className={
+                        "btn s  " +
+                        (this.state.mode === PageMode.Edit ? "primary" : "")
+                    }
+                    onClick={this.setEditMode}
+                >
+                    {this.state.current_move_category === "new" &&
+                    this.state.mode === PageMode.Explore
+                        ? _("Save")
+                        : _("Edit")}
+                </button>
+            )}
+            {this.state.user_can_edit && this.state.db_locked_down && (
+                <button className={"btn s "} disabled>
+                    Edit <i className="fa fa-lock" />
+                </button>
+            )}
             <button
-                className={"btn s  " + (this.state.mode === PageMode.Edit ? "primary" : "")} onClick={this.setEditMode}>
-                {this.state.current_move_category === "new" && this.state.mode === PageMode.Explore ? _("Save") : _("Edit")}
-            </button>
-            }
-            {this.state.user_can_edit && this.state.db_locked_down &&
-            <button
-                className={"btn s "} disabled>
-                Edit <i className="fa fa-lock"/>
-            </button>
-            }
-            <button className={"btn s  " + (this.state.mode === PageMode.Admin ? "primary" : "")} onClick={this.setAdminMode}>
+                className={
+                    "btn s  " +
+                    (this.state.mode === PageMode.Admin ? "primary" : "")
+                }
+                onClick={this.setAdminMode}
+            >
                 {this.state.user_can_administer ? _("Admin") : _("Updates")}
             </button>
         </div>
@@ -1280,15 +1579,18 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
                     user_can_administer={this.state.user_can_administer}
                     user_can_edit={this.state.user_can_edit}
                     db_locked_down={this.state.db_locked_down}
-                    loadPositionToBoard = {this.loadPosition}
-                    updateDBLockStatus = {this.updateDBLockStatus}
+                    loadPositionToBoard={this.loadPosition}
+                    updateDBLockStatus={this.updateDBLockStatus}
                 />
             );
-        } else if (this.state.mode === PageMode.Explore ||
-            (this.state.mode === PageMode.Edit && this.state.move_string === "" )// you can't edit the empty board
+        } else if (
+            this.state.mode === PageMode.Explore ||
+            (this.state.mode === PageMode.Edit && this.state.move_string === "") // you can't edit the empty board
         ) {
             // hacklily lock down comments on the old server, because (1) it is old and (2) the comment PUT route changed.
-            const allow_comments = server_url.includes('oje') ? this.state.user_can_comment : false;
+            const allow_comments = server_url.includes("oje")
+                ? this.state.user_can_comment
+                : false;
             return (
                 <ExplorePane
                     description={this.state.position_description}
@@ -1298,10 +1600,10 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
                     can_comment={this.state.user_can_comment}
                     joseki_source={this.state.joseki_source}
                     tags={this.state.tags}
-                    set_variation_filter = {this.updateVariationFilter}
-                    current_filter = {this.state.variation_filter}
-                    child_count = {this.state.child_count}
-                    show_comments = {this.show_comments_requested}
+                    set_variation_filter={this.updateVariationFilter}
+                    current_filter={this.state.variation_filter}
+                    child_count={this.state.child_count}
+                    show_comments={this.show_comments_requested}
                 />
             );
         } else if (this.state.mode === PageMode.Edit) {
@@ -1311,7 +1613,11 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
                     category={this.state.current_move_category}
                     description={this.state.position_description}
                     variation_label={this.state.variation_label}
-                    joseki_source_id={(this.state.joseki_source ? this.state.joseki_source.id : 'none') as number} // joseki_source_id appears to be unused within EditPane
+                    joseki_source_id={
+                        (this.state.joseki_source
+                            ? this.state.joseki_source.id
+                            : "none") as number
+                    } // joseki_source_id appears to be unused within EditPane
                     tags={this.state.tags}
                     contributor={this.state.contributor_id}
                     save_new_info={this.saveNewPositionInfo}
@@ -1328,15 +1634,21 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
                     joseki_best_attempt={this.state.joseki_best_attempt}
                     joseki_successes={this.state.joseki_successes}
                     joseki_tag_id={this.state.joseki_tag_id}
-                    set_variation_filter = {this.updateVariationFilter}
-                    current_filter = {this.state.variation_filter}
+                    set_variation_filter={this.updateVariationFilter}
+                    current_filter={this.state.variation_filter}
                 />
             );
         }
     };
 
-    saveNewPositionInfo = (move_type, variation_label, tags, description, joseki_source_id, marks) => {
-
+    saveNewPositionInfo = (
+        move_type,
+        variation_label,
+        tags,
+        description,
+        joseki_source_id,
+        marks,
+    ) => {
         const mark_string = JSON.stringify(marks); // 'marks' is just a string as far as back end is concerned
 
         this.cached_positions = {}; // dump cache to make sure the editor sees their new results
@@ -1345,8 +1657,8 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
             // they must have pressed save on a current position.
             // console.log("saving position for node", node_id, this.state.mode);
             fetch(position_url(this.state.current_node_id), {
-                method: 'put',
-                mode: 'cors',
+                method: "put",
+                mode: "cors",
                 headers: oje_headers(),
                 body: JSON.stringify({
                     description: description,
@@ -1354,58 +1666,62 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
                     tags: tags,
                     category: move_type.toUpperCase(),
                     joseki_source_id: joseki_source_id,
-                    marks: mark_string
-                })
+                    marks: mark_string,
+                }),
             })
-            .then(res => res.json())
-            .then(body => {
-                // console.log("Server response to sequence PUT:", body);
-                this.processNewJosekiPosition(body);
-                this.setExploreMode();
-            }).catch((r) => {
-                console.log("Position PUT failed:", r);
-            });
+                .then((res) => res.json())
+                .then((body) => {
+                    // console.log("Server response to sequence PUT:", body);
+                    this.processNewJosekiPosition(body);
+                    this.setExploreMode();
+                })
+                .catch((r) => {
+                    console.log("Position PUT failed:", r);
+                });
         } else {
             // Here the person has added one or more moves then clicked "save"
             // First we save the new position(s)
             fetch(server_url + "positions", {
-                method: 'post',
-                mode: 'cors',
+                method: "post",
+                mode: "cors",
                 headers: oje_headers(),
                 body: JSON.stringify({
                     sequence: this.state.move_string,
-                    category: move_type.toUpperCase() })
+                    category: move_type.toUpperCase(),
+                }),
             })
-            .then(res => res.json())
-            .then(body => {
-                // console.log("Server response to sequence POST:", body);
-                this.processNewJosekiPosition(body);
-
-                // Now we can save the fields that apply only to the final position
-
-                fetch(position_url(this.state.current_node_id), {
-                    method: 'put',
-                    mode: 'cors',
-                    headers: oje_headers(),
-                    body: JSON.stringify({
-                        description: description,
-                        variation_label: variation_label,
-                        tags: tags,
-                        joseki_source_id: joseki_source_id,
-                        marks: mark_string
-                    })
-                })
-                .then(res => res.json())
-                .then(body => {
-                    // console.log("Server response to description PUT:", body);
+                .then((res) => res.json())
+                .then((body) => {
+                    // console.log("Server response to sequence POST:", body);
                     this.processNewJosekiPosition(body);
-                    this.setExploreMode();
-                }).catch((r) => {
-                    console.log("Position PUT failed:", r);
+
+                    // Now we can save the fields that apply only to the final position
+
+                    fetch(position_url(this.state.current_node_id), {
+                        method: "put",
+                        mode: "cors",
+                        headers: oje_headers(),
+                        body: JSON.stringify({
+                            description: description,
+                            variation_label: variation_label,
+                            tags: tags,
+                            joseki_source_id: joseki_source_id,
+                            marks: mark_string,
+                        }),
+                    })
+                        .then((res) => res.json())
+                        .then((body) => {
+                            // console.log("Server response to description PUT:", body);
+                            this.processNewJosekiPosition(body);
+                            this.setExploreMode();
+                        })
+                        .catch((r) => {
+                            console.log("Position PUT failed:", r);
+                        });
+                })
+                .catch((r) => {
+                    console.log("PositionS POST failed:", r);
                 });
-            }).catch((r) => {
-                console.log("PositionS POST failed:", r);
-            });
         }
     };
 }
@@ -1417,10 +1733,10 @@ interface ExploreProps {
     position_type: string;
     comment_count: number;
     can_comment: boolean;
-    joseki_source: {url: string; description: string};
+    joseki_source: { url: string; description: string };
     tags: Array<any>;
     set_variation_filter(filter: any): void;
-    current_filter: {contributor: number; tags: number[]; source: number};
+    current_filter: { contributor: number; tags: number[]; source: number };
     child_count: number;
     show_comments: boolean;
 }
@@ -1440,7 +1756,6 @@ interface ExploreState {
     extra_throb: boolean;
 }
 class ExplorePane extends React.Component<ExploreProps, ExploreState> {
-
     constructor(props) {
         super(props);
 
@@ -1451,7 +1766,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
             forum_thread: "",
             audit_log: [],
             next_comment: "",
-            extra_throb: false
+            extra_throb: false,
         };
     }
 
@@ -1474,10 +1789,14 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
         if (prevProps.position_id !== this.props.position_id) {
             this.setState({
                 extra_info_selected: "none",
-                commentary: []
+                commentary: [],
             });
         } else {
-            if (this.props.position_id  && this.props.show_comments && this.state.extra_info_selected === "none" ) {
+            if (
+                this.props.position_id &&
+                this.props.show_comments &&
+                this.state.extra_info_selected === "none"
+            ) {
                 this.showComments();
             }
         }
@@ -1485,41 +1804,44 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
 
     showComments = () => {
         // Possible optimisation: don't re-fetch if we already have them for this node
-        const comments_url = server_url + "commentary?id=" + this.props.position_id;
+        const comments_url =
+            server_url + "commentary?id=" + this.props.position_id;
         // console.log("Fetching comments ", comments_url);
         // console.log(oje_headers);
-        this.setState({extra_throb: true});
+        this.setState({ extra_throb: true });
 
         fetch(comments_url, {
-            mode: 'cors',
-            headers: oje_headers()
+            mode: "cors",
+            headers: oje_headers(),
         })
-        .then(response => response.json()) // wait for the body of the response
-        .then(body => {
-            // console.log("Server response:", body);
-            this.setState({extra_throb: false});
-            this.extractCommentary(body);
-        }).catch((r) => {
-            console.log("Comments GET failed:", r);
-        });
+            .then((response) => response.json()) // wait for the body of the response
+            .then((body) => {
+                // console.log("Server response:", body);
+                this.setState({ extra_throb: false });
+                this.extractCommentary(body);
+            })
+            .catch((r) => {
+                console.log("Comments GET failed:", r);
+            });
         this.setState({ extra_info_selected: "comments" });
     };
 
     extractCommentary = (commentary_dto) => {
         // console.log(commentary_dto);
-        const commentary = commentary_dto.commentary.map((comment) => (
-            {
-                user_id: comment.user_id,
-                date: new Date(comment.date),
-                comment: comment.comment
-            }
-        ));
-        const forum_thread_url = commentary_dto.forum_thread_id === null ? "" :
-            ("https://forums.online-go.com/t/" + commentary_dto.forum_thread_id);
+        const commentary = commentary_dto.commentary.map((comment) => ({
+            user_id: comment.user_id,
+            date: new Date(comment.date),
+            comment: comment.comment,
+        }));
+        const forum_thread_url =
+            commentary_dto.forum_thread_id === null
+                ? ""
+                : "https://forums.online-go.com/t/" +
+                  commentary_dto.forum_thread_id;
 
         this.setState({
             commentary: commentary,
-            forum_thread: forum_thread_url
+            forum_thread: forum_thread_url,
         });
     };
 
@@ -1530,27 +1852,29 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
     showAuditLog = () => {
         const audits_url = server_url + "audits?id=" + this.props.position_id;
         // console.log("Fetching audit logs ", audits_url);
-        this.setState({extra_throb: true});
+        this.setState({ extra_throb: true });
         fetch(audits_url, {
-            mode: 'cors',
-            headers: oje_headers()
+            mode: "cors",
+            headers: oje_headers(),
         })
-        .then(response => response.json()) // wait for the body of the response
-        .then(body => {
-            // console.log("Server response: ", body);
-            this.extractAuditLog(body);
-        }).catch((r) => {
-            console.log("Audits GET failed:", r);
-        }).finally(() => {
-            this.setState({extra_throb: false});
-        });
+            .then((response) => response.json()) // wait for the body of the response
+            .then((body) => {
+                // console.log("Server response: ", body);
+                this.extractAuditLog(body);
+            })
+            .catch((r) => {
+                console.log("Audits GET failed:", r);
+            })
+            .finally(() => {
+                this.setState({ extra_throb: false });
+            });
 
         this.setState({ extra_info_selected: "audit-log" });
     };
 
     extractAuditLog = (audit_log_dto) => {
         // the format is basically what we need.  Just capture it!
-        this.setState({ audit_log: audit_log_dto});
+        this.setState({ audit_log: audit_log_dto });
     };
 
     showFilterSelector = () => {
@@ -1561,20 +1885,22 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
         // If they hit enter, we intercept and save.  Otherwise just let them keep typing characters, up to the max length
         // (if they are allowed, of course)
         if (/\r|\n/.exec(e.target.value)) {
-            const comment_url = server_url + "comment?id=" + this.props.position_id;
+            const comment_url =
+                server_url + "comment?id=" + this.props.position_id;
             fetch(comment_url, {
-                method: 'post',
-                mode: 'cors',
+                method: "post",
+                mode: "cors",
                 headers: oje_headers(),
-                body: JSON.stringify({'comment': this.state.next_comment})
+                body: JSON.stringify({ comment: this.state.next_comment }),
             })
-            .then(res => res.json())
-            .then(body => {
-                // console.log("Server response to comment POST:", body);
-                this.extractCommentary(body);
-            }).catch((r) => {
-                console.log("Comment PUT failed:", r);
-            });
+                .then((res) => res.json())
+                .then((body) => {
+                    // console.log("Server response to comment POST:", body);
+                    this.extractCommentary(body);
+                })
+                .catch((r) => {
+                    console.log("Comment PUT failed:", r);
+                });
 
             this.setState({ next_comment: "" });
         } else if (e.target.value.length < 200 && this.props.can_comment) {
@@ -1584,88 +1910,154 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
 
     render = () => {
         const filter_active =
-            ((this.props.current_filter.tags && this.props.current_filter.tags.length !== 0) ||
+            (this.props.current_filter.tags &&
+                this.props.current_filter.tags.length !== 0) ||
             this.props.current_filter.contributor ||
-            this.props.current_filter.source);
+            this.props.current_filter.source;
 
         const description = applyJosekiMarkdown(this.props.description);
 
         return (
             <div className="explore-pane">
                 <div className="description-column">
-                    {this.props.position_type !== "new" ?
+                    {this.props.position_type !== "new" ? (
                         <div className="position-description">
                             <Markdown source={description} />
                         </div>
-                        : ""}
+                    ) : (
+                        ""
+                    )}
                 </div>
                 <div className={"extra-info-column extra-info-open"}>
                     <div className="btn-group extra-info-selector">
-                        <button className={"btn s " + (this.state.extra_info_selected === "variation-filter" ? " primary" : "")}
-                            onClick={(this.state.extra_info_selected === "variation-filter") ? this.hideExtraInfo : this.showFilterSelector}>
-                            <span>{_("Filter")}</span>
-                            {this.state.extra_info_selected === "variation-filter" ?
-                                    <i className={"fa fa-filter hide"}/> :
-                                    <i className={"fa fa-filter" + (filter_active ? " filter-active" : "")}/>
+                        <button
+                            className={
+                                "btn s " +
+                                (this.state.extra_info_selected ===
+                                "variation-filter"
+                                    ? " primary"
+                                    : "")
                             }
+                            onClick={
+                                this.state.extra_info_selected ===
+                                "variation-filter"
+                                    ? this.hideExtraInfo
+                                    : this.showFilterSelector
+                            }
+                        >
+                            <span>{_("Filter")}</span>
+                            {this.state.extra_info_selected ===
+                            "variation-filter" ? (
+                                <i className={"fa fa-filter hide"} />
+                            ) : (
+                                <i
+                                    className={
+                                        "fa fa-filter" +
+                                        (filter_active ? " filter-active" : "")
+                                    }
+                                />
+                            )}
                         </button>
-                        <button className={"btn s " + (this.state.extra_info_selected === "comments" ? " primary" : "")}
-                            onClick={(this.state.extra_info_selected === "comments") ? this.hideExtraInfo : this.showComments}>
+                        <button
+                            className={
+                                "btn s " +
+                                (this.state.extra_info_selected === "comments"
+                                    ? " primary"
+                                    : "")
+                            }
+                            onClick={
+                                this.state.extra_info_selected === "comments"
+                                    ? this.hideExtraInfo
+                                    : this.showComments
+                            }
+                        >
                             {_("Comments")} ({this.props.comment_count})
                         </button>
-                        <button className={"btn s " + (this.state.extra_info_selected === "audit-log" ? " primary" : "")}
-                            onClick={(this.state.extra_info_selected === "audit-log") ? this.hideExtraInfo : this.showAuditLog}>
+                        <button
+                            className={
+                                "btn s " +
+                                (this.state.extra_info_selected === "audit-log"
+                                    ? " primary"
+                                    : "")
+                            }
+                            onClick={
+                                this.state.extra_info_selected === "audit-log"
+                                    ? this.hideExtraInfo
+                                    : this.showAuditLog
+                            }
+                        >
                             {_("Changes")}
                         </button>
                     </div>
 
-                    {this.state.extra_info_selected === "comments" &&
-                            <div className="discussion-container">
-                                <div className="discussion-lines">
-                                    <Throbber throb={this.state.extra_throb}/>
-                                    {this.state.commentary.map((comment, idx) =>
-                                        <div className="comment" key={idx}>
-                                            <div className="comment-header">
-                                                <Player user={comment.user_id}></Player>
-                                                <div className="comment-date">{comment.date.toDateString()}</div>
+                    {this.state.extra_info_selected === "comments" && (
+                        <div className="discussion-container">
+                            <div className="discussion-lines">
+                                <Throbber throb={this.state.extra_throb} />
+                                {this.state.commentary.map((comment, idx) => (
+                                    <div className="comment" key={idx}>
+                                        <div className="comment-header">
+                                            <Player
+                                                user={comment.user_id}
+                                            ></Player>
+                                            <div className="comment-date">
+                                                {comment.date.toDateString()}
                                             </div>
-                                            <Markdown className="comment-text" source={applyJosekiMarkdown(comment.comment)} />
                                         </div>
-                                    )}
-                                </div>
-                                <textarea className="comment-input"
-                                    hidden={!this.props.can_comment}
-                                    rows={1} value={this.state.next_comment} onChange={this.onCommentChange} />
-                            </div>
-                    }
-
-                    {this.state.extra_info_selected === "audit-log" &&
-                            <div className="audit-container">
-                                <Throbber throb={this.state.extra_throb}/>
-                                {this.state.audit_log.map((audit, idx) =>
-                                    <div className="audit-entry" key={idx}>
-                                        <div className="audit-header">
-                                            <Player user={audit.user_id}></Player>
-                                            <div className="audit-date">{new Date(audit.date).toDateString()}</div>
-                                        </div>
-                                        {audit.comment}
+                                        <Markdown
+                                            className="comment-text"
+                                            source={applyJosekiMarkdown(
+                                                comment.comment,
+                                            )}
+                                        />
                                     </div>
-                                )}
+                                ))}
                             </div>
-                    }
+                            <textarea
+                                className="comment-input"
+                                hidden={!this.props.can_comment}
+                                rows={1}
+                                value={this.state.next_comment}
+                                onChange={this.onCommentChange}
+                            />
+                        </div>
+                    )}
 
-                    {this.state.extra_info_selected === "variation-filter" &&
-                            <div className="filter-container">
-                                <JosekiVariationFilter
-                                    contributor_list_url={server_url + "contributors"}
-                                    tag_list_url = {server_url + "tags"}
-                                    source_list_url = {server_url + "josekisources"}
-                                    current_filter = {this.props.current_filter}
-                                    oje_headers={oje_headers()}
-                                    set_variation_filter={this.props.set_variation_filter}
-                                />
-                            </div>
-                    }
+                    {this.state.extra_info_selected === "audit-log" && (
+                        <div className="audit-container">
+                            <Throbber throb={this.state.extra_throb} />
+                            {this.state.audit_log.map((audit, idx) => (
+                                <div className="audit-entry" key={idx}>
+                                    <div className="audit-header">
+                                        <Player user={audit.user_id}></Player>
+                                        <div className="audit-date">
+                                            {new Date(
+                                                audit.date,
+                                            ).toDateString()}
+                                        </div>
+                                    </div>
+                                    {audit.comment}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {this.state.extra_info_selected === "variation-filter" && (
+                        <div className="filter-container">
+                            <JosekiVariationFilter
+                                contributor_list_url={
+                                    server_url + "contributors"
+                                }
+                                tag_list_url={server_url + "tags"}
+                                source_list_url={server_url + "josekisources"}
+                                current_filter={this.props.current_filter}
+                                oje_headers={oje_headers()}
+                                set_variation_filter={
+                                    this.props.set_variation_filter
+                                }
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
         );
@@ -1682,7 +2074,7 @@ interface PlayProps {
     joseki_successes: number;
     joseki_tag_id: number;
     set_variation_filter(filter: any): void;
-    current_filter: {contributor: number; tags: number[]; source: number};
+    current_filter: { contributor: number; tags: number[]; source: number };
 }
 
 interface PlayState {
@@ -1696,32 +2088,43 @@ class PlayPane extends React.Component<PlayProps, PlayState> {
         this.state = {
             extra_info_selected: "none",
             extra_throb: false,
-            forced_filter: false
+            forced_filter: false,
         };
     }
 
     iconFor = (move_type) => {
         switch (move_type) {
-            case 'good': return (<i className="fa fa-check"/>); break;
-            case 'bad': return (<i className="fa fa-times"/>); break;
-            case 'computer': return (<i className="fa fa-desktop"/>); break;
-            case 'complete': return (<i className="fa fa-star"/>); break;
-            default: return "";
+            case "good":
+                return <i className="fa fa-check" />;
+                break;
+            case "bad":
+                return <i className="fa fa-times" />;
+                break;
+            case "computer":
+                return <i className="fa fa-desktop" />;
+                break;
+            case "complete":
+                return <i className="fa fa-star" />;
+                break;
+            default:
+                return "";
         }
     };
 
     componentDidMount = () => {
-        if (this.props.current_filter.contributor  &&
-            this.props.current_filter.tags  &&
-            this.props.current_filter.source ) {
+        if (
+            this.props.current_filter.contributor &&
+            this.props.current_filter.tags &&
+            this.props.current_filter.source
+        ) {
             // Set up a Joseki filter by default
             this.props.set_variation_filter({
-                tags:[this.props.joseki_tag_id],
+                tags: [this.props.joseki_tag_id],
                 contributor: undefined,
-                source: undefined
+                source: undefined,
             });
             this.showFilterSelector();
-            this.setState({forced_filter: true});
+            this.setState({ forced_filter: true });
         } else {
             this.showResults();
         }
@@ -1730,11 +2133,14 @@ class PlayPane extends React.Component<PlayProps, PlayState> {
     // here we are detecting each time they play a move, so we can
     // set the extra info selector in the most helpful way
     static getDerivedStateFromProps = (nextProps, prevState) => {
-        if (prevState.forced_filter && nextProps.move_type_sequence.length > 1) {
-            return ({
-                extra_info_selected: 'results',
-                forced_filter: false
-            });
+        if (
+            prevState.forced_filter &&
+            nextProps.move_type_sequence.length > 1
+        ) {
+            return {
+                extra_info_selected: "results",
+                forced_filter: false,
+            };
         }
         return null;
     };
@@ -1744,7 +2150,7 @@ class PlayPane extends React.Component<PlayProps, PlayState> {
     };
 
     showResults = () => {
-        this.setState({ extra_info_selected: 'results'});
+        this.setState({ extra_info_selected: "results" });
     };
 
     hideExtraInfo = () => {
@@ -1755,69 +2161,131 @@ class PlayPane extends React.Component<PlayProps, PlayState> {
         // console.log("Play render", this.props.move_type_sequence);
 
         const filter_active =
-            ((this.props.current_filter.tags && this.props.current_filter.tags.length !== 0) ||
+            (this.props.current_filter.tags &&
+                this.props.current_filter.tags.length !== 0) ||
             this.props.current_filter.contributor ||
-            this.props.current_filter.source );
+            this.props.current_filter.source;
 
         return (
             <div className="play-columns">
                 <div className="play-dashboard">
-                    {this.props.move_type_sequence.length === 0 &&
-                    <div> Your move...</div>}
-                    {this.props.move_type_sequence.map( (move_type, id) => (
+                    {this.props.move_type_sequence.length === 0 && (
+                        <div> Your move...</div>
+                    )}
+                    {this.props.move_type_sequence.map((move_type, id) => (
                         <div key={id}>
-                            {this.iconFor(move_type['type'])}
-                            {move_type['comment']}
-                        </div>))}
+                            {this.iconFor(move_type["type"])}
+                            {move_type["comment"]}
+                        </div>
+                    ))}
                 </div>
                 <div className={"extra-info-column extra-info-open"}>
                     <div className="btn-group extra-info-selector">
-                        <button className={"btn s " + (this.state.extra_info_selected === "results" ? " primary" : "")}
-                            onClick={(this.state.extra_info_selected === "results") ? this.hideExtraInfo : this.showResults}>
+                        <button
+                            className={
+                                "btn s " +
+                                (this.state.extra_info_selected === "results"
+                                    ? " primary"
+                                    : "")
+                            }
+                            onClick={
+                                this.state.extra_info_selected === "results"
+                                    ? this.hideExtraInfo
+                                    : this.showResults
+                            }
+                        >
                             {_("Results")}
                         </button>
-                        <button className={"btn s " + (this.state.extra_info_selected === "variation-filter" ? " primary" : "")}
-                            onClick={(this.state.extra_info_selected === "variation-filter") ? this.hideExtraInfo : this.showFilterSelector}>
-                            <span>{_("Filter")}</span>
-                            {this.state.extra_info_selected === "variation-filter" ?
-                                    <i className={"fa fa-filter hide"}/> :
-                                    <i className={"fa fa-filter" + (filter_active ? " filter-active" : "")}/>
+                        <button
+                            className={
+                                "btn s " +
+                                (this.state.extra_info_selected ===
+                                "variation-filter"
+                                    ? " primary"
+                                    : "")
                             }
+                            onClick={
+                                this.state.extra_info_selected ===
+                                "variation-filter"
+                                    ? this.hideExtraInfo
+                                    : this.showFilterSelector
+                            }
+                        >
+                            <span>{_("Filter")}</span>
+                            {this.state.extra_info_selected ===
+                            "variation-filter" ? (
+                                <i className={"fa fa-filter hide"} />
+                            ) : (
+                                <i
+                                    className={
+                                        "fa fa-filter" +
+                                        (filter_active ? " filter-active" : "")
+                                    }
+                                />
+                            )}
                         </button>
                     </div>
-                    {this.state.extra_info_selected === "results" &&
-                            <div className="play-results-container">
-                                <h4>{_("Overall:")}</h4>
-                                <div>{_("Josekis played")}: {this.props.josekis_played}</div>
-                                <div>{_("Josekis played correctly")}: {this.props.josekis_completed}</div>
-
-                                <h4>{_("This Sequence:")}</h4>
-                                <div>{_("Mistakes so far")}: {this.props.joseki_errors}</div>
-
-                                {!!this.props.joseki_successes &&
-                                    <div>{_("Correct plays of this position")}: {this.props.joseki_successes}</div>
-                                }
-                                {!!this.props.joseki_best_attempt &&
-                                    <div>
-                                        {interpolate(_("Best attempt: {{mistakes}}"), {mistakes: this.props.joseki_best_attempt})
-                                     + " " + npgettext("mistakes", "mistake", "mistakes", this.props.joseki_best_attempt)}
-                                    </div>
-                                }
+                    {this.state.extra_info_selected === "results" && (
+                        <div className="play-results-container">
+                            <h4>{_("Overall:")}</h4>
+                            <div>
+                                {_("Josekis played")}:{" "}
+                                {this.props.josekis_played}
                             </div>
-                    }
-
-                    {this.state.extra_info_selected === "variation-filter" &&
-                            <div className="filter-container">
-                                <JosekiVariationFilter
-                                    contributor_list_url={server_url + "contributors"}
-                                    tag_list_url = {server_url + "tags"}
-                                    source_list_url = {server_url + "josekisources"}
-                                    current_filter = {this.props.current_filter}
-                                    oje_headers={oje_headers()}
-                                    set_variation_filter={this.props.set_variation_filter}
-                                />
+                            <div>
+                                {_("Josekis played correctly")}:{" "}
+                                {this.props.josekis_completed}
                             </div>
-                    }
+
+                            <h4>{_("This Sequence:")}</h4>
+                            <div>
+                                {_("Mistakes so far")}:{" "}
+                                {this.props.joseki_errors}
+                            </div>
+
+                            {!!this.props.joseki_successes && (
+                                <div>
+                                    {_("Correct plays of this position")}:{" "}
+                                    {this.props.joseki_successes}
+                                </div>
+                            )}
+                            {!!this.props.joseki_best_attempt && (
+                                <div>
+                                    {interpolate(
+                                        _("Best attempt: {{mistakes}}"),
+                                        {
+                                            mistakes:
+                                                this.props.joseki_best_attempt,
+                                        },
+                                    ) +
+                                        " " +
+                                        npgettext(
+                                            "mistakes",
+                                            "mistake",
+                                            "mistakes",
+                                            this.props.joseki_best_attempt,
+                                        )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {this.state.extra_info_selected === "variation-filter" && (
+                        <div className="filter-container">
+                            <JosekiVariationFilter
+                                contributor_list_url={
+                                    server_url + "contributors"
+                                }
+                                tag_list_url={server_url + "tags"}
+                                source_list_url={server_url + "josekisources"}
+                                current_filter={this.props.current_filter}
+                                oje_headers={oje_headers()}
+                                set_variation_filter={
+                                    this.props.set_variation_filter
+                                }
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
         );
@@ -1835,7 +2303,14 @@ interface EditProps {
     joseki_source_id: number;
     tags: Array<any>;
     contributor: number;
-    save_new_info: (move_type, variation_label, tags, description, joseki_source, marks) => void;
+    save_new_info: (
+        move_type,
+        variation_label,
+        tags,
+        description,
+        joseki_source,
+        marks,
+    ) => void;
     update_marks: ({}) => void;
 }
 
@@ -1844,12 +2319,12 @@ interface EditState {
     new_description: string;
     preview: string;
     node_id: number;
-    joseki_source_list: {id: number; description: string}[];
-    joseki_source: string|number;
+    joseki_source_list: { id: number; description: string }[];
+    joseki_source: string | number;
     available_tag_list: any[]; // Appears to be unused
     // 'tags' is the value of the multi-select.  It has to have keys of 'label' and 'value' apparently.
     // ('valueKey' and 'labelKey' aren't working for me)
-    tags: {label: string; value: number}[];
+    tags: { label: string; value: number }[];
     variation_label: string;
 }
 
@@ -1858,7 +2333,10 @@ class EditPane extends React.Component<EditProps, EditState> {
         super(props);
 
         this.state = {
-            move_type: this.props.category === "new" ? Object.keys(MoveCategory)[0] : this.props.category,
+            move_type:
+                this.props.category === "new"
+                    ? Object.keys(MoveCategory)[0]
+                    : this.props.category,
             new_description: this.props.description,
             preview: this.props.description,
             node_id: this.props.node_id,
@@ -1867,22 +2345,34 @@ class EditPane extends React.Component<EditProps, EditState> {
             available_tag_list: [],
             // 'tags' is the value of the multi-select.  It has to have keys of 'label' and 'value' apparently.
             // ('valueKey' and 'labelKey' aren't working for me)
-            tags: (this.props.tags === null) ? [] : this.props.tags.map((t) => ({label: t.description, value: t.id})),
-            variation_label: this.props.variation_label || '1'
+            tags:
+                this.props.tags === null
+                    ? []
+                    : this.props.tags.map((t) => ({
+                          label: t.description,
+                          value: t.id,
+                      })),
+            variation_label: this.props.variation_label || "1",
         };
 
         // Get the list of joseki sources
         fetch(joseki_sources_url, {
-            mode: 'cors',
-            headers: oje_headers()
+            mode: "cors",
+            headers: oje_headers(),
         })
-        .then(res => res.json())
-        .then(body => {
-            // console.log("Server response to josekisources GET:", body);
-            this.setState({joseki_source_list: [{id: 'none', description: "(unknown)"}, ...body.sources]});
-        }).catch((r) => {
-            console.log("Sources GET failed:", r);
-        });
+            .then((res) => res.json())
+            .then((body) => {
+                // console.log("Server response to josekisources GET:", body);
+                this.setState({
+                    joseki_source_list: [
+                        { id: "none", description: "(unknown)" },
+                        ...body.sources,
+                    ],
+                });
+            })
+            .catch((r) => {
+                console.log("Sources GET failed:", r);
+            });
     }
 
     static getDerivedStateFromProps = (nextProps, prevState) => {
@@ -1893,11 +2383,20 @@ class EditPane extends React.Component<EditProps, EditState> {
             // console.log("gdsfp: ", nextProps, prevState);
             return {
                 node_id: nextProps.node_id,
-                move_type: nextProps.category === "new" ? Object.keys(MoveCategory)[0] : nextProps.category,
+                move_type:
+                    nextProps.category === "new"
+                        ? Object.keys(MoveCategory)[0]
+                        : nextProps.category,
                 new_description: nextProps.description,
                 joseki_source: nextProps.joseki_source_id,
-                tags: nextProps.tags === null ? [] : nextProps.tags.map((t) => ({label: t.description, value: t.id})),
-                variation_label: nextProps.variation_label || '1'
+                tags:
+                    nextProps.tags === null
+                        ? []
+                        : nextProps.tags.map((t) => ({
+                              label: t.description,
+                              value: t.id,
+                          })),
+                variation_label: nextProps.variation_label || "1",
             };
         } else {
             return null;
@@ -1920,7 +2419,9 @@ class EditPane extends React.Component<EditProps, EditState> {
     handleEditInput = (e) => {
         const new_description = e.target.value;
 
-        this.props.update_marks(this.currentMarksInDescription(new_description));
+        this.props.update_marks(
+            this.currentMarksInDescription(new_description),
+        );
 
         this.setState({ new_description });
     };
@@ -1929,29 +2430,35 @@ class EditPane extends React.Component<EditProps, EditState> {
         this.props.save_new_info(
             this.state.move_type,
             this.state.variation_label,
-            this.state.tags.map((t) => (t.value)),
+            this.state.tags.map((t) => t.value),
             this.state.new_description,
-            this.state.joseki_source  !== 'none' ? this.state.joseki_source : undefined,
-            this.currentMarksInDescription(this.state.new_description));
+            this.state.joseki_source !== "none"
+                ? this.state.joseki_source
+                : undefined,
+            this.currentMarksInDescription(this.state.new_description),
+        );
     };
 
-    currentMarksInDescription = (description: string): Array<{label: string; position: string}> => {
+    currentMarksInDescription = (
+        description: string,
+    ): Array<{ label: string; position: string }> => {
         // Extract markup for "board marks"
         // maps markup of form "<label:position>"  to an array of {label, position} objects for each mark
 
-        if (description === null) { // I don't see how, but Sentry logs seem to imply there is a way!
+        if (description === null) {
+            // I don't see how, but Sentry logs seem to imply there is a way!
             return [];
         }
 
         // we have to grok each mark out of the multiline string then parse it, because es5.
-        const mark_matches = description.match(/<[A-Z]:[A-Z][0-9]{1,2}>/mg);
+        const mark_matches = description.match(/<[A-Z]:[A-Z][0-9]{1,2}>/gm);
 
         const current_marks = [];
 
         if (mark_matches) {
-            mark_matches.forEach(mark => {
+            mark_matches.forEach((mark) => {
                 const extract = mark.match(/<([A-Z]):([A-Z][0-9]{1,2})>/);
-                current_marks.push({label: extract[1], position: extract[2]});
+                current_marks.push({ label: extract[1], position: extract[2] });
             });
         }
 
@@ -1966,54 +2473,88 @@ class EditPane extends React.Component<EditProps, EditState> {
     };
 
     promptForJosekiSource = (e) => {
-        openModal(<JosekiSourceModal add_joseki_source={this.addJosekiSource} fastDismiss />);
+        openModal(
+            <JosekiSourceModal
+                add_joseki_source={this.addJosekiSource}
+                fastDismiss
+            />,
+        );
     };
 
     addJosekiSource = (description, url) => {
         fetch(server_url + "josekisources/", {
-            method: 'post',
-            mode: 'cors',
+            method: "post",
+            mode: "cors",
             headers: oje_headers(),
-            body: JSON.stringify({ source: {description: description, url: url, contributor: this.props.contributor}})
+            body: JSON.stringify({
+                source: {
+                    description: description,
+                    url: url,
+                    contributor: this.props.contributor,
+                },
+            }),
         })
-        .then(res => res.json())
-        .then(body => {
-            // console.log("Server response to joseki POST:", body);
-            const new_source = {id: body.source.id, description: body.source.description};
-            // console.log(new_source);
-            this.setState({
-                joseki_source_list: [new_source, ...this.state.joseki_source_list],
-                joseki_source: new_source.id
+            .then((res) => res.json())
+            .then((body) => {
+                // console.log("Server response to joseki POST:", body);
+                const new_source = {
+                    id: body.source.id,
+                    description: body.source.description,
+                };
+                // console.log(new_source);
+                this.setState({
+                    joseki_source_list: [
+                        new_source,
+                        ...this.state.joseki_source_list,
+                    ],
+                    joseki_source: new_source.id,
+                });
+            })
+            .catch((r) => {
+                console.log("Sources PUT failed:", r);
             });
-        }).catch((r) => {
-            console.log("Sources PUT failed:", r);
-        });
     };
 
     onLabelChange = (e) => {
-        this.setState({ variation_label: e.target.value});
+        this.setState({ variation_label: e.target.value });
     };
 
     render = () => {
-        console.log("rendering EditPane with ", this.state.move_type, this.state.new_description, this.state.variation_label);
+        console.log(
+            "rendering EditPane with ",
+            this.state.move_type,
+            this.state.new_description,
+            this.state.variation_label,
+        );
 
         // create the set of select option elements from the valid MoveCategory items, with the current one at the top
         const selections = Object.keys(MoveCategory).map((selection, i) => (
-            <option key={i} value={MoveCategory[selection]}>{_(MoveCategory[selection])}</option>
+            <option key={i} value={MoveCategory[selection]}>
+                {_(MoveCategory[selection])}
+            </option>
         ));
 
         if (this.state.move_type !== "new") {
-            selections.unshift(<option key={-1} value={MoveCategory[this.state.move_type]}>{_(MoveCategory[this.state.move_type])}</option>);
+            selections.unshift(
+                <option key={-1} value={MoveCategory[this.state.move_type]}>
+                    {_(MoveCategory[this.state.move_type])}
+                </option>,
+            );
         }
 
-        const labels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '_'].map((label, i) => (
-            <option key={i} value={label}>{label}</option>
-        ));
+        const labels = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "_"].map(
+            (label, i) => (
+                <option key={i} value={label}>
+                    {label}
+                </option>
+            ),
+        );
 
         const sources = this.state.joseki_source_list.map((selection, i) => (
-            <option key={i} value={selection["id"]}>{_(selection["description"])}</option>
+            <option key={i} value={selection["id"]}>
+                {_(selection["description"])}
+            </option>
         ));
-
 
         // console.log("EditPane render, tags", this.state.tags);
 
@@ -2025,13 +2566,19 @@ class EditPane extends React.Component<EditProps, EditState> {
                 <div className="move-attributes">
                     <div className="move-type-selection">
                         <span>{_("This sequence is")}:</span>
-                        <select value={this.state.move_type} onChange={this.onTypeChange}>
+                        <select
+                            value={this.state.move_type}
+                            onChange={this.onTypeChange}
+                        >
                             {selections}
                         </select>
                     </div>
                     <div className="variation-order-select">
                         <span>{_("Variation label")}:</span>
-                        <select value={this.state.variation_label} onChange={this.onLabelChange}>
+                        <select
+                            value={this.state.variation_label}
+                            onChange={this.onLabelChange}
+                        >
                             {labels}
                         </select>
                     </div>
@@ -2039,49 +2586,65 @@ class EditPane extends React.Component<EditProps, EditState> {
                     <div className="joseki-source-edit">
                         <div>{_("Source")}:</div>
                         <div className="joseki-source-edit-controls">
-                            <select value={this.state.joseki_source} onChange={this.onSourceChange}>
+                            <select
+                                value={this.state.joseki_source}
+                                onChange={this.onSourceChange}
+                            >
                                 {sources}
                             </select>
-                            <i className="fa fa-plus-circle" onClick={this.promptForJosekiSource}/>
+                            <i
+                                className="fa fa-plus-circle"
+                                onClick={this.promptForJosekiSource}
+                            />
                         </div>
                     </div>
                     <div className="tag-edit">
                         <div>{_("Tags")}:</div>
                         <JosekiTagSelector
                             oje_headers={oje_headers()}
-                            tag_list_url = {server_url + "tags"}
-                            selected_tags= {this.state.tags as any} // selected_tags is typed as number[], I haven't figured out how to resolve yet.
+                            tag_list_url={server_url + "tags"}
+                            selected_tags={this.state.tags as any} // selected_tags is typed as number[], I haven't figured out how to resolve yet.
                             on_tag_update={this.onTagChange}
                         />
                     </div>
                 </div>
                 <div className="description-edit">
-
-                    <div className="edit-label">{_("Position description")}:</div>
+                    <div className="edit-label">
+                        {_("Position description")}:
+                    </div>
 
                     {/* Here is the edit box for the markdown source of the description */}
-                    <textarea onChange={this.handleEditInput} value={this.state.new_description} />
+                    <textarea
+                        onChange={this.handleEditInput}
+                        value={this.state.new_description}
+                    />
 
                     <div className="position-edit-button">
-                        <button className="btn xs primary" onClick={this.saveNewInfo}>
+                        <button
+                            className="btn xs primary"
+                            onClick={this.saveNewInfo}
+                        >
                             {_("Save")}
                         </button>
                     </div>
                     <div className="edit-label">{_("Preview")}:</div>
 
                     {/* The actual description rendered here */}
-                    {this.state.new_description.length !== 0 &&
-                    <Markdown className="description-preview" source={preview} />
-                    }
+                    {this.state.new_description.length !== 0 && (
+                        <Markdown
+                            className="description-preview"
+                            source={preview}
+                        />
+                    )}
 
                     {/* and a placeholder for the description when the markdown is empty*/}
-                    {this.state.new_description.length === 0 &&
-                    <div className="description-preview edit-label">({_("position description")})</div>
-                    }
+                    {this.state.new_description.length === 0 && (
+                        <div className="description-preview edit-label">
+                            ({_("position description")})
+                        </div>
+                    )}
                 </div>
             </div>
         );
     };
 }
-
-

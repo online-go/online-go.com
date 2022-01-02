@@ -15,15 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {Goban, GoMath} from "goban";
+import { Goban, GoMath } from "goban";
 
 export class PuzzleNavigation {
-
     _goban: Goban;
 
     constructor() {}
 
-    set goban(newValue: Goban) { this._goban = newValue; }
+    set goban(newValue: Goban) {
+        this._goban = newValue;
+    }
 
     nav_up = () => {
         this.checkAndEnterAnalysis();
@@ -41,7 +42,7 @@ export class PuzzleNavigation {
         this.checkAndEnterAnalysis();
         for (let i = 0; i < 10; ++i) {
             // update display only for final navigation result
-            this._goban.showPrevious( i < 9 );
+            this._goban.showPrevious(i < 9);
         }
     };
     nav_prev = () => {
@@ -56,7 +57,7 @@ export class PuzzleNavigation {
         this.checkAndEnterAnalysis();
         for (let i = 0; i < 10; ++i) {
             // update display only for final navigation result
-            this._goban.showNext( i < 9 );
+            this._goban.showNext(i < 9);
         }
     };
     nav_last = () => {
@@ -82,5 +83,4 @@ export class PuzzleNavigation {
         }
         return true;
     }
-
 }

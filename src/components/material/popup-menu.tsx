@@ -22,19 +22,23 @@ export interface PopupMenuItem {
     onClick: () => void;
 }
 
-interface PopupMenuProps { list: PopupMenuItem[] }
+interface PopupMenuProps {
+    list: PopupMenuItem[];
+}
 
-export class PopupMenu extends React.Component<PopupMenuProps, {isListOpen: boolean}> {
-
+export class PopupMenu extends React.Component<
+    PopupMenuProps,
+    { isListOpen: boolean }
+> {
     constructor(props: PopupMenuProps) {
         super(props);
         this.state = {
-            isListOpen: false
+            isListOpen: false,
         };
     }
 
     toggleList = () => {
-        this.setState(prevState => ({
+        this.setState((prevState) => ({
             isListOpen: !prevState.isListOpen,
         }));
     };
@@ -48,14 +52,12 @@ export class PopupMenu extends React.Component<PopupMenuProps, {isListOpen: bool
                 <button
                     type="button"
                     className="popup-menu-button"
-                    onClick={this.toggleList}>
-                    <i className = "fa fa-caret-down"/>
+                    onClick={this.toggleList}
+                >
+                    <i className="fa fa-caret-down" />
                 </button>
                 {isListOpen && (
-                    <div
-                        role="list"
-                        className="popup-menu-list"
-                    >
+                    <div role="list" className="popup-menu-list">
                         {list.map((item: PopupMenuItem, idx) => (
                             <button
                                 key={idx}
@@ -85,9 +87,9 @@ export class PopupMenu extends React.Component<PopupMenuProps, {isListOpen: bool
 
         setTimeout(() => {
             if (isListOpen) {
-                window.addEventListener('click', this.close);
+                window.addEventListener("click", this.close);
             } else {
-                window.removeEventListener('click', this.close);
+                window.removeEventListener("click", this.close);
             }
         }, 0);
     }

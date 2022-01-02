@@ -15,14 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 import * as React from "react";
 import * as data from "data";
 import { ai_socket } from "sockets";
 import { MoveTree } from "goban";
 
-
-const analysis_requests_made: {[id: string]: boolean} = {};
+const analysis_requests_made: { [id: string]: boolean } = {};
 
 interface AIReviewStreamProperties {
     uuid?: string;
@@ -41,7 +39,7 @@ export function AIReviewStream(props: AIReviewStreamProperties): JSX.Element {
             console.log("No UUID for review stream");
             return;
         } else {
-            ai_socket.on('connect', onConnect);
+            ai_socket.on("connect", onConnect);
             ai_socket.on(uuid, onMessage);
             if (ai_socket.connected) {
                 onConnect();
@@ -49,22 +47,26 @@ export function AIReviewStream(props: AIReviewStreamProperties): JSX.Element {
         }
 
         function onJwtChange() {
-            const user = data.get('config.user');
-            const user_jwt = data.get('config.user_jwt');
+            const user = data.get("config.user");
+            const user_jwt = data.get("config.user_jwt");
             if (!user.anonymous && user_jwt) {
-                ai_socket.send('authenticate', {jwt: user_jwt});
+                ai_socket.send("authenticate", { jwt: user_jwt });
             }
         }
 
         function watch_jwt() {
-            data.watch('config.user_jwt', onJwtChange);
+            data.watch("config.user_jwt", onJwtChange);
         }
         function unwatch_jwt() {
-            data.unwatch('config.user_jwt', onJwtChange);
+            data.unwatch("config.user_jwt", onJwtChange);
         }
 
         function onConnect() {
-            ai_socket.send('ai-review-connect', {uuid, game_id, ai_review_id});
+            ai_socket.send("ai-review-connect", {
+                uuid,
+                game_id,
+                ai_review_id,
+            });
             watch_jwt();
         }
 
@@ -74,9 +76,9 @@ export function AIReviewStream(props: AIReviewStreamProperties): JSX.Element {
 
         return () => {
             if (ai_socket.connected) {
-                ai_socket.send('ai-review-disconnect', {uuid});
+                ai_socket.send("ai-review-disconnect", { uuid });
             }
-            ai_socket.off('connect', onConnect);
+            ai_socket.off("connect", onConnect);
             ai_socket.off(uuid, onMessage);
             unwatch_jwt();
         };
@@ -85,9 +87,17 @@ export function AIReviewStream(props: AIReviewStreamProperties): JSX.Element {
     return null;
 }
 
-export function ai_request_variation_analysis(uuid, game_id, ai_review_id, cur_move: MoveTree, trunk_move: MoveTree): void {
+export function ai_request_variation_analysis(
+    uuid,
+    game_id,
+    ai_review_id,
+    cur_move: MoveTree,
+    trunk_move: MoveTree,
+): void {
     if (!ai_socket.connected) {
-        console.warn("Not sending request for variation analysis since we wern't connected to the AI server");
+        console.warn(
+            "Not sending request for variation analysis since we wern't connected to the AI server",
+        );
         return;
     }
 

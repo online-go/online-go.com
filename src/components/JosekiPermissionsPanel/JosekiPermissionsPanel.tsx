@@ -37,7 +37,10 @@ interface JosekiAdminState {
     throb: boolean;
 }
 
-export class JosekiPermissionsPanel extends React.PureComponent<JosekiAdminProps, any /*JosekiAdminState*/> {
+export class JosekiPermissionsPanel extends React.PureComponent<
+    JosekiAdminProps,
+    any /*JosekiAdminState*/
+> {
     constructor(props) {
         super(props);
         this.state = {
@@ -45,7 +48,7 @@ export class JosekiPermissionsPanel extends React.PureComponent<JosekiAdminProps
             can_comment: false,
             can_edit: false,
             can_admin: false,
-            throb: true // we are actually waiting for them to type an ID.
+            throb: true, // we are actually waiting for them to type an ID.
         };
     }
 
@@ -59,94 +62,129 @@ export class JosekiPermissionsPanel extends React.PureComponent<JosekiAdminProps
 
         this.setState({ throb: true });
         fetch(this.props.server_url + "permissions?id=" + e.target.value, {
-            mode: 'cors',
-            headers: this.props.oje_headers
+            mode: "cors",
+            headers: this.props.oje_headers,
         })
-        .then(response => response.json()) // wait for the body of the response
-        .then(body => {
-            // console.log("Server response:", body);
+            .then((response) => response.json()) // wait for the body of the response
+            .then((body) => {
+                // console.log("Server response:", body);
 
-            this.setState({
-                can_comment: body.can_comment,
-                can_edit: body.can_edit,
-                can_admin: body.can_admin,
-                throb: false
+                this.setState({
+                    can_comment: body.can_comment,
+                    can_edit: body.can_edit,
+                    can_admin: body.can_admin,
+                    throb: false,
+                });
+            })
+            .catch((r) => {
+                console.log("Permissions GET failed:", r);
             });
-        }).catch((r) => {
-            console.log("Permissions GET failed:", r);
-        });
     };
 
     onCommentChange = (e) => {
-        this.updatePermission('can_comment', e.target.checked);
+        this.updatePermission("can_comment", e.target.checked);
     };
 
     onEditChange = (e) => {
-        this.updatePermission('can_edit', e.target.checked);
+        this.updatePermission("can_edit", e.target.checked);
     };
 
     onAdminChange = (e) => {
-        this.updatePermission('can_admin', e.target.checked);
+        this.updatePermission("can_admin", e.target.checked);
     };
 
     updatePermission = (permission, value) => {
         this.setState({
             // TypeScript has trouble with this
             // TODO: modify, and then use JosekiAdminState as template arg for the component.
-            [permission] : value,
-            throb: true
+            [permission]: value,
+            throb: true,
         });
 
         const new_permissions = {
             can_comment: this.state.can_comment,
             can_edit: this.state.can_edit,
-            can_admin: this.state.can_admin
+            can_admin: this.state.can_admin,
         };
 
         new_permissions[permission] = value;
 
         fetch(this.props.server_url + "permissions?id=" + this.state.userid, {
-            method: 'put',
-            mode: 'cors',
+            method: "put",
+            mode: "cors",
             headers: this.props.oje_headers,
-            body: JSON.stringify(new_permissions)
-        }).then (res => res.json())
-        .then (body => {
-            // Display the result of what happened
-            console.log("permissions result", body);
-            this.setState({throb: false});
-        }).catch((r) => {
-            console.log("Permissions PUT failed:", r);
-        });
+            body: JSON.stringify(new_permissions),
+        })
+            .then((res) => res.json())
+            .then((body) => {
+                // Display the result of what happened
+                console.log("permissions result", body);
+                this.setState({ throb: false });
+            })
+            .catch((r) => {
+                console.log("Permissions PUT failed:", r);
+            });
     };
 
     render = () => {
-        const protect_self = data.get('config').user.id === parseInt(this.state.userid); // don't let people dis-admin themselves!
+        const protect_self =
+            data.get("config").user.id === parseInt(this.state.userid); // don't let people dis-admin themselves!
 
         return (
             <div className="joseki-permissions-panel">
                 <div>User id:</div>
-                <input value={this.state.userid} onChange={this.onUserIdChange}/>
-                <Player user={parseInt(this.state.userid)}/>
+                <input
+                    value={this.state.userid}
+                    onChange={this.onUserIdChange}
+                />
+                <Player user={parseInt(this.state.userid)} />
                 <div>comment</div>
-                {this.state.throb ?
+                {this.state.throb ? (
                     <React.Fragment>
-                        <input type="checkbox" checked={this.state.can_comment} onChange={this.onCommentChange} disabled={true}/>
+                        <input
+                            type="checkbox"
+                            checked={this.state.can_comment}
+                            onChange={this.onCommentChange}
+                            disabled={true}
+                        />
                         <div>edit</div>
-                        <input type="checkbox" checked={this.state.can_edit} onChange={this.onEditChange} disabled={true}/>
+                        <input
+                            type="checkbox"
+                            checked={this.state.can_edit}
+                            onChange={this.onEditChange}
+                            disabled={true}
+                        />
                         <div>admin</div>
-                        <input type="checkbox" checked={this.state.can_admin} onChange={this.onAdminChange} disabled={true}/>
-                    </React.Fragment> :
-                    <React.Fragment>
-                        <input type="checkbox" checked={this.state.can_comment} onChange={this.onCommentChange}/>
-                        <div>edit</div>
-                        <input type="checkbox" checked={this.state.can_edit} onChange={this.onEditChange}/>
-                        <div>admin</div>
-                        <input type="checkbox" checked={this.state.can_admin} onChange={this.onAdminChange} disabled={protect_self}/>
+                        <input
+                            type="checkbox"
+                            checked={this.state.can_admin}
+                            onChange={this.onAdminChange}
+                            disabled={true}
+                        />
                     </React.Fragment>
-                }
+                ) : (
+                    <React.Fragment>
+                        <input
+                            type="checkbox"
+                            checked={this.state.can_comment}
+                            onChange={this.onCommentChange}
+                        />
+                        <div>edit</div>
+                        <input
+                            type="checkbox"
+                            checked={this.state.can_edit}
+                            onChange={this.onEditChange}
+                        />
+                        <div>admin</div>
+                        <input
+                            type="checkbox"
+                            checked={this.state.can_admin}
+                            onChange={this.onAdminChange}
+                            disabled={protect_self}
+                        />
+                    </React.Fragment>
+                )}
             </div>
         );
     };
 }
-

@@ -1,387 +1,600 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="{{PAGE_LANGUAGE}}">
-  <head>
-      <meta charset="utf-8">
-      <title>{{PAGE_TITLE}}</title>
+    <head>
+        <meta charset="utf-8" />
+        <title>{{PAGE_TITLE}}</title>
 
-      <meta http-equiv="Cache-control" content="no-cache">
-      <meta http-equiv="Expires" content="-1">
-      <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-      <meta name="apple-mobile-web-app-capable" content="yes">
-      <meta name="format-detection" content="telephone=no">
-      <meta name="application-name" content="Online-Go.com"/>
-      <meta name="keywords" content="{{PAGE_KEYWORDS}}"/>
-      <meta name="Description" content="{{PAGE_DESCRIPTION}}">
+        <meta http-equiv="Cache-control" content="no-cache" />
+        <meta http-equiv="Expires" content="-1" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, viewport-fit=cover"
+        />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="application-name" content="Online-Go.com" />
+        <meta name="keywords" content="{{PAGE_KEYWORDS}}" />
+        <meta name="Description" content="{{PAGE_DESCRIPTION}}" />
 
-      <link rel="manifest" href="/manifest.json">
-      <link rel="shortcut icon" href="https://cdn.online-go.com/icons/favicon.ico" type="image/x-icon" />
-      <link rel="apple-touch-icon" sizes="57x57" href="https://cdn.online-go.com/icons/apple-touch-icon-57x57.png">
-      <link rel="apple-touch-icon" sizes="60x60" href="https://cdn.online-go.com/icons/apple-touch-icon-60x60.png">
-      <link rel="apple-touch-icon" sizes="72x72" href="https://cdn.online-go.com/icons/apple-touch-icon-72x72.png">
-      <link rel="apple-touch-icon" sizes="76x76" href="https://cdn.online-go.com/icons/apple-touch-icon-76x76.png">
-      <link rel="apple-touch-icon" sizes="114x114" href="https://cdn.online-go.com/icons/apple-touch-icon-114x114.png">
-      <link rel="apple-touch-icon" sizes="120x120" href="https://cdn.online-go.com/icons/apple-touch-icon-120x120.png">
-      <link rel="apple-touch-icon" sizes="144x144" href="https://cdn.online-go.com/icons/apple-touch-icon-144x144.png">
-      <link rel="apple-touch-icon" sizes="152x152" href="https://cdn.online-go.com/icons/apple-touch-icon-152x152.png">
-      <link rel="apple-touch-icon" sizes="180x180" href="https://cdn.online-go.com/icons/apple-touch-icon-180x180.png">
-      <link rel="icon" type="image/png" href="https://cdn.online-go.com/icons/favicon-16x16.png" sizes="16x16">
-      <link rel="icon" type="image/png" href="https://cdn.online-go.com/icons/favicon-32x32.png" sizes="32x32">
-      <link rel="icon" type="image/png" href="https://cdn.online-go.com/icons/favicon-96x96.png" sizes="96x96">
-      <link rel="icon" type="image/png" href="https://cdn.online-go.com/icons/android-chrome-192x192.png" sizes="192x192">
-      <meta name="apple-mobile-web-app-status-bar-style" content="black">
-      <meta name="msapplication-square70x70logo" content="https://cdn.online-go.com/icons/smalltile.png" />
-      <meta name="msapplication-square150x150logo" content="https://cdn.online-go.com/icons/mediumtile.png" />
-      <meta name="msapplication-wide310x150logo" content="https://cdn.online-go.com/icons/widetile.png" />
-      <meta name="msapplication-square310x310logo" content="https://cdn.online-go.com/icons/largetile.png" />
-      <meta name="msapplication-TileColor" content="#DDB06D" />
-      <meta name="msapplication-TileImage" content="https://cdn.online-go.com/icons/apple-touch-icon-144x144.png" />
+        <link rel="manifest" href="/manifest.json" />
+        <link
+            rel="shortcut icon"
+            href="https://cdn.online-go.com/icons/favicon.ico"
+            type="image/x-icon"
+        />
+        <link
+            rel="apple-touch-icon"
+            sizes="57x57"
+            href="https://cdn.online-go.com/icons/apple-touch-icon-57x57.png"
+        />
+        <link
+            rel="apple-touch-icon"
+            sizes="60x60"
+            href="https://cdn.online-go.com/icons/apple-touch-icon-60x60.png"
+        />
+        <link
+            rel="apple-touch-icon"
+            sizes="72x72"
+            href="https://cdn.online-go.com/icons/apple-touch-icon-72x72.png"
+        />
+        <link
+            rel="apple-touch-icon"
+            sizes="76x76"
+            href="https://cdn.online-go.com/icons/apple-touch-icon-76x76.png"
+        />
+        <link
+            rel="apple-touch-icon"
+            sizes="114x114"
+            href="https://cdn.online-go.com/icons/apple-touch-icon-114x114.png"
+        />
+        <link
+            rel="apple-touch-icon"
+            sizes="120x120"
+            href="https://cdn.online-go.com/icons/apple-touch-icon-120x120.png"
+        />
+        <link
+            rel="apple-touch-icon"
+            sizes="144x144"
+            href="https://cdn.online-go.com/icons/apple-touch-icon-144x144.png"
+        />
+        <link
+            rel="apple-touch-icon"
+            sizes="152x152"
+            href="https://cdn.online-go.com/icons/apple-touch-icon-152x152.png"
+        />
+        <link
+            rel="apple-touch-icon"
+            sizes="180x180"
+            href="https://cdn.online-go.com/icons/apple-touch-icon-180x180.png"
+        />
+        <link
+            rel="icon"
+            type="image/png"
+            href="https://cdn.online-go.com/icons/favicon-16x16.png"
+            sizes="16x16"
+        />
+        <link
+            rel="icon"
+            type="image/png"
+            href="https://cdn.online-go.com/icons/favicon-32x32.png"
+            sizes="32x32"
+        />
+        <link
+            rel="icon"
+            type="image/png"
+            href="https://cdn.online-go.com/icons/favicon-96x96.png"
+            sizes="96x96"
+        />
+        <link
+            rel="icon"
+            type="image/png"
+            href="https://cdn.online-go.com/icons/android-chrome-192x192.png"
+            sizes="192x192"
+        />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+        <meta
+            name="msapplication-square70x70logo"
+            content="https://cdn.online-go.com/icons/smalltile.png"
+        />
+        <meta
+            name="msapplication-square150x150logo"
+            content="https://cdn.online-go.com/icons/mediumtile.png"
+        />
+        <meta
+            name="msapplication-wide310x150logo"
+            content="https://cdn.online-go.com/icons/widetile.png"
+        />
+        <meta
+            name="msapplication-square310x310logo"
+            content="https://cdn.online-go.com/icons/largetile.png"
+        />
+        <meta name="msapplication-TileColor" content="#DDB06D" />
+        <meta
+            name="msapplication-TileImage"
+            content="https://cdn.online-go.com/icons/apple-touch-icon-144x144.png"
+        />
 
-      <meta property="og:site_name" content="online-go.com" />
-      <meta property="og:type" content="website" />
-      <meta property="og:title" content="{{OG_TITLE}}" />
-      <meta property="og:url" content="{{OG_URL}}" />
-      <meta property="og:image" content="{{OG_IMAGE}}" />
-      <meta property="og:description" content="{{OG_DESCRIPTION}}" />
+        <meta property="og:site_name" content="online-go.com" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="{{OG_TITLE}}" />
+        <meta property="og:url" content="{{OG_URL}}" />
+        <meta property="og:image" content="{{OG_IMAGE}}" />
+        <meta property="og:description" content="{{OG_DESCRIPTION}}" />
 
-      <style>
-          html {
-              touch-action: manipulation;
-          }
-          html, body {
-              margin: 0;
-              padding: 0;
-          }
-          body, input, select, button, svg {
-              font-family: "Nunito", sans-serif;
-              font-size: 12pt;
-              font-weight: 400;
-          }
-          #em10 {
-              position: absolute;
-              top: -1px;
-              height: 1px;
-              width: 10em;
-              display: inline block;
-          }
-          #main-content {
-              display: none;
-          }
-          @keyframes bounce {
-              0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-              40% {transform: translateY(-30px);}
-              60% {transform: translateY(-15px);}
-          }
-
-          @keyframes fade-in {
-             0% {opacity: 0}
-             20% {opacity: 0}
-             100% {opacity: 1}
-          }
-          #svg-bouncer {
-             animation: bounce 1s infinite, fade-in 2s;
-          }
-
-          #loading-svg-container {
-              width: 100vw;
-              height: 100vh;
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              flex-direction: column;
-          }
-
-          body.dark {
-              background-color: #1A1A1A;
-          }
-          body.light {
-              background-color: #ffffff;
-          }
-          body.accessible {
-              background-color: #1A1A1A;
-          }
-
-      </style>
-      {{EXTRA_CONFIG}}
-  </head>
-  <body>
-      <script>
-        try {
-            var remote_theme = null;
-            try {
-                var user = JSON.parse(localStorage.getItem('ogs.config.user') || "null");
-                if (user && !user.anonymous) {
-                  remote_theme = 
-                      JSON.parse(
-                          localStorage.getItem('ogs-remote-storage-store.' + user.id + '.theme')
-                      ).value;
+        <style>
+            html {
+                touch-action: manipulation;
+            }
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            body,
+            input,
+            select,
+            button,
+            svg {
+                font-family: "Nunito", sans-serif;
+                font-size: 12pt;
+                font-weight: 400;
+            }
+            #em10 {
+                position: absolute;
+                top: -1px;
+                height: 1px;
+                width: 10em;
+                display: inline block;
+            }
+            #main-content {
+                display: none;
+            }
+            @keyframes bounce {
+                0%,
+                20%,
+                50%,
+                80%,
+                100% {
+                    transform: translateY(0);
                 }
+                40% {
+                    transform: translateY(-30px);
+                }
+                60% {
+                    transform: translateY(-15px);
+                }
+            }
+
+            @keyframes fade-in {
+                0% {
+                    opacity: 0;
+                }
+                20% {
+                    opacity: 0;
+                }
+                100% {
+                    opacity: 1;
+                }
+            }
+            #svg-bouncer {
+                animation: bounce 1s infinite, fade-in 2s;
+            }
+
+            #loading-svg-container {
+                width: 100vw;
+                height: 100vh;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column;
+            }
+
+            body.dark {
+                background-color: #1a1a1a;
+            }
+            body.light {
+                background-color: #ffffff;
+            }
+            body.accessible {
+                background-color: #1a1a1a;
+            }
+        </style>
+        {{EXTRA_CONFIG}}
+    </head>
+    <body>
+        <script>
+            try {
+                var remote_theme = null;
+                try {
+                    var user = JSON.parse(
+                        localStorage.getItem("ogs.config.user") || "null",
+                    );
+                    if (user && !user.anonymous) {
+                        remote_theme = JSON.parse(
+                            localStorage.getItem(
+                                "ogs-remote-storage-store." +
+                                    user.id +
+                                    ".theme",
+                            ),
+                        ).value;
+                    }
+                } catch (e) {
+                    /* ignore errors, expected if user is not logged in */
+                }
+
+                var default_theme = null;
+                if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                    /* if OS theme set to dark */
+                    default_theme = "dark";
+                } else {
+                    default_theme = "light";
+                }
+                window["default_theme"] = default_theme;
+
+                var theme =
+                    localStorage.getItem("ogs.theme") ||
+                    JSON.stringify(remote_theme || default_theme);
+                document.body.className = JSON.parse(theme);
             } catch (e) {
-                /* ignore errors, expected if user is not logged in */
+                console.error(e);
+                document.body.className = "light";
             }
-
-            var default_theme = null;
-            if (window.matchMedia("(prefers-color-scheme: dark)").matches) { /* if OS theme set to dark */
-                default_theme = "dark";
-            } else {
-                default_theme = "light";
-            }
-            window['default_theme'] = default_theme;
-
-            var theme = localStorage.getItem('ogs.theme') || JSON.stringify(remote_theme || default_theme);
-            document.body.className = JSON.parse(theme);
-        } catch (e) {
-            console.error(e);
-            document.body.className = "light";
-        }
-      </script>
-      <div id="em10"></div>
-      <div id='loading-svg-container'><div id='svg-bouncer'>
-        <svg xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" width="40.733135mm" height="40.733135mm" viewBox="0 0 40.733135 40.733135" version="1.1" >
-          <g transform="translate(-76.395338,-117.88343)">
-              <g transform="matrix(0.28222223,0,0,0.28222223,76.397031,109.18478)" >
-              <g>
-                <g>
-                  <g >
-                    <g id="g16">
-                      <path style="fill:#010101" d="m 144.324,102.987 c 0,39.855 -32.31,72.165 -72.165,72.165 -39.855,0 -72.165,-32.31 -72.165,-72.165 0,0 144.33,0 144.33,0 z" />
-                      <path style="fill:#dededd" d="m 72.159,30.822 c 39.855,0 72.165,32.31 72.165,72.165 H -0.006 c 0,-39.855 32.31,-72.165 72.165,-72.165 z" />
+        </script>
+        <div id="em10"></div>
+        <div id="loading-svg-container">
+            <div id="svg-bouncer">
+                <svg
+                    xmlns:svg="http://www.w3.org/2000/svg"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="40.733135mm"
+                    height="40.733135mm"
+                    viewBox="0 0 40.733135 40.733135"
+                    version="1.1"
+                >
+                    <g transform="translate(-76.395338,-117.88343)">
+                        <g
+                            transform="matrix(0.28222223,0,0,0.28222223,76.397031,109.18478)"
+                        >
+                            <g>
+                                <g>
+                                    <g>
+                                        <g id="g16">
+                                            <path
+                                                style="fill: #010101"
+                                                d="m 144.324,102.987 c 0,39.855 -32.31,72.165 -72.165,72.165 -39.855,0 -72.165,-32.31 -72.165,-72.165 0,0 144.33,0 144.33,0 z"
+                                            />
+                                            <path
+                                                style="fill: #dededd"
+                                                d="m 72.159,30.822 c 39.855,0 72.165,32.31 72.165,72.165 H -0.006 c 0,-39.855 32.31,-72.165 72.165,-72.165 z"
+                                            />
+                                        </g>
+                                    </g>
+                                </g>
+                            </g>
+                            <g id="g22">
+                                <path
+                                    style="fill: #ffffff"
+                                    d="m 9.821,95.52 c 0,0 -0.073,-0.322 -0.144,-0.925 -0.061,-0.601 -0.179,-1.497 -0.206,-2.624 -0.076,-2.257 0.037,-5.492 0.733,-9.296 0.334,-1.906 0.836,-3.942 1.473,-6.075 0.675,-2.116 1.457,-4.344 2.491,-6.559 0.998,-2.231 2.197,-4.475 3.589,-6.657 1.385,-2.187 2.932,-4.337 4.674,-6.337 0.839,-1.024 1.791,-1.96 2.703,-2.916 0.936,-0.936 1.93,-1.811 2.903,-2.683 2.018,-1.676 4.112,-3.195 6.251,-4.477 2.132,-1.294 4.307,-2.341 6.404,-3.204 1.072,-0.39 2.095,-0.789 3.103,-1.123 1.033,-0.28 2.016,-0.563 2.967,-0.799 1.917,-0.433 3.689,-0.716 5.262,-0.868 1.591,-0.099 2.944,-0.215 4.086,-0.155 1.135,0.035 2.029,0.137 2.628,0.176 0.602,0.053 0.923,0.102 0.923,0.102 0,0 -0.273,0.193 -0.785,0.516 -0.515,0.309 -1.255,0.807 -2.199,1.345 -0.944,0.543 -2.042,1.304 -3.307,2.052 -0.636,0.367 -1.278,0.832 -1.961,1.281 -0.673,0.473 -1.42,0.86 -2.125,1.413 -0.719,0.52 -1.475,1.027 -2.243,1.563 -0.746,0.561 -1.517,1.141 -2.31,1.737 -1.559,1.206 -3.15,2.504 -4.738,3.89 -0.8,0.683 -1.565,1.439 -2.373,2.148 -0.787,0.738 -1.537,1.537 -2.337,2.283 -0.758,0.795 -1.523,1.596 -2.29,2.4 -0.722,0.85 -1.524,1.625 -2.222,2.505 -0.735,0.845 -1.461,1.698 -2.155,2.579 -0.713,0.863 -1.406,1.745 -2.082,2.63 -0.668,0.897 -1.332,1.787 -1.987,2.666 -0.616,0.912 -1.274,1.784 -1.878,2.679 -1.234,1.771 -2.376,3.54 -3.476,5.231 -1.075,1.704 -2.114,3.332 -3.037,4.873 -1.88,3.066 -3.431,5.724 -4.55,7.614 -1.136,1.917 -1.785,3.015 -1.785,3.015 z"
+                                    id="path24"
+                                />
+                            </g>
+                            <g id="g26">
+                                <path
+                                    style="fill: #272626"
+                                    d="m 84.158,162.625 c 0,0 1.033,-0.747 2.84,-2.055 1.779,-1.289 4.282,-3.079 7.162,-5.233 1.449,-1.06 2.975,-2.245 4.572,-3.473 1.583,-1.252 3.239,-2.551 4.889,-3.943 0.835,-0.684 1.643,-1.419 2.494,-2.117 0.815,-0.733 1.64,-1.476 2.472,-2.224 0.819,-0.755 1.633,-1.527 2.427,-2.316 0.813,-0.773 1.597,-1.574 2.37,-2.384 0.812,-0.776 1.51,-1.647 2.29,-2.444 0.73,-0.838 1.457,-1.673 2.179,-2.501 0.669,-0.866 1.396,-1.687 2.058,-2.538 0.632,-0.87 1.314,-1.701 1.921,-2.561 1.234,-1.71 2.38,-3.413 3.437,-5.077 0.52,-0.844 1.027,-1.666 1.516,-2.46 0.463,-0.814 0.898,-1.613 1.35,-2.377 0.486,-0.753 0.802,-1.532 1.211,-2.246 0.384,-0.722 0.787,-1.404 1.094,-2.071 0.629,-1.329 1.285,-2.492 1.739,-3.482 0.449,-0.99 0.876,-1.772 1.136,-2.314 0.274,-0.54 0.441,-0.829 0.441,-0.829 0,0 0.079,0.316 0.187,0.91 0.095,0.593 0.279,1.473 0.418,2.601 0.165,1.131 0.175,2.49 0.223,4.083 -0.006,1.58 -0.125,3.372 -0.379,5.32 -0.148,0.969 -0.339,1.974 -0.522,3.029 -0.24,1.034 -0.543,2.09 -0.832,3.193 -0.667,2.168 -1.508,4.43 -2.601,6.672 -1.08,2.248 -2.399,4.474 -3.882,6.638 -0.779,1.05 -1.559,2.12 -2.404,3.138 -0.868,0.995 -1.712,2.03 -2.654,2.96 -1.832,1.919 -3.829,3.658 -5.88,5.238 -2.044,1.587 -4.169,2.987 -6.298,4.187 -2.11,1.234 -4.257,2.218 -6.301,3.085 -2.066,0.831 -4.047,1.518 -5.914,2.026 -3.724,1.043 -6.935,1.454 -9.189,1.587 -1.126,0.077 -2.028,0.042 -2.632,0.037 -0.611,-0.016 -0.938,-0.059 -0.938,-0.059 z"
+                                    id="path28"
+                                />
+                            </g>
+                        </g>
                     </g>
-                  </g>
-                </g>
-              </g>
-              <g id="g22"> <path style="fill:#ffffff" d="m 9.821,95.52 c 0,0 -0.073,-0.322 -0.144,-0.925 -0.061,-0.601 -0.179,-1.497 -0.206,-2.624 -0.076,-2.257 0.037,-5.492 0.733,-9.296 0.334,-1.906 0.836,-3.942 1.473,-6.075 0.675,-2.116 1.457,-4.344 2.491,-6.559 0.998,-2.231 2.197,-4.475 3.589,-6.657 1.385,-2.187 2.932,-4.337 4.674,-6.337 0.839,-1.024 1.791,-1.96 2.703,-2.916 0.936,-0.936 1.93,-1.811 2.903,-2.683 2.018,-1.676 4.112,-3.195 6.251,-4.477 2.132,-1.294 4.307,-2.341 6.404,-3.204 1.072,-0.39 2.095,-0.789 3.103,-1.123 1.033,-0.28 2.016,-0.563 2.967,-0.799 1.917,-0.433 3.689,-0.716 5.262,-0.868 1.591,-0.099 2.944,-0.215 4.086,-0.155 1.135,0.035 2.029,0.137 2.628,0.176 0.602,0.053 0.923,0.102 0.923,0.102 0,0 -0.273,0.193 -0.785,0.516 -0.515,0.309 -1.255,0.807 -2.199,1.345 -0.944,0.543 -2.042,1.304 -3.307,2.052 -0.636,0.367 -1.278,0.832 -1.961,1.281 -0.673,0.473 -1.42,0.86 -2.125,1.413 -0.719,0.52 -1.475,1.027 -2.243,1.563 -0.746,0.561 -1.517,1.141 -2.31,1.737 -1.559,1.206 -3.15,2.504 -4.738,3.89 -0.8,0.683 -1.565,1.439 -2.373,2.148 -0.787,0.738 -1.537,1.537 -2.337,2.283 -0.758,0.795 -1.523,1.596 -2.29,2.4 -0.722,0.85 -1.524,1.625 -2.222,2.505 -0.735,0.845 -1.461,1.698 -2.155,2.579 -0.713,0.863 -1.406,1.745 -2.082,2.63 -0.668,0.897 -1.332,1.787 -1.987,2.666 -0.616,0.912 -1.274,1.784 -1.878,2.679 -1.234,1.771 -2.376,3.54 -3.476,5.231 -1.075,1.704 -2.114,3.332 -3.037,4.873 -1.88,3.066 -3.431,5.724 -4.55,7.614 -1.136,1.917 -1.785,3.015 -1.785,3.015 z" id="path24" /> </g>
-              <g id="g26"> <path style="fill:#272626" d="m 84.158,162.625 c 0,0 1.033,-0.747 2.84,-2.055 1.779,-1.289 4.282,-3.079 7.162,-5.233 1.449,-1.06 2.975,-2.245 4.572,-3.473 1.583,-1.252 3.239,-2.551 4.889,-3.943 0.835,-0.684 1.643,-1.419 2.494,-2.117 0.815,-0.733 1.64,-1.476 2.472,-2.224 0.819,-0.755 1.633,-1.527 2.427,-2.316 0.813,-0.773 1.597,-1.574 2.37,-2.384 0.812,-0.776 1.51,-1.647 2.29,-2.444 0.73,-0.838 1.457,-1.673 2.179,-2.501 0.669,-0.866 1.396,-1.687 2.058,-2.538 0.632,-0.87 1.314,-1.701 1.921,-2.561 1.234,-1.71 2.38,-3.413 3.437,-5.077 0.52,-0.844 1.027,-1.666 1.516,-2.46 0.463,-0.814 0.898,-1.613 1.35,-2.377 0.486,-0.753 0.802,-1.532 1.211,-2.246 0.384,-0.722 0.787,-1.404 1.094,-2.071 0.629,-1.329 1.285,-2.492 1.739,-3.482 0.449,-0.99 0.876,-1.772 1.136,-2.314 0.274,-0.54 0.441,-0.829 0.441,-0.829 0,0 0.079,0.316 0.187,0.91 0.095,0.593 0.279,1.473 0.418,2.601 0.165,1.131 0.175,2.49 0.223,4.083 -0.006,1.58 -0.125,3.372 -0.379,5.32 -0.148,0.969 -0.339,1.974 -0.522,3.029 -0.24,1.034 -0.543,2.09 -0.832,3.193 -0.667,2.168 -1.508,4.43 -2.601,6.672 -1.08,2.248 -2.399,4.474 -3.882,6.638 -0.779,1.05 -1.559,2.12 -2.404,3.138 -0.868,0.995 -1.712,2.03 -2.654,2.96 -1.832,1.919 -3.829,3.658 -5.88,5.238 -2.044,1.587 -4.169,2.987 -6.298,4.187 -2.11,1.234 -4.257,2.218 -6.301,3.085 -2.066,0.831 -4.047,1.518 -5.914,2.026 -3.724,1.043 -6.935,1.454 -9.189,1.587 -1.126,0.077 -2.028,0.042 -2.632,0.037 -0.611,-0.016 -0.938,-0.059 -0.938,-0.059 z" id="path28" />
-              </g>
-            </g>
-          </g>
-        </svg>
-      </div></div>
-      <div id="main-content"></div>
-      <div id="toast-container"></div>
+                </svg>
+            </div>
+        </div>
+        <div id="main-content"></div>
+        <div id="toast-container"></div>
 
-      <noscript id="deferred-styles">
-          <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Nunito:400,400i,700%7CSource+Code+Pro&amp;subset=latin-ext">
-          <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-          <link rel="stylesheet" type="text/css" href="{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{VERSION_DOTCSS}}">
-      </noscript>
+        <noscript id="deferred-styles">
+            <link
+                rel="stylesheet"
+                type="text/css"
+                href="https://fonts.googleapis.com/css?family=Nunito:400,400i,700%7CSource+Code+Pro&amp;subset=latin-ext"
+            />
+            <link
+                rel="stylesheet"
+                type="text/css"
+                href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+            />
+            <link
+                rel="stylesheet"
+                type="text/css"
+                href="{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{VERSION_DOTCSS}}"
+            />
+        </noscript>
 
-      <script>
-        try {
-            var script = document.createElement('script');
-            script.id = "ogs_score_estimator_script";
+        <script>
             try {
-                new WebAssembly.Memory({ initial: 0 });
-                console.log("WASM support detected, score estimator will be fast");
-                script.src = "/OGSScoreEstimator/OGSScoreEstimator-0.7.0.js";
-            } catch (error) {
-                console.warn(error);
-                console.log("No WASM support detected, score estimator falling back to ASM.js mode");
-                script.src = "/OGSScoreEstimator/OGSScoreEstimator-0.7.0.asm.js";
-            }
-            document.head.appendChild(script);
-        } catch (e) {
-            console.error(e);
-        }
-      </script>
-
-      <script>
-          var loadDeferredStyles = function() {
-            var addStylesNode = document.getElementById("deferred-styles");
-            var replacement = document.createElement("div");
-            var inner = addStylesNode.textContent
-            try {
-                /* Allow the ability to override the css file we load for development / testing purposes */
-                if (localStorage.getItem('ogs-css')) {
-                    inner = inner.replace("{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{VERSION_DOTCSS}}", "{{CDN_SERVICE}}/" + localStorage.getItem('ogs-css'));
+                var script = document.createElement("script");
+                script.id = "ogs_score_estimator_script";
+                try {
+                    new WebAssembly.Memory({ initial: 0 });
+                    console.log(
+                        "WASM support detected, score estimator will be fast",
+                    );
+                    script.src =
+                        "/OGSScoreEstimator/OGSScoreEstimator-0.7.0.js";
+                } catch (error) {
+                    console.warn(error);
+                    console.log(
+                        "No WASM support detected, score estimator falling back to ASM.js mode",
+                    );
+                    script.src =
+                        "/OGSScoreEstimator/OGSScoreEstimator-0.7.0.asm.js";
                 }
+                document.head.appendChild(script);
             } catch (e) {
                 console.error(e);
             }
-            replacement.innerHTML = inner;
-            document.body.appendChild(replacement)
-            addStylesNode.parentElement.removeChild(addStylesNode);
-          };
-          var raf = requestAnimationFrame || mozRequestAnimationFrame ||
-              webkitRequestAnimationFrame || msRequestAnimationFrame;
-          if (raf) raf(function() { window.setTimeout(loadDeferredStyles, 0); });
-          else window.addEventListener('load', loadDeferredStyles);
-      </script>
+        </script>
 
-      <script defer src="https://cdn.online-go.com/lib/es6-shim/0.35.3/es6-shim{{MIN}}.js"></script>
-      <script defer src="https://cdn.online-go.com/lib/jquery/3.1.1/jquery{{MIN}}.js"></script>
-      <script defer src="{{GOBAN_JS}}"></script>
-      <script defer src="{{CDN_SERVICE}}/{{RELEASE}}/vendor.{{VENDOR_HASH_DOTJS}}"></script>
+        <script>
+            var loadDeferredStyles = function () {
+                var addStylesNode = document.getElementById("deferred-styles");
+                var replacement = document.createElement("div");
+                var inner = addStylesNode.textContent;
+                try {
+                    /* Allow the ability to override the css file we load for development / testing purposes */
+                    if (localStorage.getItem("ogs-css")) {
+                        inner = inner.replace(
+                            "{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{VERSION_DOTCSS}}",
+                            "{{CDN_SERVICE}}/" +
+                                localStorage.getItem("ogs-css"),
+                        );
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+                replacement.innerHTML = inner;
+                document.body.appendChild(replacement);
+                addStylesNode.parentElement.removeChild(addStylesNode);
+            };
+            var raf =
+                requestAnimationFrame ||
+                mozRequestAnimationFrame ||
+                webkitRequestAnimationFrame ||
+                msRequestAnimationFrame;
+            if (raf)
+                raf(function () {
+                    window.setTimeout(loadDeferredStyles, 0);
+                });
+            else window.addEventListener("load", loadDeferredStyles);
+        </script>
 
+        <script
+            defer
+            src="https://cdn.online-go.com/lib/es6-shim/0.35.3/es6-shim{{MIN}}.js"
+        ></script>
+        <script
+            defer
+            src="https://cdn.online-go.com/lib/jquery/3.1.1/jquery{{MIN}}.js"
+        ></script>
+        <script defer src="{{GOBAN_JS}}"></script>
+        <script
+            defer
+            src="{{CDN_SERVICE}}/{{RELEASE}}/vendor.{{VENDOR_HASH_DOTJS}}"
+        ></script>
 
-      <script type="text/javascript">var supported_languages = {{SUPPORTED_LANGUAGES}};</script>
-      <script type="text/javascript">
-        var ogs_version='{{VERSION}}';
-        var ogs_release='{{RELEASE}}';
-        var ogs_language_version='{{LANGUAGE_VERSION}}';
-        var cdn_service = '{{CDN_SERVICE}}';
+        <script type="text/javascript">
+            var supported_languages = {{SUPPORTED_LANGUAGES}};
+        </script>
+        <script type="text/javascript">
+            var ogs_version = "{{VERSION}}";
+            var ogs_release = "{{RELEASE}}";
+            var ogs_language_version = "{{LANGUAGE_VERSION}}";
+            var cdn_service = "{{CDN_SERVICE}}";
 
-        /* Detect preferred language  */
+            /* Detect preferred language  */
 
-        function isSupportedLanguage(lang) {
-            if (!lang) {
+            function isSupportedLanguage(lang) {
+                if (!lang) {
+                    return null;
+                }
+
+                lang = lang.toLowerCase();
+
+                if (lang in supported_languages) {
+                    return lang;
+                }
+
+                lang = lang.replace(/_/, "-");
+
+                if (lang in supported_languages) {
+                    return lang;
+                }
+
+                if (lang === "zh") {
+                    lang = "zh-cn";
+                }
+                if (lang.indexOf("zh-hans") >= 0) {
+                    lang = "zh-cn";
+                }
+                if (lang.indexOf("zh-hant") >= 0) {
+                    lang = "zh-tw";
+                }
+                if (lang.indexOf("zh-hk") >= 0) {
+                    lang = "zh-tw";
+                }
+
+                if (lang in supported_languages) {
+                    return lang;
+                }
+
+                lang = lang.replace(/-[a-z]+/, "");
+
+                if (lang in supported_languages) {
+                    return lang;
+                }
+
                 return null;
             }
 
-            lang = lang.toLowerCase();
+            function getPreferredLanguage() {
+                try {
+                    var set_lang = JSON.parse(
+                        localStorage.getItem("ogs.preferences.language") ||
+                            "null",
+                    );
+                    var lang = isSupportedLanguage(set_lang);
+                    if (lang) {
+                        return lang;
+                    } else if (
+                        set_lang &&
+                        localStorage.getItem("ogs.preferences.language") !=
+                            '"auto"'
+                    ) {
+                        console.error(
+                            "User selected language: ",
+                            localStorage.getItem("ogs.preferences.language"),
+                            "is not a recognized supported language",
+                        );
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
 
-            if (lang in supported_languages) {
-                return lang;
+                try {
+                    for (var i = 0; i < navigator.languages.length; ++i) {
+                        var lang = isSupportedLanguage(navigator.languages[i]);
+                        if (lang) {
+                            return lang;
+                        }
+                    }
+                } catch (e) {}
+
+                try {
+                    return (
+                        isSupportedLanguage(
+                            navigator.language || navigator.userLanguage,
+                        ) || "en"
+                    );
+                } catch (e) {}
+
+                return "en";
             }
 
-            lang = lang.replace(/_/, '-');
-
-            if (lang in supported_languages) {
-                return lang;
-            }
-
-            if (lang === 'zh') {
-                lang = 'zh-cn';
-            }
-            if (lang.indexOf('zh-hans') >= 0) {
-                lang = 'zh-cn';
-            }
-            if (lang.indexOf('zh-hant') >= 0) {
-                lang = 'zh-tw';
-            }
-            if (lang.indexOf('zh-hk') >= 0) {
-                lang = 'zh-tw';
-            }
-
-            if (lang in supported_languages) {
-                return lang;
-            }
-
-            lang = lang.replace(/-[a-z]+/, '');
-
-            if (lang in supported_languages) {
-                return lang;
-            }
-
-            return null;
-        }
-
-        function getPreferredLanguage() {
+            var ogs_current_language = "en";
             try {
-                var set_lang = JSON.parse(localStorage.getItem('ogs.preferences.language') || 'null');
-                var lang = isSupportedLanguage(set_lang);
-                if (lang) {
-                    return lang;
-                } else if (set_lang && localStorage.getItem('ogs.preferences.language') != '"auto"') {
-                    console.error('User selected language: ', localStorage.getItem('ogs.preferences.language'), 'is not a recognized supported language');
+                ogs_current_language = getPreferredLanguage();
+            } catch (e) {
+                console.error(e);
+            }
+            window["ogs_current_language"] = ogs_current_language || "en";
+
+            /* Load our transations */
+            var language_path =
+                "{{CDN_SERVICE}}/{{RELEASE}}/locale/" +
+                ogs_current_language +
+                ".{{LANGUAGE_VERSION_DOTJS}}";
+            language_path = language_path.replace(
+                "///",
+                "/",
+            ); /* in dev mode, we don't use the cdn or release vars */
+            document.write(
+                '<script defer src="' + language_path + '"><' + "/script>",
+            );
+
+            /* Load OGS. We can override what script is loaded by setting the
+             * 'ogs-script' entry in localStorage (useful for testing versions before they're
+             * released to everyone) */
+            var ogs_script_path =
+                "{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{OGS_VERSION_HASH_DOTJS}}";
+            try {
+                if (localStorage.getItem("ogs-script")) {
+                    ogs_script_path =
+                        "{{CDN_SERVICE}}/" + localStorage.getItem("ogs-script");
                 }
             } catch (e) {
                 console.error(e);
             }
+            document.write(
+                '<script defer src="' + ogs_script_path + '"><' + "/script>",
+            );
+        </script>
 
-            try {
-                for (var i = 0; i < navigator.languages.length; ++i) {
-                    var lang = isSupportedLanguage(navigator.languages[i]);
-                    if (lang) {
-                        return lang;
+        <script>
+            var MODE = "dev";
+            if (
+                /online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(
+                    document.location.host,
+                ) &&
+                !/dev/.test(document.location.host)
+            ) {
+                if (/beta/.test(document.location.host)) {
+                    MODE = "beta";
+                } else {
+                    MODE = "production";
+                }
+            } else {
+                MODE = "dev";
+                window["ga-disable-UA-37743954-2"] = true;
+                console.log("Dev system detected, disabling google analytics");
+            }
+        </script>
+
+        <script
+            async
+            src="https://www.googletagmanager.com/gtag/js?id=UA-37743954-2"
+        ></script>
+        <script type="text/javascript">
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag("js", new Date());
+            gtag("config", "UA-37743954-2");
+        </script>
+
+        <script type="text/javascript">
+            function version_print_setters() {
+                var ret = "\n\n";
+
+                var scripts = $("script");
+                for (var idx = 0; idx < scripts.length; ++idx) {
+                    var m = scripts[idx].src.match(
+                        /https?:\/\/[^\/]+\/(.*\/ogs\..*\.js)/,
+                    );
+                    if (m) {
+                        var path = scripts[idx].src;
+                        ret +=
+                            "localStorage.setItem('ogs-script', '" +
+                            m[1] +
+                            "');\n";
                     }
                 }
-            } catch (e) {
+
+                var stylesheets = $("link");
+                for (var idx = 0; idx < stylesheets.length; ++idx) {
+                    if (stylesheets[idx].rel === "stylesheet") {
+                        var m = stylesheets[idx].href.match(
+                            /https?:\/\/[^\/]+\/(.*\/ogs\..*\.css)/,
+                        );
+                        if (m) {
+                            var path = stylesheets[idx].src;
+                            ret +=
+                                "localStorage.setItem('ogs-css', '" +
+                                m[1] +
+                                "');\n";
+                        }
+                    }
+                }
+
+                return ret + "\n\n";
             }
-
-            try {
-                return isSupportedLanguage(navigator.language || navigator.userLanguage) || 'en';
-            } catch (e) {
+            function version_clear() {
+                localStorage.removeItem("ogs-css");
+                localStorage.removeItem("ogs-script");
             }
+        </script>
 
-            return 'en';
-        }
-
-
-        var ogs_current_language = 'en';
-        try {
-            ogs_current_language = getPreferredLanguage();
-        } catch (e) {
-            console.error(e);
-        }
-        window['ogs_current_language'] = ogs_current_language || 'en';
-
-        /* Load our transations */
-        var language_path = "{{CDN_SERVICE}}/{{RELEASE}}/locale/" + ogs_current_language + ".{{LANGUAGE_VERSION_DOTJS}}";
-        language_path = language_path.replace('///', '/'); /* in dev mode, we don't use the cdn or release vars */
-        document.write('<script defer src="' + language_path + '"><' + '/script>');
-
-        /* Load OGS. We can override what script is loaded by setting the
-         * 'ogs-script' entry in localStorage (useful for testing versions before they're
-         * released to everyone) */
-        var ogs_script_path = "{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{OGS_VERSION_HASH_DOTJS}}";
-        try {
-            if (localStorage.getItem('ogs-script')) {
-                ogs_script_path = "{{CDN_SERVICE}}/" + localStorage.getItem('ogs-script');
-            }
-        } catch (e) {
-            console.error(e);
-        }
-        document.write('<script defer src="' + ogs_script_path + '"><'+'/script>');
-
-      </script>
-
-
-      <script>
-        var MODE = 'dev';
-        if (/online-(go|baduk|weiqi|covay|igo).(com|net)$/.test(document.location.host) && !(/dev/.test(document.location.host))) {
-            if (/beta/.test(document.location.host)) {
-                MODE = 'beta';
-            } else {
-                MODE = 'production';
-            }
-        } else {
-            MODE = 'dev';
-            window['ga-disable-UA-37743954-2'] = true;
-            console.log("Dev system detected, disabling google analytics");
-        }
-      </script>
-
-      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-37743954-2"></script>
-      <script type="text/javascript">
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){ dataLayer.push(arguments); }
-        gtag('js', new Date());
-        gtag('config', 'UA-37743954-2');
-      </script>
-
-      <script type="text/javascript">
-          function version_print_setters() {
-              var ret = "\n\n";
-
-              var scripts = $("script");
-              for (var idx = 0; idx < scripts.length; ++idx) {
-                  var m = scripts[idx].src.match(/https?:\/\/[^\/]+\/(.*\/ogs\..*\.js)/)
-                  if (m) {
-                      var path = scripts[idx].src
-                      ret += "localStorage.setItem('ogs-script', '" + m[1] + "');\n";
-                  }
-              }
-
-              var stylesheets = $("link");
-              for (var idx = 0; idx < stylesheets.length; ++idx) {
-                  if (stylesheets[idx].rel === "stylesheet") {
-                      var m = stylesheets[idx].href.match(/https?:\/\/[^\/]+\/(.*\/ogs\..*\.css)/)
-                      if (m) {
-                          var path = stylesheets[idx].src
-                          ret += "localStorage.setItem('ogs-css', '" + m[1] + "');\n";
-                      }
-                  }
-              }
-
-              return ret + "\n\n";
-          }
-          function version_clear() {
-              localStorage.removeItem('ogs-css');
-              localStorage.removeItem('ogs-script');
-          }
-      </script>
-
-    {{LIVE_RELOAD}}
-</body>
-
+        {{LIVE_RELOAD}}
+    </body>
 </html>

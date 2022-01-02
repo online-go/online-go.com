@@ -16,14 +16,18 @@
  */
 
 import * as ReactDOM from "react-dom";
-import {TypedEventEmitterPureComponent} from "TypedEventEmitterPureComponent";
-import {dup} from "misc";
+import { TypedEventEmitterPureComponent } from "TypedEventEmitterPureComponent";
+import { dup } from "misc";
 
 let current_modal = null;
 
 type ModalProps<P> = P & { fastDismiss?: boolean };
 export type ModalConstructorInput<P> = ModalProps<P> | Readonly<ModalProps<P>>;
-export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<Events & {"close": never; "open": never}, P&{fastDismiss?: boolean}, S> {
+export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<
+    Events & { close: never; open: never },
+    P & { fastDismiss?: boolean },
+    S
+> {
     constructor(props: ModalConstructorInput<P>) {
         super(props);
         current_modal = this;
@@ -98,9 +102,13 @@ export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<Events &
             const event_or_value = elt[1];
 
             let value = null;
-            if (typeof(event_or_value) === "object" && "target" in event_or_value) {
+            if (
+                typeof event_or_value === "object" &&
+                "target" in event_or_value
+            ) {
                 const target = event_or_value.target;
-                value = target.type === "checkbox" ? target.checked : target.value;
+                value =
+                    target.type === "checkbox" ? target.checked : target.value;
             } else {
                 value = event_or_value;
             }
@@ -116,14 +124,13 @@ export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<Events &
         }
         this.setState(state_update);
     }
-    upstate(key: string|Array<Array<any>>, event_or_value?) {
+    upstate(key: string | Array<Array<any>>, event_or_value?) {
         if (!event_or_value && Array.isArray(key)) {
             return this.bulkUpstate(key);
         }
         return this.bulkUpstate([[key, event_or_value]]);
     }
 }
-
 
 export function openModal(modal: any): any {
     const container = $("<div class='Modal-container'></div>");

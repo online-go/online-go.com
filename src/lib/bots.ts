@@ -15,16 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {termination_socket} from "sockets";
-import {getUserRating} from 'rank_utils';
-
+import { termination_socket } from "sockets";
+import { getUserRating } from "rank_utils";
 
 interface Bot {
     id: number;
     username: string;
 }
 
-let active_bots: {[id: string]: Bot} = {};
+let active_bots: { [id: string]: Bot } = {};
 let _bots_list: Bot[] = [];
 
 export function bots_list(): Array<Bot> {
@@ -40,11 +39,13 @@ export function bot_count() {
     return Object.keys(active_bots).length;
 }
 
-termination_socket.on("active-bots", (bots: {[id: string]: Bot}) => {
+termination_socket.on("active-bots", (bots: { [id: string]: Bot }) => {
     active_bots = bots;
     _bots_list = [];
     for (const id in bots) {
         _bots_list.push(bots[id]);
     }
-    _bots_list.sort((a, b) => getUserRating(a).rating - getUserRating(b).rating);
+    _bots_list.sort(
+        (a, b) => getUserRating(a).rating - getUserRating(b).rating,
+    );
 });

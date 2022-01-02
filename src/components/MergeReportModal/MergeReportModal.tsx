@@ -16,12 +16,11 @@
  */
 
 import * as React from "react";
-import {_} from 'translate';
-import {Modal, openModal} from "Modal";
+import { _ } from "translate";
+import { Modal, openModal } from "Modal";
 import * as data from "data";
 
-interface Events {
-}
+interface Events {}
 
 interface MergeReportLine {
     info?: string;
@@ -34,7 +33,11 @@ interface MergeReportModalProperties {
     error?: string;
 }
 
-export class MergeReportModal extends Modal<Events, MergeReportModalProperties, any> {
+export class MergeReportModal extends Modal<
+    Events,
+    MergeReportModalProperties,
+    any
+> {
     constructor(props) {
         super(props);
     }
@@ -44,12 +47,22 @@ export class MergeReportModal extends Modal<Events, MergeReportModalProperties, 
             <div className="Modal MergeReportModal" ref="modal">
                 <div className="body">
                     {this.props.error && <h3>{this.props.error}</h3>}
-                    <div className='lines'>
+                    <div className="lines">
                         {this.props.report.map((e, idx) => {
-                            const cls = 'error' in e ? 'error' : ('warn' in e ? 'warn' : 'info');
+                            const cls =
+                                "error" in e
+                                    ? "error"
+                                    : "warn" in e
+                                    ? "warn"
+                                    : "info";
                             const msg = e[cls];
 
-                            return (<div key={idx} className={`line merge-${cls}`}><span className='fixed'>{idx + 1}</span>{msg}</div>);
+                            return (
+                                <div key={idx} className={`line merge-${cls}`}>
+                                    <span className="fixed">{idx + 1}</span>
+                                    {msg}
+                                </div>
+                            );
                         })}
                     </div>
                 </div>
@@ -61,6 +74,9 @@ export class MergeReportModal extends Modal<Events, MergeReportModalProperties, 
     }
 }
 
-export function openMergeReportModal(report: Array<MergeReportLine>, error?: string) {
+export function openMergeReportModal(
+    report: Array<MergeReportLine>,
+    error?: string,
+) {
     return openModal(<MergeReportModal report={report} error={error} />);
 }

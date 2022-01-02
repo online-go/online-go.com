@@ -16,16 +16,16 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router-dom";
-import {browserHistory} from "ogsHistory";
+import { Link } from "react-router-dom";
+import { browserHistory } from "ogsHistory";
 import * as data from "data";
-import {_} from "translate";
-import {Card} from "material";
-import {errorAlerter} from "misc";
-import {LineText} from "misc-ui";
-import {post} from "requests";
-import {get_ebi} from "SignIn";
-import cached from 'cached';
+import { _ } from "translate";
+import { Card } from "material";
+import { errorAlerter } from "misc";
+import { LineText } from "misc-ui";
+import { post } from "requests";
+import { get_ebi } from "SignIn";
+import cached from "cached";
 
 export class Register extends React.PureComponent<{}, any> {
     refs: {
@@ -39,28 +39,37 @@ export class Register extends React.PureComponent<{}, any> {
         this.state = {};
     }
 
-    register = event => {
+    register = (event) => {
         const actually_register = () => {
             console.log("Should be logging in");
 
             post("/api/v0/register", {
-                "username": this.refs.username.value.trim(),
-                "password": this.refs.password.value,
-                "email": this.refs.email.value.trim(),
-                "ebi": get_ebi()
-            }).then((config) => {
-                data.set(cached.config, config);
+                username: this.refs.username.value.trim(),
+                password: this.refs.password.value,
+                email: this.refs.email.value.trim(),
+                ebi: get_ebi(),
+            })
+                .then((config) => {
+                    data.set(cached.config, config);
 
-                if (window.location.hash && window.location.hash[1] === "/") {
-                    window.location.pathname = window.location.hash.substr(1);
-                } else {
-                    window.location.pathname = "/";
-                }
-            }).catch(errorAlerter);
+                    if (
+                        window.location.hash &&
+                        window.location.hash[1] === "/"
+                    ) {
+                        window.location.pathname =
+                            window.location.hash.substr(1);
+                    } else {
+                        window.location.pathname = "/";
+                    }
+                })
+                .catch(errorAlerter);
         };
 
         const focus_empty = (focus_email?: boolean) => {
-            if (this.refs.username.value.trim() === "" || !this.validateUsername()) {
+            if (
+                this.refs.username.value.trim() === "" ||
+                !this.validateUsername()
+            ) {
                 this.refs.username.focus();
                 return true;
             }
@@ -111,13 +120,17 @@ export class Register extends React.PureComponent<{}, any> {
     validateUsername = (ev?) => {
         if (/@/.test(this.refs.username.value)) {
             $(this.refs.username).addClass("validation-error");
-            this.setState({"error": _("Your username will be publically visible, please do not use your email address here.")});
+            this.setState({
+                error: _(
+                    "Your username will be publically visible, please do not use your email address here.",
+                ),
+            });
             this.refs.username.focus();
             return false;
         } else {
             if ($(this.refs.username).hasClass("validation-error")) {
                 $(this.refs.username).removeClass("validation-error");
-                this.setState({"error": null});
+                this.setState({ error: null });
             }
         }
         return true;
@@ -129,14 +142,63 @@ export class Register extends React.PureComponent<{}, any> {
                 <Card>
                     <h2>{_("Welcome new player!")}</h2>
                     <form name="login" autoComplete="on">
-                        <label htmlFor="username">{_("Username") /* translators: New account registration */}</label>
-                        <input className="boxed" id="username" autoFocus ref="username" name="username" onKeyPress={this.register} onChange={this.validateUsername} />
-                        {this.state.error && <div className="error-message">{this.state.error}</div>}
-                        <label htmlFor="password">{_("Password") /* translators: New account registration */}</label>
-                        <input className="boxed" id="password" ref="password" type="password" name="password" onKeyPress={this.register} />
-                        <label htmlFor="email">{_("Email (optional)") /* translators: New account registration */}</label>
-                        <input className="boxed" id="email" ref="email" type="email" name="email" onKeyPress={this.register} />
-                        <div style={{textAlign: "right", marginBottom: "1.0rem"}}>
+                        <label htmlFor="username">
+                            {
+                                _(
+                                    "Username",
+                                ) /* translators: New account registration */
+                            }
+                        </label>
+                        <input
+                            className="boxed"
+                            id="username"
+                            autoFocus
+                            ref="username"
+                            name="username"
+                            onKeyPress={this.register}
+                            onChange={this.validateUsername}
+                        />
+                        {this.state.error && (
+                            <div className="error-message">
+                                {this.state.error}
+                            </div>
+                        )}
+                        <label htmlFor="password">
+                            {
+                                _(
+                                    "Password",
+                                ) /* translators: New account registration */
+                            }
+                        </label>
+                        <input
+                            className="boxed"
+                            id="password"
+                            ref="password"
+                            type="password"
+                            name="password"
+                            onKeyPress={this.register}
+                        />
+                        <label htmlFor="email">
+                            {
+                                _(
+                                    "Email (optional)",
+                                ) /* translators: New account registration */
+                            }
+                        </label>
+                        <input
+                            className="boxed"
+                            id="email"
+                            ref="email"
+                            type="email"
+                            name="email"
+                            onKeyPress={this.register}
+                        />
+                        <div
+                            style={{
+                                textAlign: "right",
+                                marginBottom: "1.0rem",
+                            }}
+                        >
                             <button className="primary" onClick={this.register}>
                                 <i className="fa fa-sign-in" /> {_("Sign up")}
                             </button>
@@ -144,11 +206,42 @@ export class Register extends React.PureComponent<{}, any> {
                     </form>
 
                     <div className="social-buttons">
-                        <Link to="/sign-in" className="s btn md-icon"><i className='email-icon fa fa-envelope-o' /> {_("Sign in with Email")}</Link>
-                        <a href="/login/google-oauth2/" className="s btn md-icon" target="_self"><span  className="google google-oauth2-icon" /> {_("Sign in with Google")}</a>
-                        <a href="/login/facebook/" className="s btn md-icon" target="_self"><span className="facebook facebook-icon" /> {_("Sign in with Facebook")}</a>
-                        <a href="/login/twitter/" className="s btn md-icon" target="_self"><i className="twitter twitter-icon fa fa-twitter" />{_("Sign in with Twitter")}</a>
-                        <a href="/login/apple-id/" className="s btn md-icon" target="_self"><i className="twitter apple-id-icon fa fa-apple" />{_("Sign in with Apple")}</a>
+                        <Link to="/sign-in" className="s btn md-icon">
+                            <i className="email-icon fa fa-envelope-o" />{" "}
+                            {_("Sign in with Email")}
+                        </Link>
+                        <a
+                            href="/login/google-oauth2/"
+                            className="s btn md-icon"
+                            target="_self"
+                        >
+                            <span className="google google-oauth2-icon" />{" "}
+                            {_("Sign in with Google")}
+                        </a>
+                        <a
+                            href="/login/facebook/"
+                            className="s btn md-icon"
+                            target="_self"
+                        >
+                            <span className="facebook facebook-icon" />{" "}
+                            {_("Sign in with Facebook")}
+                        </a>
+                        <a
+                            href="/login/twitter/"
+                            className="s btn md-icon"
+                            target="_self"
+                        >
+                            <i className="twitter twitter-icon fa fa-twitter" />
+                            {_("Sign in with Twitter")}
+                        </a>
+                        <a
+                            href="/login/apple-id/"
+                            className="s btn md-icon"
+                            target="_self"
+                        >
+                            <i className="twitter apple-id-icon fa fa-apple" />
+                            {_("Sign in with Apple")}
+                        </a>
                     </div>
                 </Card>
             </div>

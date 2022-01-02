@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {deepCompare} from "misc";
-
+import { deepCompare } from "misc";
 
 export function api1ify(path) {
     if (path.indexOf("/api/v") === 0) {
@@ -42,7 +41,7 @@ function initialize() {
     initialized = true;
 
     function csrfSafeMethod(method) {
-        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        return /^(GET|HEAD|OPTIONS|TRACE)$/.test(method);
     }
     $.ajaxSetup({
         crossDomain: false, // obviates need for sameOrigin test
@@ -50,10 +49,9 @@ function initialize() {
             if (!csrfSafeMethod(settings.type)) {
                 xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
             }
-        }
+        },
     });
 }
-
 
 interface Request {
     promise?: Promise<any>;
@@ -63,9 +61,9 @@ interface Request {
     request?: JQueryXHR;
 }
 
-const requests_in_flight: {[id: string]: Request} = {};
+const requests_in_flight: { [id: string]: Request } = {};
 let last_request_id = 0;
-type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface RequestFunction {
     (url: string): Promise<any>;
@@ -95,7 +93,11 @@ export function request(method: Method): RequestFunction {
                 break;
         }
         if (url.indexOf("%%") < 0 && id !== undefined) {
-            console.warn("Url doesn't contain an id but one was given.", url, id);
+            console.warn(
+                "Url doesn't contain an id but one was given.",
+                url,
+                id,
+            );
             console.trace();
         }
         if (url.indexOf("%%") >= 0 && id === undefined) {
@@ -103,12 +105,20 @@ export function request(method: Method): RequestFunction {
             console.trace();
         }
 
-        const real_url: string = ((typeof(id) === "number" && isFinite(id)) || (typeof(id) === 'string')) ? url.replace("%%", id.toString()) : url;
+        const real_url: string =
+            (typeof id === "number" && isFinite(id)) || typeof id === "string"
+                ? url.replace("%%", id.toString())
+                : url;
         const real_data = data;
 
         for (const req_id in requests_in_flight) {
             const req = requests_in_flight[req_id];
-            if (req.promise && (req.url === real_url) && (method === req.type) && deepCompare(req.data, real_data)) {
+            if (
+                req.promise &&
+                req.url === real_url &&
+                method === req.type &&
+                deepCompare(req.data, real_data)
+            ) {
                 //console.log("Duplicate in flight request, chaining");
                 return req.promise;
             }
@@ -123,50 +133,60 @@ export function request(method: Method): RequestFunction {
             data: real_data,
         };
 
-
-        requests_in_flight[request_id].promise = new Promise((resolve, reject) => {
-            const opts: JQueryAjaxSettings = {
-                url: api1ify(real_url),
-                type: method,
-                data: undefined,
-                dataType: "json",
-                contentType: "application/json",
-                success: (res) => {
-                    delete requests_in_flight[request_id];
-                    resolve(res);
-                },
-                error: (err) => {
-                    delete requests_in_flight[request_id];
-                    if (err.status !== 0) { /* Ignore aborts */
-                        console.warn(api1ify(real_url), err.status, err.statusText);
-                        console.warn(traceback.stack);
-                    }
-                    reject(err);
-                }
-            };
-            if (real_data) {
-                if ((real_data instanceof Blob) || (Array.isArray(real_data) && real_data[0] instanceof Blob)) {
-                    opts.data = new FormData();
-                    if (real_data instanceof Blob) {
-                        opts.data.append("file", real_data);
+        requests_in_flight[request_id].promise = new Promise(
+            (resolve, reject) => {
+                const opts: JQueryAjaxSettings = {
+                    url: api1ify(real_url),
+                    type: method,
+                    data: undefined,
+                    dataType: "json",
+                    contentType: "application/json",
+                    success: (res) => {
+                        delete requests_in_flight[request_id];
+                        resolve(res);
+                    },
+                    error: (err) => {
+                        delete requests_in_flight[request_id];
+                        if (err.status !== 0) {
+                            /* Ignore aborts */
+                            console.warn(
+                                api1ify(real_url),
+                                err.status,
+                                err.statusText,
+                            );
+                            console.warn(traceback.stack);
+                        }
+                        reject(err);
+                    },
+                };
+                if (real_data) {
+                    if (
+                        real_data instanceof Blob ||
+                        (Array.isArray(real_data) &&
+                            real_data[0] instanceof Blob)
+                    ) {
+                        opts.data = new FormData();
+                        if (real_data instanceof Blob) {
+                            opts.data.append("file", real_data);
+                        } else {
+                            for (const file of real_data as Array<Blob>) {
+                                opts.data.append("file", file);
+                            }
+                        }
+                        opts.processData = false;
+                        opts.contentType = false;
                     } else {
-                        for (const file of (real_data as Array<Blob>)) {
-                            opts.data.append("file", file);
+                        if (method === "GET") {
+                            opts.data = real_data;
+                        } else {
+                            opts.data = JSON.stringify(real_data);
                         }
                     }
-                    opts.processData = false;
-                    opts.contentType = false;
-                } else {
-                    if (method === "GET") {
-                        opts.data = real_data;
-                    } else {
-                        opts.data = JSON.stringify(real_data);
-                    }
                 }
-            }
 
-            requests_in_flight[request_id].request = $.ajax(opts);
-        });
+                requests_in_flight[request_id].request = $.ajax(opts);
+            },
+        );
 
         return requests_in_flight[request_id].promise;
     };
@@ -178,8 +198,10 @@ export function getCookie(name) {
         const cookies = document.cookie.split(";");
         for (let i = 0; i < cookies.length; i++) {
             const cookie = jQuery.trim(cookies[i]);
-            if (cookie.substring(0, name.length + 1) === (name + "=")) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+                cookieValue = decodeURIComponent(
+                    cookie.substring(name.length + 1),
+                );
                 break;
             }
         }
@@ -196,7 +218,7 @@ export const del = request("DELETE");
 export function abort_requests_in_flight(url, method?: Method) {
     for (const id in requests_in_flight) {
         const req = requests_in_flight[id];
-        if ((req.url === url) && (!method || method === req.type)) {
+        if (req.url === url && (!method || method === req.type)) {
             req.request.abort();
         }
     }

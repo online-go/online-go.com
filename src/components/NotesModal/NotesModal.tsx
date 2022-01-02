@@ -16,11 +16,10 @@
  */
 
 import * as React from "react";
-import {_} from 'translate';
-import {Modal, openModal} from "Modal";
+import { _ } from "translate";
+import { Modal, openModal } from "Modal";
 
-interface Events {
-}
+interface Events {}
 
 interface NotesModalProperties {
     notes: string;

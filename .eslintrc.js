@@ -3,9 +3,6 @@ module.exports = {
         "browser": true,
         "es6": true
     },
-    "extends": [
-        "prettier",
-    ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "project": "tsconfig.json",
@@ -63,11 +60,6 @@ module.exports = {
         "@typescript-eslint/prefer-namespace-keyword": "error",
         "@typescript-eslint/semi": "error",
         "@typescript-eslint/type-annotation-spacing": "error",
-        "brace-style": [
-            "error",
-            "1tbs",
-            { "allowSingleLine": true }
-        ],
         "computed-property-spacing": ["error", "never"],
         "curly": "error",
         "eol-last": "error",
@@ -88,15 +80,6 @@ module.exports = {
             "undefined"
         ],
         "id-match": "error",
-        "indent": [
-            "error",
-            4,
-            {
-                "SwitchCase": 1,
-                "MemberExpression": "off",
-                "ignoredNodes": ["ConditionalExpression"]
-            }
-        ],
         "jsdoc/check-alignment": "error",
         "jsdoc/require-asterisk-prefix": "error",
         "linebreak-style": [
@@ -131,10 +114,6 @@ module.exports = {
         "prefer-arrow-callback": [
             "error",
             { "allowNamedFunctions": true }
-        ],
-        "space-before-function-paren": [
-            "error",
-            "never"
         ],
         "use-isnan": "error",
         "@typescript-eslint/tslint/config": [

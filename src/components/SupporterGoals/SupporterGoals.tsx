@@ -16,8 +16,8 @@
  */
 
 import * as React from "react";
-import {_, interpolate} from "translate";
-import {Link} from "react-router-dom";
+import { _, interpolate } from "translate";
+import { Link } from "react-router-dom";
 import * as data from "data";
 
 interface SupporterGoalsProperties {
@@ -29,8 +29,7 @@ export class SupporterGoals extends React.PureComponent<SupporterGoalsProperties
         super(props);
 
         // TODO: remove this
-        this.state = {
-        };
+        this.state = {};
     }
 
     getHoursVisitedSinceGoalsShown() {
@@ -38,19 +37,23 @@ export class SupporterGoals extends React.PureComponent<SupporterGoalsProperties
         const d = new Date();
         const this_hour = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()} ${d.getHours()}`;
 
-        if (data.get('last-visited-since-goals-shown') !== this_hour) {
-            data.set('last-visited-since-goals-shown', this_hour);
-            let hours_visited_since_goals_shown = data.get('hours-visited-since-goals-shown') || 0;
+        if (data.get("last-visited-since-goals-shown") !== this_hour) {
+            data.set("last-visited-since-goals-shown", this_hour);
+            let hours_visited_since_goals_shown =
+                data.get("hours-visited-since-goals-shown") || 0;
             hours_visited_since_goals_shown += 1;
-            data.set('hours-visited-since-goals-shown', hours_visited_since_goals_shown);
+            data.set(
+                "hours-visited-since-goals-shown",
+                hours_visited_since_goals_shown,
+            );
         }
 
-        return data.get('hours-visited-since-goals-shown');
+        return data.get("hours-visited-since-goals-shown");
     }
 
     resetHoursVisitedSinceGoalsShown() {
-        data.set('last-visited-since-goals-shown', null);
-        data.set('hours-visited-since-goals-shown', 0);
+        data.set("last-visited-since-goals-shown", null);
+        data.set("hours-visited-since-goals-shown", 0);
     }
 
     render() {

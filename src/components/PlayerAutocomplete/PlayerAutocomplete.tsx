@@ -16,10 +16,10 @@
  */
 
 import * as React from "react";
-import {_, pgettext, interpolate} from "translate";
-import {post, get, abort_requests_in_flight} from "requests";
+import { _, pgettext, interpolate } from "translate";
+import { post, get, abort_requests_in_flight } from "requests";
 import * as player_cache from "player_cache";
-import * as Autosuggest from 'react-autosuggest';
+import * as Autosuggest from "react-autosuggest";
 
 interface PlayerAutocompleteProperties {
     onComplete: (user: player_cache.PlayerCacheEntry | null) => void;
@@ -37,12 +37,22 @@ interface SuggestionEntry {
     username: string;
 }
 
+export const PlayerAutocomplete = React.forwardRef<
+    PlayerAutocompleteRef,
+    PlayerAutocompleteProperties
+>(_PlayerAutocomplete);
 
-export const PlayerAutocomplete = React.forwardRef<PlayerAutocompleteRef, PlayerAutocompleteProperties>(_PlayerAutocomplete);
-
-function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Element {
-    const [value, setValue]: [string, (x: string) => void] = React.useState(player_cache.lookup(props.playerId || 0)?.username || "");
-    const [suggestions, setSuggestions]: [SuggestionEntry[], (x: SuggestionEntry[]) => void] = React.useState([] as SuggestionEntry[]);
+function _PlayerAutocomplete(
+    props: PlayerAutocompleteProperties,
+    ref,
+): JSX.Element {
+    const [value, setValue]: [string, (x: string) => void] = React.useState(
+        player_cache.lookup(props.playerId || 0)?.username || "",
+    );
+    const [suggestions, setSuggestions]: [
+        SuggestionEntry[],
+        (x: SuggestionEntry[]) => void,
+    ] = React.useState([] as SuggestionEntry[]);
     const tabbed_out = React.useRef(false as boolean);
     const last_on_complete_username = React.useRef("");
     const search = React.useRef("");
@@ -54,7 +64,7 @@ function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Elem
             search.current = "";
             tabbed_out.current = false;
             last_on_complete_username.current = "";
-        }
+        },
     }));
 
     React.useEffect(() => {
@@ -62,8 +72,10 @@ function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Elem
         setSuggestions([]);
     }, [props.playerId]);
 
-
-    function onBlur(ev: unknown, {highlightedSuggestion}: {highlightedSuggestion: SuggestionEntry}): void {
+    function onBlur(
+        ev: unknown,
+        { highlightedSuggestion }: { highlightedSuggestion: SuggestionEntry },
+    ): void {
         //if (tabbed_out.current) {
         if (highlightedSuggestion) {
             setValue(getSuggestionValue(highlightedSuggestion));
@@ -84,13 +96,19 @@ function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Elem
             complete(value);
         }
     }
-    function onChange(ev: React.ChangeEvent<HTMLInputElement>, {newValue}: {newValue: string}) {
+    function onChange(
+        ev: React.ChangeEvent<HTMLInputElement>,
+        { newValue }: { newValue: string },
+    ) {
         setValue(newValue);
         //complete(newValue);
         console.log("on change fired");
     }
 
-    function onSuggestionSelected(event: unknown, { suggestion }: { suggestion: SuggestionEntry }): void {
+    function onSuggestionSelected(
+        event: unknown,
+        { suggestion }: { suggestion: SuggestionEntry },
+    ): void {
         setValue(getSuggestionValue(suggestion));
         complete(getSuggestionValue(suggestion));
     }
@@ -125,16 +143,14 @@ function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Elem
         if (value.length > 1) {
             const q = props.ladderId
                 ? get(`ladders/${props.ladderId}/players/`, {
-                    page_size: 10,
-                    player__username__istartswith: value,
-                    no_challenge_information: 1,
-                })
+                      page_size: 10,
+                      player__username__istartswith: value,
+                      no_challenge_information: 1,
+                  })
                 : get("players/", {
-                    page_size: 10,
-                    username__istartswith: value,
-                })
-            ;
-
+                      page_size: 10,
+                      username__istartswith: value,
+                  });
             q.then((res) => {
                 const new_suggestions = [];
                 for (let user of res.results) {
@@ -152,9 +168,9 @@ function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Elem
                 if (player_cache.lookup_by_username(value)) {
                     //complete(value);
                 }
-            })
-            .catch((err) => {
-                if (err.status !== 0) { // status === 0 is an abort
+            }).catch((err) => {
+                if (err.status !== 0) {
+                    // status === 0 is an abort
                     console.log(err);
                 }
             });
@@ -163,14 +179,16 @@ function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Elem
         }
     }
 
-
-    const inputProps = React.useMemo(() => ({
-        placeholder: props.placeholder || _("Player name"),
-        value: value,
-        onBlur: onBlur,
-        onKeyDown: onKeyDown,
-        onChange: onChange
-    }), [props.placeholder, value]);
+    const inputProps = React.useMemo(
+        () => ({
+            placeholder: props.placeholder || _("Player name"),
+            value: value,
+            onBlur: onBlur,
+            onKeyDown: onKeyDown,
+            onChange: onChange,
+        }),
+        [props.placeholder, value],
+    );
 
     return (
         <span className="PlayerAutocomplete">
@@ -186,9 +204,7 @@ function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Elem
             />
         </span>
     );
-
 }
-
 
 function getSuggestionValue(suggestion: SuggestionEntry): string {
     return suggestion.username;

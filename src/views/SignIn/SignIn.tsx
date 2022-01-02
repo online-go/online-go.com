@@ -16,19 +16,19 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router-dom";
-import {browserHistory} from "ogsHistory";
+import { Link } from "react-router-dom";
+import { browserHistory } from "ogsHistory";
 import * as data from "data";
-import {_} from "translate";
-import {Card} from "material";
-import {LineText} from "misc-ui";
-import {errorAlerter, ignore} from "misc";
-import {post} from "requests";
-import cached from 'cached';
-import {Md5} from 'ts-md5/dist/md5';
+import { _ } from "translate";
+import { Card } from "material";
+import { LineText } from "misc-ui";
+import { errorAlerter, ignore } from "misc";
+import { post } from "requests";
+import cached from "cached";
+import { Md5 } from "ts-md5/dist/md5";
 
-window['Md5'] = Md5;
-import swal from 'sweetalert2';
+window["Md5"] = Md5;
+import swal from "sweetalert2";
 
 export function get_bid() {
     const bid = data.get("bid") || `${Math.random()}`.split(".")[1];
@@ -71,7 +71,17 @@ export function get_ebi() {
     } catch (e) {
         console.error(e);
     }
-    return bid + "." + screen_dims + "." + plugin_hash + "." + user_agent_hash + "." + tzoffset;
+    return (
+        bid +
+        "." +
+        screen_dims +
+        "." +
+        plugin_hash +
+        "." +
+        user_agent_hash +
+        "." +
+        tzoffset
+    );
 }
 
 export class SignIn extends React.PureComponent<{}, any> {
@@ -89,22 +99,28 @@ export class SignIn extends React.PureComponent<{}, any> {
     login(event) {
         const actually_login = () => {
             post("/api/v0/login", {
-                "username": this.refs.username.value.trim(),
-                "password": this.refs.password.value,
-                "ebi": get_ebi()
-            }).then((config) => {
-                if ("redirect" in config) {
-                    window.location.pathname = config.redirect;
-                    return;
-                }
+                username: this.refs.username.value.trim(),
+                password: this.refs.password.value,
+                ebi: get_ebi(),
+            })
+                .then((config) => {
+                    if ("redirect" in config) {
+                        window.location.pathname = config.redirect;
+                        return;
+                    }
 
-                data.set(cached.config, config);
-                if (window.location.hash && window.location.hash[1] === "/") {
-                    window.location.pathname = window.location.hash.substr(1);
-                } else {
-                    window.location.pathname = "/";
-                }
-            }).catch(errorAlerter);
+                    data.set(cached.config, config);
+                    if (
+                        window.location.hash &&
+                        window.location.hash[1] === "/"
+                    ) {
+                        window.location.pathname =
+                            window.location.hash.substr(1);
+                    } else {
+                        window.location.pathname = "/";
+                    }
+                })
+                .catch(errorAlerter);
         };
 
         const focus_empty = () => {
@@ -146,13 +162,17 @@ export class SignIn extends React.PureComponent<{}, any> {
         swal({
             text: _("What is your username?"),
             input: "text",
-            showCancelButton: true
+            showCancelButton: true,
         })
             .then((username) => {
-                post("/api/v0/reset", {username: username})
+                post("/api/v0/reset", { username: username })
                     .then((res) => {
                         if (res.success) {
-                            swal(_("An email with your new password has been emailed to you.")).catch(swal.noop);
+                            swal(
+                                _(
+                                    "An email with your new password has been emailed to you.",
+                                ),
+                            ).catch(swal.noop);
                         } else {
                             console.error(res);
                             errorAlerter(res);
@@ -170,21 +190,57 @@ export class SignIn extends React.PureComponent<{}, any> {
                     <Card>
                         <h2>{_("Sign in")}</h2>
                         <form name="login" autoComplete="on">
-                            <label htmlFor="username">{_("Username") /* translators: Provide username to sign in with */}</label>
-                            <input className="boxed" id="username" autoFocus ref="username" name="username" onKeyPress={this.login} />
-                            <label htmlFor="password">{_("Password") /* translators: Provide password to sign in with */}</label>
-                            <input className="boxed" id="password" ref="password" type="password" name="password" onKeyPress={this.login} />
+                            <label htmlFor="username">
+                                {
+                                    _(
+                                        "Username",
+                                    ) /* translators: Provide username to sign in with */
+                                }
+                            </label>
+                            <input
+                                className="boxed"
+                                id="username"
+                                autoFocus
+                                ref="username"
+                                name="username"
+                                onKeyPress={this.login}
+                            />
+                            <label htmlFor="password">
+                                {
+                                    _(
+                                        "Password",
+                                    ) /* translators: Provide password to sign in with */
+                                }
+                            </label>
+                            <input
+                                className="boxed"
+                                id="password"
+                                ref="password"
+                                type="password"
+                                name="password"
+                                onKeyPress={this.login}
+                            />
                             <div className="form-actions">
-                                <a onClick={this.resetPassword}>{_("Forgot password?")}</a>
-                                <button className="primary" onClick={this.login}>
-                                    <i className="fa fa-sign-in" /> {_("Sign in")}
+                                <a onClick={this.resetPassword}>
+                                    {_("Forgot password?")}
+                                </a>
+                                <button
+                                    className="primary"
+                                    onClick={this.login}
+                                >
+                                    <i className="fa fa-sign-in" />{" "}
+                                    {_("Sign in")}
                                 </button>
                             </div>
                         </form>
 
-                        <LineText>{
-                            _("or sign in using another account:") /* translators: username or password, or sign in with social authentication */
-                        }</LineText>
+                        <LineText>
+                            {
+                                _(
+                                    "or sign in using another account:",
+                                ) /* translators: username or password, or sign in with social authentication */
+                            }
+                        </LineText>
                         <SocialLoginButtons />
                     </Card>
 
@@ -192,7 +248,14 @@ export class SignIn extends React.PureComponent<{}, any> {
                         <h3>{_("New to Online-Go?")} </h3>
                         <div>
                             <Link to="/register" className="btn primary">
-                                <b>{_("Register here!")/* translators: register for an account */}</b></Link>
+                                <b>
+                                    {
+                                        _(
+                                            "Register here!",
+                                        ) /* translators: register for an account */
+                                    }
+                                </b>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -201,14 +264,29 @@ export class SignIn extends React.PureComponent<{}, any> {
     }
 }
 
-
 export function SocialLoginButtons(): JSX.Element {
     return (
         <div className="social-buttons">
-            <a href="/login/google-oauth2/" className="s btn md-icon" target="_self"><span className="google google-oauth2-icon" /> {_("Sign in with Google")}</a>
-            <a href="/login/facebook/" className="s btn md-icon" target="_self"><span className="facebook facebook-icon" /> {_("Sign in with Facebook")}</a>
-            <a href="/login/twitter/" className="s btn md-icon" target="_self"><i className="twitter twitter-icon fa fa-twitter" />{_("Sign in with Twitter")}</a>
-            <a href="/login/apple-id/" className="s btn md-icon" target="_self"><i className="apple apple-id-icon fa fa-apple" />{_("Sign in with Apple")}</a>
+            <a
+                href="/login/google-oauth2/"
+                className="s btn md-icon"
+                target="_self"
+            >
+                <span className="google google-oauth2-icon" />{" "}
+                {_("Sign in with Google")}
+            </a>
+            <a href="/login/facebook/" className="s btn md-icon" target="_self">
+                <span className="facebook facebook-icon" />{" "}
+                {_("Sign in with Facebook")}
+            </a>
+            <a href="/login/twitter/" className="s btn md-icon" target="_self">
+                <i className="twitter twitter-icon fa fa-twitter" />
+                {_("Sign in with Twitter")}
+            </a>
+            <a href="/login/apple-id/" className="s btn md-icon" target="_self">
+                <i className="apple apple-id-icon fa fa-apple" />
+                {_("Sign in with Apple")}
+            </a>
         </div>
     );
 }

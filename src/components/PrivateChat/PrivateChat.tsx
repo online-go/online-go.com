@@ -15,28 +15,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {comm_socket} from "sockets";
-import {challenge} from "ChallengeModal";
-import {createModeratorNote} from "ModNoteModal";
-import {_, pgettext, interpolate} from 'translate';
+import { comm_socket } from "sockets";
+import { challenge } from "ChallengeModal";
+import { createModeratorNote } from "ModNoteModal";
+import { _, pgettext, interpolate } from "translate";
 import * as data from "data";
 import ITC from "ITC";
-import {splitOnBytes, unicodeFilter} from "misc";
-import {profanity_filter} from "profanity_filter";
-import {player_is_ignored} from "BlockPlayer";
-import {emitNotification} from "Notifications";
-import {PlayerCacheEntry} from 'player_cache';
+import { splitOnBytes, unicodeFilter } from "misc";
+import { profanity_filter } from "profanity_filter";
+import { player_is_ignored } from "BlockPlayer";
+import { emitNotification } from "Notifications";
+import { PlayerCacheEntry } from "player_cache";
 import * as player_cache from "player_cache";
 import online_status from "online_status";
-import {alertModerator} from "misc";
+import { alertModerator } from "misc";
 
 let last_id = 0;
 
 const private_chats = [];
 const instances = {};
 
-const date_format: Intl.DateTimeFormatOptions  = {
-    month: 'long' , day: 'numeric', year: 'numeric'
+const date_format: Intl.DateTimeFormatOptions = {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
 };
 
 class PrivateChat {
@@ -46,7 +48,10 @@ class PrivateChat {
     lines = [];
     received_messages = {};
     last_uid;
-    last_date = new Date(Date.now() - 864e5).toLocaleDateString(undefined, date_format);
+    last_date = new Date(Date.now() - 864e5).toLocaleDateString(
+        undefined,
+        date_format,
+    );
     floating = false;
     superchat_enabled = false;
     banner;
@@ -64,7 +69,6 @@ class PrivateChat {
     chatnum = 0;
 
     display_state = "closed";
-
 
     constructor(user_id, username) {
         this.user_id = user_id;
@@ -85,100 +89,143 @@ class PrivateChat {
         });
 
         this.player = {
-            "id": user_id,
-            "username": "...",
-            "ui_class": ""
+            id: user_id,
+            username: "...",
+            ui_class: "",
         };
-        player_cache.fetch(this.user_id, ["username", "ui_class"])
-        .then((player) => {
-            this.player = player;
-            this.player_dom.text(unicodeFilter(player.username));
-            this.player_dom.addClass(player.ui_class);
-            this.updateInputPlaceholder();
-            if (this.banner) {
-                this.updateModeratorBanner();
-            }
-        })
-        .catch((err) => {
-            console.error(err);
-            this.player_dom.text("[error]");
-        });
+        player_cache
+            .fetch(this.user_id, ["username", "ui_class"])
+            .then((player) => {
+                this.player = player;
+                this.player_dom.text(unicodeFilter(player.username));
+                this.player_dom.addClass(player.ui_class);
+                this.updateInputPlaceholder();
+                if (this.banner) {
+                    this.updateModeratorBanner();
+                }
+            })
+            .catch((err) => {
+                console.error(err);
+                this.player_dom.text("[error]");
+            });
     }
 
     open(send_itc?) {
-        if (this.display_state === "open") { return; }
-        if (this.display_state !== "closed") { this.close(false, true); }
+        if (this.display_state === "open") {
+            return;
+        }
+        if (this.display_state !== "closed") {
+            this.close(false, true);
+        }
         private_chats.push(this);
 
         this.dom = $("<div>").addClass("private-chat-window").addClass("open");
         this.dom.append($("<div class='paper-shadow top z2'>"));
         this.dom.append($("<div class='paper-shadow bottom z2'>"));
 
-        const title = $("<div>").addClass("title")
-            .append(this.player_dom)
-        ;
-
+        const title = $("<div>").addClass("title").append(this.player_dom);
         if (data.get("user").is_moderator) {
-            const superchat = $("<i>").addClass("fa fa-bullhorn").click(() => {
-                this.superchat_enabled = !this.superchat_enabled;
-                if (this.superchat_enabled) {
-                    superchat.addClass("enabled");
-                    this.dom.addClass("superchat");
+            const superchat = $("<i>")
+                .addClass("fa fa-bullhorn")
+                .click(() => {
+                    this.superchat_enabled = !this.superchat_enabled;
+                    if (this.superchat_enabled) {
+                        superchat.addClass("enabled");
+                        this.dom.addClass("superchat");
 
-                    comm_socket.send("chat/pm/superchat", {
-                        "player_id": this.user_id,
-                        "username": this.player.username,
-                        "auth": data.get("config.superchat_auth"),
-                        "enable": true
-                    });
-                } else {
-                    superchat.removeClass("enabled");
-                    this.dom.removeClass("superchat");
-                    comm_socket.send("chat/pm/superchat", {
-                        "player_id": this.user_id,
-                        "username": this.player.username,
-                        "auth": data.get("config.superchat_auth"),
-                        "enable": false
-                    });
-                }
-
-            });
+                        comm_socket.send("chat/pm/superchat", {
+                            player_id: this.user_id,
+                            username: this.player.username,
+                            auth: data.get("config.superchat_auth"),
+                            enable: true,
+                        });
+                    } else {
+                        superchat.removeClass("enabled");
+                        this.dom.removeClass("superchat");
+                        comm_socket.send("chat/pm/superchat", {
+                            player_id: this.user_id,
+                            username: this.player.username,
+                            auth: data.get("config.superchat_auth"),
+                            enable: false,
+                        });
+                    }
+                });
             if (this.superchat_enabled) {
                 superchat.addClass("enabled");
             }
             title.append(superchat);
 
-            title.append($("<i>").addClass("fa fa-clipboard").click(() => {
-                this.createModNote();
-            }));
+            title.append(
+                $("<i>")
+                    .addClass("fa fa-clipboard")
+                    .click(() => {
+                        this.createModNote();
+                    }),
+            );
         } else {
-            title.append($("<i>").addClass("fa fa-exclamation-triangle").click(() => {
-                this.report();
-            }));
+            title.append(
+                $("<i>")
+                    .addClass("fa fa-exclamation-triangle")
+                    .click(() => {
+                        this.report();
+                    }),
+            );
 
-            title.append($("<i>").addClass("ogs-goban").click(() => {
-                challenge(this.user_id);
-            }));
+            title.append(
+                $("<i>")
+                    .addClass("ogs-goban")
+                    .click(() => {
+                        challenge(this.user_id);
+                    }),
+            );
         }
 
-        title.append($("<i>").addClass("fa fa-info-circle").click(() => {
-            window.open("/user/view/" + this.user_id + "/" + encodeURIComponent(unicodeFilter(this.player.username)), "_blank");
-        }));
-        title.append($("<i>").addClass("fa fa-minus").click(() => { this.minimize(true); }));
-        title.append($("<i>").addClass("fa fa-times").click(() => { this.close(true); }));
-
-
+        title.append(
+            $("<i>")
+                .addClass("fa fa-info-circle")
+                .click(() => {
+                    window.open(
+                        "/user/view/" +
+                            this.user_id +
+                            "/" +
+                            encodeURIComponent(
+                                unicodeFilter(this.player.username),
+                            ),
+                        "_blank",
+                    );
+                }),
+        );
+        title.append(
+            $("<i>")
+                .addClass("fa fa-minus")
+                .click(() => {
+                    this.minimize(true);
+                }),
+        );
+        title.append(
+            $("<i>")
+                .addClass("fa fa-times")
+                .click(() => {
+                    this.close(true);
+                }),
+        );
 
         this.dom.append(title);
 
         const handle = title;
         const start_drag = (ev) => {
-            if (!$(ev.target).hasClass("title") && !$(ev.target).hasClass("user")) { return; }
-
+            if (
+                !$(ev.target).hasClass("title") &&
+                !$(ev.target).hasClass("user")
+            ) {
+                return;
+            }
 
             const body = $("body");
 
-            body.append(this.dom); /* brings the chat to the front of other chats */
+            body.append(
+                this.dom,
+            ); /* brings the chat to the front of other chats */
             const offset = this.dom.offset();
             let ox = offset.left;
             let oy = offset.top;
@@ -194,13 +241,13 @@ class PrivateChat {
             const move = (ev) => {
                 const cx = ev.clientX;
                 const cy = ev.clientY;
-                if (moving || (Math.abs(cx - lx) + Math.abs(cy - ly)) > 5) {
+                if (moving || Math.abs(cx - lx) + Math.abs(cy - ly) > 5) {
                     moving = true;
                     if (!this.floating) {
                         this.startFloating();
                     }
-                    ox += (cx - lx);
-                    oy += (cy - ly);
+                    ox += cx - lx;
+                    oy += cy - ly;
                     lx = cx;
                     ly = cy;
 
@@ -210,7 +257,12 @@ class PrivateChat {
                     if (last_rox !== rox || last_roy !== roy) {
                         last_rox = rox;
                         last_roy = roy;
-                        this.dom.css({"right": "auto", "bottom": "auto", "left": rox, "top": roy});
+                        this.dom.css({
+                            right: "auto",
+                            bottom: "auto",
+                            left: rox,
+                            top: roy,
+                        });
                         this.body[0].scrollTop = this.body[0].scrollHeight;
                     }
                 }
@@ -235,17 +287,24 @@ class PrivateChat {
 
         const raise_to_top = () => {
             const body = $("body");
-            if (body[0].childNodes[body[0].childNodes.length - 1] !== this.dom[0]) {
-                body.append(this.dom); /* brings the chat to the front of other chats */
+            if (
+                body[0].childNodes[body[0].childNodes.length - 1] !==
+                this.dom[0]
+            ) {
+                body.append(
+                    this.dom,
+                ); /* brings the chat to the front of other chats */
                 this.body[0].scrollTop = this.body[0].scrollHeight;
             }
         };
 
-        const banner = this.banner =  $("<div>").addClass("banner banner-inactive");
+        const banner = (this.banner = $("<div>").addClass(
+            "banner banner-inactive",
+        ));
         this.dom.append(banner);
         this.updateModeratorBanner();
 
-        const body = this.body = $("<div>").addClass("body");
+        const body = (this.body = $("<div>").addClass("body"));
         this.dom.append(body);
         body.on("mousedown touchstart", raise_to_top);
 
@@ -253,22 +312,27 @@ class PrivateChat {
             body.append(this.lines[i]);
         }
 
-        const input = this.input = $("<input>").attr("type", "text").keypress((ev) => {
-            if (!data.get('user').email_validated && this.player.ui_class.indexOf('moderator') < 0 && this.lines.length === 0) {
-                return;
-            }
+        const input = (this.input = $("<input>")
+            .attr("type", "text")
+            .keypress((ev) => {
+                if (
+                    !data.get("user").email_validated &&
+                    this.player.ui_class.indexOf("moderator") < 0 &&
+                    this.lines.length === 0
+                ) {
+                    return;
+                }
 
-            if (ev.keyCode === 13) {
-                if (input.val().trim() === "") {
+                if (ev.keyCode === 13) {
+                    if (input.val().trim() === "") {
+                        return false;
+                    }
+                    this.sendChat(input.val());
                     return false;
                 }
-                this.sendChat(input.val());
-                return false;
-            }
-        });
+            }));
 
         this.updateInputPlaceholder();
-
 
         (input as any).nicknameTabComplete();
         this.dom.append(input);
@@ -287,7 +351,8 @@ class PrivateChat {
         }
     }
     updateModeratorBanner() {
-        if (this.player.ui_class.match(/moderator/)) {  // surely would be better to use player.is_moderator, but not available!
+        if (this.player.ui_class.match(/moderator/)) {
+            // surely would be better to use player.is_moderator, but not available!
             this.banner.removeClass("banner-inactive");
             this.banner.empty();
             const line = $("<div>").addClass("banner-text");
@@ -305,35 +370,81 @@ class PrivateChat {
         if (!this.input) {
             return;
         }
-        if (!data.get('user').email_validated && this.player.ui_class.indexOf('moderator') < 0 && this.lines.length === 0) {
-            this.input.attr("placeholder", _("Chat will be enabled once your email address has been validated"));
+        if (
+            !data.get("user").email_validated &&
+            this.player.ui_class.indexOf("moderator") < 0 &&
+            this.lines.length === 0
+        ) {
+            this.input.attr(
+                "placeholder",
+                _(
+                    "Chat will be enabled once your email address has been validated",
+                ),
+            );
             this.input.attr("disabled", "disabled");
         } else {
-            this.input.attr("placeholder",
-                pgettext("This is the placeholder text for the chat input field in games, chat channels, and private messages", interpolate("Message {{who}}", {who: this.player.username}))
+            this.input.attr(
+                "placeholder",
+                pgettext(
+                    "This is the placeholder text for the chat input field in games, chat channels, and private messages",
+                    interpolate("Message {{who}}", {
+                        who: this.player.username,
+                    }),
+                ),
             );
             this.input.removeAttr("disabled");
         }
     }
 
     minimize(send_itc?) {
-        if (this.superchat_enabled) { return; }
-        if (this.display_state === "minimized") { return; }
-        if (this.display_state !== "closed") { this.close(false, true); }
+        if (this.superchat_enabled) {
+            return;
+        }
+        if (this.display_state === "minimized") {
+            return;
+        }
+        if (this.display_state !== "closed") {
+            this.close(false, true);
+        }
         private_chats.push(this);
 
+        this.dom = $("<div>")
+            .addClass("private-chat-window")
+            .addClass("minimized");
 
-        this.dom = $("<div>").addClass("private-chat-window").addClass("minimized");
-
-        const title = $("<div>").addClass("title").click(() => { this.open(true); });
+        const title = $("<div>")
+            .addClass("title")
+            .click(() => {
+                this.open(true);
+            });
         title.append(this.player_dom);
-        title.append($("<i>").addClass("ogs-goban").click(() => {
-            challenge(this.user_id);
-        }));
-        title.append($("<i>").addClass("fa fa-info-circle").click(() => {
-            window.open("/user/view/" + this.user_id + "/" + encodeURIComponent(this.player.username), "_blank");
-        }));
-        title.append($("<i>").addClass("fa fa-times").click(() => { this.close(true); }));
+        title.append(
+            $("<i>")
+                .addClass("ogs-goban")
+                .click(() => {
+                    challenge(this.user_id);
+                }),
+        );
+        title.append(
+            $("<i>")
+                .addClass("fa fa-info-circle")
+                .click(() => {
+                    window.open(
+                        "/user/view/" +
+                            this.user_id +
+                            "/" +
+                            encodeURIComponent(this.player.username),
+                        "_blank",
+                    );
+                }),
+        );
+        title.append(
+            $("<i>")
+                .addClass("fa fa-times")
+                .click(() => {
+                    this.close(true);
+                }),
+        );
 
         this.dom.append(title);
 
@@ -348,7 +459,10 @@ class PrivateChat {
         }
 
         if (send_itc) {
-            ITC.send("private-chat-minimize", {"user_id": this.user_id, "username": this.player.username});
+            ITC.send("private-chat-minimize", {
+                user_id: this.user_id,
+                username: this.player.username,
+            });
         }
     }
     close(send_itc, dont_send_pm_close?) {
@@ -367,7 +481,10 @@ class PrivateChat {
         this.body = null;
         update_chat_layout();
         if (send_itc) {
-            ITC.send("private-chat-close", {"user_id": this.user_id, "username": this.player.username});
+            ITC.send("private-chat-close", {
+                user_id: this.user_id,
+                username: this.player.username,
+            });
             data.set("pm.close-" + this.user_id, this.last_uid);
         }
         if (comm_socket && !dont_send_pm_close) {
@@ -382,21 +499,39 @@ class PrivateChat {
 
         if (timestamp) {
             const ts = new Date(timestamp * 1000);
-            if (this.last_date !== ts.toLocaleDateString(undefined, date_format)) {
+            if (
+                this.last_date !== ts.toLocaleDateString(undefined, date_format)
+            ) {
                 this.last_date = ts.toLocaleDateString(undefined, date_format);
-                line.append($("<div>").addClass("date").text(ts.toLocaleDateString(undefined, date_format)));
+                line.append(
+                    $("<div>")
+                        .addClass("date")
+                        .text(ts.toLocaleDateString(undefined, date_format)),
+                );
             }
 
-            line.append($("<span class='timestamp'>").text("[" + ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes() + "] "));
-
+            line.append(
+                $("<span class='timestamp'>").text(
+                    "[" +
+                        ts.getHours() +
+                        ":" +
+                        (ts.getMinutes() < 10 ? "0" : "") +
+                        ts.getMinutes() +
+                        "] ",
+                ),
+            );
         }
 
-        if (typeof(txt) === "string" && txt.substr(0, 4) === "/me ") {
+        if (typeof txt === "string" && txt.substr(0, 4) === "/me ") {
             line.append("<span> ** </span>");
-            line.append($("<span>").addClass("username").text(from)).append("<span> </span>");
+            line.append($("<span>").addClass("username").text(from)).append(
+                "<span> </span>",
+            );
             txt = txt.substr(4);
         } else {
-            line.append($("<span>").addClass("username").text(from)).append("<span>: </span>");
+            line.append($("<span>").addClass("username").text(from)).append(
+                "<span>: </span>",
+            );
         }
         line.append($("<span>").html(chat_markup(profanity_filter(txt))));
 
@@ -440,7 +575,7 @@ class PrivateChat {
 
     getConversation = () => {
         let conversation = "";
-        this.lines.forEach(line => {
+        this.lines.forEach((line) => {
             conversation += line[0].textContent + "\n";
         });
 
@@ -452,7 +587,13 @@ class PrivateChat {
     };
 
     report = () => {
-        alertModerator({user: this.user_id, reported_conversation: {username: this.player.username, content: this.getConversation()}});
+        alertModerator({
+            user: this.user_id,
+            reported_conversation: {
+                username: this.player.username,
+                content: this.getConversation(),
+            },
+        });
     };
 
     hilight() {
@@ -466,20 +607,34 @@ class PrivateChat {
         }
     }
     handleChat(line) {
-
         if (line.message.i) {
-            if ((line.message.i + " " + line.message.t + " " + line.from.username) in this.received_messages) {
+            if (
+                line.message.i +
+                    " " +
+                    line.message.t +
+                    " " +
+                    line.from.username in
+                this.received_messages
+            ) {
                 return;
             }
-            this.received_messages[(line.message.i + " " + line.message.t + " " + line.from.username)] = true;
+            this.received_messages[
+                line.message.i + " " + line.message.t + " " + line.from.username
+            ] = true;
         }
 
         //if (line.message.to) {
         //this.addChat(data.get('user').username, line.message.m, 0, line.message.t);
         //} else {
         line.message.m = profanity_filter(line.message.m);
-        this.addChat(line.from.username, line.message.m, line.from.id, line.message.t);
-        if (line.from.id !== data.get("user").id) { /* don't open if we were the ones who sent this (from another tab for instance) */
+        this.addChat(
+            line.from.username,
+            line.message.m,
+            line.from.id,
+            line.message.t,
+        );
+        if (line.from.id !== data.get("user").id) {
+            /* don't open if we were the ones who sent this (from another tab for instance) */
             if (this.display_state === "closed") {
                 //this.opening = true;
                 //setTimeout(()=>{
@@ -492,7 +647,12 @@ class PrivateChat {
                 this.hilight();
             }
             if (!player_is_ignored(line.from.id)) {
-                emitNotification("Private Message", line.from.username + " sent you a message:\n" + line.message.m);
+                emitNotification(
+                    "Private Message",
+                    line.from.username +
+                        " sent you a message:\n" +
+                        line.message.m,
+                );
             } else {
                 console.log("Ignoring private chat from ", line.from.username);
             }
@@ -506,22 +666,36 @@ class PrivateChat {
         }
     }
     sendChat(msg) {
-
         while (msg.length) {
             const arr = splitOnBytes(msg, 500);
             const line = arr[0];
             msg = arr[1];
 
-            this.addChat(data.get("user").username, line, this.user_id, Date.now() / 1000);
-            comm_socket.send("chat/pm", {
-                "player_id": this.user_id,
-                "username": this.player.username,
-                "uid": this.chatbase + "." + (++this.chatnum).toString(36),
-                "message": line
-            }, (line) => {
-                /* we're gonna get these echoed back to us in various cases */
-                this.received_messages[(line.message.i + " " + line.message.t + " " + line.from.username)] = true;
-            });
+            this.addChat(
+                data.get("user").username,
+                line,
+                this.user_id,
+                Date.now() / 1000,
+            );
+            comm_socket.send(
+                "chat/pm",
+                {
+                    player_id: this.user_id,
+                    username: this.player.username,
+                    uid: this.chatbase + "." + (++this.chatnum).toString(36),
+                    message: line,
+                },
+                (line) => {
+                    /* we're gonna get these echoed back to us in various cases */
+                    this.received_messages[
+                        line.message.i +
+                            " " +
+                            line.message.t +
+                            " " +
+                            line.from.username
+                    ] = true;
+                },
+            );
         }
         this.input.val("");
     }
@@ -571,12 +745,12 @@ class PrivateChat {
 
 function update_chat_layout() {
     let pos = $("#em10").width() / 2.5;
-    let max_width = '20rem';
+    let max_width = "20rem";
 
     const window_width = $(window).width();
     if (window_width < 640) {
         pos = 0;
-        max_width = '100vw';
+        max_width = "100vw";
     }
 
     const docked_chats = [];
@@ -586,11 +760,13 @@ function update_chat_layout() {
         }
     }
 
-    docked_chats.sort((a, b) => { return a.id - b.id; });
+    docked_chats.sort((a, b) => {
+        return a.id - b.id;
+    });
 
     for (let i = 0; i < docked_chats.length; ++i) {
         //docked_chats[i].dom.css({"right": pos, "z-index": 50000});
-        docked_chats[i].dom.css({"right": pos, maxWidth: max_width});
+        docked_chats[i].dom.css({ right: pos, maxWidth: max_width });
         pos += docked_chats[i].dom.width() + 3;
     }
 }
@@ -611,9 +787,15 @@ comm_socket.on("private-message", (line) => {
     }
 
     if (pc && !pc.superchat_enabled) {
-        if (line.from.id === data.get("user").id && player_is_ignored(line.to.id)) {
+        if (
+            line.from.id === data.get("user").id &&
+            player_is_ignored(line.to.id)
+        ) {
             pc = null;
-        } else if (line.to.id === data.get("user").id && player_is_ignored(line.from.id)) {
+        } else if (
+            line.to.id === data.get("user").id &&
+            player_is_ignored(line.from.id)
+        ) {
             pc = null;
         }
     }
@@ -632,7 +814,9 @@ comm_socket.on("private-superchat", (config) => {
                 pc.superchat(config.enable);
             } else {
                 pc.addSystem({
-                    "message": config.moderator_username + " just tried to superchat you, but being a super user we decided to ignore that shit."
+                    message:
+                        config.moderator_username +
+                        " just tried to superchat you, but being a super user we decided to ignore that shit.",
                 });
             }
         }
@@ -652,25 +836,46 @@ ITC.register("private-chat-close", (data) => {
     }
 });
 function chat_markup(body) {
-    if (typeof(body) === "string") {
+    if (typeof body === "string") {
         let ret = $("<div>").text(body).html();
         // Some link urls can have an @-sign in. Be careful not to cause the link_matcher
         // and email_matcher to overlap! See for example
         // https://www.google.co.uk/maps/place/Platform+9%C2%BE/@51.5321578,-0.1261661
         const link_matcher = /(((ftp|http)(s)?:\/\/)([^<> ]+))/gi;
-        ret = ret.replace(link_matcher, (match) => "<a target='_blank' href='" +
-            match.replace("@", "%40") + "'>" +
-            match.replace("@", "&commat;") + "</a>");
+        ret = ret.replace(
+            link_matcher,
+            (match) =>
+                "<a target='_blank' href='" +
+                match.replace("@", "%40") +
+                "'>" +
+                match.replace("@", "&commat;") +
+                "</a>",
+        );
         const email_matcher = /([^<> ]+[@][^<> ]+[.][^<> ]+)/gi;
-        ret = ret.replace(email_matcher, "<a target='_blank' href='mailto:$1'>$1</a>");
+        ret = ret.replace(
+            email_matcher,
+            "<a target='_blank' href='mailto:$1'>$1</a>",
+        );
         const review_matcher = /(^##([0-9]{3,})|([ ])##([0-9]{3,}))/gi;
-        ret = ret.replace(review_matcher, "<a target='_blank' href='/review/$2$4'>$3##$2$4</a>");
+        ret = ret.replace(
+            review_matcher,
+            "<a target='_blank' href='/review/$2$4'>$3##$2$4</a>",
+        );
         const game_matcher = /(^#([0-9]{3,})|([ ])#([0-9]{3,}))/gi;
-        ret = ret.replace(game_matcher, "<a target='_blank' href='/game/$2$4'>$3#$2$4</a>");
+        ret = ret.replace(
+            game_matcher,
+            "<a target='_blank' href='/game/$2$4'>$3#$2$4</a>",
+        );
         const player_matcher = /(player ([0-9]+))/gi;
-        ret = ret.replace(player_matcher, "<a target='_blank' href='/user/view/$2'>$1</a>");
+        ret = ret.replace(
+            player_matcher,
+            "<a target='_blank' href='/user/view/$2'>$1</a>",
+        );
         const group_matcher = /(#group-([0-9]+))/gi;
-        ret = ret.replace(group_matcher, "<a target='_blank' href='/group/$2'>$1</a>");
+        ret = ret.replace(
+            group_matcher,
+            "<a target='_blank' href='/group/$2'>$1</a>",
+        );
         // try to migigate tsumegodojo spam
         const tsumegodojo_matcher = /(tsumegodojo)/gi;
         ret = ret.replace(tsumegodojo_matcher, "tsumegododo");

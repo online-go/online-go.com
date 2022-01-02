@@ -17,13 +17,13 @@
 
 import * as React from "react";
 import * as data from "data";
-import { _ } from 'translate';
+import { _ } from "translate";
 import { ignore, errorAlerter, navigateTo, unitify } from "misc";
 import { get, del, put, abort_requests_in_flight } from "requests";
 import { longRankString, rankString } from "rank_utils";
 import { MiniGoban } from "MiniGoban";
-import { SortableContainer, SortableElement } from 'react-sortable-hoc';
-import arrayMove from 'array-move';
+import { SortableContainer, SortableElement } from "react-sortable-hoc";
+import arrayMove from "array-move";
 
 interface PuzzleEntry {
     id: number;
@@ -31,7 +31,7 @@ interface PuzzleEntry {
     name: string;
     puzzle: any;
     has_solution: boolean;
-    'type': string;
+    type: string;
     rank: number;
 }
 
@@ -42,12 +42,15 @@ interface SortablePuzzleListState {
     entries: Array<PuzzleEntry>;
 }
 
-export class SortablePuzzleList extends React.Component<SortablePuzzleListProperties, SortablePuzzleListState> {
+export class SortablePuzzleList extends React.Component<
+    SortablePuzzleListProperties,
+    SortablePuzzleListState
+> {
     constructor(props) {
         super(props);
 
         this.state = {
-            entries: []
+            entries: [],
         };
     }
 
@@ -57,13 +60,13 @@ export class SortablePuzzleList extends React.Component<SortablePuzzleListProper
 
     refresh() {
         get(`puzzles/collections/${this.props.collection}/puzzles`)
-        .then((lst) => {
-            this.setState({entries: lst});
-        })
-        .catch(errorAlerter);
+            .then((lst) => {
+                this.setState({ entries: lst });
+            })
+            .catch(errorAlerter);
     }
 
-    onSortEnd = ({oldIndex, newIndex}) => {
+    onSortEnd = ({ oldIndex, newIndex }) => {
         if (oldIndex === newIndex) {
             return;
         }
@@ -71,31 +74,44 @@ export class SortablePuzzleList extends React.Component<SortablePuzzleListProper
         const after = oldIndex < newIndex ? newIndex : newIndex - 1;
 
         put(`puzzles/${this.state.entries[oldIndex].id}/order`, {
-            after: newIndex ? this.state.entries[after].id : 0
+            after: newIndex ? this.state.entries[after].id : 0,
         })
-        .then((asdf) => {
-            console.log(asdf);
-        })
-        .catch(errorAlerter);
+            .then((asdf) => {
+                console.log(asdf);
+            })
+            .catch(errorAlerter);
 
-        this.setState(({entries}) => ({
+        this.setState(({ entries }) => ({
             entries: arrayMove(entries, oldIndex, newIndex),
         }));
     };
 
     render() {
-        return <SortablePuzzleListContainer entries={this.state.entries} onSortEnd={this.onSortEnd} />;
+        return (
+            <SortablePuzzleListContainer
+                entries={this.state.entries}
+                onSortEnd={this.onSortEnd}
+            />
+        );
     }
 }
 
-const PuzzleEntry = SortableElement(({puzzle}) => (
-    <li className='SortablePuzzleListEntry'>
-        <span className='minigoban'>
-            <MiniGoban noLink id={null} json={puzzle.puzzle} displayWidth={64} white={null} black={null} />
+const PuzzleEntry = SortableElement(({ puzzle }) => (
+    <li className="SortablePuzzleListEntry">
+        <span className="minigoban">
+            <MiniGoban
+                noLink
+                id={null}
+                json={puzzle.puzzle}
+                displayWidth={64}
+                white={null}
+                black={null}
+            />
         </span>
-        <span className='name'>{puzzle.name}</span>
-        <span className='difficulty'>{longRankString(puzzle.rank)}</span>
-        <button className='edit'
+        <span className="name">{puzzle.name}</span>
+        <span className="difficulty">{longRankString(puzzle.rank)}</span>
+        <button
+            className="edit"
             onClick={(ev) => {
                 ev.stopPropagation();
                 ev.preventDefault();
@@ -106,14 +122,18 @@ const PuzzleEntry = SortableElement(({puzzle}) => (
                 ev.preventDefault();
                 navigateTo(`/puzzle/${puzzle.id}`, ev);
             }}
-        >{_("Edit")}</button>
+        >
+            {_("Edit")}
+        </button>
     </li>
 ));
 
-const SortablePuzzleListContainer = SortableContainer(({entries}: {entries: Array<PuzzleEntry>}) => (
-    <ul className='SortablePuzzleList'>
-        {entries.map((entry, index) => (
-            <PuzzleEntry key={entry.id} index={index} puzzle={entry} />
-        ))}
-    </ul>
-));
+const SortablePuzzleListContainer = SortableContainer(
+    ({ entries }: { entries: Array<PuzzleEntry> }) => (
+        <ul className="SortablePuzzleList">
+            {entries.map((entry, index) => (
+                <PuzzleEntry key={entry.id} index={index} puzzle={entry} />
+            ))}
+        </ul>
+    ),
+);

@@ -21,11 +21,9 @@ import { Player } from "Player";
 import { _, interpolate } from "translate";
 import { comm_socket } from "sockets";
 import { useEffect, useState, useCallback } from "react";
-import { string_splitter, n2s, dup, Timeout} from "misc";
+import { string_splitter, n2s, dup, Timeout } from "misc";
 import { PlayerCacheEntry } from "player_cache";
-import { chat_manager, users_by_rank, ChatChannelProxy } from 'chat_manager';
-
-
+import { chat_manager, users_by_rank, ChatChannelProxy } from "chat_manager";
 
 interface ChatUser extends PlayerCacheEntry {
     professional: boolean;
@@ -37,17 +35,26 @@ interface ChatUsersListProperties {
 
 interface ChatUsersListState {
     online_count: number;
-    user_list: {[player_id: string]: ChatUser};
-    user_sort_order: 'alpha' | 'rank';
+    user_list: { [player_id: string]: ChatUser };
+    user_sort_order: "alpha" | "rank";
 }
 
 let deferred_users_update: Timeout = null;
 
-export function ChatUsersList({channel}: ChatUsersListProperties): JSX.Element {
+export function ChatUsersList({
+    channel,
+}: ChatUsersListProperties): JSX.Element {
     const [, refresh]: [number, (n: number) => void] = useState(0);
-    const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
-    const [user_sort_order, set_user_sort_order]: [string, (s: string) => void] = useState(preferences.get("chat.user-sort-order"));
-    const [online_count, set_online_count]: [number, (n: number) => void] = useState(0);
+    const [proxy, setProxy]: [
+        ChatChannelProxy | null,
+        (x: ChatChannelProxy) => void,
+    ] = useState(null);
+    const [user_sort_order, set_user_sort_order]: [
+        string,
+        (s: string) => void,
+    ] = useState(preferences.get("chat.user-sort-order"));
+    const [online_count, set_online_count]: [number, (n: number) => void] =
+        useState(0);
 
     useEffect(() => {
         const proxy = chat_manager.join(channel);
@@ -57,9 +64,13 @@ export function ChatUsersList({channel}: ChatUsersListProperties): JSX.Element {
         syncStateSoon();
 
         const online_count_interval = setInterval(() => {
-            comm_socket.send("getOnlineCount", {interval: 1800}, (ct) => set_online_count(ct));
+            comm_socket.send("getOnlineCount", { interval: 1800 }, (ct) =>
+                set_online_count(ct),
+            );
         }, 30000);
-        comm_socket.send("getOnlineCount", {interval: 1800}, (ct) => set_online_count(ct));
+        comm_socket.send("getOnlineCount", { interval: 1800 }, (ct) =>
+            set_online_count(ct),
+        );
 
         return () => {
             clearInterval(online_count_interval);
@@ -72,15 +83,16 @@ export function ChatUsersList({channel}: ChatUsersListProperties): JSX.Element {
     }, [channel]);
 
     const toggleSortOrder = useCallback((): void => {
-        const new_sort_order: 'rank' | 'alpha' = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
+        const new_sort_order: "rank" | "alpha" =
+            preferences.get("chat.user-sort-order") === "rank"
+                ? "alpha"
+                : "rank";
         preferences.set("chat.user-sort-order", new_sort_order);
         set_user_sort_order(new_sort_order);
     }, [channel]);
 
-
-
     if (!proxy) {
-        return <div className='ChatUsersList' />;
+        return <div className="ChatUsersList" />;
     }
 
     const sorted_user_list = [];
@@ -97,17 +109,29 @@ export function ChatUsersList({channel}: ChatUsersListProperties): JSX.Element {
     }
 
     return (
-        <div className='ChatUsersList'>
+        <div className="ChatUsersList">
             <div className="user-header" onClick={toggleSortOrder}>
-                <i className={user_sort_order === "rank" ? "fa fa-sort-numeric-asc" : "fa fa-sort-alpha-asc"} /> {
-                    interpolate(
-                        _("Users ({{total_online}} online : {{in_chat}} chat)"),
-                        {"total_online": online_count, "in_chat": sorted_user_list.length}
-                    )
-                }
+                <i
+                    className={
+                        user_sort_order === "rank"
+                            ? "fa fa-sort-numeric-asc"
+                            : "fa fa-sort-alpha-asc"
+                    }
+                />{" "}
+                {interpolate(
+                    _("Users ({{total_online}} online : {{in_chat}} chat)"),
+                    {
+                        total_online: online_count,
+                        in_chat: sorted_user_list.length,
+                    },
+                )}
             </div>
 
-            {sorted_user_list.map((user) => <div key={user.id}><Player user={user} flag rank noextracontrols /></div>)}
+            {sorted_user_list.map((user) => (
+                <div key={user.id}>
+                    <Player user={user} flag rank noextracontrols />
+                </div>
+            ))}
         </div>
     );
 
@@ -120,4 +144,3 @@ export function ChatUsersList({channel}: ChatUsersListProperties): JSX.Element {
         }
     }
 }
-

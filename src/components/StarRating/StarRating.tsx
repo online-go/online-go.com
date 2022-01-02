@@ -16,15 +16,14 @@
  */
 
 import * as React from "react";
-import {_, pgettext, interpolate} from "translate";
-import {post, get} from "requests";
+import { _, pgettext, interpolate } from "translate";
+import { post, get } from "requests";
 
 interface StarRatingProperties {
     value: number;
     rated: boolean;
     onChange?: (value) => void;
 }
-
 
 function star_class(rating, v) {
     if (rating - (v - 1) < 1.0) {
@@ -38,28 +37,36 @@ function star_class(rating, v) {
     return "fa-star";
 }
 
-export class StarRating extends React.PureComponent<any, {rating}> {
+export class StarRating extends React.PureComponent<any, { rating }> {
     setters = [];
     preview = [];
 
     constructor(props) {
         super(props);
         this.state = {
-            rating: Math.max(0, Math.min(5, props.value))
+            rating: Math.max(0, Math.min(5, props.value)),
         };
 
         for (let i = 1; i <= 5; ++i) {
-            this.setters.push(this.props.onChange ? () => this.props.onChange(i) : () => 0);
+            this.setters.push(
+                this.props.onChange ? () => this.props.onChange(i) : () => 0,
+            );
         }
 
         for (let i = 1; i <= 5; ++i) {
-            this.preview.push(this.props.onChange ? () => this.setState({rating: i}) : () => 0);
+            this.preview.push(
+                this.props.onChange
+                    ? () => this.setState({ rating: i })
+                    : () => 0,
+            );
         }
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         if (this.props.value !== nextProps.value) {
-            this.setState({rating: Math.max(0, Math.min(5, nextProps.value))});
+            this.setState({
+                rating: Math.max(0, Math.min(5, nextProps.value)),
+            });
         }
     }
 
@@ -67,15 +74,22 @@ export class StarRating extends React.PureComponent<any, {rating}> {
         if (!this.props.onChange) {
             return;
         }
-        this.setState({rating: Math.max(0, Math.min(5, this.props.value))});
+        this.setState({ rating: Math.max(0, Math.min(5, this.props.value)) });
     };
 
     render() {
         return (
-            <span className={"StarRating" + (this.props.onChange ? " interactive" : "") + (this.props.rated ? " rated" : " unrated")}>
+            <span
+                className={
+                    "StarRating" +
+                    (this.props.onChange ? " interactive" : "") +
+                    (this.props.rated ? " rated" : " unrated")
+                }
+            >
                 {[1, 2, 3, 4, 5].map((v, idx) => (
                     <i
-                        key={v} className={"fa " + star_class(this.state.rating, v)}
+                        key={v}
+                        className={"fa " + star_class(this.state.rating, v)}
                         onClick={this.setters[idx]}
                         onMouseOver={this.preview[idx]}
                         onMouseOut={this.unpreview}
@@ -85,4 +99,3 @@ export class StarRating extends React.PureComponent<any, {rating}> {
         );
     }
 }
-

@@ -16,14 +16,14 @@
  */
 
 import * as React from "react";
-import {Link} from 'react-router-dom';
-import {_, interpolate} from "translate";
-import {Goban} from "goban";
+import { Link } from "react-router-dom";
+import { _, interpolate } from "translate";
+import { Goban } from "goban";
 import * as data from "data";
-import {PersistentElement} from "PersistentElement";
-import {rankString} from "rank_utils";
-import {Player} from "Player";
-import {Clock} from "Clock";
+import { PersistentElement } from "PersistentElement";
+import { rankString } from "rank_utils";
+import { Player } from "Player";
+import { Clock } from "Clock";
 
 interface GobanLineSummaryProps {
     id: number;
@@ -60,7 +60,10 @@ interface GobanLineSummaryState {
     finished?: boolean;
 }
 
-export class GobanLineSummary extends React.Component<GobanLineSummaryProps, GobanLineSummaryState> {
+export class GobanLineSummary extends React.Component<
+    GobanLineSummaryProps,
+    GobanLineSummaryState
+> {
     goban: Goban;
 
     constructor(props) {
@@ -86,15 +89,14 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, Gob
 
     initialize() {
         this.goban = new Goban({
-            "board_div": null,
-            "draw_top_labels": false,
-            "draw_bottom_labels": false,
-            "draw_left_labels": false,
-            "draw_right_labels": false,
-            "game_id": this.props.id,
-            "square_size": "auto",
+            board_div: null,
+            draw_top_labels: false,
+            draw_bottom_labels: false,
+            draw_left_labels: false,
+            draw_right_labels: false,
+            game_id: this.props.id,
+            square_size: "auto",
         });
-
 
         this.goban.on("update", () => {
             this.sync_state();
@@ -106,10 +108,12 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, Gob
             white_pause_text: string;
             black_pause_text: string;
         }
-        this.goban.on("pause-text" as any, (new_text: PauseText) => this.setState({
-            "white_pause_text": new_text.white_pause_text,
-            "black_pause_text": new_text.black_pause_text,
-        }));
+        this.goban.on("pause-text" as any, (new_text: PauseText) =>
+            this.setState({
+                white_pause_text: new_text.white_pause_text,
+                black_pause_text: new_text.black_pause_text,
+            }),
+        );
 
         if (this.props.gobanref) {
             this.props.gobanref(this.goban);
@@ -130,27 +134,39 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, Gob
         const score = this.goban.engine.computeScore(true);
         const black = this.props.black;
         const white = this.props.white;
-        const player_to_move = (this.goban && this.goban.engine.playerToMove()) || 0;
+        const player_to_move =
+            (this.goban && this.goban.engine.playerToMove()) || 0;
 
         this.setState({
-            black_score: interpolate("%s points", [(score.black.prisoners + score.black.komi)]),
-            white_score: interpolate("%s points", [(score.white.prisoners + score.white.komi)]),
+            black_score: interpolate("%s points", [
+                score.black.prisoners + score.black.komi,
+            ]),
+            white_score: interpolate("%s points", [
+                score.white.prisoners + score.white.komi,
+            ]),
 
             move_number: this.goban.engine.getMoveNumber(),
             game_name: this.goban.engine.config.game_name,
 
-            black_name: (typeof(black) === "object" ? (black.username + " [" + rankString(black) + "]") : black),
-            white_name: (typeof(white) === "object" ? (white.username + " [" + rankString(white) + "]") : white),
+            black_name:
+                typeof black === "object"
+                    ? black.username + " [" + rankString(black) + "]"
+                    : black,
+            white_name:
+                typeof white === "object"
+                    ? white.username + " [" + rankString(white) + "]"
+                    : white,
             paused: this.state.black_pause_text ? "paused" : "",
 
             current_users_move: player_to_move === data.get("config.user").id,
-            black_to_move_cls: (this.goban && black.id === player_to_move) ? "to-move" : "",
-            white_to_move_cls: (this.goban && white.id === player_to_move) ? "to-move" : "",
+            black_to_move_cls:
+                this.goban && black.id === player_to_move ? "to-move" : "",
+            white_to_move_cls:
+                this.goban && white.id === player_to_move ? "to-move" : "",
 
-
-
-            in_stone_removal_phase: (this.goban && this.goban.engine.phase === "stone removal"),
-            finished: (this.goban && this.goban.engine.phase === "finished"),
+            in_stone_removal_phase:
+                this.goban && this.goban.engine.phase === "stone removal",
+            finished: this.goban && this.goban.engine.phase === "finished",
         });
     }
 
@@ -163,51 +179,78 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, Gob
         if (this.props.player && this.props.player.id === this.props.black.id) {
             player = this.props.black;
             opponent = this.props.white;
-            player_color = 'black';
-            opponent_color = 'white';
+            player_color = "black";
+            opponent_color = "white";
         }
 
         if (this.props.player && this.props.player.id === this.props.white.id) {
             player = this.props.white;
             opponent = this.props.black;
-            player_color = 'white';
-            opponent_color = 'black';
+            player_color = "white";
+            opponent_color = "black";
         }
 
         return (
-            <Link to={`/game/${this.props.id}`} className={ `GobanLineSummary `
-                            + (this.state.current_users_move ? " current-users-move" : "")
-                            + (this.state.in_stone_removal_phase ? " in-stone-removal-phase" : "")
-            }
+            <Link
+                to={`/game/${this.props.id}`}
+                className={
+                    `GobanLineSummary ` +
+                    (this.state.current_users_move
+                        ? " current-users-move"
+                        : "") +
+                    (this.state.in_stone_removal_phase
+                        ? " in-stone-removal-phase"
+                        : "")
+                }
             >
                 <div className="move-number">{this.state.move_number}</div>
                 <div className="game-name">{this.state.game_name}</div>
 
-                {player && <div className="player"><Player user={opponent} fakelink rank /></div> }
-                {player &&
-                    <div>
-                        <Clock goban={this.goban} color={player_color as 'black' | 'white'} />
+                {player && (
+                    <div className="player">
+                        <Player user={opponent} fakelink rank />
                     </div>
-                }
-                {player &&
+                )}
+                {player && (
                     <div>
-                        <Clock goban={this.goban} color={opponent_color as 'black' | 'white'} />
+                        <Clock
+                            goban={this.goban}
+                            color={player_color as "black" | "white"}
+                        />
                     </div>
-                }
+                )}
+                {player && (
+                    <div>
+                        <Clock
+                            goban={this.goban}
+                            color={opponent_color as "black" | "white"}
+                        />
+                    </div>
+                )}
 
-                {!player && <div className="player"><Player user={this.props.black} fakelink rank/></div> }
-                {!player &&
-                    <div>
-                        <Clock goban={this.goban} color='black' />
+                {!player && (
+                    <div className="player">
+                        <Player user={this.props.black} fakelink rank />
                     </div>
-                }
-                {!player && <div className="player"><Player user={this.props.white} fakelink /></div> }
-                {!player &&
+                )}
+                {!player && (
                     <div>
-                        <Clock goban={this.goban} color='white' />
+                        <Clock goban={this.goban} color="black" />
                     </div>
-                }
-                <div className="size">{this.props.width + "x" + this.props.height}</div>
+                )}
+                {!player && (
+                    <div className="player">
+                        <Player user={this.props.white} fakelink />
+                    </div>
+                )}
+                {!player && (
+                    <div>
+                        <Clock goban={this.goban} color="white" />
+                    </div>
+                )}
+                <div className="size">
+                    {this.props.width + "x" + this.props.height}
+                </div>
             </Link>
         );
     }

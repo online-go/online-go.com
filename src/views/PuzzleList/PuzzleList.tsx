@@ -16,29 +16,29 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router-dom";
-import {browserHistory} from "ogsHistory";
-import {_, pgettext, interpolate} from "translate";
-import {post, get} from "requests";
-import {PaginatedTable} from "PaginatedTable";
-import {Player} from "Player";
-import {MiniGoban} from "MiniGoban";
-import {SearchInput} from "misc-ui";
-import {StarRating} from "StarRating";
-import {longRankString, rankString} from "rank_utils";
-import {navigateTo, unitify} from "misc";
+import { Link } from "react-router-dom";
+import { browserHistory } from "ogsHistory";
+import { _, pgettext, interpolate } from "translate";
+import { post, get } from "requests";
+import { PaginatedTable } from "PaginatedTable";
+import { Player } from "Player";
+import { MiniGoban } from "MiniGoban";
+import { SearchInput } from "misc-ui";
+import { StarRating } from "StarRating";
+import { longRankString, rankString } from "rank_utils";
+import { navigateTo, unitify } from "misc";
 import * as data from "data";
 import * as moment from "moment";
 
 interface PuzzleListState {
-    name_contains_filter: string;  // string to be used for filtering search results by name
+    name_contains_filter: string; // string to be used for filtering search results by name
 }
 
 export class PuzzleList extends React.PureComponent<{}, PuzzleListState> {
     constructor(props) {
         super(props);
         this.state = {
-            'name_contains_filter': "",
+            name_contains_filter: "",
         };
     }
 
@@ -52,21 +52,31 @@ export class PuzzleList extends React.PureComponent<{}, PuzzleListState> {
         return (
             <div className="page-width">
                 <div className="PuzzleList container">
-                    <div className="puzzle-list-container" style={{clear:'both'}}>
-
+                    <div
+                        className="puzzle-list-container"
+                        style={{ clear: "both" }}
+                    >
                         <div className="page-nav">
-
-                            <h2><i className="fa fa-puzzle-piece"></i> {_("Puzzles")}</h2>
+                            <h2>
+                                <i className="fa fa-puzzle-piece"></i>{" "}
+                                {_("Puzzles")}
+                            </h2>
 
                             <div>
-                                {((!user.anonymous) || null) &&
-                                    <Link to={`/puzzle-collections/${user.id}`}>{_("My puzzles")}</Link>
-                                }
+                                {(!user.anonymous || null) && (
+                                    <Link to={`/puzzle-collections/${user.id}`}>
+                                        {_("My puzzles")}
+                                    </Link>
+                                )}
 
                                 <SearchInput
                                     placeholder={_("Search")}
                                     onChange={(event) => {
-                                        this.setState({name_contains_filter: (event.target as HTMLInputElement).value.trim()});
+                                        this.setState({
+                                            name_contains_filter: (
+                                                event.target as HTMLInputElement
+                                            ).value.trim(),
+                                        });
                                     }}
                                 />
                             </div>
@@ -75,64 +85,119 @@ export class PuzzleList extends React.PureComponent<{}, PuzzleListState> {
                         <PaginatedTable
                             className=""
                             source={`puzzles/collections/`}
-                            orderBy={[
-                                "-rating",
-                                "-rating_count"
-                            ]}
+                            orderBy={["-rating", "-rating_count"]}
                             filter={{
-                                "puzzle_count__gt": "0",
-                                "name__istartswith": "",
-                                ...(this.state.name_contains_filter !== "" && {'name__icontains': this.state.name_contains_filter})
+                                puzzle_count__gt: "0",
+                                name__istartswith: "",
+                                ...(this.state.name_contains_filter !== "" && {
+                                    name__icontains:
+                                        this.state.name_contains_filter,
+                                }),
                             }}
-                            groom={
-                                (arr) => {
-                                    for (const e of arr) {
-                                        e.min_rank_string = longRankString(e.min_rank);
-                                        e.max_rank_string = longRankString(e.max_rank);
-                                        e.min_rank_short = rankString(e.min_rank);
-                                        e.max_rank_short = rankString(e.max_rank);
-                                    }
-                                    return arr;
+                            groom={(arr) => {
+                                for (const e of arr) {
+                                    e.min_rank_string = longRankString(
+                                        e.min_rank,
+                                    );
+                                    e.max_rank_string = longRankString(
+                                        e.max_rank,
+                                    );
+                                    e.min_rank_short = rankString(e.min_rank);
+                                    e.max_rank_short = rankString(e.max_rank);
                                 }
-                            }
+                                return arr;
+                            }}
                             onRowClick={(row, ev) => {
-                                const id = data.get(`puzzle.collection.${row.id}.last-visited`, row.starting_puzzle.id);
+                                const id = data.get(
+                                    `puzzle.collection.${row.id}.last-visited`,
+                                    row.starting_puzzle.id,
+                                );
                                 navigateTo(`/puzzle/${id}`, ev);
                             }}
                             columns={[
-                                {header: "",  className: () => "icon",
+                                {
+                                    header: "",
+                                    className: () => "icon",
                                     render: (X) => (
-                                        <MiniGoban noLink id={null} json={X.starting_puzzle} displayWidth={64} white={null} black={null} />
-                                    )
+                                        <MiniGoban
+                                            noLink
+                                            id={null}
+                                            json={X.starting_puzzle}
+                                            displayWidth={64}
+                                            white={null}
+                                            black={null}
+                                        />
+                                    ),
                                 },
 
-                                {header: _("Collection"),  className: () => "name", orderBy: ["name"],
+                                {
+                                    header: _("Collection"),
+                                    className: () => "name",
+                                    orderBy: ["name"],
                                     render: (X) => (
                                         <div>
                                             <div>{X.name}</div>
-                                            <Player user={X.owner}/>
+                                            <Player user={X.owner} />
                                         </div>
-                                    )
+                                    ),
                                 },
 
-                                {header: _("Difficulty"),  className: () => "difficulty center", orderBy: ["min_rank", "max_rank"],
+                                {
+                                    header: _("Difficulty"),
+                                    className: () => "difficulty center",
+                                    orderBy: ["min_rank", "max_rank"],
+                                    render: (X) =>
+                                        X.min_rank_string ===
+                                        X.max_rank_string ? (
+                                            <span>{X.min_rank_string}</span>
+                                        ) : (
+                                            <span>
+                                                {X.min_rank_short}-
+                                                {X.max_rank_short}
+                                            </span>
+                                        ),
+                                },
+
+                                {
+                                    header: _("Puzzles"),
+                                    className: () => "puzzle-count center",
+                                    render: (X) => X.puzzle_count,
+                                    orderBy: ["-puzzle_count"],
+                                },
+                                {
+                                    header: _("Rating"),
+                                    className: () => "rating",
+                                    orderBy: ["-rating", "-rating_count"],
                                     render: (X) => (
-                                     X.min_rank_string === X.max_rank_string
-                                         ? <span>{X.min_rank_string}</span>
-                                         : <span>{X.min_rank_short}-{X.max_rank_short}</span>
-                                    )
+                                        <span>
+                                            <StarRating value={X.rating} />{" "}
+                                            <span className="rating-count">
+                                                ({unitify(X.rating_count)})
+                                            </span>
+                                        </span>
+                                    ),
                                 },
-
-                                {header: _("Puzzles"),  className: () => "puzzle-count center", render: (X) => X.puzzle_count, orderBy: ["-puzzle_count"]},
-                                {header: _("Rating"),  className: () => "rating", orderBy: ["-rating", "-rating_count"], render: (X) =>
-                                    <span><StarRating value={X.rating}/> <span className="rating-count">({unitify(X.rating_count)})</span></span>
+                                {
+                                    header: _("Views"),
+                                    className: () => "view-count right",
+                                    orderBy: ["-view_count"],
+                                    render: (X) => unitify(X.view_count),
                                 },
-                                {header: _("Views"),  className: () => "view-count right", orderBy: ["-view_count"], render: (X) => unitify(X.view_count)},
-                                {header: _("Solved"),  className: () => "solved-count right", orderBy: ["-solved_count"], render: (X) => unitify(X.solved_count)},
-                                {header: _("Created"),  className: () => "date center", render: (X) => moment(new Date(X.created)).format("l"), orderBy: ["-created"]},
+                                {
+                                    header: _("Solved"),
+                                    className: () => "solved-count right",
+                                    orderBy: ["-solved_count"],
+                                    render: (X) => unitify(X.solved_count),
+                                },
+                                {
+                                    header: _("Created"),
+                                    className: () => "date center",
+                                    render: (X) =>
+                                        moment(new Date(X.created)).format("l"),
+                                    orderBy: ["-created"],
+                                },
                             ]}
                         />
-
                     </div>
                 </div>
             </div>

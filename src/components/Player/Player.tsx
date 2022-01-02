@@ -16,22 +16,27 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router-dom";
-import { routes } from 'routes';
-import {browserHistory} from "ogsHistory";
+import { Link } from "react-router-dom";
+import { routes } from "routes";
+import { browserHistory } from "ogsHistory";
 import * as data from "data";
-import {shouldOpenNewTab, errorLogger, unicodeFilter} from "misc";
-import {rankString, getUserRating, is_novice, PROVISIONAL_RATING_CUTOFF} from "rank_utils";
-import {close_all_popovers, popover} from "popover";
-import {close_friend_list} from 'FriendList/FriendIndicator';
-import {PlayerDetails} from "./PlayerDetails";
-import {openPlayerNotesModal} from "PlayerNotesModal";
-import {Flag} from "Flag";
-import {PlayerIcon} from "PlayerIcon";
+import { shouldOpenNewTab, errorLogger, unicodeFilter } from "misc";
+import {
+    rankString,
+    getUserRating,
+    is_novice,
+    PROVISIONAL_RATING_CUTOFF,
+} from "rank_utils";
+import { close_all_popovers, popover } from "popover";
+import { close_friend_list } from "FriendList/FriendIndicator";
+import { PlayerDetails } from "./PlayerDetails";
+import { openPlayerNotesModal } from "PlayerNotesModal";
+import { Flag } from "Flag";
+import { PlayerIcon } from "PlayerIcon";
 import * as player_cache from "player_cache";
 import * as preferences from "preferences";
 import online_status from "online_status";
-import {pgettext} from "translate";
+import { pgettext } from "translate";
 
 interface PlayerProperties {
     // id?: any,
@@ -46,10 +51,10 @@ interface PlayerProperties {
     online?: boolean;
     nolink?: boolean;
     fakelink?: boolean;
-    nodetails?: boolean; /* don't open the detials box, instead just open player page */
-    nochallenge?: boolean; /* don't show the challenge button in the details box */
-    noextracontrols?: boolean; /* Disable extra controls */
-    shownotesindicator?: boolean; /* add the notes icon if the player has notes */
+    nodetails?: boolean /* don't open the detials box, instead just open player page */;
+    nochallenge?: boolean /* don't show the challenge button in the details box */;
+    noextracontrols?: boolean /* Disable extra controls */;
+    shownotesindicator?: boolean /* add the notes icon if the player has notes */;
     disableCacheUpdate?: boolean;
 }
 
@@ -69,65 +74,110 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
 
     constructor(props) {
         super(props);
-        const user = data.get('config.user');
-        const viewed_user = typeof(props.user) === "object" ? props.user : null;
+        const user = data.get("config.user");
+        const viewed_user = typeof props.user === "object" ? props.user : null;
         this.state = {
             is_online: false,
             user: viewed_user,
-            has_notes: viewed_user && !!data.get(`player-notes.${user.id}.${viewed_user.id}`),
+            has_notes:
+                viewed_user &&
+                !!data.get(`player-notes.${user.id}.${viewed_user.id}`),
         };
     }
 
     componentDidMount() {
-        const user = data.get('config.user');
+        const user = data.get("config.user");
         if (!this.props.disableCacheUpdate) {
             if (this.state.user && this.state.user.id > 0) {
                 player_cache.update(this.state.user);
             }
 
-            const player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
-            const username = typeof(this.props.user) !== "object" ? null : this.props.user.username ;
+            const player_id =
+                typeof this.props.user !== "object"
+                    ? this.props.user
+                    : this.props.user.id || this.props.user.player_id;
+            const username =
+                typeof this.props.user !== "object"
+                    ? null
+                    : this.props.user.username;
             if (player_id && player_id > 0) {
-                player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
-                    const player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
-                    if (this.unmounted) {
-                        return;
-                    }
-                    if (player_id === user.id) {
-                        this.setState({user: user});
-                    }
-                }).catch((user) => {
-                    this.setState({user: {id: player_id, username: "?player" + player_id + "?", ui_class: "provisional", pro: false}});
-                    errorLogger(user);
-                });
+                player_cache
+                    .fetch(player_id, [
+                        "username",
+                        "ui_class",
+                        "ranking",
+                        "pro",
+                    ])
+                    .then((user) => {
+                        const player_id =
+                            typeof this.props.user !== "object"
+                                ? this.props.user
+                                : this.props.user.id ||
+                                  this.props.user.player_id;
+                        if (this.unmounted) {
+                            return;
+                        }
+                        if (player_id === user.id) {
+                            this.setState({ user: user });
+                        }
+                    })
+                    .catch((user) => {
+                        this.setState({
+                            user: {
+                                id: player_id,
+                                username: "?player" + player_id + "?",
+                                ui_class: "provisional",
+                                pro: false,
+                            },
+                        });
+                        errorLogger(user);
+                    });
             } else if (player_id && player_id <= 0) {
                 // do nothing
             } else if (username && username !== "...") {
-                player_cache.fetch_by_username(username, ["username", "ui_class", "ranking", "pro"]).then((user) => {
-                    if (this.unmounted) {
-                        return;
-                    }
-                    if (username === user.username) {
-                        this.setState({user: user});
-                    }
-                }).catch((user) => {
-                    this.setState({user: {id: null, username: username, ui_class: "provisional", pro: false}});
-                    errorLogger(user);
-                });
+                player_cache
+                    .fetch_by_username(username, [
+                        "username",
+                        "ui_class",
+                        "ranking",
+                        "pro",
+                    ])
+                    .then((user) => {
+                        if (this.unmounted) {
+                            return;
+                        }
+                        if (username === user.username) {
+                            this.setState({ user: user });
+                        }
+                    })
+                    .catch((user) => {
+                        this.setState({
+                            user: {
+                                id: null,
+                                username: username,
+                                ui_class: "provisional",
+                                pro: false,
+                            },
+                        });
+                        errorLogger(user);
+                    });
             }
         }
 
         this.syncUpdateOnline(this.props.user);
         if (this.props.shownotesindicator) {
-            data.watch(`player-notes.${user.id}.${this.props.user.id}`, this.updateHasNotes);
+            data.watch(
+                `player-notes.${user.id}.${this.props.user.id}`,
+                this.updateHasNotes,
+            );
         }
     }
 
     updateHasNotes = () => {
-        const user = data.get('config.user');
+        const user = data.get("config.user");
         const tf = !!data.get(`player-notes.${user.id}.${this.props.user.id}`);
         if (tf !== this.state.has_notes) {
-            this.setState({has_notes: tf});
+            this.setState({ has_notes: tf });
         }
     };
 
@@ -135,76 +185,136 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
         if (this.unmounted) {
             return;
         }
-        this.setState({is_online: tf});
+        this.setState({ is_online: tf });
     };
 
     syncUpdateOnline(user_or_id) {
-        const id = typeof(user_or_id) === "number" ? user_or_id : ((typeof(user_or_id) === "object" && user_or_id) ? user_or_id.id : null);
+        const id =
+            typeof user_or_id === "number"
+                ? user_or_id
+                : typeof user_or_id === "object" && user_or_id
+                ? user_or_id.id
+                : null;
 
         if (!this.props.online || id !== this.online_subscription_user_id) {
             if (this.online_subscription_user_id) {
                 this.online_subscription_user_id = null;
-                online_status.unsubscribe(this.online_subscription_user_id, this.updateOnline);
+                online_status.unsubscribe(
+                    this.online_subscription_user_id,
+                    this.updateOnline,
+                );
             }
         }
-        if (this.props.online && id && id !== this.online_subscription_user_id) {
+        if (
+            this.props.online &&
+            id &&
+            id !== this.online_subscription_user_id
+        ) {
             this.online_subscription_user_id = id;
-            online_status.subscribe(this.online_subscription_user_id, this.updateOnline);
+            online_status.subscribe(
+                this.online_subscription_user_id,
+                this.updateOnline,
+            );
         }
-
     }
 
     UNSAFE_componentWillReceiveProps(new_props) {
-        const user = data.get('config.user');
+        const user = data.get("config.user");
         if (this.props.shownotesindicator) {
-            data.unwatch(`player-notes.${user.id}.${this.state.user.id}`, this.updateHasNotes);
+            data.unwatch(
+                `player-notes.${user.id}.${this.state.user.id}`,
+                this.updateHasNotes,
+            );
         }
 
-        if (typeof(new_props.user) === "object") {
-            this.setState({user: new_props.user});
+        if (typeof new_props.user === "object") {
+            this.setState({ user: new_props.user });
         } else {
-            this.setState({user: null});
+            this.setState({ user: null });
         }
 
         if (new_props.shownotesindicator) {
-            data.watch(`player-notes.${user.id}.${new_props.user.id}`, this.updateHasNotes);
+            data.watch(
+                `player-notes.${user.id}.${new_props.user.id}`,
+                this.updateHasNotes,
+            );
         }
 
         if (!new_props.disableCacheUpdate) {
-            const player_id = typeof(new_props.user) !== "object" ? new_props.user : (new_props.user.id || new_props.user.player_id) ;
-            const username = typeof(new_props.user) !== "object" ? null : new_props.user.username ;
+            const player_id =
+                typeof new_props.user !== "object"
+                    ? new_props.user
+                    : new_props.user.id || new_props.user.player_id;
+            const username =
+                typeof new_props.user !== "object"
+                    ? null
+                    : new_props.user.username;
 
-            if (typeof(new_props.user) === "object" && new_props.user.id > 0) {
+            if (typeof new_props.user === "object" && new_props.user.id > 0) {
                 player_cache.update(new_props.user);
             }
 
             if (player_id && player_id > 0) {
-                player_cache.fetch(player_id, ["username", "ui_class", "ranking", "pro"]).then((user) => {
-                    const player_id = typeof(this.props.user) !== "object" ? this.props.user : (this.props.user.id || this.props.user.player_id) ;
-                    if (this.unmounted) {
-                        return;
-                    }
-                    if (player_id === user.id) {
-                        this.setState({user: user});
-                    }
-                }).catch((user) => {
-                    this.setState({user: {id: player_id, username: "?player" + player_id + "?", ui_class: "provisional", pro: false}});
-                    errorLogger(user);
-                });
+                player_cache
+                    .fetch(player_id, [
+                        "username",
+                        "ui_class",
+                        "ranking",
+                        "pro",
+                    ])
+                    .then((user) => {
+                        const player_id =
+                            typeof this.props.user !== "object"
+                                ? this.props.user
+                                : this.props.user.id ||
+                                  this.props.user.player_id;
+                        if (this.unmounted) {
+                            return;
+                        }
+                        if (player_id === user.id) {
+                            this.setState({ user: user });
+                        }
+                    })
+                    .catch((user) => {
+                        this.setState({
+                            user: {
+                                id: player_id,
+                                username: "?player" + player_id + "?",
+                                ui_class: "provisional",
+                                pro: false,
+                            },
+                        });
+                        errorLogger(user);
+                    });
             } else if (player_id && player_id <= 0) {
                 // do nothing
             } else if (username && username !== "...") {
-                player_cache.fetch_by_username(username, ["username", "ui_class", "ranking", "pro"]).then((user) => {
-                    if (this.unmounted) {
-                        return;
-                    }
-                    if (username === user.username) {
-                        this.setState({user: user});
-                    }
-                }).catch((user) => {
-                    this.setState({user: {id: null, username: username, ui_class: "provisional", pro: false}});
-                    errorLogger(user);
-                });
+                player_cache
+                    .fetch_by_username(username, [
+                        "username",
+                        "ui_class",
+                        "ranking",
+                        "pro",
+                    ])
+                    .then((user) => {
+                        if (this.unmounted) {
+                            return;
+                        }
+                        if (username === user.username) {
+                            this.setState({ user: user });
+                        }
+                    })
+                    .catch((user) => {
+                        this.setState({
+                            user: {
+                                id: null,
+                                username: username,
+                                ui_class: "provisional",
+                                pro: false,
+                            },
+                        });
+                        errorLogger(user);
+                    });
             }
         }
 
@@ -214,11 +324,14 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
         this.syncUpdateOnline(this.props.user);
     }
     componentWillUnmount() {
-        const user = data.get('config.user');
+        const user = data.get("config.user");
         this.unmounted = true;
         this.syncUpdateOnline(null);
         if (this.props.shownotesindicator) {
-            data.unwatch(`player-notes.${user.id}.${this.state.user.id}`, this.updateHasNotes);
+            data.unwatch(
+                `player-notes.${user.id}.${this.state.user.id}`,
+                this.updateHasNotes,
+            );
         }
     }
 
@@ -228,10 +341,18 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
 
     render() {
         if (!this.state.user) {
-            if (typeof(this.props.user) === "number") {
-                return <span className="Player" data-player-id={0}>...</span>;
+            if (typeof this.props.user === "number") {
+                return (
+                    <span className="Player" data-player-id={0}>
+                        ...
+                    </span>
+                );
             } else {
-                return <span className="Player" data-player-id={0}>[NULL USER]</span>;
+                return (
+                    <span className="Player" data-player-id={0}>
+                        [NULL USER]
+                    </span>
+                );
             }
         }
 
@@ -241,9 +362,8 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
         const nolink = !!this.props.nolink;
         let rank: JSX.Element = null;
 
-
         const main_attrs: any = {
-            "className": "Player",
+            className: "Player",
             "data-player-id": player_id,
         };
 
@@ -271,24 +391,26 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
             main_attrs.className += " noextracontrols";
         }
 
-
         if (this.props.rank !== false) {
-            const rating = getUserRating(player, 'overall', 0);
-            let rank_text = 'E';
+            const rating = getUserRating(player, "overall", 0);
+            let rank_text = "E";
 
             if (player.pro || player.professional) {
                 rank_text = rankString(player);
-            } else if (rating.unset && (player.rank > 0 || player.ranking > 0)) {
+            } else if (
+                rating.unset &&
+                (player.rank > 0 || player.ranking > 0)
+            ) {
                 /* This is to support displaying archived chat lines */
                 rank_text = rankString(player);
             } else if (rating.deviation >= PROVISIONAL_RATING_CUTOFF) {
-                rank_text = '?';
+                rank_text = "?";
             } else {
                 rank_text = rating.bounded_rank_label;
             }
 
             if (!preferences.get("hide-ranks")) {
-                rank = <span className='Player-rank'>[{rank_text}]</span>;
+                rank = <span className="Player-rank">[{rank_text}]</span>;
             }
         }
 
@@ -297,36 +419,74 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
         }
 
         if (props.online) {
-            main_attrs.className += this.state.is_online ? " online" : " offline";
+            main_attrs.className += this.state.is_online
+                ? " online"
+                : " offline";
         }
 
         const username_string = unicodeFilter(player.username || player.name);
-        const username = <span className='Player-username'>{username_string}</span>;
+        const username = (
+            <span className="Player-username">{username_string}</span>
+        );
 
-        const player_note_indicator = (this.props.shownotesindicator && this.state.has_notes)
-            ? <i className={"Player fa fa-clipboard"} onClick={this.openPlayerNotes} data-id={player.id} />
-            : null;
+        const player_note_indicator =
+            this.props.shownotesindicator && this.state.has_notes ? (
+                <i
+                    className={"Player fa fa-clipboard"}
+                    onClick={this.openPlayerNotes}
+                    data-id={player.id}
+                />
+            ) : null;
 
-        if (this.props.nolink || this.props.fakelink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
+        if (
+            this.props.nolink ||
+            this.props.fakelink ||
+            !(this.state.user.id || this.state.user.player_id) ||
+            this.state.user.anonymous ||
+            (this.state.user.id || this.state.user.player_id) < 0
+        ) {
             return (
-                <span ref="elt" {...main_attrs} onMouseDown={this.display_details}>
-                    {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
-                    {(props.flag || null) && <Flag country={player.country}/>}
-                    {username}{rank}
+                <span
+                    ref="elt"
+                    {...main_attrs}
+                    onMouseDown={this.display_details}
+                >
+                    {(props.icon || null) && (
+                        <PlayerIcon user={player} size={props.iconSize || 16} />
+                    )}
+                    {(props.flag || null) && <Flag country={player.country} />}
+                    {username}
+                    {rank}
                     {player_note_indicator}
                 </span>
             );
         } else {
             const player_id = this.state.user.id || this.state.user.player_id;
-            const uri = `/player/${player_id}/${encodeURIComponent(username_string)}`;
+            const uri = `/player/${player_id}/${encodeURIComponent(
+                username_string,
+            )}`;
 
             return (
                 // if only we could put {...main_attrs} on the span, we could put the styles in .Player.  But router seems to hate that.
                 <span>
-                    <a href={uri} ref="elt" {...main_attrs} onMouseDown={this.display_details} router={routes}>
-                        {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16}/>}
-                        {(props.flag || null) && <Flag country={player.country}/>}
-                        {username}{rank}
+                    <a
+                        href={uri}
+                        ref="elt"
+                        {...main_attrs}
+                        onMouseDown={this.display_details}
+                        router={routes}
+                    >
+                        {(props.icon || null) && (
+                            <PlayerIcon
+                                user={player}
+                                size={props.iconSize || 16}
+                            />
+                        )}
+                        {(props.flag || null) && (
+                            <Flag country={player.country} />
+                        )}
+                        {username}
+                        {rank}
                     </a>
                     {player_note_indicator}
                 </span>
@@ -335,12 +495,19 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
     }
 
     display_details = (event) => {
-        if (this.props.nolink || !(this.state.user.id || this.state.user.player_id) || this.state.user.anonymous || (this.state.user.id || this.state.user.player_id) < 0) {
+        if (
+            this.props.nolink ||
+            !(this.state.user.id || this.state.user.player_id) ||
+            this.state.user.anonymous ||
+            (this.state.user.id || this.state.user.player_id) < 0
+        ) {
             return;
         }
 
-        if ( ("buttons" in event && (event.buttons & 2)) ||
-             ("button" in event && event.button === 2) ) {
+        if (
+            ("buttons" in event && event.buttons & 2) ||
+            ("button" in event && event.button === 2)
+        ) {
             /* on click with right mouse button do nothing.
                buttons uses on bit per button, alowing for multiple buttons pressed at the same time. The bit with value 2 is the right mouse button. https://www.w3schools.com/jsref/event_buttons.asp
                buttons isn't supported in all browsers, so we have to check button as fallback. */
@@ -373,8 +540,8 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
             try {
                 let cur = $(this.refs.elt);
 
-                while (cur && cur[0].nodeName !== 'BODY') {
-                    chat_id = cur.attr('data-chat-id');
+                while (cur && cur[0].nodeName !== "BODY") {
+                    chat_id = cur.attr("data-chat-id");
                     if (chat_id) {
                         break;
                     }
@@ -385,7 +552,14 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
             }
 
             popover({
-                elt: (<PlayerDetails playerId={player_id} noextracontrols={this.props.noextracontrols} nochallenge={this.props.nochallenge} chatId={chat_id} />),
+                elt: (
+                    <PlayerDetails
+                        playerId={player_id}
+                        noextracontrols={this.props.noextracontrols}
+                        nochallenge={this.props.nochallenge}
+                        chatId={chat_id}
+                    />
+                ),
                 below: this.refs.elt,
                 minWidth: 240,
                 minHeight: 250,

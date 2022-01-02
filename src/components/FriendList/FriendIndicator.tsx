@@ -16,16 +16,15 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import online_status from "online_status";
 import * as data from "data";
-import {get} from "requests";
+import { get } from "requests";
 import * as moment from "moment";
-import {FriendList} from "./FriendList";
-import {UIPush} from "UIPush";
-import {KBShortcut} from "KBShortcut";
-import cached from 'cached';
-
+import { FriendList } from "./FriendList";
+import { UIPush } from "UIPush";
+import { KBShortcut } from "KBShortcut";
+import cached from "cached";
 
 let friend_indicator_singleton: FriendIndicator;
 
@@ -46,7 +45,10 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
 
     UNSAFE_componentWillMount() {
         data.watch(cached.friends, this.updateFriends);
-        online_status.event_emitter.on("users-online-updated", this.updateFriendCount);
+        online_status.event_emitter.on(
+            "users-online-updated",
+            this.updateFriendCount,
+        );
     }
 
     updateFriendCount = () => {
@@ -65,7 +67,7 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
         }
 
         this.setState({
-            online_ct: ct
+            online_ct: ct,
         });
     };
 
@@ -76,10 +78,9 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
 
     toggleFriendList = () => {
         this.setState({
-            show_friend_list: !this.state.show_friend_list
+            show_friend_list: !this.state.show_friend_list,
         });
     };
-
 
     render() {
         if (this.friend_list.length === 0) {
@@ -87,23 +88,37 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
         }
 
         return (
-            <span className={"FriendIndicator" + (this.state.online_ct ? " online" : "")} onClick={this.toggleFriendList}>
-                <i className="fa fa-users"/>
+            <span
+                className={
+                    "FriendIndicator" + (this.state.online_ct ? " online" : "")
+                }
+                onClick={this.toggleFriendList}
+            >
+                <i className="fa fa-users" />
                 <span className="count">{this.state.online_ct}</span>
-                {(this.state.show_friend_list || null) &&
+                {(this.state.show_friend_list || null) && (
                     <div>
-                        <KBShortcut shortcut="escape" action={this.toggleFriendList}/>
-                        <div className='FriendListBackdrop' onClick={this.toggleFriendList} />
+                        <KBShortcut
+                            shortcut="escape"
+                            action={this.toggleFriendList}
+                        />
+                        <div
+                            className="FriendListBackdrop"
+                            onClick={this.toggleFriendList}
+                        />
                         <FriendList />
                     </div>
-                }
+                )}
             </span>
         );
     }
 }
 
 export function close_friend_list() {
-    if (friend_indicator_singleton && friend_indicator_singleton.state.show_friend_list) {
-        friend_indicator_singleton.setState({show_friend_list: false});
+    if (
+        friend_indicator_singleton &&
+        friend_indicator_singleton.state.show_friend_list
+    ) {
+        friend_indicator_singleton.setState({ show_friend_list: false });
     }
 }

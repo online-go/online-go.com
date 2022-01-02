@@ -16,7 +16,7 @@
  */
 
 import * as data from "data";
-import { parse } from 'query-string';
+import { parse } from "query-string";
 import * as React from "react";
 import { RouteComponentProps } from "react-router-dom";
 import { post } from "requests";
@@ -27,7 +27,10 @@ interface VerifyEmailState {
     message: string;
 }
 
-export class VerifyEmail extends React.PureComponent<RouteComponentProps, VerifyEmailState> {
+export class VerifyEmail extends React.PureComponent<
+    RouteComponentProps,
+    VerifyEmailState
+> {
     constructor(props: RouteComponentProps) {
         super(props);
         this.state = {
@@ -40,32 +43,32 @@ export class VerifyEmail extends React.PureComponent<RouteComponentProps, Verify
         const q = parse(this.props.location.search);
 
         post("me/validateEmail", {
-            id: q['id'],
-            verification: q['v'],
+            id: q["id"],
+            verification: q["v"],
         })
-        .then(() => {
-            this.setState({verifying: false, message: _("Great, your email address has been verified!")});
-            const user = data.get('user');
-            user.email_validated = new Date().toString();
-            data.set('user', user);
-        })
-        .catch((err) => {
-            this.setState({verifying: false, message: JSON.parse(err.responseText).error});
-        });
+            .then(() => {
+                this.setState({
+                    verifying: false,
+                    message: _("Great, your email address has been verified!"),
+                });
+                const user = data.get("user");
+                user.email_validated = new Date().toString();
+                data.set("user", user);
+            })
+            .catch((err) => {
+                this.setState({
+                    verifying: false,
+                    message: JSON.parse(err.responseText).error,
+                });
+            });
     }
 
     render() {
         return (
-            <div className='VerifyEmail'>
+            <div className="VerifyEmail">
                 <h3>
-                    {this.state.verifying &&
-                        <div>
-                            {_("Verifying...")}
-                        </div>
-                    }
-                    {this.state.message &&
-                        <div>{this.state.message}</div>
-                    }
+                    {this.state.verifying && <div>{_("Verifying...")}</div>}
+                    {this.state.message && <div>{this.state.message}</div>}
                 </h3>
             </div>
         );

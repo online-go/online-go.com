@@ -18,28 +18,32 @@
 import * as React from "react";
 import * as ValidUrl from "valid-url";
 
-import { _ } from 'translate';
+import { _ } from "translate";
 import { Modal, openModal } from "Modal";
 
-interface Events {
-}
+interface Events {}
 
 interface JosekiSourceModalProperties {
     add_joseki_source: any;
 }
 
-export class JosekiSourceModal extends Modal<Events, JosekiSourceModalProperties, any> {
+export class JosekiSourceModal extends Modal<
+    Events,
+    JosekiSourceModalProperties,
+    any
+> {
     constructor(props) {
         super(props);
 
         this.state = {
             description: "",
-            url: ""
+            url: "",
         };
     }
 
     setDescription = (e) => {
-        if (e.target.value.length < 45) {   // none longer than this at josekipedia
+        if (e.target.value.length < 45) {
+            // none longer than this at josekipedia
             this.setState({ description: e.target.value });
         }
     };
@@ -54,14 +58,20 @@ export class JosekiSourceModal extends Modal<Events, JosekiSourceModalProperties
     };
 
     render() {
-        const inputs_valid = (this.state.url.length === 0 || ValidUrl.isWebUri(this.state.url)) && this.state.description.length > 8;  // some basic sanity that they put something in
+        const inputs_valid =
+            (this.state.url.length === 0 ||
+                ValidUrl.isWebUri(this.state.url)) &&
+            this.state.description.length > 8; // some basic sanity that they put something in
 
         return (
             <div className="Modal JosekiSourceModal" ref="modal">
                 <div className="header">{_("New Joseki Source")}</div>
                 <div className="description">
                     <div>{_("Source")}:</div>
-                    <input value={this.state.description} onChange={this.setDescription} />
+                    <input
+                        value={this.state.description}
+                        onChange={this.setDescription}
+                    />
                 </div>
                 <div className="url">
                     <div>URL:</div>
@@ -69,10 +79,16 @@ export class JosekiSourceModal extends Modal<Events, JosekiSourceModalProperties
                 </div>
                 <div className="buttons">
                     <button onClick={this.close}>{_("Cancel")}</button>
-                    {inputs_valid ?
-                        <button className="primary" onClick={this.saveNewJoseki}>{_("Save")}</button> :
-                        <button >{_("Save")}</button>
-                    }
+                    {inputs_valid ? (
+                        <button
+                            className="primary"
+                            onClick={this.saveNewJoseki}
+                        >
+                            {_("Save")}
+                        </button>
+                    ) : (
+                        <button>{_("Save")}</button>
+                    )}
                 </div>
             </div>
         );

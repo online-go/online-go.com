@@ -16,12 +16,12 @@
  */
 
 import * as React from "react";
-import {_, pgettext, interpolate} from "translate";
-import {post, get} from "requests";
-import {errorAlerter} from "misc";
-import {chat_manager, ChatChannelProxy} from "chat_manager";
+import { _, pgettext, interpolate } from "translate";
+import { post, get } from "requests";
+import { errorAlerter } from "misc";
+import { chat_manager, ChatChannelProxy } from "chat_manager";
 import * as preferences from "preferences";
-import {Player} from "Player";
+import { Player } from "Player";
 
 interface ChatPresenceIndicatorProperties {
     channel: string;
@@ -32,10 +32,13 @@ interface ChatPresenceIndicatorState {
     online: boolean;
     // user_sort_order does not appear to be used in this class.
     // TODO: Verify and remove.
-    user_sort_order?: "alpha"|"rank";
+    user_sort_order?: "alpha" | "rank";
 }
 
-export class ChatPresenceIndicator extends React.PureComponent<ChatPresenceIndicatorProperties, ChatPresenceIndicatorState> {
+export class ChatPresenceIndicator extends React.PureComponent<
+    ChatPresenceIndicatorProperties,
+    ChatPresenceIndicatorState
+> {
     proxy: ChatChannelProxy;
 
     constructor(props) {
@@ -71,23 +74,29 @@ export class ChatPresenceIndicator extends React.PureComponent<ChatPresenceIndic
     update = (user_id) => {
         const online = user_id in this.proxy.channel.user_list;
         if (this.state.online !== online) {
-            this.setState({online: online});
+            this.setState({ online: online });
         }
     };
 
     // This function does not appear to be used.
     // TODO: Verify and remove.
     toggleSortOrder = () => {
-        const new_sort_order = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
+        const new_sort_order =
+            preferences.get("chat.user-sort-order") === "rank"
+                ? "alpha"
+                : "rank";
         preferences.set("chat.user-sort-order", new_sort_order);
-        this.setState({"user_sort_order": new_sort_order});
+        this.setState({ user_sort_order: new_sort_order });
     };
-
 
     render() {
         return (
-            <i className={`ChatPresenceIndicator ${this.state.online ? "online" : ""} fa fa-circle`} title={this.state.online ? _("Online") : _("Offline")} />
+            <i
+                className={`ChatPresenceIndicator ${
+                    this.state.online ? "online" : ""
+                } fa fa-circle`}
+                title={this.state.online ? _("Online") : _("Offline")}
+            />
         );
     }
 }
-

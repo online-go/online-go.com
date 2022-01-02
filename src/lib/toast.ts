@@ -17,11 +17,10 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {TypedEventEmitter} from "TypedEventEmitter";
-
+import { TypedEventEmitter } from "TypedEventEmitter";
 
 interface Events {
-    "close": never;
+    close: never;
 }
 
 let toast_meta_container = null;
@@ -53,7 +52,10 @@ export class Toast extends TypedEventEmitter<Events> {
     }
 }
 
-export function toast(element: React.ReactElement<any>, timeout?: number): Toast {
+export function toast(
+    element: React.ReactElement<any>,
+    timeout?: number,
+): Toast {
     if (toast_meta_container == null) {
         toast_meta_container = $("<div id='toast-meta-container'>");
         $(document.body).append(toast_meta_container);
@@ -69,21 +71,25 @@ export function toast(element: React.ReactElement<any>, timeout?: number): Toast
     const ret = new Toast(container[0] as HTMLElement, timeout);
     container.click((ev) => {
         if (
-            ev.target.nodeName !== "BUTTON"
-            && ev.target.className.indexOf('fab') === -1
+            ev.target.nodeName !== "BUTTON" &&
+            ev.target.className.indexOf("fab") === -1
         ) {
             ret.close();
         }
     });
 
     setTimeout(() => {
-        position_container.css({height: container.outerHeight()}).addClass("opaque");
-
+        position_container
+            .css({ height: container.outerHeight() })
+            .addClass("opaque");
     }, 1);
     //position_container.css({height: 'auto'});
     setTimeout(() => {
-        container.css({position: "relative"});
-        position_container.css({height: "auto", minHeight: position_container.height() + 3});
+        container.css({ position: "relative" });
+        position_container.css({
+            height: "auto",
+            minHeight: position_container.height() + 3,
+        });
     }, 350);
 
     return ret;

@@ -16,9 +16,8 @@
  */
 
 import * as React from "react";
-import {_} from "translate";
-import { ObserveGamesComponent } from 'ObserveGamesComponent';
-
+import { _ } from "translate";
+import { ObserveGamesComponent } from "ObserveGamesComponent";
 
 export class ObserveGames extends React.PureComponent {
     constructor(props) {
@@ -29,7 +28,11 @@ export class ObserveGames extends React.PureComponent {
         return (
             <div className="ObserveGames">
                 <div className="container">
-                    <ObserveGamesComponent announcements={true} updateTitle={true} channel='' />
+                    <ObserveGamesComponent
+                        announcements={true}
+                        updateTitle={true}
+                        channel=""
+                    />
                 </div>
             </div>
         );
