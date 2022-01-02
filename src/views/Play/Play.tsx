@@ -39,6 +39,7 @@ import {boundedRankString} from "rank_utils";
 import * as player_cache from "player_cache";
 import swal from 'sweetalert2';
 import { Size } from "src/lib/types";
+import { join } from "@sentry/utils";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 
@@ -354,19 +355,19 @@ export class Play extends React.Component<{}, PlayState> {
         }, false );
     };
 
-    liveOwnChallengePending = (): boolean => {
-        const locp = this.state.live_list.some((c) => (c.user_challenge));
+    liveOwnChallengePending = (): any => {
+        const locp = this.state.live_list.find((c) => (c.user_challenge));
         return locp;
     };
 
-    ownRengoChallengePending = (): boolean => {
-        const orcp = this.state.rengo_list.some((c) => (c.user_challenge));
+    ownRengoChallengePending = (): any => {
+        const orcp = this.state.rengo_list.find((c) => (c.user_challenge));
         return orcp;
     };
 
-    joinedRengoChallengePending = (): boolean => {
+    joinedRengoChallengePending = (): any => {
         const user_id = data.get('config.user').id;
-        const jrcp = this.state.rengo_list.some((c) => (c['rengo_participants'].includes(user_id)));
+        const jrcp = this.state.rengo_list.find((c) => (c['rengo_participants'].includes(user_id) && !c.user_challenge));
         return jrcp;
     };
 
@@ -576,13 +577,10 @@ export class Play extends React.Component<{}, PlayState> {
             return this.state.automatch_size_options.indexOf(size) >= 0;
         };
 
-        const own_rengo_challenge_pending = this.ownRengoChallengePending();
-
-        let own_rengo_challenge;
-
-        if (own_rengo_challenge_pending) {
-            own_rengo_challenge = this.state.rengo_list.find((c) => (c.user_challenge));
-        }
+        const own_rengo_challenge = this.ownRengoChallengePending();
+        const joined_rengo_challenge = this.joinedRengoChallengePending();
+        const own_rengo_challenge_ready_to_start  = own_rengo_challenge && (own_rengo_challenge.rengo_black_team.length > 0 && own_rengo_challenge.rengo_white_team.length > 0);
+        const joined_rengo_challenge_ready_to_start = joined_rengo_challenge && (joined_rengo_challenge.rengo_black_team.length > 0 && joined_rengo_challenge.rengo_white_team.length > 0);
 
         if (automatch_manager.active_live_automatcher) {
             return (
@@ -618,11 +616,13 @@ export class Play extends React.Component<{}, PlayState> {
                     </div>
                 </div>
             );
-        } else if (own_rengo_challenge_pending || this.joinedRengoChallengePending()) {
+        } else if (own_rengo_challenge || joined_rengo_challenge) {
             return(
                 <div className='automatch-container'>
                     <div className='automatch-header'>
-                        {_("Waiting for Rengo players...")}
+                        {own_rengo_challenge_ready_to_start ? _("Waiting for your decision to start...") :
+                            joined_rengo_challenge_ready_to_start ? _("Waiting for organiser to start...") :
+                                _("Waiting for Rengo players...")}
                         <div className="small-spinner">
                             <div className="double-bounce1"></div>
                             <div className="double-bounce2"></div>
@@ -631,18 +631,25 @@ export class Play extends React.Component<{}, PlayState> {
                     <div className={'rengo-admin-container' + (this.state.admin_pending ? " pending" : "")}>
                         {this.renderRengoChallengePane()}
                     </div>
-                    { (own_rengo_challenge_pending || null) &&
-                        <div className="rengo-challenge-buttons">
-                            <div className='automatch-settings'>
-                                <button className='danger sm' onClick={this.cancelOwnChallenges.bind(self, this.state.rengo_list)}>{pgettext("Cancel challenge", "Cancel")}</button>
-                            </div>
-                            {((own_rengo_challenge.rengo_black_team.length > 0 && own_rengo_challenge.rengo_white_team.length > 0) || null) &&
+                    <div className="rengo-challenge-buttons">
+                        { (own_rengo_challenge || null) &&
+                            <React.Fragment>
                                 <div className='automatch-settings'>
-                                    <button className='success sm' onClick={this.startOwnRengoChallenge}>{pgettext("Start game", "Start")}</button>
+                                    <button className='danger sm' onClick={this.cancelOwnChallenges.bind(self, this.state.rengo_list)}>{pgettext("Cancel challenge", "Cancel")}</button>
                                 </div>
-                            }
-                        </div>
-                    }
+                                {((own_rengo_challenge_ready_to_start) || null) &&
+                                    <div className='automatch-settings'>
+                                        <button className='success sm' onClick={this.startOwnRengoChallenge}>{pgettext("Start game", "Start")}</button>
+                                    </div>
+                                }
+                            </React.Fragment>
+                        }
+                        { (joined_rengo_challenge || null) &&
+                            <div className='automatch-settings'>
+                                <button onClick={this.unNominateForRengoChallenge.bind(this, joined_rengo_challenge)} className="btn success xs">{_("Withdraw")}</button>
+                            </div>
+                        }
+                    </div>
                 </div>
             );
         } else if (this.state.showLoadingSpinnerForCorrespondence) {
@@ -1037,7 +1044,7 @@ export class Play extends React.Component<{}, PlayState> {
                     <div className='rengo-assignment-row' key={i}>
                         {(our_challenge.user_challenge || null) &&
                             <React.Fragment>
-                                <i className="fa fa-lg fa-times-circle-o red"
+                                <i className="fa fa-lg fa-times-circle-o unassign"
                                     onClick={this.unassignTeam.bind(self, n, our_challenge)}/>
                                 <i className="fa fa-lg fa-arrow-down"
                                     onClick={this.assignToTeam.bind(self, n, 'rengo_white_team', our_challenge)}/>
@@ -1057,7 +1064,7 @@ export class Play extends React.Component<{}, PlayState> {
                     <div className='rengo-assignment-row' key={i}>
                         {(our_challenge.user_challenge || null) &&
                             <React.Fragment>
-                                <i className="fa fa-lg fa-times-circle-o red"
+                                <i className="fa fa-lg fa-times-circle-o unassign"
                                     onClick={this.unassignTeam.bind(self, n, our_challenge)}/>
                                 <i className="fa fa-lg fa-arrow-up"
                                     onClick={this.assignToTeam.bind(self, n, 'rengo_black_team', our_challenge)}/>
