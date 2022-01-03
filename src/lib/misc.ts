@@ -193,26 +193,29 @@ export function getOutcomeTranslation(outcome: string) {
     return outcome;
 }
 
-export function getGameResultText(game) {
+export function getGameResultText(outcome: string, white_lost: boolean, black_lost: boolean): string {
+    if (!outcome) {
+        return "";
+    }
     /* SGFs will encode the full result in the outcome */
-    if (/[+]/.test(game.outcome)) {
-        return game.outcome;
+    if (/[+]/.test(outcome)) {
+        return outcome;
     }
 
     let winner = "";
     let result = "";
-    if (game.white_lost && game.black_lost) {
+    if (white_lost && black_lost) {
         winner = _("Tie");
-    } else if (game.white_lost) {
+    } else if (white_lost) {
         winner = _("B");
-    } else if (game.black_lost) {
+    } else if (black_lost) {
         winner = _("W");
     } else {
         winner = _("Tie");
     }
 
-    game.outcome = game.outcome.replace(" points", "");
-    result += winner + "+"  + getOutcomeTranslation(game.outcome);
+    outcome = outcome.replace(" points", "");
+    result += winner + "+" + getOutcomeTranslation(outcome);
 
     return result;
 }

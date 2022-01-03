@@ -24,7 +24,7 @@ import {openModal, Modal, ModalConstructorInput} from "Modal";
 import {timeControlDescription} from "TimeControl";
 import {Player} from "Player";
 import {handicapText} from "GameAcceptModal";
-import {errorAlerter, ignore, rulesText, yesno} from "misc";
+import {errorAlerter, ignore, rulesText, yesno, getGameResultText} from "misc";
 import {rankString} from 'rank_utils';
 import {browserHistory} from "ogsHistory";
 import swal from 'sweetalert2';
@@ -261,7 +261,9 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                         <dt>{_("Result")}</dt><dd>{
                         (editable && config.review_id && !config.game_id)
                             ? <input value={config.outcome} onChange={this.updateOutcome} />
-                            : <span>{config.outcome}</span>
+                                : <span>{getGameResultText(config.outcome,
+                                    config.winner !== config.white_player_id,
+                                    config.winner !== config.black_player_id)}</span>
                         }</dd>
                         <dt>{_("Komi")}</dt><dd>{config.komi.toFixed(1)}</dd>
                         <dt>{_("Analysis")}</dt><dd>{(config.original_disable_analysis ? _("Analysis and conditional moves disabled") : _("Analysis and conditional moves enabled"))}</dd>

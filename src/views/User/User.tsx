@@ -64,20 +64,20 @@ const inlineBlock = {display: "inline-flex", "alignItems": "center"};
 const marginBottom0 = {marginBottom: "0"};
 
 function getGameResultRichText(game) {
-    let result = getGameResultText(game);
+    let resultText = getGameResultText(game.outcome, game.white_lost, game.black_lost);
 
     if (game.ranked) {
-        result += ", ";
-        result += _("ranked");
+        resultText += ", ";
+        resultText += _("ranked");
     }
     if (game.annulled) {
-        result = <span>
-            <span style={{textDecoration: 'line-through'}}>{result}</span>
+        return <span>
+            <span style={{textDecoration: 'line-through'}}>{resultText}</span>
             <span>, {_("annulled")}</span>
         </span>;
     }
 
-    return result;
+    return <>{resultText}</>;
 }
 
 function openUrlIfALinkWasNotClicked(ev, url: string) {
