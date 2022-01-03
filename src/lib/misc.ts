@@ -194,6 +194,9 @@ export function getOutcomeTranslation(outcome: string) {
 }
 
 export function getGameResultText(outcome: string, white_lost: boolean, black_lost: boolean): string {
+    if (!outcome) {
+        return "";
+    }
     /* SGFs will encode the full result in the outcome */
     if (/[+]/.test(outcome)) {
         return outcome;
