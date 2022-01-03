@@ -952,7 +952,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
 
                 <div className="row">
                     <div className='col-sm-8'>
-                        {((window["user"] && window["user"].is_moderator) || null) && <Card > {/* Moderator stuff  */}
+                        {((window["user"] && window["user"].is_moderator) || null) &&
+                        <Card > {/* Moderator stuff  */}
                             <b>Users with the same IP or Browser ID</b>
                             <PaginatedTable
                                 className="aliases"
@@ -1009,17 +1010,20 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                         }
 
                         {(user.about || editing || null) &&
-                    <Card>
-                        <div className='about-container'>
-                            {(!editing && user.about) && <div className='about-markdown'><Markdown source={user.about}/></div>}
-                            {(editing || null) && <textarea className='about-editor' rows={15} onChange={this.saveAbout} placeholder={_("About yourself")} value={user.about}/>}
-                        </div>
-                    </Card>
+                            <Card>
+                                <div className='about-container'>
+                                    {(!editing && user.about) && <div className='about-markdown'><Markdown source={user.about}/></div>}
+                                    {(editing || null) && <textarea className='about-editor' rows={15} onChange={this.saveAbout} placeholder={_("About yourself")} value={user.about}/>}
+                                </div>
+                            </Card>
                         }
 
                         {(this.state.active_games.length > 0 || null) && <h2>{_("Active Games")} ({this.state.active_games.length})</h2>}
-                        <GameList list={this.state.active_games} player={user}/>
-
+                        <GameList
+                            list={ // GameList is expecting rengo info on the game (like in ObserveGamesComponent) but here that information is on game.json, so we have to promote it ...
+                                this.state.active_games.map((game) => ({rengo: game.json.rengo, rengo_teams: game.json.rengo_teams, ...game}) )}
+                            player={user}
+                            namesByGobans={true} />
 
                         <div className="row">{/* Game History  */}
                             <div className="col-sm-12">

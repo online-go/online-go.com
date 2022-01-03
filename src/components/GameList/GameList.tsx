@@ -18,8 +18,6 @@
 import * as React from "react";
 import { _, pgettext, interpolate } from "translate";
 import * as preferences from "preferences";
-import { Goban } from "goban";
-import { termination_socket } from "sockets";
 import { MiniGoban } from "MiniGoban";
 import { GobanLineSummary } from "GobanLineSummary";
 import { Player } from "Player";
