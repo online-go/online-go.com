@@ -302,9 +302,9 @@ class NotificationManager {
         const game_player_ids = [goban.config.players.black.id, goban.config.players.white.id,
             ...(goban.config.rengo ?
                 [goban.config.rengo_teams.black.concat(goban.config.rengo_teams.white).map((p) => (p.id))] : [] )
-        ]
+        ];
 
-        return goban && goban.engine.phase !== "finished" && isLiveGame(goban.engine.time_control) && game_player_ids.includes(player_id)
+        return goban && goban.engine.phase !== "finished" && isLiveGame(goban.engine.time_control) && game_player_ids.includes(player_id);
     };
 
     deleteNotification(notification, dont_rebuild?: boolean) {
