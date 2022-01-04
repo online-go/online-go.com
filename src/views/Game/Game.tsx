@@ -2666,8 +2666,8 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                                     className={user.is_moderator && !user_is_active_player ? "" : "primary"}
                                     disabled={user.is_moderator && !user_is_active_player}
                                     onClick={this.onStoneRemovalAccept}>
-                                   {_("Accept removed stones")}
-                                   <Clock goban={this.goban} color='stone-removal' />
+                                    {_("Accept removed stones")}
+                                    <Clock goban={this.goban} color='stone-removal' />
                                 </button>
                             }
                         </div>
