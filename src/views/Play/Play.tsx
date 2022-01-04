@@ -579,8 +579,8 @@ export class Play extends React.Component<{}, PlayState> {
 
         const own_rengo_challenge = this.ownRengoChallengePending();
         const joined_rengo_challenge = this.joinedRengoChallengePending();
-        const own_rengo_challenge_ready_to_start  = own_rengo_challenge && (own_rengo_challenge.rengo_black_team.length > 0 && own_rengo_challenge.rengo_white_team.length > 0);
-        const joined_rengo_challenge_ready_to_start = joined_rengo_challenge && (joined_rengo_challenge.rengo_black_team.length > 0 && joined_rengo_challenge.rengo_white_team.length > 0);
+        const own_rengo_challenge_ready_to_start  = own_rengo_challenge && (own_rengo_challenge.rengo_black_team.length + own_rengo_challenge.rengo_white_team.length > 2);
+        const joined_rengo_challenge_ready_to_start = joined_rengo_challenge && (joined_rengo_challenge.rengo_black_team.length + joined_rengo_challenge.rengo_white_team.length > 2);
 
         if (automatch_manager.active_live_automatcher) {
             return (
