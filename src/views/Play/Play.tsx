@@ -970,12 +970,12 @@ export class Play extends React.Component<{}, PlayState> {
     assignToTeam = (player_id: number, team: string, challenge) => {
         const assignment = team === 'rengo_black_team' ? 'assign_black' :
             team === 'rengo_white_team' ? 'assign_white' :
-            'unassign'
+            'unassign';
 
         this.setState({admin_pending: true});
 
         put("challenges/%%/team", challenge.challenge_id, {
-            [assignment]: [player_id,]  // back end expects an array of changes, but we only ever send one at a time.
+            [assignment]: [player_id, ]  // back end expects an array of changes, but we only ever send one at a time.
         })
         .then(() => {
             this.setState({admin_pending: false});
