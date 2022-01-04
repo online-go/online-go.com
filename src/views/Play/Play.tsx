@@ -968,38 +968,14 @@ export class Play extends React.Component<{}, PlayState> {
     };
 
     assignToTeam = (player_id: number, team: string, challenge) => {
-        const other_team = (team === 'rengo_black_team') ? 'rengo_white_team' : 'rengo_black_team';
-        const new_team = [...challenge[team], player_id];
-        const new_other_team = challenge[other_team].filter((n) => (n !== player_id));
-        const new_nominees = challenge['rengo_nominees'].filter((n) => (n !== player_id));
+        const assignment = team === 'rengo_black_team' ? 'assign_black' :
+            team === 'rengo_white_team' ? 'assign_white' :
+            'unassign'
 
         this.setState({admin_pending: true});
 
         put("challenges/%%/team", challenge.challenge_id, {
-            [team]: new_team,
-            [other_team]: new_other_team,
-            'rengo_nominees': new_nominees
-        })
-        .then(() => {
-            this.setState({admin_pending: false});
-        })
-        .catch((err) => {
-            this.setState({admin_pending: false});
-            errorAlerter(err);
-        });
-    };
-
-    unassignTeam = (player_id: number, challenge) => {
-        const new_black_team = challenge['rengo_black_team'].filter((n) => (n !== player_id));
-        const new_white_team = challenge['rengo_white_team'].filter((n) => (n !== player_id));
-        const new_nominees = [... challenge['rengo_nominees'], player_id];
-
-        this.setState({admin_pending: true});
-
-        put("challenges/%%/team", challenge.challenge_id, {
-            'rengo_black_team': new_black_team,
-            'rengo_white_team': new_white_team,
-            'rengo_nominees': new_nominees
+            [assignment]: [player_id,]  // back end expects an array of changes, but we only ever send one at a time.
         })
         .then(() => {
             this.setState({admin_pending: false});
@@ -1045,7 +1021,7 @@ export class Play extends React.Component<{}, PlayState> {
                         {(our_challenge.user_challenge || null) &&
                             <React.Fragment>
                                 <i className="fa fa-lg fa-times-circle-o unassign"
-                                    onClick={this.unassignTeam.bind(self, n, our_challenge)}/>
+                                    onClick={this.assignToTeam.bind(self, n, 'none', our_challenge)}/>
                                 <i className="fa fa-lg fa-arrow-down"
                                     onClick={this.assignToTeam.bind(self, n, 'rengo_white_team', our_challenge)}/>
                             </React.Fragment>
@@ -1065,7 +1041,7 @@ export class Play extends React.Component<{}, PlayState> {
                         {(our_challenge.user_challenge || null) &&
                             <React.Fragment>
                                 <i className="fa fa-lg fa-times-circle-o unassign"
-                                    onClick={this.unassignTeam.bind(self, n, our_challenge)}/>
+                                    onClick={this.assignToTeam.bind(self, n, 'none', our_challenge)}/>
                                 <i className="fa fa-lg fa-arrow-up"
                                     onClick={this.assignToTeam.bind(self, n, 'rengo_black_team', our_challenge)}/>
                             </React.Fragment>
