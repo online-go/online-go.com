@@ -70,9 +70,9 @@ import {toast} from "toast";
 import {Clock} from "Clock";
 import {JGOFClock} from "goban";
 import {GameTimings} from "./GameTimings";
-import {getPlayerIconURL} from "PlayerIcon";
 
 import swal from 'sweetalert2';
+
 
 const win = $(window);
 
@@ -2517,7 +2517,9 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             return null;
         }
 
-        return (
+        const user_is_active_player = [this.goban.engine.players.black.id, this.goban.engine.players.white.id].includes(user.id);
+
+        return(
             <div className="play-controls">
                 <div ref={el => this.ref_game_action_buttons = el} className="game-action-buttons">{/* { */}
                     {(state.mode === "play" && state.phase === "play" && state.cur_move_number >= state.official_move_number || null) &&
@@ -2658,13 +2660,15 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                 }{/* } */}
                 {(this.state.phase === "stone removal" || null) &&  /* { */
                     <div className="stone-removal-controls">
-
                         <div>
-                            {(this.state.user_is_player || user.is_moderator || null) &&
-                               <button id="game-stone-removal-accept" className="primary" onClick={this.state.user_is_player ? this.onStoneRemovalAccept :  null}>
+                            {(user_is_active_player || user.is_moderator || null) &&  // moderators see the button, with its timer, but can't press it
+                                <button id="game-stone-removal-accept"
+                                    className={user.is_moderator && !user_is_active_player ? "" : "primary"}
+                                    disabled={user.is_moderator && !user_is_active_player}
+                                    onClick={this.onStoneRemovalAccept}>
                                    {_("Accept removed stones")}
                                    <Clock goban={this.goban} color='stone-removal' />
-                               </button>
+                                </button>
                             }
                         </div>
                         <br/>
