@@ -495,7 +495,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                 off();
                             });
                 }
-
                 active_check();
             } else {
                 if (this.props.mode === "open") {
@@ -505,10 +504,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 }
             }
 
-
             function active_check() {
                 keepalive_interval = setInterval(() => {
-                    termination_socket.send("challenge/keepalive", {challenge_id: challenge_id, game_id: game_id});
+                    termination_socket.send("challenge/keepalive",
+                        {challenge_id: challenge_id, game_id: game_id});
                 }, 1000);
                 termination_socket.send("game/connect", {"game_id": game_id});
                 termination_socket.on(`game/${game_id}/gamedata`, onGamedata);
