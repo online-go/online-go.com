@@ -41,28 +41,22 @@
     display: flex;
     flex-direction: column;
 
-    .rengo-teams-header {
-        margin-top: 0.4rem;
-    }
-
-    .rengo-team-members-container {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-around;
-        margin-top: 0.3rem;
-        margin-bottom: 0.3rem;
-    }
-
     .rengo-team-members {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-
         flex-grow: 1;
-        border-radius: 0.4em;
-        padding: 0.3rem;
-        margin: 0.1rem;
+        margin: 0.3rem;
 
+        .rengo-team-member {
+            border-radius: 0.4em;
+            padding: 0.3rem;
+            padding-bottom: 0.1rem;
+            width: 100%
+            box-sizing: border-box;
+            text-align: left;
+            themed background-color other-player-background
+        }
     }
 
 }
@@ -159,7 +153,7 @@
     }
 
 
-    .white.player-container
+    .white.player-container {
         box-shadow: 0 2px 5px rgba(50,50,50,.51);
         themed background player-white-background
         themed color player-white-fg
@@ -169,13 +163,17 @@
         }
 
         // Use the light mode color for names in the white player box
-        .white.player-name-container .Player
+        .Player {
             color light.user
-        for color-attr, class-attr in special-player-type-priority
-            .white.player-name-container .Player.{class-attr}
+        }
+        for color-attr, class-attr in special-player-type-priority {
+            .Player.{class-attr} {
                 color: light[color-attr]!important
+            }
+        }
+    }
 
-    .black.player-container
+    .black.player-container {
         themed background player-black-background
         themed color player-black-fg
         border-top: 1px solid #202020;
@@ -186,11 +184,15 @@
         }
 
         // Use the dark mode color for names in the black player box
-        .black.player-name-container .Player
-            color dark.user
-        for color-attr, class-attr in special-player-type-priority
-            .black.player-name-container .Player.{class-attr}
+        .Player {
+            color: dark.user ;
+        }
+        for color-attr, class-attr in special-player-type-priority {
+            .Player.{class-attr} {
                 color: dark[color-attr]!important
+            }
+        }
+    }
 
     .player-container.shortgame.offline {
         border: 1px solid #f66 !important;
