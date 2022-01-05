@@ -572,6 +572,11 @@ export class Play extends React.Component<{}, PlayState> {
         );
     }
 
+    rengoReadyToStart = (challenge) => (
+        challenge.rengo_black_team.length && challenge.rengo_white_team.length &&
+        (challenge.rengo_black_team.length + challenge.rengo_white_team.length > 2)
+    );
+
     automatchContainer() {
         const size_enabled = (size) => {
             return this.state.automatch_size_options.indexOf(size) >= 0;
@@ -579,8 +584,12 @@ export class Play extends React.Component<{}, PlayState> {
 
         const own_rengo_challenge = this.ownRengoChallengePending();
         const joined_rengo_challenge = this.joinedRengoChallengePending();
-        const own_rengo_challenge_ready_to_start  = own_rengo_challenge && (own_rengo_challenge.rengo_black_team.length + own_rengo_challenge.rengo_white_team.length > 2);
-        const joined_rengo_challenge_ready_to_start = joined_rengo_challenge && (joined_rengo_challenge.rengo_black_team.length + joined_rengo_challenge.rengo_white_team.length > 2);
+
+        const own_rengo_challenge_ready_to_start =
+            own_rengo_challenge && this.rengoReadyToStart(own_rengo_challenge);
+
+        const joined_rengo_challenge_ready_to_start =
+            joined_rengo_challenge && this.rengoReadyToStart(joined_rengo_challenge);
 
         if (automatch_manager.active_live_automatcher) {
             return (
@@ -595,7 +604,9 @@ export class Play extends React.Component<{}, PlayState> {
                         </div>
                     </div>
                     <div className='automatch-settings'>
-                        <button className='danger sm' onClick={this.cancelActiveAutomatch}>{pgettext("Cancel automatch", "Cancel")}</button>
+                        <button className='danger sm' onClick={this.cancelActiveAutomatch}>
+                            {pgettext("Cancel automatch", "Cancel")}
+                        </button>
                     </div>
                 </div>
             );
@@ -612,7 +623,9 @@ export class Play extends React.Component<{}, PlayState> {
                         </div>
                     </div>
                     <div className='automatch-settings'>
-                        <button className='danger sm' onClick={this.cancelOwnChallenges.bind(self, this.state.live_list)}>{pgettext("Cancel challenge", "Cancel")}</button>
+                        <button className='danger sm' onClick={this.cancelOwnChallenges.bind(self, this.state.live_list)}>
+                            {pgettext("Cancel challenge", "Cancel")}
+                        </button>
                     </div>
                 </div>
             );
@@ -635,18 +648,24 @@ export class Play extends React.Component<{}, PlayState> {
                         { (own_rengo_challenge || null) &&
                             <React.Fragment>
                                 <div className='automatch-settings'>
-                                    <button className='danger sm' onClick={this.cancelOwnChallenges.bind(self, this.state.rengo_list)}>{pgettext("Cancel challenge", "Cancel")}</button>
+                                    <button className='danger sm' onClick={this.cancelOwnChallenges.bind(self, this.state.rengo_list)}>
+                                        {pgettext("Cancel challenge", "Cancel")}
+                                    </button>
                                 </div>
                                 {((own_rengo_challenge_ready_to_start) || null) &&
                                     <div className='automatch-settings'>
-                                        <button className='success sm' onClick={this.startOwnRengoChallenge}>{pgettext("Start game", "Start")}</button>
+                                        <button className='success sm' onClick={this.startOwnRengoChallenge}>
+                                            {pgettext("Start game", "Start")}
+                                        </button>
                                     </div>
                                 }
                             </React.Fragment>
                         }
                         { (joined_rengo_challenge || null) &&
                             <div className='automatch-settings'>
-                                <button onClick={this.unNominateForRengoChallenge.bind(this, joined_rengo_challenge)} className="btn success xs">{_("Withdraw")}</button>
+                                <button onClick={this.unNominateForRengoChallenge.bind(this, joined_rengo_challenge)} className="btn success xs">
+                                    {_("Withdraw")}
+                                </button>
                             </div>
                         }
                     </div>
