@@ -3050,20 +3050,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
 
         return (
             <div ref={el => this.ref_players = el} className="players">
-                {(engine.rengo || null) &&
-                    <div className="rengo-header-block">
-                        <div className="rengo-header"
-                            data-title={_("Sponsored by Gozart!") }
-                            onMouseOver={tooltip}
-                            onMouseOut={tooltip}>
-                            {_("Rengo!")}
-                        </div>
-                        {(!this.review_id && this.state.show_title && this.goban?.engine?.rengo || null) &&
-                            <div className="game-state">{this.state.title}</div>
-                        }
-                    </div>
-                }
-
                 <div className="player-icons">
                     {["black", "white"].map((color: 'black' | 'white', idx) => {
                         const player_bg: any = {};
@@ -3145,6 +3131,13 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                         );
                     })}
                 </div>
+                {(engine.rengo || null) &&
+                    <div className="rengo-header-block">
+                        {(!this.review_id && this.state.show_title && this.goban?.engine?.rengo || null) &&
+                            <div className="game-state">{this.state.title}</div>
+                        }
+                    </div>
+                }
             </div>
         );
     }
