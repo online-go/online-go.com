@@ -18,8 +18,6 @@
 import * as React from "react";
 import { _, pgettext, interpolate } from "translate";
 import * as preferences from "preferences";
-import { Goban } from "goban";
-import { termination_socket } from "sockets";
 import { MiniGoban } from "MiniGoban";
 import { GobanLineSummary } from "GobanLineSummary";
 import { Player } from "Player";
@@ -225,36 +223,56 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
             if (this.props.namesByGobans) {
                 return (
                     <div className="GameList">
-                        {lst.map((game) =>
-                            <div className='goban-with-names' key={game.id}>
-                                <div className='names'>
-                                    <div><Player user={game.black} disableCacheUpdate noextracontrols /></div>
-                                    <div><Player user={game.white} disableCacheUpdate noextracontrols /></div>
-                                </div>
-                                <MiniGoban
-                                    id={game.id}
-                                    black={game.black}
-                                    white={game.white}
-                                    width={game.width}
-                                    height={game.height}
-                                    {...(this.props.miniGobanProps || {})}
-                                />
-                            </div>
-                        )}
+                        {
+                            lst.map((game) => {
+                                const black_name: string = game.rengo ?
+                                    game.black.username + ` +${game.rengo_teams.black.length - 1}` :
+                                    game.black.username;
+                                const white_name: string = game.rengo ?
+                                    game.white.username + ` +${game.rengo_teams.white.length - 1}` :
+                                    game.white.username;
+
+                                return (
+                                    <div className='goban-with-names' key={game.id}>
+                                        <div className='names'>
+                                            <div><Player user={game.black} disableCacheUpdate noextracontrols /></div>
+                                            <div><Player user={game.white} disableCacheUpdate noextracontrols /></div>
+                                        </div>
+                                        <MiniGoban
+                                            id={game.id}
+                                            black={black_name}
+                                            white={white_name}
+                                            width={game.width}
+                                            height={game.height}
+                                            {...(this.props.miniGobanProps || {})}
+                                        />
+                                    </div>
+                                );
+                            })
+                        }
                     </div>
                 );
             } else {
                 return (
                     <div className="GameList">
-                        {lst.map((game) =>
-                            <MiniGoban key={game.id}
-                                id={game.id}
-                                black={game.black}
-                                white={game.white}
-                                width={game.width}
-                                height={game.height}
-                                {...(this.props.miniGobanProps || {})}
-                            />)}
+                        {lst.map((game) => {
+                            const black_name: string = game.rengo ?
+                                game.black.username + ` +${game.rengo_teams.black.length - 1}` :
+                                game.black.username;
+                            const white_name: string = game.rengo ?
+                                game.white.username + ` +${game.rengo_teams.white.length - 1}` :
+                                game.white.username;
+                            return (
+                                <MiniGoban key={game.id}
+                                    id={game.id}
+                                    black={black_name}
+                                    white={white_name}
+                                    width={game.width}
+                                    height={game.height}
+                                    {...(this.props.miniGobanProps || {})}
+                                />
+                            );
+                        })}
                     </div>
                 );
             }

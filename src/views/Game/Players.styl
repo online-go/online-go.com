@@ -19,12 +19,53 @@
     50% { color: #888; }
 }
 
+// used in Game and GameInfoModal
 
-.MainGobanView .players
+.rengo-header-block {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+
+}
+
+.rengo-header {
+    font-size: larger;
+    align-self: center;
+    border-radius: 0.4em;
+    padding: 0.3rem;
+    margin-bottom: 0.25rem;
+    themed background-color shade4;
+}
+
+.MainGobanView .players {
+    display: flex;
+    flex-direction: column;
+
+    .rengo-team-members {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        flex-grow: 1;
+        margin: 0.3rem;
+
+        .rengo-team-member {
+            border-radius: 0.4em;
+            padding: 0.3rem;
+            padding-bottom: 0.1rem;
+            width: 100%
+            box-sizing: border-box;
+            text-align: left;
+            themed background-color other-player-background
+        }
+    }
+
+}
+
+.MainGobanView .player-icons
     flex-shrink: 0;
     flex-grow: 0;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: stretch;
     min-height: 2.7rem;
     flex-direction: row;
@@ -112,7 +153,7 @@
     }
 
 
-    .white.player-container
+    .white.player-container {
         box-shadow: 0 2px 5px rgba(50,50,50,.51);
         themed background player-white-background
         themed color player-white-fg
@@ -122,13 +163,17 @@
         }
 
         // Use the light mode color for names in the white player box
-        .white.player-name-container .Player
+        .Player {
             color light.user
-        for color-attr, class-attr in special-player-type-priority
-            .white.player-name-container .Player.{class-attr}
+        }
+        for color-attr, class-attr in special-player-type-priority {
+            .Player.{class-attr} {
                 color: light[color-attr]!important
+            }
+        }
+    }
 
-    .black.player-container
+    .black.player-container {
         themed background player-black-background
         themed color player-black-fg
         border-top: 1px solid #202020;
@@ -139,11 +184,15 @@
         }
 
         // Use the dark mode color for names in the black player box
-        .black.player-name-container .Player
-            color dark.user
-        for color-attr, class-attr in special-player-type-priority
-            .black.player-name-container .Player.{class-attr}
+        .Player {
+            color: dark.user ;
+        }
+        for color-attr, class-attr in special-player-type-priority {
+            .Player.{class-attr} {
                 color: dark[color-attr]!important
+            }
+        }
+    }
 
     .player-container.shortgame.offline {
         border: 1px solid #f66 !important;
@@ -295,7 +344,7 @@
     }
 
 
-.MainGobanView.portrait .players {
+.MainGobanView.portrait .player-icons {
     .player-icon-container {
         flex-basis: 1.5rem;
         min-height: 1.5rem;
@@ -338,7 +387,7 @@
     }
 }
 
-body.dark .MainGobanView.zen .players {
+body.dark .MainGobanView.zen .player-icons {
     .white {
         &.player-container {
             background: linear-gradient(#2C2C2C 0%, #383838 100%);
@@ -366,7 +415,7 @@ body.dark .MainGobanView.zen .players {
     }
 }
 
-body.accessible .MainGobanView.zen .players {
+body.accessible .MainGobanView.zen .player-icons {
 	.white {
 		&.player-container {
 			background: linear-gradient(#2C2C2C 0%, #383838 100%);
@@ -393,7 +442,7 @@ body.accessible .MainGobanView.zen .players {
 		color: #BBB;
 	}
 }
-body.light .MainGobanView.zen .players {
+body.light .MainGobanView.zen .player-icons {
     .black.player-container {
         background: linear-gradient(#666 0%, #181818 100%);
     }
@@ -403,73 +452,82 @@ body.light .MainGobanView.zen .players {
         display: none;
     }
 }
-.MainGobanView.zen .players {
-    .black.player-container {
-        border-top: none;
+.MainGobanView.zen {
+
+    .rengo-header,
+    .rengo-teams-header,
+    .rengo-team-members-container  {
+        display: none;
     }
-    .player-container {
-        justify-content: center;
-        min-width: 150px;
-    }
-    .player-icon-clock-row {
-        width: auto;
-        flex-grow: 1;
-    }
-    .Clock {
-        min-height: 80px;
-        .pause-text {
-            display: none;
+
+    .player-icons {
+        .black.player-container {
+            border-top: none;
         }
-        .main-time,
-        .period-time {
-            line-height: 50px;
-            font-size: 26pt;
-            text-align: center;
+        .player-container {
+            justify-content: center;
+            min-width: 150px;
         }
-        .byo-yomi-container,
-        .canadian-clock-container {
-            display: block;
-            font-size: font-size-mid
+        .player-icon-clock-row {
+            width: auto;
             flex-grow: 1;
         }
-    }
-    .Clock:not(.in-overtime) {
-        .byo-yomi-container,
-        .canadian-clock-container {
+        .Clock {
+            min-height: 80px;
+            .pause-text {
+                display: none;
+            }
+            .main-time,
+            .period-time {
+                line-height: 50px;
+                font-size: 26pt;
+                text-align: center;
+            }
+            .byo-yomi-container,
+            .canadian-clock-container {
+                display: block;
+                font-size: font-size-mid
+                flex-grow: 1;
+            }
+        }
+        .Clock:not(.in-overtime) {
+            .byo-yomi-container,
+            .canadian-clock-container {
+                display: none;
+            }
+        }
+        .captures {
+            display: flex;
+            justify-content: center;
+            flex-basis: 70%;
+        }
+        .score-container {
+            margin: 0px;
+            justify-content: center;
+            flex-grow: 0;
+        }
+        .num-captures-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: row;
+            flex-grow: 1;
+            .stone-image {
+                width: 14px;
+                height: 14px;
+            }
+            .num-captures-stone {
+                margin-left: 3px;
+                margin-right: 3px;
+            }
+        }
+        .player-icon-container,
+        .player-name-container,
+        .player-name-plain,
+        .score-details,
+        .komi {
             display: none;
         }
-    }
-    .captures {
-        display: flex;
-        justify-content: center;
-        flex-basis: 70%;
-    }
-    .score-container {
-        margin: 0px;
-        justify-content: center;
-        flex-grow: 0;
-    }
-    .num-captures-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: row;
-        flex-grow: 1;
-        .stone-image {
-            width: 14px;
-            height: 14px;
-        }
-        .num-captures-stone {
-            margin-left: 3px;
-            margin-right: 3px;
-        }
-    }
-    .player-icon-container,
-    .player-name-container,
-    .player-name-plain,
-    .score-details,
-    .komi {
-        display: none;
     }
 }
 

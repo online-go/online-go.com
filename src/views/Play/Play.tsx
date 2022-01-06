@@ -21,7 +21,7 @@ import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
 import {_, pgettext, interpolate} from "translate";
 import {Card} from "material";
-import {post, get, del} from "requests";
+import {put, post, get, del} from "requests";
 import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";
 import {shortShortTimeControl, usedForCheating} from "TimeControl";
@@ -29,7 +29,6 @@ import {challenge, createOpenChallenge, challengeComputer} from "ChallengeModal"
 import {openGameAcceptModal} from "GameAcceptModal";
 import {errorAlerter, rulesText, timeControlSystemText, dup, uuid, ignore} from "misc";
 import {Player} from "Player";
-import {openNewGameModal} from "NewGameModal";
 import {openAutomatchSettings, getAutomatchSettings} from "AutomatchSettings";
 import * as data from "data";
 import * as preferences from "preferences";
@@ -40,12 +39,14 @@ import {boundedRankString} from "rank_utils";
 import * as player_cache from "player_cache";
 import swal from 'sweetalert2';
 import { Size } from "src/lib/types";
+import { join } from "@sentry/utils";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 
 interface PlayState {
     live_list: Array<any>;
     correspondence_list: Array<any>;
+    rengo_list: Array<any>;
     showLoadingSpinnerForCorrespondence: boolean;
     show_all_challenges: boolean;
     show_ranked_challenges: boolean;
@@ -57,6 +58,7 @@ interface PlayState {
     automatch_size_options: Size[];
     freeze_challenge_list: boolean; // Don't change the challenge list while they are trying to point the mouse at it
     pending_challenges: Array<any>; // challenges received while frozen
+    admin_pending: boolean;  // used to change cursor while waiting for rengo admin actions
 }
 
 export class Play extends React.Component<{}, PlayState> {
@@ -73,6 +75,7 @@ export class Play extends React.Component<{}, PlayState> {
         this.state = {
             live_list: [],
             correspondence_list: [],
+            rengo_list: [],
             showLoadingSpinnerForCorrespondence: false,
             show_all_challenges: preferences.get("show-all-challenges"),
             show_ranked_challenges: preferences.get("show-ranked-challenges"),
@@ -84,6 +87,7 @@ export class Play extends React.Component<{}, PlayState> {
             automatch_size_options: data.get('automatch.size_options', ['19x19']),
             freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
             pending_challenges: [], // challenges received while frozen
+            admin_pending: false,
         };
         this.canvas = document.createElement("canvas");
         this.list_freeze_timeout = null;
@@ -138,7 +142,8 @@ export class Play extends React.Component<{}, PlayState> {
         if (this.state.freeze_challenge_list) {
             const live = this.state.live_list;
             const corr = this.state.correspondence_list;
-            for (const list of [live, corr]) {
+            const rengo = this.state.rengo_list;
+            for (const list of [live, corr, rengo]) {
                 for (const i in list) {
                     const id = list[i].challenge_id;
                     if (!challenges[id]) {
@@ -160,6 +165,7 @@ export class Play extends React.Component<{}, PlayState> {
         //console.log("Updating challenges with:", challenges);
         const live = [];
         const corr = [];
+        const rengo = [];
         for (const i in challenges) {
             const C = challenges[i];
             player_cache.fetch(C.user_id).then(() => 0).catch(ignore); /* just get the user data ready ready if we don't already have it */
@@ -172,7 +178,9 @@ export class Play extends React.Component<{}, PlayState> {
                 C.handicap_text = C.handicap;
             }
 
-            if (C.time_per_move > 0 && C.time_per_move < 3600) {
+            if (C.rengo) {
+                rengo.push(C);
+            } else if (C.time_per_move > 0 && C.time_per_move < 3600) {
                 live.push(C);
             } else {
                 corr.push(C);
@@ -180,11 +188,13 @@ export class Play extends React.Component<{}, PlayState> {
         }
         live.sort(challenge_sort);
         corr.sort(challenge_sort);
+        rengo.sort(challenge_sort);
 
         //console.log("list update...");
         this.setState({
             live_list: live,
             correspondence_list: corr,
+            rengo_list: rengo,
             pending_challenges: []
         });
     };
@@ -202,9 +212,8 @@ export class Play extends React.Component<{}, PlayState> {
         this.unfreezeChallenges();
     }
 
-    cancelActiveLiveChallenges = () => {
-        // In theory there should only be one, but cancel them all anyhow...
-        this.state.live_list.forEach((c) => {
+    cancelOwnChallenges = (challenge_list) => {
+        challenge_list.forEach((c) => {
             if (c.user_challenge) {
                 this.cancelOpenChallenge(c);
             }
@@ -339,17 +348,48 @@ export class Play extends React.Component<{}, PlayState> {
         this.setState({show_other_boardsize_challenges: !this.state.show_other_boardsize_challenges});
     };
 
-    anyChallengesToShow = (live) => {
-        const challengeList = live ? this.state.live_list : this.state.correspondence_list;
+    anyChallengesToShow = (challenge_list): boolean => {
 
-        return this.state.show_all_challenges && challengeList.length || challengeList.reduce( (prev, current) => {
+        return this.state.show_all_challenges && challenge_list.length || challenge_list.reduce( (prev, current) => {
             return prev || current.eligible || current.user_challenge;
         }, false );
     };
 
-    liveOwnChallengePending = () => {
-        const locp = this.state.live_list.some((c) => (c.user_challenge));
+    liveOwnChallengePending = (): any => {
+        const locp = this.state.live_list.find((c) => (c.user_challenge));
         return locp;
+    };
+
+    ownRengoChallengePending = (): any => {
+        const orcp = this.state.rengo_list.find((c) => (c.user_challenge));
+        return orcp;
+    };
+
+    joinedRengoChallengePending = (): any => {
+        const user_id = data.get('config.user').id;
+        const jrcp = this.state.rengo_list.find((c) => (c['rengo_participants'].includes(user_id) && !c.user_challenge));
+        return jrcp;
+    };
+
+    startOwnRengoChallenge  = () => {
+        const our_challenge = this.state.rengo_list.find((c) => (c.user_challenge));
+
+        swal({
+            text: "Starting...",
+            type: "info",
+            showCancelButton: false,
+            showConfirmButton: false,
+            allowEscapeKey: false,
+        }).catch(swal.noop);
+
+        post("challenges/%%/start", our_challenge.challenge_id, {})
+        .then(() => {
+            swal.close();
+        })
+        .catch((err) => {
+            swal.close();
+            errorAlerter(err);
+        });
     };
 
     freezeChallenges = () => {
@@ -473,7 +513,7 @@ export class Play extends React.Component<{}, PlayState> {
                                 {this.cellBreaks(8)}
                             </div>
 
-                            {this.anyChallengesToShow(true) ? this.challengeListHeaders() : null}
+                            {this.anyChallengesToShow(this.state.live_list) ? this.challengeListHeaders() : null}
 
                             {this.challengeList(true)}
 
@@ -484,10 +524,20 @@ export class Play extends React.Component<{}, PlayState> {
                                 {this.cellBreaks(8)}
                             </div>
 
-                            {this.anyChallengesToShow(false) ? this.challengeListHeaders() : null}
+                            {this.anyChallengesToShow(this.state.correspondence_list) ? this.challengeListHeaders() : null}
 
                             {this.challengeList(false)}
 
+                            <div style={{marginTop: "2em"}}></div>
+
+                            <div className="challenge-row" style={{marginTop: "1em"}}>
+                                <span className="cell break">{_("Rengo")}</span>
+                                {this.cellBreaks(8)}
+                            </div>
+
+                            {this.anyChallengesToShow(this.state.rengo_list) ? this.rengoListHeaders() : null}
+
+                            {this.rengoList()}
                         </div>
                     </div>
                 </div>
@@ -522,10 +572,24 @@ export class Play extends React.Component<{}, PlayState> {
         );
     }
 
+    rengoReadyToStart = (challenge) => (
+        challenge.rengo_black_team.length && challenge.rengo_white_team.length &&
+        (challenge.rengo_black_team.length + challenge.rengo_white_team.length > 2)
+    );
+
     automatchContainer() {
         const size_enabled = (size) => {
             return this.state.automatch_size_options.indexOf(size) >= 0;
         };
+
+        const own_rengo_challenge = this.ownRengoChallengePending();
+        const joined_rengo_challenge = this.joinedRengoChallengePending();
+
+        const own_rengo_challenge_ready_to_start =
+            own_rengo_challenge && this.rengoReadyToStart(own_rengo_challenge);
+
+        const joined_rengo_challenge_ready_to_start =
+            joined_rengo_challenge && this.rengoReadyToStart(joined_rengo_challenge);
 
         if (automatch_manager.active_live_automatcher) {
             return (
@@ -540,7 +604,9 @@ export class Play extends React.Component<{}, PlayState> {
                         </div>
                     </div>
                     <div className='automatch-settings'>
-                        <button className='danger sm' onClick={this.cancelActiveAutomatch}>{pgettext("Cancel automatch", "Cancel")}</button>
+                        <button className='danger sm' onClick={this.cancelActiveAutomatch}>
+                            {pgettext("Cancel automatch", "Cancel")}
+                        </button>
                     </div>
                 </div>
             );
@@ -557,7 +623,51 @@ export class Play extends React.Component<{}, PlayState> {
                         </div>
                     </div>
                     <div className='automatch-settings'>
-                        <button className='danger sm' onClick={this.cancelActiveLiveChallenges}>{pgettext("Cancel challenge", "Cancel")}</button>
+                        <button className='danger sm' onClick={this.cancelOwnChallenges.bind(self, this.state.live_list)}>
+                            {pgettext("Cancel challenge", "Cancel")}
+                        </button>
+                    </div>
+                </div>
+            );
+        } else if (own_rengo_challenge || joined_rengo_challenge) {
+            return(
+                <div className='automatch-container'>
+                    <div className='automatch-header'>
+                        {own_rengo_challenge_ready_to_start ? _("Waiting for your decision to start...") :
+                            joined_rengo_challenge_ready_to_start ? _("Waiting for organiser to start...") :
+                                _("Waiting for Rengo players...")}
+                        <div className="small-spinner">
+                            <div className="double-bounce1"></div>
+                            <div className="double-bounce2"></div>
+                        </div>
+                    </div>
+                    <div className={'rengo-admin-container' + (this.state.admin_pending ? " pending" : "")}>
+                        {this.renderRengoChallengePane()}
+                    </div>
+                    <div className="rengo-challenge-buttons">
+                        { (own_rengo_challenge || null) &&
+                            <React.Fragment>
+                                <div className='automatch-settings'>
+                                    <button className='danger sm' onClick={this.cancelOwnChallenges.bind(self, this.state.rengo_list)}>
+                                        {pgettext("Cancel challenge", "Cancel")}
+                                    </button>
+                                </div>
+                                {((own_rengo_challenge_ready_to_start) || null) &&
+                                    <div className='automatch-settings'>
+                                        <button className='success sm' onClick={this.startOwnRengoChallenge}>
+                                            {pgettext("Start game", "Start")}
+                                        </button>
+                                    </div>
+                                }
+                            </React.Fragment>
+                        }
+                        { (joined_rengo_challenge || null) &&
+                            <div className='automatch-settings'>
+                                <button onClick={this.unNominateForRengoChallenge.bind(this, joined_rengo_challenge)} className="btn success xs">
+                                    {_("Withdraw")}
+                                </button>
+                            </div>
+                        }
                     </div>
                 </div>
             );
@@ -633,38 +743,38 @@ export class Play extends React.Component<{}, PlayState> {
         }
     }
 
+    commonSpan = (text: string, align: "center"|"left") => {
+        return <span className="cell" style={{textAlign: align}}>
+            {text}
+        </span>;
+    };
+
     challengeList(isLive: boolean) {
+        const challenge_list = isLive ? this.state.live_list : this.state.correspondence_list;
+
         const user = data.get("user");
 
-        const timeControlClassName = (config) => {
+        const timeControlClassName = (config) => {  // This appears to be bolding live games compared to blitz?
             const isBold = isLive && (config.time_per_move > 3600 || config.time_per_move === 0);
             return "cell " + (isBold ? "bold" : "");
         };
 
-        if (!this.anyChallengesToShow(isLive)) {
+        if (!this.anyChallengesToShow(challenge_list)) {
             return (
                 <div className="ineligible">
                     {this.state.show_all_challenges ?
-                        _("(none)") /* translators: No challenges available */ :
-                        _("(none available)") /* translators: No challenges available */}
+                        _("(none)") /* translators: There are no challenges in the system, nothing to list here */ :
+                        _("(none available)") /* translators: There are no challenges that this person is eligible for */}
                 </div>
             );
         }
 
-        const commonSpan = (text: string, align: "center"|"left") => {
-            return <span className="cell" style={{textAlign: align}}>
-                {text}
-            </span>;
-        };
-
-        const challengeList = isLive ? this.state.live_list : this.state.correspondence_list;
-
-        return challengeList.map((C) => (
+        return challenge_list.map((C) => (
             (((C.eligible || C.user_challenge || this.state.show_all_challenges)
              && ((this.state.show_unranked_challenges && !C.ranked) || (this.state.show_ranked_challenges && C.ranked))
              && ((this.state.show_19x19_challenges && C.width === 19 && C.height === 19) || (this.state.show_13x13_challenges && C.width === 13 && C.height === 13) || (this.state.show_9x9_challenges && C.width === 9 && C.height === 9) || (this.state.show_other_boardsize_challenges && (C.width !== C.height || (C.width !== 19 && C.width !== 13 && C.width !== 9)))) ) ?
-                    <div key={C.challenge_id} className="challenge-row">
-                        <span className="cell" style={{textAlign: "center"}}>
+                    <div key={C.challenge_id} className={"challenge-row"}>
+                        <span className={"cell"}  style={{textAlign: "center"}}>
                             {user.is_moderator &&
                                 <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left "><i className='fa fa-trash' /></button>}
 
@@ -713,10 +823,10 @@ export class Play extends React.Component<{}, PlayState> {
                         <span className={timeControlClassName(C)}>
                             {shortShortTimeControl(C.time_control_parameters)}
                         </span>
-                        {commonSpan(C.ranked_text, "center")}
-                        {commonSpan(C.handicap_text, "center")}
-                        {commonSpan(C.name, "left")}
-                        {commonSpan(rulesText(C.rules), "left")}
+                        {this.commonSpan(C.ranked_text, "center")}
+                        {this.commonSpan(C.handicap_text, "center")}
+                        {this.commonSpan(C.name, "left")}
+                        {this.commonSpan(rulesText(C.rules), "left")}
                     </div> :
                     null
             )));
@@ -729,6 +839,7 @@ export class Play extends React.Component<{}, PlayState> {
         }
         return result;
     }
+
     challengeListHeaders() {
         return <div className="challenge-row">
             <span className="head"></span>
@@ -743,7 +854,245 @@ export class Play extends React.Component<{}, PlayState> {
         </div>;
     }
 
+    rengoListHeaders() {
+        return <div className="challenge-row">
+            <span className="head"></span>
+            <span className="head">{_("Organiser")}</span>
+            {/* <span className="head">{_("Rank")}</span> */}
+            <span className="head">{_("Size")}</span>
+            <span className="head time-control-header">{_("Time")}</span>
+            <span className="head">{_("")}</span>
+            <span className="head">{_("Handicap")}</span>
+            <span className="head" style={{textAlign: "left"}}>{_("Name")}</span>
+            <span className="head" style={{textAlign: "left"}}>{_("Rules")}</span>
+        </div>;
+    }
+
+    nominateForRengoChallenge = (C) => {
+        swal({
+            text: _("Joining..."),   // translator: the server is processing their request to join a rengo game
+            type: "info",
+            showCancelButton: false,
+            showConfirmButton: false,
+            allowEscapeKey: false,
+        }).catch(swal.noop);
+
+        put("challenges/%%/join", C.challenge_id, {})
+        .then(() => {
+            swal.close();
+        })
+        .catch((err) => {
+            swal.close();
+            errorAlerter(err);
+        });
+    };
+
+    unNominateForRengoChallenge = (C) => {
+        swal({
+            text: _("Withdrawing..."),   // translator: the server is processing their request to withdraw from a rengo challenge
+            type: "info",
+            showCancelButton: false,
+            showConfirmButton: false,
+            allowEscapeKey: false,
+        }).catch(swal.noop);
+
+        del("challenges/%%/join", C.challenge_id, {})
+        .then(() => {
+            swal.close();
+        })
+        .catch((err) => {
+            swal.close();
+            errorAlerter(err);
+        });
+    };
+
+    rengoList = () => {
+        if (!this.anyChallengesToShow(this.state.rengo_list)) {
+            return (
+                <div className="ineligible">
+                    {this.state.show_all_challenges ?
+                        _("(none)") /* translators: There are no challenges in the system, nothing to list here */ :
+                        _("(none available)") /* translators: There are no challenges that this person is eligible for */}
+                </div>
+            );
+        }
+
+        const user = data.get("user");
+
+        return this.state.rengo_list.map((C) => (
+            (((C.eligible || C.user_challenge || this.state.show_all_challenges)
+             && ((this.state.show_unranked_challenges && !C.ranked) || (this.state.show_ranked_challenges && C.ranked))
+             && ((this.state.show_19x19_challenges && C.width === 19 && C.height === 19) || (this.state.show_13x13_challenges && C.width === 13 && C.height === 13) || (this.state.show_9x9_challenges && C.width === 9 && C.height === 9) || (this.state.show_other_boardsize_challenges && (C.width !== C.height || (C.width !== 19 && C.width !== 13 && C.width !== 9)))) ) ?
+                    <div key={C.challenge_id} className={"challenge-row"}>
+                        <span className={"cell"}  style={{textAlign: "center"}}>
+                            {user.is_moderator &&
+                                <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left "><i className='fa fa-trash' /></button>}
+
+
+                            {(C.user_challenge || null) && <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">{_("Remove")}</button>}
+
+                            {(C.eligible && !C.removed && !C.user_challenge && !C.rengo_participants.includes(user.id) || null) &&
+                                <button onClick={this.nominateForRengoChallenge.bind(this, C)} className="btn success xs">{_("Join")}</button>}
+
+                            {(C.eligible && !C.removed && !C.user_challenge && C.rengo_participants.includes(user.id) || null) &&
+                                <button onClick={this.unNominateForRengoChallenge.bind(this, C)} className="btn success xs">{_("Withdraw")}</button>}
+
+                            { /* Mark eligible suspect games with a warning icon and warning explanation popup.
+                                 We do let users see the warning for their own challenges. */
+                                (((C.eligible || C.user_challenge) && !C.removed) &&
+                                 (C.komi !== null ||
+                                  usedForCheating(C.time_control_parameters) ||
+                                  ((C.handicap !== 0 && C.handicap !== -1)))
+                                   || null) &&
+                                <React.Fragment>
+                                    <i className="cheat-alert fa fa-exclamation-triangle fa-xs"/>
+                                    <p className="cheat-alert-tooltiptext">
+                                        {
+                                            (C.komi !== null ?
+                                            pgettext("Warning for users accepting game", "Custom komi") + ": " + C.komi + " "
+                                            : ""
+                                            ) +
+                                        (usedForCheating(C.time_control_parameters) ?
+                                            pgettext("Warning for users accepting game", "Unusual time setting") + " "
+                                            : ""
+                                        ) +
+                                        ((C.handicap !== 0 && C.handicap !== -1) ?
+                                            pgettext("Warning for users accepting game", "Custom handicap") + ": " + C.handicap_text
+                                            : ""
+                                        )
+                                        }
+                                    </p>
+                                </React.Fragment>
+                            }
+
+                            {((!C.eligible || C.removed) && !C.user_challenge || null) && <span className="ineligible" title={C.ineligible_reason}>{_("Can't accept")}</span>}
+                        </span>
+                        <span className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
+                            <Player user={this.extractUser(C)} rank={true} />
+                        </span>
+                        {/*commonSpan(boundedRankString(C.rank), "center")*/}
+                        <span className={"cell " + ((C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19)) ? "bold" : "")}>
+                            {C.width}x{C.height}
+                        </span>
+                        <span>
+                            {shortShortTimeControl(C.time_control_parameters)}
+                        </span>
+                        {this.commonSpan("", "center")  /* rengo is unranked always (at present) */}
+                        {this.commonSpan(C.handicap_text, "center")}
+                        {this.commonSpan(C.name, "left")}
+                        {this.commonSpan(rulesText(C.rules), "left")}
+                    </div> :
+                    null
+            ) ));
+    };
+
+    assignToTeam = (player_id: number, team: string, challenge) => {
+        const assignment = team === 'rengo_black_team' ? 'assign_black' :
+            team === 'rengo_white_team' ? 'assign_white' :
+            'unassign';
+
+        this.setState({admin_pending: true});
+
+        put("challenges/%%/team", challenge.challenge_id, {
+            [assignment]: [player_id, ]  // back end expects an array of changes, but we only ever send one at a time.
+        })
+        .then(() => {
+            this.setState({admin_pending: false});
+        })
+        .catch((err) => {
+            this.setState({admin_pending: false});
+            errorAlerter(err);
+        });
+    };
+
+    renderRengoChallengePane = () => {
+        const our_challenge =
+            this.state.rengo_list.find((c) => c.user_challenge) ||
+            this.state.rengo_list.find((c) => c['rengo_participants'].includes(data.get('config.user').id));
+
+        //console.log("rengo pane:", our_challenge);
+
+        // this function should not be called if the user doesn't have a rengo challenge open...
+        if (our_challenge === undefined) {
+            return <div>(oops - if you had a rengo challenge open, the details would be showing here!)</div>;
+        }
+
+        const nominees = our_challenge['rengo_nominees'];
+        const black_team = our_challenge['rengo_black_team'];
+        const white_team = our_challenge['rengo_white_team'];
+
+
+        if (nominees.length + black_team.length + white_team.length === 0) {
+            // This should be at most transitory, since the creator is added as a player on creation!
+            return <div className="no-rengo-players-to-admin">{_("(none yet - standby!)")}</div>;
+        }
+
+        return (
+            <React.Fragment>
+                <div className='rengo-admin-header'>
+                    {_("Black:")}
+                </div>
+                {(black_team.length === 0 || null) &&
+                    <div className="no-rengo-players-to-admin">{_("(none yet)")}</div>
+                }
+                {black_team.map((n, i) => (
+                    <div className='rengo-assignment-row' key={i}>
+                        {(our_challenge.user_challenge || null) &&
+                            <React.Fragment>
+                                <i className="fa fa-lg fa-times-circle-o unassign"
+                                    onClick={this.assignToTeam.bind(self, n, 'none', our_challenge)}/>
+                                <i className="fa fa-lg fa-arrow-down"
+                                    onClick={this.assignToTeam.bind(self, n, 'rengo_white_team', our_challenge)}/>
+                            </React.Fragment>
+                        }
+                        <Player user={n} rank={true} key={i}/>
+                    </div>
+                ))}
+
+                <div className='rengo-admin-header'>
+                    {_("White:")}
+                </div>
+                {(white_team.length === 0 || null) &&
+                    <div className="no-rengo-players-to-admin">{_("(none yet)")}</div>
+                }
+                {white_team.map((n, i) => (
+                    <div className='rengo-assignment-row' key={i}>
+                        {(our_challenge.user_challenge || null) &&
+                            <React.Fragment>
+                                <i className="fa fa-lg fa-times-circle-o unassign"
+                                    onClick={this.assignToTeam.bind(self, n, 'none', our_challenge)}/>
+                                <i className="fa fa-lg fa-arrow-up"
+                                    onClick={this.assignToTeam.bind(self, n, 'rengo_black_team', our_challenge)}/>
+                            </React.Fragment>
+                        }
+                        <Player user={n} rank={true} key={i}/>
+                    </div>
+                ))}
+
+                <div className='rengo-admin-header'>
+                    {_("Unassigned:")}
+                </div>
+                {(nominees.length === 0 || null) &&
+                    <div className="no-rengo-players-to-admin">{_("(none left)")}</div>
+                }
+                {nominees.map((n, i) => (
+                    <div className='rengo-assignment-row' key={i}>
+                        {(our_challenge.user_challenge || null) &&
+                            <React.Fragment>
+                                <i className="fa fa-lg fa-arrow-up black"
+                                    onClick={this.assignToTeam.bind(self, n, 'rengo_black_team', our_challenge)}/>
+                                <i className="fa fa-lg fa-arrow-up white"
+                                    onClick={this.assignToTeam.bind(self, n, 'rengo_white_team', our_challenge)}/>
+                            </React.Fragment>
+                        }
+                        <Player user={n} rank={true} key={i}/>
+                    </div>
+                ))}
+            </React.Fragment>
+        );
+    };
 }
+
 
 function challenge_sort(A, B) {
     if (A.eligible && !B.eligible) { return -1; }

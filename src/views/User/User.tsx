@@ -169,6 +169,7 @@ interface UserState {
     show_graph_type_toggle: boolean;
     rating_chart_type_toggle_left?: number;
     hovered_game_id?: number;
+    show_rengo_game_history: boolean;
     friend_request_sent?: boolean;
     friend_request_received?: boolean;
     is_friend?: boolean;
@@ -223,6 +224,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             hovered_game_id: null,
             games_alt_player_filter: null,
             reviews_alt_player_filter: null,
+            show_rengo_game_history: false,
         };
 
         try {
@@ -624,6 +626,10 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         this.setState({rating_chart_type_toggle_left: width + 30});  // eyeball enough extra left pad
     };
 
+    onToggleRengoHistorySelect = () => {
+        this.setState({show_rengo_game_history: !this.state.show_rengo_game_history});
+    };
+
     review_history_groomer = (results) => {
         const ret = [];
 
@@ -946,7 +952,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
 
                 <div className="row">
                     <div className='col-sm-8'>
-                        {((window["user"] && window["user"].is_moderator) || null) && <Card > {/* Moderator stuff  */}
+                        {((window["user"] && window["user"].is_moderator) || null) &&
+                        <Card > {/* Moderator stuff  */}
                             <b>Users with the same IP or Browser ID</b>
                             <PaginatedTable
                                 className="aliases"
@@ -1003,31 +1010,38 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                         }
 
                         {(user.about || editing || null) &&
-                    <Card>
-                        <div className='about-container'>
-                            {(!editing && user.about) && <div className='about-markdown'><Markdown source={user.about}/></div>}
-                            {(editing || null) && <textarea className='about-editor' rows={15} onChange={this.saveAbout} placeholder={_("About yourself")} value={user.about}/>}
-                        </div>
-                    </Card>
+                            <Card>
+                                <div className='about-container'>
+                                    {(!editing && user.about) && <div className='about-markdown'><Markdown source={user.about}/></div>}
+                                    {(editing || null) && <textarea className='about-editor' rows={15} onChange={this.saveAbout} placeholder={_("About yourself")} value={user.about}/>}
+                                </div>
+                            </Card>
                         }
 
                         {(this.state.active_games.length > 0 || null) && <h2>{_("Active Games")} ({this.state.active_games.length})</h2>}
-                        <GameList list={this.state.active_games} player={user}/>
-
+                        <GameList
+                            list={ // GameList is expecting rengo info on the game (like in ObserveGamesComponent) but here that information is on game.json, so we have to promote it ...
+                                this.state.active_games.map((game) => ({rengo: game.json.rengo, rengo_teams: game.json.rengo_teams, ...game}) )}
+                            player={user} />
 
                         <div className="row">{/* Game History  */}
                             <div className="col-sm-12">
                                 <h2>{_("Game History")}</h2>
                                 <Card>
                                     <div>{/* loading-container="game_history.settings().$loading" */}
-                                        <div className="search">
-                                            <i className="fa fa-search"></i>
-                                            <PlayerAutocomplete onComplete={(player) => {
-                                                // happily, and importantly, if there isn't a player, then we get null
-                                                this.setState({games_alt_player_filter: player?.id});
-                                            }}/>
+                                        <div className="game-options">
+                                            <div className="search">
+                                                <i className="fa fa-search"></i>
+                                                <PlayerAutocomplete onComplete={(player) => {
+                                                    // happily, and importantly, if there isn't a player, then we get null
+                                                    this.setState({games_alt_player_filter: player?.id});
+                                                }}/>
+                                            </div>
+                                            <div className="rengo-selector">
+                                                <span>{_("Rengo")}</span>
+                                                <input type="checkbox" checked={this.state.show_rengo_game_history} onChange={this.onToggleRengoHistorySelect}/>
+                                            </div>
                                         </div>
-
                                         <PaginatedTable
                                             className="game-history-table"
                                             name="game-history"
@@ -1036,20 +1050,35 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                             filter={{
                                                 "source": "play",
                                                 "ended__isnull": false,
-                                                ...(this.state.games_alt_player_filter !== null && {"alt_player": this.state.games_alt_player_filter})
+                                                ...(this.state.games_alt_player_filter !== null && {"alt_player": this.state.games_alt_player_filter}),
+                                                "rengo": this.state.show_rengo_game_history,
                                             }}
                                             orderBy={["-ended"]}
                                             groom={game_history_groomer}
                                             onRowClick={(ref, ev) => openUrlIfALinkWasNotClicked(ev, ref.href)}
-                                            columns={[                                /* I wish we could set properties at the row level! */
-                                                {header: _("User"),   className: (X) => ("user_info" +         ((X && X.annulled) ? " annulled" : "")), render: (X) => (<React.Fragment>{(X.played_black ? <span>⚫</span> : <span>⚪</span>)}{this.maskedRank(`[${rankString(X.player)}]`)}</React.Fragment>)},
-                                                {header: _(""),       className: (X) => ("winner_marker" + ((X && X.annulled) ? " annulled" : "")),     render: (X) => (X.player_won ?  <i className="fa fa-trophy game-history-winner"/> : "")},
-                                                {header: _("Date"),   className: (X) => ("date" +          ((X && X.annulled) ? " annulled" : "")),     render: (X) => moment(X.date).format("YYYY-MM-DD")},
-                                                {header: _("Opponent"),  className: (X) => ("player" +     ((X && X.annulled) ? " annulled" : "")),     render: (X) => <Player user={X.opponent} disableCacheUpdate />} ,
-                                                {header: _(""),       className: (X) => ("speed" +         ((X && X.annulled) ? " annulled" : "")),     render: (X) => <i className={X.speed_icon_class} title={X.speed} />},
-                                                {header: _("Size"),   className: (X) => ("board_size" +    ((X && X.annulled) ? " annulled" : "")),     render: (X) => `${X.width}x${X.height}`},
-                                                {header: _("Name"),   className: (X) => ("game_name" +     ((X && X.annulled) ? " annulled" : "")),     render: (X) => <Link to={X.href}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username})}</Link>},
-                                                {header: _("Result"), className: (X) => (X ? X.result_class + (X.annulled ? " annulled" : "") : ""),    render: (X) => X.result},
+                                            columns={[
+                                                // normal table layout ...
+                                                ...(!this.state.show_rengo_game_history ? [
+                                                    {header: _("User"),   className: (X) => ("user_info" +     ((X && X.annulled) ? " annulled" : "")),  render: (X) => (<React.Fragment>{(X.played_black ? <span>⚫</span> : <span>⚪</span>)}{this.maskedRank(`[${rankString(X.player)}]`)}</React.Fragment>)},
+                                                    {header: _(""),       className: (X) => ("winner_marker" + ((X && X.annulled) ? " annulled" : "")),  render: (X) => (X.player_won ?  <i className="fa fa-trophy game-history-winner"/> : "")},
+                                                    {header: _("Date"),   className: (X) => ("date" +          ((X && X.annulled) ? " annulled" : "")),  render: (X) => moment(X.date).format("YYYY-MM-DD")},
+                                                    {header: _("Opponent"),  className: (X) => ("player" +     ((X && X.annulled) ? " annulled" : "")),  render: (X) => <Player user={X.opponent} disableCacheUpdate />} ,
+                                                    {header: _(""),       className: (X) => ("speed" +         ((X && X.annulled) ? " annulled" : "")),  render: (X) => <i className={X.speed_icon_class} title={X.speed} />},
+                                                    {header: _("Size"),   className: (X) => ("board_size" +    ((X && X.annulled) ? " annulled" : "")),  render: (X) => `${X.width}x${X.height}`},
+                                                    {header: _("Name"),   className: (X) => ("game_name" +     ((X && X.annulled) ? " annulled" : "")),  render: (X) => <Link to={X.href}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username})}</Link>},
+                                                    {header: _("Result"), className: (X) => (X ? X.result_class + (X.annulled ? " annulled" : "") : ""), render: (X) => X.result},
+                                                ] : []),
+                                                // .. and brute force hiding things that are too hard for a quick implemetation for rengo :o  ...
+                                                ...(this.state.show_rengo_game_history ? [
+                                                    {header: _("-"),   className: (X) => ("user_info" +     ((X && X.annulled) ? " annulled" : "")),  render: (X) => ("")},
+                                                    {header: _(""),       className: (X) => ("winner_marker" + ((X && X.annulled) ? " annulled" : "")),  render: (X) => ("")},
+                                                    {header: _("Date"),   className: (X) => ("date" +          ((X && X.annulled) ? " annulled" : "")),  render: (X) => moment(X.date).format("YYYY-MM-DD")},
+                                                    {header: _("-"),      className: (X) => ("player" +     ((X && X.annulled) ? " annulled" : "")),     render: (X) => ("")} ,
+                                                    {header: _(""),       className: (X) => ("speed" +         ((X && X.annulled) ? " annulled" : "")),  render: (X) => <i className={X.speed_icon_class} title={X.speed} />},
+                                                    {header: _("Size"),   className: (X) => ("board_size" +    ((X && X.annulled) ? " annulled" : "")),  render: (X) => `${X.width}x${X.height}`},
+                                                    {header: _("Name"),   className: (X) => ("game_name" +     ((X && X.annulled) ? " annulled" : "")),  render: (X) => <Link to={X.href}>{X.name || interpolate('{{black_username}} vs. {{white_username}}', {'black_username': X.black.username, 'white_username': X.white.username})}</Link>},
+                                                    {header: _("Result"), className: (X) => (" annulled"), /* a nice background color for this... */     render: (X) => _("fun was had")},
+                                                ] : []),
                                             ]}
                                         />
                                     </div>
