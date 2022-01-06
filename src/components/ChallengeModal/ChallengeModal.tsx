@@ -140,8 +140,12 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 disable_analysis: false,
                 initial_state: null,
                 "private": false,
+                rengo: false,
             },
         });
+
+        // make sure rengo=true doesn't persist into the wrong kinds of challenges
+        challenge.game.rengo = this.props.mode === "open" ? challenge.game.rengo : false;
 
         /* fix dirty data */
         if (isNaN(challenge.min_ranking) || challenge.min_ranking < 0 || challenge.min_ranking > 36) {
@@ -174,6 +178,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             },
             //time_control: recallTimeControlSettings(speed),
             challenge: challenge,
+            rengo: false,
+
             demo: data.get("demo.settings", {
                 name: "",
                 rules: "japanese",
@@ -362,9 +368,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         }
         return true;
     }
+
     createChallenge = () => {
         const next = this.next();
 
+        console.log("next ", next);
         if (!this.validateBoardSize()) {
             swal(_("Invalid board size, please correct and try again")).catch(swal.noop);
             return;
@@ -447,12 +455,14 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             challenge.game.initial_state = null;
         }
 
+        challenge.game.rengo = next.challenge.game.rengo;
+
         this.saveSettings();
         this.close();
 
         post(player_id ? "players/%%/challenge" : "challenges", player_id, challenge)
         .then((res) => {
-            console.log("Challenge response: ", res);
+            // console.log("Challenge response: ", res);
             const challenge_id = res.challenge;
             const game_id = typeof(res.game) === "object" ? res.game.id : res.game;
             let keepalive_interval;
@@ -485,7 +495,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                 off();
                             });
                 }
-
                 active_check();
             } else {
                 if (this.props.mode === "open") {
@@ -495,10 +504,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 }
             }
 
-
             function active_check() {
                 keepalive_interval = setInterval(() => {
-                    termination_socket.send("challenge/keepalive", {challenge_id: challenge_id, game_id: game_id});
+                    termination_socket.send("challenge/keepalive",
+                        {challenge_id: challenge_id, game_id: game_id});
                 }, 1000);
                 termination_socket.send("game/connect", {"game_id": game_id});
                 termination_socket.on(`game/${game_id}/gamedata`, onGamedata);
@@ -530,7 +539,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             }
 
             function checkForReject(notification) {
-                console.log(notification);
+                console.log("challenge rejection check notification:", notification);
                 if (notification.type === "gameOfferRejected") {
                     /* non checked delete to purge old notifications that
                          * could be around after browser refreshes, connection
@@ -549,6 +558,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     update_conf_bot_id          = (ev) => this.upstate("conf.bot_id", ev);
     update_challenge_game_name  = (ev) => this.upstate("challenge.game.name", ev);
     update_private              = (ev) => this.upstate([["challenge.game.private", ev], ["challenge.game.ranked", false]]);
+    update_rengo                = (ev) => this.upstate([["challenge.game.rengo", ev], ["challenge.game.ranked", false]]);
     update_demo_private         = (ev) => this.upstate("demo.private", ev);
     update_ranked               = (ev) => this.setRanked((ev.target as HTMLInputElement).checked);
     update_aga_ranked           = (ev) => {this.setAGARanked((ev.target as HTMLInputElement).checked); };
@@ -662,9 +672,23 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                             checked={this.state.demo.private} onChange={this.update_demo_private}/>
                     </div>
                     }
-
                 </div>
             </div>
+
+            {(mode === "open" || null) &&
+            <div className="form-group">
+                <label className="control-label" htmlFor="rengo-option">
+                    {_("Rengo")}
+                </label>
+                <div className="controls">
+                    <div className="checkbox">
+                        <input type="checkbox"
+                            id="rengo-option"
+                            checked={this.state.challenge.game.rengo} onChange={this.update_rengo}/>
+                    </div>
+                </div>
+            </div>
+            }
         </div>;
     };
 

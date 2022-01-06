@@ -41,6 +41,18 @@
         display: flex;
         flex-direction: column;
         align-items: stretch;
+
+        .small-spinner {
+            width: 20px;
+            height: 20px;
+            position: relative;
+        }
+
+        .rengo-challenge-buttons {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
     }
 
     .automatch-header {
@@ -65,7 +77,6 @@
         align-items: center;
         justify-content: center;
     }
-
 
     .automatch-row {
         display: flex;
@@ -121,6 +132,57 @@
             }
         }
     }
+
+    .rengo-admin-container {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .rengo-admin-container.pending {
+        cursor: wait !important;
+    }
+
+    .no-rengo-players-to-admin {
+        font-style: italic;
+        font-size: smaller;
+        themed color shade2;
+        padding-left: 1rem;
+    }
+
+    .rengo-admin-header {
+        padding-top: 1rem;
+    }
+
+    .rengo-assignment-row {
+        margin-left: 1rem;
+
+        .fa {
+            margin: 0 0.8rem 0 0 ;
+            cursor: pointer;
+        }
+
+        .fa.black {
+            color: black;
+            background-color: red;
+            border-radius: 0.2rem;
+            border: 2px solid red;
+        }
+
+        .fa.white {
+            color: white;
+            background-color: red;
+            border-radius: 0.2rem;
+            border: 2px solid red;
+        }
+
+        .fa.unassign {
+            themed color shade2;
+            border-radius: 0.5rem;
+        }
+    }
+
 
     .automatch-settings {
         font-size: 1rem;
@@ -210,7 +272,7 @@
         cursor: help;
     }
 
-    // Flex to escape from the table
+    // Flex to escape from the containing table formats
     .custom-games-list-header-row {
         display: flex;
         font-weight: bold;

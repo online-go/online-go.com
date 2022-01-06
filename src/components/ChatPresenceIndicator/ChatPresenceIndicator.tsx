@@ -16,12 +16,9 @@
  */
 
 import * as React from "react";
-import {_, pgettext, interpolate} from "translate";
-import {post, get} from "requests";
-import {errorAlerter} from "misc";
+import { _ } from "translate";
 import {chat_manager, ChatChannelProxy} from "chat_manager";
-import * as preferences from "preferences";
-import {Player} from "Player";
+
 
 interface ChatPresenceIndicatorProperties {
     channel: string;
@@ -30,9 +27,6 @@ interface ChatPresenceIndicatorProperties {
 
 interface ChatPresenceIndicatorState {
     online: boolean;
-    // user_sort_order does not appear to be used in this class.
-    // TODO: Verify and remove.
-    user_sort_order?: "alpha"|"rank";
 }
 
 export class ChatPresenceIndicator extends React.PureComponent<ChatPresenceIndicatorProperties, ChatPresenceIndicatorState> {
@@ -45,13 +39,14 @@ export class ChatPresenceIndicator extends React.PureComponent<ChatPresenceIndic
         };
     }
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         this.init(this.props.channel, this.props.userId);
     }
-    UNSAFE_componentWillReceiveProps(next_props) {
-        if (this.props.channel !== next_props.channel) {
+
+    componentDidUpdate(prev_props) {
+        if (this.props.channel !== prev_props.channel || this.props.userId !== prev_props.userId) {
             this.deinit();
-            this.init(next_props.channel, next_props.userId);
+            this.init(this.props.channel, this.props.userId);
         }
     }
     componentWillUnmount() {
@@ -73,16 +68,8 @@ export class ChatPresenceIndicator extends React.PureComponent<ChatPresenceIndic
         if (this.state.online !== online) {
             this.setState({online: online});
         }
-    };
 
-    // This function does not appear to be used.
-    // TODO: Verify and remove.
-    toggleSortOrder = () => {
-        const new_sort_order = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
-        preferences.set("chat.user-sort-order", new_sort_order);
-        this.setState({"user_sort_order": new_sort_order});
     };
-
 
     render() {
         return (

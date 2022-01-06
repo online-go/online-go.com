@@ -164,11 +164,19 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             this.connectToLiveGameList();
         }
     };
+
     onSeekgraphGlobal = (lst) => {
+        const this_userid = data.get("user").id;
         for (let i = 0; i < lst.length; ++i) {
             const e = lst[i];
             if ("game_started" in e) {
-                //console.log(e);
+                // rengo "other players" on this page need to be sent to the game when it starts
+                // the creator already gets sent, by the normal challenge modal mechanism
+                if (e.rengo && e.creator !== this_userid) {
+                    if (e.rengo_black_team.concat(e.rengo_white_team).includes(this_userid)) {
+                        browserHistory.push(`/game/${e.game_id}`);
+                    }
+                }
             } else if ("delete" in e) {
                 if (e.challenge_id in this.challenges) {
                     const uid = this.challenges[e.challenge_id].system_message_id;
@@ -215,6 +223,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         this.redraw();
         this.emit("challenges", this.challenges);
     };
+
     onTouchEnd = (ev) => {
         if (ev.target === this.canvas[0]) {
             this.onPointerDown(ev);

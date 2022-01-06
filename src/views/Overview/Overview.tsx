@@ -145,7 +145,10 @@ export class Overview extends React.Component<{}, any> {
                         {((this.state.resolved && this.state.overview.active_games.length) || null) &&
                         <div className="active-games">
                             <h2>{_("Active Games")} ({this.state.overview.active_games.length})</h2>
-                            <GameList list={this.state.overview.active_games} player={user}
+                            <GameList
+                                list={ // GameList is expecting rengo info on the game (like in ObserveGamesComponent) but here that information is on game.json, so we have to promote it ...
+                                    this.state.overview.active_games.map((game) => ({rengo: game.json.rengo, rengo_teams: game.json.rengo_teams, ...game}) )}
+                                player={user}
                                 emptyMessage={_("You're not currently playing any games. Start a new game with the \"Create a new game\" or \"Look for open games\" buttons above.")}
                             />
                         </div>

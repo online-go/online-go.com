@@ -19,6 +19,34 @@
     width: 100%;
     max-width: 40rem;
 
+    .header {
+        display: flex;
+        flex-direction: column;
+    }
+
+    h3>span {
+        margin: 0 0.3rem 0 0.3rem;
+    }
+
+    .rengo-teams-container {
+        margin-top: 0.5rem;
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+
+        .rengo-team-list {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1;
+
+            span.team-title {
+                border-bottom: solid 1px;
+                margin-bottom: 0.3rem;
+            }
+        }
+    }
+
     dt {
         width: 30%;
     }

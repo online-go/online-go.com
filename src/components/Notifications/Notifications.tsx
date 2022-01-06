@@ -147,7 +147,7 @@ export function emitNotification(title, body, cb?) {
              * watch for the associated 'storage' event in other tabs. We hope that we get this
              * before our timer is up to send the notification ourselves.
              *
-             * This is not a full proof system, but it doesn't need to be as duplicate notifications
+             * This is not a fool-proof system, but it doesn't need to be as duplicate notifications
              * are handled just fine by the browser, but this reduces flicker and reduces the chance
              * that the browser will cut us off from sending desktop notifications.
              */
@@ -299,7 +299,12 @@ class NotificationManager {
             return false;
         }
         const player_id = goban.config.player_id;
-        return (goban && goban.engine.phase !== "finished" && isLiveGame(goban.engine.time_control) && (player_id === goban.config.black_player_id || player_id === goban.config.white_player_id));
+        const game_player_ids = [goban.config.players.black.id, goban.config.players.white.id,
+            ...(goban.config.rengo ?
+                [goban.config.rengo_teams.black.concat(goban.config.rengo_teams.white).map((p) => (p.id))] : [] )
+        ];
+
+        return goban && goban.engine.phase !== "finished" && isLiveGame(goban.engine.time_control) && game_player_ids.includes(player_id);
     };
 
     deleteNotification(notification, dont_rebuild?: boolean) {

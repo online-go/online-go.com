@@ -147,6 +147,33 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         this.forceUpdate();
     };
 
+    twoPlayerTeamList = () => (
+        <h3>
+            <Player disableCacheUpdate icon rank user={this.props.black} />
+            {
+                _("vs.")
+            }
+            <Player disableCacheUpdate icon rank user={this.props.white} />
+        </h3>
+    );
+
+    rengoTeamList = () => (
+        <div className="rengo-teams-container">
+            <div className="rengo-team-list">
+                <span className='team-title'>Black Team</span>
+                {this.props.config.rengo_teams.black.map((player) =>
+                    <Player disableCacheUpdate icon rank user={player}/>)
+                }
+            </div>
+            <div className="rengo-team-list">
+                <span className='team-title'>White Team</span>
+                {this.props.config.rengo_teams.white.map((player) =>
+                    <Player disableCacheUpdate icon rank user={player}/>)
+                }
+            </div>
+        </div>
+    );
+
     render() {
         const config = this.props.config;
         const user = data.get('user');
@@ -169,16 +196,19 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         return (
             <div className="Modal GameInfoModal" ref="modal">
                 <div className="header">
-                    <div>
-                        <h2>
-                            {config.game_name}
-                        </h2>
-                        <h3>
-                            <Player disableCacheUpdate icon rank user={this.props.black} /> {
-                                _("vs.")
-                            } <Player disableCacheUpdate icon rank user={this.props.white} />
-                        </h3>
-                    </div>
+                    {(config.rengo || null) &&
+                        <div className="rengo-header">
+                            {_("Rengo!")}
+                        </div>
+                    }
+
+                    <h2>
+                        {config.game_name}
+                    </h2>
+                    {this.props.config.rengo ?
+                        this.rengoTeamList() :
+                        this.twoPlayerTeamList()
+                    }
                 </div>
                 <div className="body">
                     <dl className="horizontal">
@@ -190,32 +220,34 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                         </dd>
                         {this.props.creatorId && <dt>{_("Creator")}</dt>}
                         {this.props.creatorId && <dd><Player icon rank user={this.props.creatorId} /></dd>}
-                        <dt>{_("Black")}</dt><dd>
-                            { black_editable
-                            ? <span>
-                                <input value={config.players.black.name} onChange={this.updateBlackName} />
-                                <select value={config.players.black.rank + "." + (config.players.black.pro ? 1 : 0)} onChange={this.updateBlackRank} >
-                                    {ranks.map((rank, idx) =>
-                                        <option key={rank.value} value={rank.value}>{rank.label}</option>
-                                    )}
-                                </select>
-                            </span>
-                            : <Player disableCacheUpdate icon rank user={this.props.black} />
-                            }
-                        </dd>
-                        <dt>{_("White")}</dt><dd>
-                            { white_editable
-                            ? <span>
-                                <input value={config.players.white.name} onChange={this.updateWhiteName} />
-                                <select value={config.players.white.rank + "." + (config.players.white.pro ? 1 : 0)} onChange={this.updateWhiteRank} >
-                                    {ranks.map((rank, idx) =>
-                                        <option key={rank.value} value={rank.value}>{rank.label}</option>
-                                    )}
-                                </select>
-                            </span>
-                            : <Player disableCacheUpdate icon rank user={this.props.white} />
-                            }
-                        </dd>
+                        {!this.props.config.rengo && <React.Fragment>
+                            <dt>{_("Black")}</dt><dd>
+                                { black_editable
+                                ? <span>
+                                    <input value={config.players.black.name} onChange={this.updateBlackName} />
+                                    <select value={config.players.black.rank + "." + (config.players.black.pro ? 1 : 0)} onChange={this.updateBlackRank} >
+                                        {ranks.map((rank, idx) =>
+                                            <option key={rank.value} value={rank.value}>{rank.label}</option>
+                                        )}
+                                    </select>
+                                </span>
+                                : <Player disableCacheUpdate icon rank user={this.props.black} />
+                                }
+                            </dd>
+                            <dt>{_("White")}</dt><dd>
+                                { white_editable
+                                ? <span>
+                                    <input value={config.players.white.name} onChange={this.updateWhiteName} />
+                                    <select value={config.players.white.rank + "." + (config.players.white.pro ? 1 : 0)} onChange={this.updateWhiteRank} >
+                                        {ranks.map((rank, idx) =>
+                                            <option key={rank.value} value={rank.value}>{rank.label}</option>
+                                        )}
+                                    </select>
+                                </span>
+                                : <Player disableCacheUpdate icon rank user={this.props.white} />
+                                }
+                            </dd>
+                        </React.Fragment>}
                         <dt>{_("Time")}</dt>
                         <dd>
                             {config.start_time ? moment(new Date(config.start_time * 1000)).format("LLL") : ""}
