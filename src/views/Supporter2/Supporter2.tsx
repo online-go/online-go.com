@@ -142,8 +142,6 @@ interface Price {
         [currency: string]: {
             "month": number;
             "year": number;
-            "xmonth": number;
-            "xyear": number;
         };
     };
 }
