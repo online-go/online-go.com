@@ -150,29 +150,37 @@ export class MiniGoban extends React.Component<MiniGobanProps, MiniGobanState> {
         let white: string | PlayerCacheEntry = this.props.white || "";
 
         if (!black ) {
-            black = engine.players.black;
-            // the goban engine doesn't come with the full player rating structure
-            fetch(this.goban.engine.players.black.id)
-                .then( (player) => {
-                    this.setState({
-                        black_rank: preferences.get('hide-ranks') ? "" :
-                            " [" + getUserRating(player).bounded_rank_label + "]"
-                    });
-                })
-                .catch( () => {console.log("Couldn't work out black rank"); });
+            try { // maybe the engine doesn't have players?
+                black = engine.players.black;
+                // the goban engine doesn't come with the full player rating structure
+                fetch(this.goban.engine.players.black.id)
+                    .then( (player) => {
+                        this.setState({
+                            black_rank: preferences.get('hide-ranks') ? "" :
+                                " [" + getUserRating(player).bounded_rank_label + "]"
+                        });
+                    })
+                    .catch( () => {console.log("Couldn't work out black rank"); });
+            } catch (e) {
+                console.log("Couldn't work out who played black");
+            }
         }
 
         if (!white ) {
-            white = engine.players.white;
-            // the goban engine doesn't come with the full player rating structure
-            fetch(this.goban.engine.players.white.id)
-                .then( (player) => {
-                    this.setState({
-                        white_rank: preferences.get('hide-ranks') ? "" :
-                            " [" + getUserRating(player).bounded_rank_label + "]"
-                    });
-                })
-                .catch( () => {console.log("Couldn't work out white rank"); });
+            try {
+                white = engine.players.white;
+                // the goban engine doesn't come with the full player rating structure
+                fetch(this.goban.engine.players.white.id)
+                    .then( (player) => {
+                        this.setState({
+                            white_rank: preferences.get('hide-ranks') ? "" :
+                                " [" + getUserRating(player).bounded_rank_label + "]"
+                        });
+                    })
+                    .catch( () => {console.log("Couldn't work out white rank"); });
+            } catch (e) {
+                console.log("Couldn't work out who played black");
+            }
         }
 
         if (this.props.title) {
