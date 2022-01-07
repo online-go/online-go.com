@@ -29,6 +29,7 @@ import {rankString, getUserRating} from "rank_utils";
 import { Clock } from 'Clock';
 import { fetch } from "player_cache";
 import { getGameResultText } from "misc";
+import { PlayerCacheEntry } from "player_cache";
 
 interface MiniGobanProps {
     id: number;
@@ -36,9 +37,12 @@ interface MiniGobanProps {
     height?: number;
     displayWidth?: number;
 
-    // if these are not provided, we look in the game itself...
-    black?: any; // user object or string is expected, to get the player name
-    white?: any; // user object or string is expected, to get the player name
+    // If these are not provided, we look in the game itself (via the id prop)...
+    // Also note that if you pass in a string, you won't get the rank of the player displayed...
+    // ... this component only looks up the rank if it has a player object.
+
+    black?: string | PlayerCacheEntry; // user object or string is expected, to get the player name and rank where possible
+    white?: string | PlayerCacheEntry; // user object or string is expected, to get the player name and rank where possible
 
     onUpdate?: () => void;
     json?: any;
@@ -58,6 +62,7 @@ interface MiniGobanState {
 
     white_points: string;
     black_points: string;
+
     black_name?: string;
     white_name?: string;
 
@@ -105,7 +110,6 @@ export class MiniGoban extends React.Component<MiniGobanProps, MiniGobanState> {
     }
 
     initialize() {
-
         this.goban = new Goban({
             "board_div": this.goban_div,
             "draw_top_labels": false,
@@ -118,7 +122,6 @@ export class MiniGoban extends React.Component<MiniGobanProps, MiniGobanState> {
             "width" : this.props.width || (this.props.json ? this.props.json.width : 19),
             "height" : this.props.height || (this.props.json ? this.props.json.height : 19)
         }, this.props.json);
-
 
         this.goban.on("update", () => {
             this.sync_state();
@@ -140,22 +143,31 @@ export class MiniGoban extends React.Component<MiniGobanProps, MiniGobanState> {
             this.goban.destroy();
         }
     }
-
     sync_state() {
         const score = this.goban.engine.computeScore(true);
-        const black = this.props.black || "";
-        const white = this.props.white || "";
+        let black: string | PlayerCacheEntry = this.props.black || "";
+        let white: string | PlayerCacheEntry = this.props.white || "";
 
         if (!black ) {
-            fetch(this.goban.engine.config.black_player_id)
-                .then( (player) => {this.setState({black_name: player.username}); })
-                .catch( () => {console.log("Couldn't work out who played black"); });
+            try {
+                black = this.goban.engine.config.players.black;
+                this.setState({
+                    black_name: this.goban.engine.config.players.black.username,
+                });
+            } catch (e) {
+                console.log("Couldn't work out who played black", e);
+            }
         }
 
         if (!white ) {
-            fetch(this.goban.engine.config.white_player_id)
-                .then( (player) => {this.setState({white_name: player.username}); })
-                .catch( () => {console.log("Couldn't work out who played white"); });
+            try {
+                white = this.goban.engine.config.players.white;
+                this.setState({
+                    white_name: this.goban.engine.config.players.white.username,
+                });
+            } catch (e) {
+                console.log("Couldn't work out who played white", e);
+            }
         }
 
         if (this.props.title) {
@@ -174,21 +186,45 @@ export class MiniGoban extends React.Component<MiniGobanProps, MiniGobanState> {
 
         const black_points = score.black.prisoners + score.black.komi;
         const white_points = score.white.prisoners + score.white.komi;
+
+        // TODO something is telling me we should compute all this state into variables then do setState :)
+        // That will definitely be needed to get the rank on the name of the current rengo player, if we want that.
+
         this.setState({
             // note, we need to say {{num}} point here as the singular form is used for multiple values in some languages (such as french, they say 0 point, 1 point, 2 points)
             black_points: interpolate(npgettext("Plural form 0 is the singular form, Plural form 1 is the plural form", "{{num}} point", "{{num}} points", black_points), {num: black_points}),
             white_points: interpolate(npgettext("Plural form 0 is the singular form, Plural form 1 is the plural form", "{{num}} point", "{{num}} points", white_points), {num: white_points}),
 
-            black_name: (typeof(black) === "object" ? (black.username) : black),
-            white_name: (typeof(white) === "object" ? (white.username) : white),
+            ...(typeof(black) === "string" ?
+                //honour the string that they provided: they must really want it!
+                {black_name: black} :
+                // otherwise get the player name/team from the engine
+                {black_name: this.goban.engine.rengo ?
+                    this.goban.engine.rengo_teams.black[0].username + " +" +
+                        (this.goban.engine.rengo_teams.black.length - 1) :
+                    this.goban.engine.players.black.username }),
+
+            ...(typeof(white) === "string" ?
+                    //honour the string that they provided: they must really want it!
+                    {white_name: white} :
+                    // otherwise get the player name/team from the engine
+                    {white_name: this.goban.engine.rengo ?
+                        this.goban.engine.rengo_teams.white[0].username + " +" +
+                            (this.goban.engine.rengo_teams.white.length - 1) :
+                        this.goban.engine.players.white.username }),
+
             paused: this.state.black_pause_text ? "paused" : "",
 
-            black_rank: (typeof(black) === "object" ? (preferences.get('hide-ranks') ? "" : (" [" + getUserRating(black).bounded_rank_label + "]")) : ""),
-            white_rank: (typeof(white) === "object" ? (preferences.get('hide-ranks') ? "" : (" [" + getUserRating(white).bounded_rank_label + "]")) : ""),
+            black_rank: (typeof(black) === "object" && !this.goban.engine.rengo ?
+                (preferences.get('hide-ranks') ? "" : (" [" + getUserRating(black).bounded_rank_label + "]")) :
+                ""),
+            white_rank: (typeof(white) === "object" && !this.goban.engine.rengo ?
+                (preferences.get('hide-ranks') ? "" : (" [" + getUserRating(white).bounded_rank_label + "]")) :
+                ""),
 
             current_users_move: player_to_move === data.get("config.user").id,
-            black_to_move_cls: (this.goban && black.id === player_to_move) ? "to-move" : "",
-            white_to_move_cls: (this.goban && white.id === player_to_move) ? "to-move" : "",
+            black_to_move_cls: (typeof(black) === "object" && this.goban && black.id === player_to_move) ? "to-move" : "",
+            white_to_move_cls: (typeof(white) === "object" && this.goban && white.id === player_to_move) ? "to-move" : "",
 
             in_stone_removal_phase: (this.goban && this.goban.engine.phase === "stone removal"),
             finished: (this.goban && this.goban.engine.phase === "finished"),
