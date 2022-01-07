@@ -3064,8 +3064,12 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                             player_bg.backgroundImage = `url("${icon}")`;
                         }
 
+                        const their_turn = this.state.player_to_move === engine.players[color].id;
+
+                        const highlight_their_turn = their_turn ? `their-turn` : "";
+
                         return (
-                            <div key={idx} className={`${color} player-container`}>
+                            <div key={idx} className={`${color} ${highlight_their_turn} player-container`}>
 
                                 <div className="player-icon-clock-row">
                                     {((engine.players[color] && engine.players[color].id) || null) &&
