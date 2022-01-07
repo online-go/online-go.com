@@ -144,29 +144,42 @@ export class MiniGoban extends React.Component<MiniGobanProps, MiniGobanState> {
         }
     }
     sync_state() {
-        const score = this.goban.engine.computeScore(true);
+        const engine = this.goban.engine;
+        const score = engine.computeScore(true);
         let black: string | PlayerCacheEntry = this.props.black || "";
         let white: string | PlayerCacheEntry = this.props.white || "";
 
         if (!black ) {
-            try {
-                black = this.goban.engine.config.players.black;
-                this.setState({
-                    black_name: this.goban.engine.config.players.black.username,
-                });
+            try { // maybe the engine doesn't have players?
+                black = engine.players.black;
+                // the goban engine doesn't come with the full player rating structure
+                fetch(this.goban.engine.players.black.id)
+                    .then( (player) => {
+                        this.setState({
+                            black_rank: preferences.get('hide-ranks') ? "" :
+                                " [" + getUserRating(player).bounded_rank_label + "]"
+                        });
+                    })
+                    .catch( () => {console.log("Couldn't work out black rank"); });
             } catch (e) {
-                console.log("Couldn't work out who played black", e);
+                console.log("Couldn't work out who played black");
             }
         }
 
         if (!white ) {
             try {
-                white = this.goban.engine.config.players.white;
-                this.setState({
-                    white_name: this.goban.engine.config.players.white.username,
-                });
+                white = engine.players.white;
+                // the goban engine doesn't come with the full player rating structure
+                fetch(this.goban.engine.players.white.id)
+                    .then( (player) => {
+                        this.setState({
+                            white_rank: preferences.get('hide-ranks') ? "" :
+                                " [" + getUserRating(player).bounded_rank_label + "]"
+                        });
+                    })
+                    .catch( () => {console.log("Couldn't work out white rank"); });
             } catch (e) {
-                console.log("Couldn't work out who played white", e);
+                console.log("Couldn't work out who played black");
             }
         }
 
@@ -214,13 +227,6 @@ export class MiniGoban extends React.Component<MiniGobanProps, MiniGobanState> {
                         this.goban.engine.players.white.username }),
 
             paused: this.state.black_pause_text ? "paused" : "",
-
-            black_rank: (typeof(black) === "object" && !this.goban.engine.rengo ?
-                (preferences.get('hide-ranks') ? "" : (" [" + getUserRating(black).bounded_rank_label + "]")) :
-                ""),
-            white_rank: (typeof(white) === "object" && !this.goban.engine.rengo ?
-                (preferences.get('hide-ranks') ? "" : (" [" + getUserRating(white).bounded_rank_label + "]")) :
-                ""),
 
             current_users_move: player_to_move === data.get("config.user").id,
             black_to_move_cls: (typeof(black) === "object" && this.goban && black.id === player_to_move) ? "to-move" : "",
