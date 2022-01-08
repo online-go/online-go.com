@@ -188,7 +188,7 @@ export class Play extends React.Component<{}, PlayState> {
         }
         live.sort(challenge_sort);
         corr.sort(challenge_sort);
-        rengo.sort(timesetting_challenge_sort);
+        rengo.sort(time_per_move_challenge_sort);
 
         //console.log("list update...");
         this.setState({
@@ -1110,12 +1110,12 @@ function challenge_sort(A, B) {
     return A.challenge_id - B.challenge_id;
 }
 
-function timesetting_challenge_sort(A, B) {
-    const a_live = isLiveGame(A.time_control_parameters);
-    const b_live = isLiveGame(B.time_control_parameters);
+function time_per_move_challenge_sort(A, B) {
+    const comparison = Math.sign(A.time_per_move - B.time_per_move);
 
-    if (a_live && !b_live) { return -1; }
-    if (!a_live && b_live) { return -1; }
-
-    return challenge_sort(A, B);
+    if (comparison) {
+        return comparison;
+    } else {
+        return challenge_sort(A, B);
+    }
 }
