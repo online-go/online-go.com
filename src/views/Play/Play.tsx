@@ -868,25 +868,6 @@ export class Play extends React.Component<{}, PlayState> {
         </div>;
     }
 
-    nominateForRengoChallenge = (C) => {
-        swal({
-            text: _("Joining..."),   // translator: the server is processing their request to join a rengo game
-            type: "info",
-            showCancelButton: false,
-            showConfirmButton: false,
-            allowEscapeKey: false,
-        }).catch(swal.noop);
-
-        put("challenges/%%/join", C.challenge_id, {})
-        .then(() => {
-            swal.close();
-        })
-        .catch((err) => {
-            swal.close();
-            errorAlerter(err);
-        });
-    };
-
     unNominateForRengoChallenge = (C) => {
         swal({
             text: _("Withdrawing..."),   // translator: the server is processing their request to withdraw from a rengo challenge
@@ -932,7 +913,7 @@ export class Play extends React.Component<{}, PlayState> {
                             {(C.user_challenge || null) && <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">{_("Remove")}</button>}
 
                             {(C.eligible && !C.removed && !C.user_challenge && !C.rengo_participants.includes(user.id) || null) &&
-                                <button onClick={this.nominateForRengoChallenge.bind(this, C)} className="btn success xs">{_("Join")}</button>}
+                                <button onClick={nominateForRengoChallenge.bind(C)} className="btn success xs">{_("Join")}</button>}
 
                             {(C.eligible && !C.removed && !C.user_challenge && C.rengo_participants.includes(user.id) || null) &&
                                 <button onClick={this.unNominateForRengoChallenge.bind(this, C)} className="btn success xs">{_("Withdraw")}</button>}
@@ -1108,4 +1089,25 @@ function challenge_sort(A, B) {
     if (!A.ranked && B.ranked) { return 1; }
 
     return A.challenge_id - B.challenge_id;
+}
+
+// This is used by the SeekGraph to perform this function as well as this page...
+
+export function nominateForRengoChallenge(C) {
+    swal({
+        text: _("Joining..."),   // translator: the server is processing their request to join a rengo game
+        type: "info",
+        showCancelButton: false,
+        showConfirmButton: false,
+        allowEscapeKey: false,
+    }).catch(swal.noop);
+
+    put("challenges/%%/join", C.challenge_id, {})
+    .then(() => {
+        swal.close();
+    })
+    .catch((err) => {
+        swal.close();
+        errorAlerter(err);
+    });
 }

@@ -32,6 +32,7 @@ import {kb_bind, kb_unbind} from "KBShortcut";
 import {Player} from "Player";
 import * as player_cache from "player_cache";
 import swal from 'sweetalert2';
+import { nominateForRengoChallenge } from "Play";
 
 interface Events {
     "challenges": Array<any>;
@@ -188,6 +189,9 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 }
             } else {
                 e.user_challenge = false;
+                e.joined_rengo = e.rengo && e.rengo_participants.includes(this_userid);
+
+                console.log(e);
                 if (data.get("user").anonymous) {
                     e.eligible = false;
                     e.ineligible_reason = _("Not logged in");
@@ -660,7 +664,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                     browserHistory.push("/game/" + C.game_id);
                 }).append($("<i>").addClass("fa fa-eye").attr("title", _("View Game")));
                 e.append(anchor);
-            } else if (C.eligible) {
+            } else if (C.eligible && !C.rengo) {
                 e.append($("<i>").addClass("fa fa-check-circle").attr("title", _("Accept game")).click((ev) => {
                     openGameAcceptModal(C).then((ev) => {
                         this.list_locked = false;
@@ -674,6 +678,12 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                         e.empty().append(anchor);
                         */
                     }).catch(errorAlerter);
+                }));
+            } else if (C.eligible && C.rengo && !C.joined_rengo) {
+                e.append($("<i>").addClass("fa fa-check-circle").attr("title", _("Join rengo game")).click((ev) => {
+                    nominateForRengoChallenge(C);
+                    this.list_locked = false;
+                    this.closeChallengeList();
                 }));
             } else if (C.user_challenge) {
                 e.append($("<i>").addClass("fa fa-trash-o").attr("title", _("Remove challenge")).click((ev) => {
