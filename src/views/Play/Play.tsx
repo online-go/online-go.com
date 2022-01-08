@@ -913,7 +913,7 @@ export class Play extends React.Component<{}, PlayState> {
                             {(C.user_challenge || null) && <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">{_("Remove")}</button>}
 
                             {(C.eligible && !C.removed && !C.user_challenge && !C.rengo_participants.includes(user.id) || null) &&
-                                <button onClick={nominateForRengoChallenge.bind(C)} className="btn success xs">{_("Join")}</button>}
+                                <button onClick={nominateForRengoChallenge.bind(this, C)} className="btn success xs">{_("Join")}</button>}
 
                             {(C.eligible && !C.removed && !C.user_challenge && C.rengo_participants.includes(user.id) || null) &&
                                 <button onClick={this.unNominateForRengoChallenge.bind(this, C)} className="btn success xs">{_("Withdraw")}</button>}
