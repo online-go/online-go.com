@@ -1112,8 +1112,8 @@ export function nominateForRengoChallenge(C) {
         errorAlerter(err);
     });
 }
-        
-        
+
+
 function time_per_move_challenge_sort(A, B) {
     const comparison = Math.sign(A.time_per_move - B.time_per_move);
 
