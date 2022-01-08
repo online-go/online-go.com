@@ -372,7 +372,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     createChallenge = () => {
         const next = this.next();
 
-        console.log("next ", next);
+        //console.log("next ", next);
         if (!this.validateBoardSize()) {
             swal(_("Invalid board size, please correct and try again")).catch(swal.noop);
             return;
@@ -450,7 +450,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         }
         */
 
-        console.log(challenge);
+        //console.log(challenge);
         if (challenge.game.initial_state && Object.keys(challenge.game.initial_state).length === 0) {
             challenge.game.initial_state = null;
         }
