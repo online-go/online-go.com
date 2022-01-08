@@ -406,7 +406,12 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 return;
             }
         }
-        if (this.props.mode === "computer") {
+
+        if (!challenge.game.name || challenge.game.name.trim() === '' || this.props.mode === 'computer') {
+            challenge.game.name = _('Friendly Match');
+        }
+
+        if (this.props.mode === 'computer') {
             player_id = conf.bot_id;
 
             if (!player_id) {
@@ -415,11 +420,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
             console.log("Bot set to ", player_id);
         }
-
-        if (!challenge.game.name || challenge.game.name.trim() === "") {
-            challenge.game.name = _("Friendly Match");
-        }
-
 
         if (!conf.restrict_rank) {
             challenge.min_ranking = -1000;
