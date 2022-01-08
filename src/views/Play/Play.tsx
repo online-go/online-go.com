@@ -24,7 +24,7 @@ import {Card} from "material";
 import {put, post, get, del} from "requests";
 import {SeekGraph} from "SeekGraph";
 import {PersistentElement} from "PersistentElement";
-import {shortShortTimeControl, usedForCheating} from "TimeControl";
+import {isLiveGame, shortShortTimeControl, usedForCheating} from "TimeControl";
 import {challenge, createOpenChallenge, challengeComputer} from "ChallengeModal";
 import {openGameAcceptModal} from "GameAcceptModal";
 import {errorAlerter, rulesText, timeControlSystemText, dup, uuid, ignore} from "misc";
@@ -180,7 +180,7 @@ export class Play extends React.Component<{}, PlayState> {
 
             if (C.rengo) {
                 rengo.push(C);
-            } else if (C.time_per_move > 0 && C.time_per_move < 3600) {
+            } else if (C.time_per_move > 0 && C.time_per_move < 3600) { // TBD: why aren't we using isLive here?
                 live.push(C);
             } else {
                 corr.push(C);
@@ -188,7 +188,7 @@ export class Play extends React.Component<{}, PlayState> {
         }
         live.sort(challenge_sort);
         corr.sort(challenge_sort);
-        rengo.sort(challenge_sort);
+        rengo.sort(time_per_move_challenge_sort);
 
         //console.log("list update...");
         this.setState({
@@ -1091,6 +1091,7 @@ function challenge_sort(A, B) {
     return A.challenge_id - B.challenge_id;
 }
 
+
 // This is used by the SeekGraph to perform this function as well as this page...
 
 export function nominateForRengoChallenge(C) {
@@ -1110,4 +1111,16 @@ export function nominateForRengoChallenge(C) {
         swal.close();
         errorAlerter(err);
     });
+}
+        
+        
+function time_per_move_challenge_sort(A, B) {
+    const comparison = Math.sign(A.time_per_move - B.time_per_move);
+
+    if (comparison) {
+        return comparison;
+    } else {
+        return challenge_sort(A, B);
+    }
+
 }
