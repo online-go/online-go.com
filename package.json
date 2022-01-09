@@ -15,7 +15,8 @@
     "lint:fix": "eslint --fix src/ --ext=.ts,.tsx",
     "gulp": "gulp",
     "minify-index": "gulp minify-index --silent",
-    "analyze": "webpack --mode production --profile --optimization-minimize --devtool=source-map"
+    "analyze": "webpack --mode production --profile --optimization-minimize --devtool=source-map",
+    "prepare": "husky install"
   },
   "browserslist": [
     "defaults"
@@ -48,7 +49,7 @@
     "gulp-sourcemaps": "^2.6.5",
     "gulp-stylus": "^2.7.0",
     "html-minifier": "4.0.0",
-    "husky": "^7.0.4",
+    "husky": "^7.0.0",
     "jest": "^26.6.1",
     "lint-staged": "^12.1.7",
     "pofile": "^1.1.0",
@@ -127,8 +128,5 @@
     "src/**/*.{ts,tsx}": [
       "eslint"
     ]
-  },
-  "husky": {
-    "pre-commit": "lint-staged"
   }
 }
