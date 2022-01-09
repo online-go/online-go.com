@@ -48,7 +48,9 @@
     "gulp-sourcemaps": "^2.6.5",
     "gulp-stylus": "^2.7.0",
     "html-minifier": "4.0.0",
+    "husky": "^7.0.4",
     "jest": "^26.6.1",
+    "lint-staged": "^12.1.7",
     "pofile": "^1.1.0",
     "postcss": "^8.3.9",
     "postcss-inline-svg": "^5.0.0",
@@ -120,5 +122,13 @@
     "ts-md5": "^1.2.7",
     "valid-url": "^1.0.9",
     "whatwg-fetch": "^3.0.0"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "eslint"
+    ]
+  },
+  "husky": {
+    "pre-commit": "lint-staged"
   }
 }
