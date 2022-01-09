@@ -39,6 +39,10 @@ import {SupporterGoals} from "SupporterGoals";
 import swal from 'sweetalert2';
 import { Size } from "src/lib/types";
 
+import { openModal } from "Modal";
+import { RengoManagementModal } from "RengoManagementModal";
+import { RengoChallengeManagementPane } from "RengoChallengeManagementPane";
+
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 
@@ -587,7 +591,24 @@ export class Play extends React.Component<{}, PlayState> {
 
     manageRengoChallenge = (C) => {
         console.log("managing ", C);
-        this.setState({show_in_rengo_management_pane: C.challenge_id});
+        openModal(
+            <RengoManagementModal
+                challenge_to_manage = {C}
+                ownPendingChallenges = {this.ownRengoChallengesPending}
+                joinedPendingChallenges = {this.joinedRengoChallengesPending}
+                readyToStart =  {this.rengoReadyToStart}
+                startRengoChallenge = {this.startOwnRengoChallenge}
+                cancelChallenge = {this.cancelOpenChallenge}
+                withdrawFromRengoChallenge = {this.unNominateForRengoChallenge}
+                joinRengoChallenge = {this.nominateAndShow}
+                admin_pending = {this.state.admin_pending}
+            >
+                <RengoChallengeManagementPane
+                    the_challenge={C}
+                    assignToTeam = {this.assignToTeam}
+                />
+            </RengoManagementModal>
+        );
     };
 
     closeRengoManagementPane = (challenge) => {
@@ -599,65 +620,32 @@ export class Play extends React.Component<{}, PlayState> {
             return this.state.automatch_size_options.indexOf(size) >= 0;
         };
 
-        //  Logic for displaying rengo management pane and managing it's buttons.
+        //  Logic for displaying rengo management pane for live challenges, and managing it's buttons.
+
         const own_live_rengo_challenge = this.ownRengoChallengesPending().find((c) => isLiveGame(c.time_control_parameters));
         const joined_live_rengo_challenge = this.joinedRengoChallengesPending().find((c) => isLiveGame(c.time_control_parameters));
 
-        const selected_rengo_to_manage = this.state.rengo_list.find((c) => (c.challenge_id === this.state.show_in_rengo_management_pane));
-
-        const selected_own_rengo_challenge: boolean = this.state.show_in_rengo_management_pane &&
-            this.ownRengoChallengesPending().find((c) => (c.challenge_id === this.state.show_in_rengo_management_pane));
-
-        console.log("rengo to manage", selected_rengo_to_manage);
-        console.log("show in pane", this.state.show_in_rengo_management_pane);
-        console.log("selected own", selected_own_rengo_challenge);
-        console.log("own live", own_live_rengo_challenge);
-
-        // Note: the order of terms here determines which one shows up, if there are multiple.
         const rengo_challenge_to_show =
             own_live_rengo_challenge ||
-            joined_live_rengo_challenge ||
-            selected_rengo_to_manage;  // note: this should be a correspondence challenge.
+            joined_live_rengo_challenge;
 
         console.log("rengo to show", rengo_challenge_to_show);
-
-        // spinner or dismiss control
-        const showing_live_rengo = rengo_challenge_to_show && [
-            own_live_rengo_challenge && own_live_rengo_challenge.challenge_id,
-            joined_live_rengo_challenge && joined_live_rengo_challenge.challenge_id].includes(rengo_challenge_to_show.challenge_id);
-
-        console.log("Showing live rengo", showing_live_rengo);
 
         // Start button visibility control...
         // ... whether to show the button at all
         const showing_own_rengo_challenge = rengo_challenge_to_show &&
             ((own_live_rengo_challenge &&
-                own_live_rengo_challenge.challenge_id === rengo_challenge_to_show.challenge_id ) ||
-            (selected_own_rengo_challenge &&
-                this.state.show_in_rengo_management_pane === rengo_challenge_to_show.challenge_id)
-            );
+                own_live_rengo_challenge.challenge_id === rengo_challenge_to_show.challenge_id ));
 
         console.log("Showing own rengo", showing_own_rengo_challenge);
 
         // ... whether to enable the start button
         const own_rengo_challenge_ready_to_start =
-            own_live_rengo_challenge && this.rengoReadyToStart(own_live_rengo_challenge) ||
-            !own_live_rengo_challenge && selected_own_rengo_challenge && this.rengoReadyToStart(selected_rengo_to_manage);
+            own_live_rengo_challenge && this.rengoReadyToStart(own_live_rengo_challenge);
 
         // ... tell them it's up to the organiser
         const joined_rengo_challenge_ready_to_start =
-            joined_live_rengo_challenge && this.rengoReadyToStart(joined_live_rengo_challenge) ||
-            !joined_live_rengo_challenge && this.state.show_in_rengo_management_pane &&
-                this.rengoReadyToStart(selected_rengo_to_manage);
-
-        // Are they even in this rengo challenge?
-
-        const our_rengo_challenges = this.ownRengoChallengesPending().concat(this.joinedRengoChallengesPending());
-
-        const in_this_rengo_challenge = rengo_challenge_to_show && our_rengo_challenges.find((c) => (c.challenge_id === rengo_challenge_to_show.challenge_id));
-
-        console.log("our challenges", our_rengo_challenges);
-        console.log("in this one", in_this_rengo_challenge);
+            joined_live_rengo_challenge && this.rengoReadyToStart(joined_live_rengo_challenge);
 
         //  Construction of the pane we need to show...
         if (automatch_manager.active_live_automatcher) {
@@ -702,32 +690,25 @@ export class Play extends React.Component<{}, PlayState> {
             return(
                 <div className='automatch-container'>
                     <div className='automatch-header'>
-                        <span>"{rengo_challenge_to_show.name}"</span>
-                        {(showing_live_rengo || null) &&
-                            <div className="small-spinner">
-                                <div className="double-bounce1"></div>
-                                <div className="double-bounce2"></div>
-                            </div>
-                        }
-                        {(!showing_live_rengo || null) &&  // we're manually showing correspondence pane
-                            <div>
-                                <i className="fa fa-lg fa-times-circle-o"
-                                    onClick={this.closeRengoManagementPane.bind(self, rengo_challenge_to_show)}/>
-                            </div>
-                        }
-                    </div>
-                    <div className='rengo-challenge-status'>
+                        <div className="small-spinner">
+                            <div className="double-bounce1"></div>
+                            <div className="double-bounce2"></div>
+                        </div>
+
                         {own_rengo_challenge_ready_to_start ? _("Waiting for your decision to start...") :
                             joined_rengo_challenge_ready_to_start ? _("Waiting for organiser to start...") :
                                 _("Waiting for Rengo players...")}
                     </div>
 
                     <div className={'rengo-admin-container' + (this.state.admin_pending ? " pending" : "")}>
-                        {this.renderRengoChallengePane(rengo_challenge_to_show)}
+                        <RengoChallengeManagementPane
+                            the_challenge={rengo_challenge_to_show}
+                            assignToTeam = {this.assignToTeam}
+                        />
                     </div>
 
                     <div className="rengo-challenge-buttons">
-                        { (own_live_rengo_challenge || selected_own_rengo_challenge && showing_own_rengo_challenge || null) &&
+                        { (own_live_rengo_challenge || null) &&
                             <React.Fragment>
                                 <div className='automatch-settings'>
                                     <button className='danger sm' onClick={this.cancelOpenChallenge.bind(self, rengo_challenge_to_show)}>
@@ -746,18 +727,10 @@ export class Play extends React.Component<{}, PlayState> {
                                 }
                             </React.Fragment>
                         }
-                        { (joined_live_rengo_challenge ||
-                            (!joined_live_rengo_challenge && this.state.show_in_rengo_management_pane && !selected_own_rengo_challenge) || null) &&
+                        { (joined_live_rengo_challenge || null) &&
                             <div className='automatch-settings'>
                                 <button onClick={this.unNominateForRengoChallenge.bind(this, rengo_challenge_to_show)} className="btn success xs">
                                     {_("Withdraw")}
-                                </button>
-                            </div>
-                        }
-                        { (!in_this_rengo_challenge || null) &&
-                            <div className='automatch-settings'>
-                                <button onClick={nominateForRengoChallenge.bind(this, rengo_challenge_to_show)} className="btn success xs">
-                                    {_("Join")}
                                 </button>
                             </div>
                         }
@@ -1099,84 +1072,6 @@ export class Play extends React.Component<{}, PlayState> {
 
     renderRengoChallengePane = (the_challenge) => {
 
-        // this function should not be called if the user doesn't have a rengo challenge open...
-        if (the_challenge === undefined) {
-            return <div>{_("(oops - if you had a rengo challenge open, the details would be showing here!)")}</div>;
-        }
-
-        const nominees = the_challenge['rengo_nominees'];
-        const black_team = the_challenge['rengo_black_team'];
-        const white_team = the_challenge['rengo_white_team'];
-
-
-        if (nominees.length + black_team.length + white_team.length === 0) {
-            // This should be at most transitory, since the creator is added as a player on creation!
-            return <div className="no-rengo-players-to-admin">{_("(none yet - standby!)")}</div>;
-        }
-
-        return (
-            <React.Fragment>
-                <div className='rengo-admin-header'>
-                    {_("Black:")}
-                </div>
-                {(black_team.length === 0 || null) &&
-                    <div className="no-rengo-players-to-admin">{_("(none yet)")}</div>
-                }
-                {black_team.map((n, i) => (
-                    <div className='rengo-assignment-row' key={i}>
-                        {(the_challenge.user_challenge || null) &&
-                            <React.Fragment>
-                                <i className="fa fa-lg fa-times-circle-o unassign"
-                                    onClick={this.assignToTeam.bind(self, n, 'none', the_challenge)}/>
-                                <i className="fa fa-lg fa-arrow-down"
-                                    onClick={this.assignToTeam.bind(self, n, 'rengo_white_team', the_challenge)}/>
-                            </React.Fragment>
-                        }
-                        <Player user={n} rank={true} key={i}/>
-                    </div>
-                ))}
-
-                <div className='rengo-admin-header'>
-                    {_("White:")}
-                </div>
-                {(white_team.length === 0 || null) &&
-                    <div className="no-rengo-players-to-admin">{_("(none yet)")}</div>
-                }
-                {white_team.map((n, i) => (
-                    <div className='rengo-assignment-row' key={i}>
-                        {(the_challenge.user_challenge || null) &&
-                            <React.Fragment>
-                                <i className="fa fa-lg fa-times-circle-o unassign"
-                                    onClick={this.assignToTeam.bind(self, n, 'none', the_challenge)}/>
-                                <i className="fa fa-lg fa-arrow-up"
-                                    onClick={this.assignToTeam.bind(self, n, 'rengo_black_team', the_challenge)}/>
-                            </React.Fragment>
-                        }
-                        <Player user={n} rank={true} key={i}/>
-                    </div>
-                ))}
-
-                <div className='rengo-admin-header'>
-                    {_("Unassigned:")}
-                </div>
-                {(nominees.length === 0 || null) &&
-                    <div className="no-rengo-players-to-admin">{_("(none left)")}</div>
-                }
-                {nominees.map((n, i) => (
-                    <div className='rengo-assignment-row' key={i}>
-                        {(the_challenge.user_challenge || null) &&
-                            <React.Fragment>
-                                <i className="fa fa-lg fa-arrow-up black"
-                                    onClick={this.assignToTeam.bind(self, n, 'rengo_black_team', the_challenge)}/>
-                                <i className="fa fa-lg fa-arrow-up white"
-                                    onClick={this.assignToTeam.bind(self, n, 'rengo_white_team', the_challenge)}/>
-                            </React.Fragment>
-                        }
-                        <Player user={n} rank={true} key={i}/>
-                    </div>
-                ))}
-            </React.Fragment>
-        );
     };
 }
 
