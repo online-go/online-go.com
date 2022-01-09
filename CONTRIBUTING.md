@@ -23,7 +23,7 @@ If you want to work on Joseki Explorer front-end code, you also need to point to
 Do this by executing `data.set("joseki-url", "https:beta.online-go.com/oje/")` in the javascript console of your browser,
 after confirming that the dev server loaded as above.
 
-This repo uses ESLint to keep keep code consistent and try to catch bugs.  ESLint will be run on every pull request, but you can also set it up so that it runs before every commit locally.  To do this, run `husky install`.
+This repo uses ESLint to keep keep code consistent and try to catch bugs.  ESLint will be run on every pull request, but you can also set it up so that it runs before every commit locally.  To do this, run `npx husky install`.
 
 ## Getting Started
 * Sign up for a [GitHub account](https://github.com/signup/free).
