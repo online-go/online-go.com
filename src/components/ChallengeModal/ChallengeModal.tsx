@@ -555,7 +555,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     };
 
     /* update bindings  */
-    update_conf_bot_id          = (ev) => this.upstate("conf.bot_id", ev);
+    update_conf_bot_id          = (ev) => this.upstate("conf.bot_id", parseInt((ev.target as HTMLSelectElement).value));
     update_challenge_game_name  = (ev) => this.upstate("challenge.game.name", ev);
     update_private              = (ev) => this.upstate([["challenge.game.private", ev], ["challenge.game.ranked", false]]);
     update_rengo                = (ev) => this.upstate([["challenge.game.rengo", ev], ["challenge.game.ranked", false]]);
