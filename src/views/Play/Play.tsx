@@ -42,11 +42,12 @@ import { Size } from "src/lib/types";
 import { join } from "@sentry/utils";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
+type Challenge = socket_api.seekgraph_global.Challenge;
 
 interface PlayState {
-    live_list: Array<any>;
-    correspondence_list: Array<any>;
-    rengo_list: Array<any>;
+    live_list: Array<Challenge>;
+    correspondence_list: Array<Challenge>;
+    rengo_list: Array<Challenge>;
     showLoadingSpinnerForCorrespondence: boolean;
     show_all_challenges: boolean;
     show_ranked_challenges: boolean;
@@ -138,7 +139,7 @@ export class Play extends React.Component<{}, PlayState> {
         }
     };
 
-    updateChallenges = (challenges) => {
+    updateChallenges = (challenges: Challenge[]) => {
         if (this.state.freeze_challenge_list) {
             const live = this.state.live_list;
             const corr = this.state.correspondence_list;
@@ -824,7 +825,7 @@ export class Play extends React.Component<{}, PlayState> {
                             {shortShortTimeControl(C.time_control_parameters)}
                         </span>
                         {this.commonSpan(C.ranked_text, "center")}
-                        {this.commonSpan(C.handicap_text, "center")}
+                        {this.commonSpan(C.handicap_text as string, "center")}
                         {this.commonSpan(C.name, "left")}
                         {this.commonSpan(rulesText(C.rules), "left")}
                     </div> :
@@ -900,7 +901,7 @@ export class Play extends React.Component<{}, PlayState> {
 
         const user = data.get("user");
 
-        return this.state.rengo_list.map((C) => (
+        return this.state.rengo_list.map((C: Challenge) => (
             (((C.eligible || C.user_challenge || this.state.show_all_challenges)
              && ((this.state.show_unranked_challenges && !C.ranked) || (this.state.show_ranked_challenges && C.ranked))
              && ((this.state.show_19x19_challenges && C.width === 19 && C.height === 19) || (this.state.show_13x13_challenges && C.width === 13 && C.height === 13) || (this.state.show_9x9_challenges && C.width === 9 && C.height === 9) || (this.state.show_other_boardsize_challenges && (C.width !== C.height || (C.width !== 19 && C.width !== 13 && C.width !== 9)))) ) ?
@@ -959,7 +960,7 @@ export class Play extends React.Component<{}, PlayState> {
                             {shortShortTimeControl(C.time_control_parameters)}
                         </span>
                         {this.commonSpan("", "center")  /* rengo is unranked always (at present) */}
-                        {this.commonSpan(C.handicap_text, "center")}
+                        {this.commonSpan(C.handicap_text as string, "center")}
                         {this.commonSpan(C.name, "left")}
                         {this.commonSpan(rulesText(C.rules), "left")}
                     </div> :
