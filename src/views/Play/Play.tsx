@@ -58,7 +58,7 @@ interface PlayState {
     show_other_boardsize_challenges: boolean;
     automatch_size_options: Size[];
     freeze_challenge_list: boolean; // Don't change the challenge list while they are trying to point the mouse at it
-    pending_challenges: Array<any>; // challenges received while frozen
+    pending_challenges: Array<Challenge>; // challenges received while frozen
     admin_pending: boolean;  // used to change cursor while waiting for rengo admin actions
 }
 
@@ -200,7 +200,7 @@ export class Play extends React.Component<{}, PlayState> {
         });
     };
 
-    acceptOpenChallenge(challenge) {
+    acceptOpenChallenge(challenge: Challenge) {
         openGameAcceptModal(challenge).then((challenge) => {
             browserHistory.push(`/game/${challenge.game_id}`);
             //window['openGame'](obj.game);
@@ -208,12 +208,12 @@ export class Play extends React.Component<{}, PlayState> {
         }).catch(errorAlerter);
     }
 
-    cancelOpenChallenge(challenge) {
+    cancelOpenChallenge(challenge: Challenge) {
         del("challenges/%%", challenge.challenge_id).then(() => 0).catch(errorAlerter);
         this.unfreezeChallenges();
     }
 
-    cancelOwnChallenges = (challenge_list) => {
+    cancelOwnChallenges = (challenge_list: Challenge[]) => {
         challenge_list.forEach((c) => {
             if (c.user_challenge) {
                 this.cancelOpenChallenge(c);
@@ -221,7 +221,7 @@ export class Play extends React.Component<{}, PlayState> {
         });
     };
 
-    extractUser(challenge) {
+    extractUser(challenge: Challenge) {
         return {
             id: challenge.user_id,
             username: challenge.username,
@@ -349,24 +349,23 @@ export class Play extends React.Component<{}, PlayState> {
         this.setState({show_other_boardsize_challenges: !this.state.show_other_boardsize_challenges});
     };
 
-    anyChallengesToShow = (challenge_list): boolean => {
-
-        return this.state.show_all_challenges && challenge_list.length || challenge_list.reduce( (prev, current) => {
+    anyChallengesToShow = (challenge_list: Challenge[]): boolean => {
+        return this.state.show_all_challenges && challenge_list.length as any || challenge_list.reduce( (prev, current) => {
             return prev || current.eligible || current.user_challenge;
         }, false );
     };
 
-    liveOwnChallengePending = (): any => {
+    liveOwnChallengePending = (): Challenge => {
         const locp = this.state.live_list.find((c) => (c.user_challenge));
         return locp;
     };
 
-    ownRengoChallengePending = (): any => {
+    ownRengoChallengePending = (): Challenge => {
         const orcp = this.state.rengo_list.find((c) => (c.user_challenge));
         return orcp;
     };
 
-    joinedRengoChallengePending = (): any => {
+    joinedRengoChallengePending = (): Challenge => {
         const user_id = data.get('config.user').id;
         const jrcp = this.state.rengo_list.find((c) => (c['rengo_participants'].includes(user_id) && !c.user_challenge));
         return jrcp;
@@ -755,7 +754,7 @@ export class Play extends React.Component<{}, PlayState> {
 
         const user = data.get("user");
 
-        const timeControlClassName = (config) => {  // This appears to be bolding live games compared to blitz?
+        const timeControlClassName = (config: Challenge) => {  // This appears to be bolding live games compared to blitz?
             const isBold = isLive && (config.time_per_move > 3600 || config.time_per_move === 0);
             return "cell " + (isBold ? "bold" : "");
         };
@@ -869,7 +868,7 @@ export class Play extends React.Component<{}, PlayState> {
         </div>;
     }
 
-    unNominateForRengoChallenge = (C) => {
+    unNominateForRengoChallenge = (C: Challenge) => {
         swal({
             text: _("Withdrawing..."),   // translator: the server is processing their request to withdraw from a rengo challenge
             type: "info",
@@ -968,7 +967,7 @@ export class Play extends React.Component<{}, PlayState> {
             ) ));
     };
 
-    assignToTeam = (player_id: number, team: string, challenge) => {
+    assignToTeam = (player_id: number, team: string, challenge: Challenge) => {
         const assignment = team === 'rengo_black_team' ? 'assign_black' :
             team === 'rengo_white_team' ? 'assign_white' :
             'unassign';
@@ -1076,7 +1075,7 @@ export class Play extends React.Component<{}, PlayState> {
 }
 
 
-function challenge_sort(A, B) {
+function challenge_sort(A: Challenge, B: Challenge) {
     if (A.eligible && !B.eligible) { return -1; }
     if (!A.eligible && B.eligible) { return 1; }
 
@@ -1095,7 +1094,7 @@ function challenge_sort(A, B) {
 
 // This is used by the SeekGraph to perform this function as well as this page...
 
-export function nominateForRengoChallenge(C) {
+export function nominateForRengoChallenge(C: Challenge) {
     swal({
         text: _("Joining..."),   // translator: the server is processing their request to join a rengo game
         type: "info",
@@ -1115,7 +1114,7 @@ export function nominateForRengoChallenge(C) {
 }
 
 
-function time_per_move_challenge_sort(A, B) {
+function time_per_move_challenge_sort(A: Challenge, B: Challenge) {
     const comparison = Math.sign(A.time_per_move - B.time_per_move);
 
     if (comparison) {
