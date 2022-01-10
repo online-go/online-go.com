@@ -27,7 +27,7 @@ import { ai_host } from 'sockets';
 import { get_bid } from 'SignIn';
 sfx.sync();
 
-declare let ogs_current_language
+declare let ogs_current_language;
 declare let ogs_language_version;
 declare let ogs_version;
 
