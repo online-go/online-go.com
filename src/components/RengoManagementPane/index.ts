@@ -15,17 +15,5 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.RengoChallengeManasgementPane {
-    display: flex;
-    align-items: flex-end;
 
-    input {
-        max-width: 6em;
-        margin-right: 1em;
-        margin-left: 1em;
-    }
-
-    .Player {
-        margin-right: 1em;
-    }
-}
+export * from "./RengoManagementPane";
