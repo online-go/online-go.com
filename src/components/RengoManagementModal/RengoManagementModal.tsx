@@ -20,20 +20,21 @@ import * as ValidUrl from "valid-url";
 
 import {_, pgettext, interpolate} from "translate";
 import { Modal, openModal } from "Modal";
+import { RengoManagementPane } from "../RengoManagementPane";
 
 interface Events {
 }
 
 interface RengoManagementModalProperties {
-    challenge_to_manage: any;
-    ownPendingChallenges: () => any[];
-    joinedPendingChallenges: () => any[];
-    readyToStart: (challenge: any) => boolean;
+    heading: string;
+    user_id: number;
+    challenge_id: number;
+    rengo_challenge_list: any[];
+
     startRengoChallenge: (challenge: any) => void;
     cancelChallenge: (challenge: any) => void;
     withdrawFromRengoChallenge: (challenge: any) => void;
     joinRengoChallenge: (challenge: any) => void;
-    admin_pending: boolean;
 }
 
 interface RengoManagementModalState {
@@ -45,91 +46,50 @@ export class RengoManagementModal extends Modal<Events, RengoManagementModalProp
         super(props);
 
         this.state = {
-
         };
     }
 
-    closeRengoManagementPane = () => {
+    closeModal = () => {
         this.close();
     };
 
+    _startChallenge = (challenge) => {
+        this.props.startRengoChallenge(challenge);
+        this.close();
+    };
+
+    _cancelChallenge = (challenge) => {
+        this.props.cancelChallenge(challenge);
+        this.close();
+    };
+
+    UNSAFE_componentWillReceiveProps(nextProps) {
+        console.log("modal props update" , nextProps);
+    }
+
     render() {
-        const the_challenge = this.props.challenge_to_manage;
-
-        const selected_own_rengo_challenge: boolean =
-            this.props.ownPendingChallenges().find((c) => (c.challenge_id === the_challenge.challenge_id));
-
-        console.log("selected own", selected_own_rengo_challenge);
-
-        // ... whether to enable the start button
-        const own_rengo_challenge_ready_to_start =
-            selected_own_rengo_challenge && this.props.readyToStart(the_challenge);
-
-        // ... or tell them it's up to the organiser
-        const joined_rengo_challenge_ready_to_start =
-                !selected_own_rengo_challenge && this.props.readyToStart(the_challenge);
-
-        // Are they even in this rengo challenge?
-
-        const our_rengo_challenges = this.props.ownPendingChallenges().concat(this.props.joinedPendingChallenges());
-
-        const in_this_rengo_challenge = our_rengo_challenges.find((c) => (c.challenge_id === the_challenge.challenge_id));
-
-        console.log("our challenges", our_rengo_challenges);
-        console.log("in this one", in_this_rengo_challenge);
-
+        console.log("modal render", this.props);
         return(
-            <div className='RengoManagementModal'>
+            <div className='Modal RengoManagementModal'>
                 <div className='rengo-management-header'>
-                    <span>"{the_challenge.name}"</span>
+                    <span>{this.props.heading}</span>
                     <div>
                         <i className="fa fa-lg fa-times-circle-o"
-                            onClick={this.closeRengoManagementPane}/>
+                            onClick={this.closeModal}/>
                     </div>
                 </div>
-                <div className='rengo-challenge-status'>
-                    {own_rengo_challenge_ready_to_start ? _("Waiting for your decision to start...") :
-                        joined_rengo_challenge_ready_to_start ? _("Waiting for organiser to start...") :
-                            _("Waiting for Rengo players...")}
-                </div>
+                <RengoManagementPane
+                    user_id={this.props.user_id}
+                    challenge_id={this.props.challenge_id}
+                    rengo_challenge_list={this.props.rengo_challenge_list}
 
-                <div className={'rengo-admin-container' + (this.props.admin_pending ? " pending" : "")}>
-                    {React.Children.only(this.props.children)}
-                </div>
-
-                <div className="rengo-challenge-buttons">
-          \
-                    <div className='automatch-settings'>
-                        <button className='danger sm' onClick={this.props.cancelChallenge.bind(self, the_challenge)}>
-                            {_("Cancel challenge")}
-                        </button>
-                    </div>
-
-                    {((selected_own_rengo_challenge) || null) &&
-                        <div className='automatch-settings'>
-                            <button className='success sm'
-                                onClick={this.props.startRengoChallenge.bind(self, the_challenge)}
-                                disabled = {!own_rengo_challenge_ready_to_start}
-                            >
-                                {pgettext("Start game", "Start")}
-                            </button>
-                        </div>
-                    }
-                    {(!selected_own_rengo_challenge || null) &&
-                        <div className='automatch-settings'>
-                            <button onClick={this.props.withdrawFromRengoChallenge.bind(this, the_challenge)} className="btn success xs">
-                                {_("Withdraw")}
-                            </button>
-                        </div>
-                    }
-                    {(!in_this_rengo_challenge || null) &&
-                        <div className='automatch-settings'>
-                            <button onClick={this.props.joinRengoChallenge.bind(this, the_challenge)} className="btn success xs">
-                                {_("Join")}
-                            </button>
-                        </div>
-                    }
-                </div>
+                    startRengoChallenge={this._startChallenge}
+                    cancelChallenge={this._cancelChallenge}
+                    withdrawFromRengoChallenge={this.props.withdrawFromRengoChallenge}
+                    joinRengoChallenge={this.props.joinRengoChallenge}
+                >
+                    {React.Children.only(this.props.children)  /* intended to be RengoTeamManagementPane */ }
+                </RengoManagementPane>
             </div>
         );
     }
