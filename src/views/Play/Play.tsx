@@ -372,7 +372,7 @@ export class Play extends React.Component<{}, PlayState> {
         return orcp;
     };
 
-    joinedRengoChallengesPending = (): any[] => { // multiple correspondence are possible, plus one live
+    joinedRengoChallengesPending = (): Challenge[] => { // multiple correspondence are possible, plus one live
         const user_id = data.get('config.user').id;
         const jrcp = this.state.rengo_list.filter((c) => (c['rengo_participants'].includes(user_id) && !c.user_challenge));
         // console.log("joined rcp", jrcp);

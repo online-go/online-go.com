@@ -666,6 +666,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     {(mode !== "demo" || null) && <div className="checkbox">
                         <input type="checkbox"
                             id="challenge-private"
+                            disabled={this.state.challenge.game.rengo}
                             checked={this.state.challenge.game.private} onChange={this.update_private}/>
                     </div>
                     }
