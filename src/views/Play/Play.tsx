@@ -204,7 +204,7 @@ export class Play extends React.Component<{}, PlayState> {
         });
     };
 
-    acceptOpenChallenge(challenge: Challenge) {
+    acceptOpenChallenge = (challenge: Challenge) => {
         openGameAcceptModal(challenge).then((challenge) => {
             browserHistory.push(`/game/${challenge.game_id}`);
             //window['openGame'](obj.game);
@@ -363,12 +363,12 @@ export class Play extends React.Component<{}, PlayState> {
         }, false );
     };
 
-    liveOwnChallengePending = (): any => { // a user should have only one of these at any time
+    liveOwnChallengePending = (): Challenge => { // a user should have only one of these at any time
         const locp = this.state.live_list.find((c) => (c.user_challenge));
         return locp;
     };
 
-    ownRengoChallengesPending = (): any[] => { // multiple correspondence are possible, plus one live
+    ownRengoChallengesPending = (): Challenge[] => { // multiple correspondence are possible, plus one live
         const orcp = this.state.rengo_list.filter((c) => (c.user_challenge));
         //console.log("own rcp", orcp);
         return orcp;
@@ -381,7 +381,7 @@ export class Play extends React.Component<{}, PlayState> {
         return jrcp;
     };
 
-    startOwnRengoChallenge = (the_challenge) => {
+    startOwnRengoChallenge = (the_challenge: Challenge) => {
         swal({
             text: "Starting...",
             type: "info",
@@ -836,7 +836,7 @@ export class Play extends React.Component<{}, PlayState> {
                         {shortShortTimeControl(C.time_control_parameters)}
                     </span>
                     {this.commonSpan(C.ranked_text, "center")}
-                    {this.commonSpan(C.handicap_text, "center")}
+                    {this.commonSpan(C.handicap_text as string, "center")}
                     {this.commonSpan(C.name, "left")}
                     {this.commonSpan(rulesText(C.rules), "left")}
                 </div> :
@@ -1004,13 +1004,13 @@ export class Play extends React.Component<{}, PlayState> {
 
     rengoListItem = (C, user) => (
         <div key={C.challenge_id} className={"challenge-row"}>
-            <span className={"cell"}  style={{textAlign: "right"}}>
+            <span className={"cell rengo-list-buttons"}>
                 {user.is_moderator &&
                     <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left ">
                         <i className='fa fa-trash' /></button>}
 
                 {(C.user_challenge || null) &&
-                    <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">
+                    <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs">
                         {_("Cancel")}</button>}
 
                 {(C.eligible && !C.removed && !C.user_challenge && C.rengo_participants.includes(user.id) || null) &&

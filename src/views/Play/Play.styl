@@ -67,8 +67,17 @@
     .rengo-management-row {
     }
 
+    .rengo-list-buttons {
+        text-align: right !important; // overriding challenge-row.cell, to put the buttons on the right
+        vertical-align: baseline; // attempting to line up with rest of cell rows
+        .btn {
+            padding-bottom: 0;  // override default that makes these look bottom heavy
+        }
+
+    }
+
     .rengo-management-list-item {
-        margin: auto;  // this should put the item in the middle of the row, but it's not centered properly??
+        margin: auto;  // this *should* put the item in the middle of the row, but still it's not centered properly??
         width: 60%;
         border: 5px solid;
         border-radius: 0.3rem;
@@ -80,7 +89,6 @@
     }
 
     .rengo-management-header {
-
         font-size: 1.3rem;
         display: flex;
         justify-content: space-between;  // push the dismiss icon out to the right
