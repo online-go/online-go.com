@@ -655,7 +655,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                     {header: _("News"), className: "none", render: (entry) =>
                                         <div>
                                             {this.state.editing_news && this.state.editing_news.id === entry.id
-                                                ? <h2><input ref='editing_news_title' value={this.state.editing_news.title} style={{width:'100%'}} onChange={this.updateNewsTitle}/></h2>
+                                                ? <h2><input value={this.state.editing_news.title} style={{width:'100%'}} onChange={this.updateNewsTitle}/></h2>
                                                 : <h2>{localize_time_strings(entry.title)}</h2>
                                             }
                                             <i>{moment(entry.posted).format("llll")} - <Player icon user={entry.author} /></i>
@@ -669,7 +669,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                                 </div>
                                             }
                                             {this.state.editing_news && this.state.editing_news.id === entry.id
-                                                ? <textarea rows={7} ref='editing_news_body' value={this.state.editing_news.content} onChange={this.updateNewsContent} />
+                                                ? <textarea rows={7} value={this.state.editing_news.content} onChange={this.updateNewsContent} />
                                                 : <Markdown source={entry.content} />
                                             }
                                         </div>
