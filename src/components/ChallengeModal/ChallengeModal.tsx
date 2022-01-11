@@ -688,6 +688,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     <div className="checkbox">
                         <input type="checkbox"
                             id="rengo-option"
+                            disabled={this.state.game.private || this.state.game.ranked}
                             checked={this.state.challenge.game.rengo} onChange={this.update_rengo}/>
                     </div>
                 </div>
@@ -706,12 +707,14 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             {!this.state.forking_game && mode !== "demo" &&
                 <div>
                     <div className="form-group">
-                        <label className="control-label" htmlFor="challenge-ranked">{_("Ranked")}</label>
+                        <label className="control-label" htmlFor="challenge-ranked">
+                            {_("Ranked")}
+                        </label>
                         <div className="controls">
                             <div className="checkbox">
                                 <input type="checkbox"
                                     id="challenge-ranked"
-                                    disabled={this.state.challenge.game.private}
+                                    disabled={this.state.challenge.game.private || this.state.challenge.game.rengo}
                                     checked={this.state.challenge.game.ranked} onChange={this.update_ranked}/>
                             </div>
                         </div>
@@ -719,7 +722,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
                     {data.get("config.aga_rankings_enabled", null) &&
                         <div className="form-group">
-                            <label className="control-label" htmlFor="challenge-aga-ranked">{_("AGA Ranked")}</label>
+                            <label className="control-label" htmlFor="challenge-aga-ranked">
+                                {_("AGA Ranked")}
+                            </label>
                             <div className="controls">
                                 <div className="checkbox">
                                     <input type="checkbox"
