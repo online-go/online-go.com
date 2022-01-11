@@ -437,7 +437,7 @@ export const currencies: CurrencyMap = {
         "symbol": "Ft",
         "name": "Hungarian Forint",
         "symbol_native": "Ft",
-        "decimal_digits": 0,
+        "decimal_digits": 2,
         "rounding": 0,
         "code": "HUF",
         "name_plural": "Hungarian forints",
