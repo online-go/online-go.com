@@ -416,7 +416,6 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                 {content: ev.target.value}
             )
         });
-        this.news_ref.current?.refresh();
     };
     updateNewsTitle = (ev) => {
         this.setState({
@@ -426,7 +425,6 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                 {title: ev.target.value}
             )
         });
-        this.news_ref.current?.refresh();
     };
 
     inviteUser = (ev) => {
