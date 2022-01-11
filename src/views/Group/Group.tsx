@@ -765,50 +765,8 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                             )}
                         </div>
 
-                        {(this.state.news.length > 0 || null) &&
-                        <Card style={{minHeight: "12rem"}}>
-                            <PaginatedTable
-                                className="news"
-                                name="news"
-                                ref={this.news_ref}
-                                source={`groups/${group.id}/news`}
-                                pageSize={1}
-                                columns={[
-                                    {header: _("News"), className: "none", render: (entry) =>
-                                        <div>
-                                            {this.state.editing_news && this.state.editing_news.id === entry.id
-                                                ? <h2><input value={this.state.editing_news.title} style={{width:'100%'}} onChange={this.updateNewsTitle}/></h2>
-                                                : <h2>{localize_time_strings(entry.title)}</h2>
-                                            }
-                                            <i>{moment(entry.posted).format("llll")} - <Player icon user={entry.author} /></i>
-                                            {this.state.is_admin &&
-                                                <div>
-                                                    {this.state.editing_news && this.state.editing_news.id === entry.id
-                                                        ?  <button className='sm' onClick={this.updateNewsPost} >{_("Save")}</button>
-                                                        :  <button className='sm' onClick={this.editNewsPost.bind(this, entry)} >{_("Edit")}</button>
-                                                    }
-                                                    <button className='sm reject' onClick={this.deleteNewsPost.bind(this, entry)} >{_("Delete")}</button>
-                                                </div>
-                                            }
-                                            {this.state.editing_news && this.state.editing_news.id === entry.id
-                                                ? <textarea rows={7} value={this.state.editing_news.content} onChange={this.updateNewsContent} />
-                                                : <Markdown source={entry.content} />
-                                            }
-                                        </div>
-                                    },
-                                ]}
-                            />
-                        </Card>
-                        }
-
-                        {(((group.is_public && !group.hide_details) || group.is_member ) || null) && <EmbeddedChatCard channel={`group-${this.state.group.id}`} updateTitle={false} />}
-
-                        <Card>
-                            {(group.has_tournament_records || null) &&
-                            <div>
-                                <h3>{_("Tournament Records")}</h3>
-
-
+                        {(this.state.news.length > 0 || null) && (
+                            <Card style={{ minHeight: "12rem" }}>
                                 <PaginatedTable
                                     className="news"
                                     name="news"
@@ -825,7 +783,6 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                                     this.state.editing_news.id === entry.id ? (
                                                         <h2>
                                                             <input
-                                                                ref="editing_news_title"
                                                                 value={this.state.editing_news.title}
                                                                 style={{ width: "100%" }}
                                                                 onChange={this.updateNewsTitle}
@@ -865,7 +822,6 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                                     this.state.editing_news.id === entry.id ? (
                                                         <textarea
                                                             rows={7}
-                                                            ref="editing_news_body"
                                                             value={this.state.editing_news.content}
                                                             onChange={this.updateNewsContent}
                                                         />
@@ -879,6 +835,90 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                 />
                             </Card>
                         )}
+
+                        {((group.is_public && !group.hide_details) || group.is_member || null) && (
+                            <EmbeddedChatCard channel={`group-${this.state.group.id}`} updateTitle={false} />
+                        )}
+
+                        <Card>
+                            {(group.has_tournament_records || null) && (
+                                <div>
+                                    <h3>{_("Tournament Records")}</h3>
+
+                                    <PaginatedTable
+                                        className="news"
+                                        name="news"
+                                        ref={this.news_ref}
+                                        source={`groups/${group.id}/news`}
+                                        pageSize={1}
+                                        columns={[
+                                            {
+                                                header: _("News"),
+                                                className: "none",
+                                                render: (entry) => (
+                                                    <div>
+                                                        {this.state.editing_news &&
+                                                        this.state.editing_news.id === entry.id ? (
+                                                            <h2>
+                                                                <input
+                                                                    ref="editing_news_title"
+                                                                    value={this.state.editing_news.title}
+                                                                    style={{ width: "100%" }}
+                                                                    onChange={this.updateNewsTitle}
+                                                                />
+                                                            </h2>
+                                                        ) : (
+                                                            <h2>{localize_time_strings(entry.title)}</h2>
+                                                        )}
+                                                        <i>
+                                                            {moment(entry.posted).format("llll")} -{" "}
+                                                            <Player icon user={entry.author} />
+                                                        </i>
+                                                        {this.state.is_admin && (
+                                                            <div>
+                                                                {this.state.editing_news &&
+                                                                this.state.editing_news.id === entry.id ? (
+                                                                    <button
+                                                                        className="sm"
+                                                                        onClick={this.updateNewsPost}
+                                                                    >
+                                                                        {_("Save")}
+                                                                    </button>
+                                                                ) : (
+                                                                    <button
+                                                                        className="sm"
+                                                                        onClick={this.editNewsPost.bind(this, entry)}
+                                                                    >
+                                                                        {_("Edit")}
+                                                                    </button>
+                                                                )}
+                                                                <button
+                                                                    className="sm reject"
+                                                                    onClick={this.deleteNewsPost.bind(this, entry)}
+                                                                >
+                                                                    {_("Delete")}
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                        {this.state.editing_news &&
+                                                        this.state.editing_news.id === entry.id ? (
+                                                            <textarea
+                                                                rows={7}
+                                                                ref="editing_news_body"
+                                                                value={this.state.editing_news.content}
+                                                                onChange={this.updateNewsContent}
+                                                            />
+                                                        ) : (
+                                                            <Markdown source={entry.content} />
+                                                        )}
+                                                    </div>
+                                                ),
+                                            },
+                                        ]}
+                                    />
+                                </div>
+                            )}
+                        </Card>
 
                         {((group.is_public && !group.hide_details) || group.is_member || null) && (
                             <EmbeddedChatCard channel={`group-${this.state.group.id}`} updateTitle={false} />
