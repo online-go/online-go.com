@@ -94,12 +94,34 @@ goban-view-bar-width=400px
         font-size: smaller;
     }
 
-    .black.player-container.their-turn {
-        box-shadow: 4px 6px 20px rgb(100 100 100) !important;
+
+    .black.player-container.their-turn, .white.player-container.their-turn {
+        position: relative;
+
+        &::after {
+            position: absolute;
+            content: "▲";
+            border-bottom: 0.15rem solid #000;
+            height: 0.15rem;;
+            bottom: -0.25rem;
+            themed border-color primary
+            themed color primary
+            font-size: 0.6rem;
+            display: block;
+            z-index: 1000;
+            width: 100%;
+            left: 0;
+            right: 0.1rem;
+        }
     }
 
-    .white.player-container.their-turn {
-        box-shadow: -2px 6px 20px rgb(130 130 130) !important;
+    &.portrait {
+        .black.player-container.their-turn, .white.player-container.their-turn {
+            &::after {
+                // in portrait mode, the arrow overlaps the board
+                content: "";
+            }
+        }
     }
 
     .play-controls {
