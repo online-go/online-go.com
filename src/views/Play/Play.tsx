@@ -39,8 +39,6 @@ import {SupporterGoals} from "SupporterGoals";
 import swal from 'sweetalert2';
 import { Size } from "src/lib/types";
 
-import { openModal } from "Modal";
-import { RengoManagementModal } from "RengoManagementModal";
 import { RengoManagementPane } from "RengoManagementPane";
 import { RengoTeamManagementPane } from "RengoTeamManagementPane";
 
@@ -945,7 +943,7 @@ export class Play extends React.Component<{}, PlayState> {
 
     rengoManageListItem = (C, user) => {
         return (
-            <div key={C.challenge_id} className={"challenge-row"}>
+            <div key={C.challenge_id} className={"challenge-row rengo-management-row"}>
                 <div className='rengo-management-list-item'>
                     <div className='rengo-management-header'>
                         <span>{C.name}</span>

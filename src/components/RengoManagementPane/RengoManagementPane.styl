@@ -25,36 +25,16 @@
 
     flex-grow: 1;
 
-    .rengo-admin-container {
+    .rengo-challenge-buttons {
+        margin-top: 0.5rem;  // stop buttons bumping into components above, if squashed up against them.
+
+        // Yellow buttons on left, green on right
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        //put the buttons at the bottom of the containing element
         flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .rengo-challenge-buttons {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-    }
-
-    .rengo-challenge-buttons {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-    }
-
-    .rengo-management-header {
-        flex-shrink: 0;
-        flex-grow: 0;
-        flex-basis: 2.5rem;
-        font-size: 1.3rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        .btn-group {
-            display: flex;
-            flex-wrap: nowrap;
-        }
+        align-items: flex-end;
     }
 }
