@@ -1181,7 +1181,8 @@ function formatMoney(currency_code: string, amount: number): string {
         currency: currency_code,
     }).format(zero_decimal_to_float(currency_code, amount));
 
-    if (currency.decimal_digits === 0) {
+    // huf is effectively zero decimal, but still need to send with decimal
+    if (currency.decimal_digits === 0 || currency_code === "HUF") {
         return ret.replace(/[.,].{2}$/, "");
     }
     return ret;

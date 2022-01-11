@@ -1068,9 +1068,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         let white_moves = 0;
 
         let worst_move_list = getWorstMoves(this.props.game.goban.engine.move_tree, this.ai_review, 100);
-        worst_move_list = worst_move_list.filter(
-            (move) => (move.player === 1 && black_moves++ < 3) || (move.player === 2 && white_moves++ < 3),
-        );
+        worst_move_list = worst_move_list.filter(move => move.player === 1 && black_moves++ < 3 || move.player === 2 && white_moves++ < 3);
+        worst_move_list.sort((a, b) => a.move_number - b.move_number);
 
         return (
             <div className="AIReview">
