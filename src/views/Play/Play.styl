@@ -67,8 +67,9 @@
     .rengo-management-row {
     }
 
-    .rengo-list-buttons {
-        text-align: right !important; // overriding challenge-row.cell, to put the buttons on the right
+    // long specifier to make sure this specific column is not overriden
+    #challenge-list .challenge-row .cell.rengo-list-buttons {
+        text-align: right;
         vertical-align: baseline; // attempting to line up with rest of cell rows
         .btn {
             padding-bottom: 0;  // override default that makes these look bottom heavy
@@ -86,6 +87,19 @@
         display: flex;
         flex-direction: column;
         align-items: stretch;
+    }
+
+    @media (max-width 720px) {
+        .rengo-management-list-item {
+            margin: inherit; // override the `auto` directive so this goes to the left on narrow screens.
+            width: 40%;  // try to fit the whole pane nicely on narrow phones
+        }
+
+        // long specifier to make sure this specific column is not overriden
+        #challenge-list .challenge-row .cell.rengo-list-buttons {
+            display: flex;  // to enable the buttons to wrap to the next line on narrow screens
+            justify-content: flex-end;
+        }
     }
 
     .rengo-management-header {
