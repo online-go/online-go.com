@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+/**** THIS SEEMS TO NOT WORK BECAUSE CHANGES ON PROPS DONT PROPAGATE IN.  TBD: is that right? */
+
 import * as React from "react";
 import * as ValidUrl from "valid-url";
 
@@ -45,6 +48,7 @@ export class RengoManagementModal extends Modal<Events, RengoManagementModalProp
     constructor(props) {
         super(props);
 
+        console.error("THIS SEEMS TO NOT WORK BECAUSE CHANGES ON PROPS DONT PROPAGATE IN.  TBD: is that right? ");
         this.state = {
         };
     }
