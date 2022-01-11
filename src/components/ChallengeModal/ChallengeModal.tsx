@@ -460,9 +460,19 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         this.saveSettings();
         this.close();
 
+
+        swal({
+            text: _("Creating..."),   // translator: the server is processing their request create a challenge
+            type: "info",
+            showCancelButton: false,
+            showConfirmButton: false,
+            allowEscapeKey: false,
+        }).catch(swal.noop);
+
         post(player_id ? "players/%%/challenge" : "challenges", player_id, challenge)
         .then((res) => {
             // console.log("Challenge response: ", res);
+            swal.close();
             const challenge_id = res.challenge;
             const game_id = typeof(res.game) === "object" ? res.game.id : res.game;
             let keepalive_interval;
@@ -551,7 +561,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 }
             }
         })
-        .catch(errorAlerter);
+        .catch((err) => {
+            swal.close();
+            errorAlerter(err);
+        });
     };
 
     /* update bindings  */
