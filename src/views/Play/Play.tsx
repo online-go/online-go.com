@@ -61,7 +61,6 @@ interface PlayState {
     automatch_size_options: Size[];
     freeze_challenge_list: boolean; // Don't change the challenge list while they are trying to point the mouse at it
     pending_challenges: Array<Challenge>; // challenges received while frozen
-    admin_pending: boolean;  // used to change cursor while waiting for rengo admin actions
     show_in_rengo_management_pane: number; // a challenge_id for challenge to show in the rengo challenge management pane
 }
 
@@ -91,7 +90,6 @@ export class Play extends React.Component<{}, PlayState> {
             automatch_size_options: data.get('automatch.size_options', ['19x19']),
             freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
             pending_challenges: [], // challenges received while frozen
-            admin_pending: false,
             show_in_rengo_management_pane: 0,
         };
         this.canvas = document.createElement("canvas");
@@ -1061,7 +1059,7 @@ export class Play extends React.Component<{}, PlayState> {
             [assignment]: [player_id, ]  // back end expects an array of changes, but we only ever send one at a time.
         })
         .then(() => {
-            if (done) { done(); }
+            if (done) { done(); } // signal that the team update completed
         })
         .catch((err) => {
             errorAlerter(err);

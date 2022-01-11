@@ -48,8 +48,8 @@ export class RengoTeamManagementPane extends React.PureComponent<
     }
 
     done = () => {
-        console.log("assign done called... ap", this.state.assignment_pending, this.props.challenge_id);
-        // this.setState({assignment_pending: false});
+        //console.log("assign done called... ap", this.state.assignment_pending, this.props.challenge_id);
+        this.setState({assignment_pending: false});
     };
 
     _assignToTeam = (
@@ -57,7 +57,7 @@ export class RengoTeamManagementPane extends React.PureComponent<
         team: string,
         challenge: any
     ) => {
-        //this.setState({assignment_pending: true});
+        this.setState({assignment_pending: true});
         this.props.assignToTeam(player_id, team, challenge, this.done.bind(self));
     };
 
