@@ -922,13 +922,44 @@ export class Play extends React.Component<{}, PlayState> {
 
         const user = data.get("user");
 
-        return this.state.rengo_list.map((C) => (
-            this.visibleInChallengeList(C) ?
-                (this.state.show_in_rengo_management_pane !== C.challenge_id) ?
-                    this.rengoListItem(C, user) :
-                    this.rengoManageListItem(C, user)
-            : null
-        ));
+        const live_list = this.state.rengo_list.filter((c) => (isLiveGame(c.time_control_parameters)));
+        const corre_list = this.state.rengo_list.filter((c) => (!isLiveGame(c.time_control_parameters)));
+
+        return [
+            // the live list
+            <div className="challenge-row"><span className="cell">{_("Live:")}</span></div>,
+            !this.anyChallengesToShow(live_list) ?
+                <div className="ineligible">
+                    {this.state.show_all_challenges ?
+                        _("(none)") /* translators: There are no challenges in the system, nothing to list here */ :
+                        _("(none available)") /* translators: There are no challenges that this person is eligible for */}
+                </div>
+            :
+            live_list.map((C) => (
+                this.visibleInChallengeList(C) ?
+                    this.rengoListItem(C, user)
+                : null
+            )),
+
+            <div className="challenge-row"><hr/></div>,
+
+            // the correspondence list
+            <div className="challenge-row"><span className="cell">{_("Correspondence:")}</span></div>,
+            !this.anyChallengesToShow(corre_list) ?
+                <div className="ineligible">
+                    {this.state.show_all_challenges ?
+                        _("(none)") /* translators: There are no challenges in the system, nothing to list here */ :
+                        _("(none available)") /* translators: There are no challenges that this person is eligible for */}
+                </div>
+            :
+            corre_list.map((C) => (
+                this.visibleInChallengeList(C) ?
+                    (this.state.show_in_rengo_management_pane !== C.challenge_id) ?
+                        this.rengoListItem(C, user) :
+                        this.rengoManageListItem(C, user)
+                : null
+            ))
+        ];
     };
 
     manageRengoChallenge = (C) => {
@@ -981,23 +1012,23 @@ export class Play extends React.Component<{}, PlayState> {
 
                 {(C.user_challenge || null) &&
                     <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">
-                        {_("Remove")}</button>}
-
-                {(C.eligible && !C.removed && !C.user_challenge && !C.rengo_participants.includes(user.id) || null) &&
-                    <button onClick={this.nominateAndShow.bind(this, C, )} className="btn success xs">
-                        {_("Join")}</button>}
+                        {_("Cancel")}</button>}
 
                 {(C.eligible && !C.removed && !C.user_challenge && C.rengo_participants.includes(user.id) || null) &&
-                    <button onClick={this.unNominateForRengoChallenge.bind(this, C)} className="btn success xs">
+                    <button onClick={this.unNominateForRengoChallenge.bind(this, C)} className="btn danger xs">
                         {_("Withdraw")}</button>}
 
                 {!isLiveGame(C.time_control_parameters) &&
                     <button
                         onClick={this.manageRengoChallenge.bind(this, C)}
-                        className="btn success xs rengo-pane-button"
+                        className="btn success xs"
                     >
-                        {_("Manage")}
+                        {C.user_challenge ?  _("Manage") : _("View")}
                     </button>}
+
+                {(C.eligible && !C.removed && !C.user_challenge && !C.rengo_participants.includes(user.id) || null) &&
+                    <button onClick={this.nominateAndShow.bind(this, C, )} className="btn success xs">
+                        {_("Join")}</button>}
 
                 { this.suspectChallengeIcon(C) }
 

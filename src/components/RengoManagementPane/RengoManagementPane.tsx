@@ -88,7 +88,10 @@ export class RengoManagementPane extends React.PureComponent<RengoManagementPane
                     }
                     {(!own_challenge || null) &&
                         <div className='automatch-settings'>
-                            <button onClick={this.props.withdrawFromRengoChallenge.bind(this, the_challenge)} className="btn success xs">
+                            <button onClick={this.props.withdrawFromRengoChallenge.bind(this, the_challenge)}
+                                className="btn danger xs"
+                                disabled = {!participating}
+                            >
                                 {_("Withdraw")}
                             </button>
                         </div>
