@@ -16,13 +16,13 @@
  */
 
 import * as React from "react";
-import {_, pgettext, interpolate} from "translate";
-import {post, get} from "requests";
-import {errorAlerter} from "misc";
-import {chat_manager, ChatChannelProxy} from "chat_manager";
+import { _, pgettext, interpolate } from "translate";
+import { post, get } from "requests";
+import { errorAlerter } from "misc";
+import { chat_manager, ChatChannelProxy } from "chat_manager";
 import * as preferences from "preferences";
-import {Player} from "Player";
-import {GameChat} from "Game/Chat";
+import { Player } from "Player";
+import { GameChat } from "Game/Chat";
 
 interface ChatUserListProperties {
     channel: string;
@@ -42,7 +42,7 @@ export class ChatUsers<P extends ChatUserListProperties, S extends ChatUsersStat
 
     constructor(props) {
         super(props);
-        (this.state as ChatUsersState) = {tick: 0};
+        (this.state as ChatUsersState) = { tick: 0 };
     }
     UNSAFE_componentWillMount() {
         this.init(this.props.channel);
@@ -60,8 +60,8 @@ export class ChatUsers<P extends ChatUserListProperties, S extends ChatUsersStat
 
     init(channel) {
         this.proxy = chat_manager.join(channel);
-        this.proxy.on("join", () => this.setState({tick: this.state.tick + 1}));
-        this.proxy.on("part", () => this.setState({tick: this.state.tick + 1}));
+        this.proxy.on("join", () => this.setState({ tick: this.state.tick + 1 }));
+        this.proxy.on("part", () => this.setState({ tick: this.state.tick + 1 }));
     }
     deinit() {
         this.proxy.part();
@@ -70,7 +70,7 @@ export class ChatUsers<P extends ChatUserListProperties, S extends ChatUsersStat
 }
 
 interface ChatUserListState extends ChatUsersState {
-    user_sort_order: 'alpha'|'rank';
+    user_sort_order: "alpha" | "rank";
 }
 
 export class ChatUserList extends ChatUsers<ChatUserListProperties, ChatUserListState> {
@@ -82,23 +82,31 @@ export class ChatUserList extends ChatUsers<ChatUserListProperties, ChatUserList
     toggleSortOrder = () => {
         const new_sort_order = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
         preferences.set("chat.user-sort-order", new_sort_order);
-        this.setState({"user_sort_order": new_sort_order});
+        this.setState({ user_sort_order: new_sort_order });
     };
 
-
     render() {
-        const sorted_users: Array<any> = this.state.user_sort_order === "alpha" ? this.proxy.channel.users_by_name : this.proxy.channel.users_by_rank;
+        const sorted_users: Array<any> =
+            this.state.user_sort_order === "alpha"
+                ? this.proxy.channel.users_by_name
+                : this.proxy.channel.users_by_rank;
 
         return (
             <div className="ChatUserList">
                 <div className="user-header" onClick={this.toggleSortOrder}>
-                    <i className={this.state.user_sort_order === "rank" ? "fa fa-sort-numeric-asc" : "fa fa-sort-alpha-asc"} /> {
-                        interpolate(_("Users : {{in_chat}}"),
-                            {"in_chat": sorted_users.length})
-                    }
+                    <i
+                        className={
+                            this.state.user_sort_order === "rank" ? "fa fa-sort-numeric-asc" : "fa fa-sort-alpha-asc"
+                        }
+                    />{" "}
+                    {interpolate(_("Users : {{in_chat}}"), { in_chat: sorted_users.length })}
                 </div>
 
-                {sorted_users.map((user) => <div key={user.id}><Player user={user} flag rank /></div>)}
+                {sorted_users.map((user) => (
+                    <div key={user.id}>
+                        <Player user={user} flag rank />
+                    </div>
+                ))}
             </div>
         );
     }

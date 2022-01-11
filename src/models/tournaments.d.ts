@@ -16,102 +16,100 @@
  */
 
 declare namespace rest_api {
-
-/**
- * One element of `results` from `tournaments/`
- *
- * This is a work in progress. Trust these values at your own risk.
- * */
-export interface Tournament {
-    "id": number;
-    "name": string;
-    "director": {
-        "id": number;
-        "username": string;
-        "country": string;
-        "icon": string; // URL
-        "ratings": {
-            "version": number;
-            "overall": {
-                "rating": number;
-                "deviation": number;
-                "volatility": number;
+    /**
+     * One element of `results` from `tournaments/`
+     *
+     * This is a work in progress. Trust these values at your own risk.
+     * */
+    export interface Tournament {
+        id: number;
+        name: string;
+        director: {
+            id: number;
+            username: string;
+            country: string;
+            icon: string; // URL
+            ratings: {
+                version: number;
+                overall: {
+                    rating: number;
+                    deviation: number;
+                    volatility: number;
+                };
             };
+            ranking: number;
+            professional: boolean;
+            ui_class: string;
         };
-        "ranking": number;
-        "professional": boolean;
-        "ui_class": string;
-    };
-    "description": "Automatic Sitewide Tournament";
-    "schedule": {
-        "id": number;
-        "name": string;
-        "rrule": string;
-        "active": boolean;
-        "created": string; // Date
-        "last_run": string; // Date
-        "lead_time_seconds": number;
-        "tournament_type": string;
-        "handicap": number;
-        "rules": string;
-        "size": number;
-        "time_control_parameters": {};
-        "min_ranking": number;
-        "max_ranking": number;
-        "analysis_enabled": boolean;
-        "exclude_provisional": boolean;
-        "players_start": number;
-        "first_pairing_method": string;
-        "subsequent_pairing_method": string;
-        "settings": {
-            "num_rounds": string; // number
-            "upper_bar": string; // number
-            "lower_bar": string; // number
-            "group_size": string; // number
-            "maximum_players": number;
+        description: "Automatic Sitewide Tournament";
+        schedule: {
+            id: number;
+            name: string;
+            rrule: string;
+            active: boolean;
+            created: string; // Date
+            last_run: string; // Date
+            lead_time_seconds: number;
+            tournament_type: string;
+            handicap: number;
+            rules: string;
+            size: number;
+            time_control_parameters: {};
+            min_ranking: number;
+            max_ranking: number;
+            analysis_enabled: boolean;
+            exclude_provisional: boolean;
+            players_start: number;
+            first_pairing_method: string;
+            subsequent_pairing_method: string;
+            settings: {
+                num_rounds: string; // number
+                upper_bar: string; // number
+                lower_bar: string; // number
+                group_size: string; // number
+                maximum_players: number;
+            };
+            next_run: string; // Date
+            base_points: string; // number
         };
-        "next_run": string; // Date
-        "base_points": string; // number
-    };
-    "title"?: string;
-    "tournament_type": string;
-    "handicap": number;
-    "rules": string;
-    "time_per_move": number;
-    "time_control_parameters": {
-        "time_control": string;
-        "period_time": number;
-        "main_time": number;
-        "periods": number;
-    };
-    "is_open": boolean;
-    "exclude_provisional": boolean;
-    "group": {
-        "id": number;
-        "name": string;
-        "summary": string;
-        "require_invitation": boolean;
-        "is_public": boolean;
-        "hide_details": boolean;
-        "member_count": number;
-        "icon": string;  // URL
-    };
-    "auto_start_on_max": boolean;
-    "time_start": string; // Date
-    "players_start": number;
-    "first_pairing_method": string;
-    "subsequent_pairing_method": string;
-    "min_ranking": number;
-    "max_ranking": number;
-    "analysis_enabled": boolean;
-    "exclusivity": string;
-    "started": string; // Date
-    "ended": string; // Date
-    "start_waiting": string; // Date
-    "board_size": number;
-    "active_round": number;
-    "icon": string; // URL
-    "player_count": number;
-}
-
+        title?: string;
+        tournament_type: string;
+        handicap: number;
+        rules: string;
+        time_per_move: number;
+        time_control_parameters: {
+            time_control: string;
+            period_time: number;
+            main_time: number;
+            periods: number;
+        };
+        is_open: boolean;
+        exclude_provisional: boolean;
+        group: {
+            id: number;
+            name: string;
+            summary: string;
+            require_invitation: boolean;
+            is_public: boolean;
+            hide_details: boolean;
+            member_count: number;
+            icon: string; // URL
+        };
+        auto_start_on_max: boolean;
+        time_start: string; // Date
+        players_start: number;
+        first_pairing_method: string;
+        subsequent_pairing_method: string;
+        min_ranking: number;
+        max_ranking: number;
+        analysis_enabled: boolean;
+        exclusivity: string;
+        started: string; // Date
+        ended: string; // Date
+        start_waiting: string; // Date
+        board_size: number;
+        active_round: number;
+        icon: string; // URL
+        player_count: number;
+    }
 }

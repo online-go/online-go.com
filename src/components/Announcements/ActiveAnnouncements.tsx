@@ -16,20 +16,20 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router-dom";
-import {interpolate, _} from "translate";
-import {Card, PopupMenu, PopupMenuItem} from 'material';
+import { Link } from "react-router-dom";
+import { interpolate, _ } from "translate";
+import { Card, PopupMenu, PopupMenuItem } from "material";
 
-import {active_announcements, announcement_event_emitter, Announcement, announcementTypeMuted} from './Announcements';
+import { active_announcements, announcement_event_emitter, Announcement, announcementTypeMuted } from "./Announcements";
 import { getBlocks, setAnnouncementBlock } from "../BlockPlayer";
 
-import * as data from 'data';
+import * as data from "data";
 import * as preferences from "preferences";
 
-import swal from 'sweetalert2';
+import swal from "sweetalert2";
 
 // Holds the expirations dates of cleared announcements
-const hard_cleared_announcements: {[id: number]: number} = data.get("announcements.hard_cleared", {});
+const hard_cleared_announcements: { [id: number]: number } = data.get("announcements.hard_cleared", {});
 for (const k in hard_cleared_announcements) {
     if (hard_cleared_announcements[k] < Date.now()) {
         delete hard_cleared_announcements[k];
@@ -43,10 +43,10 @@ export class ActiveAnnouncements extends React.PureComponent {
     }
 
     componentDidMount() {
-        announcement_event_emitter.on('announcement', this.update);
+        announcement_event_emitter.on("announcement", this.update);
     }
     componentWillUnmount() {
-        announcement_event_emitter.off('announcement', this.update);
+        announcement_event_emitter.off("announcement", this.update);
     }
 
     update = () => {
@@ -81,102 +81,119 @@ export class ActiveAnnouncements extends React.PureComponent {
             <Card className="ActiveAnnouncements">
                 {lst.map((announcement, idx) => {
                     const user = data.get("user");
-                    const can_block_user = !user.anonymous &&
-                        (user.id !== announcement.creator.id) &&
-                        announcement.creator.ui_class.indexOf('moderator') < 0;
+                    const can_block_user =
+                        !user.anonymous &&
+                        user.id !== announcement.creator.id &&
+                        announcement.creator.ui_class.indexOf("moderator") < 0;
 
                     const announcement_actions: PopupMenuItem[] = [
-                        {title: _('Hide this announcement'), onClick: () => {
-                            this.clearAnnouncement(announcement.id);
-                            return;
-                        }}];
+                        {
+                            title: _("Hide this announcement"),
+                            onClick: () => {
+                                this.clearAnnouncement(announcement.id);
+                                return;
+                            },
+                        },
+                    ];
 
                     if (can_block_user) {
-                        announcement_actions.push(
-                            {title: interpolate(_("Hide all from {{username}}"), {username: announcement.creator.username}), onClick: () => {
+                        announcement_actions.push({
+                            title: interpolate(_("Hide all from {{username}}"), {
+                                username: announcement.creator.username,
+                            }),
+                            onClick: () => {
                                 swal({
-                                    "text": interpolate(_("Are you sure you want to hide all announcements from {{name}}?"),
-                                        {name: announcement.creator.username}),
-                                    "showCancelButton": true,
-                                    "confirmButtonText": _("Yes"),
-                                    "cancelButtonText": _("Cancel"),
+                                    text: interpolate(
+                                        _("Are you sure you want to hide all announcements from {{name}}?"),
+                                        { name: announcement.creator.username },
+                                    ),
+                                    showCancelButton: true,
+                                    confirmButtonText: _("Yes"),
+                                    cancelButtonText: _("Cancel"),
                                 })
-                                .then(() => {
-                                    setAnnouncementBlock(announcement.creator.id, true);
-                                    this.forceUpdate();
-                                })
-                                .catch(() => 0);
+                                    .then(() => {
+                                        setAnnouncementBlock(announcement.creator.id, true);
+                                        this.forceUpdate();
+                                    })
+                                    .catch(() => 0);
                                 return;
-                            }}
-                        );
+                            },
+                        });
                     }
 
                     if (announcement.type === "stream") {
-                        announcement_actions.push(
-                            {title: _('Hide stream announcements'), onClick: () => {
+                        announcement_actions.push({
+                            title: _("Hide stream announcements"),
+                            onClick: () => {
                                 swal({
-                                    "text": _("Are you sure you want to hide all announcements for streamers?"),
-                                    "showCancelButton": true,
-                                    "confirmButtonText": _("Yes"),
-                                    "cancelButtonText": _("Cancel"),
+                                    text: _("Are you sure you want to hide all announcements for streamers?"),
+                                    showCancelButton: true,
+                                    confirmButtonText: _("Yes"),
+                                    cancelButtonText: _("Cancel"),
                                 })
-                                .then(() => {
-                                    preferences.set("mute-stream-announcements", true);
-                                    this.forceUpdate();
-                                })
-                                .catch(() => 0);
+                                    .then(() => {
+                                        preferences.set("mute-stream-announcements", true);
+                                        this.forceUpdate();
+                                    })
+                                    .catch(() => 0);
                                 return;
-                            }}
-                        );
+                            },
+                        });
                     }
 
                     if (announcement.type === "event") {
-                        announcement_actions.push(
-                            {title: _('Hide event announcements'), onClick: () => {
+                        announcement_actions.push({
+                            title: _("Hide event announcements"),
+                            onClick: () => {
                                 swal({
-                                    "text": _("Are you sure you want to hide all event announcements?"),
-                                    "showCancelButton": true,
-                                    "confirmButtonText": _("Yes"),
-                                    "cancelButtonText": _("Cancel"),
+                                    text: _("Are you sure you want to hide all event announcements?"),
+                                    showCancelButton: true,
+                                    confirmButtonText: _("Yes"),
+                                    cancelButtonText: _("Cancel"),
                                 })
-                                .then(() => {
-                                    preferences.set("mute-event-announcements", true);
-                                    this.forceUpdate();
-                                })
-                                .catch(() => 0);
+                                    .then(() => {
+                                        preferences.set("mute-event-announcements", true);
+                                        this.forceUpdate();
+                                    })
+                                    .catch(() => 0);
                                 return;
-                            }}
-                        );
+                            },
+                        });
                     }
 
                     if (announcement.type === "advertisement") {
-                        announcement_actions.push(
-                            {title: _('Hide go service advertisements'), onClick: () => {
+                        announcement_actions.push({
+                            title: _("Hide go service advertisements"),
+                            onClick: () => {
                                 swal({
-                                    "text": _("Are you sure you want to hide all go related advertisements?"),
-                                    "showCancelButton": true,
-                                    "confirmButtonText": _("Yes"),
-                                    "cancelButtonText": _("Cancel"),
+                                    text: _("Are you sure you want to hide all go related advertisements?"),
+                                    showCancelButton: true,
+                                    confirmButtonText: _("Yes"),
+                                    cancelButtonText: _("Cancel"),
                                 })
-                                .then(() => {
-                                    preferences.set("mute-event-announcements", true);
-                                    this.forceUpdate();
-                                })
-                                .catch(() => 0);
+                                    .then(() => {
+                                        preferences.set("mute-event-announcements", true);
+                                        this.forceUpdate();
+                                    })
+                                    .catch(() => 0);
                                 return;
-                            }}
-                        );
+                            },
+                        });
                     }
 
                     return (
                         <div className="announcement" key={idx}>
-                            {announcement.link
-                            ? (announcement.link.indexOf("://") > 0
-                                ? <a href={announcement.link} target="_blank">{announcement.text}</a>
-                                : <Link to={announcement.link}>{announcement.text}</Link>
-                              )
-                            : <span>{announcement.text}</span>
-                            }
+                            {announcement.link ? (
+                                announcement.link.indexOf("://") > 0 ? (
+                                    <a href={announcement.link} target="_blank">
+                                        {announcement.text}
+                                    </a>
+                                ) : (
+                                    <Link to={announcement.link}>{announcement.text}</Link>
+                                )
+                            ) : (
+                                <span>{announcement.text}</span>
+                            )}
                             <PopupMenu list={announcement_actions}></PopupMenu>
                         </div>
                     );

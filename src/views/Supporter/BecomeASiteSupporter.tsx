@@ -16,14 +16,12 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router-dom";
-import {browserHistory} from "ogsHistory";
+import { Link } from "react-router-dom";
+import { browserHistory } from "ogsHistory";
 import * as data from "data";
-import {Modal, openModal} from "Modal";
-import {_, pgettext, interpolate} from "translate";
-import {SiteSupporterText} from "./SiteSupporterText";
-
-
+import { Modal, openModal } from "Modal";
+import { _, pgettext, interpolate } from "translate";
+import { SiteSupporterText } from "./SiteSupporterText";
 
 export class BecomeASiteSupporterModal extends Modal<{}, {}, any> {
     constructor(props) {
@@ -41,7 +39,9 @@ export class BecomeASiteSupporterModal extends Modal<{}, {}, any> {
                 </div>
                 <div className="buttons">
                     <button onClick={this.close}>{_("Close")}</button>
-                    <button className='primary' onClick={this.becomeASiteSupporter}>{_("Become a Site Supporter!")}</button>
+                    <button className="primary" onClick={this.becomeASiteSupporter}>
+                        {_("Become a Site Supporter!")}
+                    </button>
                 </div>
             </div>
         );

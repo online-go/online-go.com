@@ -16,7 +16,7 @@
  */
 
 // Basic types used the the pubsub module. Saves typing and allows for easy modification.
-type CallbackTable<T> = {[K in Extract<keyof T, string>]?: {[serial: number]: Callback<T, K>}};
+type CallbackTable<T> = { [K in Extract<keyof T, string>]?: { [serial: number]: Callback<T, K> } };
 type Callback<T, K extends Extract<keyof T, string>> = (channel: K, item: T[K]) => void;
 
 export interface Subscriber<T, K extends Extract<keyof T, string>> {
@@ -24,8 +24,6 @@ export interface Subscriber<T, K extends Extract<keyof T, string>> {
     off: (channels: K | Array<K>) => this;
     channels: () => Array<K>;
 }
-
-
 
 // A Publisher<T> is an object that publishes information of type T to its subscribers.
 //
@@ -62,8 +60,6 @@ export class Publisher<T> {
     }
 }
 
-
-
 // A Subscriber to a Publisher. This class connects the callback functions to
 // the publisher that will call them.
 //
@@ -77,7 +73,7 @@ export class Publisher<T> {
 // to narrow the type down, then you can specify K = keyof T or just allow
 // the compiler to infer the type.
 abstract class AbstractSubscriber<T, K extends Extract<keyof T, string>> implements Subscriber<T, K> {
-    private subscribed_channels: {[channel in K]?: boolean};
+    private subscribed_channels: { [channel in K]?: boolean };
 
     constructor(private serial: number, private callback_table: CallbackTable<T>, private callback: Callback<T, K>) {
         this.subscribed_channels = {};

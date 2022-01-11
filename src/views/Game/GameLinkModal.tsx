@@ -16,18 +16,16 @@
  */
 
 import * as React from "react";
-import {_} from "translate";
-import {openModal, Modal} from "Modal";
-import {Goban} from "goban";
-import {Player} from "Player";
+import { _ } from "translate";
+import { openModal, Modal } from "Modal";
+import { Goban } from "goban";
+import { Player } from "Player";
 
-interface Events {
-}
+interface Events {}
 
 interface GameLinkModalProperties {
     goban: Goban;
 }
-
 
 export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
     constructor(props) {
@@ -40,37 +38,53 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
         if (goban.game_id) {
             sgf_url = window.location.protocol + "//" + window.location.hostname + `/api/v1/games/${goban.game_id}/sgf`;
         } else {
-            sgf_url = window.location.protocol + "//" + window.location.hostname + `/api/v1/reviews/${goban.review_id}/sgf`;
+            sgf_url =
+                window.location.protocol + "//" + window.location.hostname + `/api/v1/reviews/${goban.review_id}/sgf`;
         }
 
         return (
             <div className="Modal GameLinkModal" ref="modal">
                 <div className="header">
                     <div>
-                        <h2>
-                            {goban.engine.config.game_name}
-                        </h2>
+                        <h2>{goban.engine.config.game_name}</h2>
                         <h3>
-                            <Player disableCacheUpdate icon rank user={goban.engine.config.players.black} /> {
-                                _("vs.")
-                            } <Player disableCacheUpdate icon rank user={goban.engine.config.players.white} />
+                            <Player disableCacheUpdate icon rank user={goban.engine.config.players.black} /> {_("vs.")}{" "}
+                            <Player disableCacheUpdate icon rank user={goban.engine.config.players.white} />
                         </h3>
                     </div>
                 </div>
                 <div className="body">
                     <div className="GameLink-kv">
-                        <a href={"" + window.location} target="_blank"><i className="fa fa-link"/></a>
-                        <span>{goban.game_id
-                          ?  _("Game") /* Translators: Link to game */
-                          :  _("Review") /* Translators: Link to review */
-                        }: </span>
-                        <input type="text" value={"" + window.location} onClick={(ev) => (ev.target as HTMLInputElement).select()} readOnly/>
+                        <a href={"" + window.location} target="_blank">
+                            <i className="fa fa-link" />
+                        </a>
+                        <span>
+                            {
+                                goban.game_id
+                                    ? _("Game") /* Translators: Link to game */
+                                    : _("Review") /* Translators: Link to review */
+                            }
+                            :{" "}
+                        </span>
+                        <input
+                            type="text"
+                            value={"" + window.location}
+                            onClick={(ev) => (ev.target as HTMLInputElement).select()}
+                            readOnly
+                        />
                     </div>
 
                     <div className="GameLink-kv">
-                        <a href={sgf_url} target="_blank"><i className="fa fa-link"/></a>
+                        <a href={sgf_url} target="_blank">
+                            <i className="fa fa-link" />
+                        </a>
                         <span>{_("SGF")}: </span>
-                        <input type="text" value={sgf_url} onClick={(ev) => (ev.target as HTMLInputElement).select()} readOnly/>
+                        <input
+                            type="text"
+                            value={sgf_url}
+                            onClick={(ev) => (ev.target as HTMLInputElement).select()}
+                            readOnly
+                        />
                     </div>
                 </div>
                 <div className="buttons">
@@ -80,7 +94,6 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
         );
     }
 }
-
 
 export function openGameLinkModal(goban): void {
     openModal(<GameLinkModal goban={goban} fastDismiss />);

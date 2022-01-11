@@ -24,15 +24,15 @@ interface LoadingProps {
 
 export function Loading(props: LoadingProps): JSX.Element {
     return (
-        <span className={'Loading' + (props.small ? ' small' : '') + (props.large ? ' large' : '')}>
-            <span className='loading-spinner' />
+        <span className={"Loading" + (props.small ? " small" : "") + (props.large ? " large" : "")}>
+            <span className="loading-spinner" />
         </span>
     );
 }
 
 export function LoadingPage(props: LoadingProps): JSX.Element {
     return (
-        <span className='LoadingPage'>
+        <span className="LoadingPage">
             <Loading {...props} />
         </span>
     );

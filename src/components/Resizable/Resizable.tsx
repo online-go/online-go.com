@@ -16,8 +16,8 @@
  */
 
 import * as React from "react";
-import {_, pgettext, interpolate} from "translate";
-import {post, get} from "requests";
+import { _, pgettext, interpolate } from "translate";
+import { post, get } from "requests";
 
 interface ResizableProperties {
     id?: string;
@@ -65,10 +65,10 @@ export class Resizable extends React.Component<any, {}> {
               - anoek 2017-11-28
             */
 
-            console.warn('Resizable.checkForResize errored out');
+            console.warn("Resizable.checkForResize errored out");
             console.warn(e);
-            console.warn('This was: ', this);
-            console.warn('Div was: ', div, this.div);
+            console.warn("This was: ", this);
+            console.warn("Div was: ", div, this.div);
             throw e;
         }
 
@@ -92,11 +92,13 @@ export class Resizable extends React.Component<any, {}> {
         clearInterval(this.check_interval);
     }
 
-    setref_div = (el) => this.div = el;
+    setref_div = (el) => (this.div = el);
 
     render() {
         return (
-            <div ref={this.setref_div} id={this.props.id} className={"Resizable " + (this.props.className || "")}>{this.props.children}</div>
+            <div ref={this.setref_div} id={this.props.id} className={"Resizable " + (this.props.className || "")}>
+                {this.props.children}
+            </div>
         );
     }
 }

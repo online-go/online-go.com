@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {_, interpolate, pgettext} from "translate";
+import { _, interpolate, pgettext } from "translate";
 import { Interface } from "readline";
 
 export interface IRankInfo {
@@ -46,7 +46,6 @@ export const MinRank = 5;
 export const MaxRank = 38;
 export const PROVISIONAL_RATING_CUTOFF = 160;
 
-
 const MIN_RATING = 100;
 const MAX_RATING = 6000;
 const A = 525;
@@ -69,10 +68,10 @@ export function get_handicap_adjustment(rating: number, handicap: number): numbe
 }
 function overall_rank(user_or_rank: any): number {
     let rank = null;
-    if (typeof(user_or_rank) === 'number') {
+    if (typeof user_or_rank === "number") {
         rank = user_or_rank;
     } else {
-        rank = getUserRating(user_or_rank, 'overall', 0).rank;
+        rank = getUserRating(user_or_rank, "overall", 0).rank;
     }
     return rank;
 }
@@ -90,7 +89,7 @@ export function bounded_rank(user_or_rank: any): number {
 export function is_provisional(user: any): boolean {
     const ratings = user.ratings || {};
 
-    const rating = ratings['overall'] || {
+    const rating = ratings["overall"] || {
         rating: 1500,
         deviation: 350,
         volatility: 0.06,
@@ -99,15 +98,18 @@ export function is_provisional(user: any): boolean {
     return rating.deviation >= PROVISIONAL_RATING_CUTOFF;
 }
 
-
-export function getUserRating(user: any, speed: 'overall' | 'blitz' | 'live' | 'correspondence' = 'overall', size: 0 | 9 | 13 | 19 = 0) {
+export function getUserRating(
+    user: any,
+    speed: "overall" | "blitz" | "live" | "correspondence" = "overall",
+    size: 0 | 9 | 13 | 19 = 0,
+) {
     const ret = new Rating();
     const ratings = user.ratings || {};
     ret.professional = user.pro || user.professional;
 
     let key: string = speed;
     if (size > 0) {
-        if (speed !== 'overall') {
+        if (speed !== "overall") {
             key += `-${size}x${size}`;
         } else {
             key = `${size}x${size}`;
@@ -142,21 +144,20 @@ export function getUserRating(user: any, speed: 'overall' | 'blitz' | 'live' | '
     ret.bounded_rank_label = rankString(ret.bounded_rank);
     ret.partial_bounded_rank = Math.max(MinRank, Math.min(MaxRank, ret.partial_rank));
     ret.partial_bounded_rank_label = rankString(ret.partial_bounded_rank, true);
-    if (ret.rank > (MaxRank + 1)) {
-        ret.bounded_rank_label += '+';
-        ret.partial_bounded_rank_label += '+';
+    if (ret.rank > MaxRank + 1) {
+        ret.bounded_rank_label += "+";
+        ret.partial_bounded_rank_label += "+";
     }
 
     if (ret.professional) {
         ret.rank_label = rankString(user);
         ret.bounded_rank_label = rankString(user);
         ret.partial_rank_label = ret.rank_label;
-        ret.rank_deviation_labels = ['', ''];
+        ret.rank_deviation_labels = ["", ""];
     }
 
     return ret;
 }
-
 
 export function boundedRankString(r, with_tenths?: boolean) {
     return rankString(bounded_rank(r), with_tenths);
@@ -165,18 +166,18 @@ export function boundedRankString(r, with_tenths?: boolean) {
 export function rankString(r, with_tenths?: boolean) {
     let provisional = false;
 
-    if (typeof(r) === "object") {
+    if (typeof r === "object") {
         provisional = is_provisional(r);
 
         const ranking = "ranking" in r ? r.ranking : r.rank;
         if (r.pro || r.professional) {
             if (ranking > 900) {
-                return interpolate(pgettext("Pro", "%sp"), [(((ranking - 1000) - 36))]);
+                return interpolate(pgettext("Pro", "%sp"), [ranking - 1000 - 36]);
             } else {
-                return interpolate(pgettext("Pro", "%sp"), [((ranking - 36))]);
+                return interpolate(pgettext("Pro", "%sp"), [ranking - 36]);
             }
         }
-        if ('ratings' in r) {
+        if ("ratings" in r) {
             r = overall_rank(r);
         } else {
             provisional = false;
@@ -184,7 +185,7 @@ export function rankString(r, with_tenths?: boolean) {
         }
     }
     if (r > 900) {
-        return interpolate(pgettext("Pro", "%sp"), [(((r - 1000) - 36))]);
+        return interpolate(pgettext("Pro", "%sp"), [r - 1000 - 36]);
     }
 
     if (r < -900) {
@@ -214,21 +215,21 @@ export function rankString(r, with_tenths?: boolean) {
 export function longRankString(r) {
     let provisional = false;
 
-    if (typeof(r) === "object") {
+    if (typeof r === "object") {
         provisional = is_provisional(r);
 
         const ranking = "ranking" in r ? r.ranking : r.rank;
         if (r.pro || r.professional) {
-            return interpolate(_("%s Pro"), [((ranking - 36))]);
+            return interpolate(_("%s Pro"), [ranking - 36]);
         }
-        if ('ratings' in r) {
+        if ("ratings" in r) {
             r = overall_rank(r);
         } else {
             r = ranking;
         }
     }
     if (r > 900) {
-        return interpolate(_("%s Pro"), [(((r - 1000) - 36))]);
+        return interpolate(_("%s Pro"), [r - 1000 - 36]);
     }
 
     if (r < -900) {
@@ -239,20 +240,25 @@ export function longRankString(r) {
     }
 
     if (r < 30) {
-        return interpolate(_("%s Kyu"), [(30 - r)]);
+        return interpolate(_("%s Kyu"), [30 - r]);
     }
-    return interpolate(_("%s Dan"), [((r - 30) + 1)]);
+    return interpolate(_("%s Dan"), [r - 30 + 1]);
 }
 
-
-export function rankList(minRank: number = 0, maxRank: number = MaxRank, usePlusOnLast: boolean = false): Array<IRankInfo> {
+export function rankList(
+    minRank: number = 0,
+    maxRank: number = MaxRank,
+    usePlusOnLast: boolean = false,
+): Array<IRankInfo> {
     const result = [];
     for (let i = minRank; i <= maxRank; ++i) {
         let label = longRankString(i);
-        if (usePlusOnLast && i === maxRank) { label += "+"; }
-        result.push ({
+        if (usePlusOnLast && i === maxRank) {
+            label += "+";
+        }
+        result.push({
             rank: i,
-            label: label
+            label: label,
         });
     }
     return result;
@@ -261,24 +267,33 @@ export function rankList(minRank: number = 0, maxRank: number = MaxRank, usePlus
 export function proRankList(bigranknums: boolean = true): Array<IRankInfo> {
     const result = [];
     for (let i = 37; i <= 45; ++i) {
-        result.push ({
+        result.push({
             rank: i + (bigranknums ? 1000 : 0),
-            label: longRankString(i + 1000)
+            label: longRankString(i + 1000),
         });
     }
     return result;
 }
 
-export function amateurRanks() { return rankList(MinRank, MaxRank, true); }
-export function allRanks() { return rankList().concat( proRankList()); }
+export function amateurRanks() {
+    return rankList(MinRank, MaxRank, true);
+}
+export function allRanks() {
+    return rankList().concat(proRankList());
+}
 
 /* For new players we pretend their rating is lower than it actually is for the purposes of
  * matchmaking and the like. See:
  *  https://forums.online-go.com/t/i-think-the-13k-default-rank-is-doing-harm/13480/192
  * for the history surounding that.
-*/
+ */
 export function humble_rating(rating: number, deviation: number): number {
-    return rating - ((Math.min(350, Math.max(PROVISIONAL_RATING_CUTOFF, deviation)) - PROVISIONAL_RATING_CUTOFF) / (350 - PROVISIONAL_RATING_CUTOFF)) * deviation;
+    return (
+        rating -
+        ((Math.min(350, Math.max(PROVISIONAL_RATING_CUTOFF, deviation)) - PROVISIONAL_RATING_CUTOFF) /
+            (350 - PROVISIONAL_RATING_CUTOFF)) *
+            deviation
+    );
 }
 
 export interface EffectiveOutcome {
@@ -306,7 +321,6 @@ export function effective_outcome(black_rating: number, white_rating: number, ha
         black_real_stronger: black_rating > white_rating,
         black_effective_stronger: black_effective_rating > white_effective_rating,
         white_real_stronger: white_rating >= black_rating,
-        white_effective_stronger: white_effective_rating >= black_effective_rating
+        white_effective_stronger: white_effective_rating >= black_effective_rating,
     };
 }
-

@@ -27,5 +27,4 @@ class Device {
     }
 }
 
-
 export default new Device();

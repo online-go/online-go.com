@@ -16,24 +16,21 @@
  */
 
 import * as React from "react";
-import {_} from "translate";
-import {put, get, post, del} from "requests";
-import {Player} from "Player";
-import {errorAlerter, ignore} from "misc";
-import {Modal, openModal} from "Modal";
-import {PrettyTransactionInfo} from 'Supporter/PrettyTransactionInfo';
-import * as moment from 'moment';
+import { _ } from "translate";
+import { put, get, post, del } from "requests";
+import { Player } from "Player";
+import { errorAlerter, ignore } from "misc";
+import { Modal, openModal } from "Modal";
+import { PrettyTransactionInfo } from "Supporter/PrettyTransactionInfo";
+import * as moment from "moment";
 
-
-interface Events {
-}
+interface Events {}
 
 interface SupporterAdminProperties {
     playerId?: number;
 }
 
-import swal from 'sweetalert2';
-
+import swal from "sweetalert2";
 
 export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any> {
     constructor(props) {
@@ -45,7 +42,7 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
             supporter_expiration: null,
             rough_monthly_support: null,
             payment_accounts: [],
-            num_months: '',
+            num_months: "",
         };
     }
 
@@ -55,53 +52,53 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
 
     refresh() {
         get("supporter_center/player/%%", this.props.playerId)
-        .then((res) => {
-
-            const last_transaction = null;
-            const transactions = [];
-            for (const account of res.payment_accounts) {
-                for (const method of account.payment_methods) {
-                    for (const purchase of method.purchases) {
-                        for (const transaction of purchase.transactions) {
-                            transactions.push(transaction);
+            .then((res) => {
+                const last_transaction = null;
+                const transactions = [];
+                for (const account of res.payment_accounts) {
+                    for (const method of account.payment_methods) {
+                        for (const purchase of method.purchases) {
+                            for (const transaction of purchase.transactions) {
+                                transactions.push(transaction);
+                            }
                         }
                     }
                 }
-            }
-            transactions.sort((a, b) => b.created.localeCompare(a.created));
+                transactions.sort((a, b) => b.created.localeCompare(a.created));
 
-            console.log(transactions);
+                console.log(transactions);
 
-            this.setState({
-                supporter: res.supporter,
-                supporter_expiration: res.supporter_expiration,
-                rough_monthly_support: res.rough_monthly_support,
-                payment_accounts: res.payment_accounts,
-                last_transaction: transactions.length > 0 ? transactions[0] : null,
-                loading: false,
-            });
-            //console.log(dets);
-            //this.setState(Object.assign({loading: false}, dets.user, {bot_owner: dets.user.bot_owner ? dets.user.bot_owner.id : null}));
-        })
-        .catch(errorAlerter);
+                this.setState({
+                    supporter: res.supporter,
+                    supporter_expiration: res.supporter_expiration,
+                    rough_monthly_support: res.rough_monthly_support,
+                    payment_accounts: res.payment_accounts,
+                    last_transaction: transactions.length > 0 ? transactions[0] : null,
+                    loading: false,
+                });
+                //console.log(dets);
+                //this.setState(Object.assign({loading: false}, dets.user, {bot_owner: dets.user.bot_owner ? dets.user.bot_owner.id : null}));
+            })
+            .catch(errorAlerter);
     }
 
     setNumMonths = (ev: React.ChangeEvent<HTMLInputElement>) => {
-        this.setState({num_months: ev.target.value});
+        this.setState({ num_months: ev.target.value });
     };
 
     makeSupporter = () => {
         const num_months = parseInt(this.state.num_months);
 
         swal({
-            "text": (`Grant ${num_months} month supporter status to player?`),
-            showCancelButton: true
-        }).then(() => {
-            post("supporter_center/player/%%", this.props.playerId, {months: num_months})
-            .then((res) => this.refresh())
-            .catch(errorAlerter);
+            text: `Grant ${num_months} month supporter status to player?`,
+            showCancelButton: true,
         })
-        .catch(ignore);
+            .then(() => {
+                post("supporter_center/player/%%", this.props.playerId, { months: num_months })
+                    .then((res) => this.refresh())
+                    .catch(errorAlerter);
+            })
+            .catch(ignore);
     };
 
     render() {
@@ -111,31 +108,28 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
             <div className="Modal SupporterAdmin" ref="modal">
                 <div className="header">
                     <h3>
-                        <Player user={this.props.playerId}/> - {this.state.loading
-                            ? null
-                            : <span >
-                                {this.state.supporter ? 'Supporter' : 'Non-Supporter'}
-                                {this.state.supporter_expiration ? ' until ' + moment(this.state.supporter_expiration).format('YYYY-MM-DD') : ''}
-
+                        <Player user={this.props.playerId} /> -{" "}
+                        {this.state.loading ? null : (
+                            <span>
+                                {this.state.supporter ? "Supporter" : "Non-Supporter"}
+                                {this.state.supporter_expiration
+                                    ? " until " + moment(this.state.supporter_expiration).format("YYYY-MM-DD")
+                                    : ""}
                                 : ~${this.state.rough_monthly_support.toFixed(2)}/mo
                             </span>
-                        }
+                        )}
                     </h3>
                 </div>
-                {(this.state.loading === false || null) &&
+                {(this.state.loading === false || null) && (
                     <div className="body">
-
                         <PrettyTransactionInfo transaction={this.state.last_transaction} />
-                        <hr/>
+                        <hr />
 
-
-                        {(this.state.payment_accounts.length === 0 || null) &&
-                            <h3>No payment accounts</h3>
-                        }
+                        {(this.state.payment_accounts.length === 0 || null) && <h3>No payment accounts</h3>}
 
                         {this.state.payment_accounts.map((account, idx) => (
-                            <div key={account.id} className='PaymentAccount'>
-                                <table className='account-info'>
+                            <div key={account.id} className="PaymentAccount">
+                                <table className="account-info">
                                     <thead>
                                         <tr>
                                             <th>Created</th>
@@ -146,8 +140,8 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td>{moment(account.created).format('YYYY-MM-DD')}</td>
-                                            <td>{account.active ? 'active' : ' '}</td>
+                                            <td>{moment(account.created).format("YYYY-MM-DD")}</td>
+                                            <td>{account.active ? "active" : " "}</td>
                                             <td>{account.payment_vendor}</td>
                                             <td>{account.account_id}</td>
                                         </tr>
@@ -156,7 +150,7 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
 
                                 {account.payment_methods.map((method, idx) => (
                                     <div key={method.id}>
-                                        <table className='method-info'>
+                                        <table className="method-info">
                                             <thead>
                                                 <tr>
                                                     <th>Token</th>
@@ -169,17 +163,17 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
                                             <tbody>
                                                 <tr key={method.id}>
                                                     <td>{method.payment_token}</td>
-                                                    <td>{method.active ? 'active' : ' '}</td>
+                                                    <td>{method.active ? "active" : " "}</td>
                                                     <td>{method.name}</td>
                                                     <td>{method.card_number}</td>
-                                                    <td>{method.expiration_month + '/' + method.expiration_year}</td>
+                                                    <td>{method.expiration_month + "/" + method.expiration_year}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
 
                                         {method.purchases.map((purchase, idx) => (
                                             <div key={purchase.id}>
-                                                <table className='purchase-info'>
+                                                <table className="purchase-info">
                                                     <thead>
                                                         <tr>
                                                             <th>Created</th>
@@ -191,16 +185,24 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
                                                     </thead>
                                                     <tbody>
                                                         <tr key={purchase.id}>
-                                                            <td>{moment(purchase.created).format('YYYY-MM-DD HH:MM')}</td>
-                                                            <td>{purchase.cancelation ? moment(purchase.cancelation).format('YYYY-MM-DD HH:MM') : ''}</td>
-                                                            <td>{purchase.active ? 'active' : ' '}</td>
+                                                            <td>
+                                                                {moment(purchase.created).format("YYYY-MM-DD HH:MM")}
+                                                            </td>
+                                                            <td>
+                                                                {purchase.cancelation
+                                                                    ? moment(purchase.cancelation).format(
+                                                                          "YYYY-MM-DD HH:MM",
+                                                                      )
+                                                                    : ""}
+                                                            </td>
+                                                            <td>{purchase.active ? "active" : " "}</td>
                                                             <td>${parseFloat(purchase.price).toFixed(2)}</td>
                                                             <td>{purchase.order_id}</td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
 
-                                                <table className='transaction-info'>
+                                                <table className="transaction-info">
                                                     <thead>
                                                         <tr>
                                                             <th>Date</th>
@@ -214,17 +216,25 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
                                                     <tbody>
                                                         {purchase.transactions.map((transaction, idx) => (
                                                             <tr key={transaction.id}>
-                                                                <td>{moment(transaction.created).format('YYYY-MM-DD HH:MM')}</td>
+                                                                <td>
+                                                                    {moment(transaction.created).format(
+                                                                        "YYYY-MM-DD HH:MM",
+                                                                    )}
+                                                                </td>
                                                                 <td>{transaction.transaction_id}</td>
                                                                 <td>{transaction.action}</td>
                                                                 <td>{transaction.method}</td>
                                                                 <td>{transaction.account}</td>
-                                                                <td>{transaction.amount ? '$' + parseFloat(transaction.amount).toFixed(2) : '-'}</td>
+                                                                <td>
+                                                                    {transaction.amount
+                                                                        ? "$" +
+                                                                          parseFloat(transaction.amount).toFixed(2)
+                                                                        : "-"}
+                                                                </td>
                                                             </tr>
                                                         ))}
                                                     </tbody>
                                                 </table>
-
                                             </div>
                                         ))}
                                     </div>
@@ -232,12 +242,20 @@ export class SupporterAdmin extends Modal<Events, SupporterAdminProperties, any>
                             </div>
                         ))}
                     </div>
-                }
+                )}
                 <div className="buttons">
                     <button onClick={this.close}>{_("Close")}</button>
                     <span>
-                        <button className='btn btn-primary' onClick={this.makeSupporter}>Make supporter</button>
-                        <input type='number' style={{width: '5rem'}} value={this.state.num_months} onChange={this.setNumMonths} placeholder='Months'/>
+                        <button className="btn btn-primary" onClick={this.makeSupporter}>
+                            Make supporter
+                        </button>
+                        <input
+                            type="number"
+                            style={{ width: "5rem" }}
+                            value={this.state.num_months}
+                            onChange={this.setNumMonths}
+                            placeholder="Months"
+                        />
                     </span>
                 </div>
             </div>

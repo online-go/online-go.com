@@ -18,20 +18,19 @@
 import * as React from "react";
 import * as moment from "moment";
 import * as data from "data";
-import {_} from "translate";
-import {post, patch, del} from "requests";
-import {openModal, Modal, ModalConstructorInput} from "Modal";
-import {timeControlDescription} from "TimeControl";
-import {Player} from "Player";
-import {handicapText} from "GameAcceptModal";
-import {errorAlerter, ignore, rulesText, yesno, getGameResultText} from "misc";
-import {rankString} from 'rank_utils';
-import {browserHistory} from "ogsHistory";
-import swal from 'sweetalert2';
+import { _ } from "translate";
+import { post, patch, del } from "requests";
+import { openModal, Modal, ModalConstructorInput } from "Modal";
+import { timeControlDescription } from "TimeControl";
+import { Player } from "Player";
+import { handicapText } from "GameAcceptModal";
+import { errorAlerter, ignore, rulesText, yesno, getGameResultText } from "misc";
+import { rankString } from "rank_utils";
+import { browserHistory } from "ogsHistory";
+import swal from "sweetalert2";
 import { GobanConfig, GoEnginePlayerEntry } from "goban";
 
-interface Events {
-}
+interface Events {}
 
 interface GameInfoModalProperties {
     config: GobanConfig;
@@ -53,37 +52,37 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         if (game_id) {
             const settings = {
                 moderation_note: "Update game name",
-                name: config.game_name
+                name: config.game_name,
             };
 
             post(`games/${this.props.config.game_id}/moderate`, settings)
-            .then(() => {
-                this.close();
-            })
-            .catch(errorAlerter);
+                .then(() => {
+                    this.close();
+                })
+                .catch(errorAlerter);
         }
 
         if (review_id) {
             const settings = {
-                'name': config.game_name,
-                'outcome': config.outcome,
+                name: config.game_name,
+                outcome: config.outcome,
             };
             if (config.black_player_id === 0 || !config.players?.black?.id) {
-                settings['black_player_name'] = config.players.black.name;
-                settings['black_player_rank'] = config.players.black.rank;
-                settings['black_player_pro'] = !!config.players.black.pro;
+                settings["black_player_name"] = config.players.black.name;
+                settings["black_player_rank"] = config.players.black.rank;
+                settings["black_player_pro"] = !!config.players.black.pro;
             }
             if (config.white_player_id === 0 || !config.players?.white?.id) {
-                settings['white_player_name'] = config.players.white.name;
-                settings['white_player_rank'] = config.players.white.rank;
-                settings['white_player_pro'] = !!config.players.white.pro;
+                settings["white_player_name"] = config.players.white.name;
+                settings["white_player_rank"] = config.players.white.rank;
+                settings["white_player_pro"] = !!config.players.white.pro;
             }
 
             patch(`reviews/${review_id}`, settings)
-            .then(() => {
-                this.close();
-            })
-            .catch(errorAlerter);
+                .then(() => {
+                    this.close();
+                })
+                .catch(errorAlerter);
         }
     };
 
@@ -95,17 +94,17 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                 text: _("Are you sure you wish to delete this board?"),
                 showCancelButton: true,
             })
-            .then(() => {
-                console.log("Should be deleting");
-
-                del(`reviews/${review_id}`)
                 .then(() => {
-                    this.close();
-                    console.log(browserHistory.goBack());
+                    console.log("Should be deleting");
+
+                    del(`reviews/${review_id}`)
+                        .then(() => {
+                            this.close();
+                            console.log(browserHistory.goBack());
+                        })
+                        .catch(errorAlerter);
                 })
-                .catch(errorAlerter);
-            })
-            .catch(ignore);
+                .catch(ignore);
         }
     };
 
@@ -150,9 +149,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
     twoPlayerTeamList = () => (
         <h3>
             <Player disableCacheUpdate icon rank user={this.props.black} />
-            {
-                _("vs.")
-            }
+            {_("vs.")}
             <Player disableCacheUpdate icon rank user={this.props.white} />
         </h3>
     );
@@ -160,34 +157,34 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
     rengoTeamList = () => (
         <div className="rengo-teams-container">
             <div className="rengo-team-list">
-                <span className='team-title'>Black Team</span>
-                {this.props.config.rengo_teams.black.map((player) =>
-                    <Player disableCacheUpdate icon rank user={player}/>)
-                }
+                <span className="team-title">Black Team</span>
+                {this.props.config.rengo_teams.black.map((player) => (
+                    <Player disableCacheUpdate icon rank user={player} />
+                ))}
             </div>
             <div className="rengo-team-list">
-                <span className='team-title'>White Team</span>
-                {this.props.config.rengo_teams.white.map((player) =>
-                    <Player disableCacheUpdate icon rank user={player}/>)
-                }
+                <span className="team-title">White Team</span>
+                {this.props.config.rengo_teams.white.map((player) => (
+                    <Player disableCacheUpdate icon rank user={player} />
+                ))}
             </div>
         </div>
     );
 
     render() {
         const config = this.props.config;
-        const user = data.get('user');
+        const user = data.get("user");
         const review_id = config.review_id;
-        const editable = ((review_id && this.props.creatorId === user.id) || user.is_moderator) || null;
+        const editable = (review_id && this.props.creatorId === user.id) || user.is_moderator || null;
 
         const time_control_description = timeControlDescription(config.time_control);
 
         const ranks = [];
         for (let i = 0; i < 39; ++i) {
-            ranks.push({value: i + ".0", label: rankString({ranking: i, professional: false})});
+            ranks.push({ value: i + ".0", label: rankString({ ranking: i, professional: false }) });
         }
         for (let i = 37; i < 46; ++i) {
-            ranks.push({value: i + ".1", label: rankString({ranking: i, professional: true})});
+            ranks.push({ value: i + ".1", label: rankString({ ranking: i, professional: true }) });
         }
 
         const black_editable = editable && (config.black_player_id === 0 || !config.players?.black?.id);
@@ -196,98 +193,151 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         return (
             <div className="Modal GameInfoModal" ref="modal">
                 <div className="header">
-                    {(config.rengo || null) &&
-                        <div className="rengo-header">
-                            {_("Rengo!")}
-                        </div>
-                    }
+                    {(config.rengo || null) && <div className="rengo-header">{_("Rengo!")}</div>}
 
-                    <h2>
-                        {config.game_name}
-                    </h2>
-                    {this.props.config.rengo ?
-                        this.rengoTeamList() :
-                        this.twoPlayerTeamList()
-                    }
+                    <h2>{config.game_name}</h2>
+                    {this.props.config.rengo ? this.rengoTeamList() : this.twoPlayerTeamList()}
                 </div>
                 <div className="body">
                     <dl className="horizontal">
-                        <dt>{_("Game")}</dt><dd>
-                            {editable
-                              ? <input value={config.game_name} onChange={this.updateName} />
-                              : <span>{config.game_name}</span>
-                            }
+                        <dt>{_("Game")}</dt>
+                        <dd>
+                            {editable ? (
+                                <input value={config.game_name} onChange={this.updateName} />
+                            ) : (
+                                <span>{config.game_name}</span>
+                            )}
                         </dd>
                         {this.props.creatorId && <dt>{_("Creator")}</dt>}
-                        {this.props.creatorId && <dd><Player icon rank user={this.props.creatorId} /></dd>}
-                        {!this.props.config.rengo && <React.Fragment>
-                            <dt>{_("Black")}</dt><dd>
-                                { black_editable
-                                ? <span>
-                                    <input value={config.players.black.name} onChange={this.updateBlackName} />
-                                    <select value={config.players.black.rank + "." + (config.players.black.pro ? 1 : 0)} onChange={this.updateBlackRank} >
-                                        {ranks.map((rank, idx) =>
-                                            <option key={rank.value} value={rank.value}>{rank.label}</option>
-                                        )}
-                                    </select>
-                                </span>
-                                : <Player disableCacheUpdate icon rank user={this.props.black} />
-                                }
+                        {this.props.creatorId && (
+                            <dd>
+                                <Player icon rank user={this.props.creatorId} />
                             </dd>
-                            <dt>{_("White")}</dt><dd>
-                                { white_editable
-                                ? <span>
-                                    <input value={config.players.white.name} onChange={this.updateWhiteName} />
-                                    <select value={config.players.white.rank + "." + (config.players.white.pro ? 1 : 0)} onChange={this.updateWhiteRank} >
-                                        {ranks.map((rank, idx) =>
-                                            <option key={rank.value} value={rank.value}>{rank.label}</option>
-                                        )}
-                                    </select>
-                                </span>
-                                : <Player disableCacheUpdate icon rank user={this.props.white} />
-                                }
-                            </dd>
-                        </React.Fragment>}
+                        )}
+                        {!this.props.config.rengo && (
+                            <React.Fragment>
+                                <dt>{_("Black")}</dt>
+                                <dd>
+                                    {black_editable ? (
+                                        <span>
+                                            <input value={config.players.black.name} onChange={this.updateBlackName} />
+                                            <select
+                                                value={
+                                                    config.players.black.rank + "." + (config.players.black.pro ? 1 : 0)
+                                                }
+                                                onChange={this.updateBlackRank}
+                                            >
+                                                {ranks.map((rank, idx) => (
+                                                    <option key={rank.value} value={rank.value}>
+                                                        {rank.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </span>
+                                    ) : (
+                                        <Player disableCacheUpdate icon rank user={this.props.black} />
+                                    )}
+                                </dd>
+                                <dt>{_("White")}</dt>
+                                <dd>
+                                    {white_editable ? (
+                                        <span>
+                                            <input value={config.players.white.name} onChange={this.updateWhiteName} />
+                                            <select
+                                                value={
+                                                    config.players.white.rank + "." + (config.players.white.pro ? 1 : 0)
+                                                }
+                                                onChange={this.updateWhiteRank}
+                                            >
+                                                {ranks.map((rank, idx) => (
+                                                    <option key={rank.value} value={rank.value}>
+                                                        {rank.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </span>
+                                    ) : (
+                                        <Player disableCacheUpdate icon rank user={this.props.white} />
+                                    )}
+                                </dd>
+                            </React.Fragment>
+                        )}
                         <dt>{_("Time")}</dt>
                         <dd>
                             {config.start_time ? moment(new Date(config.start_time * 1000)).format("LLL") : ""}
                             {config.end_time ? " - " + moment(new Date(config.end_time * 1000)).format("LLL") : ""}
                         </dd>
-                        <dt>{_("Rules")}</dt><dd>{rulesText(config.rules)}</dd>
-                        <dt>{_("Ranked")}</dt><dd>{yesno(config.ranked)}</dd>
-                        <dt>{_("Annulled")}</dt><dd>{yesno(this.props.annulled)}</dd>
-                        <dt>{_("Board Size")}</dt><dd>{config.width}x{config.height}</dd>
-                        <dt>{_("Handicap")}</dt><dd>{handicapText(config.handicap)}</dd>
-                        <dt>{_("Result")}</dt><dd>{
-                        (editable && config.review_id && !config.game_id)
-                            ? <input value={config.outcome} onChange={this.updateOutcome} />
-                                : <span>{getGameResultText(config.outcome,
-                                    config.winner !== config.white_player_id,
-                                    config.winner !== config.black_player_id)}</span>
-                        }</dd>
-                        <dt>{_("Komi")}</dt><dd>{config.komi.toFixed(1)}</dd>
-                        <dt>{_("Analysis")}</dt><dd>{(config.original_disable_analysis ? _("Analysis and conditional moves disabled") : _("Analysis and conditional moves enabled"))}</dd>
-                        <dt>{_("Time Control")}</dt><dd>{time_control_description}</dd>
+                        <dt>{_("Rules")}</dt>
+                        <dd>{rulesText(config.rules)}</dd>
+                        <dt>{_("Ranked")}</dt>
+                        <dd>{yesno(config.ranked)}</dd>
+                        <dt>{_("Annulled")}</dt>
+                        <dd>{yesno(this.props.annulled)}</dd>
+                        <dt>{_("Board Size")}</dt>
+                        <dd>
+                            {config.width}x{config.height}
+                        </dd>
+                        <dt>{_("Handicap")}</dt>
+                        <dd>{handicapText(config.handicap)}</dd>
+                        <dt>{_("Result")}</dt>
+                        <dd>
+                            {editable && config.review_id && !config.game_id ? (
+                                <input value={config.outcome} onChange={this.updateOutcome} />
+                            ) : (
+                                <span>
+                                    {getGameResultText(
+                                        config.outcome,
+                                        config.winner !== config.white_player_id,
+                                        config.winner !== config.black_player_id,
+                                    )}
+                                </span>
+                            )}
+                        </dd>
+                        <dt>{_("Komi")}</dt>
+                        <dd>{config.komi.toFixed(1)}</dd>
+                        <dt>{_("Analysis")}</dt>
+                        <dd>
+                            {config.original_disable_analysis
+                                ? _("Analysis and conditional moves disabled")
+                                : _("Analysis and conditional moves enabled")}
+                        </dd>
+                        <dt>{_("Time Control")}</dt>
+                        <dd>{time_control_description}</dd>
                     </dl>
                 </div>
                 <div className="buttons">
                     <button onClick={this.close}>{_("Close")}</button>
-                    {editable &&
-                      <span>
-                          {(this.props.config.review_id || null)
-                              &&
-                              <button className='danger' onClick={this.deleteReview}>{_("Delete")}</button>
-                          }
-                          <button onClick={this.save}>{_("Save")}</button>
-                      </span>
-                    }
+                    {editable && (
+                        <span>
+                            {(this.props.config.review_id || null) && (
+                                <button className="danger" onClick={this.deleteReview}>
+                                    {_("Delete")}
+                                </button>
+                            )}
+                            <button onClick={this.save}>{_("Save")}</button>
+                        </span>
+                    )}
                 </div>
             </div>
         );
     }
 }
 
-
-export function openGameInfoModal(config: GobanConfig, black: GoEnginePlayerEntry, white: GoEnginePlayerEntry, annulled: boolean, creator_id: number): void {
-    openModal(<GameInfoModal config={config} black={black} white={white} annulled={annulled} creatorId={creator_id} fastDismiss />);
+export function openGameInfoModal(
+    config: GobanConfig,
+    black: GoEnginePlayerEntry,
+    white: GoEnginePlayerEntry,
+    annulled: boolean,
+    creator_id: number,
+): void {
+    openModal(
+        <GameInfoModal
+            config={config}
+            black={black}
+            white={white}
+            annulled={annulled}
+            creatorId={creator_id}
+            fastDismiss
+        />,
+    );
 }
