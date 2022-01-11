@@ -44,11 +44,12 @@ import { RengoTeamManagementPane } from "RengoTeamManagementPane";
 
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
+type Challenge = socket_api.seekgraph_global.Challenge;
 
 interface PlayState {
-    live_list: Array<any>;
-    correspondence_list: Array<any>;
-    rengo_list: Array<any>;
+    live_list: Array<Challenge>;
+    correspondence_list: Array<Challenge>;
+    rengo_list: Array<Challenge>;
     showLoadingSpinnerForCorrespondence: boolean;
     show_all_challenges: boolean;
     show_ranked_challenges: boolean;
@@ -59,7 +60,7 @@ interface PlayState {
     show_other_boardsize_challenges: boolean;
     automatch_size_options: Size[];
     freeze_challenge_list: boolean; // Don't change the challenge list while they are trying to point the mouse at it
-    pending_challenges: Array<any>; // challenges received while frozen
+    pending_challenges: Array<Challenge>; // challenges received while frozen
     admin_pending: boolean;  // used to change cursor while waiting for rengo admin actions
     show_in_rengo_management_pane: number; // a challenge_id for challenge to show in the rengo challenge management pane
 }
@@ -142,7 +143,7 @@ export class Play extends React.Component<{}, PlayState> {
         }
     };
 
-    updateChallenges = (challenges) => {
+    updateChallenges = (challenges: Challenge[]) => {
         if (this.state.freeze_challenge_list) {
             const live = this.state.live_list;
             const corr = this.state.correspondence_list;
@@ -194,8 +195,7 @@ export class Play extends React.Component<{}, PlayState> {
         corr.sort(challenge_sort);
         rengo.sort(time_per_move_challenge_sort);
 
-        console.log("list update...", rengo);
-
+        //console.log("list update...");
         this.setState({
             live_list: live,
             correspondence_list: corr,
@@ -204,7 +204,7 @@ export class Play extends React.Component<{}, PlayState> {
         });
     };
 
-    acceptOpenChallenge = (challenge) => {
+    acceptOpenChallenge(challenge: Challenge) {
         openGameAcceptModal(challenge).then((challenge) => {
             browserHistory.push(`/game/${challenge.game_id}`);
             //window['openGame'](obj.game);
@@ -221,7 +221,7 @@ export class Play extends React.Component<{}, PlayState> {
         this.unfreezeChallenges();
     };
 
-    cancelOwnChallenges = (challenge_list) => {
+    cancelOwnChallenges = (challenge_list: Challenge[]) => {
         challenge_list.forEach((c) => {
             if (c.user_challenge) {
                 this.cancelOpenChallenge(c);
@@ -229,7 +229,7 @@ export class Play extends React.Component<{}, PlayState> {
         });
     };
 
-    extractUser(challenge) {
+    extractUser(challenge: Challenge) {
         return {
             id: challenge.user_id,
             username: challenge.username,
@@ -357,9 +357,8 @@ export class Play extends React.Component<{}, PlayState> {
         this.setState({show_other_boardsize_challenges: !this.state.show_other_boardsize_challenges});
     };
 
-    anyChallengesToShow = (challenge_list): boolean => {
-
-        return this.state.show_all_challenges && challenge_list.length || challenge_list.reduce( (prev, current) => {
+    anyChallengesToShow = (challenge_list: Challenge[]): boolean => {
+        return this.state.show_all_challenges && challenge_list.length as any || challenge_list.reduce( (prev, current) => {
             return prev || current.eligible || current.user_challenge;
         }, false );
     };
@@ -1071,7 +1070,7 @@ export class Play extends React.Component<{}, PlayState> {
 }
 
 
-function challenge_sort(A, B) {
+function challenge_sort(A: Challenge, B: Challenge) {
     if (A.eligible && !B.eligible) { return -1; }
     if (!A.eligible && B.eligible) { return 1; }
 
@@ -1090,7 +1089,7 @@ function challenge_sort(A, B) {
 
 // This is used by the SeekGraph to perform this function as well as this page...
 
-export function nominateForRengoChallenge(C) {
+export function nominateForRengoChallenge(C: Challenge) {
     swal({
         text: _("Joining..."),   // translator: the server is processing their request to join a rengo game
         type: "info",
@@ -1110,7 +1109,7 @@ export function nominateForRengoChallenge(C) {
 }
 
 
-function time_per_move_challenge_sort(A, B) {
+function time_per_move_challenge_sort(A: Challenge, B: Challenge) {
     const comparison = Math.sign(A.time_per_move - B.time_per_move);
 
     if (comparison) {

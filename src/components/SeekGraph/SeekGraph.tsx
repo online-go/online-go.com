@@ -34,8 +34,10 @@ import * as player_cache from "player_cache";
 import swal from 'sweetalert2';
 import { nominateForRengoChallenge } from "Play";
 
+type Challenge = socket_api.seekgraph_global.Challenge;
+
 interface Events {
-    "challenges": Array<any>;
+    "challenges": Challenge[];
 }
 
 const MAX_RATIO = 0.99;
@@ -110,7 +112,9 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     show_live_games: boolean;
     socket: any;
     connected: boolean    = false;
-    challenges: any       = {};
+    // This is treated as an array later because that is what TypedEventEmitter expects.
+    // Perhaps this should be changed to an array as well.
+    challenges: {[id: number]: Challenge} = {};
     live_games: any       = {};
     list_hits: Array<any> = [];
     challenge_points: any = {};
@@ -225,7 +229,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         }
         this.redraw();
-        this.emit("challenges", this.challenges);
+        this.emit("challenges", this.challenges as Challenge[]);
     };
 
     onTouchEnd = (ev) => {
