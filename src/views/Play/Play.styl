@@ -47,12 +47,6 @@
             height: 20px;
             position: relative;
         }
-
-        .rengo-challenge-buttons {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-        }
     }
 
     .automatch-header {
@@ -68,6 +62,65 @@
             display: flex;
             flex-wrap: nowrap;
         }
+    }
+
+    .rengo-management-row {
+    }
+
+    // long specifier to make sure this specific column is not overriden
+    #challenge-list .challenge-row .cell.rengo-list-buttons {
+        text-align: right;
+        vertical-align: baseline; // attempting to line up with rest of cell rows
+        .btn {
+            padding-bottom: 0;  // override default that makes these look bottom heavy
+        }
+
+    }
+
+    .rengo-management-list-item {
+        colspan: 0;
+        margin: auto;
+        width: 40%;
+        border: 5px solid;
+        border-radius: 0.3rem;
+        themed border-color shade3;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    @media (max-width 720px) {
+        .rengo-management-list-item {
+            margin: inherit; // override the `auto` directive so this goes to the left on narrow screens.
+            width: 40%;  // try to fit the whole pane nicely on narrow phones
+        }
+
+        // long specifier to make sure this specific column is not overriden
+        #challenge-list .challenge-row .cell.rengo-list-buttons {
+            display: flex;  // to enable the buttons to wrap to the next line on narrow screens
+            justify-content: flex-end;
+        }
+    }
+
+    .rengo-management-header {
+        font-size: 1.3rem;
+        display: flex;
+        justify-content: space-between;  // push the dismiss icon out to the right
+        align-items: center;
+
+        span {
+            text-decoration: underline; // The game name.
+        }
+    }
+
+    .rengo-live-match-header {
+        flex-shrink: 0;
+        flex-grow: 0;
+        flex-basis: 1rem;
+        font-size: 1.3rem;
+        display: flex;
+        justify-content: flex-end;
     }
 
     .automatch-row-container {
@@ -132,57 +185,6 @@
             }
         }
     }
-
-    .rengo-admin-container {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .rengo-admin-container.pending {
-        cursor: wait !important;
-    }
-
-    .no-rengo-players-to-admin {
-        font-style: italic;
-        font-size: smaller;
-        themed color shade2;
-        padding-left: 1rem;
-    }
-
-    .rengo-admin-header {
-        padding-top: 1rem;
-    }
-
-    .rengo-assignment-row {
-        margin-left: 1rem;
-
-        .fa {
-            margin: 0 0.8rem 0 0 ;
-            cursor: pointer;
-        }
-
-        .fa.black {
-            color: black;
-            background-color: red;
-            border-radius: 0.2rem;
-            border: 2px solid red;
-        }
-
-        .fa.white {
-            color: white;
-            background-color: red;
-            border-radius: 0.2rem;
-            border: 2px solid red;
-        }
-
-        .fa.unassign {
-            themed color shade2;
-            border-radius: 0.5rem;
-        }
-    }
-
 
     .automatch-settings {
         font-size: 1rem;
@@ -309,9 +311,7 @@
         .cheat-alert {
             color: chocolate;
             cursor: help;
-            position: absolute;
             top: 50%;
-            transform: translateY(-50%);
             margin-left: .5em;
         }
 
@@ -346,7 +346,6 @@
             font-weight: bold;
             font-size: 1.1em;
         }
-
 
         // automatch condition stylings
         .no-preference {

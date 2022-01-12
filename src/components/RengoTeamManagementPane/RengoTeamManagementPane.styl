@@ -1,0 +1,76 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.RengoTeamManagementPane {
+    display: flex;
+    flex-direction: column;
+
+    .Player {
+        margin-right: 1em;
+    }
+
+    .rengo-admin-container {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .rengo-admin-container.pending {
+        cursor: wait !important;
+    }
+
+    .no-rengo-players-to-admin {
+        font-style: italic;
+        font-size: smaller;
+        themed color shade2;
+        padding-left: 1rem;
+    }
+
+    .rengo-admin-header {
+        padding-top: 1rem;
+    }
+
+    .rengo-assignment-row {
+        margin-left: 1rem;
+
+        .fa {
+            margin: 0 0.8rem 0 0 ;
+            cursor: pointer;
+        }
+
+        .fa.black {
+            color: black;
+            background-color: red;
+            border-radius: 0.2rem;
+            border: 2px solid red;
+        }
+
+        .fa.white {
+            color: white;
+            background-color: red;
+            border-radius: 0.2rem;
+            border: 2px solid red;
+        }
+
+        .fa.unassign {
+            themed color shade2;
+            border-radius: 0.5rem;
+        }
+    }
+
+}
