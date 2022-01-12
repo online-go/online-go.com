@@ -135,7 +135,7 @@ interface Price {
     //currency: string;
     //interval: string;
 
-    slug: "hane" | "tenuki";
+    slug: "hane" | "tenuki" | "meijin";
     monthly_paddle_plan_id: string;
     annual_paddle_plan_id: string;
     price: {
@@ -290,7 +290,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
 
     const hane = prices.filter(x => x.slug === "hane")[0];
     if (hane) {
-        hane.title = pgettext("Hane supporter plan", "Hane Plan");
+        hane.title = pgettext("Hane supporter plan", "Hane Supporter");
         hane.description = [
             <b>{_("Automatic AI reviews for your games")}<sup>*</sup></b>,
             <span>{interpolate(_("AI reviews are processed moderately deep using {{num}} playouts per move"), {"num": "1000"})}<sup>*</sup></span>,
@@ -300,11 +300,22 @@ export function Supporter(props: SupporterProperties): JSX.Element {
 
     const tenuki = prices.filter(x => x.slug === "tenuki")[0];
     if (tenuki) {
-        tenuki.title = pgettext("Tenuki supporter plan", "Tenuki Plan");
+        tenuki.title = pgettext("Tenuki supporter plan", "Tenuki Supporter");
         tenuki.description = [
             <b>{_("Automatic AI reviews for your games")}<sup>*</sup></b>,
             <span>{interpolate(_("AI reviews are processed deeper using {{num}} playouts per move"), {"num": "3000"})}<sup>*</sup></span>,
             <b className='green'>{_("3x the analysis done by the AI per move")}</b>,
+            ...common_description,
+        ];
+    }
+
+    const meijin = prices.filter(x => x.slug === "meijin")[0];
+    if (meijin) {
+        meijin.title = pgettext("Meijin supporter plan", "Meijin Supporter");
+        meijin.description = [
+            <b>{_("Automatic AI reviews for your games")}<sup>*</sup></b>,
+            <span>{interpolate(_("AI reviews are processed deeper using {{num}} playouts per move"), {"num": "12000"})}<sup>*</sup></span>,
+            //<b className='green'>{_("3x the analysis done by the AI per move")}</b>,
             ...common_description,
         ];
     }
@@ -605,11 +616,7 @@ export function PriceBox({price, currency, interval, config, account_id, overrid
 
         </div>
     );
-
-    //            <input id="paypal-purchase-id" type="hidden" name="invoice" value="" />
 }
-
-
 
 function Subscription({subscription}: {subscription: Subscription}): JSX.Element {
     const user = data.get('user');

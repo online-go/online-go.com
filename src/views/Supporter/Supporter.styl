@@ -94,7 +94,14 @@
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
+        margin-bottom: 1rem;
 
+        .PriceBox:nth-of-type(2) {
+            box-shadow: 0.0rem 0.3rem 0.8rem #000;
+            /body.light .PriceBox:nth-of-type(2) {
+                box-shadow: 0.0rem 0.3rem 0.8rem #888 !important;
+            }
+        }
     }
 
     .PriceBox {
@@ -103,7 +110,11 @@
         width: 20rem;
         max-width: 95vw;
         //themed background-color shade3
-        margin: 1rem;
+        //margin: 1rem;
+        margin-left: 0.2rem;
+        margin-right: 0.2rem;
+        margin-bottom: 1rem;
+        margin-top: 1rem;
         //padding: 0.5rem;
         text-align: center;
         border-radius: 0.7rem;
