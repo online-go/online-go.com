@@ -536,9 +536,13 @@ export class Play extends React.Component<{}, PlayState> {
 
                             <div style={{marginTop: "2em"}}></div>
 
+                        </div>
+                        <div id="challenge-list" onMouseMove={this.freezeChallenges}>
                             <div className="challenge-row" style={{marginTop: "1em"}}>
-                                <span className="cell break">{_("Rengo")}</span>
-                                {this.cellBreaks(8)}
+                                <span className="cell break">
+                                    {_("Rengo")}
+                                </span>
+                                {this.cellBreaks(7)}
                             </div>
 
                             {this.anyChallengesToShow(this.state.rengo_list) ? this.rengoListHeaders() : null}
@@ -888,17 +892,24 @@ export class Play extends React.Component<{}, PlayState> {
     };
 
     rengoListHeaders() {
-        return <div className="challenge-row">
-            <span className="head" style={{textAlign: "right"}}>{_("")}</span>
-            <span className="head">{_("Organiser")}</span>
-            {/* <span className="head">{_("Rank")}</span> */}
-            <span className="head">{_("Size")}</span>
-            <span className="head">{_("Signed up")}</span>
-            <span className="head time-control-header">{_("Time")}</span>
-            <span className="head">{_("Handicap")}</span>
-            <span className="head" style={{textAlign: "left"}}>{_("Name")}</span>
-            <span className="head" style={{textAlign: "left"}}>{_("Rules")}</span>
-        </div>;
+        return (
+            <React.Fragment>
+                <colgroup>
+                    <col span={8}></col>
+                </colgroup>
+                <tr className="challenge-row">
+                    <td className="head" style={{textAlign: "right"}}>{_("")}</td>
+                    <td className="head">{_("Organiser")}</td>
+                    {/* <td className="head">{_("Rank")}</td> */}
+                    <td className="head">{_("Size")}</td>
+                    <td className="head">{_("Signed up")}</td>
+                    <td className="head time-control-header">{_("Time")}</td>
+                    <td className="head">{_("Handicap")}</td>
+                    <td className="head" style={{textAlign: "left"}}>{_("Name")}</td>
+                    <td className="head" style={{textAlign: "left"}}>{_("Rules")}</td>
+                </tr>
+            </React.Fragment>
+        );
     }
 
     nominateAndShow = (C) => {
@@ -924,13 +935,20 @@ export class Play extends React.Component<{}, PlayState> {
 
         return [
             // the live list
-            <div className="challenge-row"><span className="cell">{_("Live:")}</span></div>,
+            <tr className="challenge-row" key="live">
+                <span className="cell">
+                    {_("Live:")}
+                </span>
+            </tr>,
+
             !this.anyChallengesToShow(live_list) ?
-                <div className="ineligible">
-                    {this.state.show_all_challenges ?
-                        _("(none)") /* translators: There are no challenges in the system, nothing to list here */ :
-                        _("(none available)") /* translators: There are no challenges that this person is eligible for */}
-                </div>
+                <tr className="challenge-row ineligible" key="live-ineligible">
+                    <span className="cell" style={{textAlign: "center"}}>
+                        {this.state.show_all_challenges ?
+                            _("(none)") /* translators: There are no challenges in the system, nothing to list here */ :
+                            _("(none available)") /* translators: There are no challenges that this person is eligible for */}
+                    </span>
+                </tr>
             :
             live_list.map((C) => (
                 this.visibleInChallengeList(C) ?
@@ -938,16 +956,25 @@ export class Play extends React.Component<{}, PlayState> {
                 : null
             )),
 
-            <div className="challenge-row"><hr/></div>,
+            <tr className="challenge-row" key="hr">
+                <td className="cell" colSpan={8}><hr/></td>
+            </tr>,
 
             // the correspondence list
-            <div className="challenge-row"><span className="cell">{_("Correspondence:")}</span></div>,
+            <tr className="challenge-row" key="corre">
+                <span className="cell">
+                    {_("Correspondence:")}
+                </span>
+            </tr>,
+
             !this.anyChallengesToShow(corre_list) ?
-                <div className="ineligible">
-                    {this.state.show_all_challenges ?
-                        _("(none)") /* translators: There are no challenges in the system, nothing to list here */ :
-                        _("(none available)") /* translators: There are no challenges that this person is eligible for */}
-                </div>
+                <tr className="ineligible" key="corre-ineligible">
+                    <span style={{textAlign: "center"}}>
+                        {this.state.show_all_challenges ?
+                            _("(none)") /* translators: There are no challenges in the system, nothing to list here */ :
+                            _("(none available)") /* translators: There are no challenges that this person is eligible for */}
+                    </span>
+                </tr>
             :
             corre_list.map((C) => (
                 this.visibleInChallengeList(C) ?
@@ -971,37 +998,39 @@ export class Play extends React.Component<{}, PlayState> {
 
     rengoManageListItem = (C, user) => {
         return (
-            <div key={C.challenge_id} className={"challenge-row rengo-management-row"}>
-                <div className='rengo-management-list-item'>
-                    <div className='rengo-management-header'>
-                        <span>{C.name}</span>
-                        <div>
-                            <i className="fa fa-lg fa-times-circle-o"
-                                onClick={this.stopManagingRengoChallenge}/>
+            <tr key={C.challenge_id} className={"challenge-row rengo-management-row"}>
+                <td className='cell' colSpan={8}>
+                    <div className='rengo-management-list-item' >
+                        <div className='rengo-management-header'>
+                            <span>{C.name}</span>
+                            <div>
+                                <i className="fa fa-lg fa-times-circle-o"
+                                    onClick={this.stopManagingRengoChallenge}/>
+                            </div>
                         </div>
-                    </div>
-                    <RengoManagementPane
-                        user_id={user.id}
-                        challenge_id={C.challenge_id}
-                        rengo_challenge_list={this.state.rengo_list}
-                        startRengoChallenge={this.startOwnRengoChallenge}
-                        cancelChallenge={this.cancelOpenChallenge}
-                        withdrawFromRengoChallenge={this.unNominateForRengoChallenge}
-                        joinRengoChallenge={nominateForRengoChallenge}
-                    >
-                        <RengoTeamManagementPane
+                        <RengoManagementPane
+                            user_id={user.id}
                             challenge_id={C.challenge_id}
-                            challenge_list={this.state.rengo_list}
-                            assignToTeam = {this.assignToTeam}
-                        />
-                    </RengoManagementPane>
-                </div>
-            </div>
+                            rengo_challenge_list={this.state.rengo_list}
+                            startRengoChallenge={this.startOwnRengoChallenge}
+                            cancelChallenge={this.cancelOpenChallenge}
+                            withdrawFromRengoChallenge={this.unNominateForRengoChallenge}
+                            joinRengoChallenge={nominateForRengoChallenge}
+                        >
+                            <RengoTeamManagementPane
+                                challenge_id={C.challenge_id}
+                                challenge_list={this.state.rengo_list}
+                                assignToTeam = {this.assignToTeam}
+                            />
+                        </RengoManagementPane>
+                    </div>
+                </td>
+            </tr>
         );
     };
 
     rengoListItem = (C, user) => (
-        <div key={C.challenge_id} className={"challenge-row"}>
+        <tr key={C.challenge_id} className={"challenge-row"}>
             <span className={"cell rengo-list-buttons"}>
                 {user.is_moderator &&
                     <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left ">
@@ -1047,7 +1076,7 @@ export class Play extends React.Component<{}, PlayState> {
             {this.commonSpan(C.handicap_text, "center")}
             {this.commonSpan(C.name, "left")}
             {this.commonSpan(rulesText(C.rules), "left")}
-        </div>
+        </tr>
     );
 
     assignToTeam = (player_id: number, team: string, challenge, done?: () => void) => {
