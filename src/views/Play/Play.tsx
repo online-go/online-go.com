@@ -1088,7 +1088,7 @@ export class Play extends React.Component<{}, PlayState> {
                 </span>
             </tr>
         );
-    }
+    };
 
     assignToTeam = (player_id: number, team: string, challenge, signal_done?: () => void) => {
         const assignment = team === 'rengo_black_team' ? 'assign_black' :
