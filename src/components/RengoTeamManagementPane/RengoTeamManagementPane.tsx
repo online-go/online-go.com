@@ -16,19 +16,19 @@
  */
 
 import * as React from "react";
-import { _, pgettext, interpolate } from "translate";
-
-import * as data from "data";
+import { _ } from "translate";
 
 import { Player } from "Player";
 
+type Challenge = socket_api.seekgraph_global.Challenge;
+
 interface RengoTeamManagementPaneProps {
-    challenge_list: any[];
+    challenge_list: Challenge[];
     challenge_id: number;
     assignToTeam: (
         player_id: number,
         team: string,
-        challenge: any,
+        challenge: Challenge,
         done: () => void) => void;
 }
 
@@ -55,7 +55,7 @@ export class RengoTeamManagementPane extends React.PureComponent<
     _assignToTeam = (
         player_id: number,
         team: string,
-        challenge: any
+        challenge: Challenge
     ) => {
         this.setState({assignment_pending: true});
         this.props.assignToTeam(player_id, team, challenge, this.done.bind(self));

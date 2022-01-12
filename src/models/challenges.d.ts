@@ -45,10 +45,10 @@ export interface Challenge {
     "time_control_parameters": import('../components/TimeControl').TimeControl;
     "time_per_move": number;
     "rengo": boolean;
-    "rengo_nominees": any[];
-    "rengo_black_team": any[];
-    "rengo_white_team": any[];
-    "rengo_participants": any[];
+    "rengo_nominees": number[];  // array of player ids
+    "rengo_black_team": number[];   // array of player ids
+    "rengo_white_team": number[];   // array of player ids
+    "rengo_participants": number[];  // array of player ids
 
     // All this stuff seems to get added *after* we get a challenge from the api
     // but I don't have a good idea where to put it for now...

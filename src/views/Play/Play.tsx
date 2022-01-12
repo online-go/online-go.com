@@ -757,7 +757,7 @@ export class Play extends React.Component<{}, PlayState> {
         )
     );
 
-    suspectChallengeIcon = (C) => (
+    suspectChallengeIcon = (C: Challenge): JSX.Element => (
         /* Mark eligible suspect games with a warning icon and warning explanation popup.
            We do let users see the warning for their own challenges. */
         (((C.eligible || C.user_challenge) && !C.removed) &&
@@ -1079,7 +1079,7 @@ export class Play extends React.Component<{}, PlayState> {
         </tr>
     );
 
-    assignToTeam = (player_id: number, team: string, challenge, done?: () => void) => {
+    assignToTeam = (player_id: number, team: string, challenge, signal_done?: () => void) => {
         const assignment = team === 'rengo_black_team' ? 'assign_black' :
             team === 'rengo_white_team' ? 'assign_white' :
             'unassign';
@@ -1087,9 +1087,7 @@ export class Play extends React.Component<{}, PlayState> {
         put("challenges/%%/team", challenge.challenge_id, {
             [assignment]: [player_id, ]  // back end expects an array of changes, but we only ever send one at a time.
         })
-        .then(() => {
-            if (done) { done(); } // signal that the team update completed
-        })
+        .then(signal_done) // tell caller that we got the response from the server now.
         .catch((err) => {
             errorAlerter(err);
         });

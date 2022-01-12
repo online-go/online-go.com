@@ -17,10 +17,7 @@
 
 import * as React from "react";
 
-import {_, pgettext, interpolate} from "translate";
-
-interface Events {
-}
+import {_, pgettext} from "translate";
 
 interface RengoManagementPaneProperties {
     user_id: number;
