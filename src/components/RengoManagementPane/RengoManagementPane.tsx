@@ -28,6 +28,7 @@ interface RengoManagementPaneProperties {
     cancelChallenge: (challenge: any) => void;
     withdrawFromRengoChallenge: (challenge: any) => void;
     joinRengoChallenge: (challenge: any) => void;
+    dontShowCancelButton?: boolean;
 }
 
 interface RengoManagementPaneState {
@@ -71,9 +72,13 @@ export class RengoManagementPane extends React.PureComponent<RengoManagementPane
 
                     {((own_challenge) || null) &&
                         <React.Fragment>
-                            <button className='danger sm' onClick={this.props.cancelChallenge.bind(self, the_challenge)}>
-                                {_("Cancel challenge")}
-                            </button>
+                            {(!this.props.dontShowCancelButton)
+                                ?
+                                <button className='danger sm' onClick={this.props.cancelChallenge.bind(self, the_challenge)}>
+                                    {_("Cancel challenge")}
+                                </button>
+                                : <span/>
+                            }
 
                             <button className='success sm'
                                 onClick={this.props.startRengoChallenge.bind(self, the_challenge)}

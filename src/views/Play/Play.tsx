@@ -735,11 +735,6 @@ export class Play extends React.Component<{}, PlayState> {
         }
     }
 
-    commonSpan = (text: string, align: "center"|"left") => {
-        return <span className="cell" style={{textAlign: align}}>
-            {text}
-        </span>;
-    };
 
     visibleInChallengeList = (C) => (
         (C.eligible || C.user_challenge || this.state.show_all_challenges) &&
@@ -765,7 +760,7 @@ export class Play extends React.Component<{}, PlayState> {
             usedForCheating(C.time_control_parameters) ||
             ((C.handicap !== 0 && C.handicap !== -1)))
             || null) &&
-        <span>
+        <span className='suspect-challenge'>
             <i className="cheat-alert fa fa-exclamation-triangle fa-xs"/>
             <p className="cheat-alert-tooltiptext">
                 {
@@ -830,17 +825,16 @@ export class Play extends React.Component<{}, PlayState> {
                     <span className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
                         <Player user={this.extractUser(C)} rank={true} />
                     </span>
-                    {/*commonSpan(boundedRankString(C.rank), "center")*/}
                     <span className={"cell " + ((C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19)) ? "bold" : "")}>
                         {C.width}x{C.height}
                     </span>
                     <span className={timeControlClassName(C)}>
                         {shortShortTimeControl(C.time_control_parameters)}
                     </span>
-                    {this.commonSpan(C.ranked_text, "center")}
-                    {this.commonSpan(C.handicap_text as string, "center")}
-                    {this.commonSpan(C.name, "left")}
-                    {this.commonSpan(rulesText(C.rules), "left")}
+                    <span className="cell">{C.ranked_text}</span>
+                    <span className="cell">{C.handicap_text}</span>
+                    <span className="cell">{C.name}</span>
+                    <span className="cell">{rulesText(C.rules)}</span>
                 </div> :
             null
         ));
@@ -898,12 +892,12 @@ export class Play extends React.Component<{}, PlayState> {
                     <col span={8}></col>
                 </colgroup>
                 <tr className="challenge-row">
-                    <td className="head" style={{textAlign: "right"}}>{_("")}</td>
-                    <td className="head">{_("Organiser")}</td>
+                    <td className="head " style={{textAlign: "right"}}>{_("")}</td>
+                    <td className="head organizer">{_("Organizer")}</td>
                     {/* <td className="head">{_("Rank")}</td> */}
-                    <td className="head">{_("Size")}</td>
-                    <td className="head">{_("Signed up")}</td>
+                    <td className="head size">{_("Size")}</td>
                     <td className="head time-control-header">{_("Time")}</td>
+                    <td className="head">{_("Signed up")}</td>
                     <td className="head">{_("Handicap")}</td>
                     <td className="head" style={{textAlign: "left"}}>{_("Name")}</td>
                     <td className="head" style={{textAlign: "left"}}>{_("Rules")}</td>
@@ -977,19 +971,24 @@ export class Play extends React.Component<{}, PlayState> {
                 </tr>
             :
             corre_list.map((C) => (
-                this.visibleInChallengeList(C) ?
-                    (this.state.show_in_rengo_management_pane !== C.challenge_id) ?
-                        this.rengoListItem(C, user) :
-                        this.rengoManageListItem(C, user)
-                : null
+                (this.visibleInChallengeList(C) || null) &&
+                    <>
+                        {this.rengoListItem(C, user)}
+                        {(this.state.show_in_rengo_management_pane === C.challenge_id || null) &&
+                            this.rengoManageListItem(C, user)
+                        }
+                    </>
             ))
         ];
     };
 
     manageRengoChallenge = (C) => {
         //console.log("managing ", C);
-
-        this.setState({show_in_rengo_management_pane: C.challenge_id});
+        if (this.state.show_in_rengo_management_pane === C.challenge_id) {
+            this.setState({show_in_rengo_management_pane: 0});
+        } else {
+            this.setState({show_in_rengo_management_pane: C.challenge_id});
+        }
     };
 
     stopManagingRengoChallenge = () => {
@@ -1000,7 +999,7 @@ export class Play extends React.Component<{}, PlayState> {
         return (
             <tr key={C.challenge_id} className={"challenge-row rengo-management-row"}>
                 <td className='cell' colSpan={8}>
-                    <div className='rengo-management-list-item' >
+                    <Card className='rengo-management-list-item' >
                         <div className='rengo-management-header'>
                             <span>{C.name}</span>
                             <div>
@@ -1016,6 +1015,7 @@ export class Play extends React.Component<{}, PlayState> {
                             cancelChallenge={this.cancelOpenChallenge}
                             withdrawFromRengoChallenge={this.unNominateForRengoChallenge}
                             joinRengoChallenge={nominateForRengoChallenge}
+                            dontShowCancelButton={true}
                         >
                             <RengoTeamManagementPane
                                 challenge_id={C.challenge_id}
@@ -1023,61 +1023,72 @@ export class Play extends React.Component<{}, PlayState> {
                                 assignToTeam = {this.assignToTeam}
                             />
                         </RengoManagementPane>
-                    </div>
+                    </Card>
                 </td>
             </tr>
         );
     };
 
-    rengoListItem = (C, user) => (
-        <tr key={C.challenge_id} className={"challenge-row"}>
-            <span className={"cell rengo-list-buttons"}>
-                {user.is_moderator &&
-                    <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left ">
-                        <i className='fa fa-trash' /></button>}
+    rengoListItem = (C, user) => {
+        const showing_manage_interface = this.state.show_in_rengo_management_pane === C.challenge_id;
 
-                {(C.user_challenge || null) &&
-                    <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs">
-                        {_("Cancel")}</button>}
+        return (
+            <tr key={C.challenge_id} className={"challenge-row"}>
+                <span className={"cell rengo-list-buttons"}>
+                    {user.is_moderator &&
+                        <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left ">
+                            <i className='fa fa-trash' /></button>}
 
-                {(C.eligible && !C.removed && !C.user_challenge && C.rengo_participants.includes(user.id) || null) &&
-                    <button onClick={this.unNominateForRengoChallenge.bind(this, C)} className="btn danger xs">
-                        {_("Withdraw")}</button>}
+                    {(C.user_challenge || null) &&
+                        <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">
+                            {_("Remove")}</button>}
 
-                {!isLiveGame(C.time_control_parameters) &&
-                    <button
-                        onClick={this.manageRengoChallenge.bind(this, C)}
-                        className="btn success xs"
-                    >
-                        {C.user_challenge ?  _("Manage") : _("View")}
-                    </button>}
+                    {(C.eligible && !C.removed && !C.user_challenge && C.rengo_participants.includes(user.id) || null) &&
+                        <button onClick={this.unNominateForRengoChallenge.bind(this, C)} className="btn danger xs">
+                            {_("Withdraw")}</button>}
 
-                {(C.eligible && !C.removed && !C.user_challenge && !C.rengo_participants.includes(user.id) || null) &&
-                    <button onClick={this.nominateAndShow.bind(this, C, )} className="btn success xs">
-                        {_("Join")}</button>}
+                    {!isLiveGame(C.time_control_parameters) &&
+                        <button
+                            onClick={this.manageRengoChallenge.bind(this, C)}
+                            className="btn primary xs"
+                        >
+                            {C.user_challenge ?  _("Manage") : _("View")}
+                        </button>}
 
-                { this.suspectChallengeIcon(C) }
+                    {(C.eligible && !C.removed && !C.user_challenge && !C.rengo_participants.includes(user.id) || null) &&
+                        <button onClick={this.nominateAndShow.bind(this, C, )} className="btn success xs">
+                            {_("Join")}</button>}
 
-                {((!C.eligible || C.removed) && !C.user_challenge || null) &&
-                    <span className="ineligible" title={C.ineligible_reason}>
-                        {_("Can't accept")}</span>}
-            </span>
-            <span className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
-                <Player user={this.extractUser(C)} rank={true} />
-            </span>
-            {/*commonSpan(boundedRankString(C.rank), "center")*/}
-            <span className={"cell " + ((C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19)) ? "bold" : "")}>
-                {C.width}x{C.height}
-            </span>
-            {this.commonSpan(C.rengo_participants.length, "center")}
-            <span>
-                {shortShortTimeControl(C.time_control_parameters)}
-            </span>
-            {this.commonSpan(C.handicap_text, "center")}
-            {this.commonSpan(C.name, "left")}
-            {this.commonSpan(rulesText(C.rules), "left")}
-        </tr>
-    );
+                    { this.suspectChallengeIcon(C) }
+
+                    {((!C.eligible || C.removed) && !C.user_challenge || null) &&
+                        <span className="ineligible" title={C.ineligible_reason}>
+                            {_("Can't accept")}</span>}
+                </span>
+                <span className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
+                    <Player user={this.extractUser(C)} rank={true} />
+                </span>
+                <span className={"cell " + ((C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19)) ? "bold" : "")}>
+                    {C.width}x{C.height}
+                </span>
+                <span>
+                    {shortShortTimeControl(C.time_control_parameters)}
+                </span>
+                <span className="cell">
+                    {C.rengo_participants.length}
+                </span>
+                <span className="cell">
+                    {C.handicap_text}
+                </span>
+                <span className="cell">
+                    {C.name}
+                </span>
+                <span className="cell">
+                    {rulesText(C.rules)}
+                </span>
+            </tr>
+        );
+    }
 
     assignToTeam = (player_id: number, team: string, challenge, signal_done?: () => void) => {
         const assignment = team === 'rengo_black_team' ? 'assign_black' :

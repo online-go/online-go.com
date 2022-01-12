@@ -65,11 +65,24 @@
     }
 
     .rengo-management-row {
+        td {
+            padding-bottom: 2rem;
+        }
+
+        .organizer {
+
+        }
+
+        .size {
+
+        }
+
     }
 
     // long specifier to make sure this specific column is not overriden
     #challenge-list .challenge-row .cell.rengo-list-buttons {
         text-align: right;
+        width: 10rem;
         vertical-align: baseline; // attempting to line up with rest of cell rows
         .btn {
             padding-bottom: 0;  // override default that makes these look bottom heavy
@@ -81,10 +94,7 @@
         colspan: 0;
         margin: auto;
         width: 40%;
-        border: 5px solid;
-        border-radius: 0.3rem;
-        themed border-color shade3;
-        padding: 10px;
+        padding: 1.0rem;
         display: flex;
         flex-direction: column;
         align-items: stretch;
@@ -292,12 +302,12 @@
         .head {
             padding-left: 0.5em;
             display: table-cell;
-            text-align: center;
+            text-align: left;
             font-weight: bold;
             font-size: 0.8em;
         }
         .head.time-control-header {
-            padding-left: 4em;
+            //padding-left: 4em;
             text-align: left;
         }
 
@@ -306,6 +316,14 @@
             display: table-cell;
             text-align: left;
             position: relative;
+        }
+
+        .suspect-challenge {
+            position: relative;
+            i {
+                position: absolute;
+                top: 0.2rem;
+            }
         }
 
         .cheat-alert {
@@ -364,5 +382,9 @@
         .cell {
             text-align: center;
         }
+    }
+
+    .fa-times-circle-o {
+        cursor: pointer;
     }
 }
