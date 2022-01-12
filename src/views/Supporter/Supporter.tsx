@@ -32,6 +32,7 @@ interface SupporterProperties {
             account_id?: string;
         };
     };
+    inline?: boolean;
 }
 
 let stripe_checkout_js_promise: Promise<void>;
@@ -198,6 +199,7 @@ function guessCurrency(config: Config, country: string): string {
 
 export function Supporter(props: SupporterProperties): JSX.Element {
     const user = data.get('user');
+    const inline = props?.inline;
     const account_id = parseInt(props?.match?.params?.account_id || user?.id || "0");
     const [loading, setLoading] = React.useState(true);
     const [config, setConfig]: [Config, (h: Config) => void] = React.useState({
@@ -344,73 +346,76 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                 <Toggle id="annual-billing" checked={annualBilling} onChange={(checked) => setAnnualBilling(checked)} />
             </div>
 
-            <DeprecatedPlanNote slug={current_plan_slug} />
-
-            <SupporterOverridesEditor account_id={account_id} overrides={overrides} config={config} onChange={setOverrides}/>
-
-            <div className='SiteSupporterText'>
-                <p className='fineprint'>
-                    <sup>*</sup>{_("Only 19x19, 9x9, and 13x13 games are supported for AI review. Engines currently available are KataGo and Leela Zero. Playouts and engines are subject to change over time as technology and software improves, but only if the changes should provide you with better reviews.")}
-                </p>
-            </div>
-
-
-
-            {config.subscriptions.length
-                ?
+            {(inline || null) &&
                 <>
-                    <div className='Subscriptions'>
-                        {config.subscriptions.map((s, idx) => (
-                            <Subscription key={s.id} subscription={s} />
-                        ))}
-                    </div>
-                </>
-                :
-                (config.payments.length > 0
-                    ?
-                    <div>
-                        <h4>{_("You do not currently have an active supporter subscription")}</h4>
-                    </div>
-                    :
-                    null
-                )
-            }
+                    <DeprecatedPlanNote slug={current_plan_slug} />
 
-            {config.payments.length
-                ?
-                    <>
-                        <h3>{_("Recent Payments")}</h3>
-                        <div className='Payments'>
-                            {config.payments.map((p, idx) => (
-                                <div key={idx} className='Payment'>
-                                    <span className='date'>{moment(p.updated).format('lll')}</span>
-                                    <span className='amount'>{formatMoney(p.currency, p.amount)}</span>
-                                    <PaymentMethod payment={p} />
-                                    <span className='status'>
-                                        {p.status === "succeeded"
-                                            ? <i className='fa fa-check' />
-                                            : <i className='fa fa-times' />
-                                        }
-                                    </span>
+                    <SupporterOverridesEditor account_id={account_id} overrides={overrides} config={config} onChange={setOverrides}/>
+
+                    <div className='SiteSupporterText'>
+                        <p className='fineprint'>
+                            <sup>*</sup>{_("Only 19x19, 9x9, and 13x13 games are supported for AI review. Engines currently available are KataGo and Leela Zero. Playouts and engines are subject to change over time as technology and software improves, but only if the changes should provide you with better reviews.")}
+                        </p>
+                    </div>
+
+
+
+                    {config.subscriptions.length
+                        ?
+                        <>
+                            <div className='Subscriptions'>
+                                {config.subscriptions.map((s, idx) => (
+                                    <Subscription key={s.id} subscription={s} />
+                                ))}
+                            </div>
+                        </>
+                        :
+                        (config.payments.length > 0
+                            ?
+                            <div>
+                                <h4>{_("You do not currently have an active supporter subscription")}</h4>
+                            </div>
+                            :
+                            null
+                        )
+                    }
+
+                    {config.payments.length
+                        ?
+                            <>
+                                <h3>{_("Recent Payments")}</h3>
+                                <div className='Payments'>
+                                    {config.payments.map((p, idx) => (
+                                        <div key={idx} className='Payment'>
+                                            <span className='date'>{moment(p.updated).format('lll')}</span>
+                                            <span className='amount'>{formatMoney(p.currency, p.amount)}</span>
+                                            <PaymentMethod payment={p} />
+                                            <span className='status'>
+                                                {p.status === "succeeded"
+                                                    ? <i className='fa fa-check' />
+                                                    : <i className='fa fa-times' />
+                                                }
+                                            </span>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
-                    </>
-                : null
+                            </>
+                        : null
+                    }
+
+                    <ManualServiceCreator account_id={account_id} config={config} />
+
+                    {(config.services.length && user.is_superuser)
+                        ?
+                            <div className='Services'>
+                                {config.services.map((s, idx) => (
+                                    <ServiceLine key={s.id} service={s} />
+                                ))}
+                            </div>
+                        : null
+                    }
+                </>
             }
-
-            <ManualServiceCreator account_id={account_id} config={config} />
-
-            {(config.services.length && user.is_superuser)
-                ?
-                    <div className='Services'>
-                        {config.services.map((s, idx) => (
-                            <ServiceLine key={s.id} service={s} />
-                        ))}
-                    </div>
-                : null
-            }
-
         </div>
     );
 }

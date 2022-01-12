@@ -19,8 +19,10 @@ import * as React from "react";
 import {browserHistory} from "ogsHistory";
 import {Modal, openModal} from "Modal";
 import { _ } from "translate";
-import {SiteSupporterText} from "./Supporter";
+//import {SiteSupporterText} from "./Supporter";
+import {Supporter} from "./Supporter";
 import {PriceBox} from "./Supporter";
+
 
 
 
@@ -36,11 +38,11 @@ export class BecomeASiteSupporterModal extends Modal<{}, {}, any> {
                     <h2>{_("Become a site supporter today!")}</h2>
                 </div>
                 <div className="body">
-                    <SiteSupporterText />
+                    <Supporter inline={true} />
                 </div>
+
                 <div className="buttons">
                     <button onClick={this.close}>{_("Close")}</button>
-                    <button className='primary' onClick={this.becomeASiteSupporter}>{_("Become a Site Supporter!")}</button>
                 </div>
             </div>
         );
