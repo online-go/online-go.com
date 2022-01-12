@@ -313,8 +313,6 @@ export function Supporter(props: SupporterProperties): JSX.Element {
 
     return (
         <div className='Supporter'>
-            <h1 className='reject'>Warning this is not intended for use yet</h1>
-
             <SiteSupporterText />
 
             <div className='Prices'>
@@ -329,8 +327,6 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                         account_id={account_id}
                     />)}
             </div>
-
-            <h1 className='reject'>Warning this is not intended for use yet</h1>
 
             <div className='annual-billing'>
                 <label htmlFor="annual-billing">{_("Save 16% with annual billing")}</label>
@@ -1041,6 +1037,10 @@ function DeprecatedPlanNote({slug}: {slug: string}): JSX.Element {
         return null;
     }
 
+    if (slug === null) {
+        return null;
+    }
+
     let name = "unknown";
     let playouts = 125;
 
@@ -1132,8 +1132,10 @@ function getCurentPlanSlug(config: Config): string {
     if (max_service_level >= 3) {
         return "kyu";
     }
-
-    return "basic";
+    if (max_service_level >= 1) {
+        return "basic";
+    }
+    return null;
 }
 
 
