@@ -16,12 +16,11 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router-dom";
 import {browserHistory} from "ogsHistory";
-import * as data from "data";
 import {Modal, openModal} from "Modal";
-import {_, pgettext, interpolate} from "translate";
-import {SiteSupporterText} from "./SiteSupporterText";
+import { _ } from "translate";
+import {SiteSupporterText} from "./Supporter";
+import {PriceBox} from "./Supporter";
 
 
 

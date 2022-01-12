@@ -47,7 +47,6 @@ import { Puzzle } from "Puzzle";
 import { PuzzleList } from "PuzzleList";
 import { PuzzleCollectionList, PuzzleCollection } from "PuzzleCollection";
 import { Supporter } from "Supporter";
-import { Supporter2 } from "Supporter2";
 import { Tournament } from "Tournament";
 import { TournamentRecord } from "TournamentRecord";
 import { TournamentListMainView } from "TournamentList";
@@ -177,6 +176,7 @@ export const routes = (
                 <Route path="/player/settings" render={SettingsRedirect}/>
 
                 <Route path="/player/supporter" component={Supporter}/>
+                <Route path="/player/supporter/:account_id" component={Supporter}/>
                 <Route path="/player/:user_id" component={User}/>
                 <Route path="/player/:user_id/*" component={User}/>
                 <Route path="/player/:user_id/**/*" component={User}/>
@@ -185,14 +185,13 @@ export const routes = (
                 <Route path="/user/view/:user_id/*" component={User}/>
                 <Route path="/user/view/:user_id/**/*" component={User}/>
                 <Route path="/user/supporter" component={Supporter}/>
-                <Route path="/user/supporter2/:account_id" component={Supporter2}/>
-                <Route path="/user/supporter2" component={Supporter2}/>
                 <Route path="/user/verifyEmail" component={VerifyEmail}/>
                 <Route path="/u/:username" component={UserByName}/>
                 <Route path="/user/:username" component={UserByName}/>
 
 
                 <Route path="/supporter" component={Supporter}/>
+                <Route path="/supporter/:account_id" component={Supporter}/>
                 <Route path="/support" component={Supporter}/>
                 <Route path="/donate" component={Supporter}/>
 
