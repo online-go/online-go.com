@@ -10,14 +10,13 @@ jobs:
     steps:
     - uses: actions/stale@v4
       with:
-        repo-token: ${{ secrets.UI_STALE_BOT }}
         stale-issue-message: "This issue has been marked stale and will be closed soon without further activity. To keep the issue open, please respond to the comment to keep the discussion going."
         close-issue-message: "This issue has been automatically closed due to inactivity. Please feel free to re-open it if the issue persists."
         stale-issue-label: "stale"
         stale-pr-message: "This pull request has been marked stale and will be closed soon without further activity. Please update the PR or respond to this comment if you're still interested in working on this."
         close-pr-message: "This pull request has been automatically closed due to inactivity. Please feel free to re-open it if you still want to work on it."
         stale-pr-label: "stale"
-        days-before-issue-stale: 730
+        days-before-issue-stale: 650
         days-before-issue-close: 15
         days-before-pr-stale: 30
         days-before-pr-close: 15
