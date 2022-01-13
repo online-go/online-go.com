@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/stale@v4
       with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        repo-token: ${{ secrets.UI_STALE_BOT }}
         stale-issue-message: "This issue has been marked stale and will be closed soon without further activity. To keep the issue open, please respond to the comment to keep the discussion going."
         close-issue-message: "This issue has been automatically closed due to inactivity. Please feel free to re-open it if the issue persists."
         stale-issue-label: "stale"
