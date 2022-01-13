@@ -96,32 +96,7 @@ goban-view-bar-width=400px
 
 
     .black.player-container.their-turn, .white.player-container.their-turn {
-        position: relative;
-
-        &::after {
-            position: absolute;
-            content: "▲";
-            border-bottom: 0.15rem solid #000;
-            height: 0.15rem;;
-            bottom: -0.25rem;
-            themed border-color primary
-            themed color primary
-            font-size: 0.6rem;
-            display: block;
-            z-index: 1000;
-            width: 100%;
-            left: 0;
-            right: 0.1rem;
-        }
-    }
-
-    &.portrait {
-        .black.player-container.their-turn, .white.player-container.their-turn {
-            &::after {
-                // in portrait mode, the arrow overlaps the board
-                content: "";
-            }
-        }
+        box-shadow: 0 3px 5px 1px rgba(50,50,50,0.51) !important;
     }
 
     .play-controls {
