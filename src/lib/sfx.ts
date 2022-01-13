@@ -456,6 +456,7 @@ export class SFXManager {
                 }
             }
         } catch (e) {
+            // ignore error
         }
 
         to_check.push(lang);

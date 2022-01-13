@@ -102,12 +102,6 @@ module.exports = {
         "no-caller": "error",
         "no-cond-assign": "error",
         "no-debugger": "error",
-        "no-empty": [
-            "error",
-            {
-                "allowEmptyCatch": true
-            }
-        ],
         "no-eval": "error",
         "no-fallthrough": [
             "error",

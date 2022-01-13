@@ -451,6 +451,7 @@ class NotificationManager {
                         emitNotification(title, body);
                     }
                 } catch (e) {
+                    // ignore error
                 }
             }
 

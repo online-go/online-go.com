@@ -514,16 +514,19 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
                     try {
                         data.remove('user');
                     } catch (e) {
+                        // ignore error
                     }
 
                     try {
                         data.removePrefix('config');
                     } catch (e) {
+                        // ignore error
                     }
 
                     try {
                         data.removePrefix('preferences');
                     } catch (e) {
+                        // ignore error
                     }
 
                     window.location.href = "/";

@@ -1414,6 +1414,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                 return;
             }
         } catch (e) {
+            // ignore error
         }
 
         if (this.goban && this.goban.mode === "analyze") {
@@ -2181,6 +2182,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                 return;
             }
         } catch (e) {
+            // ignore error
         }
 
         if (this.goban.engine.cur_move.trunk) {
@@ -2206,6 +2208,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                 return;
             }
         } catch (e) {
+            // ignore error
         }
 
         this.copied_node = this.goban.engine.cur_move;
@@ -2222,6 +2225,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                 return;
             }
         } catch (e) {
+            // ignore error
         }
 
         if (this.copied_node) {
@@ -3214,7 +3218,9 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             sgf_download_enabled = this.goban.engine.phase === 'finished' || !this.goban.isAnalysisDisabled(true);
             game_id = this.goban.engine.config.game_id;
 
-        } catch (e) {}
+        } catch (e) {
+            // ignore error
+        }
 
         let sgf_url = null;
         let sgf_with_comments_url = null;

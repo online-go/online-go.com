@@ -50,6 +50,7 @@ export class MerchantLog extends React.PureComponent<{}, any> {
                             try {
                                 return JSON.parse(X.request_body).type;
                             } catch (e) {
+                                // ignore error
                             }
                             return "";
                         }},
@@ -76,6 +77,7 @@ function clean_body(str: string): string {
         obj = JSON.parse(str);
         console.log(obj);
     } catch (e) {
+        // ignore error
     }
 
     try {
@@ -83,11 +85,13 @@ function clean_body(str: string): string {
             obj = parseQuery(str);
         }
     } catch (e) {
+        // ignore error
     }
 
     try {
         return orderedJsonStringify(obj);
     } catch (e) {
+        // ignore error
     }
 
     return JSON.stringify(obj, null, 1);

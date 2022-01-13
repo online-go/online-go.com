@@ -279,13 +279,16 @@ export function getPrintableError(err) {
     let obj = typeof(err) === "object" ? err : null;
     if (!obj) {
         console.error(obj);
-        try { obj = JSON.parse(err.responseText); } catch (e) { }
+        try { obj = JSON.parse(err.responseText); } catch (e) {
+            // ignore error
+        }
         if (!obj) {
             console.log(err);
             console.warn("Unable to process error message to a printable error string (1): ", err.responseText);
             try {
                 console.error(new Error().stack);
             } catch (e) {
+                // ignore error
             }
             return "An unknown error has occurred!";
         }
@@ -360,6 +363,7 @@ export function errorAlerter(...args) {
                 }
             }
         } catch (e) {
+            // ignore error
         }
         errcodeAlerter(errobj);
     } else {
@@ -629,12 +633,14 @@ try {
                 localStorage.removeItem("focused_window");
             }
         } catch (e) {
+            // ignore error
         }
     });
     if (document.hasFocus()) {
         try {
             localStorage.setItem("focused_window", focus_window_id);
         } catch (e) {
+            // ignore error
         }
     }
 } catch (e) {
