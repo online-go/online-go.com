@@ -560,7 +560,9 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.moveTo(padding + 0.5 + live_line, h - (padding) + 0.5);
         ctx.lineTo(padding + 0.5 + live_line, 0);
         ctx.strokeStyle = "#aaaaaa";
-        try { ctx.setLineDash([2, 3]); } catch (e) {}
+        try { ctx.setLineDash([2, 3]); } catch (e) {
+            // ignore error
+        }
         ctx.stroke();
         ctx.restore();
 
@@ -581,6 +583,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             metrics = ctx.measureText(word);
             ctx.fillText(word, padding + live_line + ((w - live_line - padding) - metrics.width) / 2, h - 2);
         } catch (e) {
+            // ignore error
         }
         ctx.restore();
     }
@@ -740,6 +743,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                     try {
                         details_html += ", " + interpolate(pgettext("time control", "%s %s timing"), [shortShortTimeControl(C.time_control_parameters), timeControlSystemText(C.time_control)]);
                     } catch (err) {
+                        // ignore error
                     }
                 }
 

@@ -343,6 +343,7 @@ function speedIcon(e) {
 }
 function timeIcon(time_per_move) {
     if (time_per_move === 0) {
+        return "ogs-turtle";
     } else if (time_per_move < 20) {
         return "fa fa-bolt";
     } else if (time_per_move < 3600) {

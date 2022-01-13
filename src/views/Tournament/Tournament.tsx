@@ -206,6 +206,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             elimination_tree: null,
         };
 
+        // eslint-disable-next-line no-constant-condition
         if (false) {
             // This is just for quick testing when I'm working on a particular
             // part of the tournament testing process. This is never intended
@@ -502,6 +503,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                             console.warn("ID.", k, '=', id[k]);
                         }
                     } catch (e) {
+                        // ignore error
                     }
                     console.error('Tournament bind hover called with non numeric id');
                 }
@@ -1240,10 +1242,16 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             try {
                 min_bar = rankString(parseInt(tournament.settings.lower_bar));
                 max_bar = rankString(parseInt(tournament.settings.upper_bar));
-            } catch (e) { }
+            } catch (e) {
+                // ignore error
+            }
             try { maximum_players = parseInt(tournament.settings.maximum_players as string); } catch (e) { console.error(e); }
-            try { num_rounds = parseInt(tournament.settings.num_rounds); } catch (e) { }
-            try { group_size = parseInt(tournament.settings.group_size); } catch (e) { }
+            try { num_rounds = parseInt(tournament.settings.num_rounds); } catch (e) {
+                // ignore error
+            }
+            try { group_size = parseInt(tournament.settings.group_size); } catch (e) {
+                // ignore error
+            }
 
             let tournament_exclusivity = "";
             switch (tournament.exclusivity) {
@@ -2310,7 +2318,7 @@ function OpenGothaTournamentRound({tournament, roundNotes, selectedRound, player
                                         black_won = 'win';
                                     }
                                 } catch (e) {
-
+                                    // ignore error
                                 }
 
                                 return (

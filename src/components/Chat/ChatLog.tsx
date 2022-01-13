@@ -452,6 +452,7 @@ function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers
                 try {
                     div.scrollTop = div.scrollHeight;
                 } catch (e) {
+                    // ignore error
                 }
             } , 100);
         }
