@@ -264,7 +264,7 @@ try {
     }
 
 } catch (e) {
-
+    // ignore error
 }
 /**** END DEPRECATED BRAINTREE CODE ****/
 
