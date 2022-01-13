@@ -346,7 +346,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                 <Toggle id="annual-billing" checked={annualBilling} onChange={(checked) => setAnnualBilling(checked)} />
             </div>
 
-            {(inline || null) &&
+            {(!inline || null) &&
                 <>
                     <DeprecatedPlanNote slug={current_plan_slug} />
 
