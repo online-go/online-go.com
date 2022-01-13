@@ -16,11 +16,11 @@ jobs:
         stale-pr-message: "This pull request has been marked stale and will be closed soon without further activity. Please update the PR or respond to this comment if you're still interested in working on this."
         close-pr-message: "This pull request has been automatically closed due to inactivity. Please feel free to re-open it if you still want to work on it."
         stale-pr-label: "stale"
-        days-before-issue-stale: 650
+        days-before-issue-stale: 700
         days-before-issue-close: 15
         days-before-pr-stale: 30
         days-before-pr-close: 15
         remove-issue-stale-when-updated: true
         remove-pr-stale-when-updated: true
         operations-per-run: 1000 # turn down when debug only is turned off
-        debug-only: true
+        debug-only: false
