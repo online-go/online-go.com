@@ -551,9 +551,16 @@ export class Play extends React.Component<{}, PlayState> {
                                 {this.cellBreaks(7)}
                             </div>
 
-                            {this.anyChallengesToShow(this.state.rengo_list) ? this.rengoListHeaders() : null}
 
-                            {this.rengoList()}
+                            <table id='rengo-table'>
+                                <thead>
+                                    {this.anyChallengesToShow(this.state.rengo_list) ? this.rengoListHeaders() : null}
+                                </thead>
+
+                                <tbody>
+                                    {this.rengoList()}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -891,10 +898,7 @@ export class Play extends React.Component<{}, PlayState> {
 
     rengoListHeaders() {
         return (
-            <React.Fragment>
-                <colgroup>
-                    <col span={8}></col>
-                </colgroup>
+            <>
                 <tr className="challenge-row">
                     <td className="head " style={{textAlign: "right"}}>{_("")}</td>
                     <td className="head organizer">{_("Organizer")}</td>
@@ -906,7 +910,7 @@ export class Play extends React.Component<{}, PlayState> {
                     <td className="head" style={{textAlign: "left"}}>{_("Name")}</td>
                     <td className="head" style={{textAlign: "left"}}>{_("Rules")}</td>
                 </tr>
-            </React.Fragment>
+            </>
         );
     }
 
@@ -918,11 +922,15 @@ export class Play extends React.Component<{}, PlayState> {
     rengoList = () => {
         if (!this.anyChallengesToShow(this.state.rengo_list)) {
             return (
-                <div className="ineligible">
-                    {this.state.show_all_challenges ?
-                        _("(none)") /* translators: There are no challenges in the system, nothing to list here */ :
-                        _("(none available)") /* translators: There are no challenges that this person is eligible for */}
-                </div>
+                <tr key="none-available">
+                    <td colSpan={8}>
+                        <div className="ineligible">
+                            {this.state.show_all_challenges ?
+                                _("(none)") /* translators: There are no challenges in the system, nothing to list here */ :
+                                _("(none available)") /* translators: There are no challenges that this person is eligible for */}
+                        </div>
+                    </td>
+                </tr>
             );
         }
 
@@ -934,18 +942,18 @@ export class Play extends React.Component<{}, PlayState> {
         return [
             // the live list
             <tr className="challenge-row" key="live">
-                <span className="cell">
+                <td className="cell">
                     {_("Live:")}
-                </span>
+                </td>
             </tr>,
 
             !this.anyChallengesToShow(live_list) ?
                 <tr className="challenge-row ineligible" key="live-ineligible">
-                    <span className="cell" style={{textAlign: "center"}}>
+                    <td className="cell" style={{textAlign: "center"}}>
                         {this.state.show_all_challenges ?
                             _("(none)") /* translators: There are no challenges in the system, nothing to list here */ :
                             _("(none available)") /* translators: There are no challenges that this person is eligible for */}
-                    </span>
+                    </td>
                 </tr>
             :
             live_list.map((C) => (
@@ -960,28 +968,28 @@ export class Play extends React.Component<{}, PlayState> {
 
             // the correspondence list
             <tr className="challenge-row" key="corre">
-                <span className="cell">
+                <td className="cell">
                     {_("Correspondence:")}
-                </span>
+                </td>
             </tr>,
 
             !this.anyChallengesToShow(corre_list) ?
                 <tr className="ineligible" key="corre-ineligible">
-                    <span style={{textAlign: "center"}}>
+                    <td style={{textAlign: "center"}}>
                         {this.state.show_all_challenges ?
                             _("(none)") /* translators: There are no challenges in the system, nothing to list here */ :
                             _("(none available)") /* translators: There are no challenges that this person is eligible for */}
-                    </span>
+                    </td>
                 </tr>
             :
             corre_list.map((C) => (
                 (this.visibleInChallengeList(C) || null) &&
-                    <>
+                    <React.Fragment key={C.challenge_id}>
                         {this.rengoListItem(C, user)}
                         {(this.state.show_in_rengo_management_pane.includes(C.challenge_id) || null) &&
                             this.rengoManageListItem(C, user)
                         }
-                    </>
+                    </React.Fragment>
             ))
         ];
     };
@@ -1033,7 +1041,7 @@ export class Play extends React.Component<{}, PlayState> {
 
         return (
             <tr key={`rengo-list-item-${C.challenge_id}`} className={"challenge-row"}>
-                <span className={"cell rengo-list-buttons"}>
+                <td className={"cell rengo-list-buttons"}>
                     {user.is_moderator &&
                         <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left ">
                             <i className='fa fa-trash' /></button>}
@@ -1063,28 +1071,28 @@ export class Play extends React.Component<{}, PlayState> {
                     {((!C.eligible || C.removed) && !C.user_challenge || null) &&
                         <span className="ineligible" title={C.ineligible_reason}>
                             {_("Can't accept")}</span>}
-                </span>
-                <span className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
+                </td>
+                <td className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
                     <Player user={this.extractUser(C)} rank={true} />
-                </span>
-                <span className={"cell " + ((C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19)) ? "bold" : "")}>
+                </td>
+                <td className={"cell " + ((C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19)) ? "bold" : "")}>
                     {C.width}x{C.height}
-                </span>
-                <span>
+                </td>
+                <td>
                     {shortShortTimeControl(C.time_control_parameters)}
-                </span>
-                <span className="cell">
+                </td>
+                <td className="cell">
                     {C.rengo_participants.length}
-                </span>
-                <span className="cell">
+                </td>
+                <td className="cell">
                     {C.handicap_text}
-                </span>
-                <span className="cell">
+                </td>
+                <td className="cell">
                     {C.name}
-                </span>
-                <span className="cell">
+                </td>
+                <td className="cell">
                     {rulesText(C.rules)}
-                </span>
+                </td>
             </tr>
         );
     };
