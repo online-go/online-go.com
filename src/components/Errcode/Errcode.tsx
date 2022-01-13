@@ -80,6 +80,7 @@ export function format_message(props: MessageProps): string {
             }
         }
 
+        // break omitted
         case 'test':
             return "This is a test";
     }

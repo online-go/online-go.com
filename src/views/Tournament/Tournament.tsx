@@ -206,6 +206,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             elimination_tree: null,
         };
 
+        // eslint-disable-next-line no-constant-condition
         if (false) {
             // This is just for quick testing when I'm working on a particular
             // part of the tournament testing process. This is never intended

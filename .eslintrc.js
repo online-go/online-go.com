@@ -34,11 +34,7 @@ module.exports = {
         "@typescript-eslint/no-unused-vars": "off", // 675 warnings
         "@typescript-eslint/triple-slash-reference": "off", // 1 error
 
-        "no-case-declarations": "off", // 3 errors
-        "no-constant-condition": "off", // 1 error
-        "no-empty": "off", // 30 errors
         "no-empty-pattern": "off", // 1 error
-        "no-fallthrough": "off", // 3 errors
         "no-misleading-character-class": "off", // 2 errors
         "no-prototype-builtins": "off", // 8 errors
         "no-self-assign": "off", // 2 errors
@@ -106,7 +102,19 @@ module.exports = {
         "no-caller": "error",
         "no-cond-assign": "error",
         "no-debugger": "error",
+        "no-empty": [
+            "error",
+            {
+                "allowEmptyCatch": true
+            }
+        ],
         "no-eval": "error",
+        "no-fallthrough": [
+            "error",
+            {
+                "commentPattern": "break[\\s\\w]*omitted"
+            }
+        ],
         // Using the typescript-eslint version of this rule because of class
         // properties, which are not yet supported in ESLint.  For more info,
         // see: https://github.com/typescript-eslint/typescript-eslint/issues/491

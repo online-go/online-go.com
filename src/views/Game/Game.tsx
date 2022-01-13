@@ -1070,6 +1070,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                         return;
                     }
 
+                // break omitted
                 case 'simple':
                 case 'absolute':
                 case 'fischer':

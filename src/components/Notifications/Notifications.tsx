@@ -733,6 +733,9 @@ class NotificationEntry extends React.Component<{notification}, any> {
 
     renderNotification() {
         const notification = this.props.notification;
+        let outcome: any;
+        let now: number;
+        let left: number;
 
         switch (notification.type) {
             case "test":
@@ -773,7 +776,7 @@ class NotificationEntry extends React.Component<{notification}, any> {
                 return <div>{_("Game has started")}: {notification.black} v {notification.white} - {notification.name}</div>;
 
             case "gameEnded":
-                let outcome = notification.outcome;
+                outcome = notification.outcome;
                 if (notification.black_lost && !notification.white_lost) {
                     outcome = interpolate(pgettext("Game outcome: <player that won> by <result>", "%s by %s"), [notification.white, outcome]);
                 }
@@ -796,8 +799,8 @@ class NotificationEntry extends React.Component<{notification}, any> {
                 );
 
             case "timecop":
-                const now = (Date.now()) / 1000;
-                const left = Math.floor(notification.time / 1000 - now);
+                now = (Date.now()) / 1000;
+                left = Math.floor(notification.time / 1000 - now);
                 return <div>{interpolate(_("You have {{time_left}} to make your move!"), {"time_left": formatTime(left)})}</div>;
 
             case "gameEnteredStoneRemoval":

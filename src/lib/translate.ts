@@ -71,6 +71,7 @@ function setPluralIdx(lang: string) {
         // Croatian and Serbian are not strictly the same as Russian and Polish, but since this function does not take a string,
         // we cannot properly handle decimals.
         // TODO: allow this function to take a string and handle this case accordingly
+        // break omitted
         case 'hr':    // Croatian
         case 'sr':    // Serbian
             pluralidx = (count: number) => {
