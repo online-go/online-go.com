@@ -24,4 +24,4 @@ jobs:
         remove-issue-stale-when-updated: true
         remove-pr-stale-when-updated: true
         operations-per-run: 1000 # turn down when debug only is turned off
-        debug-only: true
+        debug-only: false
