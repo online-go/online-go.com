@@ -10,8 +10,8 @@ jobs:
     - uses: actions/stale@v4
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        stale-pr-message: "This issue is stale because it has been open for some time with no activity."
-        stale-pr-label: "stale"
+        stale-issue-message: "This issue is stale because it has been open for some time with no activity."
+        stale-issue-label: "stale"
         days-before-issue-stale: 730
         days-before-issue-close: -1
         remove-stale-when-updated: false
