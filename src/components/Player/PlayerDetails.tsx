@@ -185,7 +185,7 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     };
     openSupporterPage = (ev: React.MouseEvent<HTMLButtonElement>) => {
         this.close_all_modals_and_popovers();
-        const url = `/user/supporter2/${this.props.playerId}/${this.state.username}`;
+        const url = `/supporter/${this.props.playerId}/${this.state.username}`;
         if (shouldOpenNewTab(ev)) {
             window.open(url, "_blank");
         } else {
