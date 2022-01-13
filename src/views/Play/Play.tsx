@@ -61,7 +61,7 @@ interface PlayState {
     automatch_size_options: Size[];
     freeze_challenge_list: boolean; // Don't change the challenge list while they are trying to point the mouse at it
     pending_challenges: Array<Challenge>; // challenges received while frozen
-    show_in_rengo_management_pane: number; // a challenge_id for challenge to show in the rengo challenge management pane
+    show_in_rengo_management_pane: number[]; // a challenge_ids for challenges to show with pane open in the rengo challenge list
 }
 
 export class Play extends React.Component<{}, PlayState> {
@@ -90,7 +90,7 @@ export class Play extends React.Component<{}, PlayState> {
             automatch_size_options: data.get('automatch.size_options', ['19x19']),
             freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
             pending_challenges: [], // challenges received while frozen
-            show_in_rengo_management_pane: 0,
+            show_in_rengo_management_pane: [],
         };
         this.canvas = document.createElement("canvas");
         this.list_freeze_timeout = null;
@@ -205,16 +205,22 @@ export class Play extends React.Component<{}, PlayState> {
     acceptOpenChallenge = (challenge: Challenge) => {
         openGameAcceptModal(challenge).then((challenge) => {
             browserHistory.push(`/game/${challenge.game_id}`);
-            //window['openGame'](obj.game);
+            //window['openGame'](obj.game);_
             this.unfreezeChallenges();
         }).catch(errorAlerter);
     };
 
-    cancelOpenChallenge = (challenge) => {
-        console.log("Canceling", challenge);
-        if (challenge.challenge_id === this.state.show_in_rengo_management_pane) {
-            this.setState({show_in_rengo_management_pane: 0});
+    closeChallengeManagementPane = (challenge: Challenge) => {
+        if (this.state.show_in_rengo_management_pane.includes(challenge.challenge_id)) {
+            this.setState({show_in_rengo_management_pane: this.state.show_in_rengo_management_pane.filter((c) => (c !== challenge.challenge_id))});
         }
+    };
+
+    cancelOpenChallenge = (challenge: Challenge) => {
+        // stop trying to show the cancelled challenge
+        this.closeChallengeManagementPane(challenge);
+
+        // then tell the server
         del("challenges/%%", challenge.challenge_id).then(() => 0).catch(errorAlerter);
         this.unfreezeChallenges();
     };
@@ -862,7 +868,7 @@ export class Play extends React.Component<{}, PlayState> {
         </div>;
     }
 
-    unNominateForRengoChallenge = (C) => {
+    unNominateForRengoChallenge = (C: Challenge) => {
         swal({
             text: _("Withdrawing..."),   // translator: the server is processing their request to withdraw from a rengo challenge
             type: "info",
@@ -871,9 +877,7 @@ export class Play extends React.Component<{}, PlayState> {
             allowEscapeKey: false,
         }).catch(swal.noop);
 
-        if (C.challenge_id === this.state.show_in_rengo_management_pane) {
-            this.setState({show_in_rengo_management_pane: 0});
-        }
+        this.closeChallengeManagementPane(C);
 
         del("challenges/%%/join", C.challenge_id, {})
         .then(() => {
@@ -907,7 +911,7 @@ export class Play extends React.Component<{}, PlayState> {
     }
 
     nominateAndShow = (C) => {
-        this.manageRengoChallenge(C);
+        this.toggleRengoChallengePane(C);
         nominateForRengoChallenge(C);
     };
 
@@ -974,7 +978,7 @@ export class Play extends React.Component<{}, PlayState> {
                 (this.visibleInChallengeList(C) || null) &&
                     <>
                         {this.rengoListItem(C, user)}
-                        {(this.state.show_in_rengo_management_pane === C.challenge_id || null) &&
+                        {(this.state.show_in_rengo_management_pane.includes(C.challenge_id) || null) &&
                             this.rengoManageListItem(C, user)
                         }
                     </>
@@ -982,29 +986,24 @@ export class Play extends React.Component<{}, PlayState> {
         ];
     };
 
-    manageRengoChallenge = (C) => {
-        //console.log("managing ", C);
-        if (this.state.show_in_rengo_management_pane === C.challenge_id) {
-            this.setState({show_in_rengo_management_pane: 0});
+    toggleRengoChallengePane = (C: Challenge) => {
+        if (this.state.show_in_rengo_management_pane.includes(C.challenge_id)) {
+            this.closeChallengeManagementPane(C);
         } else {
-            this.setState({show_in_rengo_management_pane: C.challenge_id});
+            this.setState({show_in_rengo_management_pane: [C.challenge_id, ... this.state.show_in_rengo_management_pane]});
         }
-    };
-
-    stopManagingRengoChallenge = () => {
-        this.setState({show_in_rengo_management_pane: 0});
     };
 
     rengoManageListItem = (C, user) => {
         return (
-            <tr key={C.challenge_id} className={"challenge-row rengo-management-row"}>
+            <tr key={`manage-list-item-${C.challenge_id}`} className={"challenge-row rengo-management-row"}>
                 <td className='cell' colSpan={8}>
                     <Card className='rengo-management-list-item' >
                         <div className='rengo-management-header'>
                             <span>{C.name}</span>
                             <div>
                                 <i className="fa fa-lg fa-times-circle-o"
-                                    onClick={this.stopManagingRengoChallenge}/>
+                                    onClick={this.closeChallengeManagementPane.bind(self, C)}/>
                             </div>
                         </div>
                         <RengoManagementPane
@@ -1033,7 +1032,7 @@ export class Play extends React.Component<{}, PlayState> {
         const showing_manage_interface = this.state.show_in_rengo_management_pane === C.challenge_id;
 
         return (
-            <tr key={C.challenge_id} className={"challenge-row"}>
+            <tr key={`rengo-list-item-${C.challenge_id}`} className={"challenge-row"}>
                 <span className={"cell rengo-list-buttons"}>
                     {user.is_moderator &&
                         <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left ">
@@ -1049,7 +1048,7 @@ export class Play extends React.Component<{}, PlayState> {
 
                     {!isLiveGame(C.time_control_parameters) &&
                         <button
-                            onClick={this.manageRengoChallenge.bind(this, C)}
+                            onClick={this.toggleRengoChallengePane.bind(this, C)}
                             className="btn primary xs"
                         >
                             {C.user_challenge ?  _("Manage") : _("View")}
