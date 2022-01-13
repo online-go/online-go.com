@@ -24,8 +24,6 @@ import {Supporter} from "./Supporter";
 import {PriceBox} from "./Supporter";
 
 
-
-
 export class BecomeASiteSupporterModal extends Modal<{}, {}, any> {
     constructor(props) {
         super(props);
