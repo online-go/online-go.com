@@ -1,7 +1,7 @@
 name: "Stale issues"
 on:
   schedule:
-  - cron: "0 0 * * *"
+  - cron: "45 17 * * *"
   workflow_dispatch:
 
 jobs:
