@@ -14,5 +14,5 @@ jobs:
         stale-issue-label: "stale"
         days-before-issue-stale: 730
         days-before-issue-close: -1
-        remove-stale-when-updated: false
+        remove-issue-stale-when-updated: false
         debug-only: true
