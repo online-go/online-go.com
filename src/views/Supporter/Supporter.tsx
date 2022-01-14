@@ -351,15 +351,17 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                     <DeprecatedPlanNote slug={current_plan_slug} />
 
                     <SupporterOverridesEditor account_id={account_id} overrides={overrides} config={config} onChange={setOverrides}/>
+                </>
+            }
 
-                    <div className='SiteSupporterText'>
-                        <p className='fineprint'>
-                            <sup>*</sup>{_("Only 19x19, 9x9, and 13x13 games are supported for AI review. Engines currently available are KataGo and Leela Zero. Playouts and engines are subject to change over time as technology and software improves, but only if the changes should provide you with better reviews.")}
-                        </p>
-                    </div>
+            <div className='SiteSupporterText'>
+                <p className='fineprint'>
+                    <sup>*</sup>{_("Only 19x19, 9x9, and 13x13 games are supported for AI review. Engines currently available are KataGo and Leela Zero. Playouts and engines are subject to change over time as technology and software improves, but only if the changes should provide you with better reviews.")}
+                </p>
+            </div>
 
-
-
+            {(!inline || null) &&
+                <>
                     {config.subscriptions.length
                         ?
                         <>
