@@ -374,8 +374,9 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                         :
                         (config.payments.length > 0
                             ?
-                            <div>
+                            <div style={{"textAlign": "center"}}>
                                 <h4>{_("You do not currently have an active supporter subscription")}</h4>
+                                <h5>{_("(Note: if you recently signed up, it may take a few minutes for your subscription to appear here)")}</h5>
                             </div>
                             :
                             null
