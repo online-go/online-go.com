@@ -60,11 +60,9 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
         } else {
             throw new Error(`ACLModal created with invalid parameters`);
         }
-    }
-
-    UNSAFE_componentWillMount() {
         this.refresh();
     }
+
     componentWillUnmount() {
     }
     refresh = () => {
