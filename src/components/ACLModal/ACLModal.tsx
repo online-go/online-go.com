@@ -60,11 +60,15 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
         } else {
             throw new Error(`ACLModal created with invalid parameters`);
         }
-        this.refresh();
     }
 
     componentWillUnmount() {
     }
+
+    componentDidMount() {
+        this.refresh();
+    }
+
     refresh = () => {
         get(this.url)
         .then((acl) => this.setState({acl: acl}))
