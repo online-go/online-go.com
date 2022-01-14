@@ -476,7 +476,7 @@ export function PriceBox({price, currency, interval, config, account_id, overrid
         setDisabled(true);
 
         post("/billing/stripe/checkout", {
-            'interval': 'month',
+            'interval': interval,
             'currency': currency,
             'amount': amount,
             'review_level': 'kyu',
