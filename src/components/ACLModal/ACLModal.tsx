@@ -62,11 +62,11 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
         }
     }
 
-    componentWillUnmount() {
-    }
-
     componentDidMount() {
         this.refresh();
+    }
+
+    componentWillUnmount() {
     }
 
     refresh = () => {
