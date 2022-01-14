@@ -737,11 +737,20 @@ function Subscription({subscription}: {subscription: Subscription}): JSX.Element
 
     if (!subscription?.plan?.amount) {
         console.log("No plan amount", subscription);
-        return (
-            <div className='Subscription'>
-                <h3>error loading plan information</h3>
-            </div>
-        );
+        if (user.is_superuser) {
+            return (
+                <div className='Subscription'>
+                    <div className='developer-options'>
+                        <h3>error loading plan information</h3>
+                        <pre>
+                            {JSON.stringify(subscription, null, 2)}
+                        </pre>
+                    </div>
+                </div>
+            );
+        } else {
+            return null;
+        }
     }
 
     return (
