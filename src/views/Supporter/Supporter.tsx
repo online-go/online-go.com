@@ -735,13 +735,21 @@ function Subscription({subscription}: {subscription: Subscription}): JSX.Element
         }
     }
 
-    if (!subscription?.plan?.amount) {
-        console.log("No plan amount", subscription);
+    let amount: string;
+
+    if (subscription?.plan?.amount) {
+        amount = formatMoney(subscription.plan.currency, subscription.plan.amount);
+    } else if (subscription?.last_payment?.amount) {
+        amount = formatMoney(subscription.last_payment.currency, subscription.last_payment.amount);
+    }
+
+    if (!amount) {
+        console.log("No amount determined", subscription);
         if (user.is_superuser) {
             return (
                 <div className='Subscription'>
                     <div className='developer-options'>
-                        <h3>error loading plan information</h3>
+                        <h3>error loading subscription information</h3>
                         <pre>
                             {JSON.stringify(subscription, null, 2)}
                         </pre>
@@ -759,7 +767,7 @@ function Subscription({subscription}: {subscription: Subscription}): JSX.Element
                 interpolate(
                     text,
                     {
-                        amount: formatMoney(subscription.plan.currency, subscription.plan.amount),
+                        amount: amount,
                         period_in_months: subscription.period_duration_months,
                     }
                 )
