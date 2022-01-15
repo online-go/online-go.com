@@ -548,7 +548,6 @@ export class Play extends React.Component<{}, PlayState> {
                                 <span className="cell break">
                                     {_("Rengo")}
                                 </span>
-                                {this.cellBreaks(7)}
                             </div>
 
 
@@ -994,6 +993,7 @@ export class Play extends React.Component<{}, PlayState> {
         ];
     };
 
+
     toggleRengoChallengePane = (C: Challenge) => {
         if (this.state.show_in_rengo_management_pane.includes(C.challenge_id)) {
             this.closeChallengeManagementPane(C);
@@ -1036,7 +1036,9 @@ export class Play extends React.Component<{}, PlayState> {
         );
     };
 
-    rengoListItem = (C, user) => {
+    rengoListItem = (props: {C: Challenge; user: any}) => {
+        const {C, user} = {...props};
+
         const showing_manage_interface = this.state.show_in_rengo_management_pane === C.challenge_id;
 
         return (
