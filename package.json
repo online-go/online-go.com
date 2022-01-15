@@ -6,8 +6,8 @@
   "private": true,
   "scripts": {
     "dev": "supervisor -w Gulpfile.js,webpack.config.js,tsconfig.json supervisor -w Gulpfile.js -x gulp --",
-    "prettytsx": "prettier --write 'src/**/*.tsx'",
-    "prettyts": "prettier --write 'src/**/*.ts'",
+    "prettier": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "prettier:check": "prettier --check \"src/**/*.{ts,tsx}\"",
     "webpack": "webpack",
     "webpack-watch": "webpack --watch --progress --color",
     "yarn": "yarn",
@@ -126,7 +126,8 @@
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
-      "eslint"
+      "eslint",
+      "prettier --check"
     ]
   }
 }

@@ -236,9 +236,9 @@ export function resolveChannelDisplayName(channel: string): string {
             }
         });
     } else if (channel.startsWith("game-")) {
-        return interpolate(_("Game {{number}}"), {"number": channel.substring(5)});
+        return interpolate(_("Game {{number}}"), { number: channel.substring(5) });  // eslint-disable-line id-denylist
     } else if (channel.startsWith("review-")) {
-        return interpolate(_("Review {{number}}"), {"number": channel.substring(7)});
+        return interpolate(_("Review {{number}}"), { number: channel.substring(7) });  // eslint-disable-line id-denylist
     }
     return "<error>";
 }
