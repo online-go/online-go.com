@@ -47,7 +47,7 @@ export class LadderList extends React.PureComponent<{}, LadderListState> {
         };
     }
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         window.document.title = ("Ladders");
         this.resolve();
     }

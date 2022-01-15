@@ -49,7 +49,7 @@ export class KBShortcut extends React.Component<KBProps> {
     shouldComponentUpdate() {
         return false;
     }
-    UNSAFE_componentWillReceiveProps(next_props) {
+    componentDidUpdate(next_props) {
         kb_unbind(this.binding);
         this.binding = kb_bind(next_props.shortcut, next_props.action, next_props.priority || 0);
     }
