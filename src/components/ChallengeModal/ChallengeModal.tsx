@@ -145,7 +145,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         });
 
         // make sure rengo=true doesn't persist into the wrong kinds of challenges
-        challenge.game.rengo = this.props.mode === "open" ? challenge.game.rengo : false;
+        if (challenge.game.ranked || challenge.game.private || this.props.mode !== "open") {
+            challenge.game.rengo = false;
+        }
 
         /* fix dirty data */
         if (isNaN(challenge.min_ranking) || challenge.min_ranking < 0 || challenge.min_ranking > 36) {
@@ -688,7 +690,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     <div className="checkbox">
                         <input type="checkbox"
                             id="rengo-option"
-                            disabled={this.state.challenge.game.private || this.state.challenge.game.ranked}
+                            disabled={!this.state.challenge.game.rengo && (this.state.challenge.game.private || this.state.challenge.game.ranked) }
                             checked={this.state.challenge.game.rengo} onChange={this.update_rengo}/>
                     </div>
                 </div>
@@ -714,7 +716,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                             <div className="checkbox">
                                 <input type="checkbox"
                                     id="challenge-ranked"
-                                    disabled={this.state.challenge.game.private || this.state.challenge.game.rengo}
+                                    disabled={!this.state.challenge.game.ranked && (this.state.challenge.game.private || this.state.challenge.game.rengo)}
                                     checked={this.state.challenge.game.ranked} onChange={this.update_ranked}/>
                             </div>
                         </div>

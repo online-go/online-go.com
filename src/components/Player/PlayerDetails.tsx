@@ -29,7 +29,6 @@ import * as data from "data";
 import {close_all_popovers} from "popover";
 import {Flag} from "Flag";
 import {ban, shadowban, remove_shadowban, remove_ban} from "Moderator";
-import {openSupporterAdminModal} from "SupporterAdmin";
 import {challenge} from "ChallengeModal";
 import {getPrivateChat} from "PrivateChat";
 import {openBlockPlayerControls} from "BlockPlayer";
@@ -184,13 +183,9 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     removeBan = () => {
         remove_ban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     };
-    openSupporterAdmin = () => {
-        this.close_all_modals_and_popovers();
-        openSupporterAdminModal(this.props.playerId);
-    };
     openSupporterPage = (ev: React.MouseEvent<HTMLButtonElement>) => {
         this.close_all_modals_and_popovers();
-        const url = `/user/supporter2/${this.props.playerId}/${this.state.username}`;
+        const url = `/supporter/${this.props.playerId}/${this.state.username}`;
         if (shouldOpenNewTab(ev)) {
             window.open(url, "_blank");
         } else {
@@ -336,7 +331,6 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                 }
                 { ((user.is_superuser && this.props.playerId > 0) || null) &&
                     <div className="actions">
-                        <button className="xs noshadow" onClick={this.openSupporterAdmin}><i className="fa fa-star"/>Supporter Admin</button>
                         <button className="xs noshadow" onClick={this.openSupporterPage}><i className="fa fa-star"/>Supporter Page</button>
                     </div>
                 }
