@@ -49,9 +49,9 @@ export class KBShortcut extends React.Component<KBProps> {
     shouldComponentUpdate() {
         return false;
     }
-    componentDidUpdate(next_props) {
+    componentDidUpdate() {
         kb_unbind(this.binding);
-        this.binding = kb_bind(next_props.shortcut, next_props.action, next_props.priority || 0);
+        this.binding = kb_bind(this.props.shortcut, this.props.action, this.props.priority || 0);
     }
     componentDidMount() {
         this.binding = kb_bind(this.props.shortcut, this.props.action, this.props.priority || 0);
