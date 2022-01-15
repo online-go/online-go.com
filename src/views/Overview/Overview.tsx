@@ -147,12 +147,18 @@ export class Overview extends React.Component<{}, any> {
                         <ChallengesList onAccept={() => this.refresh()} />
 
                         {((user && user.provisional) || null) && (
-                            <DismissableNotification className="learn-how-to-play" dismissedKey="learn-how-to-play">
-                                <Link to="/learn-to-play-go">{_("New to Go? Click here to learn how to play!")}</Link>
+                            <DismissableNotification
+                                className="learn-how-to-play"
+                                dismissedKey="learn-how-to-play"
+                            >
+                                <Link to="/learn-to-play-go">
+                                    {_("New to Go? Click here to learn how to play!")}
+                                </Link>
                             </DismissableNotification>
                         )}
 
-                        {((this.state.resolved && this.state.overview.active_games.length) || null) && (
+                        {((this.state.resolved && this.state.overview.active_games.length) ||
+                            null) && (
                             <div className="active-games">
                                 <h2>
                                     {_("Active Games")} ({this.state.overview.active_games.length})
@@ -173,7 +179,8 @@ export class Overview extends React.Component<{}, any> {
                                 />
                             </div>
                         )}
-                        {((this.state.resolved && this.state.overview.active_games.length === 0) || null) && (
+                        {((this.state.resolved && this.state.overview.active_games.length === 0) ||
+                            null) && (
                             <div className="no-active-games">
                                 <div style={{ marginBottom: "1rem" }}>
                                     {_("You're not currently playing any games.")}
@@ -198,7 +205,10 @@ export class Overview extends React.Component<{}, any> {
                                         )}
                                     </div>
 
-                                    <a className="btn success" href="https://translate.online-go.com/">
+                                    <a
+                                        className="btn success"
+                                        href="https://translate.online-go.com/"
+                                    >
                                         {_("I'll help translate!")}
                                     </a>
 

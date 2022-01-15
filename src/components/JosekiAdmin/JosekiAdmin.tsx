@@ -153,7 +153,10 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                     const next_selections = new Map(current_selections);
                     next_selections.set(next_selection, false);
                     const next_reversions = new Map(this.state.reversions);
-                    next_reversions.set(next_selection, `Reversion of audit ${target_id} status: ${body.result}`);
+                    next_reversions.set(
+                        next_selection,
+                        `Reversion of audit ${target_id} status: ${body.result}`,
+                    );
                     this.setState({
                         selections: next_selections,
                         reversions: next_reversions,
@@ -261,7 +264,8 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
     };
 
     toggleLockdown = () => {
-        const lockdown_url = this.props.server_url + "lockdown?lockdown=" + !this.props.db_locked_down;
+        const lockdown_url =
+            this.props.server_url + "lockdown?lockdown=" + !this.props.db_locked_down;
 
         fetch(lockdown_url, {
             method: "put",
@@ -299,16 +303,24 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                         <div className="audit-filters">
                             <div className="audit-filter">
                                 <div>Filter by position:</div>
-                                <input value={this.state.filter_position_id} onChange={this.onFilterPositionChange} />
+                                <input
+                                    value={this.state.filter_position_id}
+                                    onChange={this.onFilterPositionChange}
+                                />
                             </div>
                             <div
                                 className={
                                     "audit-filter" +
-                                    (this.state.filter_position_id === "" ? "" : " audit-filter-overridden")
+                                    (this.state.filter_position_id === ""
+                                        ? ""
+                                        : " audit-filter-overridden")
                                 }
                             >
                                 <div>Filter by user (id):</div>
-                                <input value={this.state.filter_user_id} onChange={this.onUserIdChange} />
+                                <input
+                                    value={this.state.filter_user_id}
+                                    onChange={this.onUserIdChange}
+                                />
                                 <span>
                                     (<Player user={parseInt(this.state.filter_user_id)} />)
                                 </span>
@@ -316,20 +328,26 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                             <div
                                 className={
                                     "audit-filter" +
-                                    (this.state.filter_position_id === "" && this.state.filter_user_id === ""
+                                    (this.state.filter_position_id === "" &&
+                                    this.state.filter_user_id === ""
                                         ? ""
                                         : " audit-filter-overridden")
                                 }
                             >
                                 <div>Filter by type:</div>
-                                <select value={this.state.filter_audit_type} onChange={this.onFilterAuditTypeChange}>
+                                <select
+                                    value={this.state.filter_audit_type}
+                                    onChange={this.onFilterAuditTypeChange}
+                                >
                                     {audit_type_selections}
                                 </select>
                             </div>
                         </div>
                         {this.props.user_can_administer && (
                             <button
-                                className={"btn" + (this.state.any_selected ? " danger" : "disabled")}
+                                className={
+                                    "btn" + (this.state.any_selected ? " danger" : "disabled")
+                                }
                                 onClick={this.revertAllSelectedChanges}
                             >
                                 {_("Revert")}
@@ -337,7 +355,8 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                         )}
                     </div>
                 )}
-                {reversions.length > 0 && reversions.map((reversion, idx) => <div key={idx}>{reversion}</div>)}
+                {reversions.length > 0 &&
+                    reversions.map((reversion, idx) => <div key={idx}>{reversion}</div>)}
                 <AuditTable
                     showPaginationBottom
                     pageSizeOptions={[5, 10, 15, 30, 50, 100]}
@@ -350,7 +369,9 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                     selectType={"checkbox"}
                     isSelected={(key) => {
                         const key_string = `select-${key}`;
-                        const result = this.state.selections.has(key_string) && this.state.selections.get(key_string);
+                        const result =
+                            this.state.selections.has(key_string) &&
+                            this.state.selections.get(key_string);
                         //console.log(`check for ${key_string}:`, result);
                         return result;
                     }}
@@ -384,7 +405,9 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                             // Click the placement to see the position on the board
                             getProps: ((state, rowInfo, column) => ({
                                 onClick: (e, handleOriginal) => {
-                                    this.props.loadPositionToBoard(rowInfo.original.node_id.toString());
+                                    this.props.loadPositionToBoard(
+                                        rowInfo.original.node_id.toString(),
+                                    );
                                 },
                                 className: "position-link",
                             })) as any,

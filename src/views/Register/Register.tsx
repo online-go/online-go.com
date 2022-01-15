@@ -76,7 +76,11 @@ export class Register extends React.PureComponent<{}, any> {
                 this.refs.password.focus();
                 return true;
             }
-            if (focus_email && this.refs.email.value.trim() === "" && this.refs.email !== document.activeElement) {
+            if (
+                focus_email &&
+                this.refs.email.value.trim() === "" &&
+                this.refs.email !== document.activeElement
+            ) {
                 this.refs.email.focus();
                 return true;
             }
@@ -110,7 +114,9 @@ export class Register extends React.PureComponent<{}, any> {
         if (/@/.test(this.refs.username.value)) {
             $(this.refs.username).addClass("validation-error");
             this.setState({
-                error: _("Your username will be publically visible, please do not use your email address here."),
+                error: _(
+                    "Your username will be publically visible, please do not use your email address here.",
+                ),
             });
             this.refs.username.focus();
             return false;
@@ -129,7 +135,9 @@ export class Register extends React.PureComponent<{}, any> {
                 <Card>
                     <h2>{_("Welcome new player!")}</h2>
                     <form name="login" autoComplete="on">
-                        <label htmlFor="username">{_("Username") /* translators: New account registration */}</label>
+                        <label htmlFor="username">
+                            {_("Username") /* translators: New account registration */}
+                        </label>
                         <input
                             className="boxed"
                             id="username"
@@ -139,8 +147,12 @@ export class Register extends React.PureComponent<{}, any> {
                             onKeyPress={this.register}
                             onChange={this.validateUsername}
                         />
-                        {this.state.error && <div className="error-message">{this.state.error}</div>}
-                        <label htmlFor="password">{_("Password") /* translators: New account registration */}</label>
+                        {this.state.error && (
+                            <div className="error-message">{this.state.error}</div>
+                        )}
+                        <label htmlFor="password">
+                            {_("Password") /* translators: New account registration */}
+                        </label>
                         <input
                             className="boxed"
                             id="password"
@@ -172,7 +184,8 @@ export class Register extends React.PureComponent<{}, any> {
                             <i className="email-icon fa fa-envelope-o" /> {_("Sign in with Email")}
                         </Link>
                         <a href="/login/google-oauth2/" className="s btn md-icon" target="_self">
-                            <span className="google google-oauth2-icon" /> {_("Sign in with Google")}
+                            <span className="google google-oauth2-icon" />{" "}
+                            {_("Sign in with Google")}
                         </a>
                         <a href="/login/facebook/" className="s btn md-icon" target="_self">
                             <span className="facebook facebook-icon" /> {_("Sign in with Facebook")}

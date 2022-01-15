@@ -92,20 +92,35 @@ export const GoResources = (props) => {
                             <span>
                                 <Flag country={kr} />
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="https://cdn.online-go.com/Falling-in-love-with-Baduk.pdf">
+                                <a
+                                    rel="noopener"
+                                    href="https://cdn.online-go.com/Falling-in-love-with-Baduk.pdf"
+                                >
                                     Falling in love with Baduk
                                 </a>
                                 <br />
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}> Korea Baduk Association</span>
+                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
+                                    {" "}
+                                    Korea Baduk Association
+                                </span>
                             </span>,
                             <span>
                                 <Flag country={en} />{" "}
                                 <a rel="noopener" href="https://cdn.online-go.com/relentless.pdf">
                                     Relentless (2016)
                                 </a>
-                                <br /> <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>Younggil An</span>
-                                <br /> <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>Josh Hoak</span>
-                                <br /> <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>David Ormerod</span>
+                                <br />{" "}
+                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
+                                    Younggil An
+                                </span>
+                                <br />{" "}
+                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
+                                    Josh Hoak
+                                </span>
+                                <br />{" "}
+                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
+                                    David Ormerod
+                                </span>
                                 <br />{" "}
                                 <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
                                     <a rel="noopener" href="http://gogameguru.com/relentless/">
@@ -121,45 +136,73 @@ export const GoResources = (props) => {
                                 >
                                     Go on Go: The Analyzed Games of Go Seigen
                                 </a>
-                                <br /> <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>Go Seigen</span>
                                 <br />{" "}
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>Translation by Jim Z. Yu</span>
+                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
+                                    Go Seigen
+                                </span>
+                                <br />{" "}
+                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
+                                    Translation by Jim Z. Yu
+                                </span>
                             </span>,
 
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="https://archive.org/details/gameofgonational00smitrich/page/n9">
+                                <a
+                                    rel="noopener"
+                                    href="https://archive.org/details/gameofgonational00smitrich/page/n9"
+                                >
                                     The Game of Go
                                 </a>
                                 <br />{" "}
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>Arthur Smith (1908)</span>
+                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
+                                    Arthur Smith (1908)
+                                </span>
                             </span>,
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="http://tigersmouth.org/downloads/RiverMtnGo-30k-20k.pdf">
+                                <a
+                                    rel="noopener"
+                                    href="http://tigersmouth.org/downloads/RiverMtnGo-30k-20k.pdf"
+                                >
                                     River Mountain Go 1 (30k-20k)
                                 </a>
-                                <br /> <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>Oliver Richman</span>
+                                <br />{" "}
+                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
+                                    Oliver Richman
+                                </span>
                             </span>,
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="http://tigersmouth.org/downloads/RiverMtnGo-20k-8k.pdf">
+                                <a
+                                    rel="noopener"
+                                    href="http://tigersmouth.org/downloads/RiverMtnGo-20k-8k.pdf"
+                                >
                                     River Mountain Go 2 (20k-8k)
                                 </a>
-                                <br /> <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>Oliver Richman</span>
+                                <br />{" "}
+                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
+                                    Oliver Richman
+                                </span>
                             </span>,
                             <span>
                                 <Flag country={es} />{" "}
-                                <a rel="noopener" href="https://cdn.online-go.com/Introduccion-al-juego-de-Go.pdf">
+                                <a
+                                    rel="noopener"
+                                    href="https://cdn.online-go.com/Introduccion-al-juego-de-Go.pdf"
+                                >
                                     Introducción al juego de Go
                                 </a>
                                 <br />{" "}
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>Mariano López Minnucci</span>
+                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
+                                    Mariano López Minnucci
+                                </span>
                             </span>,
 
                             <span>
                                 {" "}
-                                <Flag country={en} /> <Flag country={ru} /> 81 Little Lions (9x9 intro)
+                                <Flag country={en} /> <Flag country={ru} /> 81 Little Lions (9x9
+                                intro)
                                 <br />
                                 <span style={{ marginLeft: "1.7em" }}>
                                     <Flag country={en} />
@@ -193,24 +236,35 @@ export const GoResources = (props) => {
                                 <br />
                                 <span style={{ marginLeft: "1.7em" }}>
                                     <Flag country={ru} />
-                                    <a rel="noopener" href="https://cdn.online-go.com/81_little_lions_ru.pdf">
+                                    <a
+                                        rel="noopener"
+                                        href="https://cdn.online-go.com/81_little_lions_ru.pdf"
+                                    >
                                         81 львёнок (pdf)
                                     </a>
                                 </span>
                                 <br />
                                 <span style={{ marginLeft: "1.7em" }}>
                                     <Flag country={en} />
-                                    <a rel="noopener" href="https://cdn.online-go.com/81_little_lions.pdf">
+                                    <a
+                                        rel="noopener"
+                                        href="https://cdn.online-go.com/81_little_lions.pdf"
+                                    >
                                         2015 Edition (pdf)
                                     </a>
                                 </span>
                                 <br />{" "}
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>Immanuel deVillers</span>
+                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
+                                    Immanuel deVillers
+                                </span>
                                 <br />{" "}
                                 <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
                                     Lucas Félix de Oliveira Santana
                                 </span>
-                                <br /> <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>Рочев Антон</span>
+                                <br />{" "}
+                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
+                                    Рочев Антон
+                                </span>
                             </span>,
 
                             <span>
@@ -220,7 +274,8 @@ export const GoResources = (props) => {
                                         <Flag country={fr} /> <Flag country={br} />
                                     </span>{" "}
                                     <a rel="noopener" href="https://www.gobook.eu/">
-                                        A Go Guide <span style={{ fontSize: "0.9em" }}>From a Beginner</span>
+                                        A Go Guide{" "}
+                                        <span style={{ fontSize: "0.9em" }}>From a Beginner</span>
                                     </a>
                                 </div>
 
@@ -231,11 +286,20 @@ export const GoResources = (props) => {
 
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="https://cdn.online-go.com/shape_up_v1.2.pdf">
+                                <a
+                                    rel="noopener"
+                                    href="https://cdn.online-go.com/shape_up_v1.2.pdf"
+                                >
                                     Shape Up!
                                 </a>
-                                <br /> <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>Charles Matthews</span>
-                                <br /> <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>Seong-June Kim</span>
+                                <br />{" "}
+                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
+                                    Charles Matthews
+                                </span>
+                                <br />{" "}
+                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
+                                    Seong-June Kim
+                                </span>
                             </span>,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
@@ -246,10 +310,16 @@ export const GoResources = (props) => {
                         {scramble(
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="https://cdn.online-go.com/kifu-en-19x19.pdf">
+                                <a
+                                    rel="noopener"
+                                    href="https://cdn.online-go.com/kifu-en-19x19.pdf"
+                                >
                                     19x19
                                 </a>{" "}
-                                <a rel="noopener" href="https://cdn.online-go.com/kifu-en-13x13.pdf">
+                                <a
+                                    rel="noopener"
+                                    href="https://cdn.online-go.com/kifu-en-13x13.pdf"
+                                >
                                     13x13
                                 </a>{" "}
                                 <a rel="noopener" href="https://cdn.online-go.com/kifu-en-9x9.pdf">
@@ -258,16 +328,25 @@ export const GoResources = (props) => {
                             </span>,
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="https://cdn.online-go.com/kifu-with-circles-en-19x19.pdf">
+                                <a
+                                    rel="noopener"
+                                    href="https://cdn.online-go.com/kifu-with-circles-en-19x19.pdf"
+                                >
                                     19x19 with circles
                                 </a>{" "}
                             </span>,
                             <span>
                                 <Flag country={es} />{" "}
-                                <a rel="noopener" href="https://cdn.online-go.com/kifu-es-19x19.pdf">
+                                <a
+                                    rel="noopener"
+                                    href="https://cdn.online-go.com/kifu-es-19x19.pdf"
+                                >
                                     19x19
                                 </a>{" "}
-                                <a rel="noopener" href="https://cdn.online-go.com/kifu-es-13x13.pdf">
+                                <a
+                                    rel="noopener"
+                                    href="https://cdn.online-go.com/kifu-es-13x13.pdf"
+                                >
                                     13x13
                                 </a>{" "}
                                 <a rel="noopener" href="https://cdn.online-go.com/kifu-es-9x9.pdf">
@@ -331,7 +410,10 @@ export const GoResources = (props) => {
                         {scramble(
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="https://internetgoschool.com/index.vhtml.com">
+                                <a
+                                    rel="noopener"
+                                    href="https://internetgoschool.com/index.vhtml.com"
+                                >
                                     Guo Juans Internet Go School
                                 </a>
                             </span>,
@@ -388,7 +470,10 @@ export const GoResources = (props) => {
                             </span>,
                             <span>
                                 <Flag country={un} />{" "}
-                                <a rel="noopener" href="http://gochild2009.appspot.com/?locale=en_US">
+                                <a
+                                    rel="noopener"
+                                    href="http://gochild2009.appspot.com/?locale=en_US"
+                                >
                                     GoChild
                                 </a>
                             </span>,
@@ -421,7 +506,10 @@ export const GoResources = (props) => {
                         {scramble(
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="http://www.gocommentary.com/free-tutorial-videos.html">
+                                <a
+                                    rel="noopener"
+                                    href="http://www.gocommentary.com/free-tutorial-videos.html"
+                                >
                                     Go Commentary Videos
                                 </a>
                             </span>,
@@ -452,7 +540,10 @@ export const GoResources = (props) => {
                         {scramble(
                             <span>
                                 <Flag country={en} /> <Flag country={jp} />{" "}
-                                <a rel="noopener" href="https://www.youtube.com/channel/UCRJyagla1B5cxIfR4i2LdgA">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/channel/UCRJyagla1B5cxIfR4i2LdgA"
+                                >
                                     Michael Redmond's Go TV
                                 </a>
                             </span>,
@@ -483,7 +574,10 @@ export const GoResources = (props) => {
                             </span>,
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="https://www.youtube.com/channel/UCGAASXnrt4FtYfFZ608PqHA">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/channel/UCGAASXnrt4FtYfFZ608PqHA"
+                                >
                                     Andrew Jackson
                                 </a>
                             </span>,
@@ -499,13 +593,19 @@ export const GoResources = (props) => {
                             </span>,
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="https://www.youtube.com/user/tokinonagare27/">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/user/tokinonagare27/"
+                                >
                                     Shusaku Games
                                 </a>
                             </span>,
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="https://www.youtube.com/channel/UCTji1kQNoWIH85dB_Vxka9g">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/channel/UCTji1kQNoWIH85dB_Vxka9g"
+                                >
                                     Haylee
                                 </a>
                             </span>,
@@ -532,13 +632,19 @@ export const GoResources = (props) => {
                             </span>,
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="https://www.youtube.com/user/longstridebaduk">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/user/longstridebaduk"
+                                >
                                     LongstrideBaduk
                                 </a>
                             </span>,
                             <span>
                                 <Flag country={it} />{" "}
-                                <a rel="noopener" href="https://www.youtube.com/user/PaceAlessandro">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/user/PaceAlessandro"
+                                >
                                     Alessandro Pace
                                 </a>
                             </span>,
@@ -556,13 +662,19 @@ export const GoResources = (props) => {
                             </span>,
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="https://www.youtube.com/channel/UCP14BOcc0Rg9-TXXv2I4AkA">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/channel/UCP14BOcc0Rg9-TXXv2I4AkA"
+                                >
                                     In Sente
                                 </a>
                             </span>,
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="https://www.youtube.com/channel/UCsH0N8Hc4e4AXTnZt8Hg6fQ">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/channel/UCsH0N8Hc4e4AXTnZt8Hg6fQ"
+                                >
                                     BenKyo
                                 </a>
                             </span>,
@@ -590,7 +702,10 @@ export const GoResources = (props) => {
                                     Xhu98 Twitch
                                 </a>{" "}
                                 /{" "}
-                                <a rel="noopener" href="https://www.youtube.com/channel/UCohURdr4oSzrXL49qOQQpwg">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/channel/UCohURdr4oSzrXL49qOQQpwg"
+                                >
                                     YouTube
                                 </a>
                             </span>,
@@ -625,23 +740,35 @@ export const GoResources = (props) => {
                             </span>,
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="https://www.youtube.com/channel/UCQ7fRyWobKv_FejtqwUVImA">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/channel/UCQ7fRyWobKv_FejtqwUVImA"
+                                >
                                     Yoon's Baduk Cafe
                                 </a>
                             </span>,
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="https://www.youtube.com/channel/UC_AU7Wu_tKhFIRjrJZgYA9w">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/channel/UC_AU7Wu_tKhFIRjrJZgYA9w"
+                                >
                                     Go Pro Yeonwoo
                                 </a>{" "}
                                 / <Flag country={kr} />{" "}
-                                <a rel="noopener" href="https://www.youtube.com/channel/UCfC7lLfshm-GGKengvBm_HQ">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/channel/UCfC7lLfshm-GGKengvBm_HQ"
+                                >
                                     프로연우
                                 </a>
                             </span>,
                             <span>
                                 <Flag country={cn} />{" "}
-                                <a rel="noopener" href="https://www.youtube.com/channel/UC9BYxg8ZakiOvbDyO2eGLZw">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/channel/UC9BYxg8ZakiOvbDyO2eGLZw"
+                                >
                                     围棋TV
                                 </a>
                             </span>,
@@ -665,20 +792,29 @@ export const GoResources = (props) => {
                             </span>,
                             <span>
                                 <Flag country={"tr"} />{" "}
-                                <a rel="noopener" href="https://www.youtube.com/channel/UCwTy0RGxDD2ZkQv-qCuWrAQ">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/channel/UCwTy0RGxDD2ZkQv-qCuWrAQ"
+                                >
                                     Şibumi Go Okulu
                                 </a>
                             </span>,
                             <span>
                                 <Flag country={"tr"} />{" "}
-                                <a rel="noopener" href="https://www.youtube.com/channel/UCzxYMKMGX_ZXXzBiLE9FVfw">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/channel/UCzxYMKMGX_ZXXzBiLE9FVfw"
+                                >
                                     Istanbul Go Association
                                 </a>
                             </span>,
 
                             <span>
                                 <Flag country={jp} />{" "}
-                                <a rel="noopener" href="https://www.youtube.com/channel/UCl4UWklKYTaUOZAhSJAprWQ">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/channel/UCl4UWklKYTaUOZAhSJAprWQ"
+                                >
                                     The Nihon Ki-in Youtube Channel (日本棋院囲碁チャンネル)
                                 </a>
                             </span>,
@@ -968,7 +1104,10 @@ export const GoResources = (props) => {
                             </span>,
                             <span>
                                 <Flag country={jp} />{" "}
-                                <a rel="noopener" href="https://blog.goo.ne.jp/minamijyuujisei_1984">
+                                <a
+                                    rel="noopener"
+                                    href="https://blog.goo.ne.jp/minamijyuujisei_1984"
+                                >
                                     ひろふみのブログ☆
                                 </a>
                             </span>,
@@ -1384,7 +1523,10 @@ export const GoResources = (props) => {
                             </span>,
                             <span>
                                 <Flag country={gb} />{" "}
-                                <a rel="noopener" href="https://www.mastersofgames.com/cat/board/go.htm">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.mastersofgames.com/cat/board/go.htm"
+                                >
                                     Masters of Games
                                 </a>
                             </span>,
@@ -1408,7 +1550,10 @@ export const GoResources = (props) => {
                             </span>,
                             <span>
                                 <Flag country={us} />{" "}
-                                <a rel="noopener" href="http://www.algorithmicartisan.com/gostones/">
+                                <a
+                                    rel="noopener"
+                                    href="http://www.algorithmicartisan.com/gostones/"
+                                >
                                     Exotic Go Stones
                                 </a>
                             </span>,
@@ -1450,7 +1595,10 @@ export const GoResources = (props) => {
                             </span>,
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="http://home.earthlink.net/~inkwolf/Inkwolf/Ajis_Quest.html">
+                                <a
+                                    rel="noopener"
+                                    href="http://home.earthlink.net/~inkwolf/Inkwolf/Ajis_Quest.html"
+                                >
                                     Aji's Quest
                                 </a>
                             </span>,
@@ -1468,7 +1616,10 @@ export const GoResources = (props) => {
                             </span>,
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="http://tigersmouth.org/articles.php?article_id=49">
+                                <a
+                                    rel="noopener"
+                                    href="http://tigersmouth.org/articles.php?article_id=49"
+                                >
                                     The Better move
                                 </a>
                             </span>,
@@ -1482,28 +1633,43 @@ export const GoResources = (props) => {
                         {scramble(
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="https://www.youtube.com/watch?v=dVd959KJWEI">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/watch?v=dVd959KJWEI"
+                                >
                                     Playing A game of Go
                                 </a>
                             </span>,
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="https://www.youtube.com/watch?v=-EwuqJfwOU4">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/watch?v=-EwuqJfwOU4"
+                                >
                                     The Game of Go - Chris Linn [1981 Swedish New-Wave]
                                 </a>
                             </span>,
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="http://www.haskellsmall.com/videos/a-game-of-go-part-1">
+                                <a
+                                    rel="noopener"
+                                    href="http://www.haskellsmall.com/videos/a-game-of-go-part-1"
+                                >
                                     A Game of Go pt. I
                                 </a>
-                                <a rel="noopener" href="http://www.haskellsmall.com/videos/a-game-of-go-part-2">
+                                <a
+                                    rel="noopener"
+                                    href="http://www.haskellsmall.com/videos/a-game-of-go-part-2"
+                                >
                                     pt. II
                                 </a>
                             </span>,
                             <span>
                                 <Flag country={en} />{" "}
-                                <a rel="noopener" href="https://www.youtube.com/watch?v=quEN6FE90bM">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/watch?v=quEN6FE90bM"
+                                >
                                     Tesuji
                                 </a>
                             </span>,
@@ -1523,7 +1689,10 @@ export const GoResources = (props) => {
                             </span>,
                             <span>
                                 <i className="fa fa-windows" /> <Flag country={jp} />{" "}
-                                <a rel="noopener" href="http://www.nihonkiin.or.jp/teach/kiin_editor/">
+                                <a
+                                    rel="noopener"
+                                    href="http://www.nihonkiin.or.jp/teach/kiin_editor/"
+                                >
                                     Kiin Editor
                                 </a>
                             </span>,
@@ -1554,7 +1723,10 @@ export const GoResources = (props) => {
                             <span>
                                 <i className="fa fa-linux" /> <i className="fa fa-apple" />{" "}
                                 <i className="fa fa-windows"></i>{" "}
-                                <a rel="noopener" href="https://www.gnu.org/software/gnugo/gnugo.html">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.gnu.org/software/gnugo/gnugo.html"
+                                >
                                     GNU Go
                                 </a>
                             </span>,
@@ -1599,13 +1771,19 @@ export const GoResources = (props) => {
                             </span>,
                             <span>
                                 <i className="fa fa-android" />{" "}
-                                <a rel="noopener" href="https://play.google.com/store/apps/developer?id=Lauri+Paatero">
+                                <a
+                                    rel="noopener"
+                                    href="https://play.google.com/store/apps/developer?id=Lauri+Paatero"
+                                >
                                     Hactar Go
                                 </a>
                             </span>,
                             <span>
                                 <i className="fa fa-android" />{" "}
-                                <a rel="noopener" href="https://play.google.com/store/apps/details?id=cn.ezandroid.aq">
+                                <a
+                                    rel="noopener"
+                                    href="https://play.google.com/store/apps/details?id=cn.ezandroid.aq"
+                                >
                                     Ah Q Go
                                 </a>
                             </span>,
@@ -1656,7 +1834,10 @@ export const GoResources = (props) => {
                             </span>,
                             <span>
                                 <i className="fa fa-dollar" /> <i className="fa fa-apple" />{" "}
-                                <a rel="noopener" href="https://itunes.apple.com/app/apple-store/id492566615?mt=8">
+                                <a
+                                    rel="noopener"
+                                    href="https://itunes.apple.com/app/apple-store/id492566615?mt=8"
+                                >
                                     EasyGo
                                 </a>
                             </span>,

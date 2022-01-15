@@ -134,7 +134,9 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             throw new Error(`AI Review graph creation failed`);
         }
 
-        this.win_rate_area_container = this.prediction_graph.append("path").attr("class", "win-rate-area");
+        this.win_rate_area_container = this.prediction_graph
+            .append("path")
+            .attr("class", "win-rate-area");
 
         this.variation_win_rate_line_container = this.prediction_graph
             .append("path")
@@ -168,7 +170,10 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             .attr("x1", 0)
             .attr("y1", this.height);
 
-        this.move_crosshair.attr("transform", "translate(" + this.x(this.props.move_number) + ", 0)");
+        this.move_crosshair.attr(
+            "transform",
+            "translate(" + this.x(this.props.move_number) + ", 0)",
+        );
         this.variation_move_crosshair.attr(
             "transform",
             "translate(" + this.x(this.props.variation_move_number) + ", 0)",
@@ -231,10 +236,15 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
                 }
 
                 const d = x0 - d0.move_number > d1.move_number - x0 ? d1 : d0;
-                self.cursor_crosshair?.attr("transform", "translate(" + self.x(d.move_number) + ", 0)");
+                self.cursor_crosshair?.attr(
+                    "transform",
+                    "translate(" + self.x(d.move_number) + ", 0)",
+                );
                 self.full_crosshair?.attr(
                     "transform",
-                    "translate(0, " + self.y(self.props.use_score ? d.score : d.win_rate * 100.0) + ")",
+                    "translate(0, " +
+                        self.y(self.props.use_score ? d.score : d.win_rate * 100.0) +
+                        ")",
                 );
 
                 if (mouse_down && !variation) {
@@ -295,7 +305,8 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             entries = this.props.entries.map((x, i) => {
                 return {
                     win_rate: x.win_rate,
-                    score: x.score === 0 && use_score_safe ? this.props.ai_review.scores[i] : x.score,
+                    score:
+                        x.score === 0 && use_score_safe ? this.props.ai_review.scores[i] : x.score,
                     move_number: x.move_number,
                     num_variations: x.num_variations,
                 };
@@ -313,7 +324,8 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             const n_moves_to_render = 100;
             const sine_step = (Math.PI / n_moves_to_render) * 4;
             for (let i = 0; i < n_moves_to_render; ++i) {
-                const unitNoiseLine = simplex.getValue(Date.now() * 0.001, i * sine_step, 0.5) * 0.4;
+                const unitNoiseLine =
+                    simplex.getValue(Date.now() * 0.001, i * sine_step, 0.5) * 0.4;
                 entries.push({
                     //win_rate: Math.sin((Date.now() * 0.005 + i) * sine_step) * 0.4 + 0.5,
                     win_rate: unitNoiseLine + 0.5,
@@ -326,7 +338,10 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             this.replot_timeout = setTimeout(() => this.plot(), 50);
         }
 
-        if (this.props.variation_entries.length > 0 && entries.length > this.props.move_number + 1) {
+        if (
+            this.props.variation_entries.length > 0 &&
+            entries.length > this.props.move_number + 1
+        ) {
             variation_entries = this.props.variation_entries.map((x, i) => {
                 return {
                     win_rate: x.win_rate,
@@ -345,17 +360,23 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
         }
 
         this.x.domain(
-            d3.extent([0, Math.max(entries[entries.length - 1].move_number, this.props.variation_move_number)]) as [
-                number,
-                number,
-            ],
+            d3.extent([
+                0,
+                Math.max(entries[entries.length - 1].move_number, this.props.variation_move_number),
+            ]) as [number, number],
         );
         if (use_score_safe) {
             this.max_score = Math.max(0, Math.max(...entries.map((e) => e.score)));
             this.min_score = Math.min(0, Math.min(...entries.map((e) => e.score)));
             if (variation_entries && variation_entries.length > 0) {
-                this.max_score = Math.max(this.max_score, Math.max(...variation_entries.map((e) => e.score)));
-                this.min_score = Math.min(this.min_score, Math.min(...variation_entries.map((e) => e.score)));
+                this.max_score = Math.max(
+                    this.max_score,
+                    Math.max(...variation_entries.map((e) => e.score)),
+                );
+                this.min_score = Math.min(
+                    this.min_score,
+                    Math.min(...variation_entries.map((e) => e.score)),
+                );
             }
 
             this.y.domain(d3.extent([this.min_score, this.max_score]) as [number, number]);
@@ -379,7 +400,9 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
 
         this.win_rate_area_container?.datum(entries).attr("d", this.win_rate_area as any);
 
-        this.variation_win_rate_line_container?.datum(variation_entries).attr("d", this.win_rate_line as any);
+        this.variation_win_rate_line_container
+            ?.datum(variation_entries)
+            .attr("d", this.win_rate_line as any);
 
         const show_all = Object.keys(this.props.ai_review.moves).length <= 3;
         const circle_coords = entries.filter((x) => {
@@ -430,16 +453,28 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
                 data.get("theme") === "light"
                     ? [
                           { offset: "0%", color: "#222222" },
-                          { offset: (gradient_transition_point - 1).toFixed(0) + "%", color: "#444444" },
+                          {
+                              offset: (gradient_transition_point - 1).toFixed(0) + "%",
+                              color: "#444444",
+                          },
                           { offset: gradient_transition_point.toFixed(0) + "%", color: "#888888" },
-                          { offset: (gradient_transition_point + 1).toFixed(0) + "%", color: "#cccccc" },
+                          {
+                              offset: (gradient_transition_point + 1).toFixed(0) + "%",
+                              color: "#cccccc",
+                          },
                           { offset: "100%", color: "#eeeeee" },
                       ]
                     : [
                           { offset: "0%", color: "#000000" },
-                          { offset: (gradient_transition_point - 1).toFixed(0) + "%", color: "#333333" },
+                          {
+                              offset: (gradient_transition_point - 1).toFixed(0) + "%",
+                              color: "#333333",
+                          },
                           { offset: gradient_transition_point.toFixed(0) + "%", color: "#888888" },
-                          { offset: (gradient_transition_point + 1).toFixed(0) + "%", color: "#909090" },
+                          {
+                              offset: (gradient_transition_point + 1).toFixed(0) + "%",
+                              color: "#909090",
+                          },
                           { offset: "100%", color: "#999999" },
                       ],
             )
@@ -469,7 +504,12 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
 
         this.highlighted_move_circles = this.highlighted_move_circle_container
             .selectAll("circle")
-            .data(circle_coords) as d3.Selection<SVGCircleElement, AIReviewEntry, SVGSVGElement, unknown>;
+            .data(circle_coords) as d3.Selection<
+            SVGCircleElement,
+            AIReviewEntry,
+            SVGSVGElement,
+            unknown
+        >;
         // remove any data points that were removed
         const removes = this.highlighted_move_circles.exit().remove();
         // add circles that were added
@@ -483,7 +523,10 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             .attr("r", (d) => 3)
             .attr("fill", (d) => "#FF0000");
 
-        this.move_crosshair?.attr("transform", "translate(" + this.x(this.props.move_number) + ", 0)");
+        this.move_crosshair?.attr(
+            "transform",
+            "translate(" + this.x(this.props.move_number) + ", 0)",
+        );
         this.variation_move_crosshair?.attr(
             "transform",
             "translate(" + this.x(this.props.variation_move_number) + ", 0)",
@@ -539,7 +582,9 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             win_rate: 0.5,
             score: 0.0,
             move_number:
-                this.props.entries?.length >= 1 ? this.props.entries[this.props.entries.length - 1].move_number : 0,
+                this.props.entries?.length >= 1
+                    ? this.props.entries[this.props.entries.length - 1].move_number
+                    : 0,
             num_variations: 0,
         });
 
@@ -550,14 +595,17 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             score: 0.0,
             move_number:
                 this.props.variation_entries?.length >= 1
-                    ? this.props.variation_entries[this.props.variation_entries.length - 1].move_number
+                    ? this.props.variation_entries[this.props.variation_entries.length - 1]
+                          .move_number
                     : 0,
             num_variations: 0,
         });
 
         this.win_rate_area_container?.datum(entries).attr("d", this.win_rate_area as any);
 
-        this.variation_win_rate_line_container?.datum(variation_entries).attr("d", this.win_rate_line as any);
+        this.variation_win_rate_line_container
+            ?.datum(variation_entries)
+            .attr("d", this.win_rate_line as any);
 
         this.mouse_rect
             ?.attr("transform", "translate(" + MARGIN.left + "," + MARGIN.top + ")")

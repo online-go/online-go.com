@@ -91,7 +91,9 @@ export function ai_request_variation_analysis(
     trunk_move: MoveTree,
 ): void {
     if (!ai_socket.connected) {
-        console.warn("Not sending request for variation analysis since we wern't connected to the AI server");
+        console.warn(
+            "Not sending request for variation analysis since we wern't connected to the AI server",
+        );
         return;
     }
 

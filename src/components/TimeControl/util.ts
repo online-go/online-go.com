@@ -135,7 +135,10 @@ function mktime(t) {
     const t1 = Math.floor(t / 86400);
     const t2 = (t % 86400) / 3600;
 
-    return interpolate(t1 === 1 ? _("1 day") : _("%s days"), [t1]) + (t2 ? " " + interpolate(_("%s hours"), [t2]) : "");
+    return (
+        interpolate(t1 === 1 ? _("1 day") : _("%s days"), [t1]) +
+        (t2 ? " " + interpolate(_("%s hours"), [t2]) : "")
+    );
 }
 
 const zero = {
@@ -308,29 +311,44 @@ export function timeControlDescription(time_control) {
             ret = interpolate(_("Simple: %s per move."), [durationString(time_control.per_move)]);
             break;
         case "fischer":
-            ret = interpolate(_("Fischer: Clock starts with %s and increments by %s per move up to a maximum of %s."), [
-                durationString(time_control.initial_time),
-                durationString(time_control.time_increment),
-                durationString(time_control.max_time),
-            ]);
+            ret = interpolate(
+                _(
+                    "Fischer: Clock starts with %s and increments by %s per move up to a maximum of %s.",
+                ),
+                [
+                    durationString(time_control.initial_time),
+                    durationString(time_control.time_increment),
+                    durationString(time_control.max_time),
+                ],
+            );
             break;
         case "byoyomi":
-            ret = interpolate(_("Japanese Byo-Yomi: Clock starts with %s main time, followed by %s %s periods."), [
-                durationString(time_control.main_time),
-                time_control.periods,
-                durationString(time_control.period_time),
-            ]);
+            ret = interpolate(
+                _("Japanese Byo-Yomi: Clock starts with %s main time, followed by %s %s periods."),
+                [
+                    durationString(time_control.main_time),
+                    time_control.periods,
+                    durationString(time_control.period_time),
+                ],
+            );
 
             break;
         case "canadian":
-            ret = interpolate(_("Canadian Byo-Yomi: Clock starts with %s main time, followed by %s per %s stones."), [
-                durationString(time_control.main_time),
-                durationString(time_control.period_time),
-                time_control.stones_per_period,
-            ]);
+            ret = interpolate(
+                _(
+                    "Canadian Byo-Yomi: Clock starts with %s main time, followed by %s per %s stones.",
+                ),
+                [
+                    durationString(time_control.main_time),
+                    durationString(time_control.period_time),
+                    time_control.stones_per_period,
+                ],
+            );
             break;
         case "absolute":
-            ret = interpolate(_("Absolute: %s total play time per player."), [durationString(time_control.total_time)]);
+            ret = interpolate(_("Absolute: %s total play time per player."), [
+                durationString(time_control.total_time),
+            ]);
             break;
         case "none":
             ret = _("No time limits.");
@@ -451,7 +469,8 @@ export function usedForCheating(time_control) {
         case "canadian":
             return !(
                 time_control.main_time > QUESTIONABLE_ABSOLUTE_TIME ||
-                time_control.period_time / time_control.stones_per_period > QUESTIONABLE_SECONDS_PER_MOVE
+                time_control.period_time / time_control.stones_per_period >
+                    QUESTIONABLE_SECONDS_PER_MOVE
             );
 
         case "byoyomi":

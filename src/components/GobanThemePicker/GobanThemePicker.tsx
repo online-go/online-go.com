@@ -38,7 +38,10 @@ interface GobanThemePickerState {
     blackCustom: string;
     urlCustom: string;
 }
-export class GobanThemePicker extends React.PureComponent<GobanThemePickerProperties, GobanThemePickerState> {
+export class GobanThemePicker extends React.PureComponent<
+    GobanThemePickerProperties,
+    GobanThemePickerState
+> {
     canvases: { [k: string]: JQuery[] } = {};
     selectTheme: { [k: string]: { [k: string]: () => void } } = {};
 
@@ -63,7 +66,9 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
             this.canvases[k] = [];
             this.selectTheme[k] = {};
             for (const theme of GoThemesSorted[k]) {
-                this.canvases[k].push($("<canvas>").attr("width", this.state.size).attr("height", this.state.size));
+                this.canvases[k].push(
+                    $("<canvas>").attr("width", this.state.size).attr("height", this.state.size),
+                );
                 theme.styles = Object.assign(
                     {
                         height: this.state.size + "px",
@@ -93,7 +98,9 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
     }
     setCustom(
         key: string,
-        event: React.MouseEvent<HTMLButtonElement, MouseEvent> | React.ChangeEvent<HTMLInputElement>,
+        event:
+            | React.MouseEvent<HTMLButtonElement, MouseEvent>
+            | React.ChangeEvent<HTMLInputElement>,
     ) {
         if ("value" in event.target) {
             data.set(`custom.${key}`, event.target.value);
@@ -128,7 +135,10 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                         <div
                             key={theme.theme_name}
                             title={_(theme.theme_name)}
-                            className={"selector" + (this.state.board === theme.theme_name ? " active" : "")}
+                            className={
+                                "selector" +
+                                (this.state.board === theme.theme_name ? " active" : "")
+                            }
                             style={{
                                 ...theme.styles,
                                 ...(theme.theme_name === "Plain"
@@ -155,7 +165,10 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                                 value={boardCustom}
                                 onChange={this.setCustom.bind(this, "board")}
                             />
-                            <button className="color-reset" onClick={this.setCustom.bind(this, "board")}>
+                            <button
+                                className="color-reset"
+                                onClick={this.setCustom.bind(this, "board")}
+                            >
                                 <i className="fa fa-undo" />
                             </button>
                             <input
@@ -164,7 +177,10 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                                 value={lineCustom}
                                 onChange={this.setCustom.bind(this, "line")}
                             />
-                            <button className="color-reset" onClick={this.setCustom.bind(this, "line")}>
+                            <button
+                                className="color-reset"
+                                onClick={this.setCustom.bind(this, "line")}
+                            >
                                 <i className="fa fa-undo" />
                             </button>
                             <input
@@ -187,7 +203,10 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                         <div
                             key={theme.theme_name}
                             title={_(theme.theme_name)}
-                            className={"selector" + (this.state.white === theme.theme_name ? " active" : "")}
+                            className={
+                                "selector" +
+                                (this.state.white === theme.theme_name ? " active" : "")
+                            }
                             style={theme.styles}
                             onClick={this.selectTheme["white"][theme.theme_name]}
                         >
@@ -202,7 +221,10 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                                 value={whiteCustom}
                                 onChange={this.setCustom.bind(this, "white")}
                             />
-                            <button className="color-reset" onClick={this.setCustom.bind(this, "white")}>
+                            <button
+                                className="color-reset"
+                                onClick={this.setCustom.bind(this, "white")}
+                            >
                                 <i className="fa fa-undo" />
                             </button>
                         </div>
@@ -214,7 +236,10 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                         <div
                             key={theme.theme_name}
                             title={_(theme.theme_name)}
-                            className={"selector" + (this.state.black === theme.theme_name ? " active" : "")}
+                            className={
+                                "selector" +
+                                (this.state.black === theme.theme_name ? " active" : "")
+                            }
                             style={theme.styles}
                             onClick={this.selectTheme["black"][theme.theme_name]}
                         >
@@ -229,7 +254,10 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                                 value={blackCustom}
                                 onChange={this.setCustom.bind(this, "black")}
                             />
-                            <button className="color-reset" onClick={this.setCustom.bind(this, "black")}>
+                            <button
+                                className="color-reset"
+                                onClick={this.setCustom.bind(this, "black")}
+                            >
                                 <i className="fa fa-undo" />
                             </button>
                         </div>

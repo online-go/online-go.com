@@ -102,9 +102,16 @@ export class FriendList extends React.PureComponent<{}, any> {
                 </div>
                 {this.state.friends.map(
                     (friend) =>
-                        (online_status.is_player_online(friend.id) || this.state.show_offline_friends) && (
+                        (online_status.is_player_online(friend.id) ||
+                            this.state.show_offline_friends) && (
                             <div className="friend-entry" key={friend.id}>
-                                <Player user={friend} online rank noextracontrols shownotesindicator />
+                                <Player
+                                    user={friend}
+                                    online
+                                    rank
+                                    noextracontrols
+                                    shownotesindicator
+                                />
                             </div>
                         ),
                 )}

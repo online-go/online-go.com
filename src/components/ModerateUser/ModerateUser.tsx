@@ -204,7 +204,12 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                                         <label htmlFor="bot">Bot</label>
                                     </dt>
                                     <dd>
-                                        <input id="bot" type="checkbox" checked={user.is_bot} onChange={this.setBot} />
+                                        <input
+                                            id="bot"
+                                            type="checkbox"
+                                            checked={user.is_bot}
+                                            onChange={this.setBot}
+                                        />
                                         {(user.is_bot || null) && (
                                             <input
                                                 type="number"
@@ -296,7 +301,9 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                 )}
                 <div className="buttons">
                     <button onClick={this.close}>{_("Close")}</button>
-                    {(this.state.loading === false || null) && <button onClick={this.save}>{_("Save")}</button>}
+                    {(this.state.loading === false || null) && (
+                        <button onClick={this.save}>{_("Save")}</button>
+                    )}
                 </div>
             </div>
         );

@@ -24,7 +24,9 @@ export const languages: { [key: string]: string } = w["supported_languages"] || 
 export const countries: { [key: string]: { [key: string]: string } } = w["ogs_countries"] || {
     en: { us: "United States" },
 };
-export const locales: { [key: string]: { [key: string]: string[] } } = w["ogs_locales"] || { en: {} };
+export const locales: { [key: string]: { [key: string]: string[] } } = w["ogs_locales"] || {
+    en: {},
+};
 export const sorted_locale_countries: { cc: string; name: string }[] = [];
 
 let catalog: { [key: string]: string[] };
@@ -426,7 +428,8 @@ function sanitize(language_or_country: string): string {
 export function getLanguageFlag(language: string, user_country: string, default_flag: string) {
     if (
         language === "english" &&
-        ["ca", "gb", "au", "nz", "pk", "ng", "ph", "za", "sg", "ie", "us"].indexOf(user_country) >= 0
+        ["ca", "gb", "au", "nz", "pk", "ng", "ph", "za", "sg", "ie", "us"].indexOf(user_country) >=
+            0
     ) {
         return sanitize(user_country);
     }
@@ -495,7 +498,9 @@ export function setCurrentLanguage(language_code: string) {
         "Synchronization error, reloading": _("Synchronization error, reloading"),
         "Stone Removal": _("Stone Removal"),
         "Stone Removal Phase": _("Stone Removal Phase"),
-        "Enter the label you want to add to the board": _("Enter the label you want to add to the board"),
+        "Enter the label you want to add to the board": _(
+            "Enter the label you want to add to the board",
+        ),
 
         "Black Walnut": _("Black Walnut"),
         Book: _("Book"),

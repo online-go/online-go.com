@@ -64,7 +64,11 @@ export function PuzzleCollection({
                 <dl className="horizontal">
                     <dt>{_("Puzzle collection")}</dt>
                     <dd>
-                        <input value={name} onChange={(ev) => setName(ev.target.value)} placeholder={_("Name")} />
+                        <input
+                            value={name}
+                            onChange={(ev) => setName(ev.target.value)}
+                            placeholder={_("Name")}
+                        />
                     </dd>
 
                     <dt>
@@ -117,9 +121,14 @@ export function PuzzleCollection({
                         <dd>
                             <button
                                 className="success"
-                                onClick={() => openACLModal({ puzzle_collection_id: collection_id })}
+                                onClick={() =>
+                                    openACLModal({ puzzle_collection_id: collection_id })
+                                }
                             >
-                                {pgettext("Control who can access the game or review", "Access settings")}
+                                {pgettext(
+                                    "Control who can access the game or review",
+                                    "Access settings",
+                                )}
                             </button>
                         </dd>
                     )}
@@ -164,7 +173,10 @@ export function PuzzleCollection({
     }
 
     function remove() {
-        swal({ text: _("Are you sure you wish to remove this puzzle collection?"), showCancelButton: true })
+        swal({
+            text: _("Are you sure you wish to remove this puzzle collection?"),
+            showCancelButton: true,
+        })
             .then(() => {
                 del(`puzzles/collections/${collection_id}`)
                     .then(() => {

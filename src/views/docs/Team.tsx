@@ -164,7 +164,9 @@ export class Team extends React.PureComponent<{}, any> {
                                     <img src={u.avatar_url} width={15} height={15} />
                                 </span>
                                 <span className="name">
-                                    <a href={u.html_url || "https://github.com/" + u.name}>{u.login || u.name}</a>
+                                    <a href={u.html_url || "https://github.com/" + u.name}>
+                                        {u.login || u.name}
+                                    </a>
                                 </span>
                             </div>
                         ))}
@@ -185,7 +187,9 @@ export class Team extends React.PureComponent<{}, any> {
                                 <Flag country="gb" />
                             </span>
                             <span className="name">
-                                <a href="https://voicebunny.com/voice-actor/claire-natalie-TK5C1B8">Claire Natalie</a>
+                                <a href="https://voicebunny.com/voice-actor/claire-natalie-TK5C1B8">
+                                    Claire Natalie
+                                </a>
                             </span>
                             <span className="description">- GB English voiceover</span>
                         </div>
@@ -235,7 +239,9 @@ export class Team extends React.PureComponent<{}, any> {
                                 <Flag country="us" />
                             </span>
                             <span className="name">
-                                <a href="https://freesound.org/people/leviclaassen/">leviclaassen</a>
+                                <a href="https://freesound.org/people/leviclaassen/">
+                                    leviclaassen
+                                </a>
                             </span>
                             <span className="description">- Effects</span>
                         </div>
@@ -245,9 +251,13 @@ export class Team extends React.PureComponent<{}, any> {
                                 <Flag country="us" />
                             </span>
                             <span className="name">
-                                <a href="http://seamless-pixels.blogspot.com/">Seamless Texture Library</a>
+                                <a href="http://seamless-pixels.blogspot.com/">
+                                    Seamless Texture Library
+                                </a>
                             </span>
-                            <span className="description">- Marble, Granite, and Rust Goban Textures</span>
+                            <span className="description">
+                                - Marble, Granite, and Rust Goban Textures
+                            </span>
                         </div>
 
                         <div>
@@ -255,7 +265,9 @@ export class Team extends React.PureComponent<{}, any> {
                                 <Flag country="fr" />
                             </span>
                             <span className="name">
-                                <a href="https://github.com/ornicar/lila/tree/master/public/sound">Lichess - Effects</a>
+                                <a href="https://github.com/ornicar/lila/tree/master/public/sound">
+                                    Lichess - Effects
+                                </a>
                             </span>
                         </div>
 
@@ -264,7 +276,9 @@ export class Team extends React.PureComponent<{}, any> {
                                 <Flag country="ar" />
                             </span>
                             <span className="name">
-                                <a href="https://online-go.com/player/784/mlopezviedma">Mariano López Minnucci</a>
+                                <a href="https://online-go.com/player/784/mlopezviedma">
+                                    Mariano López Minnucci
+                                </a>
                             </span>
                         </div>
                         <div>

@@ -207,13 +207,17 @@ export function Supporter(props: SupporterProperties): JSX.Element {
         plans: [],
     } as Config);
     const [error, setError]: [string, (e: string) => void] = React.useState("");
-    const [overrides, setOverrides]: [SupporterOverrides, (e: SupporterOverrides) => void] = React.useState({});
-    const [annualBilling, setAnnualBilling]: [boolean, (b: boolean) => void] = React.useState(false as boolean);
+    const [overrides, setOverrides]: [SupporterOverrides, (e: SupporterOverrides) => void] =
+        React.useState({});
+    const [annualBilling, setAnnualBilling]: [boolean, (b: boolean) => void] = React.useState(
+        false as boolean,
+    );
 
     load_checkout_libraries();
 
     const prices = config.plans;
-    const currency = overrides.currency || guessCurrency(config, overrides.country || config.country_code);
+    const currency =
+        overrides.currency || guessCurrency(config, overrides.country || config.country_code);
     const interval = annualBilling ? "year" : "month";
     const max_service_level = Math.max(0, ...config.services.map((s) => s.level));
 
@@ -233,7 +237,10 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                                     //console.log("Paddle event callback",  p1, p2, p3);
                                     console.log("Paddle event callback", obj);
 
-                                    if (obj.event === "Checkout.Complete" || obj.event === "Checkout.Close") {
+                                    if (
+                                        obj.event === "Checkout.Complete" ||
+                                        obj.event === "Checkout.Close"
+                                    ) {
                                         //console.log("Reloading config");
                                     }
                                 },
@@ -282,7 +289,10 @@ export function Supporter(props: SupporterProperties): JSX.Element {
         _("Golden name (optional)"),
         _("Access to Site Supporters channel"),
         pgettext("Easily cancel the supporter subscription plan anytime", "Easily cancel anytime"),
-        pgettext("Plan prices wont change unless the plan is canceled", "Locked in price until canceled"),
+        pgettext(
+            "Plan prices wont change unless the plan is canceled",
+            "Locked in price until canceled",
+        ),
     ];
 
     const hane = prices.filter((x) => x.slug === "hane")[0];
@@ -294,9 +304,12 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                 <sup>*</sup>
             </b>,
             <span>
-                {interpolate(_("AI reviews are processed moderately deep using {{num}} playouts per move"), {
-                    num: "1000",
-                })}
+                {interpolate(
+                    _("AI reviews are processed moderately deep using {{num}} playouts per move"),
+                    {
+                        num: "1000",
+                    },
+                )}
                 <sup>*</sup>
             </span>,
             ...common_description,
@@ -312,7 +325,9 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                 <sup>*</sup>
             </b>,
             <span>
-                {interpolate(_("AI reviews are processed deeper using {{num}} playouts per move"), { num: "3000" })}
+                {interpolate(_("AI reviews are processed deeper using {{num}} playouts per move"), {
+                    num: "3000",
+                })}
                 <sup>*</sup>
             </span>,
             <b className="green">{_("3x the analysis done by the AI per move")}</b>,
@@ -329,7 +344,9 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                 <sup>*</sup>
             </b>,
             <span>
-                {interpolate(_("AI reviews are processed deeper using {{num}} playouts per move"), { num: "12000" })}
+                {interpolate(_("AI reviews are processed deeper using {{num}} playouts per move"), {
+                    num: "12000",
+                })}
                 <sup>*</sup>
             </span>,
             //<b className='green'>{_("3x the analysis done by the AI per move")}</b>,
@@ -359,7 +376,11 @@ export function Supporter(props: SupporterProperties): JSX.Element {
 
             <div className="annual-billing">
                 <label htmlFor="annual-billing">{_("Save 16% with annual billing")}</label>
-                <Toggle id="annual-billing" checked={annualBilling} onChange={(checked) => setAnnualBilling(checked)} />
+                <Toggle
+                    id="annual-billing"
+                    checked={annualBilling}
+                    onChange={(checked) => setAnnualBilling(checked)}
+                />
             </div>
 
             {(!inline || null) && (
@@ -396,7 +417,9 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                         </>
                     ) : config.payments.length > 0 ? (
                         <div style={{ textAlign: "center" }}>
-                            <h4>{_("You do not currently have an active supporter subscription")}</h4>
+                            <h4>
+                                {_("You do not currently have an active supporter subscription")}
+                            </h4>
                             <h5>
                                 {_(
                                     "(Note: if you recently signed up, it may take a few minutes for your subscription to appear here)",
@@ -411,8 +434,12 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                             <div className="Payments">
                                 {config.payments.map((p, idx) => (
                                     <div key={idx} className="Payment">
-                                        <span className="date">{moment(p.updated).format("lll")}</span>
-                                        <span className="amount">{formatMoney(p.currency, p.amount)}</span>
+                                        <span className="date">
+                                            {moment(p.updated).format("lll")}
+                                        </span>
+                                        <span className="amount">
+                                            {formatMoney(p.currency, p.amount)}
+                                        </span>
                                         <PaymentMethod payment={p} />
                                         <span className="status">
                                             {p.status === "succeeded" ? (
@@ -472,10 +499,11 @@ export function PriceBox({
     overrides,
 }: PriceBoxProperties): JSX.Element {
     const user = data.get("user");
-    const [mor_locations, setMorLocations] = React.useState<string[]>(data.get("config.billing_mor_locations") || []);
-    const [disabled, setDisabled]: [boolean, React.Dispatch<React.SetStateAction<boolean>>] = React.useState(
-        user.id !== account_id,
+    const [mor_locations, setMorLocations] = React.useState<string[]>(
+        data.get("config.billing_mor_locations") || [],
     );
+    const [disabled, setDisabled]: [boolean, React.Dispatch<React.SetStateAction<boolean>>] =
+        React.useState(user.id !== account_id);
     const amount = overrides.plan?.[price.slug]?.[interval] || price.price[currency][interval];
     const paypal_amount = zero_decimal_to_paypal_amount_string(currency, amount);
     const cdn_release = data.get("config.cdn_release");
@@ -541,12 +569,15 @@ export function PriceBox({
         setDisabled(true);
         console.log("Paddle Checkout");
         if (!Paddle) {
-            swal("Error", "Paddle is not loaded. Please try again later.", "error").catch(swal.noop);
+            swal("Error", "Paddle is not loaded. Please try again later.", "error").catch(
+                swal.noop,
+            );
             return;
         }
 
         const paddle_config: any = {
-            product: interval === "month" ? price.monthly_paddle_plan_id : price.annual_paddle_plan_id,
+            product:
+                interval === "month" ? price.monthly_paddle_plan_id : price.annual_paddle_plan_id,
             passthrough: account_id,
             country: config.country_code,
             email: config.email,
@@ -568,9 +599,14 @@ export function PriceBox({
     const country = overrides.country || config.country_code;
     const mor_only = mor_locations.includes(country);
 
-    const show_paypal = overrides.payment_methods === "stripe_and_paypal" || (!overrides.payment_methods && !mor_only);
-    const show_stripe = overrides.payment_methods === "stripe_and_paypal" || (!overrides.payment_methods && !mor_only);
-    const show_paddle = overrides.payment_methods === "paddle" || (!overrides.payment_methods && mor_only);
+    const show_paypal =
+        overrides.payment_methods === "stripe_and_paypal" ||
+        (!overrides.payment_methods && !mor_only);
+    const show_stripe =
+        overrides.payment_methods === "stripe_and_paypal" ||
+        (!overrides.payment_methods && !mor_only);
+    const show_paddle =
+        overrides.payment_methods === "paddle" || (!overrides.payment_methods && mor_only);
 
     const has_subscription = config.subscriptions.length > 0;
     const current_plan_slug = getCurentPlanSlug(config);
@@ -586,9 +622,12 @@ export function PriceBox({
             </ul>
 
             <div className="price-increase-note">
-                {interpolate(_("Sign up before {{date}} to lock in your price before the prices increase"), {
-                    date: moment("2022-01-31").format("ll"),
-                })}
+                {interpolate(
+                    _("Sign up before {{date}} to lock in your price before the prices increase"),
+                    {
+                        date: moment("2022-01-31").format("ll"),
+                    },
+                )}
             </div>
 
             <h3>
@@ -610,7 +649,11 @@ export function PriceBox({
                 <div className="payment-buttons">
                     {(show_stripe || null) && (
                         <>
-                            <button className="sign-up" onClick={stripe_subscribe} disabled={disabled}>
+                            <button
+                                className="sign-up"
+                                onClick={stripe_subscribe}
+                                disabled={disabled}
+                            >
                                 {_("Become a supporter")}
                             </button>
                             <div className="payment-methods">
@@ -627,13 +670,26 @@ export function PriceBox({
                     {((show_stripe && show_paypal) || null) && <div className="ruler" />}
 
                     {(show_paypal || null) && (
-                        <form id="paypal-form" action={data.get("config.paypal_server")} method="post" target="_top">
+                        <form
+                            id="paypal-form"
+                            action={data.get("config.paypal_server")}
+                            method="post"
+                            target="_top"
+                        >
                             <input type="hidden" name="cmd" value={"_xclick-subscriptions"} />
-                            <input type="hidden" name="business" value={data.get("config.paypal_email")} />
+                            <input
+                                type="hidden"
+                                name="business"
+                                value={data.get("config.paypal_email")}
+                            />
                             <input type="hidden" name="item_name" value="Supporter Account" />
                             <input type="hidden" name="a3" value={paypal_amount} />
                             <input type="hidden" name="p3" value="1" />
-                            <input type="hidden" name="t3" value={interval === "month" ? "M" : "Y"} />
+                            <input
+                                type="hidden"
+                                name="t3"
+                                value={interval === "month" ? "M" : "Y"}
+                            />
 
                             <input type="hidden" name="src" value="1" />
                             <input type="hidden" name="no_note" value="1" />
@@ -643,7 +699,9 @@ export function PriceBox({
                             <input
                                 type="hidden"
                                 name="notify_url"
-                                value={`https://${data.get("config.paypal_this_server")}/billing/paypal/ipn`}
+                                value={`https://${data.get(
+                                    "config.paypal_this_server",
+                                )}/billing/paypal/ipn`}
                             />
 
                             {pgettext("Or support with <paypal button>", "Or support with")}
@@ -654,7 +712,11 @@ export function PriceBox({
                     )}
 
                     {(show_paddle || null) && (
-                        <button className="paddle-sign-up" onClick={paddle_subscribe} disabled={disabled}>
+                        <button
+                            className="paddle-sign-up"
+                            onClick={paddle_subscribe}
+                            disabled={disabled}
+                        >
                             {_("Become a supporter")}
                         </button>
                     )}
@@ -696,11 +758,15 @@ function Subscription({ subscription }: { subscription: Subscription }): JSX.Ele
 
                 switch (subscription.payment_processor) {
                     case "stripe":
-                        promise = post(`/billing/stripe/cancel_subscription`, { ref_id: subscription.ref_id });
+                        promise = post(`/billing/stripe/cancel_subscription`, {
+                            ref_id: subscription.ref_id,
+                        });
                         break;
 
                     case "paypal":
-                        promise = post(`/billing/paypal/cancel_subscription`, { ref_id: subscription.ref_id });
+                        promise = post(`/billing/paypal/cancel_subscription`, {
+                            ref_id: subscription.ref_id,
+                        });
                         break;
 
                     case "paddle":
@@ -710,11 +776,15 @@ function Subscription({ subscription }: { subscription: Subscription }): JSX.Ele
 
                     case "braintree":
                         //promise = post(`/billing/braintree/cancel_subscription`, {'ref_id': subscription.ref_id});
-                        swal("Please contact anoek@online-go.com to cancel your subscription").catch(swal.noop);
+                        swal(
+                            "Please contact anoek@online-go.com to cancel your subscription",
+                        ).catch(swal.noop);
                         break;
 
                     default:
-                        swal("Error canceling subscription, please contact billing@online-go.com").catch(swal.noop);
+                        swal(
+                            "Error canceling subscription, please contact billing@online-go.com",
+                        ).catch(swal.noop);
                         break;
                 }
 
@@ -727,9 +797,9 @@ function Subscription({ subscription }: { subscription: Subscription }): JSX.Ele
                         .catch((err: any) => {
                             //this.setState({processing: false});
                             console.error(err);
-                            swal("Error canceling subscription [2], please contact billing@online-go.com").catch(
-                                swal.noop,
-                            );
+                            swal(
+                                "Error canceling subscription [2], please contact billing@online-go.com",
+                            ).catch(swal.noop);
                         });
                 }
             })
@@ -770,7 +840,9 @@ function Subscription({ subscription }: { subscription: Subscription }): JSX.Ele
                 break;
 
             default:
-                swal("Error canceling subscription, please contact billing@online-go.com").catch(swal.noop);
+                swal("Error canceling subscription, please contact billing@online-go.com").catch(
+                    swal.noop,
+                );
                 break;
         }
     }
@@ -882,7 +954,10 @@ function PaymentMethod({ payment }: { payment: Payment }): JSX.Element {
         }
         if (payment.payment_processor === "paypal") {
             return (
-                <a href={`https://www.paypal.com/activity/payment/${payment.ref_id}`} target="_blank">
+                <a
+                    href={`https://www.paypal.com/activity/payment/${payment.ref_id}`}
+                    target="_blank"
+                >
                     {ret}
                 </a>
             );
@@ -930,11 +1005,19 @@ function ManualServiceCreator({ account_id, config }: ManualServiceCreatorProper
             <dl>
                 <dt>Level</dt>
                 <dd>
-                    <input placeholder="level" value={level} onChange={(ev) => setLevel(ev.target.value)} />
+                    <input
+                        placeholder="level"
+                        value={level}
+                        onChange={(ev) => setLevel(ev.target.value)}
+                    />
                 </dd>
                 <dt>Months</dt>
                 <dd>
-                    <input placeholder="months" value={months} onChange={(ev) => setMonths(ev.target.value)} />
+                    <input
+                        placeholder="months"
+                        value={months}
+                        onChange={(ev) => setMonths(ev.target.value)}
+                    />
                 </dd>
             </dl>
             <button onClick={create}>Create</button>

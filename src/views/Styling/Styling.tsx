@@ -97,7 +97,9 @@ export class Styling extends React.PureComponent<{}, any> {
                             <span title="second">World</span>
                             <div title="third">
                                 <div>And the world was bright and shiny</div>
-                                <button onClick={() => errcodeAlerter({ errcode: "test" })}>Errcode test</button>
+                                <button onClick={() => errcodeAlerter({ errcode: "test" })}>
+                                    Errcode test
+                                </button>
                             </div>
                         </Steps>
                     </div>
@@ -112,7 +114,9 @@ export class Styling extends React.PureComponent<{}, any> {
 
                             <GroupAutocomplete onComplete={this.updateAutocompletedGroup} />
                             <div>
-                                {this.state.autocompleted_group && <div>{this.state.autocompleted_group.name}</div>}
+                                {this.state.autocompleted_group && (
+                                    <div>{this.state.autocompleted_group.name}</div>
+                                )}
                             </div>
                         </Card>
                     </div>
@@ -388,7 +392,11 @@ export class Styling extends React.PureComponent<{}, any> {
                                 <Card>
                                     {this.state.star_ratings.map((v, idx) => (
                                         <div key={idx}>
-                                            <StarRating value={v} onChange={this.setStarRating.bind(this, idx)} /> {v}
+                                            <StarRating
+                                                value={v}
+                                                onChange={this.setStarRating.bind(this, idx)}
+                                            />{" "}
+                                            {v}
                                         </div>
                                     ))}
                                 </Card>

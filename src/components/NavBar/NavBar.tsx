@@ -280,7 +280,12 @@ export class NavBar extends React.PureComponent<{}, any> {
             this.state.omnisearch_sitemap.length;
 
         return (
-            <div id="NavBar" className={this.state.left_nav_active || this.state.right_nav_active ? "active" : ""}>
+            <div
+                id="NavBar"
+                className={
+                    this.state.left_nav_active || this.state.right_nav_active ? "active" : ""
+                }
+            >
                 <KBShortcut shortcut="`" action={this.toggleLeftNav} />
                 <KBShortcut shortcut="alt-`" action={this.toggleRightNav} />
                 <KBShortcut shortcut="shift-`" action={this.toggleRightNav} />
@@ -292,7 +297,9 @@ export class NavBar extends React.PureComponent<{}, any> {
                 </span>
 
                 <section className="left">
-                    {(!this.state.user.anonymous || null) && <Link to="/overview">{_("Home")}</Link>}
+                    {(!this.state.user.anonymous || null) && (
+                        <Link to="/overview">{_("Home")}</Link>
+                    )}
                     {user && <Link to="/play">{_("Play")}</Link>}
                     <Link to="/observe-games">{_("Games")}</Link>
                     <Link to="/chat">{_("Chat")}</Link>
@@ -371,7 +378,10 @@ export class NavBar extends React.PureComponent<{}, any> {
                             <button className="theme-button dark" onClick={setThemeDark}>
                                 <i className="fa fa-moon-o" />
                             </button>
-                            <button className="theme-button accessible" onClick={setThemeAccessible}>
+                            <button
+                                className="theme-button accessible"
+                                onClick={setThemeAccessible}
+                            >
                                 <i className="fa fa-eye" />
                             </button>
                         </div>
@@ -383,7 +393,10 @@ export class NavBar extends React.PureComponent<{}, any> {
                         {(show_debug || null) && <LineText>{_("Debug")}</LineText>}
                         {(show_debug || null) && (
                             <div style={{ textAlign: "center" }}>
-                                <button className={debug ? "sm info" : "sm"} onClick={this.toggleDebug}>
+                                <button
+                                    className={debug ? "sm info" : "sm"}
+                                    onClick={this.toggleDebug}
+                                >
                                     {debug ? "Turn debugging off" : "Turn debugging on"}
                                 </button>
                             </div>
@@ -572,7 +585,9 @@ export class NavBar extends React.PureComponent<{}, any> {
                                 </li>
                             )}
 
-                            {user && (user.is_moderator || user.is_announcer) && <li className="divider"></li>}
+                            {user && (user.is_moderator || user.is_announcer) && (
+                                <li className="divider"></li>
+                            )}
                             {user && user.is_moderator && (
                                 <li>
                                     <Link className="admin-link" to="/moderator">
@@ -616,7 +631,10 @@ export class NavBar extends React.PureComponent<{}, any> {
                                                 className="fa fa-times reject clickable"
                                                 onClick={() => rejectTournamentInvite(ti.id)}
                                             ></i>
-                                            <Link to={`/tournament/${ti.tournament_id}/`} title={ti.message}>
+                                            <Link
+                                                to={`/tournament/${ti.tournament_id}/`}
+                                                title={ti.message}
+                                            >
                                                 {" "}
                                                 {ti.name}
                                             </Link>
@@ -625,7 +643,8 @@ export class NavBar extends React.PureComponent<{}, any> {
                                     {tournaments.map((tournament, idx) => (
                                         <li key={idx}>
                                             <Link to={`/tournament/${tournament.id}/`}>
-                                                <img src={tournament.icon} height="15" width="15" /> {tournament.name}
+                                                <img src={tournament.icon} height="15" width="15" />{" "}
+                                                {tournament.name}
                                             </Link>
                                         </li>
                                     ))}
@@ -640,14 +659,17 @@ export class NavBar extends React.PureComponent<{}, any> {
                                     {ladders.map((ladder, idx) => (
                                         <li key={idx} className="group">
                                             <Link to={`/ladder/${ladder.id}/`}>
-                                                #{ladder.rank} <img src={ladder.icon} height="15" width="15" />{" "}
+                                                #{ladder.rank}{" "}
+                                                <img src={ladder.icon} height="15" width="15" />{" "}
                                                 {_(ladder.name)}
                                             </Link>
                                         </li>
                                     ))}
                                 </ul>
                             )}
-                            {(group_invites.length || groups.length || false) && <li className="divider"></li>}
+                            {(group_invites.length || groups.length || false) && (
+                                <li className="divider"></li>
+                            )}
                             {(group_invites.length || groups.length || false) && (
                                 <ul>
                                     <li>
@@ -671,7 +693,8 @@ export class NavBar extends React.PureComponent<{}, any> {
                                     {groups.map((group, idx) => (
                                         <li key={idx} className="group">
                                             <Link to={`/group/${group.id}/`}>
-                                                <img src={group.icon} height="15" width="15" /> {group.name}
+                                                <img src={group.icon} height="15" width="15" />{" "}
+                                                {group.name}
                                             </Link>
                                         </li>
                                     ))}
@@ -700,7 +723,8 @@ export class NavBar extends React.PureComponent<{}, any> {
                             {(this.state.omnisearch_loading || null) && (
                                 <div className="loading">{_("Loading...")}</div>
                             )}
-                            {((!this.state.omnisearch_loading && omnisearch_result_count === 0) || null) && (
+                            {((!this.state.omnisearch_loading && omnisearch_result_count === 0) ||
+                                null) && (
                                 <div className="no-results">
                                     {_("No results.") /* translators: No search results */}
                                 </div>
@@ -721,7 +745,8 @@ export class NavBar extends React.PureComponent<{}, any> {
                                     <h3>{_("Groups")}</h3>
                                     {this.state.omnisearch_groups.map((e, idx) => (
                                         <div key={idx}>
-                                            <img src={e.icon} /> <Link to={`/group/${e.id}`}>{e.name}</Link>
+                                            <img src={e.icon} />{" "}
+                                            <Link to={`/group/${e.id}`}>{e.name}</Link>
                                         </div>
                                     ))}
                                 </div>
@@ -731,7 +756,8 @@ export class NavBar extends React.PureComponent<{}, any> {
                                     <h3>{_("Tournaments")}</h3>
                                     {this.state.omnisearch_tournaments.map((e, idx) => (
                                         <div key={idx}>
-                                            <img src={e.icon} /> <Link to={`/tournament/${e.id}`}>{e.name}</Link>
+                                            <img src={e.icon} />{" "}
+                                            <Link to={`/tournament/${e.id}`}>{e.name}</Link>
                                         </div>
                                     ))}
                                 </div>
@@ -780,7 +806,10 @@ omnisearch_sitemap[_("Refund Policy")] = [_("Refund Policy"), "/docs/refund-poli
 omnisearch_sitemap[_("Terms of Service")] = [_("Terms of Service"), "/docs/terms-of-service"];
 omnisearch_sitemap["ToS"] = [_("Terms of Service"), "/docs/terms-of-service"];
 omnisearch_sitemap[_("Privacy Policy")] = [_("Privacy Policy"), "/docs/privacy-policy"];
-omnisearch_sitemap[_("Contact Information")] = [_("Contact Information"), "/docs/contact-information"];
+omnisearch_sitemap[_("Contact Information")] = [
+    _("Contact Information"),
+    "/docs/contact-information",
+];
 
 function match_sitemap(q) {
     q = q.trim().toLowerCase();

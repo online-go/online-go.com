@@ -72,7 +72,10 @@ interface PlayerDetailsState {
     error?: string;
 }
 
-export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, PlayerDetailsState> {
+export class PlayerDetails extends React.PureComponent<
+    PlayerDetailsProperties,
+    PlayerDetailsState
+> {
     constructor(props: PlayerDetailsProperties) {
         super(props);
         this.state = this.blankState();
@@ -102,13 +105,23 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     resolve(player_id: number) {
         this.setState({ resolved: false });
         player_cache
-            .fetch(this.props.playerId, ["username", "icon", "ratings", "pro", "country", "ui_class"])
+            .fetch(this.props.playerId, [
+                "username",
+                "icon",
+                "ratings",
+                "pro",
+                "country",
+                "ui_class",
+            ])
             .then((player) => {
                 this.setState(Object.assign({}, player as any, { resolved: true }));
             })
             .catch((err) => {
                 if (player_id === this.props.playerId) {
-                    this.setState({ resolved: false, error: _("Error loading player information") });
+                    this.setState({
+                        resolved: false,
+                        error: _("Error loading player information"),
+                    });
                     console.error(err);
                 }
             });
@@ -168,10 +181,14 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
         shadowban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
     };
     removeShadowban = () => {
-        remove_shadowban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
+        remove_shadowban(this.props.playerId)
+            .then(this.close_all_modals_and_popovers)
+            .catch(errorAlerter);
     };
     removeBan = () => {
-        remove_ban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
+        remove_ban(this.props.playerId)
+            .then(this.close_all_modals_and_popovers)
+            .catch(errorAlerter);
     };
     openSupporterPage = (ev: React.MouseEvent<HTMLButtonElement>) => {
         this.close_all_modals_and_popovers();
@@ -196,7 +213,9 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
     removeFriend = () => {
         toast(<div>{_("Removed friend")}</div>, 5000);
         this.close_all_modals_and_popovers();
-        post("me/friends", { delete: true, player_id: this.props.playerId }).then(ignore).catch(errorAlerter);
+        post("me/friends", { delete: true, player_id: this.props.playerId })
+            .then(ignore)
+            .catch(errorAlerter);
     };
     removeSingleLine = () => {
         const m = this.props.chatId.match(/^([gr]).([^.]+).([^.]+).(.+)/);
@@ -239,14 +258,17 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
             showCancelButton: true,
             focusCancel: true,
         })
-            .then(() => termination_socket.send("chat/remove_all", { player_id: this.props.playerId }))
+            .then(() =>
+                termination_socket.send("chat/remove_all", { player_id: this.props.playerId }),
+            )
             .catch(() => 0);
     };
     render() {
         const user = data.get("user");
 
         const rating =
-            !preferences.get("hide-ranks") && (this.state.ratings ? getUserRating(this.state, "overall", 0) : null);
+            !preferences.get("hide-ranks") &&
+            (this.state.ratings ? getUserRating(this.state, "overall", 0) : null);
 
         const add_note_label = data.get(`player-notes.${user.id}.${this.props.playerId}`)
             ? _("Player notes")
@@ -257,7 +279,9 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                 <div className="details">
                     <div
                         className="icon"
-                        style={{ backgroundImage: 'url("' + icon_size_url(this.state.icon, 64) + '")' }}
+                        style={{
+                            backgroundImage: 'url("' + icon_size_url(this.state.icon, 64) + '")',
+                        }}
                     >
                         <Flag country={this.state.country} />
                     </div>
@@ -273,15 +297,16 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                         {rating && !rating.professional && (
                             <div>
                                 <span className="rating">
-                                    {Math.round(humble_rating(rating.rating, rating.deviation))} &plusmn;{" "}
-                                    {Math.round(rating.deviation)}
+                                    {Math.round(humble_rating(rating.rating, rating.deviation))}{" "}
+                                    &plusmn; {Math.round(rating.deviation)}
                                 </span>
                             </div>
                         )}
                         {rating && !rating.professional && !rating.provisional && (
                             <div>
                                 <span className="rank">
-                                    {rating.partial_bounded_rank_label} &plusmn; {rating.rank_deviation.toFixed(1)}
+                                    {rating.partial_bounded_rank_label} &plusmn;{" "}
+                                    {rating.rank_deviation.toFixed(1)}
                                 </span>
                             </div>
                         )}
@@ -315,7 +340,11 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                             {add_note_label}
                         </button>
 
-                        <button className="xs noshadow success" disabled={!this.state.resolved} onClick={this.message}>
+                        <button
+                            className="xs noshadow success"
+                            disabled={!this.state.resolved}
+                            onClick={this.message}
+                        >
                             <i className="fa fa-comment-o" />
                             {_("Message")}
                         </button>
@@ -338,11 +367,19 @@ export class PlayerDetails extends React.PureComponent<PlayerDetailsProperties, 
                                 {_("Add friend")}
                             </button>
                         )}
-                        <button className="xs noshadow reject" disabled={!this.state.resolved} onClick={this.report}>
+                        <button
+                            className="xs noshadow reject"
+                            disabled={!this.state.resolved}
+                            onClick={this.report}
+                        >
                             <i className="fa fa-exclamation-triangle" />
                             {_("Report")}
                         </button>
-                        <button className="xs noshadow reject" disabled={!this.state.resolved} onClick={this.block}>
+                        <button
+                            className="xs noshadow reject"
+                            disabled={!this.state.resolved}
+                            onClick={this.block}
+                        >
                             <i className="fa fa-ban" />
                             {_("Block")}
                         </button>

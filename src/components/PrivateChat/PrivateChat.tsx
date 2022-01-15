@@ -182,7 +182,10 @@ class PrivateChat {
                 .addClass("fa fa-info-circle")
                 .click(() => {
                     window.open(
-                        "/user/view/" + this.user_id + "/" + encodeURIComponent(unicodeFilter(this.player.username)),
+                        "/user/view/" +
+                            this.user_id +
+                            "/" +
+                            encodeURIComponent(unicodeFilter(this.player.username)),
                         "_blank",
                     );
                 }),
@@ -350,7 +353,10 @@ class PrivateChat {
             this.player.ui_class.indexOf("moderator") < 0 &&
             this.lines.length === 0
         ) {
-            this.input.attr("placeholder", _("Chat will be enabled once your email address has been validated"));
+            this.input.attr(
+                "placeholder",
+                _("Chat will be enabled once your email address has been validated"),
+            );
             this.input.attr("disabled", "disabled");
         } else {
             this.input.attr(
@@ -396,7 +402,10 @@ class PrivateChat {
                 .addClass("fa fa-info-circle")
                 .click(() => {
                     window.open(
-                        "/user/view/" + this.user_id + "/" + encodeURIComponent(this.player.username),
+                        "/user/view/" +
+                            this.user_id +
+                            "/" +
+                            encodeURIComponent(this.player.username),
                         "_blank",
                     );
                 }),
@@ -422,7 +431,10 @@ class PrivateChat {
         }
 
         if (send_itc) {
-            ITC.send("private-chat-minimize", { user_id: this.user_id, username: this.player.username });
+            ITC.send("private-chat-minimize", {
+                user_id: this.user_id,
+                username: this.player.username,
+            });
         }
     }
     close(send_itc, dont_send_pm_close?) {
@@ -441,7 +453,10 @@ class PrivateChat {
         this.body = null;
         update_chat_layout();
         if (send_itc) {
-            ITC.send("private-chat-close", { user_id: this.user_id, username: this.player.username });
+            ITC.send("private-chat-close", {
+                user_id: this.user_id,
+                username: this.player.username,
+            });
             data.set("pm.close-" + this.user_id, this.last_uid);
         }
         if (comm_socket && !dont_send_pm_close) {
@@ -458,12 +473,19 @@ class PrivateChat {
             const ts = new Date(timestamp * 1000);
             if (this.last_date !== ts.toLocaleDateString(undefined, date_format)) {
                 this.last_date = ts.toLocaleDateString(undefined, date_format);
-                line.append($("<div>").addClass("date").text(ts.toLocaleDateString(undefined, date_format)));
+                line.append(
+                    $("<div>").addClass("date").text(ts.toLocaleDateString(undefined, date_format)),
+                );
             }
 
             line.append(
                 $("<span class='timestamp'>").text(
-                    "[" + ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes() + "] ",
+                    "[" +
+                        ts.getHours() +
+                        ":" +
+                        (ts.getMinutes() < 10 ? "0" : "") +
+                        ts.getMinutes() +
+                        "] ",
                 ),
             );
         }
@@ -531,7 +553,10 @@ class PrivateChat {
     report = () => {
         alertModerator({
             user: this.user_id,
-            reported_conversation: { username: this.player.username, content: this.getConversation() },
+            reported_conversation: {
+                username: this.player.username,
+                content: this.getConversation(),
+            },
         });
     };
 
@@ -547,10 +572,15 @@ class PrivateChat {
     }
     handleChat(line) {
         if (line.message.i) {
-            if (line.message.i + " " + line.message.t + " " + line.from.username in this.received_messages) {
+            if (
+                line.message.i + " " + line.message.t + " " + line.from.username in
+                this.received_messages
+            ) {
                 return;
             }
-            this.received_messages[line.message.i + " " + line.message.t + " " + line.from.username] = true;
+            this.received_messages[
+                line.message.i + " " + line.message.t + " " + line.from.username
+            ] = true;
         }
 
         //if (line.message.to) {
@@ -572,7 +602,10 @@ class PrivateChat {
                 this.hilight();
             }
             if (!player_is_ignored(line.from.id)) {
-                emitNotification("Private Message", line.from.username + " sent you a message:\n" + line.message.m);
+                emitNotification(
+                    "Private Message",
+                    line.from.username + " sent you a message:\n" + line.message.m,
+                );
             } else {
                 console.log("Ignoring private chat from ", line.from.username);
             }
@@ -602,7 +635,9 @@ class PrivateChat {
                 },
                 (line) => {
                     /* we're gonna get these echoed back to us in various cases */
-                    this.received_messages[line.message.i + " " + line.message.t + " " + line.from.username] = true;
+                    this.received_messages[
+                        line.message.i + " " + line.message.t + " " + line.from.username
+                    ] = true;
                 },
             );
         }

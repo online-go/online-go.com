@@ -115,7 +115,10 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
                                 <i className="fa fa-calendar"></i>
                                 {_("Schedule")}
                             </span>
-                            <span className={"tab" + (tab === "live" ? " active" : "")} onClick={this.setTabLive}>
+                            <span
+                                className={"tab" + (tab === "live" ? " active" : "")}
+                                onClick={this.setTabLive}
+                            >
                                 <i className="fa fa-clock-o"></i>
                                 {_("Live")}
                             </span>
@@ -126,7 +129,10 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
                                 <i className="ogs-turtle"></i>
                                 {_("Correspondence")}
                             </span>
-                            <span className={"tab" + (tab === "archive" ? " active" : "")} onClick={this.setTabArchive}>
+                            <span
+                                className={"tab" + (tab === "archive" ? " active" : "")}
+                                onClick={this.setTabArchive}
+                            >
                                 <i className="fa fa-university"></i>
                                 {_("Archive")}
                             </span>
@@ -332,28 +338,43 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
                                             onMouseMove={tooltip}
                                         />
                                     )}
-                                    <Link to={`/tournament/${tournament.id}`}>{tournament.name}</Link>
+                                    <Link to={`/tournament/${tournament.id}`}>
+                                        {tournament.name}
+                                    </Link>
                                 </div>
                             ),
                         },
 
-                        { header: _("When"), className: "nobr", render: (tournament) => when(tournament.time_start) },
+                        {
+                            header: _("When"),
+                            className: "nobr",
+                            render: (tournament) => when(tournament.time_start),
+                        },
                         {
                             header: _("Time Control"),
                             className: "nobr",
-                            render: (tournament) => shortShortTimeControl(tournament.time_control_parameters),
+                            render: (tournament) =>
+                                shortShortTimeControl(tournament.time_control_parameters),
                         },
                         {
                             header: _("Size"),
                             className: "nobr",
-                            render: (tournament) => `${tournament.board_size}x${tournament.board_size}`,
+                            render: (tournament) =>
+                                `${tournament.board_size}x${tournament.board_size}`,
                         },
-                        { header: _("Players"), className: "nobr", render: (tournament) => tournament.player_count },
+                        {
+                            header: _("Players"),
+                            className: "nobr",
+                            render: (tournament) => tournament.player_count,
+                        },
                         {
                             header: _("Ranks"),
                             className: "nobr",
                             render: (tournament) =>
-                                shortRankRestrictionText(tournament.min_ranking, tournament.max_ranking),
+                                shortRankRestrictionText(
+                                    tournament.min_ranking,
+                                    tournament.max_ranking,
+                                ),
                         },
                     ]}
                 />
@@ -427,20 +448,26 @@ function rrule_description(entry) {
             case "daily":
                 return interpolate(_("Occurs daily at %s"), [m.format("LT")]);
             case "weekly":
-                return interpolate(pgettext("Every <day of week> at <time>", "Occurs every %s at %s"), [
-                    m.format("dddd"),
-                    m.format("LT"),
-                ]);
+                return interpolate(
+                    pgettext("Every <day of week> at <time>", "Occurs every %s at %s"),
+                    [m.format("dddd"), m.format("LT")],
+                );
             case "monthly":
-                return interpolate(pgettext("The <day of month> at <time>", "Occurs on the %s of every month at %s"), [
-                    m.format("Do"),
-                    m.format("LT"),
-                ]);
+                return interpolate(
+                    pgettext(
+                        "The <day of month> at <time>",
+                        "Occurs on the %s of every month at %s",
+                    ),
+                    [m.format("Do"), m.format("LT")],
+                );
             case "yearly":
-                return interpolate(pgettext("<day of year> of every year at <time>", "Occurs %s of every year at %s"), [
-                    m.format("MMMM Do"),
-                    m.format("LT"),
-                ]);
+                return interpolate(
+                    pgettext(
+                        "<day of year> of every year at <time>",
+                        "Occurs %s of every year at %s",
+                    ),
+                    [m.format("MMMM Do"), m.format("LT")],
+                );
         }
     } else {
         switch (unit) {
@@ -448,7 +475,10 @@ function rrule_description(entry) {
                 return interpolate(_("Occurs every %s minutes"), [interval]);
             case "hourly":
                 return m.format("m") !== "0"
-                    ? interpolate(_("Occurs %s minutes past the hour every %s hours"), [m.format("m"), interval])
+                    ? interpolate(_("Occurs %s minutes past the hour every %s hours"), [
+                          m.format("m"),
+                          interval,
+                      ])
                     : interpolate(_("Occurs every %s hours on the hour"), [interval]);
             case "daily":
                 return interpolate(_("Occurs every %s days at %s"), [interval, m.format("LT")]);
@@ -460,7 +490,10 @@ function rrule_description(entry) {
                 ]);
             case "monthly":
                 return interpolate(
-                    pgettext("The <day of month> every <n> months at <time>", "Occurs on the %s every %s months at %s"),
+                    pgettext(
+                        "The <day of month> every <n> months at <time>",
+                        "Occurs on the %s every %s months at %s",
+                    ),
                     [m.format("Do"), interval, m.format("LT")],
                 );
         }

@@ -118,7 +118,9 @@ export class MiniGoban extends React.Component<MiniGobanProps, MiniGobanState> {
                 draw_left_labels: false,
                 draw_right_labels: false,
                 game_id: this.props.id,
-                display_width: this.props.displayWidth || Math.min($("body").width() - 50, $("#em10").width() * 2),
+                display_width:
+                    this.props.displayWidth ||
+                    Math.min($("body").width() - 50, $("#em10").width() * 2),
                 square_size: "auto",
                 width: this.props.width || (this.props.json ? this.props.json.width : 19),
                 height: this.props.height || (this.props.json ? this.props.json.height : 19),
@@ -267,8 +269,14 @@ export class MiniGoban extends React.Component<MiniGobanProps, MiniGobanState> {
             paused: this.state.black_pause_text ? "paused" : "",
 
             current_users_move: player_to_move === data.get("config.user").id,
-            black_to_move_cls: typeof black === "object" && this.goban && black.id === player_to_move ? "to-move" : "",
-            white_to_move_cls: typeof white === "object" && this.goban && white.id === player_to_move ? "to-move" : "",
+            black_to_move_cls:
+                typeof black === "object" && this.goban && black.id === player_to_move
+                    ? "to-move"
+                    : "",
+            white_to_move_cls:
+                typeof white === "object" && this.goban && white.id === player_to_move
+                    ? "to-move"
+                    : "",
 
             in_stone_removal_phase: this.goban && this.goban.engine.phase === "stone removal",
             finished: this.goban && this.goban.engine.phase === "finished",
@@ -312,9 +320,16 @@ export class MiniGoban extends React.Component<MiniGobanProps, MiniGobanState> {
                             <span className={`player-name`}>{this.state.black_name}</span>
                             <span className={`player-rank`}>{this.state.black_rank}</span>
                             {this.state.finished || (
-                                <Clock compact goban={this.goban} color="black" className="mini-goban" />
+                                <Clock
+                                    compact
+                                    goban={this.goban}
+                                    color="black"
+                                    className="mini-goban"
+                                />
                             )}
-                            {this.state.finished || <span className="score">{this.state.black_points}</span>}
+                            {this.state.finished || (
+                                <span className="score">{this.state.black_points}</span>
+                            )}
                         </div>
                     )}
                     {!this.props.noText && (
@@ -322,9 +337,16 @@ export class MiniGoban extends React.Component<MiniGobanProps, MiniGobanState> {
                             <span className={`player-name`}>{this.state.white_name}</span>
                             <span className={`player-rank`}>{this.state.white_rank}</span>
                             {this.state.finished || (
-                                <Clock compact goban={this.goban} color="white" className="mini-goban" />
+                                <Clock
+                                    compact
+                                    goban={this.goban}
+                                    color="white"
+                                    className="mini-goban"
+                                />
                             )}
-                            {this.state.finished || <span className="score">{this.state.white_points}</span>}
+                            {this.state.finished || (
+                                <span className="score">{this.state.white_points}</span>
+                            )}
                         </div>
                     )}
                 </div>

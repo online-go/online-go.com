@@ -35,7 +35,11 @@ export class PersistentElement extends React.Component<PersistentElementProps> {
 
     render() {
         return (
-            <div className={this.props.className || ""} {...this.props.extra_props} ref={(e) => (this.container = e)} />
+            <div
+                className={this.props.className || ""}
+                {...this.props.extra_props}
+                ref={(e) => (this.container = e)}
+            />
         );
     }
 }

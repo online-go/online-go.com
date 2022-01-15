@@ -161,7 +161,11 @@ export class PuzzleTransform {
         const width = puzzle.width;
         const height = puzzle.height;
 
-        if (puzzle.initial_state && puzzle.initial_state.black && puzzle.initial_state.black.length) {
+        if (
+            puzzle.initial_state &&
+            puzzle.initial_state.black &&
+            puzzle.initial_state.black.length
+        ) {
             puzzle.initial_state.black = GoMath.encodeMoves(
                 this.transformCoordinates(
                     puzzle,
@@ -171,7 +175,11 @@ export class PuzzleTransform {
                 ),
             );
         }
-        if (puzzle.initial_state && puzzle.initial_state.white && puzzle.initial_state.white.length) {
+        if (
+            puzzle.initial_state &&
+            puzzle.initial_state.white &&
+            puzzle.initial_state.white.length
+        ) {
             puzzle.initial_state.white = GoMath.encodeMoves(
                 this.transformCoordinates(
                     puzzle,
@@ -221,7 +229,10 @@ export class PuzzleTransform {
                 state = { transform_x: (this.settings.transform_x = !this.settings.transform_x) };
                 break;
             case "color":
-                state = { transform_color: (this.settings.transform_color = !this.settings.transform_color) };
+                state = {
+                    transform_color: (this.settings.transform_color =
+                        !this.settings.transform_color),
+                };
                 break;
             case "zoom":
                 state = { zoom: (this.settings.zoom = !this.settings.zoom) };

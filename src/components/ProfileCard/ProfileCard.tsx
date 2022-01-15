@@ -35,7 +35,8 @@ export class ProfileCard extends React.Component<ProfileCardInterface> {
 
     render() {
         const user = this.props.user;
-        const rating = !preferences.get("hide-ranks") && user ? getUserRating(user, "overall", 0) : null;
+        const rating =
+            !preferences.get("hide-ranks") && user ? getUserRating(user, "overall", 0) : null;
 
         return (
             <div className="ProfileCard">
@@ -53,15 +54,16 @@ export class ProfileCard extends React.Component<ProfileCardInterface> {
                     {rating && !rating.professional && (
                         <div>
                             <span className="rating">
-                                {Math.round(humble_rating(rating.rating, rating.deviation))} &plusmn;{" "}
-                                {Math.round(rating.deviation)}
+                                {Math.round(humble_rating(rating.rating, rating.deviation))}{" "}
+                                &plusmn; {Math.round(rating.deviation)}
                             </span>
                         </div>
                     )}
                     {rating && !rating.professional && !is_novice(user) && !is_provisional(user) && (
                         <div>
                             <span className="rank">
-                                {rating.partial_bounded_rank_label} &plusmn; {rating.rank_deviation.toFixed(1)}
+                                {rating.partial_bounded_rank_label} &plusmn;{" "}
+                                {rating.rank_deviation.toFixed(1)}
                             </span>
                         </div>
                     )}

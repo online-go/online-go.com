@@ -63,7 +63,11 @@ export function ForceUsernameChange(): JSX.Element {
                             onChange={(ev) => setUsername(ev.target.value)}
                             ref={inputRef}
                         />
-                        <button className="primary" disabled={username.length < 3} onClick={saveUsername}>
+                        <button
+                            className="primary"
+                            disabled={username.length < 3}
+                            onClick={saveUsername}
+                        >
                             Continue
                         </button>
                     </Card>

@@ -217,16 +217,22 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                     e.ineligible_reason = _("This is your challenge");
                 } else if (e.ranked && Math.abs(this.userRank() - e.rank) > 9) {
                     e.eligible = false;
-                    e.ineligible_reason = _("This is a ranked game and the rank difference is more than 9");
+                    e.ineligible_reason = _(
+                        "This is a ranked game and the rank difference is more than 9",
+                    );
                 } else if (e.min_rank <= this.userRank() && e.max_rank >= this.userRank()) {
                     e.eligible = true;
                 } else {
                     e.eligible = false;
 
                     if (e.min_rank > this.userRank()) {
-                        e.ineligible_reason = interpolate(_("min. rank: %s"), [rankString(e.min_rank)]);
+                        e.ineligible_reason = interpolate(_("min. rank: %s"), [
+                            rankString(e.min_rank),
+                        ]);
                     } else if (e.max_rank < this.userRank()) {
-                        e.ineligible_reason = interpolate(_("max. rank: %s"), [rankString(e.max_rank)]);
+                        e.ineligible_reason = interpolate(_("max. rank: %s"), [
+                            rankString(e.max_rank),
+                        ]);
                     }
                 }
 
@@ -595,11 +601,19 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
             word = _("Normal");
             metrics = ctx.measureText(word);
-            ctx.fillText(word, padding + blitz_line + (live_line - blitz_line - metrics.width) / 2, h - 2);
+            ctx.fillText(
+                word,
+                padding + blitz_line + (live_line - blitz_line - metrics.width) / 2,
+                h - 2,
+            );
 
             word = _("Long");
             metrics = ctx.measureText(word);
-            ctx.fillText(word, padding + live_line + (w - live_line - padding - metrics.width) / 2, h - 2);
+            ctx.fillText(
+                word,
+                padding + live_line + (w - live_line - padding - metrics.width) / 2,
+                h - 2,
+            );
         } catch (e) {
             // ignore error
         }
@@ -652,7 +666,9 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         const first_hit = this.list_hits[0];
         const header = $("<div>").addClass("header");
-        header.append($("<span>").html(rankString({ ranking: first_hit.rank, pro: first_hit.pro })));
+        header.append(
+            $("<span>").html(rankString({ ranking: first_hit.rank, pro: first_hit.pro })),
+        );
         header.append(
             $("<i>")
                 .addClass("fa fa-times pull-right")
@@ -665,7 +681,11 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             header.append(
                 $("<span>")
                     .addClass("pull-right")
-                    .html("~" + shortDurationString(first_hit.time_per_move).replace(/ /g, "") + "/move"),
+                    .html(
+                        "~" +
+                            shortDurationString(first_hit.time_per_move).replace(/ /g, "") +
+                            "/move",
+                    ),
             );
         } else {
             header.append($("<span>").addClass("pull-right").html(_("No time limit")));
@@ -757,14 +777,22 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 let f = $("<span>");
                 e.append(f);
                 ReactDOM.render(
-                    <Player user={{ user_id: 0, ranking: C.black_rank, username: C.black_username }} rank nolink />,
+                    <Player
+                        user={{ user_id: 0, ranking: C.black_rank, username: C.black_username }}
+                        rank
+                        nolink
+                    />,
                     f[0],
                 );
                 e.append($("<span>").text(" " + _("vs.") + " "));
                 f = $("<span>");
                 e.append(f);
                 ReactDOM.render(
-                    <Player user={{ user_id: 0, ranking: C.white_rank, username: C.white_username }} rank nolink />,
+                    <Player
+                        user={{ user_id: 0, ranking: C.white_rank, username: C.white_username }}
+                        rank
+                        nolink
+                    />,
                     f[0],
                 );
             } else {
@@ -800,7 +828,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                         yourcolor = _(C.challenger_color);
                     }
 
-                    details_html += ", " + interpolate(pgettext("color", "you play as %s"), [yourcolor]);
+                    details_html +=
+                        ", " + interpolate(pgettext("color", "you play as %s"), [yourcolor]);
                 }
 
                 if (C.time_control !== "none") {
@@ -836,7 +865,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                             interpolate(_("max. rank: %s"), [rankString(C.max_rank)]) +
                             "</span>";
                     } else if (C.ranked && Math.abs(this.userRank() - C.rank) > 9) {
-                        details_html += ", <span class='cause'>" + _("rank difference more than 9") + "</span>";
+                        details_html +=
+                            ", <span class='cause'>" + _("rank difference more than 9") + "</span>";
                     }
                 }
 

@@ -90,7 +90,9 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
                     {usedForCheating(challenge.time_control_parameters) ? (
                         <p className="cheat-warning">
                             <i className="fa fa-exclamation-triangle cheat-alert"></i>
-                            {_("Note: this time setting sometimes causes problems.  Accept at your own risk.")}
+                            {_(
+                                "Note: this time setting sometimes causes problems.  Accept at your own risk.",
+                            )}
                         </p>
                     ) : (
                         ""
@@ -128,7 +130,9 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
                         </dd>
                         <dt>{_("In-game analysis")}</dt>
                         <dd>{yesno(!challenge.disable_analysis)}</dd>
-                        {(challenge.time_per_move > 3600 || null) && <dt>{_("Pause on weekends")}</dt>}
+                        {(challenge.time_per_move > 3600 || null) && (
+                            <dt>{_("Pause on weekends")}</dt>
+                        )}
                         {(challenge.time_per_move > 3600 || null) && (
                             <dd>{yesno(challenge.time_control_parameters.pause_on_weekends)}</dd>
                         )}

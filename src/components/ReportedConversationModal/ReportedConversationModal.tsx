@@ -58,5 +58,7 @@ export class ReportedConversationModal extends Modal<Events, ReportedConversatio
 }
 
 export function openReportedConversationModal(player_id: number, conversation: string) {
-    return openModal(<ReportedConversationModal player_id={player_id} conversation={conversation} />);
+    return openModal(
+        <ReportedConversationModal player_id={player_id} conversation={conversation} />,
+    );
 }

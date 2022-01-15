@@ -154,7 +154,9 @@ export class SignIn extends React.PureComponent<{}, any> {
                 post("/api/v0/reset", { username: username })
                     .then((res) => {
                         if (res.success) {
-                            swal(_("An email with your new password has been emailed to you.")).catch(swal.noop);
+                            swal(
+                                _("An email with your new password has been emailed to you."),
+                            ).catch(swal.noop);
                         } else {
                             console.error(res);
                             errorAlerter(res);
@@ -216,7 +218,9 @@ export class SignIn extends React.PureComponent<{}, any> {
                         <h3>{_("New to Online-Go?")} </h3>
                         <div>
                             <Link to="/register" className="btn primary">
-                                <b>{_("Register here!") /* translators: register for an account */}</b>
+                                <b>
+                                    {_("Register here!") /* translators: register for an account */}
+                                </b>
                             </Link>
                         </div>
                     </div>

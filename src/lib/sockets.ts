@@ -41,15 +41,23 @@ const ai_config = {
     upgrade: false,
 };
 
-export const termination_socket = window["websocket_host"] ? io(window["websocket_host"], io_config) : io(io_config);
+export const termination_socket = window["websocket_host"]
+    ? io(window["websocket_host"], io_config)
+    : io(io_config);
 export const comm_socket = termination_socket;
 
 export let ai_host = "";
-if (window.location.hostname.indexOf("dev.beta") >= 0 && window["websocket_host"] === "https://online-go.com") {
+if (
+    window.location.hostname.indexOf("dev.beta") >= 0 &&
+    window["websocket_host"] === "https://online-go.com"
+) {
     // if we're developing locally but connecting to the production system, use our local system for estimation
     ai_host = `http://localhost:13284`;
     console.log("AI Host set to: ", ai_host);
-} else if (window.location.hostname.indexOf("beta") >= 0 || window.location.hostname.indexOf("dev") >= 0) {
+} else if (
+    window.location.hostname.indexOf("beta") >= 0 ||
+    window.location.hostname.indexOf("dev") >= 0
+) {
     ai_host = "https://beta-ai.online-go.com";
 } else if (window.location.hostname.indexOf("online-go.com") >= 0) {
     ai_host = "https://ai.online-go.com";

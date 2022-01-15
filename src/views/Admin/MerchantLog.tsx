@@ -59,11 +59,23 @@ export class MerchantLog extends React.PureComponent<{}, any> {
                             },
                         },
                         //{header: "URI"        , render: (X) => X.request_uri} ,
-                        { header: "Meta", render: (X) => <pre className="meta">{clean_meta(X.request_meta)}</pre> },
-                        { header: "Body", render: (X) => <pre className="body">{clean_body(X.request_body)}</pre> },
+                        {
+                            header: "Meta",
+                            render: (X) => <pre className="meta">{clean_meta(X.request_meta)}</pre>,
+                        },
+                        {
+                            header: "Body",
+                            render: (X) => <pre className="body">{clean_body(X.request_body)}</pre>,
+                        },
                         { header: "Status", render: (X) => X.response_status_code },
-                        { header: "Reponse", render: (X) => <pre>{clean_body(X.response_body)}</pre> },
-                        { header: "Exception", render: (X) => <pre>{clean_exception(X.exception)}</pre> },
+                        {
+                            header: "Reponse",
+                            render: (X) => <pre>{clean_body(X.response_body)}</pre>,
+                        },
+                        {
+                            header: "Exception",
+                            render: (X) => <pre>{clean_exception(X.exception)}</pre>,
+                        },
                     ]}
                 />
             </div>

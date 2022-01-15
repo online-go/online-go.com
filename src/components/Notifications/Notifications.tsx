@@ -109,7 +109,10 @@ export function emitNotification(title, body, cb?) {
             return;
         }
 
-        if (!preferences.get("asked-to-enable-desktop-notifications") && Notification.permission === "default") {
+        if (
+            !preferences.get("asked-to-enable-desktop-notifications") &&
+            Notification.permission === "default"
+        ) {
             preferences.set("asked-to-enable-desktop-notifications", true);
             const t = toast(
                 <div>
@@ -163,7 +166,9 @@ export function emitNotification(title, body, cb?) {
             if (notification_timeout) {
                 clearTimeout(notification_timeout);
             }
-            const delay = Math.round((Math.random() * 0.2 + 0.05) * 1000); /* sleep 0.05-0.15 seconds */
+            const delay = Math.round(
+                (Math.random() * 0.2 + 0.05) * 1000,
+            ); /* sleep 0.05-0.15 seconds */
             notification_timeout = setTimeout(() => {
                 notification_timeout = null;
                 if (title + body in sent) {
@@ -308,7 +313,11 @@ class NotificationManager {
             goban.config.players.black.id,
             goban.config.players.white.id,
             ...(goban.config.rengo
-                ? [goban.config.rengo_teams.black.concat(goban.config.rengo_teams.white).map((p) => p.id)]
+                ? [
+                      goban.config.rengo_teams.black
+                          .concat(goban.config.rengo_teams.white)
+                          .map((p) => p.id),
+                  ]
                 : []),
         ];
 
@@ -439,11 +448,17 @@ class NotificationManager {
             }
 
             if (notification.type === "friendAccepted") {
-                emitNotification(_("Friend Request Accepted"), _("Your friend request has been accepted"));
+                emitNotification(
+                    _("Friend Request Accepted"),
+                    _("Your friend request has been accepted"),
+                );
             }
 
             if (notification.type === "friendDeclined") {
-                emitNotification(_("Friend Request Declined"), _("Your friend request has been declined"));
+                emitNotification(
+                    _("Friend Request Declined"),
+                    _("Your friend request has been declined"),
+                );
             }
 
             if (
@@ -530,7 +545,9 @@ class NotificationManager {
         }
 
         this.ordered_notifications.sort((a, b) => {
-            return (b.timestamp || b.time) - (a.timestamp || a.time); /* wtf why is this not uniform */
+            return (
+                (b.timestamp || b.time) - (a.timestamp || a.time)
+            ); /* wtf why is this not uniform */
         });
 
         this.event_emitter.emit("notification-count", this.unread_notification_count);
@@ -571,10 +588,18 @@ export class TurnIndicator extends React.Component<{}, any> {
 
     render() {
         return (
-            <span className="turn-indicator" onAuxClick={this.advanceToNextBoard} onClick={this.advanceToNextBoard}>
+            <span
+                className="turn-indicator"
+                onAuxClick={this.advanceToNextBoard}
+                onClick={this.advanceToNextBoard}
+            >
                 <span
                     className={
-                        this.state.total > 0 ? (this.state.count > 0 ? "active count" : "inactive count") : "count"
+                        this.state.total > 0
+                            ? this.state.count > 0
+                                ? "active count"
+                                : "inactive count"
+                            : "count"
                     }
                 >
                     <span>{this.state.count}</span>
@@ -608,7 +633,9 @@ export class NotificationIndicator extends React.Component<{}, any> {
         return (
             <span>
                 <span className={"notification-indicator " + (this.state.count ? "active" : "")} />
-                <span className={"notification-indicator-count " + (this.state.count ? "active" : "")}>
+                <span
+                    className={"notification-indicator-count " + (this.state.count ? "active" : "")}
+                >
                     {this.state.count}
                 </span>
             </span>
@@ -650,12 +677,17 @@ export class NotificationList extends React.Component<{}, any> {
     render() {
         return (
             <div className="NotificationList">
-                {this.state.list.length === 0 && <div className="no-notifications">{_("No notifications")}</div>}
+                {this.state.list.length === 0 && (
+                    <div className="no-notifications">{_("No notifications")}</div>
+                )}
                 {this.state.list.length !== 0 && (
                     <div className="contents">
                         <div className="list">
                             {this.state.list.map((notification, idx) => (
-                                <NotificationEntry key={notification.id} notification={notification} />
+                                <NotificationEntry
+                                    key={notification.id}
+                                    notification={notification}
+                                />
                             ))}
                         </div>
                         <div className="clear clickable" onClick={this.clearNotifications}>
@@ -765,7 +797,9 @@ class NotificationEntry extends React.Component<{ notification }, any> {
 
         return (
             <div
-                className={`notification ${this.props.notification.type} ${this.isClickable() ? "clickable" : ""}`}
+                className={`notification ${this.props.notification.type} ${
+                    this.isClickable() ? "clickable" : ""
+                }`}
                 onClick={this.open}
             >
                 <i className="fa fa-times-circle" onClick={this.del} />
@@ -789,7 +823,9 @@ class NotificationEntry extends React.Component<{ notification }, any> {
                 return (
                     <div>
                         {_("Challenge from")} <Player user={notification.user} />
-                        <div className="description">{challenge_text_description(notification)}</div>
+                        <div className="description">
+                            {challenge_text_description(notification)}
+                        </div>
                         <div className="buttons">
                             <FabX
                                 onClick={() => {
@@ -806,7 +842,9 @@ class NotificationEntry extends React.Component<{ notification }, any> {
                                         .then(() => {
                                             this.del();
                                             if (isLiveGame(notification.time_control)) {
-                                                browserHistory.push("/game/" + notification.game_id);
+                                                browserHistory.push(
+                                                    "/game/" + notification.game_id,
+                                                );
                                             }
                                         })
                                         .catch(this.onError);
@@ -819,23 +857,24 @@ class NotificationEntry extends React.Component<{ notification }, any> {
             case "gameStarted":
                 return (
                     <div>
-                        {_("Game has started")}: {notification.black} v {notification.white} - {notification.name}
+                        {_("Game has started")}: {notification.black} v {notification.white} -{" "}
+                        {notification.name}
                     </div>
                 );
 
             case "gameEnded": {
                 let outcome = notification.outcome;
                 if (notification.black_lost && !notification.white_lost) {
-                    outcome = interpolate(pgettext("Game outcome: <player that won> by <result>", "%s by %s"), [
-                        notification.white,
-                        outcome,
-                    ]);
+                    outcome = interpolate(
+                        pgettext("Game outcome: <player that won> by <result>", "%s by %s"),
+                        [notification.white, outcome],
+                    );
                 }
                 if (!notification.black_lost && notification.white_lost) {
-                    outcome = interpolate(pgettext("Game outcome: <player that won> by <result>", "%s by %s"), [
-                        notification.black,
-                        outcome,
-                    ]);
+                    outcome = interpolate(
+                        pgettext("Game outcome: <player that won> by <result>", "%s by %s"),
+                        [notification.black, outcome],
+                    );
                 }
                 if (notification.annulled) {
                     outcome += ", " + _("game annulled");
@@ -844,7 +883,8 @@ class NotificationEntry extends React.Component<{ notification }, any> {
                 return (
                     <div>
                         <div>
-                            {_("Game has ended")}: {notification.black} v {notification.white} - {notification.name}
+                            {_("Game has ended")}: {notification.black} v {notification.white} -{" "}
+                            {notification.name}
                         </div>
                         <div>{outcome}</div>
                     </div>
@@ -856,7 +896,9 @@ class NotificationEntry extends React.Component<{ notification }, any> {
                 const left = Math.floor(notification.time / 1000 - now);
                 return (
                     <div>
-                        {interpolate(_("You have {{time_left}} to make your move!"), { time_left: formatTime(left) })}
+                        {interpolate(_("You have {{time_left}} to make your move!"), {
+                            time_left: formatTime(left),
+                        })}
                     </div>
                 );
             }
@@ -881,7 +923,10 @@ class NotificationEntry extends React.Component<{ notification }, any> {
                             <FabX
                                 onClick={() => {
                                     this.setState({ message: _("Declining") });
-                                    post("me/friends/invitations", { delete: true, from_user: notification.user.id })
+                                    post("me/friends/invitations", {
+                                        delete: true,
+                                        from_user: notification.user.id,
+                                    })
                                         .then(this.del)
                                         .catch(this.onError);
                                 }}
@@ -889,7 +934,9 @@ class NotificationEntry extends React.Component<{ notification }, any> {
                             <FabCheck
                                 onClick={() => {
                                     this.setState({ message: _("Accepting") });
-                                    post("me/friends/invitations", { from_user: notification.user.id })
+                                    post("me/friends/invitations", {
+                                        from_user: notification.user.id,
+                                    })
                                         .then(this.del)
                                         .catch(this.onError);
                                 }}
@@ -915,13 +962,20 @@ class NotificationEntry extends React.Component<{ notification }, any> {
             case "groupRequest":
                 return (
                     <div>
-                        {_("Group join request from") /* translators: Group join request from <user> */}{" "}
+                        {
+                            _(
+                                "Group join request from",
+                            ) /* translators: Group join request from <user> */
+                        }{" "}
                         <Player user={notification.user} />
                         <div className="buttons">
                             <FabX
                                 onClick={() => {
                                     this.setState({ message: _("Declining") });
-                                    post("me/groups/invitations", { delete: true, request_id: notification.rqid })
+                                    post("me/groups/invitations", {
+                                        delete: true,
+                                        request_id: notification.rqid,
+                                    })
                                         .then(this.del)
                                         .catch(this.onError);
                                 }}
@@ -947,15 +1001,21 @@ class NotificationEntry extends React.Component<{ notification }, any> {
             case "groupInvitation":
                 return (
                     <div>
-                        {interpolate(_("You've received an invitation to join the group {{group_name}}"), {
-                            group_name: notification.groupname,
-                        })}
+                        {interpolate(
+                            _("You've received an invitation to join the group {{group_name}}"),
+                            {
+                                group_name: notification.groupname,
+                            },
+                        )}
 
                         <div className="buttons">
                             <FabX
                                 onClick={() => {
                                     this.setState({ message: _("Declining") });
-                                    post("me/groups/invitations", { delete: true, request_id: notification.grouprqid })
+                                    post("me/groups/invitations", {
+                                        delete: true,
+                                        request_id: notification.grouprqid,
+                                    })
                                         .then(this.del)
                                         .catch(this.onError);
                                 }}
@@ -963,7 +1023,9 @@ class NotificationEntry extends React.Component<{ notification }, any> {
                             <FabCheck
                                 onClick={() => {
                                     this.setState({ message: _("Accepting") });
-                                    post("me/groups/invitations", { request_id: notification.grouprqid })
+                                    post("me/groups/invitations", {
+                                        request_id: notification.grouprqid,
+                                    })
                                         .then(this.del)
                                         .catch(this.onError);
                                 }}
@@ -995,8 +1057,13 @@ class NotificationEntry extends React.Component<{ notification }, any> {
                 return (
                     <div>
                         {interpolate(
-                            _("{{username}} has sent you an invitation to join the tournament: {{tournament_name}}"),
-                            { username: notification.invitingUser, tournament_name: notification.tournamentname },
+                            _(
+                                "{{username}} has sent you an invitation to join the tournament: {{tournament_name}}",
+                            ),
+                            {
+                                username: notification.invitingUser,
+                                tournament_name: notification.tournamentname,
+                            },
                         )}
 
                         <div className="buttons">
@@ -1014,7 +1081,9 @@ class NotificationEntry extends React.Component<{ notification }, any> {
                             <FabCheck
                                 onClick={() => {
                                     this.setState({ message: _("Accepting") });
-                                    post("me/tournaments/invitations", { request_id: notification.tournamentrqid })
+                                    post("me/tournaments/invitations", {
+                                        request_id: notification.tournamentrqid,
+                                    })
                                         .then(this.del)
                                         .catch(this.onError);
                                 }}
@@ -1047,9 +1116,12 @@ class NotificationEntry extends React.Component<{ notification }, any> {
             case "aiReviewDone":
                 return (
                     <div>
-                        {interpolate(_("The computer has finished analyzing your game: {{game_name}}"), {
-                            game_name: notification.game_name,
-                        })}
+                        {interpolate(
+                            _("The computer has finished analyzing your game: {{game_name}}"),
+                            {
+                                game_name: notification.game_name,
+                            },
+                        )}
                     </div>
                 );
 

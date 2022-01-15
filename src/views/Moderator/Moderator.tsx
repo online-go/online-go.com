@@ -216,7 +216,11 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                         <SearchInput
                             placeholder={_("Search")}
                             onChange={(event) => {
-                                this.setState({ newuserany_filter: (event.target as HTMLInputElement).value.trim() });
+                                this.setState({
+                                    newuserany_filter: (
+                                        event.target as HTMLInputElement
+                                    ).value.trim(),
+                                });
                             }}
                         />
                     </div>
@@ -232,13 +236,18 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                         ref={this.userlog_ref}
                         orderBy={["-timestamp"]}
                         filter={{
-                            ...(this.state.newuserany_filter !== "" && { newuserany: this.state.newuserany_filter }),
+                            ...(this.state.newuserany_filter !== "" && {
+                                newuserany: this.state.newuserany_filter,
+                            }),
                         }}
                         columns={[
                             {
                                 header: _("Time"),
                                 className: () => "timestamp",
-                                render: (X) => moment(new Date(X.registration_date)).format("YYYY-MM-DD HH:mm"),
+                                render: (X) =>
+                                    moment(new Date(X.registration_date)).format(
+                                        "YYYY-MM-DD HH:mm",
+                                    ),
                             },
 
                             {
@@ -249,25 +258,39 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                                         <button className="reject sm" onClick={() => ban(X.id)}>
                                             {_("Ban")}
                                         </button>
-                                        <button className="danger sm" onClick={() => shadowban(X.id)}>
+                                        <button
+                                            className="danger sm"
+                                            onClick={() => shadowban(X.id)}
+                                        >
                                             {_("Shadowban")}
                                         </button>
                                     </div>
                                 ),
                             },
 
-                            { header: _("User"), className: () => "user", render: (X) => <Player user={X} /> },
+                            {
+                                header: _("User"),
+                                className: () => "user",
+                                render: (X) => <Player user={X} />,
+                            },
 
                             {
                                 header: _("Accounts"),
                                 render: (X) => (
-                                    <span className={X.should_ban ? "should-ban" : ""}>{X.browser_id_count} </span>
+                                    <span className={X.should_ban ? "should-ban" : ""}>
+                                        {X.browser_id_count}{" "}
+                                    </span>
                                 ),
                             },
                             {
                                 header: "IP",
                                 render: (X) => (
-                                    <span className={"monospace small clip " + (X.should_ban ? "should-ban" : "")}>
+                                    <span
+                                        className={
+                                            "monospace small clip " +
+                                            (X.should_ban ? "should-ban" : "")
+                                        }
+                                    >
                                         {X.last_ip}
                                     </span>
                                 ),
@@ -277,7 +300,9 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                                 render: (X) => (
                                     <span className={X.should_ban ? "should-ban" : ""}>
                                         {X.geoip.country}{" "}
-                                        {X.geoip.subdivisions ? " / " + X.geoip.subdivisions.join(", ") : ""}
+                                        {X.geoip.subdivisions
+                                            ? " / " + X.geoip.subdivisions.join(", ")
+                                            : ""}
                                     </span>
                                 ),
                             },
@@ -292,7 +317,12 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                             {
                                 header: "BID",
                                 render: (X) => (
-                                    <span className={"monospace small clip " + (X.should_ban ? "should-ban" : "")}>
+                                    <span
+                                        className={
+                                            "monospace small clip " +
+                                            (X.should_ban ? "should-ban" : "")
+                                        }
+                                    >
                                         {X.last_browser_id}
                                     </span>
                                 ),
@@ -300,7 +330,12 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                             {
                                 header: "Email",
                                 render: (X) => (
-                                    <span className={"monospace small clip " + (X.should_ban ? "should-ban" : "")}>
+                                    <span
+                                        className={
+                                            "monospace small clip " +
+                                            (X.should_ban ? "should-ban" : "")
+                                        }
+                                    >
                                         {X.email}
                                     </span>
                                 ),
@@ -317,7 +352,9 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                             placeholder={_("Search")}
                             onChange={(event) => {
                                 this.setState({
-                                    playerusernameistartswith_filter: (event.target as HTMLInputElement).value.trim(),
+                                    playerusernameistartswith_filter: (
+                                        event.target as HTMLInputElement
+                                    ).value.trim(),
                                 });
                             }}
                         />
@@ -331,14 +368,16 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                         orderBy={["-timestamp"]}
                         filter={{
                             ...(this.state.playerusernameistartswith_filter !== "" && {
-                                playerusernameistartswith: this.state.playerusernameistartswith_filter,
+                                playerusernameistartswith:
+                                    this.state.playerusernameistartswith_filter,
                             }),
                         }}
                         columns={[
                             {
                                 header: _("Time"),
                                 className: () => "timestamp ",
-                                render: (X) => moment(new Date(X.timestamp)).format("YYYY-MM-DD HH:mm"),
+                                render: (X) =>
+                                    moment(new Date(X.timestamp)).format("YYYY-MM-DD HH:mm"),
                             },
 
                             {
@@ -352,7 +391,9 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                                 className: () => "object",
                                 render: (X) => (
                                     <span>
-                                        {X.game && <Link to={`/game/${X.game.id}`}>#{X.game.id}</Link>}{" "}
+                                        {X.game && (
+                                            <Link to={`/game/${X.game.id}`}>#{X.game.id}</Link>
+                                        )}{" "}
                                         {X.player && <Player user={X.player} />}
                                     </span>
                                 ),
@@ -424,35 +465,57 @@ export class ColorTableToggle extends React.Component<{}, any> {
         }
 
         for (let i = 0; i < users.length; i++) {
-            const m = parseInt(users[i].getElementsByTagName("td")[3].getElementsByTagName("span")[0].innerHTML);
+            const m = parseInt(
+                users[i].getElementsByTagName("td")[3].getElementsByTagName("span")[0].innerHTML,
+            );
 
             if (m > 1) {
                 users[i].getElementsByTagName("td")[3].style.backgroundColor = "hsl(0,80%,20%)";
             }
-            const l = parseInt(users[i].getElementsByTagName("td")[6].getElementsByTagName("span")[0].innerHTML) + 12;
+            const l =
+                parseInt(
+                    users[i].getElementsByTagName("td")[6].getElementsByTagName("span")[0]
+                        .innerHTML,
+                ) + 12;
             const j = (l * 15) % 360;
             if (l !== 12) {
                 users[i].getElementsByTagName("td")[6].style.backgroundColor =
-                    "hsl(" + j + (l % 3 === 1 ? ",70%,15%)" : l % 3 === 2 ? ",70%,30%)" : ",70%,60%)");
+                    "hsl(" +
+                    j +
+                    (l % 3 === 1 ? ",70%,15%)" : l % 3 === 2 ? ",70%,30%)" : ",70%,60%)");
 
                 users[i].getElementsByTagName("td")[5].style.backgroundColor =
-                    "hsl(" + j + (l % 3 === 1 ? ",70%,15%)" : l % 3 === 2 ? ",70%,30%)" : ",70%,60%)");
+                    "hsl(" +
+                    j +
+                    (l % 3 === 1 ? ",70%,15%)" : l % 3 === 2 ? ",70%,30%)" : ",70%,60%)");
             }
 
             if (
-                parseInt(users[i].getElementsByTagName("td")[6].getElementsByTagName("span")[0].innerHTML) === -7 &&
-                users[i].getElementsByTagName("td")[5].getElementsByTagName("span")[0].innerHTML.substring(0, 2) !==
-                    "TH" &&
-                users[i].getElementsByTagName("td")[5].getElementsByTagName("span")[0].innerHTML.substring(0, 2) !==
-                    "KH" &&
-                users[i].getElementsByTagName("td")[5].getElementsByTagName("span")[0].innerHTML.substring(0, 2) !==
-                    "LA"
+                parseInt(
+                    users[i].getElementsByTagName("td")[6].getElementsByTagName("span")[0]
+                        .innerHTML,
+                ) === -7 &&
+                users[i]
+                    .getElementsByTagName("td")[5]
+                    .getElementsByTagName("span")[0]
+                    .innerHTML.substring(0, 2) !== "TH" &&
+                users[i]
+                    .getElementsByTagName("td")[5]
+                    .getElementsByTagName("span")[0]
+                    .innerHTML.substring(0, 2) !== "KH" &&
+                users[i]
+                    .getElementsByTagName("td")[5]
+                    .getElementsByTagName("span")[0]
+                    .innerHTML.substring(0, 2) !== "LA"
             ) {
                 users[i].getElementsByTagName("td")[2].style.backgroundColor = "hsl(0,80%,20%)";
             }
 
             if (users[i].getElementsByTagName("td")[8].getElementsByTagName("div").length === 0) {
-                const k = users[i].getElementsByTagName("td")[8].getElementsByTagName("span")[0].innerHTML.split("@");
+                const k = users[i]
+                    .getElementsByTagName("td")[8]
+                    .getElementsByTagName("span")[0]
+                    .innerHTML.split("@");
                 if (k.length === 2) {
                     if (!whitelist.includes(k[1])) {
                         users[i].getElementsByTagName("td")[8].innerHTML =

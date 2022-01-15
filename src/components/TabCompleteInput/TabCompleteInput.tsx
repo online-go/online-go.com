@@ -27,12 +27,13 @@ interface TabCompleteInputProperties {
     autoFocus?: boolean;
 }
 
-export const TabCompleteInput = React.forwardRef<HTMLInputElement, React.HTMLProps<HTMLInputElement>>(
-    (props: TabCompleteInputProperties, ref): JSX.Element => {
-        React.useEffect(() => {
-            ($((ref as any).current) as any).nicknameTabComplete();
-        }, [(ref as any).current]);
+export const TabCompleteInput = React.forwardRef<
+    HTMLInputElement,
+    React.HTMLProps<HTMLInputElement>
+>((props: TabCompleteInputProperties, ref): JSX.Element => {
+    React.useEffect(() => {
+        ($((ref as any).current) as any).nicknameTabComplete();
+    }, [(ref as any).current]);
 
-        return <input ref={ref} {...props} />;
-    },
-);
+    return <input ref={ref} {...props} />;
+});

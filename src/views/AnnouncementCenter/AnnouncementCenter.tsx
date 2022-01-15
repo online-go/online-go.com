@@ -168,7 +168,10 @@ export class AnnouncementCenter extends React.PureComponent<{}, AnnouncementCent
 
                         <dt>{_("Expiration")}</dt>
                         <dd>
-                            <Datetime value={this.state.expiration_date} onChange={this.setExpiration} />
+                            <Datetime
+                                value={this.state.expiration_date}
+                                onChange={this.setExpiration}
+                            />
                         </dd>
 
                         <dt>{_("Text")}</dt>
@@ -185,7 +188,11 @@ export class AnnouncementCenter extends React.PureComponent<{}, AnnouncementCent
                             {this.state.expiration_message && (
                                 <div className="danger">{this.state.expiration_message} </div>
                             )}
-                            <button className="primary" disabled={!can_create} onClick={this.create}>
+                            <button
+                                className="primary"
+                                disabled={!can_create}
+                                onClick={this.create}
+                            >
                                 {_("Create announcement")}
                             </button>
                         </dd>
@@ -194,10 +201,15 @@ export class AnnouncementCenter extends React.PureComponent<{}, AnnouncementCent
                         {this.state.announcements.map((announcement, idx) => (
                             <div className="announcement" key={idx}>
                                 <div className="cell">
-                                    {(user.is_moderator || user.id === announcement.creator.id || null) && (
+                                    {(user.is_moderator ||
+                                        user.id === announcement.creator.id ||
+                                        null) && (
                                         <button
                                             className="reject xs"
-                                            onClick={this.deleteAnnouncement.bind(this, announcement)}
+                                            onClick={this.deleteAnnouncement.bind(
+                                                this,
+                                                announcement,
+                                            )}
                                         >
                                             <i className="fa fa-trash-o" />
                                         </button>
@@ -212,7 +224,9 @@ export class AnnouncementCenter extends React.PureComponent<{}, AnnouncementCent
                                         {announcement.link}
                                     </a>
                                 </div>
-                                <div className="cell">expires {moment(announcement.expiration).fromNow()}</div>
+                                <div className="cell">
+                                    expires {moment(announcement.expiration).fromNow()}
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -251,14 +265,25 @@ export class AnnouncementCenter extends React.PureComponent<{}, AnnouncementCent
                                         case "event":
                                             return pgettext("Announcement type", "Event");
                                         case "stream":
-                                            return pgettext("Announcement type (video stream)", "Stream");
+                                            return pgettext(
+                                                "Announcement type (video stream)",
+                                                "Stream",
+                                            );
                                     }
                                     return a.type;
                                 },
                             },
-                            { header: "Player", className: "", render: (a) => <Player user={a.creator} /> },
+                            {
+                                header: "Player",
+                                className: "",
+                                render: (a) => <Player user={a.creator} />,
+                            },
                             { header: "Message", className: "", render: (a) => a.text },
-                            { header: "Link", className: "", render: (a) => <a href={a.link}>{a.link}</a> },
+                            {
+                                header: "Link",
+                                className: "",
+                                render: (a) => <a href={a.link}>{a.link}</a>,
+                            },
                         ]}
                     />
                 </Card>

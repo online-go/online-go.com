@@ -49,16 +49,25 @@ const global_replacements: TextReplacement[] = [
         split: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/pull\/[0-9]+(?:\/|\b))/i,
         pattern: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/pull\/([0-9]+)(?:\/|\b))/i,
         replacement: (m, idx) => (
-            <a key={idx} target="_blank" href={`https://github.com/online-go/online-go.com/pull/${m[2]}`}>
+            <a
+                key={idx}
+                target="_blank"
+                href={`https://github.com/online-go/online-go.com/pull/${m[2]}`}
+            >
                 {"GH-" + m[2]}
             </a>
         ),
     },
     {
         split: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/issues\/[0-9]+(?:\/|\b))/i,
-        pattern: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/issues\/([0-9]+)(?:\/|\b))/i,
+        pattern:
+            /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/issues\/([0-9]+)(?:\/|\b))/i,
         replacement: (m, idx) => (
-            <a key={idx} target="_blank" href={`https://github.com/online-go/online-go.com/issues/${m[2]}`}>
+            <a
+                key={idx}
+                target="_blank"
+                href={`https://github.com/online-go/online-go.com/issues/${m[2]}`}
+            >
                 {"GH-" + m[2]}
             </a>
         ),
@@ -67,7 +76,11 @@ const global_replacements: TextReplacement[] = [
         split: /\b((?:gh|pr|issue)[- ]?(?:#)?[0-9]+)\b/i,
         pattern: /\b((?:gh|pr|issue))[- ]?(?:#)?([0-9]+)\b/i,
         replacement: (m, idx) => (
-            <a key={idx} target="_blank" href={`https://github.com/online-go/online-go.com/issues/${m[2]}`}>
+            <a
+                key={idx}
+                target="_blank"
+                href={`https://github.com/online-go/online-go.com/issues/${m[2]}`}
+            >
                 {m[1] + "-" + m[2]}
             </a>
         ),
@@ -75,7 +88,8 @@ const global_replacements: TextReplacement[] = [
     // links to the wiki
     {
         split: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/wiki\/(?:[^\/<> ]+)(?:\/|\b))/i,
-        pattern: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/wiki\/([^\/<> ]+)(?:\/|\b))/i,
+        pattern:
+            /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/wiki\/([^\/<> ]+)(?:\/|\b))/i,
         replacement: (m, idx) => (
             <a key={idx} href={m[1]}>
                 {"wiki: " + m[2].replace(/-/i, " ").replace(/#/i, " — ")}
@@ -84,7 +98,8 @@ const global_replacements: TextReplacement[] = [
     },
     {
         split: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/wiki#(?:[^\/<> ]+)(?:\/|\b))/i,
-        pattern: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/wiki#([^\/<> ]+)(?:\/|\b))/i,
+        pattern:
+            /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/wiki#([^\/<> ]+)(?:\/|\b))/i,
         replacement: (m, idx) => (
             <a key={idx} href={m[1]}>
                 {"wiki: TOC " + m[2].replace(/-/i, " ").replace(/#/i, " — ")}
@@ -107,25 +122,36 @@ const global_replacements: TextReplacement[] = [
     {
         split: /\b((?:player|user) ?(?:#)?[0-9]+)\b/i,
         pattern: /\b(player|user) ?(?:#)?([0-9]+)\b/i,
-        replacement: (m, idx) => <Player key={idx} user={{ id: Number(m[2]) }} rank={false} noextracontrols />,
+        replacement: (m, idx) => (
+            <Player key={idx} user={{ id: Number(m[2]) }} rank={false} noextracontrols />
+        ),
     },
     {
         split: /\b((?:player |user )?https?:\/\/online-go\.com(?:\/player|\/user\/view)\/[0-9]+(?:\/[^\/<> ]+)*(?:\/|\b))/i,
         pattern:
             /\b((player |user )?https?:\/\/online-go\.com(?:\/player|\/user\/view)\/([0-9]+)(?:\/[^\/<> ]+)*(?:\/|\b))/i,
-        replacement: (m, idx) => <Player key={idx} user={{ id: Number(m[3]) }} rank={false} noextracontrols />,
+        replacement: (m, idx) => (
+            <Player key={idx} user={{ id: Number(m[3]) }} rank={false} noextracontrols />
+        ),
     },
     {
         split: /\b((?:player |user )?https?:\/\/online-go\.com\/(?:u|user(?!\/(?:view|settings|supporter|verifyEmail)))\/(?:[^\/<> ]+)(?:\/|\b))/i,
         pattern:
             /\b((player |user )?https?:\/\/online-go\.com\/(?:u|user(?!\/(?:view|settings|supporter|verifyEmail)))\/([^\/<> ]+)(?:\/|\b))/i,
-        replacement: (m, idx) => <Player key={idx} user={{ id: -1, username: m[3] }} rank={false} noextracontrols />,
+        replacement: (m, idx) => (
+            <Player key={idx} user={{ id: -1, username: m[3] }} rank={false} noextracontrols />
+        ),
     },
     {
         split: /(@"[^"\/]+(?:\/[0-9]+)?")/i,
         pattern: /(@"([^"\/]+)(?:\/([0-9]+))?")/i,
         replacement: (m, idx) => (
-            <Player key={idx} user={m[3] ? { id: Number(m[3]) } : { username: m[2] }} rank={false} noextracontrols />
+            <Player
+                key={idx}
+                user={m[3] ? { id: Number(m[3]) } : { username: m[2] }}
+                rank={false}
+                noextracontrols
+            />
         ),
     },
     {
@@ -145,7 +171,8 @@ const global_replacements: TextReplacement[] = [
     },
     {
         split: /\b((?:game )?https?:\/\/online-go\.com\/game(?:\/view)?\/[0-9]+(?:\/[0-9]+)?(?:\/|\b))/i,
-        pattern: /\b((game )?https?:\/\/online-go\.com\/game(?:\/view)?\/([0-9]+)\/?([0-9]+)?(?:\/|\b))/i,
+        pattern:
+            /\b((game )?https?:\/\/online-go\.com\/game(?:\/view)?\/([0-9]+)\/?([0-9]+)?(?:\/|\b))/i,
         replacement: (m, idx) => (
             <Link key={idx} to={`/game/${m[3]}${Number(m[4]) >= 0 ? "/" + m[4] : ""}`}>
                 {(m[2] ? m[2] : "game ") + m[3] + (Number(m[4]) >= 0 ? " move " + m[4] : "")}
@@ -157,9 +184,9 @@ const global_replacements: TextReplacement[] = [
         split: /(^##[0-9]{3,}|[ ]##[0-9]{3,})/i,
         pattern: /(^##([0-9]{3,})|([ ])##([0-9]{3,}))/i,
         replacement: (m, idx) => (
-            <Link key={idx} to={`/review/${m[2] || ""}${m[4] || ""}`}>{`${m[3] || ""}review ${m[2] || ""}${
-                m[4] || ""
-            }`}</Link>
+            <Link key={idx} to={`/review/${m[2] || ""}${m[4] || ""}`}>{`${m[3] || ""}review ${
+                m[2] || ""
+            }${m[4] || ""}`}</Link>
         ),
     },
     {
@@ -221,7 +248,8 @@ const global_replacements: TextReplacement[] = [
     // library
     {
         split: /\b((?:library )?https?:\/\/online-go\.com\/library\/[0-9]+(?:\/[0-9]+)?(?:\/|\b))/i,
-        pattern: /\b((joseki )?https?:\/\/online-go\.com\/library\/([0-9]+)(?:\/([0-9]+))?(?:\/|\b))/i,
+        pattern:
+            /\b((joseki )?https?:\/\/online-go\.com\/library\/([0-9]+)(?:\/([0-9]+))?(?:\/|\b))/i,
         replacement: (m, idx) => (
             <Link key={idx} to={`/library/${m[3]}` + (m[4] ? `/` + m[4] : ``)}>
                 {"library" + (m[4] ? " " + m[4] : "") + " of player " + m[3]}
@@ -330,7 +358,9 @@ const global_replacements: TextReplacement[] = [
             /\b((tutorial )?https?:\/\/online-go\.com\/(?:(?:docs\/)?learn-to-play-go|learning-hub)\/([-a-z]+)(?:\/([0-9]+))?(?:\/|\b))/i,
         replacement: (m, idx) => (
             <Link key={idx} to={`/learn-to-play-go/${m[3]}` + (m[4] ? `/` + m[4] : ``)}>
-                {(m[2] ? m[2] : "tutorial ") + m[3] + (m[4] ? " exercise " + (Number(m[4]) + 1) : "")}
+                {(m[2] ? m[2] : "tutorial ") +
+                    m[3] +
+                    (m[4] ? " exercise " + (Number(m[4]) + 1) : "")}
             </Link>
         ),
     },

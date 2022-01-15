@@ -37,7 +37,10 @@ interface JosekiAdminState {
     throb: boolean;
 }
 
-export class JosekiPermissionsPanel extends React.PureComponent<JosekiAdminProps, any /*JosekiAdminState*/> {
+export class JosekiPermissionsPanel extends React.PureComponent<
+    JosekiAdminProps,
+    any /*JosekiAdminState*/
+> {
     constructor(props) {
         super(props);
         this.state = {
@@ -157,9 +160,17 @@ export class JosekiPermissionsPanel extends React.PureComponent<JosekiAdminProps
                     </React.Fragment>
                 ) : (
                     <React.Fragment>
-                        <input type="checkbox" checked={this.state.can_comment} onChange={this.onCommentChange} />
+                        <input
+                            type="checkbox"
+                            checked={this.state.can_comment}
+                            onChange={this.onCommentChange}
+                        />
                         <div>edit</div>
-                        <input type="checkbox" checked={this.state.can_edit} onChange={this.onEditChange} />
+                        <input
+                            type="checkbox"
+                            checked={this.state.can_edit}
+                            onChange={this.onEditChange}
+                        />
                         <div>admin</div>
                         <input
                             type="checkbox"

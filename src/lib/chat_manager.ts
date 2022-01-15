@@ -100,11 +100,22 @@ export const global_channels: Array<ChannelInformation> = [
     { id: "global-rengo", name: "Rengo", country: "un" },
     { id: "global-japanese", name: "日本語 ", country: "jp", language: "ja" },
     { id: "global-zh-hans", name: "中文", country: "cn", language: ["zh", "zh_hans", "zh_cn"] },
-    { id: "global-zh-hant", name: "廣東話", country: "hk", language: ["zh-hk", "zh_hk", "zh_hant", "zh_tw"] },
+    {
+        id: "global-zh-hant",
+        name: "廣東話",
+        country: "hk",
+        language: ["zh-hk", "zh_hk", "zh_hant", "zh_tw"],
+    },
     { id: "global-korean", name: "한국어", country: "kr", language: "ko" },
     { id: "global-russian", name: "Русский", country: "ru", language: "ru" },
     { id: "global-polish", name: "Polski", country: "pl", language: "pl" },
-    { id: "global-arabic", name: "العَرَبِيَّةُ", country: "_Arab_League", language: "ar", rtl: true },
+    {
+        id: "global-arabic",
+        name: "العَرَبِيَّةُ",
+        country: "_Arab_League",
+        language: "ar",
+        rtl: true,
+    },
     { id: "global-bulgarian", name: "Български", country: "bg", language: "bg" },
     { id: "global-catalan", name: "Català", country: "_cat", language: "ca" },
     { id: "global-czech", name: "Čeština", country: "cz", language: "cs" },
@@ -147,7 +158,8 @@ try {
 
         for (const chan of global_channels) {
             if (chan.language) {
-                const chan_lang_list = typeof chan.language === "string" ? [chan.language] : chan.language;
+                const chan_lang_list =
+                    typeof chan.language === "string" ? [chan.language] : chan.language;
                 for (const chan_lang of chan_lang_list) {
                     if (chan_lang === language && !chan.navigator_language) {
                         chan.navigator_language = true;
@@ -469,14 +481,22 @@ class ChatChannel extends TypedEventEmitter<Events> {
     }
 
     _insert_into_sorted_lists(new_user) {
-        insert_into_sorted_list(this.users_by_name, (a, b) => a.username.localeCompare(b.username), new_user);
+        insert_into_sorted_list(
+            this.users_by_name,
+            (a, b) => a.username.localeCompare(b.username),
+            new_user,
+        );
 
         insert_into_sorted_list(this.users_by_rank, users_by_rank, new_user);
     }
 
     _remove_from_sorted_lists(user) {
-        this.users_by_name = this.users_by_name.filter((existing_user) => existing_user.id !== user.id);
-        this.users_by_rank = this.users_by_rank.filter((existing_user) => existing_user.id !== user.id);
+        this.users_by_name = this.users_by_name.filter(
+            (existing_user) => existing_user.id !== user.id,
+        );
+        this.users_by_rank = this.users_by_rank.filter(
+            (existing_user) => existing_user.id !== user.id,
+        );
     }
 
     public send(text: string): void {
@@ -504,9 +524,14 @@ class ChatChannel extends TypedEventEmitter<Events> {
             }
 
             this.systemMessage(
-                interpolate(_("Anti-flood system engaged. You will be able to talk again in {{time}} seconds."), {
-                    time: chillout_time,
-                }),
+                interpolate(
+                    _(
+                        "Anti-flood system engaged. You will be able to talk again in {{time}} seconds.",
+                    ),
+                    {
+                        time: chillout_time,
+                    },
+                ),
                 "flood",
             );
             const start = Date.now();
@@ -516,7 +541,9 @@ class ChatChannel extends TypedEventEmitter<Events> {
                 if (left > 0) {
                     this.systemMessage(
                         interpolate(
-                            _("Anti-flood system engaged. You will be able to talk again in {{time}} seconds."),
+                            _(
+                                "Anti-flood system engaged. You will be able to talk again in {{time}} seconds.",
+                            ),
                             { time: Math.round(left / 1000) },
                         ),
                         "flood",
@@ -596,7 +623,10 @@ class ChatChannel extends TypedEventEmitter<Events> {
 
     public clearSystemMessages(system_message_type: "flood"): void {
         for (let i = 0; i < this.chat_log.length; ++i) {
-            if (this.chat_log[i].system && system_message_type === this.chat_log[i].system_message_type) {
+            if (
+                this.chat_log[i].system &&
+                system_message_type === this.chat_log[i].system_message_type
+            ) {
                 this.chat_log.splice(i, 1);
                 --i;
             }

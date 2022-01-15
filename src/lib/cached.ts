@@ -70,7 +70,9 @@ export const cached = {
                     for (const challenge of res.results) {
                         player_cache.update(challenge.challenger);
                         player_cache.update(challenge.challenged);
-                        challenge.game.time_control = JSON.parse(challenge.game.time_control_parameters);
+                        challenge.game.time_control = JSON.parse(
+                            challenge.game.time_control_parameters,
+                        );
                     }
                     data.set(cached.challenge_list, res.results);
                 })

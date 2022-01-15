@@ -459,7 +459,9 @@ export class SFXManager {
 
         const sound_list: Array<ValidSound> =
             group_name === "game_voice"
-                ? ((GameVoiceSounds as any).concat(UnusedSounds as any) as unknown as Array<ValidSound>)
+                ? ((GameVoiceSounds as any).concat(
+                      UnusedSounds as any,
+                  ) as unknown as Array<ValidSound>)
                 : group_name === "countdown"
                 ? (CountdownSounds as unknown as Array<ValidSound>)
                 : group_name === "stones"
@@ -482,7 +484,11 @@ export class SFXManager {
 
         try {
             howl.on("unlock", () => {
-                console.info("Audio group ", group_name, " unlocked successfully, sounds should now work");
+                console.info(
+                    "Audio group ",
+                    group_name,
+                    " unlocked successfully, sounds should now work",
+                );
             });
             const silence = new SFXSprite(howl, group_name, "silence");
             silence.play();

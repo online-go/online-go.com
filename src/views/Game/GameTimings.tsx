@@ -157,27 +157,37 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                                 const blur1 = non_handicap_moves?.[index]?.[4]?.blur;
                                 const blur2 = non_handicap_moves?.[index + 1]?.[4]?.blur;
                                 const black_sgf_download =
-                                    (non_handicap_moves?.[index]?.[4]?.sgf_downloaded_by || []).indexOf(
-                                        this.props.black_id,
-                                    ) >= 0 ||
-                                    (non_handicap_moves?.[index + 1]?.[4]?.sgf_downloaded_by || []).indexOf(
-                                        this.props.black_id,
-                                    ) >= 0;
+                                    (
+                                        non_handicap_moves?.[index]?.[4]?.sgf_downloaded_by || []
+                                    ).indexOf(this.props.black_id) >= 0 ||
+                                    (
+                                        non_handicap_moves?.[index + 1]?.[4]?.sgf_downloaded_by ||
+                                        []
+                                    ).indexOf(this.props.black_id) >= 0;
                                 const white_sgf_download =
-                                    (non_handicap_moves?.[index]?.[4]?.sgf_downloaded_by || []).indexOf(
-                                        this.props.white_id,
-                                    ) >= 0 ||
-                                    (non_handicap_moves?.[index + 1]?.[4]?.sgf_downloaded_by || []).indexOf(
-                                        this.props.white_id,
-                                    ) >= 0;
+                                    (
+                                        non_handicap_moves?.[index]?.[4]?.sgf_downloaded_by || []
+                                    ).indexOf(this.props.white_id) >= 0 ||
+                                    (
+                                        non_handicap_moves?.[index + 1]?.[4]?.sgf_downloaded_by ||
+                                        []
+                                    ).indexOf(this.props.white_id) >= 0;
                                 let other_sgf_download = false;
-                                for (const player_id of non_handicap_moves?.[index]?.[4]?.sgf_downloaded_by || []) {
-                                    if (player_id !== this.props.black_id && player_id !== this.props.white_id) {
+                                for (const player_id of non_handicap_moves?.[index]?.[4]
+                                    ?.sgf_downloaded_by || []) {
+                                    if (
+                                        player_id !== this.props.black_id &&
+                                        player_id !== this.props.white_id
+                                    ) {
                                         other_sgf_download = true;
                                     }
                                 }
-                                for (const player_id of non_handicap_moves?.[index + 1]?.[4]?.sgf_downloaded_by || []) {
-                                    if (player_id !== this.props.black_id && player_id !== this.props.white_id) {
+                                for (const player_id of non_handicap_moves?.[index + 1]?.[4]
+                                    ?.sgf_downloaded_by || []) {
+                                    if (
+                                        player_id !== this.props.black_id &&
+                                        player_id !== this.props.white_id
+                                    ) {
                                         other_sgf_download = true;
                                     }
                                 }
@@ -211,16 +221,22 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                                     <div>
                                         {black_move_time}
                                         {blurDurationFormat(black_blur)}
-                                        {black_download_sgf ? <i className="fa fa-download" /> : null}
+                                        {black_download_sgf ? (
+                                            <i className="fa fa-download" />
+                                        ) : null}
                                     </div>
                                     <div>
                                         {white_move_time}
                                         {blurDurationFormat(white_blur)}
-                                        {white_download_sgf ? <i className="fa fa-download" /> : null}
+                                        {white_download_sgf ? (
+                                            <i className="fa fa-download" />
+                                        ) : null}
                                     </div>
                                     <div>
                                         {`${total_elapsed.format()}`}
-                                        {other_download_sgf ? <i className="fa fa-download" /> : null}
+                                        {other_download_sgf ? (
+                                            <i className="fa fa-download" />
+                                        ) : null}
                                     </div>
                                 </React.Fragment>
                             );
@@ -236,7 +252,9 @@ export class GameTimings extends React.Component<GameTimingProperties> {
                 <div className="span-3">Final action:</div>
                 <div>
                     {this.show_seconds_resolution(
-                        moment.duration(this.props.end_time - this.props.start_time, "seconds").subtract(game_elapsed),
+                        moment
+                            .duration(this.props.end_time - this.props.start_time, "seconds")
+                            .subtract(game_elapsed),
                     )}
                 </div>
                 <div>{/* empty cell at end of row */}</div>

@@ -60,7 +60,10 @@ interface GobanLineSummaryState {
     finished?: boolean;
 }
 
-export class GobanLineSummary extends React.Component<GobanLineSummaryProps, GobanLineSummaryState> {
+export class GobanLineSummary extends React.Component<
+    GobanLineSummaryProps,
+    GobanLineSummaryState
+> {
     goban: Goban;
 
     constructor(props) {
@@ -140,8 +143,10 @@ export class GobanLineSummary extends React.Component<GobanLineSummaryProps, Gob
             move_number: this.goban.engine.getMoveNumber(),
             game_name: this.goban.engine.config.game_name,
 
-            black_name: typeof black === "object" ? black.username + " [" + rankString(black) + "]" : black,
-            white_name: typeof white === "object" ? white.username + " [" + rankString(white) + "]" : white,
+            black_name:
+                typeof black === "object" ? black.username + " [" + rankString(black) + "]" : black,
+            white_name:
+                typeof white === "object" ? white.username + " [" + rankString(white) + "]" : white,
             paused: this.state.black_pause_text ? "paused" : "",
 
             current_users_move: player_to_move === data.get("config.user").id,

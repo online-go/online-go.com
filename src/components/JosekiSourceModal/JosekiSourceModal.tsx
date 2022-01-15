@@ -55,7 +55,8 @@ export class JosekiSourceModal extends Modal<Events, JosekiSourceModalProperties
 
     render() {
         const inputs_valid =
-            (this.state.url.length === 0 || ValidUrl.isWebUri(this.state.url)) && this.state.description.length > 8; // some basic sanity that they put something in
+            (this.state.url.length === 0 || ValidUrl.isWebUri(this.state.url)) &&
+            this.state.description.length > 8; // some basic sanity that they put something in
 
         return (
             <div className="Modal JosekiSourceModal" ref="modal">

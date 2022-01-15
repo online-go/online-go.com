@@ -37,7 +37,10 @@ interface ChatUsersState {
     tick: number;
 }
 
-export class ChatUsers<P extends ChatUserListProperties, S extends ChatUsersState> extends React.PureComponent<P, S> {
+export class ChatUsers<
+    P extends ChatUserListProperties,
+    S extends ChatUsersState,
+> extends React.PureComponent<P, S> {
     proxy: ChatChannelProxy;
 
     constructor(props) {
@@ -80,7 +83,8 @@ export class ChatUserList extends ChatUsers<ChatUserListProperties, ChatUserList
     }
 
     toggleSortOrder = () => {
-        const new_sort_order = preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
+        const new_sort_order =
+            preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
         preferences.set("chat.user-sort-order", new_sort_order);
         this.setState({ user_sort_order: new_sort_order });
     };
@@ -96,7 +100,9 @@ export class ChatUserList extends ChatUsers<ChatUserListProperties, ChatUserList
                 <div className="user-header" onClick={this.toggleSortOrder}>
                     <i
                         className={
-                            this.state.user_sort_order === "rank" ? "fa fa-sort-numeric-asc" : "fa fa-sort-alpha-asc"
+                            this.state.user_sort_order === "rank"
+                                ? "fa fa-sort-numeric-asc"
+                                : "fa fa-sort-alpha-asc"
                         }
                     />{" "}
                     {interpolate(_("Users : {{in_chat}}"), { in_chat: sorted_users.length })}
@@ -117,9 +123,12 @@ export class ChatUserCount extends ChatUsers<ChatUserCountProperties, ChatUsersS
         return (
             <button
                 onClick={this.props.chat.togglePlayerList}
-                className={"chat-input-player-list-toggle sm" + (this.props.active ? " active" : "")}
+                className={
+                    "chat-input-player-list-toggle sm" + (this.props.active ? " active" : "")
+                }
             >
-                <i className="fa fa-users" /> {this.proxy ? this.proxy.channel.users_by_name.length : ""}
+                <i className="fa fa-users" />{" "}
+                {this.proxy ? this.proxy.channel.users_by_name.length : ""}
             </button>
         );
     }

@@ -26,7 +26,10 @@ import { errorAlerter, rulesText } from "misc";
 
 interface Events {}
 
-type ACLModalProperties = { game_id: number } | { review_id: number } | { puzzle_collection_id?: number };
+type ACLModalProperties =
+    | { game_id: number }
+    | { review_id: number }
+    | { puzzle_collection_id?: number };
 
 export class ACLModal extends Modal<Events, ACLModalProperties, any> {
     player_autocomplete_ref = React.createRef<PlayerAutocompleteRef>();
@@ -122,8 +125,14 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
                 </div>
                 <div className="body">
                     <div className="grant">
-                        <PlayerAutocomplete ref={this.player_autocomplete_ref} onComplete={this.playerComplete} />
-                        <GroupAutocomplete ref={this.group_autocomplete_ref} onComplete={this.groupComplete} />
+                        <PlayerAutocomplete
+                            ref={this.player_autocomplete_ref}
+                            onComplete={this.playerComplete}
+                        />
+                        <GroupAutocomplete
+                            ref={this.group_autocomplete_ref}
+                            onComplete={this.groupComplete}
+                        />
                         <button className="primary sm" onClick={this.grantAccess}>
                             {_("Grant access")}
                         </button>
@@ -132,10 +141,17 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
                     <div className="acl-entries">
                         {this.state.acl.map((obj, idx) => (
                             <div key={idx} className="acl-entry">
-                                <i className="fa fa-remove clickable" onClick={this.removeACLEntry.bind(this, obj)} />
+                                <i
+                                    className="fa fa-remove clickable"
+                                    onClick={this.removeACLEntry.bind(this, obj)}
+                                />
 
                                 {obj.group_id ? (
-                                    <a target="_blank" href={`/group/${obj.group_id}`} className="group">
+                                    <a
+                                        target="_blank"
+                                        href={`/group/${obj.group_id}`}
+                                        className="group"
+                                    >
                                         {obj.group_name}
                                     </a>
                                 ) : (

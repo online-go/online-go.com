@@ -75,7 +75,9 @@ export class ChatPresenceIndicator extends React.PureComponent<
     render() {
         return (
             <i
-                className={`ChatPresenceIndicator ${this.state.online ? "online" : ""} fa fa-circle`}
+                className={`ChatPresenceIndicator ${
+                    this.state.online ? "online" : ""
+                } fa fa-circle`}
                 title={this.state.online ? _("Online") : _("Offline")}
             />
         );

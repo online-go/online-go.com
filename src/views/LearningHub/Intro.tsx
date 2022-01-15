@@ -33,7 +33,10 @@ export class Intro extends LearningHubSection {
         return pgettext("Tutorial section name on rules introduction", "The Game!");
     }
     static subtext(): string {
-        return pgettext("Tutorial section subtext on rules introduction", "Build territory one stone at a time");
+        return pgettext(
+            "Tutorial section subtext on rules introduction",
+            "Build territory one stone at a time",
+        );
     }
 }
 

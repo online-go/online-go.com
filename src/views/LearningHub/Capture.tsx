@@ -198,7 +198,10 @@ class Page8 extends LearningPage {
                 black: "b6b5b4b3c7c2d7e7f7d2e2f2g7g2h6h5h4h3",
                 white: "c6c5c4d6d4e6e4f6f4g6g5g4",
             },
-            move_tree: this.makePuzzleMoveTree(["e5"], ["d5e5", "f5e5", "c3e5", "d3e5", "e3e5", "f3e5", "g3e5"]),
+            move_tree: this.makePuzzleMoveTree(
+                ["e5"],
+                ["d5e5", "f5e5", "c3e5", "d3e5", "e3e5", "f3e5", "g3e5"],
+            ),
         };
     }
 }

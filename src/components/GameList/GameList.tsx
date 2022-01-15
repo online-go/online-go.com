@@ -67,8 +67,10 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                 case "clock":
                     lst.sort((a, b) => {
                         try {
-                            const a_clock = a.goban && a.goban.last_clock ? a.goban.last_clock : a.json.clock;
-                            const b_clock = b.goban && b.goban.last_clock ? b.goban.last_clock : b.json.clock;
+                            const a_clock =
+                                a.goban && a.goban.last_clock ? a.goban.last_clock : a.json.clock;
+                            const b_clock =
+                                b.goban && b.goban.last_clock ? b.goban.last_clock : b.json.clock;
 
                             /* not my move? push to bottom (or top) */
                             if (
@@ -96,8 +98,10 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                 case "opponent-clock":
                     lst.sort((a, b) => {
                         try {
-                            const a_clock = a.goban && a.goban.last_clock ? a.goban.last_clock : a.json.clock;
-                            const b_clock = b.goban && b.goban.last_clock ? b.goban.last_clock : b.json.clock;
+                            const a_clock =
+                                a.goban && a.goban.last_clock ? a.goban.last_clock : a.json.clock;
+                            const b_clock =
+                                b.goban && b.goban.last_clock ? b.goban.last_clock : b.json.clock;
 
                             /* not my move? push to bottom (or top) */
                             if (
@@ -137,9 +141,14 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                 case "opponent":
                     lst.sort((a, b) => {
                         try {
-                            const a_opponent = a.black.id === this.props.player.id ? a.white : a.black;
-                            const b_opponent = b.black.id === this.props.player.id ? b.white : b.black;
-                            return a_opponent.username.localeCompare(b_opponent.username) || a.id - b.id;
+                            const a_opponent =
+                                a.black.id === this.props.player.id ? a.white : a.black;
+                            const b_opponent =
+                                b.black.id === this.props.player.id ? b.white : b.black;
+                            return (
+                                a_opponent.username.localeCompare(b_opponent.username) ||
+                                a.id - b.id
+                            );
                         } catch (e) {
                             console.error(a, b, e);
                             return 0;
@@ -151,8 +160,12 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                 case "move-number":
                     lst.sort((a, b) => {
                         try {
-                            const a_move_num = a.goban ? a.goban.engine.getMoveNumber() : a.json.moves.length;
-                            const b_move_num = b.goban ? b.goban.engine.getMoveNumber() : b.json.moves.length;
+                            const a_move_num = a.goban
+                                ? a.goban.engine.getMoveNumber()
+                                : a.json.moves.length;
+                            const b_move_num = b.goban
+                                ? b.goban.engine.getMoveNumber()
+                                : b.json.moves.length;
 
                             return a_move_num - b_move_num || a.id - b.id;
                         } catch (e) {
@@ -191,23 +204,48 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
             const sortable = this.props.disableSort && this.props.player ? "" : " sortable ";
             const sort_order = this.state.sort_order;
             const move_number_sort =
-                sort_order === "move-number" ? "sorted-desc" : sort_order === "-move-number" ? "sorted-asc" : "";
-            const game_sort = sort_order === "name" ? "sorted-desc" : sort_order === "-name" ? "sorted-asc" : "";
+                sort_order === "move-number"
+                    ? "sorted-desc"
+                    : sort_order === "-move-number"
+                    ? "sorted-asc"
+                    : "";
+            const game_sort =
+                sort_order === "name" ? "sorted-desc" : sort_order === "-name" ? "sorted-asc" : "";
             const opponent_sort =
-                sort_order === "opponent" ? "sorted-desc" : sort_order === "-opponent" ? "sorted-asc" : "";
-            const clock_sort = sort_order === "clock" ? "sorted-desc" : sort_order === "-clock" ? "sorted-asc" : "";
+                sort_order === "opponent"
+                    ? "sorted-desc"
+                    : sort_order === "-opponent"
+                    ? "sorted-asc"
+                    : "";
+            const clock_sort =
+                sort_order === "clock"
+                    ? "sorted-desc"
+                    : sort_order === "-clock"
+                    ? "sorted-asc"
+                    : "";
             const opponent_clock_sort =
-                sort_order === "opponent-clock" ? "sorted-desc" : sort_order === "-opponent-clock" ? "sorted-asc" : "";
-            const size = sort_order === "size" ? "sorted-desc" : sort_order === "-size" ? "sorted-asc" : "";
+                sort_order === "opponent-clock"
+                    ? "sorted-desc"
+                    : sort_order === "-opponent-clock"
+                    ? "sorted-asc"
+                    : "";
+            const size =
+                sort_order === "size" ? "sorted-desc" : sort_order === "-size" ? "sorted-asc" : "";
 
             return (
                 <div className="GameList GobanLineSummaryContainer">
                     {this.props.player ? (
                         <div className="GobanLineSummaryContainerHeader">
-                            <div onClick={this.sortBy("move-number")} className={sortable + move_number_sort}>
+                            <div
+                                onClick={this.sortBy("move-number")}
+                                className={sortable + move_number_sort}
+                            >
                                 {pgettext("Game list move number", "Move")}
                             </div>
-                            <div onClick={this.sortBy("name")} className={sortable + game_sort + " text-align-left"}>
+                            <div
+                                onClick={this.sortBy("name")}
+                                className={sortable + game_sort + " text-align-left"}
+                            >
                                 {_("Game")}
                             </div>
                             <div
@@ -219,7 +257,10 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                             <div onClick={this.sortBy("clock")} className={sortable + clock_sort}>
                                 {_("Clock")}
                             </div>
-                            <div onClick={this.sortBy("opponent-clock")} className={sortable + opponent_clock_sort}>
+                            <div
+                                onClick={this.sortBy("opponent-clock")}
+                                className={sortable + opponent_clock_sort}
+                            >
                                 {_("Opponent's Clock")}
                             </div>
                             <div onClick={this.sortBy("size")} className={sortable + size}>
@@ -260,10 +301,18 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                                 <div className="goban-with-names" key={game.id}>
                                     <div className="names">
                                         <div>
-                                            <Player user={game.black} disableCacheUpdate noextracontrols />
+                                            <Player
+                                                user={game.black}
+                                                disableCacheUpdate
+                                                noextracontrols
+                                            />
                                         </div>
                                         <div>
-                                            <Player user={game.white} disableCacheUpdate noextracontrols />
+                                            <Player
+                                                user={game.white}
+                                                disableCacheUpdate
+                                                noextracontrols
+                                            />
                                         </div>
                                     </div>
                                     <MiniGoban

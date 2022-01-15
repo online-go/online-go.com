@@ -218,10 +218,17 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
         return (
             <span
                 className={
-                    "ChatIndicator" + (this.state.mentioned ? " mentioned" : this.state.unread_ct > 0 ? " unread" : "")
+                    "ChatIndicator" +
+                    (this.state.mentioned
+                        ? " mentioned"
+                        : this.state.unread_ct > 0
+                        ? " unread"
+                        : "")
                 }
             >
-                {(this.state.show_empty_notification || this.state.mentioned || this.state.unread_ct > 0) && (
+                {(this.state.show_empty_notification ||
+                    this.state.mentioned ||
+                    this.state.unread_ct > 0) && (
                     <span className={"navbar-icon"} onClick={this.toggleChannelList}>
                         <i className="fa fa-comment" />
                         <span className="count">{this.state.unread_ct} </span>

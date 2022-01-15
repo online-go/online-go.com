@@ -102,12 +102,19 @@ export function request(method: Method): RequestFunction {
         }
 
         const real_url: string =
-            (typeof id === "number" && isFinite(id)) || typeof id === "string" ? url.replace("%%", id.toString()) : url;
+            (typeof id === "number" && isFinite(id)) || typeof id === "string"
+                ? url.replace("%%", id.toString())
+                : url;
         const real_data = data;
 
         for (const req_id in requests_in_flight) {
             const req = requests_in_flight[req_id];
-            if (req.promise && req.url === real_url && method === req.type && deepCompare(req.data, real_data)) {
+            if (
+                req.promise &&
+                req.url === real_url &&
+                method === req.type &&
+                deepCompare(req.data, real_data)
+            ) {
                 //console.log("Duplicate in flight request, chaining");
                 return req.promise;
             }
@@ -144,7 +151,10 @@ export function request(method: Method): RequestFunction {
                 },
             };
             if (real_data) {
-                if (real_data instanceof Blob || (Array.isArray(real_data) && real_data[0] instanceof Blob)) {
+                if (
+                    real_data instanceof Blob ||
+                    (Array.isArray(real_data) && real_data[0] instanceof Blob)
+                ) {
                     opts.data = new FormData();
                     if (real_data instanceof Blob) {
                         opts.data.append("file", real_data);

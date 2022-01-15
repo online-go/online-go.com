@@ -45,7 +45,10 @@ interface JosekiVariationFilterState {
     };
 }
 
-export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFilterProps, JosekiVariationFilterState> {
+export class JosekiVariationFilter extends React.PureComponent<
+    JosekiVariationFilterProps,
+    JosekiVariationFilterState
+> {
     constructor(props) {
         super(props);
         this.state = {
@@ -73,7 +76,10 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
                 body.forEach((id, idx) => {
                     // console.log("Looking up player", id, idx);
                     const player = player_cache.lookup(id);
-                    contributor_list[idx] = { resolved: player !== null, player: player === null ? id : player };
+                    contributor_list[idx] = {
+                        resolved: player !== null,
+                        player: player === null ? id : player,
+                    };
 
                     if (player === null) {
                         // console.log("fetching player", id, idx);
@@ -181,9 +187,12 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         );
 
         const current_contributor =
-            this.state.selected_filter.contributor === null ? "none" : this.state.selected_filter.contributor;
+            this.state.selected_filter.contributor === null
+                ? "none"
+                : this.state.selected_filter.contributor;
 
-        const current_source = this.state.selected_filter.source === null ? "none" : this.state.selected_filter.source;
+        const current_source =
+            this.state.selected_filter.source === null ? "none" : this.state.selected_filter.source;
 
         return (
             <div className="joseki-variation-filter">

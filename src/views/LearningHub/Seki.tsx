@@ -51,7 +51,9 @@ class Page1 extends LearningPage {
     }
 
     text() {
-        return _("Sometimes you cannot capture, but you can prevent from being captured. Save your black stones!");
+        return _(
+            "Sometimes you cannot capture, but you can prevent from being captured. Save your black stones!",
+        );
     }
     config(): PuzzleConfig {
         return {
@@ -71,7 +73,9 @@ class Page2 extends LearningPage {
     }
 
     text() {
-        return _("Sometimes you cannot capture, but you can prevent from being captured. Save your black stones!");
+        return _(
+            "Sometimes you cannot capture, but you can prevent from being captured. Save your black stones!",
+        );
     }
     config(): PuzzleConfig {
         return {
@@ -120,7 +124,10 @@ class Page4 extends LearningPage {
                 white: "h1h2e1e2f3f4g4e5h5j5",
                 black: "f1f2g2g3h3h4j4",
             },
-            move_tree: this.makePuzzleMoveTree(["j2"], ["g1j3", "j3g1", "j1j2g1j3", "j1j2j3g1", "g5g1", "e3g1"]),
+            move_tree: this.makePuzzleMoveTree(
+                ["j2"],
+                ["g1j3", "j3g1", "j1j2g1j3", "j1j2j3g1", "g5g1", "e3g1"],
+            ),
         };
     }
 }
@@ -140,7 +147,10 @@ class Page5 extends LearningPage {
                 white: "j2h2g3f3e3e4f5f6g6h6h7j7j5",
                 black: "j3h3h4g4f4e5e6e7f7g7h8j8",
             },
-            move_tree: this.makePuzzleMoveTree(["h5"], ["g5j4", "j4h5", "g2f2g1f1h1j1", "g2f2g1f1j1h1"]),
+            move_tree: this.makePuzzleMoveTree(
+                ["h5"],
+                ["g5j4", "j4h5", "g2f2g1f1h1j1", "g2f2g1f1j1h1"],
+            ),
         };
     }
 }

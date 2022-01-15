@@ -145,7 +145,12 @@ function sanitize_shortcut(shortcut) {
     shortcut = shortcut.replace("shift-", "");
     shortcut = shortcut.replace("ctrl-", "");
     shortcut = shortcut.replace("alt-", "");
-    shortcut = (shift ? "shift-" : "") + (alt ? "alt-" : "") + (ctrl ? "ctrl-" : "") + (meta ? "meta-" : "") + shortcut;
+    shortcut =
+        (shift ? "shift-" : "") +
+        (alt ? "alt-" : "") +
+        (ctrl ? "ctrl-" : "") +
+        (meta ? "meta-" : "") +
+        shortcut;
 
     return shortcut;
 }

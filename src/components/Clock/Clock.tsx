@@ -59,8 +59,10 @@ export function Clock({
     if (color === "stone-removal") {
         return <span> ({prettyTime(clock.stone_removal_time_left)})</span>;
     } else {
-        const player_clock: JGOFPlayerClock = color === "black" ? clock.black_clock : clock.white_clock;
-        const player_id: number = color === "black" ? goban.engine.players.black.id : goban.engine.players.white.id;
+        const player_clock: JGOFPlayerClock =
+            color === "black" ? clock.black_clock : clock.white_clock;
+        const player_id: number =
+            color === "black" ? goban.engine.players.black.id : goban.engine.players.white.id;
 
         let clock_className = "Clock " + color;
         if (clock.pause_state) {
@@ -92,17 +94,25 @@ export function Clock({
                     <div className="byo-yomi-container">
                         {(!compact || player_clock.main_time <= 0) && (
                             <React.Fragment>
-                                {player_clock.main_time > 0 && <span className="periods-delimiter"> + </span>}
+                                {player_clock.main_time > 0 && (
+                                    <span className="periods-delimiter"> + </span>
+                                )}
                                 <span
                                     className={
-                                        "period-time boxed" + (player_clock.periods_left <= 1 ? "sudden-death" : "")
+                                        "period-time boxed" +
+                                        (player_clock.periods_left <= 1 ? "sudden-death" : "")
                                     }
                                 >
                                     {prettyTime(player_clock.period_time_left)}
                                 </span>
                             </React.Fragment>
                         )}
-                        <span className={"byo-yomi-periods " + (player_clock.periods_left <= 1 ? "sudden-death" : "")}>
+                        <span
+                            className={
+                                "byo-yomi-periods " +
+                                (player_clock.periods_left <= 1 ? "sudden-death" : "")
+                            }
+                        >
                             (
                             {player_clock.periods_left === 1
                                 ? pgettext("Final byo-yomi period (Sudden Death)", "SD")
@@ -115,15 +125,21 @@ export function Clock({
                 {time_control.system === "canadian" && (!compact || player_clock.main_time <= 0) && (
                     <React.Fragment>
                         <span className="canadian-clock-container">
-                            {player_clock.main_time > 0 && <span className="periods-delimiter"> + </span>}
-                            <span className="period-time boxed">{prettyTime(player_clock.block_time_left)}</span>
+                            {player_clock.main_time > 0 && (
+                                <span className="periods-delimiter"> + </span>
+                            )}
+                            <span className="period-time boxed">
+                                {prettyTime(player_clock.block_time_left)}
+                            </span>
                             <span className="periods-delimiter">/</span>
                             <span className="period-moves boxed">{player_clock.moves_left}</span>
                         </span>
                     </React.Fragment>
                 )}
 
-                {!compact && clock.pause_state && <ClockPauseReason clock={clock} player_id={player_id} />}
+                {!compact && clock.pause_state && (
+                    <ClockPauseReason clock={clock} player_id={player_id} />
+                )}
             </span>
         );
     }
@@ -137,7 +153,13 @@ export function Clock({
     }
 }
 
-function ClockPauseReason({ clock, player_id }: { clock: JGOFClock; player_id: number }): JSX.Element {
+function ClockPauseReason({
+    clock,
+    player_id,
+}: {
+    clock: JGOFClock;
+    player_id: number;
+}): JSX.Element {
     let pause_text = _("Paused");
     const pause_state = clock.pause_state;
 
@@ -178,7 +200,10 @@ function prettyTime(ms: number): string {
     } else if (hours || days === 1) {
         ret =
             days === 0
-                ? interpolate(pgettext("Game clock: Hours and minutes", "%sh %sm"), [hours, minutes])
+                ? interpolate(pgettext("Game clock: Hours and minutes", "%sh %sm"), [
+                      hours,
+                      minutes,
+                  ])
                 : interpolate(pgettext("Game clock: hours", "%sh"), [hours + 24]);
     } else {
         ret = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;

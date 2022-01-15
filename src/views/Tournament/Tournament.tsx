@@ -238,7 +238,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
         if (this.state.new_tournament_group_id) {
             get("groups/%%", this.state.new_tournament_group_id)
                 .then((group) => {
-                    this.setState({ tournament: Object.assign({}, this.state.tournament, { group: group }) });
+                    this.setState({
+                        tournament: Object.assign({}, this.state.tournament, { group: group }),
+                    });
                 })
                 .catch(errorAlerter);
         }
@@ -299,7 +301,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                     rounds: rounds,
                     //selected_round: rounds.length - 1,
                     selected_round:
-                        tournament.ended && tournament.tournament_type === "opengotha" && tournament.opengotha_standings
+                        tournament.ended &&
+                        tournament.tournament_type === "opengotha" &&
+                        tournament.opengotha_standings
                             ? "standings"
                             : (tournament.settings.active_round || 1) - 1,
                     use_elimination_trees: use_elimination_trees,
@@ -438,7 +442,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             focusCancel: true,
         })
             .then(() => {
-                post("tournaments/%%/start", this.state.tournament.id, {}).then(ignore).catch(errorAlerter);
+                post("tournaments/%%/start", this.state.tournament.id, {})
+                    .then(ignore)
+                    .catch(errorAlerter);
             })
             .catch(ignore);
     };
@@ -476,7 +482,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
         this.setState({ user_to_invite: user });
     };
     inviteUser = () => {
-        post("tournaments/%%/players", this.state.tournament_id, { username: this.state.user_to_invite.username })
+        post("tournaments/%%/players", this.state.tournament_id, {
+            username: this.state.user_to_invite.username,
+        })
             .then((res) => {
                 console.log(res);
                 _("Player invited"); /* for translations */
@@ -523,7 +531,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
         const rounds = this.state.rounds;
         const players = this.state.players;
 
-        if (tournament.tournament_type === "elimination" || tournament.tournament_type === "double_elimination") {
+        if (
+            tournament.tournament_type === "elimination" ||
+            tournament.tournament_type === "double_elimination"
+        ) {
             if (Object.keys(players).length === 0 || rounds.length === 0) {
                 return;
             }
@@ -695,7 +706,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                     continue;
                 }
                 if (obj.bye_src) {
-                    obj.second_bracket = obj.bye_src.second_bracket || !playerWon(obj.bye_src, obj.player_id);
+                    obj.second_bracket =
+                        obj.bye_src.second_bracket || !playerWon(obj.bye_src, obj.player_id);
                 }
                 if (obj.black_src && obj.white_src) {
                     if (playerWon(obj.black_src, obj.match.black)) {
@@ -842,7 +854,11 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                     const obj = all_objects[i];
                     obj.laid_out = true;
 
-                    if (obj.round === 0 && i + 1 < all_objects.length && all_objects[i + 1].round === 1) {
+                    if (
+                        obj.round === 0 &&
+                        i + 1 < all_objects.length &&
+                        all_objects[i + 1].round === 1
+                    ) {
                         for (let r = 1; r < rounds.length; ++r) {
                             y[r] = base_y + bracket_spacing;
                         }
@@ -865,9 +881,15 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                 //|| obj.round === rounds.length-1
                             ) {
                                 obj.top = (obj.black_src.top + obj.white_src.top) / 2.0;
-                            } else if (obj.black_src && obj.black_src.second_bracket === obj.second_bracket) {
+                            } else if (
+                                obj.black_src &&
+                                obj.black_src.second_bracket === obj.second_bracket
+                            ) {
                                 obj.top = obj.black_src.top;
-                            } else if (obj.white_src && obj.white_src.second_bracket === obj.second_bracket) {
+                            } else if (
+                                obj.white_src &&
+                                obj.white_src.second_bracket === obj.second_bracket
+                            ) {
                                 obj.top = obj.white_src.top;
                             } else {
                                 obj.top = y[obj.round];
@@ -946,34 +968,48 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             const drawLines = (obj) => {
                 if (obj.black_src) {
                     drawLines(obj.black_src);
-                    if (!obj.second_bracket || obj.second_bracket === obj.black_src.second_bracket) {
+                    if (
+                        !obj.second_bracket ||
+                        obj.second_bracket === obj.black_src.second_bracket
+                    ) {
                         drawLine([
                             { x: obj.black_src.left, y: getWinnerBottom(obj.black_src) },
                             { x: obj.black_src.right, y: getWinnerBottom(obj.black_src) },
                             {
                                 x: obj.left - left_padding,
-                                y: Math.round(obj.black_won ? (obj.top + obj.bottom) / 2.0 : obj.top + em_6),
+                                y: Math.round(
+                                    obj.black_won ? (obj.top + obj.bottom) / 2.0 : obj.top + em_6,
+                                ),
                             },
                             {
                                 x: obj.left,
-                                y: Math.round(obj.black_won ? (obj.top + obj.bottom) / 2.0 : obj.top + em_6),
+                                y: Math.round(
+                                    obj.black_won ? (obj.top + obj.bottom) / 2.0 : obj.top + em_6,
+                                ),
                             },
                         ]);
                     }
                 }
                 if (obj.white_src) {
                     drawLines(obj.white_src);
-                    if (!obj.second_bracket || obj.second_bracket === obj.white_src.second_bracket) {
+                    if (
+                        !obj.second_bracket ||
+                        obj.second_bracket === obj.white_src.second_bracket
+                    ) {
                         drawLine([
                             { x: obj.white_src.left, y: getWinnerBottom(obj.white_src) },
                             { x: obj.white_src.right, y: getWinnerBottom(obj.white_src) },
                             {
                                 x: obj.left - left_padding,
-                                y: Math.round(obj.black_won ? obj.bottom - em_4 : obj.bottom + bottom_padding),
+                                y: Math.round(
+                                    obj.black_won ? obj.bottom - em_4 : obj.bottom + bottom_padding,
+                                ),
                             },
                             {
                                 x: obj.left,
-                                y: Math.round(obj.black_won ? obj.bottom - em_4 : obj.bottom + bottom_padding),
+                                y: Math.round(
+                                    obj.black_won ? obj.bottom - em_4 : obj.bottom + bottom_padding,
+                                ),
                             },
                         ]);
                     }
@@ -1183,7 +1219,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
         const max_players = parseInt(tournament.settings.maximum_players);
         if (max_players > 10 && tournament.tournament_type === "roundrobin") {
             this.refs.max_players.focus();
-            swal(_("Round Robin tournaments are limited to a maximum of 10 players")).catch(swal.noop);
+            swal(_("Round Robin tournaments are limited to a maximum of 10 players")).catch(
+                swal.noop,
+            );
             return;
         }
         if (max_players < 2) {
@@ -1193,7 +1231,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
         }
 
         tournament.time_start = moment(new Date(tournament.time_start)).utc().format();
-        tournament.group = this.state.new_tournament_group_id || (this.state.group && this.state.group.id);
+        tournament.group =
+            this.state.new_tournament_group_id || (this.state.group && this.state.group.id);
         if (!tournament.group) {
             delete tournament.group;
         }
@@ -1220,10 +1259,14 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
         this.setState({ editing: false });
     };
     setTournamentName = (ev) =>
-        this.setState({ tournament: Object.assign({}, this.state.tournament, { name: ev.target.value }) });
+        this.setState({
+            tournament: Object.assign({}, this.state.tournament, { name: ev.target.value }),
+        });
     setStartTime = (t) => {
         if (t && t.format) {
-            this.setState({ tournament: Object.assign({}, this.state.tournament, { time_start: t.format() }) });
+            this.setState({
+                tournament: Object.assign({}, this.state.tournament, { time_start: t.format() }),
+            });
         }
     };
     /*
@@ -1263,28 +1306,49 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
         this.setState({ tournament: Object.assign({}, this.state.tournament, update) });
     };
     setLowerBar = (ev) => {
-        const newSettings = Object.assign({}, this.state.tournament.settings, { lower_bar: ev.target.value });
-        this.setState({ tournament: Object.assign({}, this.state.tournament, { settings: newSettings }) });
+        const newSettings = Object.assign({}, this.state.tournament.settings, {
+            lower_bar: ev.target.value,
+        });
+        this.setState({
+            tournament: Object.assign({}, this.state.tournament, { settings: newSettings }),
+        });
     };
     setUpperBar = (ev) => {
-        const newSettings = Object.assign({}, this.state.tournament.settings, { upper_bar: ev.target.value });
-        this.setState({ tournament: Object.assign({}, this.state.tournament, { settings: newSettings }) });
+        const newSettings = Object.assign({}, this.state.tournament.settings, {
+            upper_bar: ev.target.value,
+        });
+        this.setState({
+            tournament: Object.assign({}, this.state.tournament, { settings: newSettings }),
+        });
     };
     setPlayersStart = (ev) =>
-        this.setState({ tournament: Object.assign({}, this.state.tournament, { players_start: ev.target.value }) });
+        this.setState({
+            tournament: Object.assign({}, this.state.tournament, {
+                players_start: ev.target.value,
+            }),
+        });
     setMaximumPlayers = (ev) => {
-        const newSettings = Object.assign({}, this.state.tournament.settings, { maximum_players: ev.target.value });
-        this.setState({ tournament: Object.assign({}, this.state.tournament, { settings: newSettings }) });
+        const newSettings = Object.assign({}, this.state.tournament.settings, {
+            maximum_players: ev.target.value,
+        });
+        this.setState({
+            tournament: Object.assign({}, this.state.tournament, { settings: newSettings }),
+        });
     };
     setAutoStartOnMax = (ev) =>
         this.setState({
-            tournament: Object.assign({}, this.state.tournament, { auto_start_on_max: ev.target.checked }),
+            tournament: Object.assign({}, this.state.tournament, {
+                auto_start_on_max: ev.target.checked,
+            }),
         });
     setFirstPairingMethod = (ev) => {
         const update: any = {
             first_pairing_method: ev.target.value,
         };
-        if (ev.target.value === "opengotha" || this.state.tournament.subsequent_pairing_method === "opengotha") {
+        if (
+            ev.target.value === "opengotha" ||
+            this.state.tournament.subsequent_pairing_method === "opengotha"
+        ) {
             update.subsequent_pairing_method = ev.target.value;
         }
         this.setState({ tournament: Object.assign({}, this.state.tournament, update) });
@@ -1294,50 +1358,83 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
         const update: any = {
             subsequent_pairing_method: ev.target.value,
         };
-        if (ev.target.value === "opengotha" || this.state.tournament.first_pairing_method === "opengotha") {
+        if (
+            ev.target.value === "opengotha" ||
+            this.state.tournament.first_pairing_method === "opengotha"
+        ) {
             update.first_pairing_method = ev.target.value;
         }
         this.setState({ tournament: Object.assign({}, this.state.tournament, update) });
     };
     setTournamentExclusivity = (ev) =>
-        this.setState({ tournament: Object.assign({}, this.state.tournament, { exclusivity: ev.target.value }) });
+        this.setState({
+            tournament: Object.assign({}, this.state.tournament, { exclusivity: ev.target.value }),
+        });
 
     setNumberOfRounds = (ev) => {
-        const newSettings = Object.assign({}, this.state.tournament.settings, { num_rounds: ev.target.value });
-        this.setState({ tournament: Object.assign({}, this.state.tournament, { settings: newSettings }) });
+        const newSettings = Object.assign({}, this.state.tournament.settings, {
+            num_rounds: ev.target.value,
+        });
+        this.setState({
+            tournament: Object.assign({}, this.state.tournament, { settings: newSettings }),
+        });
     };
     setGroupSize = (ev) => {
-        const newSettings = Object.assign({}, this.state.tournament.settings, { group_size: ev.target.value });
-        this.setState({ tournament: Object.assign({}, this.state.tournament, { settings: newSettings }) });
+        const newSettings = Object.assign({}, this.state.tournament.settings, {
+            group_size: ev.target.value,
+        });
+        this.setState({
+            tournament: Object.assign({}, this.state.tournament, { settings: newSettings }),
+        });
     };
     setRules = (ev) =>
-        this.setState({ tournament: Object.assign({}, this.state.tournament, { rules: ev.target.value }) });
+        this.setState({
+            tournament: Object.assign({}, this.state.tournament, { rules: ev.target.value }),
+        });
     setHandicap = (ev) =>
-        this.setState({ tournament: Object.assign({}, this.state.tournament, { handicap: ev.target.value }) });
+        this.setState({
+            tournament: Object.assign({}, this.state.tournament, { handicap: ev.target.value }),
+        });
     setBoardSize = (ev) =>
-        this.setState({ tournament: Object.assign({}, this.state.tournament, { board_size: ev.target.value }) });
+        this.setState({
+            tournament: Object.assign({}, this.state.tournament, { board_size: ev.target.value }),
+        });
     setAnalysisEnabled = (ev) =>
         this.setState({
-            tournament: Object.assign({}, this.state.tournament, { analysis_enabled: ev.target.checked }),
+            tournament: Object.assign({}, this.state.tournament, {
+                analysis_enabled: ev.target.checked,
+            }),
         });
     setMinRank = (ev) =>
-        this.setState({ tournament: Object.assign({}, this.state.tournament, { min_ranking: ev.target.value }) });
+        this.setState({
+            tournament: Object.assign({}, this.state.tournament, { min_ranking: ev.target.value }),
+        });
     setMaxRank = (ev) =>
-        this.setState({ tournament: Object.assign({}, this.state.tournament, { max_ranking: ev.target.value }) });
+        this.setState({
+            tournament: Object.assign({}, this.state.tournament, { max_ranking: ev.target.value }),
+        });
     setExcludeProvisionalPlayers = (ev) =>
         this.setState({
-            tournament: Object.assign({}, this.state.tournament, { exclude_provisional: !ev.target.checked }),
+            tournament: Object.assign({}, this.state.tournament, {
+                exclude_provisional: !ev.target.checked,
+            }),
         });
     //setScheduledRounds = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {scheduled_rounds: ev.target.checked})});
     setDescription = (ev) =>
-        this.setState({ tournament: Object.assign({}, this.state.tournament, { description: ev.target.value }) });
+        this.setState({
+            tournament: Object.assign({}, this.state.tournament, { description: ev.target.value }),
+        });
     setTimeControl = (tc) => {
         console.log(tc);
-        this.setState({ tournament: Object.assign({}, this.state.tournament, { time_control_parameters: tc }) });
+        this.setState({
+            tournament: Object.assign({}, this.state.tournament, { time_control_parameters: tc }),
+        });
     };
     updateNotes = (data) => {
         const newSettings = Object.assign({}, this.state.tournament.settings, data);
-        this.setState({ tournament: Object.assign({}, this.state.tournament, { settings: newSettings }) });
+        this.setState({
+            tournament: Object.assign({}, this.state.tournament, { settings: newSettings }),
+        });
     };
 
     render() {
@@ -1370,7 +1467,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                     );
                 } else {
                     tournament_time_start_text = interpolate(
-                        _("Start time: {{time}}") /* translators: Tournament starts at the designated time */,
+                        _(
+                            "Start time: {{time}}",
+                        ) /* translators: Tournament starts at the designated time */,
                         { time: tournament_time_start_text },
                     );
                 }
@@ -1396,16 +1495,24 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
 
             const time_control_text = timeControlDescription(tournament.time_control_parameters);
 
-            const tournament_type_name = TOURNAMENT_TYPE_NAMES[tournament.tournament_type] || "(Unknown)";
+            const tournament_type_name =
+                TOURNAMENT_TYPE_NAMES[tournament.tournament_type] || "(Unknown)";
             const tournament_rules_name = rulesText(tournament.rules);
             const first_pairing_method_text =
                 TOURNAMENT_PAIRING_METHODS[tournament.first_pairing_method] || "(Unknown)";
             const subsequent_pairing_method_text =
                 TOURNAMENT_PAIRING_METHODS[tournament.subsequent_pairing_method] || "(Unknown)";
             const handicap_text = handicapText(tournament.handicap);
-            const rank_restriction_text = rankRestrictionText(tournament.min_ranking, tournament.max_ranking);
-            const provisional_players_text = tournament.exclude_provisional ? _("Not allowed") : _("Allowed");
-            const analysis_mode_text = tournament.analysis_enabled ? _("Allowed") : _("Not allowed");
+            const rank_restriction_text = rankRestrictionText(
+                tournament.min_ranking,
+                tournament.max_ranking,
+            );
+            const provisional_players_text = tournament.exclude_provisional
+                ? _("Not allowed")
+                : _("Allowed");
+            const analysis_mode_text = tournament.analysis_enabled
+                ? _("Allowed")
+                : _("Not allowed");
             const cdn_release = data.get("config.cdn_release");
             //let scheduled_rounds_text = tournament.scheduled_rounds ? pgettext("In a tournament, rounds will be scheduled to start at specific times", "Rounds are scheduled") : pgettext("In a tournament, the next round will start when the last finishes", "Rounds will automatically start when the last round finishes");
 
@@ -1458,7 +1565,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             if (user.anonymous) {
                 can_join = false;
                 cant_join_reason = _("You must sign in to join this tournament.");
-            } else if (tournament.exclusivity === "group" && !tournament.player_is_member_of_group) {
+            } else if (
+                tournament.exclusivity === "group" &&
+                !tournament.player_is_member_of_group
+            ) {
                 can_join = false;
                 cant_join_reason = _("You must be a member of the group to join this tournament");
             } else if (!tournament.is_open || tournament.exclusivity === "invite") {
@@ -1480,7 +1590,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             const time_per_move = computeAverageMoveTime(tournament.time_control_parameters);
 
             let use_elimination_trees = false;
-            if (tournament.tournament_type === "elimination" || tournament.tournament_type === "double_elimination") {
+            if (
+                tournament.tournament_type === "elimination" ||
+                tournament.tournament_type === "double_elimination"
+            ) {
                 use_elimination_trees = true;
                 setTimeout(() => this.updateEliminationTrees(), 1);
             }
@@ -1532,8 +1645,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
 
                             {editing && tournament.tournament_type === "opengotha" && (
                                 <h3>
-                                    Please note, the OpenGotha tournament is a manually managed tournament. Please read
-                                    the{" "}
+                                    Please note, the OpenGotha tournament is a manually managed
+                                    tournament. Please read the{" "}
                                     <a
                                         href="https://github.com/online-go/online-go.com/wiki/OpenGotha-Tournaments"
                                         target="_blank"
@@ -1541,7 +1654,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                         documentation
                                     </a>{" "}
                                     before creating this type of tournament.{" "}
-                                    <i>This is a new tournament type, please report any issues experience.</i>
+                                    <i>
+                                        This is a new tournament type, please report any issues
+                                        experience.
+                                    </i>
                                 </h3>
                             )}
 
@@ -1573,20 +1689,34 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                         </button>
                                     )}
 
-                                    {((tournament.started == null && tournament.can_administer) || null) && (
-                                        <button className="danger xs" onClick={this.startTournament}>
+                                    {((tournament.started == null && tournament.can_administer) ||
+                                        null) && (
+                                        <button
+                                            className="danger xs"
+                                            onClick={this.startTournament}
+                                        >
                                             {tournament.tournament_type === "opengotha"
-                                                ? pgettext("Close tournament registration", "Close registration")
+                                                ? pgettext(
+                                                      "Close tournament registration",
+                                                      "Close registration",
+                                                  )
                                                 : _("Start Tournament Now")}
                                         </button>
                                     )}
-                                    {((tournament.started == null && tournament.can_administer) || null) && (
-                                        <button className="reject xs" onClick={this.deleteTournament}>
+                                    {((tournament.started == null && tournament.can_administer) ||
+                                        null) && (
+                                        <button
+                                            className="reject xs"
+                                            onClick={this.deleteTournament}
+                                        >
                                             {_("End Tournament")}
                                         </button>
                                     )}
 
-                                    {((tournament.started && !tournament.ended && this.state.is_joined) || null) && (
+                                    {((tournament.started &&
+                                        !tournament.ended &&
+                                        this.state.is_joined) ||
+                                        null) && (
                                         <button className="reject xs" onClick={this.resign}>
                                             {_("Resign from Tournament")}
                                         </button>
@@ -1594,12 +1724,21 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                 </div>
                             )}
 
-                            {!loading && (!tournament.started || null) && <h4>{tournament_time_start_text}</h4>}
+                            {!loading && (!tournament.started || null) && (
+                                <h4>{tournament_time_start_text}</h4>
+                            )}
                             {!editing && !loading && <h4>{date_text}</h4>}
                             {editing && (
                                 <div className="form-group" style={{ marginTop: "1rem" }}>
                                     <label className="control-label" htmlFor="start-time">
-                                        <span>{_("Start time") /* translators: When the tournament starts */}: </span>
+                                        <span>
+                                            {
+                                                _(
+                                                    "Start time",
+                                                ) /* translators: When the tournament starts */
+                                            }
+                                            :{" "}
+                                        </span>
                                     </label>
                                     <div className="controls">
                                         <div className="checkbox">
@@ -1669,12 +1808,20 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                     value={tournament.exclusivity}
                                                     onChange={this.setTournamentExclusivity}
                                                 >
-                                                    <option value="open">{pgettext("Open tournament", "Open")}</option>
+                                                    <option value="open">
+                                                        {pgettext("Open tournament", "Open")}
+                                                    </option>
                                                     <option value="group">
-                                                        {pgettext("Group tournament", "Members only")}
+                                                        {pgettext(
+                                                            "Group tournament",
+                                                            "Members only",
+                                                        )}
                                                     </option>
                                                     <option value="invite">
-                                                        {pgettext("Group tournament", "Invite only")}
+                                                        {pgettext(
+                                                            "Group tournament",
+                                                            "Invite only",
+                                                        )}
                                                     </option>
                                                 </select>
                                             )}
@@ -1694,10 +1841,16 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                     disabled={this.state.tournament.id > 0}
                                                 >
                                                     <option value="mcmahon">{_("McMahon")}</option>
-                                                    <option value="s_mcmahon">{_("Simultaneous McMahon")}</option>
-                                                    <option value="roundrobin">{_("Round Robin")}</option>
+                                                    <option value="s_mcmahon">
+                                                        {_("Simultaneous McMahon")}
+                                                    </option>
+                                                    <option value="roundrobin">
+                                                        {_("Round Robin")}
+                                                    </option>
                                                     <option value="swiss">{_("Swiss")}</option>
-                                                    <option value="elimination">{_("Single Elimination")}</option>
+                                                    <option value="elimination">
+                                                        {_("Single Elimination")}
+                                                    </option>
                                                     <option value="double_elimination">
                                                         {_("Double Elimination")}
                                                     </option>
@@ -1770,7 +1923,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                         <input
                                                             ref="max_players"
                                                             type="number"
-                                                            value={tournament.settings.maximum_players}
+                                                            value={
+                                                                tournament.settings.maximum_players
+                                                            }
                                                             onChange={this.setMaximumPlayers}
                                                         />
                                                     </span>
@@ -1781,7 +1936,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                             ? "+"
                                                             : tournament.settings.maximum_players >
                                                               tournament.players_start
-                                                            ? "-" + tournament.settings.maximum_players
+                                                            ? "-" +
+                                                              tournament.settings.maximum_players
                                                             : ""}
                                                     </span>
                                                 ) : (
@@ -1792,7 +1948,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                             ? "+"
                                                             : tournament.settings.maximum_players >
                                                               tournament.players_start
-                                                            ? "-" + tournament.settings.maximum_players
+                                                            ? "-" +
+                                                              tournament.settings.maximum_players
                                                             : ""}
                                                         )
                                                     </span>
@@ -1803,11 +1960,17 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                     {tournament.tournament_type !== "opengotha" && (
                                         <tr>
                                             <th>
-                                                <label htmlFor="autostart">{_("Start when full")}</label>
+                                                <label htmlFor="autostart">
+                                                    {_("Start when full")}
+                                                </label>
                                             </th>
                                             <td>
                                                 {!editing ? (
-                                                    <span>{tournament.auto_start_on_max ? _("Yes") : _("No")}</span>
+                                                    <span>
+                                                        {tournament.auto_start_on_max
+                                                            ? _("Yes")
+                                                            : _("No")}
+                                                    </span>
                                                 ) : (
                                                     <input
                                                         type="checkbox"
@@ -1831,19 +1994,46 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                             value={tournament.first_pairing_method}
                                                             onChange={this.setFirstPairingMethod}
                                                         >
-                                                            <option disabled={opengotha} value="random">
-                                                                {pgettext("Tournament type", "Random")}
+                                                            <option
+                                                                disabled={opengotha}
+                                                                value="random"
+                                                            >
+                                                                {pgettext(
+                                                                    "Tournament type",
+                                                                    "Random",
+                                                                )}
                                                             </option>
-                                                            <option disabled={opengotha} value="slaughter">
-                                                                {pgettext("Tournament type", "Slaughter")}
+                                                            <option
+                                                                disabled={opengotha}
+                                                                value="slaughter"
+                                                            >
+                                                                {pgettext(
+                                                                    "Tournament type",
+                                                                    "Slaughter",
+                                                                )}
                                                             </option>
-                                                            <option disabled={opengotha} value="slide">
-                                                                {pgettext("Tournament type", "Slide")}
+                                                            <option
+                                                                disabled={opengotha}
+                                                                value="slide"
+                                                            >
+                                                                {pgettext(
+                                                                    "Tournament type",
+                                                                    "Slide",
+                                                                )}
                                                             </option>
-                                                            <option disabled={opengotha} value="strength">
-                                                                {pgettext("Tournament type", "Strength")}
+                                                            <option
+                                                                disabled={opengotha}
+                                                                value="strength"
+                                                            >
+                                                                {pgettext(
+                                                                    "Tournament type",
+                                                                    "Strength",
+                                                                )}
                                                             </option>
-                                                            <option disabled={!opengotha} value="opengotha">
+                                                            <option
+                                                                disabled={!opengotha}
+                                                                value="opengotha"
+                                                            >
                                                                 {pgettext(
                                                                     "Tournament director will pair opponents with OpenGotha",
                                                                     "OpenGotha",
@@ -1860,25 +2050,58 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                 <th>{_("Subsequent Pairing Method")}</th>
                                                 <td>
                                                     {!editing ? (
-                                                        <span>{subsequent_pairing_method_text}</span>
+                                                        <span>
+                                                            {subsequent_pairing_method_text}
+                                                        </span>
                                                     ) : (
                                                         <select
-                                                            value={tournament.subsequent_pairing_method}
-                                                            onChange={this.setSubsequentPairingMethod}
+                                                            value={
+                                                                tournament.subsequent_pairing_method
+                                                            }
+                                                            onChange={
+                                                                this.setSubsequentPairingMethod
+                                                            }
                                                         >
-                                                            <option disabled={opengotha} value="random">
-                                                                {pgettext("Tournament type", "Random")}
+                                                            <option
+                                                                disabled={opengotha}
+                                                                value="random"
+                                                            >
+                                                                {pgettext(
+                                                                    "Tournament type",
+                                                                    "Random",
+                                                                )}
                                                             </option>
-                                                            <option disabled={opengotha} value="slaughter">
-                                                                {pgettext("Tournament type", "Slaughter")}
+                                                            <option
+                                                                disabled={opengotha}
+                                                                value="slaughter"
+                                                            >
+                                                                {pgettext(
+                                                                    "Tournament type",
+                                                                    "Slaughter",
+                                                                )}
                                                             </option>
-                                                            <option disabled={opengotha} value="slide">
-                                                                {pgettext("Tournament type", "Slide")}
+                                                            <option
+                                                                disabled={opengotha}
+                                                                value="slide"
+                                                            >
+                                                                {pgettext(
+                                                                    "Tournament type",
+                                                                    "Slide",
+                                                                )}
                                                             </option>
-                                                            <option disabled={opengotha} value="strength">
-                                                                {pgettext("Tournament type", "Strength")}
+                                                            <option
+                                                                disabled={opengotha}
+                                                                value="strength"
+                                                            >
+                                                                {pgettext(
+                                                                    "Tournament type",
+                                                                    "Strength",
+                                                                )}
                                                             </option>
-                                                            <option disabled={!opengotha} value="opengotha">
+                                                            <option
+                                                                disabled={!opengotha}
+                                                                value="opengotha"
+                                                            >
                                                                 {pgettext(
                                                                     "Tournament director will pair opponents with OpenGotha",
                                                                     "OpenGotha",
@@ -1901,7 +2124,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                         onChange={this.setNumberOfRounds}
                                                     >
                                                         {(tournament.tournament_type === "opengotha"
-                                                            ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+                                                            ? [
+                                                                  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+                                                                  12,
+                                                              ]
                                                             : [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
                                                         ).map((v) => (
                                                             <option key={v} value={v}>
@@ -1940,9 +2166,14 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                             {!editing ? (
                                                 tournament_rules_name
                                             ) : (
-                                                <select value={tournament.rules} onChange={this.setRules}>
+                                                <select
+                                                    value={tournament.rules}
+                                                    onChange={this.setRules}
+                                                >
                                                     <option value="aga">{_("AGA")}</option>
-                                                    <option value="japanese">{_("Japanese")}</option>
+                                                    <option value="japanese">
+                                                        {_("Japanese")}
+                                                    </option>
                                                     <option value="chinese">{_("Chinese")}</option>
                                                     <option value="korean">{_("Korean")}</option>
                                                     <option value="ing">{_("Ing SST")}</option>
@@ -1957,7 +2188,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                             {!editing ? (
                                                 `${tournament.board_size}x${tournament.board_size}`
                                             ) : (
-                                                <select value={tournament.board_size} onChange={this.setBoardSize}>
+                                                <select
+                                                    value={tournament.board_size}
+                                                    onChange={this.setBoardSize}
+                                                >
                                                     <option value="19">19x19</option>
                                                     <option value="13">13x13</option>
                                                     <option value="9">9x9</option>
@@ -1972,7 +2206,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                 {!editing ? (
                                                     handicap_text
                                                 ) : (
-                                                    <select value={tournament.handicap} onChange={this.setHandicap}>
+                                                    <select
+                                                        value={tournament.handicap}
+                                                        onChange={this.setHandicap}
+                                                    >
                                                         <option value="0">{_("None")}</option>
                                                         <option value="-1">{_("Automatic")}</option>
                                                     </select>
@@ -1982,7 +2219,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                     )}
                                     <tr>
                                         <th>
-                                            <label htmlFor="analysis">{_("Conditional Moves & Analysis")}</label>
+                                            <label htmlFor="analysis">
+                                                {_("Conditional Moves & Analysis")}
+                                            </label>
                                         </th>
                                         <td>
                                             {!editing ? (
@@ -2034,7 +2273,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                     </tr>
                                     <tr>
                                         <th>
-                                            <label htmlFor="provisional">{_("Provisional Players")}</label>
+                                            <label htmlFor="provisional">
+                                                {_("Provisional Players")}
+                                            </label>
                                         </th>
                                         <td>
                                             {!editing ? (
@@ -2097,7 +2338,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                     {editing && (
                         <div style={{ textAlign: "center", marginTop: "3rem" }}>
                             <button className="primary" onClick={this.save}>
-                                {tournament.id === 0 ? _("Create Tournament") : _("Save Tournament")}
+                                {tournament.id === 0
+                                    ? _("Create Tournament")
+                                    : _("Save Tournament")}
                             </button>
                         </div>
                     )}
@@ -2130,22 +2373,33 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
 
                     {!loading && !tournament.started && (
                         <div className={"bottom-details not-started"}>
-                            <EmbeddedChatCard channel={`tournament-${this.state.tournament_id}`} updateTitle={false} />
+                            <EmbeddedChatCard
+                                channel={`tournament-${this.state.tournament_id}`}
+                                updateTitle={false}
+                            />
 
                             {(!tournament.start_waiting || null) && (
                                 <div className="signup-area" style={{ textAlign: "center" }}>
                                     {(tournament.time_start || null) && (
                                         <h3>
-                                            {interpolate(_("Tournament starts {{relative_time_from_now}}"), {
-                                                relative_time_from_now: fromNow(tournament.time_start),
-                                            })}
+                                            {interpolate(
+                                                _("Tournament starts {{relative_time_from_now}}"),
+                                                {
+                                                    relative_time_from_now: fromNow(
+                                                        tournament.time_start,
+                                                    ),
+                                                },
+                                            )}
                                         </h3>
                                     )}
 
                                     {this.state.is_joined != null && (
                                         <p style={{ marginTop: "6em" }}>
                                             {((!this.state.is_joined && can_join) || null) && (
-                                                <button className="btn raise btn-primary" onClick={this.joinTournament}>
+                                                <button
+                                                    className="btn raise btn-primary"
+                                                    onClick={this.joinTournament}
+                                                >
                                                     {_("Join this tournament!")}
                                                 </button>
                                             )}
@@ -2153,7 +2407,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                 <div>{cant_join_reason}</div>
                                             )}
                                             {(this.state.is_joined || null) && (
-                                                <button className="btn raise btn-danger" onClick={this.partTournament}>
+                                                <button
+                                                    className="btn raise btn-danger"
+                                                    onClick={this.partTournament}
+                                                >
                                                     {_("Drop out from tournament")}
                                                 </button>
                                             )}
@@ -2182,7 +2439,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                     tournament.director.id === data.get("user").id ||
                                     null) && (
                                     <div className="invite-input">
-                                        <div className="input-group" id="tournament-invite-user-container">
+                                        <div
+                                            className="input-group"
+                                            id="tournament-invite-user-container"
+                                        >
                                             <PlayerAutocomplete onComplete={this.setUserToInvite} />
                                             <button
                                                 className="btn primary xs"
@@ -2212,7 +2472,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
 
                     {!loading && tournament.started && tournament.tournament_type === "opengotha" && (
                         <div className="bottom-details">
-                            <EmbeddedChatCard channel={`tournament-${this.state.tournament_id}`} updateTitle={false} />
+                            <EmbeddedChatCard
+                                channel={`tournament-${this.state.tournament_id}`}
+                                updateTitle={false}
+                            />
 
                             <div className="results">
                                 <div>
@@ -2220,20 +2483,31 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                         {tournament.opengotha_standings ? (
                                             <button
                                                 className={
-                                                    this.state.selected_round === "standings" ? "primary" : "default"
+                                                    this.state.selected_round === "standings"
+                                                        ? "primary"
+                                                        : "default"
                                                 }
-                                                onClick={() => this.setState({ selected_round: "standings" })}
+                                                onClick={() =>
+                                                    this.setState({ selected_round: "standings" })
+                                                }
                                             >
                                                 {pgettext("Tournament standings", "Standings")}
                                             </button>
                                         ) : (
                                             <button
                                                 className={
-                                                    this.state.selected_round === "roster" ? "primary" : "default"
+                                                    this.state.selected_round === "roster"
+                                                        ? "primary"
+                                                        : "default"
                                                 }
-                                                onClick={() => this.setState({ selected_round: "roster" })}
+                                                onClick={() =>
+                                                    this.setState({ selected_round: "roster" })
+                                                }
                                             >
-                                                {pgettext("Tournament participant roster", "Roster")}
+                                                {pgettext(
+                                                    "Tournament participant roster",
+                                                    "Roster",
+                                                )}
                                             </button>
                                         )}
                                         <Steps
@@ -2244,7 +2518,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                         />
                                     </div>
                                     {this.state.selected_round === "roster" ? (
-                                        <OpenGothaRoster tournament={tournament} players={this.state.sorted_players} />
+                                        <OpenGothaRoster
+                                            tournament={tournament}
+                                            players={this.state.sorted_players}
+                                        />
                                     ) : this.state.selected_round === "standings" ? (
                                         <OpenGothaStandings tournament={tournament} />
                                     ) : (
@@ -2252,10 +2529,13 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                             tournament={tournament}
                                             roundNotes={
                                                 tournament.settings[
-                                                    "notes-round-" + ((this.state.selected_round as number) + 1)
+                                                    "notes-round-" +
+                                                        ((this.state.selected_round as number) + 1)
                                                 ] || ""
                                             }
-                                            selectedRound={(this.state.selected_round as number) + 1}
+                                            selectedRound={
+                                                (this.state.selected_round as number) + 1
+                                            }
                                             players={this.state.sorted_players}
                                             rounds={this.state.rounds}
                                         />
@@ -2267,11 +2547,16 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
 
                     {!loading && tournament.started && tournament.tournament_type !== "opengotha" && (
                         <div className="bottom-details">
-                            <EmbeddedChatCard channel={`tournament-${this.state.tournament_id}`} updateTitle={false} />
+                            <EmbeddedChatCard
+                                channel={`tournament-${this.state.tournament_id}`}
+                                updateTitle={false}
+                            />
 
                             <div className="results">
                                 {this.state.use_elimination_trees ? (
-                                    <PersistentElement elt={this.elimination_tree_container[0] as HTMLDivElement} />
+                                    <PersistentElement
+                                        elt={this.elimination_tree_container[0] as HTMLDivElement}
+                                    />
                                 ) : (
                                     <div>
                                         {this.state.rounds.length > 1 && (
@@ -2283,13 +2568,15 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                             />
                                         )}
 
-                                        {!selected_round && tournament.group && tournament.group.hide_details && (
-                                            <div className="hide-details-note">
-                                                {_(
-                                                    "This tournament is part of a group that hides group activity and details, as such you must be a member of the group to see the tournament results.",
-                                                )}
-                                            </div>
-                                        )}
+                                        {!selected_round &&
+                                            tournament.group &&
+                                            tournament.group.hide_details && (
+                                                <div className="hide-details-note">
+                                                    {_(
+                                                        "This tournament is part of a group that hides group activity and details, as such you must be a member of the group to see the tournament results.",
+                                                    )}
+                                                </div>
+                                            )}
 
                                         {/* Round robin / simul style groups */}
                                         {((selected_round && selected_round.groupify) || null) && (
@@ -2305,106 +2592,155 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                             <table>
                                                                 <tbody>
                                                                     <tr>
-                                                                        {(tournament.ended || null) && (
-                                                                            <th className="rank">{_("Rank")}</th>
+                                                                        {(tournament.ended ||
+                                                                            null) && (
+                                                                            <th className="rank">
+                                                                                {_("Rank")}
+                                                                            </th>
                                                                         )}
                                                                         <th>{_("Player")}</th>
-                                                                        {sorted_players.map((opponent, idx) => (
-                                                                            <th key={idx} className="rotated-title">
-                                                                                {(opponent.player || null) && (
-                                                                                    <span className="rotated">
-                                                                                        <Player
-                                                                                            user={opponent.player}
-                                                                                            icon
-                                                                                        ></Player>
-                                                                                    </span>
-                                                                                )}
-                                                                            </th>
-                                                                        ))}
+                                                                        {sorted_players.map(
+                                                                            (opponent, idx) => (
+                                                                                <th
+                                                                                    key={idx}
+                                                                                    className="rotated-title"
+                                                                                >
+                                                                                    {(opponent.player ||
+                                                                                        null) && (
+                                                                                        <span className="rotated">
+                                                                                            <Player
+                                                                                                user={
+                                                                                                    opponent.player
+                                                                                                }
+                                                                                                icon
+                                                                                            ></Player>
+                                                                                        </span>
+                                                                                    )}
+                                                                                </th>
+                                                                            ),
+                                                                        )}
                                                                         <th className="rotated-title">
                                                                             <span className="rotated">
                                                                                 {_("Points")}
                                                                             </span>
                                                                         </th>
-                                                                        {(tournament.ended || null) && (
+                                                                        {(tournament.ended ||
+                                                                            null) && (
                                                                             <th className="rotated-title">
                                                                                 <span className="rotated">
-                                                                                    &Sigma; {_("Opponent Scores")}
+                                                                                    &Sigma;{" "}
+                                                                                    {_(
+                                                                                        "Opponent Scores",
+                                                                                    )}
                                                                                 </span>
                                                                             </th>
                                                                         )}
-                                                                        {(tournament.ended || null) && (
+                                                                        {(tournament.ended ||
+                                                                            null) && (
                                                                             <th className="rotated-title">
                                                                                 <span className="rotated">
-                                                                                    &Sigma; {_("Defeated Scores")}
+                                                                                    &Sigma;{" "}
+                                                                                    {_(
+                                                                                        "Defeated Scores",
+                                                                                    )}
                                                                                 </span>
                                                                             </th>
                                                                         )}
                                                                         <th></th>
                                                                     </tr>
-                                                                    {sorted_players.map((player, idx) => {
-                                                                        player = player.player;
-                                                                        return (
-                                                                            <tr key={idx}>
-                                                                                {(tournament.ended || null) && (
-                                                                                    <td className="rank">
-                                                                                        {player.rank}
-                                                                                    </td>
-                                                                                )}
-
-                                                                                <th className="player">
-                                                                                    <Player user={player} icon />
-                                                                                </th>
-                                                                                {sorted_players.map((opponent, idx) => (
-                                                                                    <td
-                                                                                        key={idx}
-                                                                                        className={
-                                                                                            "result " +
-                                                                                            selected_round.colors[
-                                                                                                player.id +
-                                                                                                    "x" +
-                                                                                                    opponent.id
-                                                                                            ]
-                                                                                        }
-                                                                                    >
-                                                                                        <Link
-                                                                                            to={`/game/${
-                                                                                                selected_round.game_ids[
-                                                                                                    player.id +
-                                                                                                        "x" +
-                                                                                                        opponent.id
-                                                                                                ]
-                                                                                            }`}
-                                                                                        >
+                                                                    {sorted_players.map(
+                                                                        (player, idx) => {
+                                                                            player = player.player;
+                                                                            return (
+                                                                                <tr key={idx}>
+                                                                                    {(tournament.ended ||
+                                                                                        null) && (
+                                                                                        <td className="rank">
                                                                                             {
-                                                                                                selected_round.results[
-                                                                                                    player.id +
-                                                                                                        "x" +
-                                                                                                        opponent.id
-                                                                                                ]
+                                                                                                player.rank
                                                                                             }
-                                                                                        </Link>
-                                                                                    </td>
-                                                                                ))}
-                                                                                <td className="points">
-                                                                                    {player.points}
-                                                                                </td>
-                                                                                {(tournament.ended || null) && (
+                                                                                        </td>
+                                                                                    )}
+
+                                                                                    <th className="player">
+                                                                                        <Player
+                                                                                            user={
+                                                                                                player
+                                                                                            }
+                                                                                            icon
+                                                                                        />
+                                                                                    </th>
+                                                                                    {sorted_players.map(
+                                                                                        (
+                                                                                            opponent,
+                                                                                            idx,
+                                                                                        ) => (
+                                                                                            <td
+                                                                                                key={
+                                                                                                    idx
+                                                                                                }
+                                                                                                className={
+                                                                                                    "result " +
+                                                                                                    selected_round
+                                                                                                        .colors[
+                                                                                                        player.id +
+                                                                                                            "x" +
+                                                                                                            opponent.id
+                                                                                                    ]
+                                                                                                }
+                                                                                            >
+                                                                                                <Link
+                                                                                                    to={`/game/${
+                                                                                                        selected_round
+                                                                                                            .game_ids[
+                                                                                                            player.id +
+                                                                                                                "x" +
+                                                                                                                opponent.id
+                                                                                                        ]
+                                                                                                    }`}
+                                                                                                >
+                                                                                                    {
+                                                                                                        selected_round
+                                                                                                            .results[
+                                                                                                            player.id +
+                                                                                                                "x" +
+                                                                                                                opponent.id
+                                                                                                        ]
+                                                                                                    }
+                                                                                                </Link>
+                                                                                            </td>
+                                                                                        ),
+                                                                                    )}
                                                                                     <td className="points">
-                                                                                        {player.sos}
+                                                                                        {
+                                                                                            player.points
+                                                                                        }
                                                                                     </td>
-                                                                                )}
-                                                                                {(tournament.ended || null) && (
-                                                                                    <td className="points">
-                                                                                        {player.sodos}
+                                                                                    {(tournament.ended ||
+                                                                                        null) && (
+                                                                                        <td className="points">
+                                                                                            {
+                                                                                                player.sos
+                                                                                            }
+                                                                                        </td>
+                                                                                    )}
+                                                                                    {(tournament.ended ||
+                                                                                        null) && (
+                                                                                        <td className="points">
+                                                                                            {
+                                                                                                player.sodos
+                                                                                            }
+                                                                                        </td>
+                                                                                    )}
+                                                                                    <td className="notes">
+                                                                                        {
+                                                                                            player.notes
+                                                                                        }
                                                                                     </td>
-                                                                                )}
-                                                                                <td className="notes">
-                                                                                    {player.notes}
-                                                                                </td>
-                                                                            </tr>
-                                                                        );
-                                                                    })}
+                                                                                </tr>
+                                                                            );
+                                                                        },
+                                                                    )}
                                                                 </tbody>
                                                             </table>
                                                         </div>
@@ -2422,7 +2758,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                 <table>
                                                     <tbody>
                                                         <tr>
-                                                            {(tournament.ended || null) && <th>{_("Rank")}</th>}
+                                                            {(tournament.ended || null) && (
+                                                                <th>{_("Rank")}</th>
+                                                            )}
                                                             <th>{_("Player")}</th>
                                                             <th>{_("Opponent")}</th>
                                                             <th>{_("Result")}</th>
@@ -2430,14 +2768,16 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                             {(tournament.ended || null) && (
                                                                 <th className="rotated-title">
                                                                     <span className="rotated">
-                                                                        &Sigma; {_("Opponent Scores")}
+                                                                        &Sigma;{" "}
+                                                                        {_("Opponent Scores")}
                                                                     </span>
                                                                 </th>
                                                             )}
                                                             {(tournament.ended || null) && (
                                                                 <th className="rotated-title">
                                                                     <span className="rotated">
-                                                                        &Sigma; {_("Defeated Scores")}
+                                                                        &Sigma;{" "}
+                                                                        {_("Defeated Scores")}
                                                                     </span>
                                                                 </th>
                                                             )}
@@ -2449,59 +2789,83 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                                     m.opponent &&
                                                                     `${m.player.id}x${m.opponent.id}`) ||
                                                                 "error-invalid-player-or-opponent";
-                                                            if (pxo === "error-invalid-player-or-opponent") {
+                                                            if (
+                                                                pxo ===
+                                                                "error-invalid-player-or-opponent"
+                                                            ) {
                                                                 if (!logspam_debounce) {
-                                                                    logspam_debounce = setTimeout(() => {
-                                                                        console.error(
-                                                                            "invalid player or opponent",
-                                                                            m,
-                                                                            selected_round.matches,
-                                                                            selected_round,
-                                                                        );
-                                                                        logspam_debounce = undefined;
-                                                                    }, 10);
+                                                                    logspam_debounce = setTimeout(
+                                                                        () => {
+                                                                            console.error(
+                                                                                "invalid player or opponent",
+                                                                                m,
+                                                                                selected_round.matches,
+                                                                                selected_round,
+                                                                            );
+                                                                            logspam_debounce =
+                                                                                undefined;
+                                                                        },
+                                                                        10,
+                                                                    );
                                                                 }
                                                             }
 
                                                             return (
                                                                 <tr key={idx}>
                                                                     {(tournament.ended || null) && (
-                                                                        <td className="rank">{m.player?.rank}</td>
+                                                                        <td className="rank">
+                                                                            {m.player?.rank}
+                                                                        </td>
                                                                     )}
                                                                     {(m.player || null) && (
                                                                         <td className="player">
-                                                                            <Player user={m.player} icon />
+                                                                            <Player
+                                                                                user={m.player}
+                                                                                icon
+                                                                            />
                                                                         </td>
                                                                     )}
                                                                     {(m.opponent || null) && (
                                                                         <td className="player">
-                                                                            <Player user={m.opponent} icon />
+                                                                            <Player
+                                                                                user={m.opponent}
+                                                                                icon
+                                                                            />
                                                                         </td>
                                                                     )}
 
                                                                     <td
                                                                         className={
-                                                                            "result " + selected_round.colors[pxo]
+                                                                            "result " +
+                                                                            selected_round.colors[
+                                                                                pxo
+                                                                            ]
                                                                         }
                                                                     >
                                                                         <Link
                                                                             to={`/game/${selected_round.game_ids[pxo]}`}
                                                                         >
-                                                                            {selected_round.results[pxo]}
+                                                                            {
+                                                                                selected_round
+                                                                                    .results[pxo]
+                                                                            }
                                                                         </Link>
                                                                     </td>
 
                                                                     <td className="points">
-                                                                        {m.player && m.player.points}
+                                                                        {m.player &&
+                                                                            m.player.points}
                                                                     </td>
                                                                     {(tournament.ended || null) && (
                                                                         <td className="points">
-                                                                            {m.player && m.player.sos}
+                                                                            {m.player &&
+                                                                                m.player.sos}
                                                                         </td>
                                                                     )}
                                                                     {(tournament.ended || null) && (
                                                                         <td className="points">
-                                                                            {m.player && m.player.sodos}
+                                                                            {m.player &&
+                                                                                m.player.sodos}
                                                                         </td>
                                                                     )}
                                                                     <td className="notes">
@@ -2516,13 +2880,16 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                         )}
 
                                         {/* Case for busted tournaments that have random matches that they shouldn't have but do */}
-                                        {((selected_round && selected_round.broken_list.length) || null) && (
+                                        {((selected_round && selected_round.broken_list.length) ||
+                                            null) && (
                                             <div className="round-group">
                                                 <h2>{_("Other Matches")}</h2>
                                                 <table>
                                                     <tbody>
                                                         <tr>
-                                                            {(tournament.ended || null) && <th>{_("Rank")}</th>}
+                                                            {(tournament.ended || null) && (
+                                                                <th>{_("Rank")}</th>
+                                                            )}
                                                             <th>{_("Player")}</th>
                                                             <th>{_("Opponent")}</th>
                                                             <th>{_("Result")}</th>
@@ -2530,96 +2897,144 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                             {(tournament.ended || null) && (
                                                                 <th className="rotated-title">
                                                                     <span className="rotated">
-                                                                        &Sigma; {_("Opponent Scores")}
+                                                                        &Sigma;{" "}
+                                                                        {_("Opponent Scores")}
                                                                     </span>
                                                                 </th>
                                                             )}
                                                             {(tournament.ended || null) && (
                                                                 <th className="rotated-title">
                                                                     <span className="rotated">
-                                                                        &Sigma; {_("Defeated Scores")}
+                                                                        &Sigma;{" "}
+                                                                        {_("Defeated Scores")}
                                                                     </span>
                                                                 </th>
                                                             )}
                                                             <th></th>
                                                         </tr>
-                                                        {selected_round.broken_list.map((m, idx) => {
-                                                            return (
-                                                                <tr key={idx}>
-                                                                    {(tournament.ended || null) && (
-                                                                        <td className="rank">{m.player.rank}</td>
-                                                                    )}
-                                                                    {(m.player || null) && (
-                                                                        <td className="player">
-                                                                            <Player user={m.player} icon />
-                                                                        </td>
-                                                                    )}
-                                                                    {(m.opponent || null) && (
-                                                                        <td className="player">
-                                                                            <Player user={m.opponent} icon />
-                                                                        </td>
-                                                                    )}
+                                                        {selected_round.broken_list.map(
+                                                            (m, idx) => {
+                                                                return (
+                                                                    <tr key={idx}>
+                                                                        {(tournament.ended ||
+                                                                            null) && (
+                                                                            <td className="rank">
+                                                                                {m.player.rank}
+                                                                            </td>
+                                                                        )}
+                                                                        {(m.player || null) && (
+                                                                            <td className="player">
+                                                                                <Player
+                                                                                    user={m.player}
+                                                                                    icon
+                                                                                />
+                                                                            </td>
+                                                                        )}
+                                                                        {(m.opponent || null) && (
+                                                                            <td className="player">
+                                                                                <Player
+                                                                                    user={
+                                                                                        m.opponent
+                                                                                    }
+                                                                                    icon
+                                                                                />
+                                                                            </td>
+                                                                        )}
 
-                                                                    <td
-                                                                        className={
-                                                                            "result " +
-                                                                            selected_round.colors[
-                                                                                m.player.id + "x" + m.opponent.id
-                                                                            ]
-                                                                        }
-                                                                    >
-                                                                        <Link
-                                                                            to={`/game/${
-                                                                                selected_round.game_ids[
-                                                                                    m.player.id + "x" + m.opponent.id
-                                                                                ]
-                                                                            }`}
-                                                                        >
-                                                                            {
-                                                                                selected_round.results[
-                                                                                    m.player.id + "x" + m.opponent.id
+                                                                        <td
+                                                                            className={
+                                                                                "result " +
+                                                                                selected_round
+                                                                                    .colors[
+                                                                                    m.player.id +
+                                                                                        "x" +
+                                                                                        m.opponent
+                                                                                            .id
                                                                                 ]
                                                                             }
-                                                                        </Link>
-                                                                    </td>
+                                                                        >
+                                                                            <Link
+                                                                                to={`/game/${
+                                                                                    selected_round
+                                                                                        .game_ids[
+                                                                                        m.player
+                                                                                            .id +
+                                                                                            "x" +
+                                                                                            m
+                                                                                                .opponent
+                                                                                                .id
+                                                                                    ]
+                                                                                }`}
+                                                                            >
+                                                                                {
+                                                                                    selected_round
+                                                                                        .results[
+                                                                                        m.player
+                                                                                            .id +
+                                                                                            "x" +
+                                                                                            m
+                                                                                                .opponent
+                                                                                                .id
+                                                                                    ]
+                                                                                }
+                                                                            </Link>
+                                                                        </td>
 
-                                                                    <td className="points">{m.player.points}</td>
-                                                                    {(tournament.ended || null) && (
-                                                                        <td className="points">{m.player.sos}</td>
-                                                                    )}
-                                                                    {(tournament.ended || null) && (
-                                                                        <td className="points">{m.player.sodos}</td>
-                                                                    )}
-                                                                    <td className="notes">{m.player.notes}</td>
-                                                                </tr>
-                                                            );
-                                                        })}
+                                                                        <td className="points">
+                                                                            {m.player.points}
+                                                                        </td>
+                                                                        {(tournament.ended ||
+                                                                            null) && (
+                                                                            <td className="points">
+                                                                                {m.player.sos}
+                                                                            </td>
+                                                                        )}
+                                                                        {(tournament.ended ||
+                                                                            null) && (
+                                                                            <td className="points">
+                                                                                {m.player.sodos}
+                                                                            </td>
+                                                                        )}
+                                                                        <td className="notes">
+                                                                            {m.player.notes}
+                                                                        </td>
+                                                                    </tr>
+                                                                );
+                                                            },
+                                                        )}
                                                     </tbody>
                                                 </table>
                                             </div>
                                         )}
 
                                         {/* Byes */}
-                                        {((selected_round && selected_round.byes.length) || null) && (
+                                        {((selected_round && selected_round.byes.length) ||
+                                            null) && (
                                             <div className="round-group">
-                                                <h2>{_("Byes") /*translators: Tournament byes */}</h2>
+                                                <h2>
+                                                    {_("Byes") /*translators: Tournament byes */}
+                                                </h2>
                                                 <table>
                                                     <tbody>
                                                         <tr>
-                                                            {(tournament.ended || null) && <th>{_("Rank")}</th>}
+                                                            {(tournament.ended || null) && (
+                                                                <th>{_("Rank")}</th>
+                                                            )}
                                                             <th>{_("Player")}</th>
                                                             <th>{_("Points")}</th>
                                                             {(tournament.ended || null) && (
                                                                 <th className="rotated-title">
                                                                     <span className="rotated">
-                                                                        &Sigma; {_("Opponent Scores")}
+                                                                        &Sigma;{" "}
+                                                                        {_("Opponent Scores")}
                                                                     </span>
                                                                 </th>
                                                             )}
                                                             {(tournament.ended || null) && (
                                                                 <th className="rotated-title">
                                                                     <span className="rotated">
-                                                                        &Sigma; {_("Defeated Scores")}
+                                                                        &Sigma;{" "}
+                                                                        {_("Defeated Scores")}
                                                                     </span>
                                                                 </th>
                                                             )}
@@ -2632,19 +3047,34 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                             return (
                                                                 <tr key={idx}>
                                                                     {(tournament.ended || null) && (
-                                                                        <td className="rank">{player.rank}</td>
+                                                                        <td className="rank">
+                                                                            {player.rank}
+                                                                        </td>
                                                                     )}
                                                                     <td className="player">
-                                                                        <Player user={player} icon />
+                                                                        <Player
+                                                                            user={player}
+                                                                            icon
+                                                                        />
                                                                     </td>
-                                                                    <td className="points">{player.points}</td>
-                                                                    {((player && tournament.ended) || null) && (
-                                                                        <td className="points">{player.sos}</td>
+                                                                    <td className="points">
+                                                                        {player.points}
+                                                                    </td>
+                                                                    {((player &&
+                                                                        tournament.ended) ||
+                                                                        null) && (
+                                                                        <td className="points">
+                                                                            {player.sos}
+                                                                        </td>
                                                                     )}
                                                                     {(tournament.ended || null) && (
-                                                                        <td className="points">{player.sodos}</td>
+                                                                        <td className="points">
+                                                                            {player.sodos}
+                                                                        </td>
                                                                     )}
-                                                                    <td className="notes">{player.notes}</td>
+                                                                    <td className="notes">
+                                                                        {player.notes}
+                                                                    </td>
                                                                 </tr>
                                                             );
                                                         })}
@@ -2659,11 +3089,18 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                 <div style={{ display: "inline-block" }}>
                                                     <h3>
                                                         {(rounds[0].matches[0].player || null) && (
-                                                            <Player user={rounds[0].matches[0].player} icon />
+                                                            <Player
+                                                                user={rounds[0].matches[0].player}
+                                                                icon
+                                                            />
                                                         )}{" "}
                                                         vs.{" "}
-                                                        {(rounds[0].matches[0].opponent || null) && (
-                                                            <Player user={rounds[0].matches[0].opponent} icon />
+                                                        {(rounds[0].matches[0].opponent ||
+                                                            null) && (
+                                                            <Player
+                                                                user={rounds[0].matches[0].opponent}
+                                                                icon
+                                                            />
                                                         )}
                                                     </h3>
 
@@ -2699,7 +3136,9 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
         const user = player_cache.lookup(player_id);
 
         swal({
-            text: interpolate(_("Really kick {{user}} from the tournament?"), { user: user.username }),
+            text: interpolate(_("Really kick {{user}} from the tournament?"), {
+                user: user.username,
+            }),
             showCancelButton: true,
             focusCancel: true,
         })
@@ -2720,9 +3159,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
 
         swal({
             input: "number",
-            text: interpolate(pgettext("How may tournament points to adjust a user by", "Adjustment for %s"), [
-                user.username,
-            ]),
+            text: interpolate(
+                pgettext("How may tournament points to adjust a user by", "Adjustment for %s"),
+                [user.username],
+            ),
             showCancelButton: true,
             focusCancel: true,
         })
@@ -2798,7 +3238,13 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
     };
 }
 
-function OpenGothaRoster({ tournament, players }: { tournament: any; players: Array<any> }): JSX.Element {
+function OpenGothaRoster({
+    tournament,
+    players,
+}: {
+    tournament: any;
+    players: Array<any>;
+}): JSX.Element {
     window["players"] = players;
     players.sort((a, b) => a.username.localeCompare(b.username));
     return (
@@ -2843,7 +3289,9 @@ function OpenGothaTournamentRound({
     const [notes, _set_notes]: [string, (s) => void] = React.useState(roundNotes);
     const [notes_updated, set_notes_updated]: [boolean, (b) => void] = React.useState(false);
     window["rounds"] = rounds;
-    const round_started = !!(rounds.length >= selectedRound && (rounds[selectedRound - 1]?.matches.length || 0) > 0);
+    const round_started = !!(
+        rounds.length >= selectedRound && (rounds[selectedRound - 1]?.matches.length || 0) > 0
+    );
 
     React.useEffect(() => {
         _set_notes(roundNotes);
@@ -2875,7 +3323,9 @@ function OpenGothaTournamentRound({
             //focusCancel: true
         })
             .then(() => {
-                post(`tournaments/${tournament.id}/rounds/${selectedRound}/start`).then(ignore).catch(errorAlerter);
+                post(`tournaments/${tournament.id}/rounds/${selectedRound}/start`)
+                    .then(ignore)
+                    .catch(errorAlerter);
             })
             .catch(ignore);
     }
@@ -2884,8 +3334,12 @@ function OpenGothaTournamentRound({
 
     const round_seen = {};
     function dedup(m) {
-        const pxo = (m.player && m.opponent && `${m.player.id}x${m.opponent.id}`) || "error-invalid-player-or-opponent";
-        const oxp = (m.player && m.opponent && `${m.opponent.id}x${m.player.id}`) || "error-invalid-player-or-opponent";
+        const pxo =
+            (m.player && m.opponent && `${m.player.id}x${m.opponent.id}`) ||
+            "error-invalid-player-or-opponent";
+        const oxp =
+            (m.player && m.opponent && `${m.opponent.id}x${m.player.id}`) ||
+            "error-invalid-player-or-opponent";
         const ret = !(pxo in round_seen) && !(oxp in round_seen);
         round_seen[pxo] = true;
         round_seen[oxp] = true;
@@ -2926,7 +3380,10 @@ function OpenGothaTournamentRound({
                                 let black_won = "";
 
                                 try {
-                                    const match = selected_round.match_map[m.player.id].matches[m.opponent.id];
+                                    const match =
+                                        selected_round.match_map[m.player.id].matches[
+                                            m.opponent.id
+                                        ];
 
                                     black = match.black === m.player.id ? m.player : m.opponent;
                                     white = match.black === m.player.id ? m.opponent : m.player;
@@ -2957,8 +3414,8 @@ function OpenGothaTournamentRound({
                                             <td className={"result"}>
                                                 <Link to={`/game/${selected_round.game_ids[pxo]}`}>
                                                     {
-                                                        selected_round.match_map[m.player.id].matches[m.opponent.id]
-                                                            .result
+                                                        selected_round.match_map[m.player.id]
+                                                            .matches[m.opponent.id].result
                                                     }
                                                 </Link>
                                             </td>
@@ -3016,7 +3473,12 @@ function OpenGothaTournamentRound({
                     </div>
                 )}
 
-                <h3>{pgettext("Tournament games that are scheduled to take place", "Scheduled matches")}</h3>
+                <h3>
+                    {pgettext(
+                        "Tournament games that are scheduled to take place",
+                        "Scheduled matches",
+                    )}
+                </h3>
 
                 <table className="scheduled-matches">
                     <tbody>
@@ -3105,7 +3567,10 @@ function OpenGothaTournamentUploadDownload({
                 </Dropzone>
                 <div onClick={download}>
                     <i className="fa fa-download" />
-                    {pgettext("Download an updated XML file for use with OpenGotha", "Download to OpenGotha")}
+                    {pgettext(
+                        "Download an updated XML file for use with OpenGotha",
+                        "Download to OpenGotha",
+                    )}
                 </div>
             </div>
         </Card>
@@ -3139,11 +3604,15 @@ export function shortRankRestrictionText(min_ranking, max_ranking) {
         if (max_ranking >= 36) {
             return _("All");
         } else {
-            return interpolate(pgettext("ranks restriction: '<rank> and below'", "%s"), [rankString(max_ranking)]);
+            return interpolate(pgettext("ranks restriction: '<rank> and below'", "%s"), [
+                rankString(max_ranking),
+            ]);
         }
     } else {
         if (max_ranking >= 36) {
-            return interpolate(pgettext("ranks restriction: '<rank> and above'", "%s+"), [rankString(min_ranking)]);
+            return interpolate(pgettext("ranks restriction: '<rank> and above'", "%s+"), [
+                rankString(min_ranking),
+            ]);
         } else {
             return interpolate(pgettext("ranks restriction: '<rank> - <rank>'", "%s-%s"), [
                 rankString(min_ranking),

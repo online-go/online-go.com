@@ -85,7 +85,8 @@ export function configure_goban() {
         getLocation: (): string => window.location.pathname,
         getShowMoveNumbers: (): boolean => !!preferences.get("show-move-numbers"),
         getShowVariationMoveNumbers: (): boolean => preferences.get("show-variation-move-numbers"),
-        getMoveTreeNumbering: (): "none" | "move-number" | "move-coordinates" => preferences.get("move-tree-numbering"),
+        getMoveTreeNumbering: (): "none" | "move-number" | "move-coordinates" =>
+            preferences.get("move-tree-numbering"),
         getCDNReleaseBase: (): string => data.get("config.cdn_release"),
         getSoundEnabled: (): boolean => sfx.getVolume("master") > 0,
         getSoundVolume: (): number => sfx.getVolume("master"),

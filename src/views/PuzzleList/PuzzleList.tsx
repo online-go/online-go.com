@@ -60,14 +60,18 @@ export class PuzzleList extends React.PureComponent<{}, PuzzleListState> {
 
                             <div>
                                 {(!user.anonymous || null) && (
-                                    <Link to={`/puzzle-collections/${user.id}`}>{_("My puzzles")}</Link>
+                                    <Link to={`/puzzle-collections/${user.id}`}>
+                                        {_("My puzzles")}
+                                    </Link>
                                 )}
 
                                 <SearchInput
                                     placeholder={_("Search")}
                                     onChange={(event) => {
                                         this.setState({
-                                            name_contains_filter: (event.target as HTMLInputElement).value.trim(),
+                                            name_contains_filter: (
+                                                event.target as HTMLInputElement
+                                            ).value.trim(),
                                         });
                                     }}
                                 />
@@ -95,7 +99,10 @@ export class PuzzleList extends React.PureComponent<{}, PuzzleListState> {
                                 return arr;
                             }}
                             onRowClick={(row, ev) => {
-                                const id = data.get(`puzzle.collection.${row.id}.last-visited`, row.starting_puzzle.id);
+                                const id = data.get(
+                                    `puzzle.collection.${row.id}.last-visited`,
+                                    row.starting_puzzle.id,
+                                );
                                 navigateTo(`/puzzle/${id}`, ev);
                             }}
                             columns={[
@@ -153,7 +160,9 @@ export class PuzzleList extends React.PureComponent<{}, PuzzleListState> {
                                     render: (X) => (
                                         <span>
                                             <StarRating value={X.rating} />{" "}
-                                            <span className="rating-count">({unitify(X.rating_count)})</span>
+                                            <span className="rating-count">
+                                                ({unitify(X.rating_count)})
+                                            </span>
                                         </span>
                                     ),
                                 },

@@ -82,7 +82,10 @@ export class CountingLiberties extends LearningHubSection {
         return pgettext("Tutorial section on counting liberties", "Counting Liberties");
     }
     static subtext(): string {
-        return pgettext("Tutorial section on counting liberties", "Known when you can win a battle");
+        return pgettext(
+            "Tutorial section on counting liberties",
+            "Known when you can win a battle",
+        );
     }
 }
 export class WhatIsGo extends LearningHubSection {
@@ -115,7 +118,10 @@ export class BenefitsOfLearningGo extends LearningHubSection {
         return pgettext("Tutorial section on beneifts to learning go", "Benefits of learning Go");
     }
     static subtext(): string {
-        return pgettext("Tutorial section on beneifts to learning go", "It's more than just a game!");
+        return pgettext(
+            "Tutorial section on beneifts to learning go",
+            "It's more than just a game!",
+        );
     }
 }
 export class BasicMannersOfGo extends LearningHubSection {
@@ -142,7 +148,10 @@ export class Terminology extends LearningHubSection {
 }
 
 export const sections: [string, any[]][] = [
-    [pgettext("Learning hub section title", "Fundamentals"), [Intro, Capture, Defend, /*Territory, */ EndingTheGame]],
+    [
+        pgettext("Learning hub section title", "Fundamentals"),
+        [Intro, Capture, Defend, /*Territory, */ EndingTheGame],
+    ],
     [pgettext("Learning hub section title", "Basics"), [TheBoard, Ladders, SnapBack, Seki, Ko]],
     /*
     [pgettext("Learning hub section title", "Intermediate"),

@@ -42,7 +42,10 @@ interface GroupAutocompleteState {
     suggestions: Suggestion[];
 }
 
-export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProperties, GroupAutocompleteState> {
+export class GroupAutocomplete extends React.PureComponent<
+    GroupAutocompleteProperties,
+    GroupAutocompleteState
+> {
     last_on_complete_username = null;
     current_search = null;
     tabbed_out = false;

@@ -134,7 +134,13 @@ export class PuzzleEditor {
         if (isNaN(puzzle_id)) {
             get("puzzles/collections/", { page_size: 100, owner: data.get("user").id })
                 .then((collections) => {
-                    callback(Object.assign({ puzzle_collections: collections.results }, this.editPuzzle(true)), true);
+                    callback(
+                        Object.assign(
+                            { puzzle_collections: collections.results },
+                            this.editPuzzle(true),
+                        ),
+                        true,
+                    );
                 })
                 .catch(errorAlerter);
             return;
@@ -150,10 +156,13 @@ export class PuzzleEditor {
                 const puzzle = arr[0].puzzle;
                 const collection = arr[0].collection;
 
-                let randomize_transform =
-                    preferences.get("puzzle.randomize.transform"); /* only randomize when we are getting a new puzzle */
+                let randomize_transform = preferences.get(
+                    "puzzle.randomize.transform",
+                ); /* only randomize when we are getting a new puzzle */
                 let randomize_color =
-                    preferences.get("puzzle.randomize.color"); /* only randomize when we are getting a new puzzle */
+                    preferences.get(
+                        "puzzle.randomize.color",
+                    ); /* only randomize when we are getting a new puzzle */
 
                 randomize_transform &= collection.position_transform_enabled;
                 randomize_color &= collection.color_transform_enabled;
@@ -216,7 +225,9 @@ export class PuzzleEditor {
         if (!editing) {
             this.transform.transformPuzzle(puzzle);
         }
-        let bounds = this.transform.settings.zoom ? this.getBounds(puzzle, puzzle.width, puzzle.height) : null;
+        let bounds = this.transform.settings.zoom
+            ? this.getBounds(puzzle, puzzle.width, puzzle.height)
+            : null;
         if (editing) {
             bounds = null;
         }
@@ -235,7 +246,8 @@ export class PuzzleEditor {
                 draw_top_labels: label_position === "all" || label_position.indexOf("top") >= 0,
                 draw_left_labels: label_position === "all" || label_position.indexOf("left") >= 0,
                 draw_right_labels: label_position === "all" || label_position.indexOf("right") >= 0,
-                draw_bottom_labels: label_position === "all" || label_position.indexOf("bottom") >= 0,
+                draw_bottom_labels:
+                    label_position === "all" || label_position.indexOf("bottom") >= 0,
                 getPuzzlePlacementSetting: () => ({ mode: "play" as const }),
                 bounds: bounds,
                 player_id: 0,

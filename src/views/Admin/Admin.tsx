@@ -131,7 +131,8 @@ export class Admin extends React.PureComponent<{}, AdminState> {
     startWeekend = () => this.promptAndPost("Start weekend?", "admin/startWeekend");
     stopWeekend = () => this.promptAndPost("Stop weekend?", "admin/stopWeekend");
     rebuildGameList = () => this.promptAndPost("Rebuild game list?", "admin/rebuildGameList");
-    fetchNotifications = () => this.promptAndPost(null, "admin/notifications/" + this.state.notifications_player_id);
+    fetchNotifications = () =>
+        this.promptAndPost(null, "admin/notifications/" + this.state.notifications_player_id);
 
     render() {
         return (
@@ -140,7 +141,9 @@ export class Admin extends React.PureComponent<{}, AdminState> {
                     <div className="col-sm-6">
                         <h3>Stuff</h3>
                         <div>
-                            <Link to="/admin/merchant_log">Merchant account request/response postback log</Link>
+                            <Link to="/admin/merchant_log">
+                                Merchant account request/response postback log
+                            </Link>
                         </div>
 
                         <h3>Pause Controls</h3>
@@ -168,7 +171,9 @@ export class Admin extends React.PureComponent<{}, AdminState> {
                                     type="text"
                                     placeholder="Player id"
                                     value={this.state.notifications_player_id}
-                                    onChange={(ev) => this.setState({ notifications_player_id: ev.target.value })}
+                                    onChange={(ev) =>
+                                        this.setState({ notifications_player_id: ev.target.value })
+                                    }
                                 />
                                 <button onClick={this.fetchNotifications}>Notifications</button>
                             </div>

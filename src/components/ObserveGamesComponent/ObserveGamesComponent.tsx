@@ -84,7 +84,8 @@ export class ObserveGamesComponent extends React.PureComponent<
             num_pages: 0,
             page_size: this.namespacedPreferenceGet("observed-games-page-size"),
             page_size_text_input: this.namespacedPreferenceGet("observed-games-page-size"),
-            viewing: this.namespacedPreferenceGet("observed-games-viewing") /* live / correspondence */,
+            viewing:
+                this.namespacedPreferenceGet("observed-games-viewing") /* live / correspondence */,
             game_list: [],
             live_game_count: 0,
             corr_game_count: 0,
@@ -98,7 +99,10 @@ export class ObserveGamesComponent extends React.PureComponent<
 
     namespacedPreferenceGet(key: preferences.ValidPreference): any {
         if (this.props.preferenceNamespace) {
-            return data.get(`observed-games.${this.props.preferenceNamespace}.${key}`, preferences.get(key));
+            return data.get(
+                `observed-games.${this.props.preferenceNamespace}.${key}`,
+                preferences.get(key),
+            );
         }
         return preferences.get(key);
     }
@@ -253,7 +257,9 @@ export class ObserveGamesComponent extends React.PureComponent<
         }
     };
     setPage = (ev_or_page) => {
-        let page = parseInt(typeof ev_or_page === "number" ? ev_or_page : (ev_or_page.target as any).value);
+        let page = parseInt(
+            typeof ev_or_page === "number" ? ev_or_page : (ev_or_page.target as any).value,
+        );
         if (isNaN(page)) {
             this.setState({ page: "" });
             return;
@@ -262,8 +268,9 @@ export class ObserveGamesComponent extends React.PureComponent<
             1,
             Math.min(
                 Math.ceil(
-                    (this.state.viewing === "live" ? this.state.live_game_count : this.state.corr_game_count) /
-                        this.state.page_size,
+                    (this.state.viewing === "live"
+                        ? this.state.live_game_count
+                        : this.state.corr_game_count) / this.state.page_size,
                 ),
                 page,
             ),
@@ -318,10 +325,13 @@ export class ObserveGamesComponent extends React.PureComponent<
                                 </button>
 
                                 <button className="btn default" onClick={this.toggleShowFilters}>
-                                    <i className="fa fa-filter"></i> {n_filters ? `(${n_filters})` : ""}
+                                    <i className="fa fa-filter"></i>{" "}
+                                    {n_filters ? `(${n_filters})` : ""}
                                 </button>
                                 <button
-                                    className={"btn default " + (this.state.force_list ? "active" : "")}
+                                    className={
+                                        "btn default " + (this.state.force_list ? "active" : "")
+                                    }
                                     onClick={this.toggleForceList}
                                 >
                                     <i className="fa fa-list"></i>
@@ -336,15 +346,23 @@ export class ObserveGamesComponent extends React.PureComponent<
                                 {((this.state.num_pages && this.state.num_pages > 0) || null) && (
                                     <div className="left">
                                         {this.state.page > 1 ? (
-                                            <i className="fa fa-step-backward" onClick={this.prevPage} />
+                                            <i
+                                                className="fa fa-step-backward"
+                                                onClick={this.prevPage}
+                                            />
                                         ) : (
                                             <i className="fa" />
                                         )}
                                         <input onChange={this.setPage} value={this.state.page} />
                                         <span className="of"> / </span>
-                                        <span className="total">{this.state.num_pages.toString()}</span>
+                                        <span className="total">
+                                            {this.state.num_pages.toString()}
+                                        </span>
                                         {this.state.page < this.state.num_pages ? (
-                                            <i className="fa fa-step-forward" onClick={this.nextPage} />
+                                            <i
+                                                className="fa fa-step-forward"
+                                                onClick={this.nextPage}
+                                            />
                                         ) : (
                                             <i className="fa" />
                                         )}
@@ -408,7 +426,11 @@ export class ObserveGamesComponent extends React.PureComponent<
                 <input
                     id={filter_field}
                     type="checkbox"
-                    checked={hide_mode ? !this.state.filters[filter_field] : !!this.state.filters[filter_field]}
+                    checked={
+                        hide_mode
+                            ? !this.state.filters[filter_field]
+                            : !!this.state.filters[filter_field]
+                    }
                     onChange={toggle}
                 />
                 <label htmlFor={filter_field}>{name}</label>
@@ -423,11 +445,17 @@ export class ObserveGamesComponent extends React.PureComponent<
                     {this.filterOption("hide_ranked", pgettext("Filter games list", "Ranked"))}
                     {this.filterOption("hide_unranked", pgettext("Filter games list", "Unranked"))}
                     {this.filterOption("rengo_only", pgettext("Filter games list", "Rengo only"))}
-                    {this.filterOption("friend_games_only", pgettext("Filter games list", "Friend games only"))}
+                    {this.filterOption(
+                        "friend_games_only",
+                        pgettext("Filter games list", "Friend games only"),
+                    )}
                 </div>
 
                 <div className="filter-group">
-                    {this.filterOption("hide_beginning", pgettext("Filter games list", "Beginning"))}
+                    {this.filterOption(
+                        "hide_beginning",
+                        pgettext("Filter games list", "Beginning"),
+                    )}
                     {this.filterOption("hide_middle", pgettext("Filter games list", "Middle"))}
                     {this.filterOption("hide_end", pgettext("Filter games list", "End"))}
                 </div>
@@ -439,23 +467,41 @@ export class ObserveGamesComponent extends React.PureComponent<
                     </div>
                     <div className="filter-group">
                         {this.filterOption("hide_9x9", pgettext("Filter games list", "9x9"))}
-                        {this.filterOption("hide_other", pgettext("Filter games list (odd board sizes)", "Other"))}
+                        {this.filterOption(
+                            "hide_other",
+                            pgettext("Filter games list (odd board sizes)", "Other"),
+                        )}
                     </div>
                 </div>
 
                 <div className="filter-group">
-                    {this.filterOption("hide_tournament", pgettext("Filter games list", "Tournament Games"))}
-                    {this.filterOption("hide_ladder", pgettext("Filter games list", "Ladder Games"))}
+                    {this.filterOption(
+                        "hide_tournament",
+                        pgettext("Filter games list", "Tournament Games"),
+                    )}
+                    {this.filterOption(
+                        "hide_ladder",
+                        pgettext("Filter games list", "Ladder Games"),
+                    )}
                     {this.filterOption(
                         "hide_open",
-                        pgettext("Filter games list (non ladder / tournament games)", "Single Games"),
+                        pgettext(
+                            "Filter games list (non ladder / tournament games)",
+                            "Single Games",
+                        ),
                     )}
                 </div>
 
                 <div className="filter-group">
                     {this.filterOption("hide_even", pgettext("Filter games list", "Even Games"))}
-                    {this.filterOption("hide_handicap", pgettext("Filter games list", "Handicap Games"))}
-                    {this.filterOption("hide_bot_games", pgettext("Filter games list", "Bot Games"))}
+                    {this.filterOption(
+                        "hide_handicap",
+                        pgettext("Filter games list", "Handicap Games"),
+                    )}
+                    {this.filterOption(
+                        "hide_bot_games",
+                        pgettext("Filter games list", "Bot Games"),
+                    )}
                 </div>
             </div>
         );

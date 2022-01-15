@@ -33,7 +33,10 @@ export class EndingTheGame extends LearningHubSection {
         return pgettext("Tutorial section name on learning how to end the game", "End the game!");
     }
     static subtext(): string {
-        return pgettext("Tutorial section subtext on learning how to end the game", "Pass and pass");
+        return pgettext(
+            "Tutorial section subtext on learning how to end the game",
+            "Pass and pass",
+        );
     }
 }
 

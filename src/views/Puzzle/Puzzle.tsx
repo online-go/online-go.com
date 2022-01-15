@@ -215,7 +215,10 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             return;
         }
 
-        if (goban_view_mode() !== this.state.view_mode || goban_view_squashed() !== this.state.squashed) {
+        if (
+            goban_view_mode() !== this.state.view_mode ||
+            goban_view_squashed() !== this.state.squashed
+        ) {
             this.setState({
                 squashed: goban_view_squashed(),
                 view_mode: goban_view_mode(),
@@ -224,7 +227,10 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
         if (this.goban) {
             this.goban.setSquareSizeBasedOnDisplayWidth(
-                Math.min(this.refs.goban_container.offsetWidth, this.refs.goban_container.offsetHeight),
+                Math.min(
+                    this.refs.goban_container.offsetWidth,
+                    this.refs.goban_container.offsetHeight,
+                ),
             );
 
             this.recenterGoban();
@@ -335,7 +341,9 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     removeHints() {
         if (this.goban) {
             const move = this.goban.engine.cur_move;
-            move.branches.forEach((item) => this.goban.deleteCustomMark(item.x, item.y, "hint", true));
+            move.branches.forEach((item) =>
+                this.goban.deleteCustomMark(item.x, item.y, "hint", true),
+            );
         }
         this.setState({ hintsOn: false });
     }
@@ -346,7 +354,9 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         new_state.analyze_tool = this.goban.analyze_tool;
         new_state.analyze_subtool = this.goban.analyze_subtool;
         new_state.move_text =
-            this.goban.engine.cur_move && this.goban.engine.cur_move.text ? this.goban.engine.cur_move.text : "";
+            this.goban.engine.cur_move && this.goban.engine.cur_move.text
+                ? this.goban.engine.cur_move.text
+                : "";
 
         this.setState(new_state);
     }
@@ -506,7 +516,9 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     setPuzzleCollection = (ev) => {
         if (parseInt(ev.target.value) > 0) {
             this.setState({
-                puzzle: Object.assign({}, this.state.puzzle, { puzzle_collection: parseInt(ev.target.value) }),
+                puzzle: Object.assign({}, this.state.puzzle, {
+                    puzzle_collection: parseInt(ev.target.value),
+                }),
             });
         } else if (ev.target.value === "new") {
             swal({
@@ -516,7 +528,9 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             })
                 .then((name) => {
                     if (!name || name.length < 5) {
-                        swal({ text: _("Please provide a longer name for your new puzzle collection") })
+                        swal({
+                            text: _("Please provide a longer name for your new puzzle collection"),
+                        })
                             .then(ignore)
                             .catch(ignore);
                         return;
@@ -563,10 +577,14 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         this.setState({ name: ev.target.value });
     };
     setPuzzleType = (ev) => {
-        this.setState({ puzzle: Object.assign({}, this.state.puzzle, { puzzle_type: ev.target.value }) });
+        this.setState({
+            puzzle: Object.assign({}, this.state.puzzle, { puzzle_type: ev.target.value }),
+        });
     };
     setDescription = (ev) => {
-        this.setState({ puzzle: Object.assign({}, this.state.puzzle, { puzzle_description: ev.target.value }) });
+        this.setState({
+            puzzle: Object.assign({}, this.state.puzzle, { puzzle_description: ev.target.value }),
+        });
     };
     setSetupColor = (color) => {
         this.navigation.checkAndEnterPuzzleMode();
@@ -574,14 +592,20 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     };
     setPuzzleSize = (ev) => {
         const size = parseInt(ev.target.value);
-        this.setState({ puzzle: Object.assign({}, this.state.puzzle, { width: size, height: size }) });
+        this.setState({
+            puzzle: Object.assign({}, this.state.puzzle, { width: size, height: size }),
+        });
         this.goban_opts.width = size;
         this.goban_opts.height = size;
         this.goban.load(this.goban_opts);
         this.goban.redraw(true);
     };
     setPuzzleRank = (ev) => {
-        this.setState({ puzzle: Object.assign({}, this.state.puzzle, { puzzle_rank: parseInt(ev.target.value) }) });
+        this.setState({
+            puzzle: Object.assign({}, this.state.puzzle, {
+                puzzle_rank: parseInt(ev.target.value),
+            }),
+        });
     };
     setInitialPlayer = (ev) => {
         const color = ev.target.value;
@@ -594,10 +618,18 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         this.setState({ puzzle: Object.assign({}, this.state.puzzle, { initial_player: color }) });
     };
     setOpponentMoveMode = (ev) => {
-        this.setState({ puzzle: Object.assign({}, this.state.puzzle, { puzzle_opponent_move_mode: ev.target.value }) });
+        this.setState({
+            puzzle: Object.assign({}, this.state.puzzle, {
+                puzzle_opponent_move_mode: ev.target.value,
+            }),
+        });
     };
     setPlayerMoveMode = (ev) => {
-        this.setState({ puzzle: Object.assign({}, this.state.puzzle, { puzzle_player_move_mode: ev.target.value }) });
+        this.setState({
+            puzzle: Object.assign({}, this.state.puzzle, {
+                puzzle_player_move_mode: ev.target.value,
+            }),
+        });
     };
     deleteBranch = () => {
         this.goban.deleteBranch();
@@ -628,7 +660,11 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         })
             .then(() => {
                 del("puzzles/%%", +this.props.match.params.puzzle_id)
-                    .then(() => browserHistory.push(`/puzzle-collection/${this.state.puzzle.puzzle_collection}`))
+                    .then(() =>
+                        browserHistory.push(
+                            `/puzzle-collection/${this.state.puzzle.puzzle_collection}`,
+                        ),
+                    )
                     .catch(errorAlerter);
             })
             .catch(ignore);
@@ -674,7 +710,8 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         goban.draw_top_labels = label_position === "all" || label_position.indexOf("top") >= 0;
         goban.draw_left_labels = label_position === "all" || label_position.indexOf("left") >= 0;
         goban.draw_right_labels = label_position === "all" || label_position.indexOf("right") >= 0;
-        goban.draw_bottom_labels = label_position === "all" || label_position.indexOf("bottom") >= 0;
+        goban.draw_bottom_labels =
+            label_position === "all" || label_position.indexOf("bottom") >= 0;
         this.setState({ label_positioning: label_position });
         this.onResize(true);
         goban.redraw(true);
@@ -718,7 +755,11 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
                 <div className={"center-col"}>
                     <div ref="goban_container" className="goban-container">
-                        <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
+                        <ReactResizeDetector
+                            handleWidth
+                            handleHeight
+                            onResize={() => this.onResize()}
+                        />
                         <PersistentElement className="Goban" elt={this.goban_div} />
                     </div>
                 </div>
@@ -760,7 +801,11 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             <dl className="horizontal">
                 <dt>{_("Puzzle")}</dt>
                 <dd>
-                    <select value={this.props.match.params.puzzle_id} onChange={this.jumpToPuzzle} id="selected_puzzle">
+                    <select
+                        value={this.props.match.params.puzzle_id}
+                        onChange={this.jumpToPuzzle}
+                        id="selected_puzzle"
+                    >
                         {this.state.puzzle_collection_summary.map((puzzle, idx) => (
                             <option key={idx} value={puzzle.id}>
                                 {puzzle.name}
@@ -795,7 +840,10 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                 <div className="btn-group">
                     <button
                         type="button"
-                        title={pgettext("Transform the stone positions in a puzzle", "Flip diagonally")}
+                        title={pgettext(
+                            "Transform the stone positions in a puzzle",
+                            "Flip diagonally",
+                        )}
                         className={this.state.transform_x ? "active" : ""}
                         disabled={!this.state.collection.position_transform_enabled}
                         onClick={this.toggle_transform_x}
@@ -805,7 +853,10 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                     </button>
                     <button
                         type="button"
-                        title={pgettext("Transform the stone positions in a puzzle", "Flip horizontally")}
+                        title={pgettext(
+                            "Transform the stone positions in a puzzle",
+                            "Flip horizontally",
+                        )}
                         className={this.state.transform_h ? "active" : ""}
                         disabled={!this.state.collection.position_transform_enabled}
                         onClick={this.toggle_transform_h}
@@ -815,7 +866,10 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                     </button>
                     <button
                         type="button"
-                        title={pgettext("Transform the stone positions in a puzzle", "Flip vertically")}
+                        title={pgettext(
+                            "Transform the stone positions in a puzzle",
+                            "Flip vertically",
+                        )}
                         className={this.state.transform_v ? "active" : ""}
                         disabled={!this.state.collection.position_transform_enabled}
                         onClick={this.toggle_transform_v}
@@ -825,7 +879,10 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                     </button>
                     <button
                         type="button"
-                        title={pgettext("Transform the colors of the stones in a puzzle", "Reverse colors")}
+                        title={pgettext(
+                            "Transform the colors of the stones in a puzzle",
+                            "Reverse colors",
+                        )}
                         className={this.state.transform_color ? "active" : ""}
                         disabled={!this.state.collection.color_transform_enabled}
                         onClick={this.toggle_transform_color}
@@ -850,7 +907,10 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
                     <button
                         type="button"
-                        title={pgettext("Show or hide coordinates when viewing a puzzle", "Toggle coordinates")}
+                        title={pgettext(
+                            "Show or hide coordinates when viewing a puzzle",
+                            "Toggle coordinates",
+                        )}
                         className={this.state.label_positioning === "all" ? "active" : ""}
                         onClick={this.toggleCoordinates}
                         ref={this.ref_toggle_coordinates_button}
@@ -928,13 +988,19 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                     {(goban.engine.cur_move.parent == null || null) && (
                         <Markdown source={goban.engine.puzzle_description} />
                     )}
-                    {(goban.engine.cur_move.text || null) && <Markdown source={goban.engine.cur_move.text} />}
+                    {(goban.engine.cur_move.text || null) && (
+                        <Markdown source={goban.engine.cur_move.text} />
+                    )}
                 </div>
 
                 {(show_correct || null) && (
                     <div className="actions">
                         {((next_id !== 0 && next_id !== puzzle.id) || null) && (
-                            <Link ref={this.next_link} to={`/puzzle/${next_id}`} className="btn primary">
+                            <Link
+                                ref={this.next_link}
+                                to={`/puzzle/${next_id}`}
+                                className="btn primary"
+                            >
                                 {_("Next")}
                             </Link>
                         )}
@@ -1049,7 +1115,9 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                                         onChange={this.setPuzzleType}
                                     >
                                         <option value="">-- {_("Type")} --</option>
-                                        <option value="life_and_death">{_("Life and Death")}</option>
+                                        <option value="life_and_death">
+                                            {_("Life and Death")}
+                                        </option>
                                         <option value="joseki">{_("Joseki")}</option>
                                         <option value="fuseki">{_("Fuseki")}</option>
                                         <option value="tesuji">{_("Tesuji")}</option>
@@ -1058,7 +1126,10 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                                         <option value="elementary">{_("Elementary")}</option>
                                     </select>
 
-                                    <select value={this.state.puzzle.width} onChange={this.setPuzzleSize}>
+                                    <select
+                                        value={this.state.puzzle.width}
+                                        onChange={this.setPuzzleSize}
+                                    >
                                         <option value={19}>{_("19x19")}</option>
                                         <option value={17}>{_("17x17")}</option>
                                         <option value={15}>{_("15x15")}</option>
@@ -1069,7 +1140,10 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                                         <option value={5}>{_("5x5")}</option>
                                     </select>
 
-                                    <select value={this.state.puzzle.puzzle_rank} onChange={this.setPuzzleRank}>
+                                    <select
+                                        value={this.state.puzzle.puzzle_rank}
+                                        onChange={this.setPuzzleRank}
+                                    >
                                         {ranks.map((e, idx) => (
                                             <option key={idx} value={e.rank}>
                                                 {e.label}
@@ -1093,24 +1167,34 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                                     <div className="btn-group">
                                         <button
                                             onClick={this.setSetupColor.bind(this, "black")}
-                                            className={this.state.setup_color === "black" ? "active" : ""}
+                                            className={
+                                                this.state.setup_color === "black" ? "active" : ""
+                                            }
                                         >
                                             <img
                                                 width="16px"
                                                 height="16px"
                                                 alt="black"
-                                                src={data.get("config.cdn_release") + "/img/black.png"}
+                                                src={
+                                                    data.get("config.cdn_release") +
+                                                    "/img/black.png"
+                                                }
                                             />
                                         </button>
                                         <button
                                             onClick={this.setSetupColor.bind(this, "white")}
-                                            className={this.state.setup_color === "white" ? "active" : ""}
+                                            className={
+                                                this.state.setup_color === "white" ? "active" : ""
+                                            }
                                         >
                                             <img
                                                 width="16px"
                                                 height="16px"
                                                 alt="white"
-                                                src={data.get("config.cdn_release") + "/img/white.png"}
+                                                src={
+                                                    data.get("config.cdn_release") +
+                                                    "/img/white.png"
+                                                }
                                             />
                                         </button>
                                     </div>
@@ -1118,7 +1202,10 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
                                 <dt>{_("Player color")}</dt>
                                 <dd>
-                                    <select value={this.state.puzzle.initial_player} onChange={this.setInitialPlayer}>
+                                    <select
+                                        value={this.state.puzzle.initial_player}
+                                        onChange={this.setInitialPlayer}
+                                    >
                                         <option value="black">{_("Black")}</option>
                                         <option value="white">{_("White")}</option>
                                     </select>
@@ -1126,10 +1213,15 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
                                 <dt>
                                     {interpolate(
-                                        pgettext("Puzzle move mode for specified color", "{{color}} move mode"),
+                                        pgettext(
+                                            "Puzzle move mode for specified color",
+                                            "{{color}} move mode",
+                                        ),
                                         {
                                             color:
-                                                this.state.puzzle.initial_player === "black" ? _("Black") : _("White"),
+                                                this.state.puzzle.initial_player === "black"
+                                                    ? _("Black")
+                                                    : _("White"),
                                         },
                                     )}
                                 </dt>
@@ -1139,16 +1231,23 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                                         onChange={this.setPlayerMoveMode}
                                     >
                                         <option value="free">{_("Free placement")}</option>
-                                        <option value="fixed">{_("Only allow on specified paths")}</option>
+                                        <option value="fixed">
+                                            {_("Only allow on specified paths")}
+                                        </option>
                                     </select>
                                 </dd>
 
                                 <dt>
                                     {interpolate(
-                                        pgettext("Puzzle move mode for specified color", "{{color}} move mode"),
+                                        pgettext(
+                                            "Puzzle move mode for specified color",
+                                            "{{color}} move mode",
+                                        ),
                                         {
                                             color:
-                                                this.state.puzzle.initial_player === "black" ? _("White") : _("Black"),
+                                                this.state.puzzle.initial_player === "black"
+                                                    ? _("White")
+                                                    : _("Black"),
                                         },
                                     )}
                                 </dt>
@@ -1193,7 +1292,9 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                                         alt="alternate"
                                         width="16px"
                                         height="16px"
-                                        src={data.get("config.cdn_release") + "/img/black-white.png"}
+                                        src={
+                                            data.get("config.cdn_release") + "/img/black-white.png"
+                                        }
                                     />
                                 </button>
 
@@ -1287,14 +1388,18 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
                             <div className="space-around padded">
                                 <button
-                                    className={this.goban.engine.cur_move.correct_answer ? " success" : ""}
+                                    className={
+                                        this.goban.engine.cur_move.correct_answer ? " success" : ""
+                                    }
                                     onClick={this.setCorrectAnswer}
                                 >
                                     {_("Correct answer") /* translators: Correct puzzle move */}
                                 </button>
 
                                 <button
-                                    className={this.goban.engine.cur_move.wrong_answer ? " reject" : ""}
+                                    className={
+                                        this.goban.engine.cur_move.wrong_answer ? " reject" : ""
+                                    }
                                     onClick={this.setIncorrectAnswer}
                                 >
                                     {_("Wrong answer") /* translators: Correct puzzle move */}

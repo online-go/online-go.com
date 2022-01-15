@@ -133,7 +133,18 @@ function sanitize(src) {
         ],
 
         allowedAttributes: {
-            "*": ["href", "align", "style", "bgcolor", "alt", "src", "width", "height", "class", "rel"],
+            "*": [
+                "href",
+                "align",
+                "style",
+                "bgcolor",
+                "alt",
+                "src",
+                "width",
+                "height",
+                "class",
+                "rel",
+            ],
         },
         allowedStyles: {
             "*": {
@@ -199,7 +210,9 @@ export class Markdown extends React.PureComponent<MarkdownProps, { html }> {
     UNSAFE_componentWillReceiveProps(next_props) {
         if (next_props.source !== this.props.source) {
             this.setState({
-                html: next_props.source ? sanitize(md.render(this.preprocess(next_props.source))) : "",
+                html: next_props.source
+                    ? sanitize(md.render(this.preprocess(next_props.source)))
+                    : "",
             });
         }
     }

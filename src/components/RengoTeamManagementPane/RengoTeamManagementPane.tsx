@@ -54,11 +54,19 @@ export class RengoTeamManagementPane extends React.PureComponent<
     };
 
     render = () => {
-        const the_challenge = this.props.challenge_list.find((c) => c.challenge_id === this.props.challenge_id);
+        const the_challenge = this.props.challenge_list.find(
+            (c) => c.challenge_id === this.props.challenge_id,
+        );
 
         // this function should not be called if the user doesn't have a rengo challenge open...
         if (the_challenge === undefined) {
-            return <div>{_("(oops - if you had a rengo challenge open, the details would be showing here!)")}</div>;
+            return (
+                <div>
+                    {_(
+                        "(oops - if you had a rengo challenge open, the details would be showing here!)",
+                    )}
+                </div>
+            );
         }
 
         const nominees = the_challenge["rengo_nominees"];
@@ -72,7 +80,11 @@ export class RengoTeamManagementPane extends React.PureComponent<
 
         return (
             <div className="RengoTeamManagementPane">
-                <div className={"rengo-admin-container" + (this.state.assignment_pending ? " pending" : "")}>
+                <div
+                    className={
+                        "rengo-admin-container" + (this.state.assignment_pending ? " pending" : "")
+                    }
+                >
                     <div className="rengo-admin-header">{_("Black:")}</div>
                     {(black_team.length === 0 || null) && (
                         <div className="no-rengo-players-to-admin">{_("(none yet)")}</div>
@@ -83,11 +95,21 @@ export class RengoTeamManagementPane extends React.PureComponent<
                                 <React.Fragment>
                                     <i
                                         className="fa fa-lg fa-times-circle-o unassign"
-                                        onClick={this._assignToTeam.bind(self, n, "none", the_challenge)}
+                                        onClick={this._assignToTeam.bind(
+                                            self,
+                                            n,
+                                            "none",
+                                            the_challenge,
+                                        )}
                                     />
                                     <i
                                         className="fa fa-lg fa-arrow-down"
-                                        onClick={this._assignToTeam.bind(self, n, "rengo_white_team", the_challenge)}
+                                        onClick={this._assignToTeam.bind(
+                                            self,
+                                            n,
+                                            "rengo_white_team",
+                                            the_challenge,
+                                        )}
                                     />
                                 </React.Fragment>
                             )}
@@ -105,11 +127,21 @@ export class RengoTeamManagementPane extends React.PureComponent<
                                 <React.Fragment>
                                     <i
                                         className="fa fa-lg fa-times-circle-o unassign"
-                                        onClick={this._assignToTeam.bind(self, n, "none", the_challenge)}
+                                        onClick={this._assignToTeam.bind(
+                                            self,
+                                            n,
+                                            "none",
+                                            the_challenge,
+                                        )}
                                     />
                                     <i
                                         className="fa fa-lg fa-arrow-up"
-                                        onClick={this._assignToTeam.bind(self, n, "rengo_black_team", the_challenge)}
+                                        onClick={this._assignToTeam.bind(
+                                            self,
+                                            n,
+                                            "rengo_black_team",
+                                            the_challenge,
+                                        )}
                                     />
                                 </React.Fragment>
                             )}
@@ -127,11 +159,21 @@ export class RengoTeamManagementPane extends React.PureComponent<
                                 <React.Fragment>
                                     <i
                                         className="fa fa-lg fa-arrow-up black"
-                                        onClick={this._assignToTeam.bind(self, n, "rengo_black_team", the_challenge)}
+                                        onClick={this._assignToTeam.bind(
+                                            self,
+                                            n,
+                                            "rengo_black_team",
+                                            the_challenge,
+                                        )}
                                     />
                                     <i
                                         className="fa fa-lg fa-arrow-up white"
-                                        onClick={this._assignToTeam.bind(self, n, "rengo_white_team", the_challenge)}
+                                        onClick={this._assignToTeam.bind(
+                                            self,
+                                            n,
+                                            "rengo_white_team",
+                                            the_challenge,
+                                        )}
                                     />
                                 </React.Fragment>
                             )}

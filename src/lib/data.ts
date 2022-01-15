@@ -253,7 +253,10 @@ export function watch(key, cb, call_on_undefined?: boolean, dont_call_immediatel
 }
 
 export function unwatch(key: "cached.groups", cb: (data: GroupList) => void): void;
-export function unwatch(key: "cached.active_tournaments", cb: (data: ActiveTournamentList) => void): void;
+export function unwatch(
+    key: "cached.active_tournaments",
+    cb: (data: ActiveTournamentList) => void,
+): void;
 export function unwatch(key: string, cb: (data: any) => void): void;
 export function unwatch(key, cb): void {
     event_emitter.off(key, cb);
@@ -274,7 +277,12 @@ export function dump(key_prefix: string = "", strip_prefix?: boolean) {
     keys.sort().map((key) => {
         if (key.indexOf(key_prefix) === 0) {
             const k = strip_prefix ? key.substr(key_prefix.length) : key;
-            ret[k] = { union: data[key], value: store[key], default: defaults[key], remote: remote_get(key) };
+            ret[k] = {
+                union: data[key],
+                value: store[key],
+                default: defaults[key],
+                remote: remote_get(key),
+            };
         }
     });
     console.table(ret);
@@ -374,7 +382,12 @@ try {
 import ITC from "ITC";
 import { termination_socket } from "sockets";
 
-type RemoteStorableValue = number | string | boolean | undefined | { [key: string]: RemoteStorableValue };
+type RemoteStorableValue =
+    | number
+    | string
+    | boolean
+    | undefined
+    | { [key: string]: RemoteStorableValue };
 
 interface RemoteKV {
     key: string;
@@ -401,7 +414,10 @@ function remote_set(key: string, value: RemoteStorableValue, replication: Replic
 
     remote_store[key] = { key, value, replication };
     _enqueue_set(user.id, key, value, replication);
-    safeLocalStorageSet(`ogs-remote-storage-store.${user.id}.${key}`, JSON.stringify(remote_store[key]));
+    safeLocalStorageSet(
+        `ogs-remote-storage-store.${user.id}.${key}`,
+        JSON.stringify(remote_store[key]),
+    );
 }
 
 function remote_remove(key: string, replication: Replication): void {
@@ -432,7 +448,12 @@ function remote_get(key: string): RemoteStorableValue {
 // are writing a value to our remote storage, we retry when we re-establish
 // our connection. This is a "last to write wins" system.
 
-function _enqueue_set(user_id: number, key: string, value: RemoteStorableValue, replication: Replication): void {
+function _enqueue_set(
+    user_id: number,
+    key: string,
+    value: RemoteStorableValue,
+    replication: Replication,
+): void {
     const entry = { key, value, replication };
     safeLocalStorageSet(`ogs-remote-storage-wal.${user_id}.${key}`, JSON.stringify(entry));
     wal[key] = entry;
@@ -474,7 +495,10 @@ function _process_write_ahead_log(user_id: number): void {
                 // unexpected errors (internal exceptions) will set a retry flag, in which case
                 // we should retry this after a short while.
                 if (res.retry) {
-                    setTimeout(() => _process_write_ahead_log(user_id), 3000 + 3000 * Math.random());
+                    setTimeout(
+                        () => _process_write_ahead_log(user_id),
+                        3000 + 3000 * Math.random(),
+                    );
                     return;
                 }
                 // otherwise, this was an error such as we've set too many keys
@@ -502,7 +526,11 @@ function _process_write_ahead_log(user_id: number): void {
                 cb,
             );
         } else {
-            termination_socket.send("remote_storage/remove", { key: kv.key, replication: kv.replication }, cb);
+            termination_socket.send(
+                "remote_storage/remove",
+                { key: kv.key, replication: kv.replication },
+                cb,
+            );
         }
     }
 }
@@ -553,7 +581,9 @@ termination_socket.on("disconnect", () => {
 ITC.register("remote_storage/sync_needed", () => {
     const user = store["config.user"];
     if (!user || user.anonymous) {
-        console.error("User is not logged in but received remote_storage/sync_needed for some reason, ignoring");
+        console.error(
+            "User is not logged in but received remote_storage/sync_needed for some reason, ignoring",
+        );
         return;
     }
 
@@ -565,7 +595,9 @@ ITC.register("remote_storage/sync_needed", () => {
 termination_socket.on("remote_storage/update", (row: RemoteKV) => {
     const user = store["config.user"];
     if (!user || user.anonymous) {
-        console.error("User is not logged in but received remote_storage/update for some reason, ignoring");
+        console.error(
+            "User is not logged in but received remote_storage/update for some reason, ignoring",
+        );
         return;
     }
 

@@ -206,7 +206,11 @@ export function getOutcomeTranslation(outcome: string) {
     return outcome;
 }
 
-export function getGameResultText(outcome: string, white_lost: boolean, black_lost: boolean): string {
+export function getGameResultText(
+    outcome: string,
+    white_lost: boolean,
+    black_lost: boolean,
+): string {
     if (!outcome) {
         return "";
     }
@@ -237,7 +241,9 @@ export function acceptGroupInvite(invite_id): Promise<any> {
     return post("me/groups/invitations", { request_id: invite_id }).catch(errorAlerter);
 }
 export function rejectGroupInvite(invite_id): Promise<any> {
-    return post("me/groups/invitations", { delete: true, request_id: invite_id }).catch(errorAlerter);
+    return post("me/groups/invitations", { delete: true, request_id: invite_id }).catch(
+        errorAlerter,
+    );
 }
 export function acceptFriendRequest(id): Promise<any> {
     return post("me/friends/invitations", { from_user: id }).catch(errorAlerter);
@@ -295,7 +301,10 @@ export function getPrintableError(err) {
         }
         if (!obj) {
             console.log(err);
-            console.warn("Unable to process error message to a printable error string (1): ", err.responseText);
+            console.warn(
+                "Unable to process error message to a printable error string (1): ",
+                err.responseText,
+            );
             try {
                 console.error(new Error().stack);
             } catch (e) {
@@ -462,13 +471,20 @@ export function alertModerator(obj) {
 
     if (obj.reported_conversation) {
         text =
-            interpolate(_("Your full conversation with {{user}} will be sent to the moderation team for review."), {
-                user: obj.reported_conversation.username,
-            }) +
+            interpolate(
+                _(
+                    "Your full conversation with {{user}} will be sent to the moderation team for review.",
+                ),
+                {
+                    user: obj.reported_conversation.username,
+                },
+            ) +
             "\n\n" +
             _("Please provide a clear description of the problem");
     } else {
-        text = (obj.user ? _("Report user:") + " " : "") + _("Please provide a clear description of the problem");
+        text =
+            (obj.user ? _("Report user:") + " " : "") +
+            _("Please provide a clear description of the problem");
     }
 
     swal({
@@ -1164,8 +1180,14 @@ export function unitify(num: number): string {
     return num.toString();
 }
 
-export function insert_into_sorted_list<T>(sorted_list: Array<T>, comparator: (a: T, b: T) => number, new_item: T) {
-    const insertion_index = sorted_list.findIndex((existing_item) => comparator(existing_item, new_item) > 0);
+export function insert_into_sorted_list<T>(
+    sorted_list: Array<T>,
+    comparator: (a: T, b: T) => number,
+    new_item: T,
+) {
+    const insertion_index = sorted_list.findIndex(
+        (existing_item) => comparator(existing_item, new_item) > 0,
+    );
 
     // If findIndex couldn't find any such index, it'll return -1.
     // In that case we want to insert at the end of the array.

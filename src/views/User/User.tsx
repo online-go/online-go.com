@@ -276,7 +276,11 @@ export class User extends React.PureComponent<UserProperties, UserState> {
     }
 
     isSpecialUser() {
-        if (this.state.user.supporter || this.state.user.is_moderator || this.state.user.is_superuser) {
+        if (
+            this.state.user.supporter ||
+            this.state.user.is_moderator ||
+            this.state.user.is_superuser
+        ) {
             return true;
         }
         return false;
@@ -332,7 +336,9 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         const user = state.user;
         try {
             state.website_href =
-                user.website.trim().toLowerCase().indexOf("http") !== 0 ? "http://" + user.website : user.website;
+                user.website.trim().toLowerCase().indexOf("http") !== 0
+                    ? "http://" + user.website
+                    : user.website;
         } catch (e) {
             console.log(e.stack);
         }
@@ -344,7 +350,9 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         state.vs.drawPercent = (vs.draws / vs.total) * 100.0;
         state.vs.recent5 = vs.history ? vs.history.slice(0, 5) : [];
         for (let i = 0; i < state.vs.recent5.length; ++i) {
-            state.vs.recent5[i].pretty_date = moment(new Date(state.vs.recent5[i].date)).format("ll");
+            state.vs.recent5[i].pretty_date = moment(new Date(state.vs.recent5[i].date)).format(
+                "ll",
+            );
             //state.vs.recent5[i].pretty_date = moment(new Date(state.vs.recent5[i].date)).calendar();
         }
 
@@ -597,7 +605,9 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         });
     };
     saveRealNameIsPrivate = (ev) => {
-        this.setState({ user: Object.assign({}, this.state.user, { real_name_is_private: ev.target.checked }) });
+        this.setState({
+            user: Object.assign({}, this.state.user, { real_name_is_private: ev.target.checked }),
+        });
     };
     saveEditChanges() {
         const username = this.state.user.username.trim();
@@ -614,7 +624,10 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         }
         promise
             .then(() => {
-                this.setState({ editing: false, user: Object.assign({}, this.state.user, { username: username }) });
+                this.setState({
+                    editing: false,
+                    user: Object.assign({}, this.state.user, { username: username }),
+                });
                 put("players/%%", this.user_id, {
                     username: username,
                     first_name: this.state.user.first_name,
@@ -679,10 +692,18 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             item.date = r.created ? new Date(r.created) : null;
             item.black = r.players.black;
             item.black_won = !r.black_lost && r.white_lost;
-            item.black_class = item.black_won ? (item.black.id === this.user_id ? "library-won" : "library-lost") : "";
+            item.black_class = item.black_won
+                ? item.black.id === this.user_id
+                    ? "library-won"
+                    : "library-lost"
+                : "";
             item.white = r.players.white;
             item.white_won = !r.white_lost && r.black_lost;
-            item.white_class = item.white_won ? (item.white.id === this.user_id ? "library-won" : "library-lost") : "";
+            item.white_class = item.white_won
+                ? item.white.id === this.user_id
+                    ? "library-won"
+                    : "library-lost"
+                : "";
             item.name = r.name;
             item.href = "/review/" + item.id;
             item.historical = r.game.historical_ratings || { black: item.black, white: item.white };
@@ -792,7 +813,11 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                     }
                 }
 
-                if ((r.white_lost && r.black_lost) || (!r.white_lost && !r.black_lost) || r.annulled) {
+                if (
+                    (r.white_lost && r.black_lost) ||
+                    (!r.white_lost && !r.black_lost) ||
+                    r.annulled
+                ) {
                     item.result_class = "library-tie-result";
                 }
 
@@ -872,15 +897,20 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                     </span>
                                 )}
 
-                                {preferences.get("hide-ranks") && this.state.temporary_show_ratings && (
-                                    <span className="Player-rank">
-                                        {"[" + getUserRating(user).bounded_rank_label + "]"}
-                                    </span>
-                                )}
+                                {preferences.get("hide-ranks") &&
+                                    this.state.temporary_show_ratings && (
+                                        <span className="Player-rank">
+                                            {"[" + getUserRating(user).bounded_rank_label + "]"}
+                                        </span>
+                                    )}
 
                                 {editing ? (
                                     <div className="dropzone-container">
-                                        <Dropzone className="Dropzone" onDrop={this.updateIcon} multiple={false}>
+                                        <Dropzone
+                                            className="Dropzone"
+                                            onDrop={this.updateIcon}
+                                            multiple={false}
+                                        >
                                             {this.state.new_icon ? (
                                                 <img
                                                     src={this.state.new_icon.preview}
@@ -906,20 +936,22 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                     {global_user.is_moderator && user.is_watched && (
                                         <div>
                                             <h3 style={inlineBlock}>
-                                                <i className="fa fa-exclamation-triangle"></i> Watched{" "}
+                                                <i className="fa fa-exclamation-triangle"></i>{" "}
+                                                Watched{" "}
                                                 <i className="fa fa-exclamation-triangle"></i>
                                             </h3>
                                         </div>
                                     )}
 
-                                    {user.ui_class_extra && user.ui_class_extra.indexOf("aga") >= 0 && (
-                                        <div>
-                                            <h4 style={inlineBlock}>
-                                                <img src="https://cdn.online-go.com/assets/agaico1.png" />{" "}
-                                                {_("AGA Staff")}{" "}
-                                            </h4>
-                                        </div>
-                                    )}
+                                    {user.ui_class_extra &&
+                                        user.ui_class_extra.indexOf("aga") >= 0 && (
+                                            <div>
+                                                <h4 style={inlineBlock}>
+                                                    <img src="https://cdn.online-go.com/assets/agaico1.png" />{" "}
+                                                    {_("AGA Staff")}{" "}
+                                                </h4>
+                                            </div>
+                                        )}
 
                                     {false /* suppress this message until backend fix is implemented */ &&
                                         user.timeout_provisional && (
@@ -952,7 +984,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                     {user.is_superuser && (
                                         <div>
                                             <h3 style={inlineBlock}>
-                                                <i className="fa fa-smile-o fa-spin"></i> {_("OGS Developer")}{" "}
+                                                <i className="fa fa-smile-o fa-spin"></i>{" "}
+                                                {_("OGS Developer")}{" "}
                                                 <i className="fa fa-smile-o fa-spin"></i>
                                             </h3>
                                         </div>
@@ -961,7 +994,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                     {!user.is_superuser && user.is_tournament_moderator && (
                                         <div>
                                             <h3 style={inlineBlock}>
-                                                <i className="fa fa-trophy"></i> {_("Tournament Moderator")}{" "}
+                                                <i className="fa fa-trophy"></i>{" "}
+                                                {_("Tournament Moderator")}{" "}
                                                 <i className="fa fa-trophy"></i>
                                             </h3>
                                         </div>
@@ -970,8 +1004,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                     {user.on_vacation && (
                                         <div>
                                             <h3 style={inlineBlock}>
-                                                <i className="fa fa-smile-o fa-spin"></i> {_("On Vacation")} -{" "}
-                                                {this.state.vacation_left_text}{" "}
+                                                <i className="fa fa-smile-o fa-spin"></i>{" "}
+                                                {_("On Vacation")} - {this.state.vacation_left_text}{" "}
                                                 <i className="fa fa-smile-o fa-spin"></i>
                                             </h3>
                                         </div>
@@ -1010,13 +1044,16 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                             checked={user.real_name_is_private}
                                             onChange={this.saveRealNameIsPrivate}
                                         />{" "}
-                                        <label htmlFor="real-name-is-private">{_("Hide real name")}</label>
+                                        <label htmlFor="real-name-is-private">
+                                            {_("Hide real name")}
+                                        </label>
                                     </div>
                                 )}
 
                                 {user.is_bot && (
                                     <div>
-                                        <i className="fa fa-star"></i> <b>{_("Artificial Intelligence")}</b>{" "}
+                                        <i className="fa fa-star"></i>{" "}
+                                        <b>{_("Artificial Intelligence")}</b>{" "}
                                         <i className="fa fa-star"></i>
                                     </div>
                                 )}
@@ -1058,27 +1095,42 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                 )}
                                 {(editing || null) && (
                                     <div className="website-url">
-                                        <input type="url" value={user.website} onChange={this.saveWebsite} />
+                                        <input
+                                            type="url"
+                                            value={user.website}
+                                            onChange={this.saveWebsite}
+                                        />
                                     </div>
                                 )}
 
                                 <div className="avatar-buttons">
-                                    {(global_user.id === user.id || global_user.is_moderator || null) && (
-                                        <button onClick={this.toggleEdit} className="xs edit-button">
-                                            <i className={editing ? "fa fa-save" : "fa fa-pencil"} />{" "}
+                                    {(global_user.id === user.id ||
+                                        global_user.is_moderator ||
+                                        null) && (
+                                        <button
+                                            onClick={this.toggleEdit}
+                                            className="xs edit-button"
+                                        >
+                                            <i
+                                                className={editing ? "fa fa-save" : "fa fa-pencil"}
+                                            />{" "}
                                             {" " + (editing ? _("Save") : _("Edit"))}
                                         </button>
                                     )}
 
                                     {window["user"].is_moderator && (
-                                        <button className="danger xs pull-right" onClick={this.openModerateUser}>
+                                        <button
+                                            className="danger xs pull-right"
+                                            onClick={this.openModerateUser}
+                                        >
                                             {_("Moderator Controls")}
                                         </button>
                                     )}
                                 </div>
                             </div>
 
-                            {(!preferences.get("hide-ranks") || this.state.temporary_show_ratings) &&
+                            {(!preferences.get("hide-ranks") ||
+                                this.state.temporary_show_ratings) &&
                                 (!user.professional || global_user.id === user.id) && (
                                     <div className="ratings-container">
                                         {/* Ratings  */}
@@ -1090,12 +1142,19 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                 checked={this.state.show_ratings_in_rating_grid}
                                                 id="show-ratings-or-ranks"
                                                 onChange={(checked, ev, id) => {
-                                                    this.setState({ show_ratings_in_rating_grid: checked });
-                                                    preferences.set("show-ratings-in-rating-grid", checked);
+                                                    this.setState({
+                                                        show_ratings_in_rating_grid: checked,
+                                                    });
+                                                    preferences.set(
+                                                        "show-ratings-in-rating-grid",
+                                                        checked,
+                                                    );
                                                 }}
                                             />
                                         </h3>
-                                        {this.renderRatingGrid(this.state.show_ratings_in_rating_grid)}
+                                        {this.renderRatingGrid(
+                                            this.state.show_ratings_in_rating_grid,
+                                        )}
                                     </div>
                                 )}
                         </div>
@@ -1165,12 +1224,14 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                         {
                                             header: "Registered",
                                             className: "date",
-                                            render: (X) => moment(X.registration_date).format("YYYY-MM-DD"),
+                                            render: (X) =>
+                                                moment(X.registration_date).format("YYYY-MM-DD"),
                                         },
                                         {
                                             header: "Last Login",
                                             className: "date",
-                                            render: (X) => moment(X.last_login).format("YYYY-MM-DD"),
+                                            render: (X) =>
+                                                moment(X.last_login).format("YYYY-MM-DD"),
                                         },
                                         {
                                             header: "Browser ID",
@@ -1187,7 +1248,9 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                     {(X.has_notes || null) && (
                                                         <i
                                                             className="fa fa-file-text-o clickable"
-                                                            onClick={() => openNotes(X.moderator_notes)}
+                                                            onClick={() =>
+                                                                openNotes(X.moderator_notes)
+                                                            }
                                                         />
                                                     )}
                                                 </span>
@@ -1228,9 +1291,14 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                         {
                                             header: "",
                                             className: "date",
-                                            render: (X) => moment(X.timestamp).format("YYYY-MM-DD HH:mm:ss"),
+                                            render: (X) =>
+                                                moment(X.timestamp).format("YYYY-MM-DD HH:mm:ss"),
                                         },
-                                        { header: "", className: "", render: (X) => <Player user={X.moderator} /> },
+                                        {
+                                            header: "",
+                                            className: "",
+                                            render: (X) => <Player user={X.moderator} />,
+                                        },
                                         {
                                             header: "",
                                             className: "",
@@ -1238,7 +1306,9 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                 <div>
                                                     <div className="action">
                                                         {X.game ? (
-                                                            <Link to={`/game/${X.game.id}`}>{X.game.id}</Link>
+                                                            <Link to={`/game/${X.game.id}`}>
+                                                                {X.game.id}
+                                                            </Link>
                                                         ) : null}
                                                         {X.action}
                                                     </div>
@@ -1250,15 +1320,28 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                                 </div>
                                                             ) : null}
                                                             <div>{X.incident_report.url}</div>
-                                                            <div>{X.incident_report.system_note}</div>
-                                                            <div>{X.incident_report.reporter_note}</div>
+                                                            <div>
+                                                                {X.incident_report.system_note}
+                                                            </div>
+                                                            <div>
+                                                                {X.incident_report.reporter_note}
+                                                            </div>
                                                             {X.incident_report.moderator ? (
-                                                                <Player user={X.incident_report.moderator} />
+                                                                <Player
+                                                                    user={
+                                                                        X.incident_report.moderator
+                                                                    }
+                                                                />
                                                             ) : null}
-                                                            <i> {X.incident_report.moderator_note}</i>
+                                                            <i>
+                                                                {" "}
+                                                                {X.incident_report.moderator_note}
+                                                            </i>
                                                         </div>
                                                     )}
-                                                    <pre>{chat_markup(X.note, undefined, 1024 * 128)}</pre>
+                                                    <pre>
+                                                        {chat_markup(X.note, undefined, 1024 * 128)}
+                                                    </pre>
                                                 </div>
                                             ),
                                         },
@@ -1318,7 +1401,9 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                 <PlayerAutocomplete
                                                     onComplete={(player) => {
                                                         // happily, and importantly, if there isn't a player, then we get null
-                                                        this.setState({ games_alt_player_filter: player?.id });
+                                                        this.setState({
+                                                            games_alt_player_filter: player?.id,
+                                                        });
                                                     }}
                                                 />
                                             </div>
@@ -1346,7 +1431,9 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                             }}
                                             orderBy={["-ended"]}
                                             groom={game_history_groomer}
-                                            onRowClick={(ref, ev) => openUrlIfALinkWasNotClicked(ev, ref.href)}
+                                            onRowClick={(ref, ev) =>
+                                                openUrlIfALinkWasNotClicked(ev, ref.href)
+                                            }
                                             columns={[
                                                 // normal table layout ...
                                                 ...(!this.state.show_rengo_game_history
@@ -1354,7 +1441,10 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                           {
                                                               header: _("User"),
                                                               className: (X) =>
-                                                                  "user_info" + (X && X.annulled ? " annulled" : ""),
+                                                                  "user_info" +
+                                                                  (X && X.annulled
+                                                                      ? " annulled"
+                                                                      : ""),
                                                               render: (X) => (
                                                                   <React.Fragment>
                                                                       {X.played_black ? (
@@ -1362,7 +1452,11 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                                       ) : (
                                                                           <span>⚪</span>
                                                                       )}
-                                                                      {this.maskedRank(`[${rankString(X.player)}]`)}
+                                                                      {this.maskedRank(
+                                                                          `[${rankString(
+                                                                              X.player,
+                                                                          )}]`,
+                                                                      )}
                                                                   </React.Fragment>
                                                               ),
                                                           },
@@ -1370,7 +1464,9 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                               header: _(""),
                                                               className: (X) =>
                                                                   "winner_marker" +
-                                                                  (X && X.annulled ? " annulled" : ""),
+                                                                  (X && X.annulled
+                                                                      ? " annulled"
+                                                                      : ""),
                                                               render: (X) =>
                                                                   X.player_won ? (
                                                                       <i className="fa fa-trophy game-history-winner" />
@@ -1381,43 +1477,72 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                           {
                                                               header: _("Date"),
                                                               className: (X) =>
-                                                                  "date" + (X && X.annulled ? " annulled" : ""),
-                                                              render: (X) => moment(X.date).format("YYYY-MM-DD"),
+                                                                  "date" +
+                                                                  (X && X.annulled
+                                                                      ? " annulled"
+                                                                      : ""),
+                                                              render: (X) =>
+                                                                  moment(X.date).format(
+                                                                      "YYYY-MM-DD",
+                                                                  ),
                                                           },
                                                           {
                                                               header: _("Opponent"),
                                                               className: (X) =>
-                                                                  "player" + (X && X.annulled ? " annulled" : ""),
+                                                                  "player" +
+                                                                  (X && X.annulled
+                                                                      ? " annulled"
+                                                                      : ""),
                                                               render: (X) => (
-                                                                  <Player user={X.opponent} disableCacheUpdate />
+                                                                  <Player
+                                                                      user={X.opponent}
+                                                                      disableCacheUpdate
+                                                                  />
                                                               ),
                                                           },
                                                           {
                                                               header: _(""),
                                                               className: (X) =>
-                                                                  "speed" + (X && X.annulled ? " annulled" : ""),
+                                                                  "speed" +
+                                                                  (X && X.annulled
+                                                                      ? " annulled"
+                                                                      : ""),
                                                               render: (X) => (
-                                                                  <i className={X.speed_icon_class} title={X.speed} />
+                                                                  <i
+                                                                      className={X.speed_icon_class}
+                                                                      title={X.speed}
+                                                                  />
                                                               ),
                                                           },
                                                           {
                                                               header: _("Size"),
                                                               className: (X) =>
-                                                                  "board_size" + (X && X.annulled ? " annulled" : ""),
-                                                              render: (X) => `${X.width}x${X.height}`,
+                                                                  "board_size" +
+                                                                  (X && X.annulled
+                                                                      ? " annulled"
+                                                                      : ""),
+                                                              render: (X) =>
+                                                                  `${X.width}x${X.height}`,
                                                           },
                                                           {
                                                               header: _("Name"),
                                                               className: (X) =>
-                                                                  "game_name" + (X && X.annulled ? " annulled" : ""),
+                                                                  "game_name" +
+                                                                  (X && X.annulled
+                                                                      ? " annulled"
+                                                                      : ""),
                                                               render: (X) => (
                                                                   <Link to={X.href}>
                                                                       {X.name ||
                                                                           interpolate(
                                                                               "{{black_username}} vs. {{white_username}}",
                                                                               {
-                                                                                  black_username: X.black.username,
-                                                                                  white_username: X.white.username,
+                                                                                  black_username:
+                                                                                      X.black
+                                                                                          .username,
+                                                                                  white_username:
+                                                                                      X.white
+                                                                                          .username,
                                                                               },
                                                                           )}
                                                                   </Link>
@@ -1427,7 +1552,10 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                               header: _("Result"),
                                                               className: (X) =>
                                                                   X
-                                                                      ? X.result_class + (X.annulled ? " annulled" : "")
+                                                                      ? X.result_class +
+                                                                        (X.annulled
+                                                                            ? " annulled"
+                                                                            : "")
                                                                       : "",
                                                               render: (X) => X.result,
                                                           },
@@ -1439,54 +1567,85 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                           {
                                                               header: _("-"),
                                                               className: (X) =>
-                                                                  "user_info" + (X && X.annulled ? " annulled" : ""),
+                                                                  "user_info" +
+                                                                  (X && X.annulled
+                                                                      ? " annulled"
+                                                                      : ""),
                                                               render: (X) => "",
                                                           },
                                                           {
                                                               header: _(""),
                                                               className: (X) =>
                                                                   "winner_marker" +
-                                                                  (X && X.annulled ? " annulled" : ""),
+                                                                  (X && X.annulled
+                                                                      ? " annulled"
+                                                                      : ""),
                                                               render: (X) => "",
                                                           },
                                                           {
                                                               header: _("Date"),
                                                               className: (X) =>
-                                                                  "date" + (X && X.annulled ? " annulled" : ""),
-                                                              render: (X) => moment(X.date).format("YYYY-MM-DD"),
+                                                                  "date" +
+                                                                  (X && X.annulled
+                                                                      ? " annulled"
+                                                                      : ""),
+                                                              render: (X) =>
+                                                                  moment(X.date).format(
+                                                                      "YYYY-MM-DD",
+                                                                  ),
                                                           },
                                                           {
                                                               header: _("-"),
                                                               className: (X) =>
-                                                                  "player" + (X && X.annulled ? " annulled" : ""),
+                                                                  "player" +
+                                                                  (X && X.annulled
+                                                                      ? " annulled"
+                                                                      : ""),
                                                               render: (X) => "",
                                                           },
                                                           {
                                                               header: _(""),
                                                               className: (X) =>
-                                                                  "speed" + (X && X.annulled ? " annulled" : ""),
+                                                                  "speed" +
+                                                                  (X && X.annulled
+                                                                      ? " annulled"
+                                                                      : ""),
                                                               render: (X) => (
-                                                                  <i className={X.speed_icon_class} title={X.speed} />
+                                                                  <i
+                                                                      className={X.speed_icon_class}
+                                                                      title={X.speed}
+                                                                  />
                                                               ),
                                                           },
                                                           {
                                                               header: _("Size"),
                                                               className: (X) =>
-                                                                  "board_size" + (X && X.annulled ? " annulled" : ""),
-                                                              render: (X) => `${X.width}x${X.height}`,
+                                                                  "board_size" +
+                                                                  (X && X.annulled
+                                                                      ? " annulled"
+                                                                      : ""),
+                                                              render: (X) =>
+                                                                  `${X.width}x${X.height}`,
                                                           },
                                                           {
                                                               header: _("Name"),
                                                               className: (X) =>
-                                                                  "game_name" + (X && X.annulled ? " annulled" : ""),
+                                                                  "game_name" +
+                                                                  (X && X.annulled
+                                                                      ? " annulled"
+                                                                      : ""),
                                                               render: (X) => (
                                                                   <Link to={X.href}>
                                                                       {X.name ||
                                                                           interpolate(
                                                                               "{{black_username}} vs. {{white_username}}",
                                                                               {
-                                                                                  black_username: X.black.username,
-                                                                                  white_username: X.white.username,
+                                                                                  black_username:
+                                                                                      X.black
+                                                                                          .username,
+                                                                                  white_username:
+                                                                                      X.white
+                                                                                          .username,
                                                                               },
                                                                           )}
                                                                   </Link>
@@ -1495,8 +1654,9 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                           {
                                                               header: _("Result"),
                                                               className: (X) => " annulled",
-                                                              /* a nice background color for this... */ render: (X) =>
-                                                                  _("fun was had"),
+                                                              /* a nice background color for this... */ render: (
+                                                                  X,
+                                                              ) => _("fun was had"),
                                                           },
                                                       ]
                                                     : []),
@@ -1519,7 +1679,9 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                             <PlayerAutocomplete
                                                 onComplete={(player) => {
                                                     // happily, and importantly, if there isn't a player, then we get null
-                                                    this.setState({ reviews_alt_player_filter: player?.id });
+                                                    this.setState({
+                                                        reviews_alt_player_filter: player?.id,
+                                                    });
                                                 }}
                                             />
                                         </div>
@@ -1531,36 +1693,51 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                             source={`reviews/`}
                                             filter={{
                                                 owner_id: this.user_id,
-                                                ...(this.state.reviews_alt_player_filter !== null && {
-                                                    alt_player: this.state.reviews_alt_player_filter,
+                                                ...(this.state.reviews_alt_player_filter !==
+                                                    null && {
+                                                    alt_player:
+                                                        this.state.reviews_alt_player_filter,
                                                 }),
                                             }}
                                             orderBy={["-created"]}
                                             groom={this.review_history_groomer}
-                                            onRowClick={(ref, ev) => openUrlIfALinkWasNotClicked(ev, ref.href)}
+                                            onRowClick={(ref, ev) =>
+                                                openUrlIfALinkWasNotClicked(ev, ref.href)
+                                            }
                                             columns={[
                                                 {
                                                     header: _("Date"),
                                                     className: () => "date",
-                                                    render: (X) => moment(X.date).format("YYYY-MM-DD"),
+                                                    render: (X) =>
+                                                        moment(X.date).format("YYYY-MM-DD"),
                                                 },
                                                 {
                                                     header: _("Name"),
                                                     className: () => "game_name",
-                                                    render: (X) => <Link to={X.href}>{X.name}</Link>,
+                                                    render: (X) => (
+                                                        <Link to={X.href}>{X.name}</Link>
+                                                    ),
                                                 },
                                                 {
                                                     header: _("Black"),
-                                                    className: (X) => "player " + (X ? X.black_class : ""),
+                                                    className: (X) =>
+                                                        "player " + (X ? X.black_class : ""),
                                                     render: (X) => (
-                                                        <Player user={X.historical.black} disableCacheUpdate />
+                                                        <Player
+                                                            user={X.historical.black}
+                                                            disableCacheUpdate
+                                                        />
                                                     ),
                                                 },
                                                 {
                                                     header: _("White"),
-                                                    className: (X) => "player " + (X ? X.white_class : ""),
+                                                    className: (X) =>
+                                                        "player " + (X ? X.white_class : ""),
                                                     render: (X) => (
-                                                        <Player user={X.historical.white} disableCacheUpdate />
+                                                        <Player
+                                                            user={X.historical.white}
+                                                            disableCacheUpdate
+                                                        />
                                                     ),
                                                 },
                                             ]}
@@ -1574,7 +1751,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                     <div className="col-sm-4">
                         {!user.professional && (
                             <div>
-                                {(!preferences.get("hide-ranks") || this.state.temporary_show_ratings) &&
+                                {(!preferences.get("hide-ranks") ||
+                                    this.state.temporary_show_ratings) &&
                                     (!user.professional || global_user.id === user.id) &&
                                     account_links && (
                                         <Card>
@@ -1589,7 +1767,9 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                     </Card>
                                 )}
 
-                                {(this.state.titles.length > 0 || this.state.trophies.length > 0 || null) && (
+                                {(this.state.titles.length > 0 ||
+                                    this.state.trophies.length > 0 ||
+                                    null) && (
                                     <Card>
                                         <h3>{_("Trophies")}</h3>
 
@@ -1613,7 +1793,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                         key={idx}
                                                         href={
                                                             trophy.tournament_id
-                                                                ? "/tournament/" + trophy.tournament_id
+                                                                ? "/tournament/" +
+                                                                  trophy.tournament_id
                                                                 : "#"
                                                         }
                                                     >
@@ -1642,7 +1823,11 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                             "1004 simultaneous correspondence games",
                                                         )}
                                                     </div>
-                                                    <div>{moment("2020-07-20T14:38:37").format("LLLL")}</div>
+                                                    <div>
+                                                        {moment("2020-07-20T14:38:37").format(
+                                                            "LLLL",
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </React.Fragment>
                                         )}
@@ -1695,8 +1880,12 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                         <div style={{ textAlign: "center" }} key={idx}>
                                             <span className="date">{game.pretty_date}</span>{" "}
                                             <a href={`/game/${game.game}`}>#{game.game}</a>
-                                            {game.state === "W" && <i className="fa fa-check-circle-o won"></i>}
-                                            {game.state === "L" && <i className="fa fa-times loss"></i>}
+                                            {game.state === "W" && (
+                                                <i className="fa fa-check-circle-o won"></i>
+                                            )}
+                                            {game.state === "L" && (
+                                                <i className="fa fa-times loss"></i>
+                                            )}
                                         </div>
                                     ))}
                                 </Card>
@@ -1729,11 +1918,16 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                         placeholder={_("Engine Name")}
                                         value={this.state.bot_ai || ""}
                                         onChange={(event) =>
-                                            this.setState({ bot_ai: (event.target as HTMLInputElement).value })
+                                            this.setState({
+                                                bot_ai: (event.target as HTMLInputElement).value,
+                                            })
                                         }
                                     />
                                     <div style={{ textAlign: "right" }}>
-                                        <button className="btn btn-xs btn-default" onClick={() => this.saveBot()}>
+                                        <button
+                                            className="btn btn-xs btn-default"
+                                            onClick={() => this.saveBot()}
+                                        >
                                             {_("Save")}
                                         </button>
                                     </div>
@@ -1751,7 +1945,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                     <b>Country</b>
                                     <span>
                                         {" "}
-                                        {this.state.ip.country} / {cc_to_country_name(this.state.ip.country)}
+                                        {this.state.ip.country} /{" "}
+                                        {cc_to_country_name(this.state.ip.country)}
                                     </span>
                                 </div>
                                 <div>
@@ -1774,13 +1969,20 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                 </div>
                                 <div>
                                     <b>IP Shadowbanned</b>{" "}
-                                    <span>{parseInt(user.ip_shadowbanned as any) === 1 ? _("Yes") : _("No")}</span>
+                                    <span>
+                                        {parseInt(user.ip_shadowbanned as any) === 1
+                                            ? _("Yes")
+                                            : _("No")}
+                                    </span>
                                 </div>
                                 {this.state.host_ip_settings && (
                                     <div>
                                         <form className="form-horizontal" role="form">
                                             <div className="form-group" style={marginBottom0}>
-                                                <label className="col-xs-7" htmlFor="clients-limit ">
+                                                <label
+                                                    className="col-xs-7"
+                                                    htmlFor="clients-limit "
+                                                >
                                                     User limit
                                                 </label>
                                                 <div className="col-xs-5">
@@ -1788,13 +1990,20 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                         type="number"
                                                         id="clients-limit"
                                                         style={{ width: "5rem" }}
-                                                        value={this.state.host_ip_settings.clients_limit}
+                                                        value={
+                                                            this.state.host_ip_settings
+                                                                .clients_limit
+                                                        }
                                                         onChange={(event) =>
                                                             this.setState({
                                                                 host_ip_settings: updateDup(
                                                                     this.state.host_ip_settings,
                                                                     "clients_limit",
-                                                                    parseInt((event.target as HTMLInputElement).value),
+                                                                    parseInt(
+                                                                        (
+                                                                            event.target as HTMLInputElement
+                                                                        ).value,
+                                                                    ),
                                                                 ),
                                                             })
                                                         }
@@ -1802,20 +2011,28 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                 </div>
                                             </div>
                                             <div className="form-group" style={marginBottom0}>
-                                                <label className="col-xs-7" htmlFor="ban-affects-all">
+                                                <label
+                                                    className="col-xs-7"
+                                                    htmlFor="ban-affects-all"
+                                                >
                                                     Ban affects all
                                                 </label>
                                                 <div className="col-xs-5">
                                                     <input
                                                         type="checkbox"
                                                         id="ban-affects-all"
-                                                        value={this.state.host_ip_settings.ban_affects_all as any}
+                                                        value={
+                                                            this.state.host_ip_settings
+                                                                .ban_affects_all as any
+                                                        }
                                                         onChange={(event) =>
                                                             this.setState({
                                                                 host_ip_settings: updateDup(
                                                                     this.state.host_ip_settings,
                                                                     "ban_affects_all",
-                                                                    (event.target as HTMLInputElement).checked,
+                                                                    (
+                                                                        event.target as HTMLInputElement
+                                                                    ).checked,
                                                                 ),
                                                             })
                                                         }
@@ -1823,20 +2040,28 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                 </div>
                                             </div>
                                             <div className="form-group" style={marginBottom0}>
-                                                <label className="col-xs-7" htmlFor="chatban-affects-all">
+                                                <label
+                                                    className="col-xs-7"
+                                                    htmlFor="chatban-affects-all"
+                                                >
                                                     Chatban affects all
                                                 </label>
                                                 <div className="col-xs-5">
                                                     <input
                                                         type="checkbox"
                                                         id="chatban-affects-all"
-                                                        value={this.state.host_ip_settings.chatban_affects_all as any}
+                                                        value={
+                                                            this.state.host_ip_settings
+                                                                .chatban_affects_all as any
+                                                        }
                                                         onChange={(event) =>
                                                             this.setState({
                                                                 host_ip_settings: updateDup(
                                                                     this.state.host_ip_settings,
                                                                     "chatban_affects_all",
-                                                                    (event.target as HTMLInputElement).checked,
+                                                                    (
+                                                                        event.target as HTMLInputElement
+                                                                    ).checked,
                                                                 ),
                                                             })
                                                         }
@@ -1878,7 +2103,10 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                     <dl className="activity-dl">
                                         {this.state.ladders.map((ladder, idx) => (
                                             <dd key={idx}>
-                                                #{ladder.rank} <Link to={`/ladder/${ladder.id}`}>{ladder.name}</Link>
+                                                #{ladder.rank}{" "}
+                                                <Link to={`/ladder/${ladder.id}`}>
+                                                    {ladder.name}
+                                                </Link>
                                             </dd>
                                         ))}
                                     </dl>
@@ -1897,7 +2125,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                         {this.state.tournaments.map((tournament, idx) => (
                                             <dd key={idx}>
                                                 <Link to={`/tournament/${tournament.id}`}>
-                                                    <img src={tournament.icon} className="icon" /> {tournament.name}
+                                                    <img src={tournament.icon} className="icon" />{" "}
+                                                    {tournament.name}
                                                 </Link>
                                             </dd>
                                         ))}
@@ -1917,7 +2146,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                         {this.state.groups.map((group, idx) => (
                                             <dd key={idx}>
                                                 <Link to={`/group/${group.id}`}>
-                                                    <img src={group.icon} className="icon" /> {group.name}
+                                                    <img src={group.icon} className="icon" />{" "}
+                                                    {group.name}
                                                 </Link>
                                             </dd>
                                         ))}
@@ -2001,7 +2231,9 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                 className={
                     `rating-entry ${speed}-${size}x${size} ` +
                     (r.unset ? "unset " : "") +
-                    (speed === this.state.selected_speed && size === this.state.selected_size ? "active" : "")
+                    (speed === this.state.selected_speed && size === this.state.selected_size
+                        ? "active"
+                        : "")
                 }
                 onClick={() => this.setState({ selected_size: size, selected_speed: speed })}
             >
@@ -2009,11 +2241,16 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                     <span className="left">
                         {show_rating
                             ? humble_rating(r.rating, r.deviation).toFixed(0)
-                            : boundedRankString(rating_to_rank(humble_rating(r.rating, r.deviation)), true)}
+                            : boundedRankString(
+                                  rating_to_rank(humble_rating(r.rating, r.deviation)),
+                                  true,
+                              )}
                     </span>
                     &plusmn;
                     <span className="right">
-                        {show_rating ? r.deviation.toFixed(0) : rank_deviation(r.rating, r.deviation).toFixed(1)}
+                        {show_rating
+                            ? r.deviation.toFixed(0)
+                            : rank_deviation(r.rating, r.deviation).toFixed(1)}
                     </span>
                 </div>
             </div>
@@ -2051,7 +2288,11 @@ function SelfReportedAccountLinkages({ links }: { links: any }): JSX.Element {
             <ServerLink name={_("KGS")} id={links.kgs_username} rank={links.kgs_rank} />
             <ServerLink name={_("IGS / PandaNet")} id={links.igs_username} rank={links.igs_rank} />
             <ServerLink name={_("DGS")} id={links.dgs_username} rank={links.dgs_rank} />
-            <ServerLink name={_("Little Golem")} id={links.golem_username} rank={links.golem_rank} />
+            <ServerLink
+                name={_("Little Golem")}
+                id={links.golem_username}
+                rank={links.golem_rank}
+            />
             <ServerLink name={_("WBaduk")} id={links.wbaduk_username} rank={links.wbaduk_rank} />
             <ServerLink name={_("Tygem")} id={links.tygem_username} rank={links.tygem_rank} />
             <ServerLink name={_("Fox")} id={links.fox_username} rank={links.fox_rank} />
@@ -2060,7 +2301,15 @@ function SelfReportedAccountLinkages({ links }: { links: any }): JSX.Element {
         </div>
     );
 }
-function AssociationLink({ country, id, rank }: { country: string; id?: string; rank?: string }): JSX.Element {
+function AssociationLink({
+    country,
+    id,
+    rank,
+}: {
+    country: string;
+    id?: string;
+    rank?: string;
+}): JSX.Element {
     try {
         if (!country) {
             return null;
@@ -2074,7 +2323,8 @@ function AssociationLink({ country, id, rank }: { country: string; id?: string; 
         }
 
         if (country === "eu") {
-            linker = (id: string) => `https://www.europeangodatabase.eu/EGD/Player_Card.php?&key=${id}`;
+            linker = (id: string) =>
+                `https://www.europeangodatabase.eu/EGD/Player_Card.php?&key=${id}`;
         }
 
         if (country === "ru") {

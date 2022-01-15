@@ -130,8 +130,10 @@ export function Settings({
         params: { category },
     },
 }: SettingsProperties): JSX.Element {
-    const [settings_state, setSettingsState]: [SettingsState, (s: SettingsState) => void] = React.useState({});
-    const [vacation_base_time, set_vacation_base_time]: [number, (s: number) => void] = React.useState(Date.now());
+    const [settings_state, setSettingsState]: [SettingsState, (s: SettingsState) => void] =
+        React.useState({});
+    const [vacation_base_time, set_vacation_base_time]: [number, (s: number) => void] =
+        React.useState(Date.now());
     const [loaded, set_loaded]: [number, (b: number) => void] = React.useState(0);
 
     React.useEffect(refresh, []);
@@ -242,7 +244,11 @@ export function Settings({
             <div id="SettingsContainer">
                 <SettingsGroupSelector>
                     {groups.map((x) => (
-                        <SettingsGroup key={x.key} selected={selected === x.key} onClick={() => select(x.key)}>
+                        <SettingsGroup
+                            key={x.key}
+                            selected={selected === x.key}
+                            onClick={() => select(x.key)}
+                        >
                             {x.label}
                         </SettingsGroup>
                     ))}
@@ -265,7 +271,9 @@ export function Settings({
                                 ref={innerRef}
                                 {...innerProps}
                                 className={
-                                    "settings-group " + (isFocused ? "focused " : "") + (isSelected ? "selected" : "")
+                                    "settings-group " +
+                                    (isFocused ? "focused " : "") +
+                                    (isSelected ? "selected" : "")
                                 }
                             >
                                 {data.label}
@@ -276,11 +284,15 @@ export function Settings({
                                 {data.label}
                             </span>
                         ),
-                        ValueContainer: ({ children }) => <div className="settings-group-container">{children}</div>,
+                        ValueContainer: ({ children }) => (
+                            <div className="settings-group-container">{children}</div>
+                        ),
                     }}
                 />
 
-                <div id="SelectedSettingsContainer">{loaded ? <SelectedPage {...props} /> : <LoadingPage />}</div>
+                <div id="SelectedSettingsContainer">
+                    {loaded ? <SelectedPage {...props} /> : <LoadingPage />}
+                </div>
             </div>
         </div>
     );
@@ -323,7 +335,9 @@ function PreferenceDropdown(props: PreferenceDropdownProps): JSX.Element {
                         {data.label}
                     </span>
                 ),
-                ValueContainer: ({ children }) => <div className="PreferenceDropdown-value-container">{children}</div>,
+                ValueContainer: ({ children }) => (
+                    <div className="PreferenceDropdown-value-container">{children}</div>
+                ),
             }}
         />
     );
@@ -338,7 +352,9 @@ function PreferenceLine(props: {
         <div className="PreferenceLine">
             <span className="PreferenceLineTitle">
                 {props.title}
-                {props.description && <div className="PreferenceLineDescription">{props.description}</div>}
+                {props.description && (
+                    <div className="PreferenceLineDescription">{props.description}</div>
+                )}
             </span>
             <span className="PreferenceLineBody">{props.children}</span>
         </div>
@@ -355,7 +371,10 @@ function SettingsGroup(props: {
     children: React.ReactNode;
 }): JSX.Element {
     return (
-        <div className={"SettingsGroup" + (props.selected ? " selected" : "")} onClick={props.onClick}>
+        <div
+            className={"SettingsGroup" + (props.selected ? " selected" : "")}
+            onClick={props.onClick}
+        >
             {props.children}
             <span className="spacer" />
             {props.selected ? <i className="fa fa-chevron-right" /> : <i />}
@@ -371,7 +390,10 @@ function VacationSettings(props: SettingGroupProps): JSX.Element {
     React.useEffect(() => {
         const vacation_interval = setInterval(() => {
             if (props.state.profile.on_vacation) {
-                set_vacation_left(props.state.profile.vacation_left - (Date.now() - props.vacation_base_time) / 1000);
+                set_vacation_left(
+                    props.state.profile.vacation_left -
+                        (Date.now() - props.vacation_base_time) / 1000,
+                );
             }
         }, 1000);
 
@@ -391,7 +413,8 @@ function VacationSettings(props: SettingGroupProps): JSX.Element {
             .catch(errorAlerter);
     }
 
-    const vacation_string = vacation_left > 0 ? durationString(vacation_left) : "0 " + _("Seconds").toLowerCase();
+    const vacation_string =
+        vacation_left > 0 ? durationString(vacation_left) : "0 " + _("Seconds").toLowerCase();
 
     return (
         <div>
@@ -421,7 +444,11 @@ function VacationSettings(props: SettingGroupProps): JSX.Element {
 
                 <div>
                     {(!props.state.profile.on_vacation || null) && (
-                        <i>{_("This will pause any correspondence games you are in until you end your vacation")}</i>
+                        <i>
+                            {_(
+                                "This will pause any correspondence games you are in until you end your vacation",
+                            )}
+                        </i>
                     )}
                 </div>
 
@@ -462,7 +489,9 @@ function LogoutPreferences(props: SettingGroupProps): JSX.Element {
 function AccountSettings(props: SettingGroupProps): JSX.Element {
     const [password1, setPassword1]: [string, (x: string) => void] = React.useState("");
     const [password2, setPassword2]: [string, (x: string) => void] = React.useState("");
-    const [email, __setEmail]: [string, (x: string) => void] = React.useState(props.state.profile.email);
+    const [email, __setEmail]: [string, (x: string) => void] = React.useState(
+        props.state.profile.email,
+    );
     const [email_changed, setEmailChanged]: [boolean, (x: boolean) => void] = React.useState();
     const [message, setMessage]: [string, (x: string) => void] = React.useState("");
     const [settings, setSettings]: [any, (x: any) => void] = React.useState({});
@@ -542,7 +571,9 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
     function resendValidationEmail() {
         post("me/validateEmail", {})
             .then(() => {
-                swal("Validation email sent! Please check your email and click the validation link.").catch(swal.noop);
+                swal(
+                    "Validation email sent! Please check your email and click the validation link.",
+                ).catch(swal.noop);
             })
             .catch(errorAlerter);
     }
@@ -604,15 +635,24 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
     return (
         <div>
             <i>
-                <Link to={`/user/view/${user.id}#edit`}>{_("To update your profile information, click here")}</Link>
+                <Link to={`/user/view/${user.id}#edit`}>
+                    {_("To update your profile information, click here")}
+                </Link>
             </i>
             <dl>
                 <dt>{_("Email address")}</dt>
                 <dd>
-                    <input type="email" name="new_email" value={email} onChange={(ev) => setEmail(ev.target.value)} />
+                    <input
+                        type="email"
+                        name="new_email"
+                        value={email}
+                        onChange={(ev) => setEmail(ev.target.value)}
+                    />
                     {!email_changed ? null : (
                         <button disabled={!emailIsValid()} className="primary" onClick={saveEmail}>
-                            {emailIsValid() ? _("Update email address") : _("Email address is not valid")}
+                            {emailIsValid()
+                                ? _("Update email address")
+                                : _("Email address is not valid")}
                         </button>
                     )}
                     {message && <div>{message}</div>}
@@ -623,7 +663,9 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
                                     "Awaiting email address confirmation. Chat will be disabled until your email address has been validated.",
                                 )}
                             </div>
-                            <button onClick={resendValidationEmail}>{_("Resend validation email")}</button>
+                            <button onClick={resendValidationEmail}>
+                                {_("Resend validation email")}
+                            </button>
                         </div>
                     )}
                 </dd>
@@ -631,7 +673,11 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
                 <dt>{_("Password")}</dt>
                 <dd className="password-update">
                     <div>
-                        <input type="password" value={password1} onChange={(ev) => setPassword1(ev.target.value)} />
+                        <input
+                            type="password"
+                            value={password1}
+                            onChange={(ev) => setPassword1(ev.target.value)}
+                        />
                     </div>
                     <div>
                         <input
@@ -643,8 +689,14 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
                     </div>
                     <div>
                         {password1.length === 0 ? null : (
-                            <button disabled={!passwordIsValid()} className="primary" onClick={savePassword}>
-                                {passwordIsValid() ? _("Update password") : _("Passwords don't match")}
+                            <button
+                                disabled={!passwordIsValid()}
+                                className="primary"
+                                onClick={savePassword}
+                            >
+                                {passwordIsValid()
+                                    ? _("Update password")
+                                    : _("Passwords don't match")}
                             </button>
                         )}
                     </div>
@@ -659,7 +711,9 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
                                     {account.provider === "google-oauth2" && (
                                         <span className="google google-oauth2-icon" />
                                     )}
-                                    {account.provider === "facebook" && <span className="facebook facebook-icon" />}
+                                    {account.provider === "facebook" && (
+                                        <span className="facebook facebook-icon" />
+                                    )}
                                     {account.provider === "twitter" && (
                                         <i className="twitter twitter-icon fa fa-twitter" />
                                     )}
@@ -675,7 +729,9 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
                                             name="csrfmiddlewaretoken"
                                             value={getCookie("csrftoken")}
                                         />
-                                        {settings.password_is_set && <button type="submit">Unlink</button>}
+                                        {settings.password_is_set && (
+                                            <button type="submit">Unlink</button>
+                                        )}
                                     </form>
                                 </div>
                             </div>
@@ -706,21 +762,18 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
 }
 
 function ChatPreferences(props: SettingGroupProps): JSX.Element {
-    const [show_empty_chat_notification, _setEmptyChatNotification]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("show-empty-chat-notification"),
-    );
-    const [group_chat_unread, _setGroupChatUnread]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("chat-subscribe-group-chat-unread"),
-    );
-    const [group_chat_mentions, _setGroupChatMentions]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("chat-subscribe-group-mentions"),
-    );
-    const [tournament_chat_unread, _setTournamentChatUnread]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("chat-subscribe-tournament-chat-unread"),
-    );
-    const [tournament_chat_mentions, _setTournamentChatMentions]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("chat-subscribe-tournament-mentions"),
-    );
+    const [show_empty_chat_notification, _setEmptyChatNotification]: [
+        boolean,
+        (x: boolean) => void,
+    ] = React.useState(preferences.get("show-empty-chat-notification"));
+    const [group_chat_unread, _setGroupChatUnread]: [boolean, (x: boolean) => void] =
+        React.useState(preferences.get("chat-subscribe-group-chat-unread"));
+    const [group_chat_mentions, _setGroupChatMentions]: [boolean, (x: boolean) => void] =
+        React.useState(preferences.get("chat-subscribe-group-mentions"));
+    const [tournament_chat_unread, _setTournamentChatUnread]: [boolean, (x: boolean) => void] =
+        React.useState(preferences.get("chat-subscribe-tournament-chat-unread"));
+    const [tournament_chat_mentions, _setTournamentChatMentions]: [boolean, (x: boolean) => void] =
+        React.useState(preferences.get("chat-subscribe-tournament-mentions"));
 
     function toggleEmptyChatNotification(checked) {
         preferences.set("show-empty-chat-notification", checked);
@@ -749,34 +802,50 @@ function ChatPreferences(props: SettingGroupProps): JSX.Element {
 
     return (
         <div>
-            <PreferenceLine title={_("Show chat notification icon when there are no unread messages.")}>
-                <Toggle checked={show_empty_chat_notification} onChange={toggleEmptyChatNotification} />
+            <PreferenceLine
+                title={_("Show chat notification icon when there are no unread messages.")}
+            >
+                <Toggle
+                    checked={show_empty_chat_notification}
+                    onChange={toggleEmptyChatNotification}
+                />
             </PreferenceLine>
 
             <PreferenceLine
                 title={_("Notify me when I'm mentioned in group chats I'm a member of.")}
-                description={_("This only applies to chats you haven't choosen a different setting.")}
+                description={_(
+                    "This only applies to chats you haven't choosen a different setting.",
+                )}
             >
                 <Toggle checked={group_chat_mentions} onChange={toggleGroupChatMentions} />
             </PreferenceLine>
 
             <PreferenceLine
                 title={_("Notify me about unread messages in group chats I'm a member of.")}
-                description={_("This only applies to chats you haven't choosen a different setting.")}
+                description={_(
+                    "This only applies to chats you haven't choosen a different setting.",
+                )}
             >
                 <Toggle checked={group_chat_unread} onChange={toggleGroupChatUnread} />
             </PreferenceLine>
 
             <PreferenceLine
                 title={_("Notify me when I'm mentioned in tournament chats I'm a member of.")}
-                description={_("This only applies to chats you haven't choosen a different setting.")}
+                description={_(
+                    "This only applies to chats you haven't choosen a different setting.",
+                )}
             >
-                <Toggle checked={tournament_chat_mentions} onChange={toggleTournamentChatMentions} />
+                <Toggle
+                    checked={tournament_chat_mentions}
+                    onChange={toggleTournamentChatMentions}
+                />
             </PreferenceLine>
 
             <PreferenceLine
                 title={_("Notify me about unread messages in tournament chats I'm a member of.")}
-                description={_("This only applies to chats you haven't choosen a different setting.")}
+                description={_(
+                    "This only applies to chats you haven't choosen a different setting.",
+                )}
             >
                 <Toggle checked={tournament_chat_unread} onChange={toggleTournamentChatUnread} />
             </PreferenceLine>
@@ -801,8 +870,10 @@ function EmailPreferences(props: SettingGroupProps): JSX.Element {
 }
 
 function BlockedPlayerPreferences(props: SettingGroupProps): JSX.Element {
-    const [blocked_players, setBlockedPlayers]: [Array<any> | null, (x: Array<any> | null) => void] =
-        React.useState(null);
+    const [blocked_players, setBlockedPlayers]: [
+        Array<any> | null,
+        (x: Array<any> | null) => void,
+    ] = React.useState(null);
 
     React.useEffect(() => {
         getAllBlocksWithUsernames()
@@ -831,7 +902,9 @@ function BlockedPlayerPreferences(props: SettingGroupProps): JSX.Element {
                     );
                 })}
 
-                {blocked_players.length === 0 ? <div>{_("You have not blocked any players")}</div> : null}
+                {blocked_players.length === 0 ? (
+                    <div>{_("You have not blocked any players")}</div>
+                ) : null}
             </div>
             <br />
         </div>
@@ -839,8 +912,10 @@ function BlockedPlayerPreferences(props: SettingGroupProps): JSX.Element {
 }
 
 function AnnouncementPreferences(props: SettingGroupProps): JSX.Element {
-    const [blocked_players, setBlockedPlayers]: [Array<any> | null, (x: Array<any> | null) => void] =
-        React.useState(null);
+    const [blocked_players, setBlockedPlayers]: [
+        Array<any> | null,
+        (x: Array<any> | null) => void,
+    ] = React.useState(null);
 
     React.useEffect(() => {
         getAllBlocksWithUsernames()
@@ -851,12 +926,10 @@ function AnnouncementPreferences(props: SettingGroupProps): JSX.Element {
             .catch(errorAlerter);
     }, []);
 
-    const [mute_stream_announcements, _muteStreamAnnouncements]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("mute-stream-announcements"),
-    );
-    const [mute_event_announcements, _muteEventAnnouncements]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("mute-event-announcements"),
-    );
+    const [mute_stream_announcements, _muteStreamAnnouncements]: [boolean, (x: boolean) => void] =
+        React.useState(preferences.get("mute-stream-announcements"));
+    const [mute_event_announcements, _muteEventAnnouncements]: [boolean, (x: boolean) => void] =
+        React.useState(preferences.get("mute-event-announcements"));
 
     function toggleMuteStreamAnnouncements(checked) {
         preferences.set("mute-stream-announcements", checked);
@@ -874,10 +947,16 @@ function AnnouncementPreferences(props: SettingGroupProps): JSX.Element {
             <h2>{_("Announcements")}</h2>
             <div>
                 <PreferenceLine title={_("Hide stream announcements")}>
-                    <Toggle checked={mute_stream_announcements} onChange={toggleMuteStreamAnnouncements} />
+                    <Toggle
+                        checked={mute_stream_announcements}
+                        onChange={toggleMuteStreamAnnouncements}
+                    />
                 </PreferenceLine>
                 <PreferenceLine title={_("Hide event announcements")}>
-                    <Toggle checked={mute_event_announcements} onChange={toggleMuteEventAnnouncements} />
+                    <Toggle
+                        checked={mute_event_announcements}
+                        onChange={toggleMuteEventAnnouncements}
+                    />
                 </PreferenceLine>
             </div>
 
@@ -920,7 +999,11 @@ function AnnouncementPreferences(props: SettingGroupProps): JSX.Element {
                     },
                     { header: "Player", className: "", render: (a) => <Player user={a.creator} /> },
                     { header: "Message", className: "announcement-message", render: (a) => a.text },
-                    { header: "Link", className: "announcement-link", render: (a) => <a href={a.link}>{a.link}</a> },
+                    {
+                        header: "Link",
+                        className: "announcement-link",
+                        render: (a) => <a href={a.link}>{a.link}</a>,
+                    },
                 ]}
             />
 
@@ -935,7 +1018,11 @@ function AnnouncementPreferences(props: SettingGroupProps): JSX.Element {
                         return (
                             <div key={user_id} className="blocked-player-row">
                                 <span className="blocked-player">{block_state.username}</span>
-                                <BlockPlayerModal playerId={user_id} inline={true} onlyAnnouncements={true} />
+                                <BlockPlayerModal
+                                    playerId={user_id}
+                                    inline={true}
+                                    onlyAnnouncements={true}
+                                />
                             </div>
                         );
                     })}
@@ -946,14 +1033,16 @@ function AnnouncementPreferences(props: SettingGroupProps): JSX.Element {
 }
 
 function GamePreferences(props: SettingGroupProps): JSX.Element {
-    const [dock_delay, _setDockDelay]: [number, (x: number) => void] = React.useState(preferences.get("dock-delay"));
-    const [ai_review_enabled, _setAiReviewEnabled]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("ai-review-enabled"),
+    const [dock_delay, _setDockDelay]: [number, (x: number) => void] = React.useState(
+        preferences.get("dock-delay"),
     );
-    const [variations_in_chat, _setVariationsInChat]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("variations-in-chat-enabled"),
+    const [ai_review_enabled, _setAiReviewEnabled]: [boolean, (x: boolean) => void] =
+        React.useState(preferences.get("ai-review-enabled"));
+    const [variations_in_chat, _setVariationsInChat]: [boolean, (x: boolean) => void] =
+        React.useState(preferences.get("variations-in-chat-enabled"));
+    const [live_submit_mode, _setLiveSubmitMode]: [string, (x: string) => void] = React.useState(
+        getSubmitMode("live"),
     );
-    const [live_submit_mode, _setLiveSubmitMode]: [string, (x: string) => void] = React.useState(getSubmitMode("live"));
     const [corr_submit_mode, _setCorrSubmitMode]: [string, (x: string) => void] = React.useState(
         getSubmitMode("correspondence"),
     );
@@ -964,22 +1053,24 @@ function GamePreferences(props: SettingGroupProps): JSX.Element {
     const [autoadvance, _setAutoAdvance]: [boolean, (x: boolean) => void] = React.useState(
         preferences.get("auto-advance-after-submit"),
     );
-    const [always_disable_analysis, _setAlwaysDisableAnalysis]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("always-disable-analysis"),
-    );
+    const [always_disable_analysis, _setAlwaysDisableAnalysis]: [boolean, (x: boolean) => void] =
+        React.useState(preferences.get("always-disable-analysis"));
     const [dynamic_title, _setDynamicTitle]: [boolean, (x: boolean) => void] = React.useState(
         preferences.get("dynamic-title"),
     );
-    const [function_keys_enabled, _setFunctionKeysEnabled]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("function-keys-enabled"),
-    );
+    const [function_keys_enabled, _setFunctionKeysEnabled]: [boolean, (x: boolean) => void] =
+        React.useState(preferences.get("function-keys-enabled"));
     const [autoplay_delay, _setAutoplayDelay]: [number, (x: number) => void] = React.useState(
         preferences.get("autoplay-delay") / 1000,
     );
-    const [variation_stone_transparency, _setVariationStoneTransparency]: [number, (x: number) => void] =
-        React.useState(preferences.get("variation-stone-transparency"));
-    const [visual_undo_request_indicator, _setVisualUndoRequestIndicator]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("visual-undo-request-indicator"));
+    const [variation_stone_transparency, _setVariationStoneTransparency]: [
+        number,
+        (x: number) => void,
+    ] = React.useState(preferences.get("variation-stone-transparency"));
+    const [visual_undo_request_indicator, _setVisualUndoRequestIndicator]: [
+        boolean,
+        (x: boolean) => void,
+    ] = React.useState(preferences.get("visual-undo-request-indicator"));
 
     function setDockDelay(ev) {
         const new_delay = parseFloat(ev.target.value);
@@ -1004,7 +1095,8 @@ function GamePreferences(props: SettingGroupProps): JSX.Element {
             _setAlwaysDisableAnalysis(preferences.get("always-disable-analysis"));
     }
     function setDynamicTitle(checked) {
-        preferences.set("dynamic-title", checked), _setDynamicTitle(preferences.get("dynamic-title"));
+        preferences.set("dynamic-title", checked),
+            _setDynamicTitle(preferences.get("dynamic-title"));
     }
     function setFunctionKeysEnabled(checked) {
         preferences.set("function-keys-enabled", checked),
@@ -1135,12 +1227,20 @@ function GamePreferences(props: SettingGroupProps): JSX.Element {
             </PreferenceLine>
 
             <PreferenceLine title={_("Autoplay delay (in seconds)")}>
-                <input type="number" step="0.1" min="0.1" onChange={updateAutoplayDelay} value={autoplay_delay} />
+                <input
+                    type="number"
+                    step="0.1"
+                    min="0.1"
+                    onChange={updateAutoplayDelay}
+                    value={autoplay_delay}
+                />
             </PreferenceLine>
 
             <PreferenceLine
                 title={_("Disable AI review")}
-                description={_("This will enable or disable the artificial intelligence reviews at the end of a game.")}
+                description={_(
+                    "This will enable or disable the artificial intelligence reviews at the end of a game.",
+                )}
             >
                 <Toggle checked={!ai_review_enabled} onChange={toggleAIReview} />
             </PreferenceLine>
@@ -1160,7 +1260,10 @@ function GamePreferences(props: SettingGroupProps): JSX.Element {
                     "This will cause an undo request to be indicated by a mark on your opponent's last move.",
                 )}
             >
-                <Toggle checked={visual_undo_request_indicator} onChange={setVisualUndoRequestIndicator} />
+                <Toggle
+                    checked={visual_undo_request_indicator}
+                    onChange={setVisualUndoRequestIndicator}
+                />
             </PreferenceLine>
 
             <PreferenceLine
@@ -1205,39 +1308,40 @@ function GamePreferences(props: SettingGroupProps): JSX.Element {
 }
 
 function GeneralPreferences(props: SettingGroupProps): JSX.Element {
-    const [profanity_filter, _setProfanityFilter]: [Array<string>, (x: Array<string>) => void] = React.useState(
-        Object.keys(preferences.get("profanity-filter")),
+    const [profanity_filter, _setProfanityFilter]: [Array<string>, (x: Array<string>) => void] =
+        React.useState(Object.keys(preferences.get("profanity-filter")));
+    const [game_list_threshold, _setGameListThreshold]: [number, (x: number) => void] =
+        React.useState(preferences.get("game-list-threshold"));
+    const [desktop_notifications, _setDesktopNotifications]: [boolean, (x: boolean) => void] =
+        React.useState(preferences.get("desktop-notifications"));
+    const [show_offline_friends, _setShowOfflineFriends]: [boolean, (x: boolean) => void] =
+        React.useState(preferences.get("show-offline-friends"));
+    const [unicode_filter_usernames, _setUnicodeFilterUsernames]: [boolean, (x: boolean) => void] =
+        React.useState(preferences.get("unicode-filter"));
+    const [translation_dialog_never_show, _setTranslationDialogNeverShow]: [
+        boolean,
+        (x: boolean) => void,
+    ] = React.useState(preferences.get("translation-dialog-never-show"));
+    const [hide_ui_class, setHideUiClass]: [boolean, (x: boolean) => void] = React.useState(
+        props.state.hide_ui_class,
     );
-    const [game_list_threshold, _setGameListThreshold]: [number, (x: number) => void] = React.useState(
-        preferences.get("game-list-threshold"),
+    const [show_tournament_indicator, _setShowTournamentIndicator]: [
+        boolean,
+        (x: boolean) => void,
+    ] = React.useState(preferences.get("show-tournament-indicator"));
+    const [hide_ranks, _setHideRanks]: [boolean, (x: boolean) => void] = React.useState(
+        preferences.get("hide-ranks"),
     );
-    const [desktop_notifications, _setDesktopNotifications]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("desktop-notifications"),
-    );
-    const [show_offline_friends, _setShowOfflineFriends]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("show-offline-friends"),
-    );
-    const [unicode_filter_usernames, _setUnicodeFilterUsernames]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("unicode-filter"),
-    );
-    const [translation_dialog_never_show, _setTranslationDialogNeverShow]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("translation-dialog-never-show"));
-    const [hide_ui_class, setHideUiClass]: [boolean, (x: boolean) => void] = React.useState(props.state.hide_ui_class);
-    const [show_tournament_indicator, _setShowTournamentIndicator]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("show-tournament-indicator"),
-    );
-    const [hide_ranks, _setHideRanks]: [boolean, (x: boolean) => void] = React.useState(preferences.get("hide-ranks"));
-    const [rating_graph_always_use, _setAlwaysUse]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("rating-graph-always-use"),
-    );
-    const [rating_graph_plot_by_games, _setUseGames]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("rating-graph-plot-by-games"),
-    );
-    const [incident_report_notifications, setIncidentReportNotifications]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("notify-on-incident-report"));
-    const [hide_incident_reports, setHideIncidentReports]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("hide-incident-reports"),
-    );
+    const [rating_graph_always_use, _setAlwaysUse]: [boolean, (x: boolean) => void] =
+        React.useState(preferences.get("rating-graph-always-use"));
+    const [rating_graph_plot_by_games, _setUseGames]: [boolean, (x: boolean) => void] =
+        React.useState(preferences.get("rating-graph-plot-by-games"));
+    const [incident_report_notifications, setIncidentReportNotifications]: [
+        boolean,
+        (x: boolean) => void,
+    ] = React.useState(preferences.get("notify-on-incident-report"));
+    const [hide_incident_reports, setHideIncidentReports]: [boolean, (x: boolean) => void] =
+        React.useState(preferences.get("hide-incident-reports"));
 
     const user = data.get("user");
     const desktop_notifications_enableable: boolean = typeof Notification !== "undefined";
@@ -1245,7 +1349,8 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
     let desktop_notifications_enabled = false;
     try {
         desktop_notifications_enabled =
-            preferences.get("desktop-notifications") && (Notification as any).permission === "granted";
+            preferences.get("desktop-notifications") &&
+            (Notification as any).permission === "granted";
     } catch (e) {
         /* not all browsers support the Notification API */
     }
@@ -1362,7 +1467,8 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
     }
 
     function setAlwaysUse(checked) {
-        preferences.set("rating-graph-always-use", checked), _setAlwaysUse(preferences.get("rating-graph-always-use"));
+        preferences.set("rating-graph-always-use", checked),
+            _setAlwaysUse(preferences.get("rating-graph-always-use"));
     }
 
     function setPlotByGames(checked) {
@@ -1398,21 +1504,30 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
     return (
         <div>
             <PreferenceLine title={_("Language")}>
-                <PreferenceDropdown value={current_language} options={language_options} onChange={setLanguage} />
+                <PreferenceDropdown
+                    value={current_language}
+                    options={language_options}
+                    onChange={setLanguage}
+                />
             </PreferenceLine>
 
             <PreferenceLine title={_("Profanity filter")}>
                 <Select
                     className="ProfanityDropdown"
                     classNamePrefix="ogs-react-select"
-                    defaultValue={language_options.filter((lang) => profanity_filter.indexOf(lang.value) >= 0)}
+                    defaultValue={language_options.filter(
+                        (lang) => profanity_filter.indexOf(lang.value) >= 0,
+                    )}
                     options={language_options.filter((lang) => lang.value in profanity_regex)}
                     onChange={updateProfanityFilter}
                     isMulti
                 />
             </PreferenceLine>
 
-            <PreferenceLine title={_("Game thumbnail list threshold")} description={_("Set to 0 to always show list.")}>
+            <PreferenceLine
+                title={_("Game thumbnail list threshold")}
+                description={_("Set to 0 to always show list.")}
+            >
                 <input
                     value={game_list_threshold}
                     onChange={updateGameListThreshold}
@@ -1445,13 +1560,22 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
                 <Toggle checked={unicode_filter_usernames} onChange={setUnicodeFilterUsernames} />
             </PreferenceLine>
 
-            <PreferenceLine title={_('Never show the "needs translation" message on the home page')}>
-                <Toggle checked={translation_dialog_never_show} onChange={setTranslationDialogNeverShow} />
+            <PreferenceLine
+                title={_('Never show the "needs translation" message on the home page')}
+            >
+                <Toggle
+                    checked={translation_dialog_never_show}
+                    onChange={setTranslationDialogNeverShow}
+                />
             </PreferenceLine>
 
             {(user.supporter || user.is_moderator || null) && (
                 <PreferenceLine title={_("Golden supporter name")}>
-                    <Toggle checked={!hide_ui_class} onChange={updateHideUIClass} id="hide_ui_class" />
+                    <Toggle
+                        checked={!hide_ui_class}
+                        onChange={updateHideUIClass}
+                        id="hide_ui_class"
+                    />
                 </PreferenceLine>
             )}
 
@@ -1478,11 +1602,19 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
 
             {(user.is_moderator || null) && (
                 <>
-                    <PreferenceLine title={_("Notify me when an incident is submitted for moderation")}>
-                        <Toggle checked={incident_report_notifications} onChange={updateIncidentReportNotifications} />
+                    <PreferenceLine
+                        title={_("Notify me when an incident is submitted for moderation")}
+                    >
+                        <Toggle
+                            checked={incident_report_notifications}
+                            onChange={updateIncidentReportNotifications}
+                        />
                     </PreferenceLine>
                     <PreferenceLine title="Hide incident reports">
-                        <Toggle checked={hide_incident_reports} onChange={updateHideIncidentReports} />
+                        <Toggle
+                            checked={hide_incident_reports}
+                            onChange={updateHideIncidentReports}
+                        />
                     </PreferenceLine>
                 </>
             )}
@@ -1657,9 +1789,19 @@ function LinkPreferences(props: SettingGroupProps): JSX.Element {
 }
 
 const rank_select_ranks = allRanks();
-function RankSelect({ value, onChange }: { value: number; onChange: (value: number) => void }): JSX.Element {
+function RankSelect({
+    value,
+    onChange,
+}: {
+    value: number;
+    onChange: (value: number) => void;
+}): JSX.Element {
     return (
-        <select className="RankSelect" value={value} onChange={(ev) => onChange(parseInt(ev.target.value))}>
+        <select
+            className="RankSelect"
+            value={value}
+            onChange={(ev) => onChange(parseInt(ev.target.value))}
+        >
             <option value={-999}>{_("-- Select Rank --")}</option>
             {rank_select_ranks.map((rank: IRankInfo) => (
                 <option key={rank.rank} value={rank.rank}>
@@ -1670,7 +1812,13 @@ function RankSelect({ value, onChange }: { value: number; onChange: (value: numb
     );
 }
 
-function AssociationSelect({ value, onChange }: { value: string; onChange: (value: string) => void }): JSX.Element {
+function AssociationSelect({
+    value,
+    onChange,
+}: {
+    value: string;
+    onChange: (value: string) => void;
+}): JSX.Element {
     let user_countries = [];
     try {
         if (data.get("user").country) {
@@ -1703,7 +1851,11 @@ function AssociationSelect({ value, onChange }: { value: string; onChange: (valu
     });
 
     return (
-        <select className="AssociationSelect" value={value} onChange={(ev) => onChange(ev.target.value)}>
+        <select
+            className="AssociationSelect"
+            value={value}
+            onChange={(ev) => onChange(ev.target.value)}
+        >
             <option value={""}>{_("-- Select Association --")}</option>
             {associations.map((association: IAssociation) => (
                 <option key={association.country} value={association.country}>
@@ -1721,22 +1873,22 @@ function SoundPreferences(props: SettingGroupProps): JSX.Element {
     const [ten_seconds_start, __setTenSecondsStart]: [number, (x: number) => void] = React.useState(
         preferences.get("sound.countdown.ten-seconds.start"),
     );
-    const [five_seconds_start, __setFiveSecondsStart]: [number, (x: number) => void] = React.useState(
-        preferences.get("sound.countdown.five-seconds.start"),
-    );
-    const [every_second_start, __setEverySecondStart]: [number, (x: number) => void] = React.useState(
-        preferences.get("sound.countdown.every-second.start"),
-    );
+    const [five_seconds_start, __setFiveSecondsStart]: [number, (x: number) => void] =
+        React.useState(preferences.get("sound.countdown.five-seconds.start"));
+    const [every_second_start, __setEverySecondStart]: [number, (x: number) => void] =
+        React.useState(preferences.get("sound.countdown.every-second.start"));
     const [count_direction, __setCountDirection]: [string, (x: string) => void] = React.useState(
         preferences.get("sound.countdown.byoyomi-direction"),
     );
     let count_direction_auto = "down";
 
     if (count_direction === "auto") {
-        count_direction_auto = current_language === "ja" || current_language === "ko" ? "up" : "down";
+        count_direction_auto =
+            current_language === "ja" || current_language === "ko" ? "up" : "down";
     }
 
-    const count_direction_computed = count_direction !== "auto" ? count_direction : count_direction_auto;
+    const count_direction_computed =
+        count_direction !== "auto" ? count_direction : count_direction_auto;
 
     function setTickTockStart(opt): void {
         preferences.set("sound.countdown.tick-tock.start", opt.value);
@@ -1761,35 +1913,98 @@ function SoundPreferences(props: SettingGroupProps): JSX.Element {
 
     const start_options = [
         { value: 0, label: pgettext("Never play the countdown sound", "Never") },
-        { value: 60, label: pgettext("Start playing the countdown sound at 60 seconds", "60 seconds") },
-        { value: 45, label: pgettext("Start playing the countdown sound at 45 seconds", "45 seconds") },
-        { value: 30, label: pgettext("Start playing the countdown sound at 30 seconds", "30 seconds") },
-        { value: 20, label: pgettext("Start playing the countdown sound at 20 seconds", "20 seconds") },
-        { value: 15, label: pgettext("Start playing the countdown sound at 15 seconds", "15 seconds") },
-        { value: 10, label: pgettext("Start playing the countdown sound at 10 seconds", "10 seconds") },
-        { value: 5, label: pgettext("Start playing the countdown sound at 5 seconds", "5 seconds") },
-        { value: 3, label: pgettext("Start playing the countdown sound at 3 seconds", "3 seconds") },
+        {
+            value: 60,
+            label: pgettext("Start playing the countdown sound at 60 seconds", "60 seconds"),
+        },
+        {
+            value: 45,
+            label: pgettext("Start playing the countdown sound at 45 seconds", "45 seconds"),
+        },
+        {
+            value: 30,
+            label: pgettext("Start playing the countdown sound at 30 seconds", "30 seconds"),
+        },
+        {
+            value: 20,
+            label: pgettext("Start playing the countdown sound at 20 seconds", "20 seconds"),
+        },
+        {
+            value: 15,
+            label: pgettext("Start playing the countdown sound at 15 seconds", "15 seconds"),
+        },
+        {
+            value: 10,
+            label: pgettext("Start playing the countdown sound at 10 seconds", "10 seconds"),
+        },
+        {
+            value: 5,
+            label: pgettext("Start playing the countdown sound at 5 seconds", "5 seconds"),
+        },
+        {
+            value: 3,
+            label: pgettext("Start playing the countdown sound at 3 seconds", "3 seconds"),
+        },
     ];
 
     const start_options_fives = [
         { value: 0, label: pgettext("Never play the countdown sound", "Never") },
-        { value: 60, label: pgettext("Start playing the countdown sound at 60 seconds", "60 seconds") },
-        { value: 45, label: pgettext("Start playing the countdown sound at 45 seconds", "45 seconds") },
-        { value: 30, label: pgettext("Start playing the countdown sound at 30 seconds", "30 seconds") },
-        { value: 20, label: pgettext("Start playing the countdown sound at 20 seconds", "20 seconds") },
-        { value: 15, label: pgettext("Start playing the countdown sound at 15 seconds", "15 seconds") },
-        { value: 10, label: pgettext("Start playing the countdown sound at 10 seconds", "10 seconds") },
-        { value: 5, label: pgettext("Start playing the countdown sound at 5 seconds", "5 seconds") },
+        {
+            value: 60,
+            label: pgettext("Start playing the countdown sound at 60 seconds", "60 seconds"),
+        },
+        {
+            value: 45,
+            label: pgettext("Start playing the countdown sound at 45 seconds", "45 seconds"),
+        },
+        {
+            value: 30,
+            label: pgettext("Start playing the countdown sound at 30 seconds", "30 seconds"),
+        },
+        {
+            value: 20,
+            label: pgettext("Start playing the countdown sound at 20 seconds", "20 seconds"),
+        },
+        {
+            value: 15,
+            label: pgettext("Start playing the countdown sound at 15 seconds", "15 seconds"),
+        },
+        {
+            value: 10,
+            label: pgettext("Start playing the countdown sound at 10 seconds", "10 seconds"),
+        },
+        {
+            value: 5,
+            label: pgettext("Start playing the countdown sound at 5 seconds", "5 seconds"),
+        },
     ];
 
     const start_options_tens = [
         { value: 0, label: pgettext("Never play the countdown sound", "Never") },
-        { value: 60, label: pgettext("Start playing the countdown sound at 60 seconds", "60 seconds") },
-        { value: 50, label: pgettext("Start playing the countdown sound at 50 seconds", "50 seconds") },
-        { value: 40, label: pgettext("Start playing the countdown sound at 40 seconds", "40 seconds") },
-        { value: 30, label: pgettext("Start playing the countdown sound at 30 seconds", "30 seconds") },
-        { value: 20, label: pgettext("Start playing the countdown sound at 20 seconds", "20 seconds") },
-        { value: 10, label: pgettext("Start playing the countdown sound at 10 seconds", "10 seconds") },
+        {
+            value: 60,
+            label: pgettext("Start playing the countdown sound at 60 seconds", "60 seconds"),
+        },
+        {
+            value: 50,
+            label: pgettext("Start playing the countdown sound at 50 seconds", "50 seconds"),
+        },
+        {
+            value: 40,
+            label: pgettext("Start playing the countdown sound at 40 seconds", "40 seconds"),
+        },
+        {
+            value: 30,
+            label: pgettext("Start playing the countdown sound at 30 seconds", "30 seconds"),
+        },
+        {
+            value: 20,
+            label: pgettext("Start playing the countdown sound at 20 seconds", "20 seconds"),
+        },
+        {
+            value: 10,
+            label: pgettext("Start playing the countdown sound at 10 seconds", "10 seconds"),
+        },
     ];
 
     const counting_direction_options = [
@@ -1818,7 +2033,10 @@ function SoundPreferences(props: SettingGroupProps): JSX.Element {
 
                     <span></span>
                     <span>
-                        <Volume group="master" sample={["black-1", "white-2", "capture-handful", "5_periods_left"]} />
+                        <Volume
+                            group="master"
+                            sample={["black-1", "white-2", "capture-handful", "5_periods_left"]}
+                        />
                     </span>
                 </div>
 
@@ -1838,12 +2056,20 @@ function SoundPreferences(props: SettingGroupProps): JSX.Element {
                 </div>
 
                 <div>
-                    <h4>{pgettext('Sound pack to use for clock countdown, "3", "2", "1"', "Clock Countdown")}</h4>
+                    <h4>
+                        {pgettext(
+                            'Sound pack to use for clock countdown, "3", "2", "1"',
+                            "Clock Countdown",
+                        )}
+                    </h4>
                     <span>
                         <SoundPackSelect group="countdown" options={SpriteGroups.countdown} />
                     </span>
                     <span>
-                        <Volume group="countdown" sample={["10", "9", "8", "7", "6", "5", "4", "3", "2", "1"]} />
+                        <Volume
+                            group="countdown"
+                            sample={["10", "9", "8", "7", "6", "5", "4", "3", "2", "1"]}
+                        />
                     </span>
                 </div>
                 <div>
@@ -1893,7 +2119,16 @@ function SoundPreferences(props: SettingGroupProps): JSX.Element {
 
                     <span>
                         <PlayButton
-                            sample={["tick", "tock", "tick", "tock", "tick", "tock-3left", "tick-2left", "tock-1left"]}
+                            sample={[
+                                "tick",
+                                "tock",
+                                "tick",
+                                "tock",
+                                "tick",
+                                "tock-3left",
+                                "tick-2left",
+                                "tock-1left",
+                            ]}
                         />
                     </span>
                 </div>
@@ -1909,7 +2144,11 @@ function SoundPreferences(props: SettingGroupProps): JSX.Element {
                         <Select
                             className="sound-option-select"
                             classNamePrefix="ogs-react-select"
-                            value={start_options_tens.filter((opt) => opt.value === ten_seconds_start)[0]}
+                            value={
+                                start_options_tens.filter(
+                                    (opt) => opt.value === ten_seconds_start,
+                                )[0]
+                            }
                             getOptionValue={(data) => data.value}
                             onChange={setTenSecondsStart}
                             options={start_options_tens}
@@ -1958,7 +2197,11 @@ function SoundPreferences(props: SettingGroupProps): JSX.Element {
                         <Select
                             className="sound-option-select"
                             classNamePrefix="ogs-react-select"
-                            value={start_options_fives.filter((opt) => opt.value === five_seconds_start)[0]}
+                            value={
+                                start_options_fives.filter(
+                                    (opt) => opt.value === five_seconds_start,
+                                )[0]
+                            }
                             getOptionValue={(data) => data.value}
                             onChange={setFiveSecondsStart}
                             options={start_options_fives}
@@ -2008,7 +2251,9 @@ function SoundPreferences(props: SettingGroupProps): JSX.Element {
                         <Select
                             className="sound-option-select"
                             classNamePrefix="ogs-react-select"
-                            value={start_options.filter((opt) => opt.value === every_second_start)[0]}
+                            value={
+                                start_options.filter((opt) => opt.value === every_second_start)[0]
+                            }
                             getOptionValue={(data) => data.value}
                             onChange={setEverySecondStart}
                             options={start_options}
@@ -2058,7 +2303,11 @@ function SoundPreferences(props: SettingGroupProps): JSX.Element {
                         <Select
                             className="sound-option-select"
                             classNamePrefix="ogs-react-select"
-                            value={counting_direction_options.filter((opt) => opt.value === count_direction)[0]}
+                            value={
+                                counting_direction_options.filter(
+                                    (opt) => opt.value === count_direction,
+                                )[0]
+                            }
                             getOptionValue={(data) => data.value}
                             onChange={setCountDirection}
                             options={counting_direction_options}
@@ -2103,7 +2352,12 @@ function SoundPreferences(props: SettingGroupProps): JSX.Element {
                 </div>
 
                 <div>
-                    <h4>{pgettext("Sound pack to use for things like stone placement sounds", "Stone Sounds")}</h4>
+                    <h4>
+                        {pgettext(
+                            "Sound pack to use for things like stone placement sounds",
+                            "Stone Sounds",
+                        )}
+                    </h4>
                     <span>
                         <SoundPackSelect group="stones" options={SpriteGroups.stones} />
                     </span>
@@ -2123,7 +2377,9 @@ function SoundPreferences(props: SettingGroupProps): JSX.Element {
                 </div>
             </div>
 
-            <LineText>{pgettext("Settings for individual sound options", "Individual sound options")}</LineText>
+            <LineText>
+                {pgettext("Settings for individual sound options", "Individual sound options")}
+            </LineText>
 
             <div className="flex-row">
                 <div className="flex-col sound-sample-left-column">
@@ -2143,7 +2399,11 @@ function SoundPreferences(props: SettingGroupProps): JSX.Element {
                             sprite="start_counting"
                             voiceopt={true}
                         />
-                        <SoundToggle name={pgettext("Sound sample option", "Period")} sprite="period" voiceopt={true} />
+                        <SoundToggle
+                            name={pgettext("Sound sample option", "Period")}
+                            sprite="period"
+                            voiceopt={true}
+                        />
                         <SoundToggle
                             name={pgettext("Sound sample option", "5 periods left")}
                             sprite="5_periods_left"
@@ -2187,7 +2447,11 @@ function SoundPreferences(props: SettingGroupProps): JSX.Element {
                             sprite="you_have_won"
                             voiceopt={true}
                         />
-                        <SoundToggle name={pgettext("Sound sample option", "Tie")} sprite="tie" voiceopt={true} />
+                        <SoundToggle
+                            name={pgettext("Sound sample option", "Tie")}
+                            sprite="tie"
+                            voiceopt={true}
+                        />
                     </Card>
 
                     <Card>
@@ -2221,7 +2485,11 @@ function SoundPreferences(props: SettingGroupProps): JSX.Element {
                             sprite="undo_requested"
                             voiceopt={true}
                         />
-                        <SoundToggle name={pgettext("Sound sample option", "Pass")} sprite="pass" voiceopt={true} />
+                        <SoundToggle
+                            name={pgettext("Sound sample option", "Pass")}
+                            sprite="pass"
+                            voiceopt={true}
+                        />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Remove the dead stones")}
                             sprite="remove_the_dead_stones"
@@ -2236,11 +2504,26 @@ function SoundPreferences(props: SettingGroupProps): JSX.Element {
                 </div>
                 <div className="flex-col">
                     <Card>
-                        <SoundToggle name={pgettext("Sound sample option", "Capture 1 stone")} sprite="capture-1" />
-                        <SoundToggle name={pgettext("Sound sample option", "Capture 2 stones")} sprite="capture-2" />
-                        <SoundToggle name={pgettext("Sound sample option", "Capture 3 stones")} sprite="capture-3" />
-                        <SoundToggle name={pgettext("Sound sample option", "Capture 4 stones")} sprite="capture-4" />
-                        <SoundToggle name={pgettext("Sound sample option", "Capture 5 stones")} sprite="capture-5" />
+                        <SoundToggle
+                            name={pgettext("Sound sample option", "Capture 1 stone")}
+                            sprite="capture-1"
+                        />
+                        <SoundToggle
+                            name={pgettext("Sound sample option", "Capture 2 stones")}
+                            sprite="capture-2"
+                        />
+                        <SoundToggle
+                            name={pgettext("Sound sample option", "Capture 3 stones")}
+                            sprite="capture-3"
+                        />
+                        <SoundToggle
+                            name={pgettext("Sound sample option", "Capture 4 stones")}
+                            sprite="capture-4"
+                        />
+                        <SoundToggle
+                            name={pgettext("Sound sample option", "Capture 5 stones")}
+                            sprite="capture-5"
+                        />
                         <SoundToggle
                             name={pgettext("Sound sample option", "Capture 1 stone - pile")}
                             sprite="capture-1-pile"
@@ -2301,9 +2584,18 @@ function SoundPreferences(props: SettingGroupProps): JSX.Element {
                             name={pgettext("Sound sample option", "Tutorial - bling")}
                             sprite="tutorial-bling"
                         />
-                        <SoundToggle name={pgettext("Sound sample option", "Tutorial - pass")} sprite="tutorial-pass" />
-                        <SoundToggle name={pgettext("Sound sample option", "Tutorial - fail")} sprite="tutorial-fail" />
-                        <SoundToggle name={pgettext("Sound sample option", "Tutorial - ping")} sprite="tutorial-ping" />
+                        <SoundToggle
+                            name={pgettext("Sound sample option", "Tutorial - pass")}
+                            sprite="tutorial-pass"
+                        />
+                        <SoundToggle
+                            name={pgettext("Sound sample option", "Tutorial - fail")}
+                            sprite="tutorial-fail"
+                        />
+                        <SoundToggle
+                            name={pgettext("Sound sample option", "Tutorial - ping")}
+                            sprite="tutorial-ping"
+                        />
                     </Card>
 
                     <Card>
@@ -2331,7 +2623,9 @@ function SoundPreferences(props: SettingGroupProps): JSX.Element {
 }
 
 function SoundToggle(props: { name: string; sprite: ValidSound; voiceopt?: boolean }): JSX.Element {
-    const [on, __set]: [boolean, (x: boolean) => void] = React.useState(sfx.getSpriteEnabled(props.sprite));
+    const [on, __set]: [boolean, (x: boolean) => void] = React.useState(
+        sfx.getSpriteEnabled(props.sprite),
+    );
     const [voice, __setVoice]: [boolean, (x: boolean) => void] = React.useState(
         sfx.getSpriteVoiceEnabled(props.sprite),
     );
@@ -2349,7 +2643,11 @@ function SoundToggle(props: { name: string; sprite: ValidSound; voiceopt?: boole
         <div className="SoundToggle">
             <label>
                 <span className="sound-toggle-name">{props.name}</span>
-                <Toggle id={`sprite-enabled-${props.sprite}`} onChange={setSpriteEnabled} checked={on} />
+                <Toggle
+                    id={`sprite-enabled-${props.sprite}`}
+                    onChange={setSpriteEnabled}
+                    checked={on}
+                />
             </label>
             {props.voiceopt && (
                 <label className="SoundToggle-voice-label">
@@ -2358,7 +2656,9 @@ function SoundToggle(props: { name: string; sprite: ValidSound; voiceopt?: boole
                             {pgettext("Use the spoken voice sound for this sound effect", "Voice")}
                         </span>
                     ) : (
-                        <span className="voice-or-effect">{pgettext("Use a non verbal sound effect", "Effect")}</span>
+                        <span className="voice-or-effect">
+                            {pgettext("Use a non verbal sound effect", "Effect")}
+                        </span>
                     )}
                     <Toggle
                         disabled={!on}
@@ -2373,7 +2673,11 @@ function SoundToggle(props: { name: string; sprite: ValidSound; voiceopt?: boole
     );
 }
 
-function EmailNotificationToggle(props: { state: SettingsState; name: string; notification: string }): JSX.Element {
+function EmailNotificationToggle(props: {
+    state: SettingsState;
+    name: string;
+    notification: string;
+}): JSX.Element {
     const [on, __set]: [boolean, (x: boolean) => void] = React.useState(
         !!props.state.notifications[props.notification].value.email,
     );
@@ -2407,7 +2711,9 @@ function EmailNotificationToggle(props: { state: SettingsState; name: string; no
 }
 
 function PreferenceToggle(props: { name: string; preference: ValidPreference }): JSX.Element {
-    const [on, __set]: [boolean, (x: boolean) => void] = React.useState(preferences.get(props.preference));
+    const [on, __set]: [boolean, (x: boolean) => void] = React.useState(
+        preferences.get(props.preference),
+    );
 
     function setPreference(on: boolean): void {
         preferences.set(props.preference, on);
@@ -2418,14 +2724,23 @@ function PreferenceToggle(props: { name: string; preference: ValidPreference }):
         <div className="PreferenceToggle">
             <label>
                 <span className="preference-toggle-name">{props.name}</span>
-                <Toggle id={`preference-toggle-${props.preference}`} onChange={setPreference} checked={on} />
+                <Toggle
+                    id={`preference-toggle-${props.preference}`}
+                    onChange={setPreference}
+                    checked={on}
+                />
             </label>
         </div>
     );
 }
 
-function SoundPackSelect(props: { group: ValidSoundGroup; options: Array<SpritePack> }): JSX.Element {
-    const [pack_id, __setPackId]: [string, (x: string) => void] = React.useState(sfx.getPackId(props.group));
+function SoundPackSelect(props: {
+    group: ValidSoundGroup;
+    options: Array<SpritePack>;
+}): JSX.Element {
+    const [pack_id, __setPackId]: [string, (x: string) => void] = React.useState(
+        sfx.getPackId(props.group),
+    );
 
     function filter({ label, value, data }, text: string): boolean {
         if (!text) {
@@ -2468,7 +2783,9 @@ function SoundPackSelect(props: { group: ValidSoundGroup; options: Array<SpriteP
                         ref={innerRef}
                         {...innerProps}
                         className={
-                            "sound-pack-option " + (isFocused ? "focused " : "") + (isSelected ? "selected" : "")
+                            "sound-pack-option " +
+                            (isFocused ? "focused " : "") +
+                            (isSelected ? "selected" : "")
                         }
                     >
                         <Flag country={data.country} /> {data.name}
@@ -2479,14 +2796,21 @@ function SoundPackSelect(props: { group: ValidSoundGroup; options: Array<SpriteP
                         <Flag country={data.country} /> {data.name}
                     </span>
                 ),
-                ValueContainer: ({ children }) => <div className="sound-pack-option-container">{children}</div>,
+                ValueContainer: ({ children }) => (
+                    <div className="sound-pack-option-container">{children}</div>
+                ),
             }}
         />
     );
 }
 
-function Volume(props: { group: ValidSoundGroup; sample: ValidSound | Array<ValidSound> }): JSX.Element {
-    const [volume, __setVolume]: [number, (x: number) => void] = React.useState(sfx.getVolume(props.group));
+function Volume(props: {
+    group: ValidSoundGroup;
+    sample: ValidSound | Array<ValidSound>;
+}): JSX.Element {
+    const [volume, __setVolume]: [number, (x: number) => void] = React.useState(
+        sfx.getVolume(props.group),
+    );
 
     function setVolume(v: number): void {
         __setVolume(v);
@@ -2510,11 +2834,22 @@ function Volume(props: { group: ValidSoundGroup; sample: ValidSound | Array<Vali
             <i
                 className={
                     "fa volume-icon " +
-                    (volume === 0 ? "fa-volume-off" : volume > 0.5 ? "fa-volume-up" : "fa-volume-down")
+                    (volume === 0
+                        ? "fa-volume-off"
+                        : volume > 0.5
+                        ? "fa-volume-up"
+                        : "fa-volume-down")
                 }
                 onClick={toggleVolumeHandler}
             />
-            <input type="range" onChange={setVolumeHandler} value={volume} min={0} max={1.0} step={0.05} />
+            <input
+                type="range"
+                onChange={setVolumeHandler}
+                value={volume}
+                min={0}
+                max={1.0}
+                step={0.05}
+            />
 
             <PlayButton sample={props.sample} />
         </span>
@@ -2526,7 +2861,8 @@ const play_emitter = new EventEmitter();
 
 function PlayButton(props: { sample: ValidSound | Array<ValidSound> }): JSX.Element {
     const [playing, setPlaying]: [boolean, any] = React.useState(false);
-    const samples: Array<ValidSound> = typeof props.sample === "string" ? [props.sample] : props.sample;
+    const samples: Array<ValidSound> =
+        typeof props.sample === "string" ? [props.sample] : props.sample;
 
     function play(ev: any): void {
         const _samples = samples.slice();

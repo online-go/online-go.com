@@ -36,14 +36,18 @@ export interface Subscriber<T, K extends Extract<keyof T, string>> {
 // tell the publisher.Subscription which channels you're interested in hearing about.
 export class Publisher<T> {
     private callback_table: CallbackTable<T>;
-    public readonly Subscriber: new <K extends Extract<keyof T, string>>(callback: Callback<T, K>) => Subscriber<T, K>;
+    public readonly Subscriber: new <K extends Extract<keyof T, string>>(
+        callback: Callback<T, K>,
+    ) => Subscriber<T, K>;
 
     constructor() {
         let serial = 0;
         const callback_table: CallbackTable<T> = {};
 
         this.callback_table = callback_table;
-        this.Subscriber = class Subscriber<K extends Extract<keyof T, string>> extends AbstractSubscriber<T, K> {
+        this.Subscriber = class Subscriber<K extends Extract<keyof T, string>> extends (
+            AbstractSubscriber
+        )<T, K> {
             constructor(callback: Callback<T, K>) {
                 super(serial++, callback_table, callback);
             }
@@ -72,10 +76,16 @@ export class Publisher<T> {
 // publication that this Subscriber can be subscribed to. If you don't wish
 // to narrow the type down, then you can specify K = keyof T or just allow
 // the compiler to infer the type.
-abstract class AbstractSubscriber<T, K extends Extract<keyof T, string>> implements Subscriber<T, K> {
+abstract class AbstractSubscriber<T, K extends Extract<keyof T, string>>
+    implements Subscriber<T, K>
+{
     private subscribed_channels: { [channel in K]?: boolean };
 
-    constructor(private serial: number, private callback_table: CallbackTable<T>, private callback: Callback<T, K>) {
+    constructor(
+        private serial: number,
+        private callback_table: CallbackTable<T>,
+        private callback: Callback<T, K>,
+    ) {
         this.subscribed_channels = {};
     }
 

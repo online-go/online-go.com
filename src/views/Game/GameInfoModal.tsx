@@ -175,7 +175,8 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         const config = this.props.config;
         const user = data.get("user");
         const review_id = config.review_id;
-        const editable = (review_id && this.props.creatorId === user.id) || user.is_moderator || null;
+        const editable =
+            (review_id && this.props.creatorId === user.id) || user.is_moderator || null;
 
         const time_control_description = timeControlDescription(config.time_control);
 
@@ -187,8 +188,10 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
             ranks.push({ value: i + ".1", label: rankString({ ranking: i, professional: true }) });
         }
 
-        const black_editable = editable && (config.black_player_id === 0 || !config.players?.black?.id);
-        const white_editable = editable && (config.white_player_id === 0 || !config.players?.white?.id);
+        const black_editable =
+            editable && (config.black_player_id === 0 || !config.players?.black?.id);
+        const white_editable =
+            editable && (config.white_player_id === 0 || !config.players?.white?.id);
 
         return (
             <div className="Modal GameInfoModal" ref="modal">
@@ -220,10 +223,15 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                                 <dd>
                                     {black_editable ? (
                                         <span>
-                                            <input value={config.players.black.name} onChange={this.updateBlackName} />
+                                            <input
+                                                value={config.players.black.name}
+                                                onChange={this.updateBlackName}
+                                            />
                                             <select
                                                 value={
-                                                    config.players.black.rank + "." + (config.players.black.pro ? 1 : 0)
+                                                    config.players.black.rank +
+                                                    "." +
+                                                    (config.players.black.pro ? 1 : 0)
                                                 }
                                                 onChange={this.updateBlackRank}
                                             >
@@ -235,17 +243,27 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                                             </select>
                                         </span>
                                     ) : (
-                                        <Player disableCacheUpdate icon rank user={this.props.black} />
+                                        <Player
+                                            disableCacheUpdate
+                                            icon
+                                            rank
+                                            user={this.props.black}
+                                        />
                                     )}
                                 </dd>
                                 <dt>{_("White")}</dt>
                                 <dd>
                                     {white_editable ? (
                                         <span>
-                                            <input value={config.players.white.name} onChange={this.updateWhiteName} />
+                                            <input
+                                                value={config.players.white.name}
+                                                onChange={this.updateWhiteName}
+                                            />
                                             <select
                                                 value={
-                                                    config.players.white.rank + "." + (config.players.white.pro ? 1 : 0)
+                                                    config.players.white.rank +
+                                                    "." +
+                                                    (config.players.white.pro ? 1 : 0)
                                                 }
                                                 onChange={this.updateWhiteRank}
                                             >
@@ -257,15 +275,24 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                                             </select>
                                         </span>
                                     ) : (
-                                        <Player disableCacheUpdate icon rank user={this.props.white} />
+                                        <Player
+                                            disableCacheUpdate
+                                            icon
+                                            rank
+                                            user={this.props.white}
+                                        />
                                     )}
                                 </dd>
                             </React.Fragment>
                         )}
                         <dt>{_("Time")}</dt>
                         <dd>
-                            {config.start_time ? moment(new Date(config.start_time * 1000)).format("LLL") : ""}
-                            {config.end_time ? " - " + moment(new Date(config.end_time * 1000)).format("LLL") : ""}
+                            {config.start_time
+                                ? moment(new Date(config.start_time * 1000)).format("LLL")
+                                : ""}
+                            {config.end_time
+                                ? " - " + moment(new Date(config.end_time * 1000)).format("LLL")
+                                : ""}
                         </dd>
                         <dt>{_("Rules")}</dt>
                         <dd>{rulesText(config.rules)}</dd>

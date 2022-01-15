@@ -61,9 +61,12 @@ class AutomatchToast extends React.PureComponent<{}, any> {
     render() {
         return (
             <div className="AutomatchToast">
-                {interpolate(pgettext("Automatch search message", "{{elapsed_time}} Finding a game..."), {
-                    elapsed_time: this.state.elapsed,
-                })}
+                {interpolate(
+                    pgettext("Automatch search message", "{{elapsed_time}} Finding a game..."),
+                    {
+                        elapsed_time: this.state.elapsed,
+                    },
+                )}
             </div>
         );
     }
@@ -153,7 +156,11 @@ class AutomatchManager extends TypedEventEmitter<Events> {
         termination_socket.emit("automatch/find_match", preferences);
 
         /* live game? track it, and pop up our searching toast */
-        if (preferences.size_speed_options.filter((opt) => opt.speed === "blitz" || opt.speed === "live").length) {
+        if (
+            preferences.size_speed_options.filter(
+                (opt) => opt.speed === "blitz" || opt.speed === "live",
+            ).length
+        ) {
             this.last_find_match_uuid = preferences.uuid;
             if (this.active_toast) {
                 this.active_toast.close();

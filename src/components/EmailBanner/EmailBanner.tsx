@@ -56,7 +56,9 @@ export class EmailBanner extends React.PureComponent {
                     )}
                     <br />
                     <br />
-                    {_("You can visit the settings page to update your email address or resend the validation email.")}
+                    {_(
+                        "You can visit the settings page to update your email address or resend the validation email.",
+                    )}
                     <button className="primary" onClick={this.viewSettings}>
                         {_("Go to settings")} &rarr;
                     </button>

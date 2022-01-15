@@ -59,7 +59,10 @@ interface TournamentRecordState {
     editable_by_current_user?: boolean;
 }
 
-export class TournamentRecord extends React.PureComponent<TournamentRecordProperties, TournamentRecordState> {
+export class TournamentRecord extends React.PureComponent<
+    TournamentRecordProperties,
+    TournamentRecordState
+> {
     loaded_state: any = {};
     player_table_ref = React.createRef<PaginatedTableRef>();
 
@@ -225,7 +228,9 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
                 }
                 this.forceUpdate();
 
-                del(`tournament_records/${this.state.tournament_record_id}/rounds/${round.id}/${entry.id}`)
+                del(
+                    `tournament_records/${this.state.tournament_record_id}/rounds/${round.id}/${entry.id}`,
+                )
                     .then(ignore)
                     .catch(errorAlerter);
             })
@@ -265,7 +270,10 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
                     return;
                 }
 
-                post(`tournament_records/${this.state.tournament_record_id}/round/${round.id}/`, { url, notes: "" })
+                post(`tournament_records/${this.state.tournament_record_id}/round/${round.id}/`, {
+                    url,
+                    notes: "",
+                })
                     .then((res) => {
                         round.entries.unshift(res);
                         this.forceUpdate();
@@ -351,7 +359,11 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
                             source={`tournament_records/${this.props.match.params.tournament_record_id}/players`}
                             orderBy={["-rank", "name"]}
                             columns={[
-                                { header: "", className: () => "player", render: (p) => <span>{p.name}</span> },
+                                {
+                                    header: "",
+                                    className: () => "player",
+                                    render: (p) => <span>{p.name}</span>,
+                                },
 
                                 {
                                     header: "",
@@ -363,7 +375,12 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
                                     header: "",
                                     className: () => "rank",
                                     render: (p) =>
-                                        editable && <i className="fa fa-trash" onClick={() => this.removePlayer(p)} />,
+                                        editable && (
+                                            <i
+                                                className="fa fa-trash"
+                                                onClick={() => this.removePlayer(p)}
+                                            />
+                                        ),
                                 },
                             ]}
                         />
@@ -433,14 +450,23 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
 
                             {editable && (
                                 <div>
-                                    <button onClick={() => this.recordGame(round)} className="default xs">
+                                    <button
+                                        onClick={() => this.recordGame(round)}
+                                        className="default xs"
+                                    >
                                         {_("Record game")}
                                     </button>
-                                    <button onClick={() => this.linkGame(round)} className="default xs">
+                                    <button
+                                        onClick={() => this.linkGame(round)}
+                                        className="default xs"
+                                    >
                                         {_("Link game")}
                                     </button>
                                     {editing && (
-                                        <button onClick={() => this.deleteRound(round)} className="default xs">
+                                        <button
+                                            onClick={() => this.deleteRound(round)}
+                                            className="default xs"
+                                        >
                                             {_("Remove round")}
                                         </button>
                                     )}
@@ -458,7 +484,9 @@ export class TournamentRecord extends React.PureComponent<TournamentRecordProper
                                                 <td>
                                                     <i
                                                         className="fa fa-trash"
-                                                        onClick={() => this.deleteEntry(round, entry)}
+                                                        onClick={() =>
+                                                            this.deleteEntry(round, entry)
+                                                        }
                                                     />
                                                 </td>
                                             )}

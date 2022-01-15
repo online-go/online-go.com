@@ -78,7 +78,10 @@ export class ErrorBoundary extends React.Component<{}, any> {
     render() {
         if (this.state.hasError) {
             return (
-                <div className="ErrorBoundary" onClick={() => Sentry.showReportDialog({ eventId: this.state.eventId })}>
+                <div
+                    className="ErrorBoundary"
+                    onClick={() => Sentry.showReportDialog({ eventId: this.state.eventId })}
+                >
                     <h3>{_("Congratulations, you found a bug!")}</h3>
                     <div>
                         {_(

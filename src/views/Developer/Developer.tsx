@@ -45,7 +45,10 @@ export class Developer extends React.PureComponent {
                 <div className="row">
                     <div>
                         <a href="/api/" target="_self">
-                            <img src={data.get("config.cdn_release") + "/img/drf-logo.png"} className="top-image" />
+                            <img
+                                src={data.get("config.cdn_release") + "/img/drf-logo.png"}
+                                className="top-image"
+                            />
                         </a>
                     </div>
                 </div>
@@ -66,7 +69,12 @@ export class Developer extends React.PureComponent {
                             href="http://ogs.readme.io/"
                             style={{ paddingTop: "20px", display: "inline-block" }}
                         >
-                            <span style={{ fontSize: "60px", fontFamily: '"Courier New", Courier, monospace' }}>
+                            <span
+                                style={{
+                                    fontSize: "60px",
+                                    fontFamily: '"Courier New", Courier, monospace',
+                                }}
+                            >
                                 <b>read</b>me.io
                             </span>
                         </a>

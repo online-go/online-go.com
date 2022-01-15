@@ -372,8 +372,13 @@ export class Play extends React.Component<{}, PlayState> {
     };
 
     toggleShowOtherBoardsizeChallenges = () => {
-        preferences.set("show-other-boardsize-challenges", !this.state.show_other_boardsize_challenges);
-        this.setState({ show_other_boardsize_challenges: !this.state.show_other_boardsize_challenges });
+        preferences.set(
+            "show-other-boardsize-challenges",
+            !this.state.show_other_boardsize_challenges,
+        );
+        this.setState({
+            show_other_boardsize_challenges: !this.state.show_other_boardsize_challenges,
+        });
     };
 
     anyChallengesToShow = (challenge_list: Challenge[]): boolean => {
@@ -435,7 +440,10 @@ export class Play extends React.Component<{}, PlayState> {
             //console.log("Freeze challenges...");
             this.setState({ freeze_challenge_list: true });
         }
-        this.list_freeze_timeout = setTimeout(this.unfreezeChallenges, CHALLENGE_LIST_FREEZE_PERIOD);
+        this.list_freeze_timeout = setTimeout(
+            this.unfreezeChallenges,
+            CHALLENGE_LIST_FREEZE_PERIOD,
+        );
     };
 
     unfreezeChallenges = () => {
@@ -448,7 +456,9 @@ export class Play extends React.Component<{}, PlayState> {
     };
 
     render() {
-        const corr_automatcher_uuids = Object.keys(automatch_manager.active_correspondence_automatchers);
+        const corr_automatcher_uuids = Object.keys(
+            automatch_manager.active_correspondence_automatchers,
+        );
         const corr_automatchers = corr_automatcher_uuids.map(
             (uuid) => automatch_manager.active_correspondence_automatchers[uuid],
         );
@@ -463,8 +473,15 @@ export class Play extends React.Component<{}, PlayState> {
                     </div>
                     <div className="col-sm-6">
                         <Card>
-                            <div ref={(el) => (this.ref_container = el)} className="seek-graph-container">
-                                <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
+                            <div
+                                ref={(el) => (this.ref_container = el)}
+                                className="seek-graph-container"
+                            >
+                                <ReactResizeDetector
+                                    handleWidth
+                                    handleHeight
+                                    onResize={() => this.onResize()}
+                                />
                                 <PersistentElement elt={this.canvas} />
                             </div>
                         </Card>
@@ -476,7 +493,9 @@ export class Play extends React.Component<{}, PlayState> {
                         <div id="challenge-list" onMouseMove={this.freezeChallenges}>
                             {(corr_automatchers.length || null) && (
                                 <div className="challenge-row">
-                                    <span className="cell break">{_("Your Automatch Requests")}</span>
+                                    <span className="cell break">
+                                        {_("Your Automatch Requests")}
+                                    </span>
                                     {this.cellBreaks(7)}
                                 </div>
                             )}
@@ -498,7 +517,9 @@ export class Play extends React.Component<{}, PlayState> {
                                             onClick={() => {
                                                 automatch_manager.cancel(m.uuid);
                                                 if (corr_automatchers.length === 1) {
-                                                    this.setState({ showLoadingSpinnerForCorrespondence: false });
+                                                    this.setState({
+                                                        showLoadingSpinnerForCorrespondence: false,
+                                                    });
                                                 }
                                             }}
                                         >
@@ -554,7 +575,9 @@ export class Play extends React.Component<{}, PlayState> {
                                 {this.cellBreaks(8)}
                             </div>
 
-                            {this.anyChallengesToShow(this.state.live_list) ? this.challengeListHeaders() : null}
+                            {this.anyChallengesToShow(this.state.live_list)
+                                ? this.challengeListHeaders()
+                                : null}
 
                             {this.challengeList(true)}
 
@@ -580,7 +603,9 @@ export class Play extends React.Component<{}, PlayState> {
 
                             <table id="rengo-table">
                                 <thead>
-                                    {this.anyChallengesToShow(this.state.rengo_list) ? this.rengoListHeaders() : null}
+                                    {this.anyChallengesToShow(this.state.rengo_list)
+                                        ? this.rengoListHeaders()
+                                        : null}
                                 </thead>
 
                                 <tbody>{this.rengoList()}</tbody>
@@ -737,7 +762,12 @@ export class Play extends React.Component<{}, PlayState> {
                     </div>
                     <div className="automatch-row-container">
                         <button className="primary" onClick={this.dismissCorrespondenceSpinner}>
-                            {_(pgettext("Dismiss the 'finding correspondence automatch' message", "Got it"))}
+                            {_(
+                                pgettext(
+                                    "Dismiss the 'finding correspondence automatch' message",
+                                    "Got it",
+                                ),
+                            )}
                         </button>
                     </div>
                 </div>
@@ -768,7 +798,10 @@ export class Play extends React.Component<{}, PlayState> {
                             </button>
                         </div>
                         <div className="automatch-settings">
-                            <span className="automatch-settings-link fake-link" onClick={openAutomatchSettings}>
+                            <span
+                                className="automatch-settings-link fake-link"
+                                onClick={openAutomatchSettings}
+                            >
                                 <i className="fa fa-gear" />
                                 {_("Settings ")}
                             </span>
@@ -780,7 +813,10 @@ export class Play extends React.Component<{}, PlayState> {
                                 <div className="play-button-text-root">
                                     <i className="fa fa-bolt" /> {_("Blitz")}
                                     <span className="time-per-move">
-                                        {pgettext("Automatch average time per move", "~10s per move")}
+                                        {pgettext(
+                                            "Automatch average time per move",
+                                            "~10s per move",
+                                        )}
                                     </span>
                                 </div>
                             </button>
@@ -788,7 +824,10 @@ export class Play extends React.Component<{}, PlayState> {
                                 <div className="play-button-text-root">
                                     <i className="fa fa-clock-o" /> {_("Normal")}
                                     <span className="time-per-move">
-                                        {pgettext("Automatch average time per move", "~30s per move")}
+                                        {pgettext(
+                                            "Automatch average time per move",
+                                            "~30s per move",
+                                        )}
                                     </span>
                                 </div>
                             </button>
@@ -800,13 +839,19 @@ export class Play extends React.Component<{}, PlayState> {
                                     <span className="time-per-move"></span>
                                 </div>
                             </button>
-                            <button className="primary" onClick={() => this.findMatch("correspondence")}>
+                            <button
+                                className="primary"
+                                onClick={() => this.findMatch("correspondence")}
+                            >
                                 <div className="play-button-text-root">
                                     <span>
                                         <i className="ogs-turtle" /> {_("Correspondence")}
                                     </span>
                                     <span className="time-per-move">
-                                        {pgettext("Automatch average time per move", "~1 day per move")}
+                                        {pgettext(
+                                            "Automatch average time per move",
+                                            "~1 day per move",
+                                        )}
                                     </span>
                                 </div>
                             </button>
@@ -827,7 +872,8 @@ export class Play extends React.Component<{}, PlayState> {
 
     visibleInChallengeList = (C) =>
         (C.eligible || C.user_challenge || this.state.show_all_challenges) &&
-        ((this.state.show_unranked_challenges && !C.ranked) || (this.state.show_ranked_challenges && C.ranked)) &&
+        ((this.state.show_unranked_challenges && !C.ranked) ||
+            (this.state.show_ranked_challenges && C.ranked)) &&
         ((this.state.show_19x19_challenges && C.width === 19 && C.height === 19) ||
             (this.state.show_13x13_challenges && C.width === 13 && C.height === 13) ||
             (this.state.show_9x9_challenges && C.width === 9 && C.height === 9) ||
@@ -847,26 +893,35 @@ export class Play extends React.Component<{}, PlayState> {
                 <i className="cheat-alert fa fa-exclamation-triangle fa-xs" />
                 <p className="cheat-alert-tooltiptext">
                     {(C.komi !== null
-                        ? pgettext("Warning for users accepting game", "Custom komi") + ": " + C.komi + " "
+                        ? pgettext("Warning for users accepting game", "Custom komi") +
+                          ": " +
+                          C.komi +
+                          " "
                         : "") +
                         (usedForCheating(C.time_control_parameters)
-                            ? pgettext("Warning for users accepting game", "Unusual time setting") + " "
+                            ? pgettext("Warning for users accepting game", "Unusual time setting") +
+                              " "
                             : "") +
                         (C.handicap !== 0 && C.handicap !== -1
-                            ? pgettext("Warning for users accepting game", "Custom handicap") + ": " + C.handicap_text
+                            ? pgettext("Warning for users accepting game", "Custom handicap") +
+                              ": " +
+                              C.handicap_text
                             : "")}
                 </p>
             </span>
         );
 
     challengeList(show_live_list: boolean) {
-        const challenge_list = show_live_list ? this.state.live_list : this.state.correspondence_list;
+        const challenge_list = show_live_list
+            ? this.state.live_list
+            : this.state.correspondence_list;
 
         const user = data.get("user");
 
         const timeControlClassName = (config) => {
             // This appears to be bolding live games compared to blitz?
-            const isBold = show_live_list && (config.time_per_move > 3600 || config.time_per_move === 0);
+            const isBold =
+                show_live_list && (config.time_per_move > 3600 || config.time_per_move === 0);
             return "cell " + (isBold ? "bold" : "");
         };
 
@@ -875,7 +930,9 @@ export class Play extends React.Component<{}, PlayState> {
                 <div className="ineligible">
                     {
                         this.state.show_all_challenges
-                            ? _("(none)") /* translators: There are no challenges in the system, nothing to list here */
+                            ? _(
+                                  "(none)",
+                              ) /* translators: There are no challenges in the system, nothing to list here */
                             : _(
                                   "(none available)",
                               ) /* translators: There are no challenges that this person is eligible for */
@@ -898,13 +955,19 @@ export class Play extends React.Component<{}, PlayState> {
                         )}
 
                         {((C.eligible && !C.removed) || null) && (
-                            <button onClick={this.acceptOpenChallenge.bind(this, C)} className="btn success xs">
+                            <button
+                                onClick={this.acceptOpenChallenge.bind(this, C)}
+                                className="btn success xs"
+                            >
                                 {_("Accept")}
                             </button>
                         )}
 
                         {(C.user_challenge || null) && (
-                            <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">
+                            <button
+                                onClick={this.cancelOpenChallenge.bind(this, C)}
+                                className="btn reject xs"
+                            >
                                 {_("Remove")}
                             </button>
                         )}
@@ -917,18 +980,26 @@ export class Play extends React.Component<{}, PlayState> {
                             </span>
                         )}
                     </span>
-                    <span className="cell" style={{ textAlign: "left", maxWidth: "10em", overflow: "hidden" }}>
+                    <span
+                        className="cell"
+                        style={{ textAlign: "left", maxWidth: "10em", overflow: "hidden" }}
+                    >
                         <Player user={this.extractUser(C)} rank={true} />
                     </span>
                     <span
                         className={
                             "cell " +
-                            (C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19) ? "bold" : "")
+                            (C.width !== C.height ||
+                            (C.width !== 9 && C.width !== 13 && C.width !== 19)
+                                ? "bold"
+                                : "")
                         }
                     >
                         {C.width}x{C.height}
                     </span>
-                    <span className={timeControlClassName(C)}>{shortShortTimeControl(C.time_control_parameters)}</span>
+                    <span className={timeControlClassName(C)}>
+                        {shortShortTimeControl(C.time_control_parameters)}
+                    </span>
                     <span className="cell">{C.ranked_text}</span>
                     <span className="cell">{C.handicap_text}</span>
                     <span className="cell">{C.name}</span>
@@ -1039,8 +1110,12 @@ export class Play extends React.Component<{}, PlayState> {
 
         const user = data.get("user");
 
-        const live_list = this.state.rengo_list.filter((c) => isLiveGame(c.time_control_parameters));
-        const corre_list = this.state.rengo_list.filter((c) => !isLiveGame(c.time_control_parameters));
+        const live_list = this.state.rengo_list.filter((c) =>
+            isLiveGame(c.time_control_parameters),
+        );
+        const corre_list = this.state.rengo_list.filter(
+            (c) => !isLiveGame(c.time_control_parameters),
+        );
 
         return [
             // the live list
@@ -1065,7 +1140,11 @@ export class Play extends React.Component<{}, PlayState> {
             ) : (
                 live_list.map((C) =>
                     this.visibleInChallengeList(C) ? (
-                        <this.rengoListItem C={C} user={user} key={`rengo-list-item-{C.challenge_id}`} />
+                        <this.rengoListItem
+                            C={C}
+                            user={user}
+                            key={`rengo-list-item-{C.challenge_id}`}
+                        />
                     ) : null,
                 )
             ),
@@ -1101,9 +1180,10 @@ export class Play extends React.Component<{}, PlayState> {
                         (this.visibleInChallengeList(C) || null) && (
                             <React.Fragment key={C.challenge_id}>
                                 <this.rengoListItem C={C} user={user} />
-                                {(this.state.show_in_rengo_management_pane.includes(C.challenge_id) || null) && (
-                                    <this.rengoManageListItem C={C} user={user} />
-                                )}
+                                {(this.state.show_in_rengo_management_pane.includes(
+                                    C.challenge_id,
+                                ) ||
+                                    null) && <this.rengoManageListItem C={C} user={user} />}
                             </React.Fragment>
                         ),
                 )
@@ -1116,7 +1196,10 @@ export class Play extends React.Component<{}, PlayState> {
             this.closeChallengeManagementPane(C);
         } else {
             this.setState({
-                show_in_rengo_management_pane: [C.challenge_id, ...this.state.show_in_rengo_management_pane],
+                show_in_rengo_management_pane: [
+                    C.challenge_id,
+                    ...this.state.show_in_rengo_management_pane,
+                ],
             });
         }
     };
@@ -1165,33 +1248,54 @@ export class Play extends React.Component<{}, PlayState> {
             <tr className={"challenge-row"}>
                 <td className={"cell rengo-list-buttons"}>
                     {user.is_moderator && (
-                        <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left ">
+                        <button
+                            onClick={this.cancelOpenChallenge.bind(this, C)}
+                            className="btn danger xs pull-left "
+                        >
                             <i className="fa fa-trash" />
                         </button>
                     )}
 
                     {(C.user_challenge || null) && (
-                        <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn reject xs">
+                        <button
+                            onClick={this.cancelOpenChallenge.bind(this, C)}
+                            className="btn reject xs"
+                        >
                             {_("Remove")}
                         </button>
                     )}
 
-                    {((C.eligible && !C.removed && !C.user_challenge && C.rengo_participants.includes(user.id)) ||
+                    {((C.eligible &&
+                        !C.removed &&
+                        !C.user_challenge &&
+                        C.rengo_participants.includes(user.id)) ||
                         null) && (
-                        <button onClick={this.unNominateForRengoChallenge.bind(this, C)} className="btn danger xs">
+                        <button
+                            onClick={this.unNominateForRengoChallenge.bind(this, C)}
+                            className="btn danger xs"
+                        >
                             {_("Withdraw")}
                         </button>
                     )}
 
                     {!isLiveGame(C.time_control_parameters) && (
-                        <button onClick={this.toggleRengoChallengePane.bind(this, C)} className="btn primary xs">
+                        <button
+                            onClick={this.toggleRengoChallengePane.bind(this, C)}
+                            className="btn primary xs"
+                        >
                             {C.user_challenge ? _("Manage") : _("View")}
                         </button>
                     )}
 
-                    {((C.eligible && !C.removed && !C.user_challenge && !C.rengo_participants.includes(user.id)) ||
+                    {((C.eligible &&
+                        !C.removed &&
+                        !C.user_challenge &&
+                        !C.rengo_participants.includes(user.id)) ||
                         null) && (
-                        <button onClick={this.nominateAndShow.bind(this, C)} className="btn success xs">
+                        <button
+                            onClick={this.nominateAndShow.bind(this, C)}
+                            className="btn success xs"
+                        >
                             {_("Join")}
                         </button>
                     )}
@@ -1204,13 +1308,18 @@ export class Play extends React.Component<{}, PlayState> {
                         </span>
                     )}
                 </td>
-                <td className="cell" style={{ textAlign: "left", maxWidth: "10em", overflow: "hidden" }}>
+                <td
+                    className="cell"
+                    style={{ textAlign: "left", maxWidth: "10em", overflow: "hidden" }}
+                >
                     <Player user={this.extractUser(C)} rank={true} />
                 </td>
                 <td
                     className={
                         "cell " +
-                        (C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19) ? "bold" : "")
+                        (C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19)
+                            ? "bold"
+                            : "")
                     }
                 >
                     {C.width}x{C.height}
@@ -1226,7 +1335,11 @@ export class Play extends React.Component<{}, PlayState> {
 
     assignToTeam = (player_id: number, team: string, challenge, signal_done?: () => void) => {
         const assignment =
-            team === "rengo_black_team" ? "assign_black" : team === "rengo_white_team" ? "assign_white" : "unassign";
+            team === "rengo_black_team"
+                ? "assign_black"
+                : team === "rengo_white_team"
+                ? "assign_white"
+                : "unassign";
 
         put("challenges/%%/team", challenge.challenge_id, {
             [assignment]: [player_id], // back end expects an array of changes, but we only ever send one at a time.

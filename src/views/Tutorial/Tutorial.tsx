@@ -139,10 +139,16 @@ abstract class TutorialPage extends React.PureComponent<{}, TutorialPageState> {
                 <div className="TutorialPage">
                     <div className="tutorial-text">{this.text()}</div>
 
-                    <InstructionalGoban ref="igoban" config={this._config} onUpdate={this.onUpdate} />
+                    <InstructionalGoban
+                        ref="igoban"
+                        config={this._config}
+                        onUpdate={this.onUpdate}
+                    />
 
                     <div className="buttons">
-                        {this.state.show_reset && <button onClick={this.reset}>{_("Reset")}</button>}
+                        {this.state.show_reset && (
+                            <button onClick={this.reset}>{_("Reset")}</button>
+                        )}
                         {this.state.show_next && (
                             <button className="primary" onClick={this.next}>
                                 {_("Next")}
@@ -472,14 +478,26 @@ class StayingAlive2 extends TutorialPage {
                         x: 5,
                         y: 4,
                         branches: [
-                            { x: 4, y: 4, branches: [{ x: 4, y: 3, branches: [{ x: 4, y: 4, wrong_answer: true }] }] },
+                            {
+                                x: 4,
+                                y: 4,
+                                branches: [
+                                    { x: 4, y: 3, branches: [{ x: 4, y: 4, wrong_answer: true }] },
+                                ],
+                            },
                         ],
                     },
                     {
                         x: 4,
                         y: 3,
                         branches: [
-                            { x: 4, y: 4, branches: [{ x: 5, y: 4, branches: [{ x: 4, y: 4, wrong_answer: true }] }] },
+                            {
+                                x: 4,
+                                y: 4,
+                                branches: [
+                                    { x: 5, y: 4, branches: [{ x: 4, y: 4, wrong_answer: true }] },
+                                ],
+                            },
                         ],
                     },
                 ],
@@ -588,7 +606,10 @@ class Snapback extends TutorialPage {
         };
     }
     showNext() {
-        return this.refs.igoban.goban.engine.board[5][4] === 0 && this.refs.igoban.goban.engine.board[5][5] === 1;
+        return (
+            this.refs.igoban.goban.engine.board[5][4] === 0 &&
+            this.refs.igoban.goban.engine.board[5][5] === 1
+        );
     }
 }
 class Scoring1 extends TutorialPage {
@@ -783,7 +804,11 @@ class Done extends React.PureComponent<{}, any> {
                         </div>
                         <div className="row">
                             <div className="col-sm-6">
-                                <a className="btn primary" href="https://forums.online-go.com" target="_blank">
+                                <a
+                                    className="btn primary"
+                                    href="https://forums.online-go.com"
+                                    target="_blank"
+                                >
                                     <i className="fa fa-th-list"></i> {_("Visit the forums")}
                                 </a>
                             </div>

@@ -72,12 +72,19 @@ export class GroupCreate extends React.PureComponent<{}, GroupCreateState> {
                 <div className="container" style={{ maxWidth: "42em", paddingTop: "5em" }}>
                     <div style={{ textAlign: "center" }}>
                         <h1>{_("Excellent, another group!")}</h1>
-                        <p>{_("To begin, please fill out some basic information about your group.")}</p>
+                        <p>
+                            {_(
+                                "To begin, please fill out some basic information about your group.",
+                            )}
+                        </p>
                     </div>
                     <div className="well">
                         <div className="form-horizontal" role="form">
                             <div className="form-group">
-                                <label className="col-sm-5 control-label" htmlFor="group-create-name">
+                                <label
+                                    className="col-sm-5 control-label"
+                                    htmlFor="group-create-name"
+                                >
                                     {_("Group Name")}
                                 </label>
                                 <div className="col-sm-6">
@@ -94,7 +101,10 @@ export class GroupCreate extends React.PureComponent<{}, GroupCreateState> {
                             </div>
 
                             <div className="form-group">
-                                <label className="col-sm-5 control-label" htmlFor="group-create-public">
+                                <label
+                                    className="col-sm-5 control-label"
+                                    htmlFor="group-create-public"
+                                >
                                     {_("Open to the public")}
                                 </label>
                                 <div className="col-sm-6">
@@ -110,7 +120,10 @@ export class GroupCreate extends React.PureComponent<{}, GroupCreateState> {
                             </div>
                             {(!this.state.is_public || null) && (
                                 <div className="form-group">
-                                    <label className="col-sm-5 control-label" htmlFor="group-create-disable-invitation">
+                                    <label
+                                        className="col-sm-5 control-label"
+                                        htmlFor="group-create-disable-invitation"
+                                    >
                                         {_("Disable invitation requests")}
                                     </label>
                                     <div className="col-sm-6">
@@ -126,7 +139,10 @@ export class GroupCreate extends React.PureComponent<{}, GroupCreateState> {
                                 </div>
                             )}
                             <div className="form-group">
-                                <label className="col-sm-5 control-label" htmlFor="group-create-hide-details">
+                                <label
+                                    className="col-sm-5 control-label"
+                                    htmlFor="group-create-hide-details"
+                                >
                                     {_("Hide details from non-members")}
                                 </label>
                                 <div className="col-sm-6">

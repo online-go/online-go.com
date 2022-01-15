@@ -101,7 +101,9 @@ export function getAllBlocksWithUsernames(): Promise<BlockState[]> {
         ret
             .filter((bs) => bs.blocked)
             .map((bs) =>
-                player_cache.fetch(bs.blocked, ["username"]).then((player) => (bs.username = player.username)),
+                player_cache
+                    .fetch(bs.blocked, ["username"])
+                    .then((player) => (bs.username = player.username)),
             ),
     ).then(() => {
         ret.sort((a, b) => a.username.localeCompare(b.username));
@@ -116,16 +118,20 @@ export function player_is_ignored(user_id) {
 function ignoreUser(uid, dont_fetch = false) {
     if (dont_fetch) {
         ignores[uid] = true;
-        $("<style type='text/css'> .chat-user-" + uid + " { display: none !important; } </style>").appendTo("head");
+        $(
+            "<style type='text/css'> .chat-user-" + uid + " { display: none !important; } </style>",
+        ).appendTo("head");
     } else {
         player_cache
             .fetch(uid, ["ui_class"])
             .then((obj) => {
                 if (obj.ui_class.indexOf("moderator") < 0) {
                     ignores[uid] = true;
-                    $("<style type='text/css'> .chat-user-" + uid + " { display: none !important; } </style>").appendTo(
-                        "head",
-                    );
+                    $(
+                        "<style type='text/css'> .chat-user-" +
+                            uid +
+                            " { display: none !important; } </style>",
+                    ).appendTo("head");
                 } else {
                     console.error("Can't ignore a moderator.");
                 }
@@ -135,7 +141,9 @@ function ignoreUser(uid, dont_fetch = false) {
 }
 function unIgnoreUser(uid) {
     delete ignores[uid];
-    $("<style type='text/css'> .chat-user-" + uid + " { display: block !important; } </style>").appendTo("head");
+    $(
+        "<style type='text/css'> .chat-user-" + uid + " { display: block !important; } </style>",
+    ).appendTo("head");
 }
 
 data.watch(cached.blocks, (blocks: BlockState[]) => {

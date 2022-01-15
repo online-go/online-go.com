@@ -160,10 +160,18 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         }
 
         /* fix dirty data */
-        if (isNaN(challenge.min_ranking) || challenge.min_ranking < 0 || challenge.min_ranking > 36) {
+        if (
+            isNaN(challenge.min_ranking) ||
+            challenge.min_ranking < 0 ||
+            challenge.min_ranking > 36
+        ) {
             challenge.min_ranking = 5;
         }
-        if (isNaN(challenge.max_ranking) || challenge.max_ranking < 0 || challenge.max_ranking > 36) {
+        if (
+            isNaN(challenge.max_ranking) ||
+            challenge.max_ranking < 0 ||
+            challenge.max_ranking > 36
+        ) {
             challenge.max_ranking = 36;
         }
 
@@ -185,7 +193,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 username: "",
                 bot_id: data.get("challenge.bot", 0),
                 selected_board_size:
-                    standard_board_sizes[`${challenge.game.width}x${challenge.game.height}`] || "custom",
+                    standard_board_sizes[`${challenge.game.width}x${challenge.game.height}`] ||
+                    "custom",
                 restrict_rank: data.get("challenge.restrict_rank", false),
             },
             //time_control: recallTimeControlSettings(speed),
@@ -205,14 +214,18 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             }),
             forking_game: !!this.props.initialState,
             selected_demo_player_black: 0,
-            selected_demo_player_white: this.props.playersList ? this.props.playersList.length - 1 : 0,
+            selected_demo_player_white: this.props.playersList
+                ? this.props.playersList.length - 1
+                : 0,
         };
 
         if (this.props.playersList && this.props.playersList.length > 0) {
             this.state.demo.black_name = this.props.playersList[0].name;
             this.state.demo.black_ranking = this.props.playersList[0].rank;
-            this.state.demo.white_name = this.props.playersList[this.props.playersList.length - 1].name;
-            this.state.demo.white_ranking = this.props.playersList[this.props.playersList.length - 1].rank;
+            this.state.demo.white_name =
+                this.props.playersList[this.props.playersList.length - 1].name;
+            this.state.demo.white_ranking =
+                this.props.playersList[this.props.playersList.length - 1].rank;
         }
 
         const state: any = this.state;
@@ -283,10 +296,22 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         if (tf && this.state.challenge && data.get("user")) {
             next.challenge.game.handicap = Math.min(9, next.challenge.game.handicap);
             next.challenge.game.komi_auto = "automatic";
-            next.challenge.min_ranking = Math.max(next.challenge.min_ranking, data.get("user").ranking - 9);
-            next.challenge.min_ranking = Math.min(next.challenge.min_ranking, data.get("user").ranking + 9);
-            next.challenge.max_ranking = Math.max(next.challenge.max_ranking, data.get("user").ranking - 9);
-            next.challenge.max_ranking = Math.min(next.challenge.max_ranking, data.get("user").ranking + 9);
+            next.challenge.min_ranking = Math.max(
+                next.challenge.min_ranking,
+                data.get("user").ranking - 9,
+            );
+            next.challenge.min_ranking = Math.min(
+                next.challenge.min_ranking,
+                data.get("user").ranking + 9,
+            );
+            next.challenge.max_ranking = Math.max(
+                next.challenge.max_ranking,
+                data.get("user").ranking - 9,
+            );
+            next.challenge.max_ranking = Math.min(
+                next.challenge.max_ranking,
+                data.get("user").ranking + 9,
+            );
 
             if (
                 next.conf.selected_board_size !== "19x19" &&
@@ -428,7 +453,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             }
         }
 
-        if (!challenge.game.name || challenge.game.name.trim() === "" || this.props.mode === "computer") {
+        if (
+            !challenge.game.name ||
+            challenge.game.name.trim() === "" ||
+            this.props.mode === "computer"
+        ) {
             challenge.game.name = _("Friendly Match");
         }
 
@@ -455,7 +484,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         challenge.game.time_control_parameters.time_control =
             this.refs.time_control_picker.time_control.system; /* on our backend we still expect this to be named `time_control` for
                                                                   old legacy reasons.. hopefully we can reconcile that someday */
-        challenge.game.pause_on_weekends = this.refs.time_control_picker.time_control.pause_on_weekends;
+        challenge.game.pause_on_weekends =
+            this.refs.time_control_picker.time_control.pause_on_weekends;
 
         let open_now = false;
         if (isLiveGame(challenge.game.time_control_parameters)) {
@@ -471,7 +501,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         */
 
         //console.log(challenge);
-        if (challenge.game.initial_state && Object.keys(challenge.game.initial_state).length === 0) {
+        if (
+            challenge.game.initial_state &&
+            Object.keys(challenge.game.initial_state).length === 0
+        ) {
             challenge.game.initial_state = null;
         }
 
@@ -578,7 +611,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     };
 
     /* update bindings  */
-    update_conf_bot_id = (ev) => this.upstate("conf.bot_id", parseInt((ev.target as HTMLSelectElement).value));
+    update_conf_bot_id = (ev) =>
+        this.upstate("conf.bot_id", parseInt((ev.target as HTMLSelectElement).value));
     update_challenge_game_name = (ev) => this.upstate("challenge.game.name", ev);
     update_private = (ev) =>
         this.upstate([
@@ -662,7 +696,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     basicSettings = () => {
         const mode = this.props.mode;
         return (
-            <div id="challenge-basic-settings" className="left-pane pane form-horizontal" role="form">
+            <div
+                id="challenge-basic-settings"
+                className="left-pane pane form-horizontal"
+                role="form"
+            >
                 {(mode === "computer" || null) && (
                     <div className="form-group">
                         <label className="control-label" htmlFor="engine">
@@ -744,7 +782,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                     id="rengo-option"
                                     disabled={
                                         !this.state.challenge.game.rengo &&
-                                        (this.state.challenge.game.private || this.state.challenge.game.ranked)
+                                        (this.state.challenge.game.private ||
+                                            this.state.challenge.game.ranked)
                                     }
                                     checked={this.state.challenge.game.rengo}
                                     onChange={this.update_rengo}
@@ -764,7 +803,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         const enable_custom_board_sizes = mode === "demo" || !this.state.challenge.game.ranked;
 
         return (
-            <div id="challenge-basic-settings" className="right-pane pane form-horizontal" role="form">
+            <div
+                id="challenge-basic-settings"
+                className="right-pane pane form-horizontal"
+                role="form"
+            >
                 {!this.state.forking_game && mode !== "demo" && (
                     <div>
                         <div className="form-group">
@@ -778,7 +821,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                         id="challenge-ranked"
                                         disabled={
                                             !this.state.challenge.game.ranked &&
-                                            (this.state.challenge.game.private || this.state.challenge.game.rengo)
+                                            (this.state.challenge.game.private ||
+                                                this.state.challenge.game.rengo)
                                         }
                                         checked={this.state.challenge.game.ranked}
                                         onChange={this.update_ranked}
@@ -870,7 +914,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                         </option>
                                     </optgroup>
                                     <optgroup label={_("Custom")}>
-                                        <option disabled={!enable_custom_board_sizes} value="custom">
+                                        <option
+                                            disabled={!enable_custom_board_sizes}
+                                            value="custom"
+                                        >
                                             {_("Custom Size")}
                                         </option>
                                     </optgroup>
@@ -882,7 +929,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
                 {!this.state.forking_game && (conf.selected_board_size === "custom" || null) && (
                     <div className="form-group">
-                        <label className="control-label" htmlFor="challenge-board-size-custom"></label>
+                        <label
+                            className="control-label"
+                            htmlFor="challenge-board-size-custom"
+                        ></label>
                         <div className="controls">
                             <div className="checkbox">
                                 <input
@@ -1067,7 +1117,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                             </div>
                         </div>
                     )}
-                    <TimeControlPicker value={this.state.initial_time_control} ref="time_control_picker" />
+                    <TimeControlPicker
+                        value={this.state.initial_time_control}
+                        ref="time_control_picker"
+                    />
                 </div>
 
                 <div className="right-pane pane form-horizontal">
@@ -1089,7 +1142,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                         </option>
                                         <option value="0">{_("None")}</option>
                                         {handicapRanges.map((n, idx) => (
-                                            <option key={idx} value={n} disabled={n > 9 && challenge.game.ranked}>
+                                            <option
+                                                key={idx}
+                                                value={n}
+                                                disabled={n > 9 && challenge.game.ranked}
+                                            >
                                                 {n}
                                             </option>
                                         ))}
@@ -1109,7 +1166,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                     className="challenge-dropdown form-control"
                                 >
                                     <option value="automatic">{_("Automatic")}</option>
-                                    <option value="custom" disabled={this.state.challenge.game.ranked}>
+                                    <option
+                                        value="custom"
+                                        disabled={this.state.challenge.game.ranked}
+                                    >
                                         {_("Custom")}
                                     </option>
                                 </select>
@@ -1176,7 +1236,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         {(mode === "open" || null) && (
                             <div>
                                 <div className="form-group" id="challenge-restrict-rank-group">
-                                    <label className="control-label" htmlFor="challenge-restrict-rank">
+                                    <label
+                                        className="control-label"
+                                        htmlFor="challenge-restrict-rank"
+                                    >
                                         {_("Restrict Rank")}
                                     </label>
                                     <div className="controls">
@@ -1193,7 +1256,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                 {(conf.restrict_rank || null) && (
                                     <div>
                                         <div className="form-group" id="challenge-min-rank-group">
-                                            <label className="control-label" htmlFor="minimum_ranking">
+                                            <label
+                                                className="control-label"
+                                                htmlFor="minimum_ranking"
+                                            >
                                                 {_("Minimum Ranking")}
                                             </label>
                                             <div className="controls">
@@ -1204,20 +1270,24 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                                         id="challenge-min-rank"
                                                         className="challenge-dropdown form-control"
                                                     >
-                                                        {(challenge.game.ranked ? ranked_ranks : ranks).map(
-                                                            (r, idx) => (
-                                                                <option key={idx} value={r.rank}>
-                                                                    {r.label}
-                                                                </option>
-                                                            ),
-                                                        )}
+                                                        {(challenge.game.ranked
+                                                            ? ranked_ranks
+                                                            : ranks
+                                                        ).map((r, idx) => (
+                                                            <option key={idx} value={r.rank}>
+                                                                {r.label}
+                                                            </option>
+                                                        ))}
                                                     </select>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div className="form-group" id="challenge-max-rank-group">
-                                            <label className="control-label" htmlFor="maximum_ranking">
+                                            <label
+                                                className="control-label"
+                                                htmlFor="maximum_ranking"
+                                            >
                                                 {_("Maximum Ranking")}
                                             </label>
                                             <div className="controls">
@@ -1228,13 +1298,14 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                                         id="challenge-max-rank"
                                                         className="challenge-dropdown form-control"
                                                     >
-                                                        {(challenge.game.ranked ? ranked_ranks : ranks).map(
-                                                            (r, idx) => (
-                                                                <option key={idx} value={r.rank}>
-                                                                    {r.label}
-                                                                </option>
-                                                            ),
-                                                        )}
+                                                        {(challenge.game.ranked
+                                                            ? ranked_ranks
+                                                            : ranks
+                                                        ).map((r, idx) => (
+                                                            <option key={idx} value={r.rank}>
+                                                                {r.label}
+                                                            </option>
+                                                        ))}
                                                     </select>
                                                 </div>
                                             </div>
@@ -1320,7 +1391,12 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     }
 }
 
-export function challenge(player_id?: number, initial_state?: any, computer?: boolean, config?: any) {
+export function challenge(
+    player_id?: number,
+    initial_state?: any,
+    computer?: boolean,
+    config?: any,
+) {
     // TODO: Support challenge by player, w/ initial state, or computer
 
     if (player_id && typeof player_id !== "number") {
@@ -1336,7 +1412,14 @@ export function challenge(player_id?: number, initial_state?: any, computer?: bo
         mode = "computer";
     }
 
-    return openModal(<ChallengeModal playerId={player_id} initialState={initial_state} config={config} mode={mode} />);
+    return openModal(
+        <ChallengeModal
+            playerId={player_id}
+            initialState={initial_state}
+            config={config}
+            mode={mode}
+        />,
+    );
 }
 export function createDemoBoard(
     players_list?: Array<{ name: string; rank: number }>,
@@ -1405,7 +1488,8 @@ export function challengeRematch(goban, player, original_game_meta) {
 
     config.challenge.game.time_control = conf.time_control["time_control"];
 
-    config.challenge.game.challenger_color = conf.players.black.id === player.id ? "white" : "black";
+    config.challenge.game.challenger_color =
+        conf.players.black.id === player.id ? "white" : "black";
     config.challenge.game.rules = conf.rules;
     config.challenge.game.ranked = conf.ranked;
     config.challenge.game.width = conf.width;
@@ -1492,13 +1576,16 @@ export function challenge_text_description(challenge) {
     details_html +=
         ", " +
         interpolate(_("%s handicap"), [g.handicap < 0 ? _("auto") : g.handicap]) +
-        (g.komi == null || typeof g.komi === "object" ? "" : ", " + interpolate(_("{{komi}} komi"), { komi: g.komi })) +
+        (g.komi == null || typeof g.komi === "object"
+            ? ""
+            : ", " + interpolate(_("{{komi}} komi"), { komi: g.komi })) +
         (g.disable_analysis ? ", " + _("analysis disabled") : "");
     if (c.challenger_color !== "automatic") {
         let yourcolor = "";
         if (
             data.get("user") &&
-            ((c.challenger && c.challenger.id !== data.get("user").id) || (c.user && c.user.id !== data.get("user").id))
+            ((c.challenger && c.challenger.id !== data.get("user").id) ||
+                (c.user && c.user.id !== data.get("user").id))
         ) {
             if (c.challenger_color === "black") {
                 yourcolor = _("white");

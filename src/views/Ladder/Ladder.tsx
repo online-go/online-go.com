@@ -156,12 +156,19 @@ export class Ladder extends React.PureComponent<LadderProperties, LadderState> {
                         />
 
                         {this.state.ladder &&
-                            (!this.state.ladder.group || this.state.ladder.player_is_member_of_group) && (
+                            (!this.state.ladder.group ||
+                                this.state.ladder.player_is_member_of_group) && (
                                 <span>
                                     {this.state.ladder.player_rank > 0 ? (
-                                        <button onClick={this.leave}>{_("Drop out from ladder")}</button>
+                                        <button onClick={this.leave}>
+                                            {_("Drop out from ladder")}
+                                        </button>
                                     ) : (
-                                        <button className="primary" disabled={user.anonymous} onClick={this.join}>
+                                        <button
+                                            className="primary"
+                                            disabled={user.anonymous}
+                                            onClick={this.join}
+                                        >
                                             {_("Join Ladder")}
                                         </button>
                                     )}
@@ -175,7 +182,9 @@ export class Ladder extends React.PureComponent<LadderProperties, LadderState> {
                                 <List
                                     height={height}
                                     width={width}
-                                    overscanRowCount={20 - (this.state.invalidationCount % 2) /* forces refresh */}
+                                    overscanRowCount={
+                                        20 - (this.state.invalidationCount % 2) /* forces refresh */
+                                    }
                                     rowHeight={30}
                                     rowCount={this.state.ladder_size}
                                     rowRenderer={this.renderRow}
@@ -231,7 +240,10 @@ export class Ladder extends React.PureComponent<LadderProperties, LadderState> {
         }
 
         this.requests_in_flight[page] = new Promise<void>((resolve, reject) => {
-            get(`ladders/${this.props.match.params.ladder_id}/players`, { page, page_size: PAGE_SIZE })
+            get(`ladders/${this.props.match.params.ladder_id}/players`, {
+                page,
+                page_size: PAGE_SIZE,
+            })
                 .then((obj) => {
                     delete this.requests_in_flight[page];
                     const start = (page - 1) * PAGE_SIZE;
@@ -392,7 +404,9 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
             <div
                 onClick={this.challengeDetails}
                 className={
-                    "LadderRow " + (row && row.rank === this.props.highlightRank ? " highlight " : "") + row_class
+                    "LadderRow " +
+                    (row && row.rank === this.props.highlightRank ? " highlight " : "") +
+                    row_class
                 }
             >
                 <div className="ladder-player">
@@ -401,9 +415,13 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                     {row && <Player flag nochallenge nolink user={row.player} />}
 
                     <span className="right">
-                        {(challenging || null) && <span className="outgoing">{challenging.length || ""}</span>}
+                        {(challenging || null) && (
+                            <span className="outgoing">{challenging.length || ""}</span>
+                        )}
 
-                        {(challenged_by || null) && <span className="incoming">{challenged_by.length || ""}</span>}
+                        {(challenged_by || null) && (
+                            <span className="incoming">{challenged_by.length || ""}</span>
+                        )}
 
                         {/*
                         <span className='btn-group'>
@@ -467,11 +485,16 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                     {row && row.can_challenge && (
                         <div className="challenge-button-or-text">
                             {row.can_challenge.challengeable ? (
-                                <button className="primary xs" onClick={this.challenge.bind(this, row)}>
+                                <button
+                                    className="primary xs"
+                                    onClick={this.challenge.bind(this, row)}
+                                >
                                     {_("Challenge")}
                                 </button>
                             ) : (
-                                <div className="not-challengable">{canChallengeTooltip(row.can_challenge)}</div>
+                                <div className="not-challengable">
+                                    {canChallengeTooltip(row.can_challenge)}
+                                </div>
                             )}
                         </div>
                     )}
@@ -492,9 +515,13 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                                     <span
                                         key={idx}
                                         className="fake-link challenge-link"
-                                        onClick={(ev) => browserHistory.push(`/game/${challenge.game_id}`)}
+                                        onClick={(ev) =>
+                                            browserHistory.push(`/game/${challenge.game_id}`)
+                                        }
                                     >
-                                        <span className="challenge-rank">#{challenge.player.ladder_rank}</span>
+                                        <span className="challenge-rank">
+                                            #{challenge.player.ladder_rank}
+                                        </span>
                                         <Player nolink user={challenge.player} />
                                     </span>
                                 ))}
@@ -518,9 +545,13 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                                     <span
                                         key={idx}
                                         className="fake-link challenge-link"
-                                        onClick={(ev) => browserHistory.push(`/game/${challenge.game_id}`)}
+                                        onClick={(ev) =>
+                                            browserHistory.push(`/game/${challenge.game_id}`)
+                                        }
                                     >
-                                        <span className="challenge-rank">#{challenge.player.ladder_rank}</span>
+                                        <span className="challenge-rank">
+                                            #{challenge.player.ladder_rank}
+                                        </span>
                                         <Player nolink user={challenge.player} />
                                     </span>
                                 ))}
@@ -530,7 +561,10 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
 
                     {(user.is_moderator || null) && (
                         <div>
-                            <button className="xs danger" onClick={() => this.adjustLadderPosition(row.player)}>
+                            <button
+                                className="xs danger"
+                                onClick={() => this.adjustLadderPosition(row.player)}
+                            >
                                 Adjust ladder position
                             </button>
                         </div>
@@ -546,7 +580,9 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
     challenge(ladder_player) {
         swal({
             text: interpolate(
-                _("Are you ready to start your game with {{player_name}}?") /* translators: ladder challenge */,
+                _(
+                    "Are you ready to start your game with {{player_name}}?",
+                ) /* translators: ladder challenge */,
                 { player_name: ladder_player.player.username },
             ),
             showCancelButton: true,
@@ -554,9 +590,13 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
             cancelButtonText: _("No"),
         })
             .then(() => {
-                post("ladders/%%/players/challenge", this.props.ladder.props.match.params.ladder_id, {
-                    player_id: ladder_player.player.id,
-                })
+                post(
+                    "ladders/%%/players/challenge",
+                    this.props.ladder.props.match.params.ladder_id,
+                    {
+                        player_id: ladder_player.player.id,
+                    },
+                )
                     .then((res) => {
                         this.props.ladder.invalidate();
                     })
@@ -570,13 +610,25 @@ function canChallengeTooltip(obj: any): string {
     if (obj.reason_code) {
         switch (obj.reason_code) {
             case 0x001:
-                return pgettext("Can't challenge player in ladder because: ", "Can't challenge yourself");
+                return pgettext(
+                    "Can't challenge player in ladder because: ",
+                    "Can't challenge yourself",
+                );
             case 0x002:
-                return pgettext("Can't challenge player in ladder because: ", "Player is a lower rank than you");
+                return pgettext(
+                    "Can't challenge player in ladder because: ",
+                    "Player is a lower rank than you",
+                );
             case 0x003:
-                return pgettext("Can't challenge player in ladder because: ", "Player is not in the ladder");
+                return pgettext(
+                    "Can't challenge player in ladder because: ",
+                    "Player is not in the ladder",
+                );
             case 0x004:
-                return pgettext("Can't challenge player in ladder because: ", "Player's rank is too high");
+                return pgettext(
+                    "Can't challenge player in ladder because: ",
+                    "Player's rank is too high",
+                );
             case 0x005:
                 return interpolate(
                     pgettext(
@@ -591,7 +643,10 @@ function canChallengeTooltip(obj: any): string {
                     "Already playing a game against this person",
                 );
             case 0x007:
-                return pgettext("Can't challenge player in ladder because: ", "Last challenge within 7 days");
+                return pgettext(
+                    "Can't challenge player in ladder because: ",
+                    "Last challenge within 7 days",
+                );
             case 0x008:
                 return pgettext(
                     "Can't challenge player in ladder because: ",

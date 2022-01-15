@@ -36,10 +36,17 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
         const goban = this.props.goban;
         let sgf_url;
         if (goban.game_id) {
-            sgf_url = window.location.protocol + "//" + window.location.hostname + `/api/v1/games/${goban.game_id}/sgf`;
+            sgf_url =
+                window.location.protocol +
+                "//" +
+                window.location.hostname +
+                `/api/v1/games/${goban.game_id}/sgf`;
         } else {
             sgf_url =
-                window.location.protocol + "//" + window.location.hostname + `/api/v1/reviews/${goban.review_id}/sgf`;
+                window.location.protocol +
+                "//" +
+                window.location.hostname +
+                `/api/v1/reviews/${goban.review_id}/sgf`;
         }
 
         return (
@@ -48,8 +55,19 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
                     <div>
                         <h2>{goban.engine.config.game_name}</h2>
                         <h3>
-                            <Player disableCacheUpdate icon rank user={goban.engine.config.players.black} /> {_("vs.")}{" "}
-                            <Player disableCacheUpdate icon rank user={goban.engine.config.players.white} />
+                            <Player
+                                disableCacheUpdate
+                                icon
+                                rank
+                                user={goban.engine.config.players.black}
+                            />{" "}
+                            {_("vs.")}{" "}
+                            <Player
+                                disableCacheUpdate
+                                icon
+                                rank
+                                user={goban.engine.config.players.white}
+                            />
                         </h3>
                     </div>
                 </div>

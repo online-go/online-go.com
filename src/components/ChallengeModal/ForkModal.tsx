@@ -68,16 +68,26 @@ export class ForkModal extends Modal<Events, ForkModalProperties, any> {
         return (
             <div className="Modal ForkModal" ref="modal">
                 <div className="header space-around">
-                    <h2>{_("Player to challenge")}:</h2> <PlayerAutocomplete onComplete={this.setPlayer} />
+                    <h2>{_("Player to challenge")}:</h2>{" "}
+                    <PlayerAutocomplete onComplete={this.setPlayer} />
                 </div>
                 <div className="body space-around">
-                    <MiniGoban id={null} black={null} white={null} json={this.state.fork_preview} noLink />
+                    <MiniGoban
+                        id={null}
+                        black={null}
+                        white={null}
+                        json={this.state.fork_preview}
+                        noLink
+                    />
                 </div>
                 <div className="buttons">
                     <button onClick={this.close}>{_("Cancel")}</button>
                     <button
                         className="primary"
-                        disabled={this.state.player == null || this.state.player.id === data.get("user").id}
+                        disabled={
+                            this.state.player == null ||
+                            this.state.player.id === data.get("user").id
+                        }
                         onClick={this.openChallengeModal}
                     >
                         {_("Game settings")} &rarr;

@@ -96,7 +96,11 @@ export class Resizable extends React.Component<any, {}> {
 
     render() {
         return (
-            <div ref={this.setref_div} id={this.props.id} className={"Resizable " + (this.props.className || "")}>
+            <div
+                ref={this.setref_div}
+                id={this.props.id}
+                className={"Resizable " + (this.props.className || "")}
+            >
                 {this.props.children}
             </div>
         );

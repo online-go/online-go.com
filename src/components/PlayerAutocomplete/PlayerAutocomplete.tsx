@@ -37,17 +37,17 @@ interface SuggestionEntry {
     username: string;
 }
 
-export const PlayerAutocomplete = React.forwardRef<PlayerAutocompleteRef, PlayerAutocompleteProperties>(
-    _PlayerAutocomplete,
-);
+export const PlayerAutocomplete = React.forwardRef<
+    PlayerAutocompleteRef,
+    PlayerAutocompleteProperties
+>(_PlayerAutocomplete);
 
 function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Element {
     const [value, setValue]: [string, (x: string) => void] = React.useState(
         player_cache.lookup(props.playerId || 0)?.username || "",
     );
-    const [suggestions, setSuggestions]: [SuggestionEntry[], (x: SuggestionEntry[]) => void] = React.useState(
-        [] as SuggestionEntry[],
-    );
+    const [suggestions, setSuggestions]: [SuggestionEntry[], (x: SuggestionEntry[]) => void] =
+        React.useState([] as SuggestionEntry[]);
     const tabbed_out = React.useRef(false as boolean);
     const last_on_complete_username = React.useRef("");
     const search = React.useRef("");
@@ -67,7 +67,10 @@ function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Elem
         setSuggestions([]);
     }, [props.playerId]);
 
-    function onBlur(ev: unknown, { highlightedSuggestion }: { highlightedSuggestion: SuggestionEntry }): void {
+    function onBlur(
+        ev: unknown,
+        { highlightedSuggestion }: { highlightedSuggestion: SuggestionEntry },
+    ): void {
         //if (tabbed_out.current) {
         if (highlightedSuggestion) {
             setValue(getSuggestionValue(highlightedSuggestion));
@@ -94,7 +97,10 @@ function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Elem
         console.log("on change fired");
     }
 
-    function onSuggestionSelected(event: unknown, { suggestion }: { suggestion: SuggestionEntry }): void {
+    function onSuggestionSelected(
+        event: unknown,
+        { suggestion }: { suggestion: SuggestionEntry },
+    ): void {
         setValue(getSuggestionValue(suggestion));
         complete(getSuggestionValue(suggestion));
     }

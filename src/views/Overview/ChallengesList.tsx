@@ -77,7 +77,9 @@ export class ChallengesList extends React.PureComponent<{ onAccept: () => void }
                 <div className="challenge-cards">
                     {this.state.challenges.map((challenge) => {
                         const opponent =
-                            challenge.challenger.id === user.id ? challenge.challenged : challenge.challenger;
+                            challenge.challenger.id === user.id
+                                ? challenge.challenged
+                                : challenge.challenger;
 
                         return (
                             <Card key={challenge.id}>
@@ -85,9 +87,13 @@ export class ChallengesList extends React.PureComponent<{ onAccept: () => void }
                                     <PlayerIcon id={opponent.id} size={64} />
                                     <div className="name">
                                         {challenge.challenged.id === user.id && (
-                                            <FabCheck onClick={this.acceptChallenge.bind(this, challenge)} />
+                                            <FabCheck
+                                                onClick={this.acceptChallenge.bind(this, challenge)}
+                                            />
                                         )}
-                                        <FabX onClick={this.deleteChallenge.bind(this, challenge)} />
+                                        <FabX
+                                            onClick={this.deleteChallenge.bind(this, challenge)}
+                                        />
                                         <h4>{profanity_filter(challenge.game.name)}</h4>
                                         <Player user={opponent} />
                                     </div>

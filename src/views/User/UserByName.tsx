@@ -51,7 +51,9 @@ export function UserByName(props: UserByNameProperties): JSX.Element {
     }, [username]);
 
     if (user_id) {
-        return <User match={{ params: { user_id: user_id.toString() } }} location={props.location} />;
+        return (
+            <User match={{ params: { user_id: user_id.toString() } }} location={props.location} />
+        );
     }
     return null;
 }

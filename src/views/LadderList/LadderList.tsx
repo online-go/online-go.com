@@ -87,15 +87,26 @@ export class LadderList extends React.PureComponent<{}, LadderListState> {
                         <Card key={idx}>
                             <h2>{_(ladder.name)}</h2>
                             {(ladder.player_rank < 0 || null) && (
-                                <button className="primary sm" onClick={this.join.bind(this, ladder.id)}>
+                                <button
+                                    className="primary sm"
+                                    onClick={this.join.bind(this, ladder.id)}
+                                >
                                     {_("Join")}
                                 </button>
                             )}
                             <Link className="btn primary sm" to={`/ladder/${ladder.id}`}>
-                                {_("Full View") /* translators: View details of the selected ladder */}
+                                {
+                                    _(
+                                        "Full View",
+                                    ) /* translators: View details of the selected ladder */
+                                }
                             </Link>
 
-                            <h4>{interpolate(_("{{ladder_size}} players"), { ladder_size: ladder.size })}</h4>
+                            <h4>
+                                {interpolate(_("{{ladder_size}} players"), {
+                                    ladder_size: ladder.size,
+                                })}
+                            </h4>
 
                             <LadderComponent
                                 pageSize={10}

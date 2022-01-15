@@ -188,12 +188,16 @@ function ChannelTopic({
 
     const [editing, set_editing]: [boolean, (tf: boolean) => void] = useState(false as boolean);
     const [topic, set_topic]: [string, (tf: string) => void] = useState("");
-    const [topic_updated, set_topic_updated]: [boolean, (tf: boolean) => void] = useState(false as boolean);
+    const [topic_updated, set_topic_updated]: [boolean, (tf: boolean) => void] = useState(
+        false as boolean,
+    );
     const [name, set_name]: [string, (tf: string) => void] = useState(channel);
     const [group_id, set_group_id]: [number | null, (tf: number) => void] = useState(null);
-    const [tournament_id, set_tournament_id]: [number | null, (tf: number) => void] = useState(null);
+    const [tournament_id, set_tournament_id]: [number | null, (tf: number) => void] =
+        useState(null);
     const [banner, set_banner]: [string, (s: string) => void] = useState("");
-    const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
+    const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] =
+        useState(null);
     const [title_hover, set_title_hover]: [string, (s: string) => void] = useState("");
 
     const groups = data.get<GroupList>("cached.groups", []);
@@ -319,7 +323,10 @@ function ChannelTopic({
 
                 {canShowGames &&
                     (showingGames ? (
-                        <i className="header-icon ogs-goban active" onClick={() => onShowGames(false)} />
+                        <i
+                            className="header-icon ogs-goban active"
+                            onClick={() => onShowGames(false)}
+                        />
                     ) : (
                         <i className="header-icon ogs-goban" onClick={() => onShowGames(true)} />
                     ))}
@@ -339,11 +346,16 @@ function ChannelTopic({
                     </React.Fragment>
                 ) : (
                     <React.Fragment>
-                        {topic_editable && <i className="header-icon fa fa-pencil" onClick={startEditing} />}
+                        {topic_editable && (
+                            <i className="header-icon fa fa-pencil" onClick={startEditing} />
+                        )}
                         <div className="channel-topic" title={title_hover}>
                             <div className="topic">
                                 <span className="content">
-                                    <Linkify>{localize_time_strings(profanity_filter(topic.trim())) || name}</Linkify>
+                                    <Linkify>
+                                        {localize_time_strings(profanity_filter(topic.trim())) ||
+                                            name}
+                                    </Linkify>
                                 </span>
                             </div>
                         </div>
@@ -358,7 +370,10 @@ function ChannelTopic({
                         />
                 */}
 
-                <i className={"header-icon fa fa-users" + (showingUsers ? " active" : "")} onClick={toggleShowUsers} />
+                <i
+                    className={"header-icon fa fa-users" + (showingUsers ? " active" : "")}
+                    onClick={toggleShowUsers}
+                />
             </div>
         </div>
     );
@@ -376,7 +391,8 @@ function ChatLines({
     const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;
     const chat_log_div = useRef(null);
     const [, refresh]: [number, (n: number) => void] = useState(0);
-    const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
+    const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] =
+        useState(null);
 
     useEffect(() => {
         const proxy = chat_manager.join(channel);
@@ -456,7 +472,8 @@ function ChatLines({
             const tf = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
             if (tf !== scrolled_to_bottom) {
                 scrolled_to_bottom = tf;
-                div.className = (rtl_mode ? "rtl chat-lines " : "chat-lines ") + (tf ? "autoscrolling" : "");
+                div.className =
+                    (rtl_mode ? "rtl chat-lines " : "chat-lines ") + (tf ? "autoscrolling" : "");
             }
             scrolled_to_bottom = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
         },
@@ -493,7 +510,9 @@ function ChatLines({
             {proxy?.channel.chat_log.slice(-500).map((line, idx) => {
                 const ll = last_line;
                 last_line = line;
-                return <ChatLine key={line.message.i || `system-${idx}`} line={line} lastline={ll} />;
+                return (
+                    <ChatLine key={line.message.i || `system-${idx}`} line={line} lastline={ll} />
+                );
             })}
         </div>
     );
@@ -503,7 +522,8 @@ function ChatInput({ channel, autoFocus }: InternalChatLogProperties): JSX.Eleme
     const user = data.get("user");
     const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;
     const input = useRef(null);
-    const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
+    const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] =
+        useState(null);
     const [show_say_hi_placeholder, set_show_say_hi_placeholder] = useState(true);
     const [channel_name, set_channel_name] = useState(cachedChannelInformation(channel)?.name);
 

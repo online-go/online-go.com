@@ -333,7 +333,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         }
                     } else if (/move-[0-9]+/.test(key)) {
                         if (!this.ai_review) {
-                            console.warn("AI Review move received but ai review not initialized yet");
+                            console.warn(
+                                "AI Review move received but ai review not initialized yet",
+                            );
                             return;
                         }
 
@@ -345,7 +347,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                             this.ai_review.analyzed_variations = {};
                         }
                         if (!this.ai_review) {
-                            console.warn("AI Review move received but ai review not initialized yet");
+                            console.warn(
+                                "AI Review move received but ai review not initialized yet",
+                            );
                             return;
                         }
                         const m = key.match(/variation-([0-9a-z.A-Z-]+)/);
@@ -383,7 +387,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             const varkey = `${trunk_move.move_number}-${varstring}`;
 
             // if we have an interactive review move, that's what we're interested in
-            if (this.ai_review.analyzed_variations && varkey in this.ai_review.analyzed_variations) {
+            if (
+                this.ai_review.analyzed_variations &&
+                varkey in this.ai_review.analyzed_variations
+            ) {
                 const analysis = this.ai_review.analyzed_variations[varkey];
                 ret.push({
                     move_number: analysis.move_number,
@@ -609,7 +616,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
 
         try {
-            this.props.game.goban.setMarks(marks, true); /* draw the remaining AI sequence as ghost marks, if any */
+            this.props.game.goban.setMarks(
+                marks,
+                true,
+            ); /* draw the remaining AI sequence as ghost marks, if any */
             this.props.game.goban.setHeatmap(heatmap, true);
             this.props.game.goban.setColoredCircles(colored_circles, false);
         } catch (e) {
@@ -624,7 +634,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
 
         if (next_move) {
-            next_move_pretty_coords = this.props.game.goban.engine.prettyCoords(next_move.x, next_move.y);
+            next_move_pretty_coords = this.props.game.goban.engine.prettyCoords(
+                next_move.x,
+                next_move.y,
+            );
         }
 
         return [win_rate, score, next_move_delta_win_rate, next_move_pretty_coords];
@@ -772,14 +785,24 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         let max_entries = 0;
 
         if (!this.ai_review) {
-            return { ai_table_rows: default_table_rows, avg_score_loss, moves_pending: moves_missing, max_entries };
+            return {
+                ai_table_rows: default_table_rows,
+                avg_score_loss,
+                moves_pending: moves_missing,
+                max_entries,
+            };
         }
 
         if (this.ai_review.engine !== "katago") {
             this.setState({
                 table_set: true,
             });
-            return { ai_table_rows: default_table_rows, avg_score_loss, moves_pending: moves_missing, max_entries };
+            return {
+                ai_table_rows: default_table_rows,
+                avg_score_loss,
+                moves_pending: moves_missing,
+                max_entries,
+            };
         }
 
         const handicap = this.props.game.goban.engine.handicap;
@@ -797,17 +820,29 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             //one more ai review point than moves in the game, since initial board gets a score.
 
             if (scores === undefined) {
-                return { ai_table_rows: default_table_rows, avg_score_loss, moves_pending: moves_missing, max_entries };
+                return {
+                    ai_table_rows: default_table_rows,
+                    avg_score_loss,
+                    moves_pending: moves_missing,
+                    max_entries,
+                };
             }
             const check1 =
-                !is_uploaded && this.props.game.goban.config.moves.length !== this.ai_review?.scores.length - 1;
+                !is_uploaded &&
+                this.props.game.goban.config.moves.length !== this.ai_review?.scores.length - 1;
             // extra initial ! in all_moves which matches extra empty board score, except in handicap games for some reason.
             // so subtract 1 if black goes second == bplayer
             const check2 =
                 is_uploaded &&
-                this.props.game.goban.config["all_moves"].split("!").length - bplayer !== this.ai_review?.scores.length;
+                this.props.game.goban.config["all_moves"].split("!").length - bplayer !==
+                    this.ai_review?.scores.length;
             if (check1 || check2) {
-                return { ai_table_rows: default_table_rows, avg_score_loss, moves_pending: moves_missing, max_entries };
+                return {
+                    ai_table_rows: default_table_rows,
+                    avg_score_loss,
+                    moves_pending: moves_missing,
+                    max_entries,
+                };
             }
 
             // we don't need the first two rows, as they're for full reviews.
@@ -854,10 +889,14 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             for (let j = 0; j < num_rows; j++) {
                 summary_moves_list[j][0] = movecounters[j].toString();
                 summary_moves_list[j][1] =
-                    btotal > 0 ? (Math.round((1000 * movecounters[j]) / btotal) / 10).toString() : "";
+                    btotal > 0
+                        ? (Math.round((1000 * movecounters[j]) / btotal) / 10).toString()
+                        : "";
                 summary_moves_list[j][2] = movecounters[num_rows + j].toString();
                 summary_moves_list[j][3] =
-                    wtotal > 0 ? (Math.round((1000 * movecounters[num_rows + j]) / wtotal) / 10).toString() : "";
+                    wtotal > 0
+                        ? (Math.round((1000 * movecounters[num_rows + j]) / wtotal) / 10).toString()
+                        : "";
             }
 
             for (let j = 0; j < ai_table_rows.length; j++) {
@@ -873,12 +912,14 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             const movekeys = Object.keys(this.ai_review?.moves);
             const is_uploaded = this.props.game.goban.config.original_sgf !== undefined;
             // should be one more ai review score and move branches for empty board.
-            const check1 = !is_uploaded && this.props.game.goban.config.moves.length !== movekeys.length - 1;
+            const check1 =
+                !is_uploaded && this.props.game.goban.config.moves.length !== movekeys.length - 1;
             // extra initial ! in all_moves which matches extra empty board score, except in handicap games for some reason.
             // so subtract 1 if black goes second == bplayer
             const check2 =
                 is_uploaded &&
-                this.props.game.goban.config["all_moves"].split("!").length - bplayer !== movekeys.length;
+                this.props.game.goban.config["all_moves"].split("!").length - bplayer !==
+                    movekeys.length;
 
             if (this.state.loading || this.ai_review.scores === undefined) {
                 for (let j = 0; j < ai_table_rows.length; j++) {
@@ -894,7 +935,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             let btotal = 0;
 
             for (let j = hoffset; j < this.ai_review?.scores.length - 1; j++) {
-                if (this.ai_review?.moves[j] === undefined || this.ai_review?.moves[j + 1] === undefined) {
+                if (
+                    this.ai_review?.moves[j] === undefined ||
+                    this.ai_review?.moves[j + 1] === undefined
+                ) {
                     moves_missing += 1;
                     continue;
                 }
@@ -962,10 +1006,14 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             for (let j = 0; j < num_rows; j++) {
                 summary_moves_list[j][0] = movecounters[j].toString();
                 summary_moves_list[j][1] =
-                    btotal > 0 ? (Math.round((1000 * movecounters[j]) / btotal) / 10).toString() : "";
+                    btotal > 0
+                        ? (Math.round((1000 * movecounters[j]) / btotal) / 10).toString()
+                        : "";
                 summary_moves_list[j][2] = movecounters[num_rows + j].toString();
                 summary_moves_list[j][3] =
-                    wtotal > 0 ? (Math.round((1000 * movecounters[num_rows + j]) / wtotal) / 10).toString() : "";
+                    wtotal > 0
+                        ? (Math.round((1000 * movecounters[num_rows + j]) / wtotal) / 10).toString()
+                        : "";
             }
 
             for (let j = 0; j < ai_table_rows.length; j++) {
@@ -980,7 +1028,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
             return { ai_table_rows, avg_score_loss, moves_pending: moves_missing, max_entries };
         } else {
-            return { ai_table_rows: default_table_rows, avg_score_loss, moves_pending: moves_missing, max_entries };
+            return {
+                ai_table_rows: default_table_rows,
+                avg_score_loss,
+                moves_pending: moves_missing,
+                max_entries,
+            };
         }
     }
 
@@ -1011,7 +1064,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         ai_review_id={this.state.selected_ai_review?.id}
                         callback={this.updateAiReview}
                     />
-                    {((!this.props.hidden && this.state.ai_reviews.length === 0 && this.state.reviewing) || null) && (
+                    {((!this.props.hidden &&
+                        this.state.ai_reviews.length === 0 &&
+                        this.state.reviewing) ||
+                        null) && (
                         <div className="reviewing">
                             <span>{_("Queuing AI review")}</span>
                             <i className="fa fa-desktop slowstrobe"></i>
@@ -1057,25 +1113,37 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 };
             }) || [];
 
-        const ai_review_chart_variation_entries: Array<AIReviewEntry> = this.getVariationReviewEntries();
+        const ai_review_chart_variation_entries: Array<AIReviewEntry> =
+            this.getVariationReviewEntries();
 
         const cur_move = this.props.move;
         const trunk_move = cur_move.getBranchPoint();
         const move_number = trunk_move.move_number;
-        const variation_move_number = cur_move.move_number !== trunk_move.move_number ? cur_move.move_number : -1;
+        const variation_move_number =
+            cur_move.move_number !== trunk_move.move_number ? cur_move.move_number : -1;
 
         let black_moves = 0;
         let white_moves = 0;
 
-        let worst_move_list = getWorstMoves(this.props.game.goban.engine.move_tree, this.ai_review, 100);
+        let worst_move_list = getWorstMoves(
+            this.props.game.goban.engine.move_tree,
+            this.ai_review,
+            100,
+        );
         worst_move_list = worst_move_list.filter(
-            (move) => (move.player === 1 && black_moves++ < 3) || (move.player === 2 && white_moves++ < 3),
+            (move) =>
+                (move.player === 1 && black_moves++ < 3) ||
+                (move.player === 2 && white_moves++ < 3),
         );
         worst_move_list.sort((a, b) => a.move_number - b.move_number);
 
         return (
             <div className="AIReview">
-                <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
+                <UIPush
+                    event="ai-review"
+                    channel={`game-${this.props.game.game_id}`}
+                    action={this.ai_review_update}
+                />
                 <AIReviewStream
                     uuid={this.state.selected_ai_review?.uuid}
                     game_id={this.props.game.game_id}
@@ -1119,11 +1187,15 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                                         engine: engineName(data.engine),
                                                         engine_version: data.engine_version,
                                                         network_size: data.network_size,
-                                                        network: extractShortNetworkVersion(data.network),
+                                                        network: extractShortNetworkVersion(
+                                                            data.network,
+                                                        ),
                                                     },
                                                 )}
                                             </div>
-                                            <div className="date">{moment(new Date(data.date)).format("lll")}</div>
+                                            <div className="date">
+                                                {moment(new Date(data.date)).format("lll")}
+                                            </div>
                                         </div>
                                     </div>
                                 );
@@ -1197,11 +1269,23 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                         {props.children}
                                         {show_full_ai_review_button && (
                                             <div className="ai-review-new-review">
-                                                <button onClick={() => this.startNewAIReview("full", "katago")}>
+                                                <button
+                                                    onClick={() =>
+                                                        this.startNewAIReview("full", "katago")
+                                                    }
+                                                >
                                                     <i className="fa fa-plus" /> KataGo
                                                 </button>
-                                                {((goban.width === 19 && goban.height === 19) || null) && (
-                                                    <button onClick={() => this.startNewAIReview("full", "leela_zero")}>
+                                                {((goban.width === 19 && goban.height === 19) ||
+                                                    null) && (
+                                                    <button
+                                                        onClick={() =>
+                                                            this.startNewAIReview(
+                                                                "full",
+                                                                "leela_zero",
+                                                            )
+                                                        }
+                                                    >
                                                         <i className="fa fa-plus" /> Leela Zero
                                                     </button>
                                                 )}
@@ -1265,7 +1349,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                                 this.setState({ use_score: false });
                                             }}
                                         >
-                                            {pgettext("Display the win % that the AI estimates", "Win %")}
+                                            {pgettext(
+                                                "Display the win % that the AI estimates",
+                                                "Win %",
+                                            )}
                                         </span>
 
                                         <span>
@@ -1285,7 +1372,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                                 this.setState({ use_score: true });
                                             }}
                                         >
-                                            {pgettext("Display the game score that the AI estimates", "Score")}
+                                            {pgettext(
+                                                "Display the game score that the AI estimates",
+                                                "Score",
+                                            )}
                                         </span>
                                     </div>
                                 )}
@@ -1332,7 +1422,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         <span
                             className={
                                 "next-move-delta " +
-                                (next_move_delta_p <= -0.1 ? "negative" : next_move_delta_p >= 0.1 ? "positive" : "")
+                                (next_move_delta_p <= -0.1
+                                    ? "negative"
+                                    : next_move_delta_p >= 0.1
+                                    ? "positive"
+                                    : "")
                             }
                         >
                             {next_move_delta_p <= -0.1 ? (
@@ -1375,7 +1469,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             <div className="worst-move-list-container">
                 <div className="move-list">
                     {lst.slice(0, this.state.worst_moves_shown).map((de, idx) => {
-                        const pretty_coords = this.props.game.goban.engine.prettyCoords(de.move.x, de.move.y);
+                        const pretty_coords = this.props.game.goban.engine.prettyCoords(
+                            de.move.x,
+                            de.move.y,
+                        );
                         return (
                             <span
                                 key={`${idx}-${de.move_number}`}
@@ -1392,9 +1489,15 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     })}
                     {(more_ct > 0 || null) && (
                         <span>
-                            {interpolate(pgettext("Number of big mistake moves not listed", "+ {{more_ct}} more"), {
-                                more_ct,
-                            })}
+                            {interpolate(
+                                pgettext(
+                                    "Number of big mistake moves not listed",
+                                    "+ {{more_ct}} more",
+                                ),
+                                {
+                                    more_ct,
+                                },
+                            )}
                         </span>
                     )}
                 </div>
@@ -1470,7 +1573,10 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
     render(): JSX.Element {
         return (
             <div className="ai-summary-container">
-                <table className="ai-summary-table" style={{ display: this.props.table_hidden ? "block" : "none" }}>
+                <table
+                    className="ai-summary-table"
+                    style={{ display: this.props.table_hidden ? "block" : "none" }}
+                >
                     <thead>
                         <tr>
                             {this.props.headinglist.map((head, index) => {
@@ -1497,7 +1603,9 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                                 <tr>
                                     <td colSpan={5}>
                                         <progress
-                                            value={this.props.max_entries - this.props.pending_entries}
+                                            value={
+                                                this.props.max_entries - this.props.pending_entries
+                                            }
                                             max={this.props.max_entries}
                                         ></progress>
                                     </td>

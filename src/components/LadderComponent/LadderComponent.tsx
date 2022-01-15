@@ -52,7 +52,10 @@ interface LadderComponentState {
     ladder?: Ladder;
 }
 
-export class LadderComponent extends React.PureComponent<LadderComponentProperties, LadderComponentState> {
+export class LadderComponent extends React.PureComponent<
+    LadderComponentProperties,
+    LadderComponentState
+> {
     ladder_table_ref = React.createRef<PaginatedTableRef>();
 
     constructor(props) {
@@ -94,7 +97,9 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
         console.log(ladder_player);
         swal({
             text: interpolate(
-                _("Are you ready to start your game with {{player_name}}?") /* translators: ladder challenge */,
+                _(
+                    "Are you ready to start your game with {{player_name}}?",
+                ) /* translators: ladder challenge */,
                 { player_name: ladder_player.player.username },
             ),
             showCancelButton: true,
@@ -121,7 +126,10 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
         const full_view = this.props.fullView;
         let startingPage = 1;
         if (!this.props.dontStartOnPlayersPage && this.state.ladder.player_rank > 0) {
-            startingPage = Math.max(1, Math.ceil(this.state.ladder.player_rank / this.state.page_size));
+            startingPage = Math.max(
+                1,
+                Math.ceil(this.state.ladder.player_rank / this.state.page_size),
+            );
         }
 
         const thin_view = $(window).width() < 800;
@@ -157,8 +165,13 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
                             )}
                             {lp.incoming_challenges.sort(by_ladder_rank).map((challenge, idx) => (
                                 <div key={idx}>
-                                    <Link className="challenge-link" to={`/game/${challenge.game_id}`}>
-                                        <span className="challenge-rank">#{challenge.player.ladder_rank}</span>
+                                    <Link
+                                        className="challenge-link"
+                                        to={`/game/${challenge.game_id}`}
+                                    >
+                                        <span className="challenge-rank">
+                                            #{challenge.player.ladder_rank}
+                                        </span>
                                         <Player nolink user={challenge.player} />
                                     </Link>
                                 </div>
@@ -185,8 +198,13 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
                             )}
                             {lp.outgoing_challenges.sort(by_ladder_rank).map((challenge, idx) => (
                                 <div key={idx}>
-                                    <Link className="challenge-link" to={`/game/${challenge.game_id}`}>
-                                        <span className="challenge-rank">#{challenge.player.ladder_rank}</span>
+                                    <Link
+                                        className="challenge-link"
+                                        to={`/game/${challenge.game_id}`}
+                                    >
+                                        <span className="challenge-rank">
+                                            #{challenge.player.ladder_rank}
+                                        </span>
                                         <Player nolink user={challenge.player} />
                                     </Link>
                                 </div>
@@ -201,10 +219,18 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
             <div className="LadderComponent">
                 <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
 
-                <UIPush event="players-updated" channel={`ladder-${this.props.ladderId}`} action={this.updatePlayers} />
+                <UIPush
+                    event="players-updated"
+                    channel={`ladder-${this.props.ladderId}`}
+                    action={this.updatePlayers}
+                />
 
                 {(this.props.showTitle || null) && (
-                    <h4>{interpolate(_("{{ladder_name}} ladder"), { ladder_name: this.state.ladder.name })} </h4>
+                    <h4>
+                        {interpolate(_("{{ladder_name}} ladder"), {
+                            ladder_name: this.state.ladder.name,
+                        })}{" "}
+                    </h4>
                 )}
                 {(this.props.showLinkToFullView || null) && (
                     <div style={{ textAlign: "center" }}>
@@ -215,14 +241,21 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
                 )}
 
                 {(this.props.showTitle || null) && (
-                    <h4>{interpolate(_("{{ladder_size}} players"), { ladder_size: this.state.ladder.size })}</h4>
+                    <h4>
+                        {interpolate(_("{{ladder_size}} players"), {
+                            ladder_size: this.state.ladder.size,
+                        })}
+                    </h4>
                 )}
 
                 <PaginatedTable
                     className="ladder"
                     name="ladder"
                     ref={this.ladder_table_ref}
-                    source={`ladders/${this.props.ladderId}/players` + (full_view ? "" : "?no_challenge_information=1")}
+                    source={
+                        `ladders/${this.props.ladderId}/players` +
+                        (full_view ? "" : "?no_challenge_information=1")
+                    }
                     startingPage={startingPage}
                     pageSize={this.state.page_size}
                     pageSizeOptions={this.props.pageSizeOptions}
@@ -236,7 +269,10 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
                             render: (lp) =>
                                 ((lp.player.id !== user.id && lp.can_challenge) || null) &&
                                 (lp.can_challenge.challengeable ? (
-                                    <button className="primary xs" onClick={this.challenge.bind(this, lp)}>
+                                    <button
+                                        className="primary xs"
+                                        onClick={this.challenge.bind(this, lp)}
+                                    >
                                         {_("Challenge")}
                                     </button>
                                 ) : (
@@ -291,13 +327,25 @@ function canChallengeTooltip(obj: any): string {
     if (obj.reason_code) {
         switch (obj.reason_code) {
             case 0x001:
-                return pgettext("Can't challenge player in ladder because: ", "Can't challenge yourself");
+                return pgettext(
+                    "Can't challenge player in ladder because: ",
+                    "Can't challenge yourself",
+                );
             case 0x002:
-                return pgettext("Can't challenge player in ladder because: ", "Player is a lower rank than you");
+                return pgettext(
+                    "Can't challenge player in ladder because: ",
+                    "Player is a lower rank than you",
+                );
             case 0x003:
-                return pgettext("Can't challenge player in ladder because: ", "Player is not in the ladder");
+                return pgettext(
+                    "Can't challenge player in ladder because: ",
+                    "Player is not in the ladder",
+                );
             case 0x004:
-                return pgettext("Can't challenge player in ladder because: ", "Player's rank is too high");
+                return pgettext(
+                    "Can't challenge player in ladder because: ",
+                    "Player's rank is too high",
+                );
             case 0x005:
                 return interpolate(
                     pgettext(
@@ -312,7 +360,10 @@ function canChallengeTooltip(obj: any): string {
                     "Already playing a game against this person",
                 );
             case 0x007:
-                return pgettext("Can't challenge player in ladder because: ", "Last challenge within 7 days");
+                return pgettext(
+                    "Can't challenge player in ladder because: ",
+                    "Last challenge within 7 days",
+                );
             case 0x008:
                 return pgettext(
                     "Can't challenge player in ladder because: ",

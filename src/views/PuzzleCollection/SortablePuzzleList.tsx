@@ -42,7 +42,10 @@ interface SortablePuzzleListState {
     entries: Array<PuzzleEntry>;
 }
 
-export class SortablePuzzleList extends React.Component<SortablePuzzleListProperties, SortablePuzzleListState> {
+export class SortablePuzzleList extends React.Component<
+    SortablePuzzleListProperties,
+    SortablePuzzleListState
+> {
     constructor(props) {
         super(props);
 
@@ -84,14 +87,23 @@ export class SortablePuzzleList extends React.Component<SortablePuzzleListProper
     };
 
     render() {
-        return <SortablePuzzleListContainer entries={this.state.entries} onSortEnd={this.onSortEnd} />;
+        return (
+            <SortablePuzzleListContainer entries={this.state.entries} onSortEnd={this.onSortEnd} />
+        );
     }
 }
 
 const PuzzleEntry = SortableElement(({ puzzle }) => (
     <li className="SortablePuzzleListEntry">
         <span className="minigoban">
-            <MiniGoban noLink id={null} json={puzzle.puzzle} displayWidth={64} white={null} black={null} />
+            <MiniGoban
+                noLink
+                id={null}
+                json={puzzle.puzzle}
+                displayWidth={64}
+                white={null}
+                black={null}
+            />
         </span>
         <span className="name">{puzzle.name}</span>
         <span className="difficulty">{longRankString(puzzle.rank)}</span>
@@ -113,10 +125,12 @@ const PuzzleEntry = SortableElement(({ puzzle }) => (
     </li>
 ));
 
-const SortablePuzzleListContainer = SortableContainer(({ entries }: { entries: Array<PuzzleEntry> }) => (
-    <ul className="SortablePuzzleList">
-        {entries.map((entry, index) => (
-            <PuzzleEntry key={entry.id} index={index} puzzle={entry} />
-        ))}
-    </ul>
-));
+const SortablePuzzleListContainer = SortableContainer(
+    ({ entries }: { entries: Array<PuzzleEntry> }) => (
+        <ul className="SortablePuzzleList">
+            {entries.map((entry, index) => (
+                <PuzzleEntry key={entry.id} index={index} puzzle={entry} />
+            ))}
+        </ul>
+    ),
+);

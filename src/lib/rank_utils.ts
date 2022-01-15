@@ -290,7 +290,8 @@ export function allRanks() {
 export function humble_rating(rating: number, deviation: number): number {
     return (
         rating -
-        ((Math.min(350, Math.max(PROVISIONAL_RATING_CUTOFF, deviation)) - PROVISIONAL_RATING_CUTOFF) /
+        ((Math.min(350, Math.max(PROVISIONAL_RATING_CUTOFF, deviation)) -
+            PROVISIONAL_RATING_CUTOFF) /
             (350 - PROVISIONAL_RATING_CUTOFF)) *
             deviation
     );
@@ -308,9 +309,14 @@ export interface EffectiveOutcome {
     white_effective_stronger: boolean;
 }
 
-export function effective_outcome(black_rating: number, white_rating: number, handicap: number): EffectiveOutcome {
+export function effective_outcome(
+    black_rating: number,
+    white_rating: number,
+    handicap: number,
+): EffectiveOutcome {
     //let res: EffectiveOutcome = new EffectiveOutcome;
-    const black_effective_rating: number = black_rating + get_handicap_adjustment(black_rating, handicap);
+    const black_effective_rating: number =
+        black_rating + get_handicap_adjustment(black_rating, handicap);
     const white_effective_rating: number = white_rating;
     return {
         black_real_rating: black_rating,

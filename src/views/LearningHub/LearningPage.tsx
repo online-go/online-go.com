@@ -82,7 +82,9 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         this.wrong_answer_triggered = false;
 
         if (this.props.curpage + 1 < this.props.npages) {
-            browserHistory.push(window.location.pathname.replace(/\/[0-9]+/, "") + "/" + (this.props.curpage + 1));
+            browserHistory.push(
+                window.location.pathname.replace(/\/[0-9]+/, "") + "/" + (this.props.curpage + 1),
+            );
         } else {
             browserHistory.push("/learn-to-play-go/" + this.props.nextSection);
         }
@@ -142,7 +144,12 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         //this.forceUpdate();
     };
 
-    makePuzzleMoveTree(_correct: Array<string>, _wrong: Array<string>, width: number = 9, height: number = 9) {
+    makePuzzleMoveTree(
+        _correct: Array<string>,
+        _wrong: Array<string>,
+        width: number = 9,
+        height: number = 9,
+    ) {
         const correct: Array<any> = [];
         const wrong: Array<any> = [];
         for (const s of _correct) {
@@ -246,7 +253,11 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
 
         return (
             <div className="LearningPage">
-                <InstructionalGoban ref={this.setGobanRef} config={this._config} onUpdate={this.onUpdate} />
+                <InstructionalGoban
+                    ref={this.setGobanRef}
+                    config={this._config}
+                    onUpdate={this.onUpdate}
+                />
 
                 <div className="LearningPage-pages">
                     <div className="header">

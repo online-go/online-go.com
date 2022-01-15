@@ -86,7 +86,9 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
             }
 
             const player_id =
-                typeof this.props.user !== "object" ? this.props.user : this.props.user.id || this.props.user.player_id;
+                typeof this.props.user !== "object"
+                    ? this.props.user
+                    : this.props.user.id || this.props.user.player_id;
             const username = typeof this.props.user !== "object" ? null : this.props.user.username;
             if (player_id && player_id > 0) {
                 player_cache
@@ -128,7 +130,14 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
                         }
                     })
                     .catch((user) => {
-                        this.setState({ user: { id: null, username: username, ui_class: "provisional", pro: false } });
+                        this.setState({
+                            user: {
+                                id: null,
+                                username: username,
+                                ui_class: "provisional",
+                                pro: false,
+                            },
+                        });
                         errorLogger(user);
                     });
             }
@@ -193,7 +202,9 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
 
         if (!new_props.disableCacheUpdate) {
             const player_id =
-                typeof new_props.user !== "object" ? new_props.user : new_props.user.id || new_props.user.player_id;
+                typeof new_props.user !== "object"
+                    ? new_props.user
+                    : new_props.user.id || new_props.user.player_id;
             const username = typeof new_props.user !== "object" ? null : new_props.user.username;
 
             if (typeof new_props.user === "object" && new_props.user.id > 0) {
@@ -240,7 +251,14 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
                         }
                     })
                     .catch((user) => {
-                        this.setState({ user: { id: null, username: username, ui_class: "provisional", pro: false } });
+                        this.setState({
+                            user: {
+                                id: null,
+                                username: username,
+                                ui_class: "provisional",
+                                pro: false,
+                            },
+                        });
                         errorLogger(user);
                     });
             }
@@ -349,7 +367,11 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
 
         const player_note_indicator =
             this.props.shownotesindicator && this.state.has_notes ? (
-                <i className={"Player fa fa-clipboard"} onClick={this.openPlayerNotes} data-id={player.id} />
+                <i
+                    className={"Player fa fa-clipboard"}
+                    onClick={this.openPlayerNotes}
+                    data-id={player.id}
+                />
             ) : null;
 
         if (
@@ -361,7 +383,9 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
         ) {
             return (
                 <span ref="elt" {...main_attrs} onMouseDown={this.display_details}>
-                    {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16} />}
+                    {(props.icon || null) && (
+                        <PlayerIcon user={player} size={props.iconSize || 16} />
+                    )}
                     {(props.flag || null) && <Flag country={player.country} />}
                     {username}
                     {rank}
@@ -375,8 +399,16 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
             return (
                 // if only we could put {...main_attrs} on the span, we could put the styles in .Player.  But router seems to hate that.
                 <span>
-                    <a href={uri} ref="elt" {...main_attrs} onMouseDown={this.display_details} router={routes}>
-                        {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16} />}
+                    <a
+                        href={uri}
+                        ref="elt"
+                        {...main_attrs}
+                        onMouseDown={this.display_details}
+                        router={routes}
+                    >
+                        {(props.icon || null) && (
+                            <PlayerIcon user={player} size={props.iconSize || 16} />
+                        )}
                         {(props.flag || null) && <Flag country={player.country} />}
                         {username}
                         {rank}
@@ -397,7 +429,10 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
             return;
         }
 
-        if (("buttons" in event && event.buttons & 2) || ("button" in event && event.button === 2)) {
+        if (
+            ("buttons" in event && event.buttons & 2) ||
+            ("button" in event && event.button === 2)
+        ) {
             /* on click with right mouse button do nothing.
                buttons uses on bit per button, alowing for multiple buttons pressed at the same time. The bit with value 2 is the right mouse button. https://www.w3schools.com/jsref/event_buttons.asp
                buttons isn't supported in all browsers, so we have to check button as fallback. */

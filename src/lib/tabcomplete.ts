@@ -215,7 +215,10 @@ function onKeyPress(e, options) {
                             ? ": "
                             : " ";
                     $this.val(first + match.value + space + last);
-                    setCaretToPos(this, sel.start - text.length + match.value.length + space.length);
+                    setCaretToPos(
+                        this,
+                        sel.start - text.length + match.value.length + space.length,
+                    );
                 }
 
                 e.preventDefault();
@@ -251,7 +254,10 @@ function onKeyPress(e, options) {
                             space +
                             last,
                     );
-                    setCaretToPos(this, sel.start - match.value + match.value.length + space.length);
+                    setCaretToPos(
+                        this,
+                        sel.start - match.value + match.value.length + space.length,
+                    );
                 }
 
                 e.preventDefault();

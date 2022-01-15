@@ -126,10 +126,26 @@ export function makeRatingEntry(d: any): RatingEntry {
         count: d.opponent_id > 0 ? 1 : 0,
         wins: won,
         losses: lost,
-        strong_wins: (played_black ? outcome.white_effective_stronger : outcome.black_effective_stronger) ? won : 0,
-        strong_losses: (played_black ? outcome.white_effective_stronger : outcome.black_effective_stronger) ? lost : 0,
-        weak_wins: (played_black ? outcome.black_effective_stronger : outcome.white_effective_stronger) ? won : 0,
-        weak_losses: (played_black ? outcome.black_effective_stronger : outcome.white_effective_stronger) ? lost : 0,
+        strong_wins: (
+            played_black ? outcome.white_effective_stronger : outcome.black_effective_stronger
+        )
+            ? won
+            : 0,
+        strong_losses: (
+            played_black ? outcome.white_effective_stronger : outcome.black_effective_stronger
+        )
+            ? lost
+            : 0,
+        weak_wins: (
+            played_black ? outcome.black_effective_stronger : outcome.white_effective_stronger
+        )
+            ? won
+            : 0,
+        weak_losses: (
+            played_black ? outcome.black_effective_stronger : outcome.white_effective_stronger
+        )
+            ? lost
+            : 0,
     });
 
     //console.log(new_rating_entry);

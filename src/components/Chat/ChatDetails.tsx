@@ -136,19 +136,30 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, Chat
 
     render() {
         const group_text = pgettext("Go to the main page for this group.", "Group Page");
-        const tournament_text = pgettext("Go to the main page for this tournament.", "Tournament Page");
+        const tournament_text = pgettext(
+            "Go to the main page for this tournament.",
+            "Tournament Page",
+        );
         const leave_text = pgettext("Leave the selected channel.", "Leave Channel");
 
         return (
             <div className="ChatDetails">
                 <div className="actions">
                     {this.state.channelId.startsWith("group") && (
-                        <button className="xs noshadow" onAuxClick={this.goToGroup} onClick={this.goToGroup}>
+                        <button
+                            className="xs noshadow"
+                            onAuxClick={this.goToGroup}
+                            onClick={this.goToGroup}
+                        >
                             <i className="fa fa-users" /> {group_text}
                         </button>
                     )}
                     {this.state.channelId.startsWith("tournament") && (
-                        <button className="xs noshadow" onAuxClick={this.goToTournament} onClick={this.goToTournament}>
+                        <button
+                            className="xs noshadow"
+                            onAuxClick={this.goToTournament}
+                            onClick={this.goToTournament}
+                        >
                             <i className="fa fa-trophy" /> {tournament_text}
                         </button>
                     )}
@@ -158,7 +169,10 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, Chat
                             onClick={this.toggleMentionNotification}
                         >
                             <i className="fa fa-comment" />
-                            {" " + (this.state.notify_mentioned ? _("unfollow mentioned") : _("follow mentioned"))}
+                            {" " +
+                                (this.state.notify_mentioned
+                                    ? _("unfollow mentioned")
+                                    : _("follow mentioned"))}
                         </button>
                     )}
                     {this.state.subscribable && (
@@ -167,7 +181,10 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, Chat
                             onClick={this.toggleNewMessageNotification}
                         >
                             <i className="fa fa-comment" />
-                            {" " + (this.state.notify_unread ? _("unfollow unread") : _("follow unread"))}
+                            {" " +
+                                (this.state.notify_unread
+                                    ? _("unfollow unread")
+                                    : _("follow unread"))}
                         </button>
                     )}
                     {this.props.partFunc ? (

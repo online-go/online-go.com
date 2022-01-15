@@ -54,7 +54,10 @@ interface LibraryPlayerState {
     new_collection_private: boolean;
 }
 
-export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, LibraryPlayerState> {
+export class LibraryPlayer extends React.PureComponent<
+    LibraryPlayerProperties,
+    LibraryPlayerState
+> {
     refs: {
         dropzone;
     };
@@ -199,7 +202,9 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
     uploadSGFs = (files) => {
         if (parseInt(this.props.match.params.player_id) === data.get("user").id) {
             files = files.filter((file) => /.sgf$/i.test(file.name));
-            Promise.all(files.map((file) => post("me/games/sgf/%%", this.state.collection_id, file)))
+            Promise.all(
+                files.map((file) => post("me/games/sgf/%%", this.state.collection_id, file)),
+            )
                 .then(() => {
                     this.refresh(this.props.match.params.player_id).then(ignore).catch(ignore);
                 })
@@ -383,7 +388,10 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
                     <Card>
                         {owner && (
                             <div className="upload-button">
-                                <button className="primary" onClick={() => this.refs.dropzone.open()}>
+                                <button
+                                    className="primary"
+                                    onClick={() => this.refs.dropzone.open()}
+                                >
                                     {_("Upload")}
                                 </button>
                             </div>
@@ -436,12 +444,19 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
                                         <span className="select">
                                             <input
                                                 type="checkbox"
-                                                checked={this.state.games_checked[game.entry_id] || false}
-                                                onChange={this.setCheckedGame.bind(this, game.entry_id)}
+                                                checked={
+                                                    this.state.games_checked[game.entry_id] || false
+                                                }
+                                                onChange={this.setCheckedGame.bind(
+                                                    this,
+                                                    game.entry_id,
+                                                )}
                                             />
                                         </span>
                                     )}
-                                    <span className="date">{moment(game.started).format("ll")}</span>
+                                    <span className="date">
+                                        {moment(game.started).format("ll")}
+                                    </span>
                                     <span className="name">
                                         <Link to={`/game/${game.game_id}`}>{game.name}</Link>
                                     </span>
@@ -456,7 +471,8 @@ export class LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, 
                             ))}
                         </div>
 
-                        {((collection.games.length === 0 && collection.collections.length === 0) || null) && (
+                        {((collection.games.length === 0 && collection.collections.length === 0) ||
+                            null) && (
                             <div className="empty-text">
                                 <h3>{_("This SGF collection is empty.")}</h3>
                                 {owner && (

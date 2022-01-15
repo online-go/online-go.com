@@ -20,7 +20,12 @@ import { Link } from "react-router-dom";
 import { interpolate, _ } from "translate";
 import { Card, PopupMenu, PopupMenuItem } from "material";
 
-import { active_announcements, announcement_event_emitter, Announcement, announcementTypeMuted } from "./Announcements";
+import {
+    active_announcements,
+    announcement_event_emitter,
+    Announcement,
+    announcementTypeMuted,
+} from "./Announcements";
 import { getBlocks, setAnnouncementBlock } from "../BlockPlayer";
 
 import * as data from "data";
@@ -29,7 +34,10 @@ import * as preferences from "preferences";
 import swal from "sweetalert2";
 
 // Holds the expirations dates of cleared announcements
-const hard_cleared_announcements: { [id: number]: number } = data.get("announcements.hard_cleared", {});
+const hard_cleared_announcements: { [id: number]: number } = data.get(
+    "announcements.hard_cleared",
+    {},
+);
 for (const k in hard_cleared_announcements) {
     if (hard_cleared_announcements[k] < Date.now()) {
         delete hard_cleared_announcements[k];
@@ -68,7 +76,12 @@ export class ActiveAnnouncements extends React.PureComponent {
             const creator_blocked = getBlocks(announcement.creator.id).block_announcements;
             const type_muted = announcementTypeMuted(announcement);
 
-            if (announcement.type !== "tournament" && !is_hidden && !creator_blocked && !type_muted) {
+            if (
+                announcement.type !== "tournament" &&
+                !is_hidden &&
+                !creator_blocked &&
+                !type_muted
+            ) {
                 lst.push(announcement);
             }
         }
@@ -104,7 +117,9 @@ export class ActiveAnnouncements extends React.PureComponent {
                             onClick: () => {
                                 swal({
                                     text: interpolate(
-                                        _("Are you sure you want to hide all announcements from {{name}}?"),
+                                        _(
+                                            "Are you sure you want to hide all announcements from {{name}}?",
+                                        ),
                                         { name: announcement.creator.username },
                                     ),
                                     showCancelButton: true,
@@ -126,7 +141,9 @@ export class ActiveAnnouncements extends React.PureComponent {
                             title: _("Hide stream announcements"),
                             onClick: () => {
                                 swal({
-                                    text: _("Are you sure you want to hide all announcements for streamers?"),
+                                    text: _(
+                                        "Are you sure you want to hide all announcements for streamers?",
+                                    ),
                                     showCancelButton: true,
                                     confirmButtonText: _("Yes"),
                                     cancelButtonText: _("Cancel"),
@@ -146,7 +163,9 @@ export class ActiveAnnouncements extends React.PureComponent {
                             title: _("Hide event announcements"),
                             onClick: () => {
                                 swal({
-                                    text: _("Are you sure you want to hide all event announcements?"),
+                                    text: _(
+                                        "Are you sure you want to hide all event announcements?",
+                                    ),
                                     showCancelButton: true,
                                     confirmButtonText: _("Yes"),
                                     cancelButtonText: _("Cancel"),
@@ -166,7 +185,9 @@ export class ActiveAnnouncements extends React.PureComponent {
                             title: _("Hide go service advertisements"),
                             onClick: () => {
                                 swal({
-                                    text: _("Are you sure you want to hide all go related advertisements?"),
+                                    text: _(
+                                        "Are you sure you want to hide all go related advertisements?",
+                                    ),
                                     showCancelButton: true,
                                     confirmButtonText: _("Yes"),
                                     cancelButtonText: _("Cancel"),

@@ -61,7 +61,11 @@ export class TournamentIndicator extends React.PureComponent<{}, any> {
         }
 
         return (
-            <Link to={this.state.tournament.link} className="TournamentIndicator" title={this.state.tournament.text}>
+            <Link
+                to={this.state.tournament.link}
+                className="TournamentIndicator"
+                title={this.state.tournament.text}
+            >
                 <i className="fa fa-trophy" />
                 <span className="time">
                     {m}:{s}

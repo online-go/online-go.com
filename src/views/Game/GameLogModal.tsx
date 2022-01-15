@@ -73,7 +73,8 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
                     <div>
                         <h2>{config.game_name}</h2>
                         <h3>
-                            <Player disableCacheUpdate icon rank user={this.props.black} /> {_("vs.")}{" "}
+                            <Player disableCacheUpdate icon rank user={this.props.black} />{" "}
+                            {_("vs.")}{" "}
                             <Player disableCacheUpdate icon rank user={this.props.white} />
                         </h3>
                     </div>
@@ -90,10 +91,16 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
                         <tbody>
                             {this.state.log.map((entry, idx) => (
                                 <tr key={entry.timestamp + ":" + idx} className="entry">
-                                    <td className="timestamp">{moment(entry.timestamp).format("L LTS")}</td>
+                                    <td className="timestamp">
+                                        {moment(entry.timestamp).format("L LTS")}
+                                    </td>
                                     <td className="event">{entry.event}</td>
                                     <td className="data">
-                                        <LogData config={this.props.config} event={entry.event} data={entry.data} />
+                                        <LogData
+                                            config={this.props.config}
+                                            event={entry.event}
+                                            data={entry.data}
+                                        />
                                     </td>
                                 </tr>
                             ))}

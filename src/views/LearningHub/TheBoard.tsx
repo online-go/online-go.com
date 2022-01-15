@@ -33,7 +33,10 @@ export class TheBoard extends LearningHubSection {
         return pgettext("Tutorial section name on learning about the board", "The Board!");
     }
     static subtext(): string {
-        return pgettext("Tutorial section subtext on learning about the board", "Corners, sides, and middle");
+        return pgettext(
+            "Tutorial section subtext on learning about the board",
+            "Corners, sides, and middle",
+        );
     }
 }
 
@@ -53,7 +56,24 @@ class Page1 extends LearningPage {
             initial_state: { black: "", white: "" },
 
             move_tree: this.makePuzzleMoveTree(
-                ["f9", "g9", "h9", "j9", "f8", "g8", "h8", "j8", "f7", "g7", "h7", "j7", "f6", "g6", "h6", "j6"],
+                [
+                    "f9",
+                    "g9",
+                    "h9",
+                    "j9",
+                    "f8",
+                    "g8",
+                    "h8",
+                    "j8",
+                    "f7",
+                    "g7",
+                    "h7",
+                    "j7",
+                    "f6",
+                    "g6",
+                    "h6",
+                    "j6",
+                ],
                 [],
             ),
         };

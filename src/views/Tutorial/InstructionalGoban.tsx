@@ -102,7 +102,9 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps>
                 draw_bottom_labels: true,
                 draw_left_labels: true,
                 draw_right_labels: true,
-                display_width: this.props.displayWidth || Math.min($("body").width() - 50, $("#em10").width() * 2),
+                display_width:
+                    this.props.displayWidth ||
+                    Math.min($("body").width() - 50, $("#em10").width() * 2),
                 square_size: "auto",
 
                 puzzle_opponent_move_mode: "automatic",

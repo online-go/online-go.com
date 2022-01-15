@@ -31,7 +31,13 @@ import { RatingEntry, makeRatingEntry } from "./RatingEntry";
 import { errorLogger } from "misc";
 import { MiniGoban } from "MiniGoban";
 
-import { rating_to_rank, rankString, is_rank_bounded, humble_rating, bounded_rank } from "rank_utils";
+import {
+    rating_to_rank,
+    rankString,
+    is_rank_bounded,
+    humble_rating,
+    bounded_rank,
+} from "rank_utils";
 
 type speed_t = "overall" | "blitz" | "live" | "correspondence";
 
@@ -122,7 +128,9 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         .x0((d: RatingEntry) => this.ratings_x(d.index))
         .x1((d: RatingEntry) => this.ratings_x(d.index))
         .y0((d: RatingEntry) => this.ratings_y(Math.min(d.starting_rating, d.rating) - d.deviation))
-        .y1((d: RatingEntry) => this.ratings_y(Math.max(d.starting_rating, d.rating) + d.deviation));
+        .y1((d: RatingEntry) =>
+            this.ratings_y(Math.max(d.starting_rating, d.rating) + d.deviation),
+        );
 
     subselect_area = d3
         .area<RatingEntry>()
@@ -296,7 +304,9 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             .attr("width", width)
             .attr("height", height + margin.top + margin.bottom);
 
-        this.rating_graph = this.svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        this.rating_graph = this.svg
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
         /* Win-loss pie chart goes to the right of the rating graph */
         const graph_right_side = this.graph_width + margin.left + margin.right;
@@ -307,7 +317,11 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             .append("g")
             .attr(
                 "transform",
-                "translate(" + (graph_right_side + this.pie_width / 2.0) + "," + (margin.top + this.height / 3.0) + ")",
+                "translate(" +
+                    (graph_right_side + this.pie_width / 2.0) +
+                    "," +
+                    (margin.top + this.height / 3.0) +
+                    ")",
             );
 
         this.subselect_graph = this.svg
@@ -337,10 +351,15 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             .attr("y", -10)
             .attr("rx", 10);
 
-        this.dateLegendText = this.dateLegend.append("text").attr("class", "date-legend-text").attr("y", 3);
+        this.dateLegendText = this.dateLegend
+            .append("text")
+            .attr("class", "date-legend-text")
+            .attr("y", 3);
 
         const size_text = this.props.size ? `${this.props.size}x${this.props.size}` : "";
-        this.legend_label = this.legend.append("text").text(`${speed_translation(this.props.speed)} ${size_text}`);
+        this.legend_label = this.legend
+            .append("text")
+            .text(`${speed_translation(this.props.speed)} ${size_text}`);
 
         this.range_label = this.legend
             .append("text")
@@ -437,10 +456,13 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                             n: n,
                             rating: Math.floor(humble_rating(d.rating, d.deviation)),
                             deviation: Math.round(d.deviation),
-                            rank: rankString(bounded_rank(rating_to_rank(humble_rating(d.rating, d.deviation))), true),
-                            rank_deviation: (rating_to_rank(d.rating + d.deviation) - rating_to_rank(d.rating)).toFixed(
-                                1,
+                            rank: rankString(
+                                bounded_rank(rating_to_rank(humble_rating(d.rating, d.deviation))),
+                                true,
                             ),
+                            rank_deviation: (
+                                rating_to_rank(d.rating + d.deviation) - rating_to_rank(d.rating)
+                            ).toFixed(1),
                         },
                     ),
                 );
@@ -455,7 +477,11 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                 );
                 self.ratingTooltip.attr(
                     "transform",
-                    "translate(" + self.ratings_x(n) + "," + self.ratings_y(humble_rating(d.rating, d.deviation)) + ")",
+                    "translate(" +
+                        self.ratings_x(n) +
+                        "," +
+                        self.ratings_y(humble_rating(d.rating, d.deviation)) +
+                        ")",
                 );
                 self.horizontalCrosshairLine.attr(
                     "transform",
@@ -466,7 +492,11 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                     window.clearTimeout(self.hover_timer);
                 }
 
-                self.hover_timer = window.setTimeout(self.updateHoveredGame, show_hovered_game_delay, d.game_id);
+                self.hover_timer = window.setTimeout(
+                    self.updateHoveredGame,
+                    show_hovered_game_delay,
+                    d.game_id,
+                );
             });
 
         this.subselect_chart = this.subselect_graph.append("path").attr("class", "area");
@@ -518,7 +548,10 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
     /* The area we can draw all of our charting in */
     chart_sizes() {
-        const width = Math.max(chart_min_width, $(this.container).width() - margin.left - margin.right);
+        const width = Math.max(
+            chart_min_width,
+            $(this.container).width() - margin.left - margin.right,
+        );
         return {
             width: width,
             height: height,
@@ -566,7 +599,10 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         this.mouseArea.attr("width", width);
         this.mouseArea.attr("height", height);
 
-        this.subselect_axis_labels.attr("transform", "translate(0," + (secondary_charts_height - 22) + ")");
+        this.subselect_axis_labels.attr(
+            "transform",
+            "translate(0," + (secondary_charts_height - 22) + ")",
+        );
         this.subselect_axis_labels.call(this.subselect_axis);
         this.brush.extent([
             [0, 0],
@@ -577,7 +613,11 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
         this.win_loss_pie.attr(
             "transform",
-            "translate(" + (graph_right_side + this.pie_width / 2.0) + "," + (margin.top + this.height / 3.0) + ")",
+            "translate(" +
+                (graph_right_side + this.pie_width / 2.0) +
+                "," +
+                (margin.top + this.height / 3.0) +
+                ")",
         );
 
         if (!this.state.nodata && this.game_entries) {
@@ -636,7 +676,10 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             },
             {
                 label: interpolate(
-                    pgettext("Number of wins against weaker opponents", "{{weak_wins}} wins vs. weaker opponents"),
+                    pgettext(
+                        "Number of wins against weaker opponents",
+                        "{{weak_wins}} wins vs. weaker opponents",
+                    ),
                     { weak_wins: agg.weak_wins },
                 ),
                 count: agg.weak_wins,
@@ -681,9 +724,12 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         this.win_loss_pie
             .append("text")
             .text(
-                interpolate(pgettext("Total Ranked Games", "Total of: {{total_games}} ranked games"), {
-                    total_games: total_games,
-                }),
+                interpolate(
+                    pgettext("Total Ranked Games", "Total of: {{total_games}} ranked games"),
+                    {
+                        total_games: total_games,
+                    },
+                ),
             )
             .attr("x", -60)
             .attr("y", -1.0 * pie_radius - 20)
@@ -740,11 +786,15 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         this.ratings_x.domain(x_range);
         const lower = Math.min.apply(
             null,
-            this.game_entries.map((d: RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation),
+            this.game_entries.map(
+                (d: RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation,
+            ),
         );
         const upper = Math.max.apply(
             null,
-            this.game_entries.map((d: RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation),
+            this.game_entries.map(
+                (d: RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation,
+            ),
         );
         this.ratings_y.domain([lower * 0.95, upper * 1.05]);
 
@@ -758,7 +808,9 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         );
 
         // Reset the sub selection to full width
-        this.subselect_extents = this.subselect_x.range().map(this.subselect_x.invert, this.subselect_x);
+        this.subselect_extents = this.subselect_x
+            .range()
+            .map(this.subselect_x.invert, this.subselect_x);
         this.setState({ subselect_extents: this.subselect_extents.slice() });
 
         this.deviation_chart.datum(this.game_entries).attr("d", this.deviation_area as any);
@@ -793,7 +845,10 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
     onSubselectBrush = () => {
         this.subselect_extents = (d3.event && d3.event.selection) || this.subselect_x.range();
-        this.subselect_extents = this.subselect_extents.map(this.subselect_x.invert, this.subselect_x);
+        this.subselect_extents = this.subselect_extents.map(
+            this.subselect_x.invert,
+            this.subselect_x,
+        );
         const range = this.subselect_extents[1] - this.subselect_extents[0];
 
         this.setState({ subselect_extents: this.subselect_extents.slice() });
@@ -802,11 +857,15 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
 
         const lower = Math.min.apply(
             null,
-            this.game_entries.map((d: RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation),
+            this.game_entries.map(
+                (d: RatingEntry) => Math.min(d.starting_rating, d.rating) - d.deviation,
+            ),
         );
         const upper = Math.max.apply(
             null,
-            this.game_entries.map((d: RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation),
+            this.game_entries.map(
+                (d: RatingEntry) => Math.max(d.starting_rating, d.rating) + d.deviation,
+            ),
         );
 
         const l = Math.min.apply(
@@ -828,7 +887,9 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         this.ratings_y.domain([l * 0.95, u * 1.05]);
 
         this.range_label.text(
-            `Games ${Math.ceil(this.subselect_extents[0])} - ${Math.floor(this.subselect_extents[1])}`,
+            `Games ${Math.ceil(this.subselect_extents[0])} - ${Math.floor(
+                this.subselect_extents[1],
+            )}`,
         );
 
         this.rating_chart.attr("d", this.rating_line as any);
@@ -880,13 +941,23 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                     <div className="nodata">{_("No rated games played yet")}</div>
                 ) : (
                     <div className="ratings-graph">
-                        <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
+                        <ReactResizeDetector
+                            handleWidth
+                            handleHeight
+                            onResize={() => this.onResize()}
+                        />
                         <PersistentElement elt={this.chart_div} />
                     </div>
                 )}
 
                 {this.state.hovered_game_id && (
-                    <MiniGoban id={this.state.hovered_game_id} displayWidth={200} width={19} height={19} title={true} />
+                    <MiniGoban
+                        id={this.state.hovered_game_id}
+                        displayWidth={200}
+                        width={19}
+                        height={19}
+                        title={true}
+                    />
                 )}
             </div>
         );
@@ -932,7 +1003,12 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     }
 
     renderWinLossNumbersAsText() {
-        if (this.state.loading || this.state.nodata || !this.game_entries || !this.win_loss_aggregate) {
+        if (
+            this.state.loading ||
+            this.state.nodata ||
+            !this.game_entries ||
+            !this.win_loss_aggregate
+        ) {
             return <div className="win-loss-stats" />;
         }
 
@@ -943,7 +1019,10 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                 <div>
                     <span className="win-loss-legend-block weak-wins" />
                     {interpolate(
-                        pgettext("Number of wins against weaker opponents", "{{weak_wins}} wins vs. weaker opponents"),
+                        pgettext(
+                            "Number of wins against weaker opponents",
+                            "{{weak_wins}} wins vs. weaker opponents",
+                        ),
                         { weak_wins: agg.weak_wins },
                     )}
                 </div>

@@ -19,7 +19,10 @@ import * as React from "react";
 import * as data from "data";
 import { TypedEventEmitter } from "TypedEventEmitter";
 
-export class TypedEventEmitterPureComponent<Events, Props, State> extends React.PureComponent<Props, State> {
+export class TypedEventEmitterPureComponent<Events, Props, State> extends React.PureComponent<
+    Props,
+    State
+> {
     event_emitter: TypedEventEmitter<Events>;
 
     constructor(props: Props | Readonly<Props>) {
@@ -32,17 +35,26 @@ export class TypedEventEmitterPureComponent<Events, Props, State> extends React.
         }
         return false;
     }
-    on<K extends Extract<keyof Events, string>>(event: K, listener: (arg?: Events[K]) => any): this {
+    on<K extends Extract<keyof Events, string>>(
+        event: K,
+        listener: (arg?: Events[K]) => any,
+    ): this {
         this.__initialize_event_emitter();
         this.event_emitter.on(event, listener);
         return this;
     }
-    once<K extends Extract<keyof Events, string>>(event: K, listener: (arg?: Events[K]) => any): this {
+    once<K extends Extract<keyof Events, string>>(
+        event: K,
+        listener: (arg?: Events[K]) => any,
+    ): this {
         this.__initialize_event_emitter();
         this.event_emitter.once(event, listener);
         return this;
     }
-    off<K extends Extract<keyof Events, string>>(event: K, listener: (arg?: Events[K]) => any): this {
+    off<K extends Extract<keyof Events, string>>(
+        event: K,
+        listener: (arg?: Events[K]) => any,
+    ): this {
         this.__initialize_event_emitter();
         this.event_emitter.off(event, listener);
         return this;

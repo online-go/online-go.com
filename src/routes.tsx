@@ -165,7 +165,8 @@ export const routes = (
                 <Route path="/review/:review_id" component={Game} />
                 <Route path="/demo/view/:review_id" component={Game} />
                 <Route path="/demo/:review_id" component={Game} />
-                <Route path="/joseki/" exact component={Joseki} /> {/* this is equivalent to specifying pos = "root" */}
+                <Route path="/joseki/" exact component={Joseki} />{" "}
+                {/* this is equivalent to specifying pos = "root" */}
                 <Route path="/joseki/:pos" component={Joseki} />
                 <Route path="/settings/:category" component={Settings} />
                 <Route path="/settings/:category/*" component={Settings} />
@@ -208,10 +209,22 @@ export const routes = (
                 <Route path="/tournaments/:tournament_id" component={Tournament} />
                 <Route path="/tournaments" component={TournamentListMainView} />
                 <Route path="/tournaments/" component={TournamentListMainView} />
-                <Route path="/tournament-record/:tournament_record_id" component={TournamentRecord} />
-                <Route path="/tournament-records/:tournament_record_id" component={TournamentRecord} />
-                <Route path="/tournament-record/:tournament_record_id/*" component={TournamentRecord} />
-                <Route path="/tournament-records/:tournament_record_id/*" component={TournamentRecord} />
+                <Route
+                    path="/tournament-record/:tournament_record_id"
+                    component={TournamentRecord}
+                />
+                <Route
+                    path="/tournament-records/:tournament_record_id"
+                    component={TournamentRecord}
+                />
+                <Route
+                    path="/tournament-record/:tournament_record_id/*"
+                    component={TournamentRecord}
+                />
+                <Route
+                    path="/tournament-records/:tournament_record_id/*"
+                    component={TournamentRecord}
+                />
                 <Route path="/ladders" component={LadderList} />
                 <Route path="/ladder/:ladder_id" component={Ladder} />
                 <Route path="/puzzles" component={PuzzleList} />

@@ -62,7 +62,10 @@ export function ChatLine(props: ChatLineInterface): JSX.Element {
 
     if (!lastline || (ts && ts_ll)) {
         if (ts) {
-            if (!lastline || moment(ts).format("YYYY-MM-DD") !== moment(ts_ll).format("YYYY-MM-DD")) {
+            if (
+                !lastline ||
+                moment(ts).format("YYYY-MM-DD") !== moment(ts_ll).format("YYYY-MM-DD")
+            ) {
                 show_date = <div className="date">{moment(ts).format("LL")}</div>;
             }
         }
@@ -75,7 +78,11 @@ export function ChatLine(props: ChatLineInterface): JSX.Element {
         }
 
         if (/^\/senseis?\s/.test(body)) {
-            body = generateChatSearchLine("http://senseis.xmp.net/?search=", /^\/senseis?\s/.exec(body)[0], body);
+            body = generateChatSearchLine(
+                "http://senseis.xmp.net/?search=",
+                /^\/senseis?\s/.exec(body)[0],
+                body,
+            );
         }
 
         if (body.substr(0, 8) === "/google ") {
@@ -95,7 +102,9 @@ export function ChatLine(props: ChatLineInterface): JSX.Element {
         const minutes = ts.getMinutes();
 
         timestamp_str =
-            (hours < 10 ? ` ${hours}` : hours.toString()) + ":" + (minutes < 10 ? `0${minutes}` : minutes.toString());
+            (hours < 10 ? ` ${hours}` : hours.toString()) +
+            ":" +
+            (minutes < 10 ? `0${minutes}` : minutes.toString());
     }
 
     return (
@@ -109,7 +118,9 @@ export function ChatLine(props: ChatLineInterface): JSX.Element {
         >
             {show_date}
             {ts && <span className="timestamp">[{timestamp_str}]</span>}
-            {(user.id || null) && <Player user={user} flare rank={false} noextracontrols disableCacheUpdate />}
+            {(user.id || null) && (
+                <Player user={user} flare rank={false} noextracontrols disableCacheUpdate />
+            )}
             {third_person ? " " : ": "}
             <span className="body">{chat_markup(body)}</span>
         </div>
@@ -125,7 +136,11 @@ function generateChatSearchLine(urlString, command, body) {
 
     const params = body.split(" ");
     if (target.length > 0) {
-        return target.slice(0, target.length - 1) + ": " + searchString(urlString, params.slice(3, params.length));
+        return (
+            target.slice(0, target.length - 1) +
+            ": " +
+            searchString(urlString, params.slice(3, params.length))
+        );
     } else {
         return searchString(urlString, params.slice(1, params.length));
     }

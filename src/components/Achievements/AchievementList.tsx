@@ -47,7 +47,10 @@ function render_achievement_entry(entry: AchievementEntry): JSX.Element {
     }
 
     return (
-        <div key={entry.name + "-" + entry.nth_time_awarded} className={"AchievementEntry " + entry.name}>
+        <div
+            key={entry.name + "-" + entry.nth_time_awarded}
+            className={"AchievementEntry " + entry.name}
+        >
             <span className="icon" />
             <div className="achievement-info">
                 <div className="title">{title}</div>

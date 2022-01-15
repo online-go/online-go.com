@@ -105,12 +105,18 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, { url }> {
         if (this.state.url) {
             return (
                 <img
-                    className={`PlayerIcon PlayerIcon-${this.props.size} ${this.props.className || ""}`}
+                    className={`PlayerIcon PlayerIcon-${this.props.size} ${
+                        this.props.className || ""
+                    }`}
                     src={this.state.url}
                 />
             );
         }
 
-        return <span className={`PlayerIcon PlayerIcon-${this.props.size} ${this.props.className || ""}`} />;
+        return (
+            <span
+                className={`PlayerIcon PlayerIcon-${this.props.size} ${this.props.className || ""}`}
+            />
+        );
     }
 }

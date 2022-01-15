@@ -33,7 +33,10 @@ interface RengoManagementPaneProperties {
 
 interface RengoManagementPaneState {}
 
-export class RengoManagementPane extends React.PureComponent<RengoManagementPaneProperties, RengoManagementPaneState> {
+export class RengoManagementPane extends React.PureComponent<
+    RengoManagementPaneProperties,
+    RengoManagementPaneState
+> {
     constructor(props) {
         super(props);
 
@@ -49,10 +52,16 @@ export class RengoManagementPane extends React.PureComponent<RengoManagementPane
     };
 
     render() {
-        const the_challenge = this.props.rengo_challenge_list.find((c) => c.challenge_id === this.props.challenge_id);
+        const the_challenge = this.props.rengo_challenge_list.find(
+            (c) => c.challenge_id === this.props.challenge_id,
+        );
 
-        const our_rengo_challenges = this.props.rengo_challenge_list.filter((c) => c.user_id === this.props.user_id);
-        const own_challenge = our_rengo_challenges.find((c) => c.challenge_id === this.props.challenge_id);
+        const our_rengo_challenges = this.props.rengo_challenge_list.filter(
+            (c) => c.user_id === this.props.user_id,
+        );
+        const own_challenge = our_rengo_challenges.find(
+            (c) => c.challenge_id === this.props.challenge_id,
+        );
         const participating = the_challenge.rengo_participants.includes(this.props.user_id);
         const challenge_ready_to_start = this.rengoReadyToStart(the_challenge);
 
@@ -66,7 +75,11 @@ export class RengoManagementPane extends React.PureComponent<RengoManagementPane
                         : _("Waiting for Rengo players...")}
                 </div>
 
-                {React.Children.only(this.props.children) /* intended to be RengoTeamManagementPane */}
+                {
+                    React.Children.only(
+                        this.props.children,
+                    ) /* intended to be RengoTeamManagementPane */
+                }
 
                 <div className="rengo-challenge-buttons">
                     {(own_challenge || null) && (
@@ -94,7 +107,10 @@ export class RengoManagementPane extends React.PureComponent<RengoManagementPane
                     {(!own_challenge || null) && (
                         <div className="automatch-settings">
                             <button
-                                onClick={this.props.withdrawFromRengoChallenge.bind(this, the_challenge)}
+                                onClick={this.props.withdrawFromRengoChallenge.bind(
+                                    this,
+                                    the_challenge,
+                                )}
                                 className="btn danger xs"
                                 disabled={!participating}
                             >

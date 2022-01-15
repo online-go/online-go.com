@@ -20,7 +20,13 @@ import "whatwg-fetch"; /* polyfills window.fetch */
 import * as Sentry from "@sentry/browser";
 import * as SentryTracing from "@sentry/tracing";
 import { configure_goban } from "configure-goban";
-import { GoMath, init_score_estimator, set_remote_scorer, ScoreEstimateRequest, ScoreEstimateResponse } from "goban";
+import {
+    GoMath,
+    init_score_estimator,
+    set_remote_scorer,
+    ScoreEstimateRequest,
+    ScoreEstimateResponse,
+} from "goban";
 import { sfx } from "sfx";
 import { post } from "requests";
 import { ai_host } from "sockets";
@@ -337,7 +343,10 @@ function ForceReactUpdateWrapper(props): JSX.Element {
     };
     return <React.Fragment key={update}>{props.children}</React.Fragment>;
 }
-ReactDOM.render(<ForceReactUpdateWrapper>{routes}</ForceReactUpdateWrapper>, document.getElementById("main-content"));
+ReactDOM.render(
+    <ForceReactUpdateWrapper>{routes}</ForceReactUpdateWrapper>,
+    document.getElementById("main-content"),
+);
 
 window["data"] = data;
 window["preferences"] = preferences;

@@ -38,10 +38,14 @@ export class About extends React.Component<{}, any> {
         window.document.title = _("About");
         termination_socket.on("connect", () => {
             console.log("Got connect[term]");
-            termination_socket.send("versions", true, (res) => this.setState({ termination_versions: res }));
+            termination_socket.send("versions", true, (res) =>
+                this.setState({ termination_versions: res }),
+            );
         });
         if (termination_socket.connected) {
-            termination_socket.send("versions", true, (res) => this.setState({ termination_versions: res }));
+            termination_socket.send("versions", true, (res) =>
+                this.setState({ termination_versions: res }),
+            );
         }
     }
 
@@ -64,7 +68,10 @@ export class About extends React.Component<{}, any> {
                         Online-Go.com
                         <span className="links">
                             <Link to="/docs/team">{_("Team")}</Link>
-                            <a className="changelog" href="https://github.com/online-go/online-go.com/commits/devel">
+                            <a
+                                className="changelog"
+                                href="https://github.com/online-go/online-go.com/commits/devel"
+                            >
                                 {_("Change Log")}
                             </a>
                         </span>

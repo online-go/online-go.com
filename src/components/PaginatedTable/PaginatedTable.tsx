@@ -41,7 +41,10 @@ interface PagedResults<EntryT = any> {
     results: Array<any>;
 }
 
-type SourceFunction<EntryT> = (filter: Filter, sorting: Array<string>) => Promise<PagedResults<EntryT>>;
+type SourceFunction<EntryT> = (
+    filter: Filter,
+    sorting: Array<string>,
+) => Promise<PagedResults<EntryT>>;
 
 interface PaginatedTableProperties<RawEntryT, GroomedEntryT = RawEntryT> {
     source: string | SourceFunction<RawEntryT>;
@@ -66,7 +69,9 @@ export interface PaginatedTableRef {
     refresh: () => void;
 }
 
-export const PaginatedTable = React.forwardRef<PaginatedTableRef, PaginatedTableProperties<any>>(_PaginatedTable);
+export const PaginatedTable = React.forwardRef<PaginatedTableRef, PaginatedTableProperties<any>>(
+    _PaginatedTable,
+);
 
 function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
     props: PaginatedTableProperties<RawEntryT, GroomedEntryT>,
@@ -83,9 +88,12 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
     const [page_size, _setPageSize]: [number, (x: number) => void] = React.useState(
         data.get(`paginated-table.${table_name}.page_size`, props.pageSize || 10),
     );
-    const [order_by, setOrderBy]: [string[], (x: string[]) => void] = React.useState(props.orderBy || []);
+    const [order_by, setOrderBy]: [string[], (x: string[]) => void] = React.useState(
+        props.orderBy || [],
+    );
     const [loading, setLoading]: [boolean, (x: boolean) => void] = React.useState(false as boolean);
-    const [load_again_refresh, setLoadAgainRefresh]: [number, (x: number) => void] = React.useState(0);
+    const [load_again_refresh, setLoadAgainRefresh]: [number, (x: number) => void] =
+        React.useState(0);
 
     const load_again = React.useRef(false as boolean);
     const last_loaded = React.useRef([] as any[]);
@@ -278,7 +286,9 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
 
     /** RENDER **/
 
-    const extra_classes = [props.className || "", props.onRowClick ? "clickable-rows" : ""].join(" ");
+    const extra_classes = [props.className || "", props.onRowClick ? "clickable-rows" : ""].join(
+        " ",
+    );
     const columns = props.columns.filter((c) => !!c);
     const blank_rows = [];
     const page_sizes = props.pageSizeOptions || [10, 25, 50];
@@ -368,7 +378,10 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
                     </div>
                     <div className="right">
                         {(page_sizes.length > 1 || null) && (
-                            <select onChange={(ev) => setPageSize(parseInt(ev.target.value))} value={page_size}>
+                            <select
+                                onChange={(ev) => setPageSize(parseInt(ev.target.value))}
+                                value={page_size}
+                            >
                                 {page_sizes.map((v, idx) => (
                                     <option key={idx} value={v}>
                                         {v}

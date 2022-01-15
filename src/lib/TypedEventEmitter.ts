@@ -35,7 +35,10 @@ export class TypedEventEmitter<T> {
         this.emitter.once(event, listener);
         return this;
     }
-    removeListener<K extends Extract<keyof T, string>>(event: K, listener: (arg?: T[K]) => any): this {
+    removeListener<K extends Extract<keyof T, string>>(
+        event: K,
+        listener: (arg?: T[K]) => any,
+    ): this {
         this.emitter.removeListener(event, listener);
         return this;
     }

@@ -114,7 +114,11 @@ export function getAutomatchSettings(speed: "blitz" | "live" | "correspondence")
     }
 }
 
-export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties, AutomatchSettingsState> {
+export class AutomatchSettings extends Modal<
+    Events,
+    AutomatchSettingsProperties,
+    AutomatchSettingsState
+> {
     constructor(props) {
         super(props);
         this.state = {
@@ -242,7 +246,9 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
                             {_("Normal")}
                         </button>
                         <button
-                            className={this.state.tab === "correspondence" ? "primary active sm" : "sm"}
+                            className={
+                                this.state.tab === "correspondence" ? "primary active sm" : "sm"
+                            }
                             onClick={() => this.setTab("correspondence")}
                         >
                             {_("Correspondence")}
@@ -255,7 +261,13 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
                                 <tr>
                                     <th>{_("Opponent rank range")}</th>
                                     <td>
-                                        <span style={{ visibility: settings.lower_rank_diff ? "visible" : "hidden" }}>
+                                        <span
+                                            style={{
+                                                visibility: settings.lower_rank_diff
+                                                    ? "visible"
+                                                    : "hidden",
+                                            }}
+                                        >
                                             -
                                         </span>
                                         <input
@@ -266,7 +278,13 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
                                             onChange={this.setLowerRankDiff}
                                         />
                                         &nbsp; &nbsp;
-                                        <span style={{ visibility: settings.upper_rank_diff ? "visible" : "hidden" }}>
+                                        <span
+                                            style={{
+                                                visibility: settings.upper_rank_diff
+                                                    ? "visible"
+                                                    : "hidden",
+                                            }}
+                                        >
                                             +
                                         </span>
                                         <input
@@ -287,12 +305,21 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
                                         />
                                         {settings.handicap.condition === "no-preference" ? (
                                             <i>
-                                                {tab === "blitz" ? _("Default is disabled") : _("Default is enabled")}{" "}
+                                                {tab === "blitz"
+                                                    ? _("Default is disabled")
+                                                    : _("Default is enabled")}{" "}
                                             </i>
                                         ) : (
-                                            <select value={settings.handicap.value} onChange={this.setHandicapValue}>
-                                                <option value="enabled">{_("Handicaps enabled")}</option>
-                                                <option value="disabled">{_("Handicaps disabled")}</option>
+                                            <select
+                                                value={settings.handicap.value}
+                                                onChange={this.setHandicapValue}
+                                            >
+                                                <option value="enabled">
+                                                    {_("Handicaps enabled")}
+                                                </option>
+                                                <option value="disabled">
+                                                    {_("Handicaps disabled")}
+                                                </option>
                                             </select>
                                         )}
                                     </td>
@@ -334,7 +361,10 @@ export class AutomatchSettings extends Modal<Events, AutomatchSettingsProperties
                                         {settings.rules.condition === "no-preference" ? (
                                             <i>{_("Default is to use Japanese rules")}</i>
                                         ) : (
-                                            <select value={settings.rules.value} onChange={this.setRulesValue}>
+                                            <select
+                                                value={settings.rules.value}
+                                                onChange={this.setRulesValue}
+                                            >
                                                 <option value="japanese">{_("Japanese")}</option>
                                                 <option value="chinese">{_("Chinese")}</option>
                                                 <option value="aga">{_("AGA")}</option>

@@ -33,7 +33,10 @@ export class SnapBack extends LearningHubSection {
         return pgettext("Tutorial section on snapback", "Snapback!");
     }
     static subtext(): string {
-        return pgettext("Tutorial section on snapback", "Sacrificing stones to come back and capture a group");
+        return pgettext(
+            "Tutorial section on snapback",
+            "Sacrificing stones to come back and capture a group",
+        );
     }
 }
 

@@ -56,7 +56,9 @@ export class GroupList extends React.PureComponent<{}, GroupListState> {
                                 placeholder={_("Search")}
                                 onChange={(event) => {
                                     this.setState({
-                                        name_contains_filter: (event.target as HTMLInputElement).value.trim(),
+                                        name_contains_filter: (
+                                            event.target as HTMLInputElement
+                                        ).value.trim(),
                                     });
                                 }}
                             />
@@ -79,7 +81,14 @@ export class GroupList extends React.PureComponent<{}, GroupListState> {
                                 {
                                     header: "",
                                     className: "group-icon-header",
-                                    render: (X) => <img className="group-icon" src={X.icon} width="64" height="64" />,
+                                    render: (X) => (
+                                        <img
+                                            className="group-icon"
+                                            src={X.icon}
+                                            width="64"
+                                            height="64"
+                                        />
+                                    ),
                                 },
                                 {
                                     header: _("Group"),
@@ -88,7 +97,9 @@ export class GroupList extends React.PureComponent<{}, GroupListState> {
                                         <div className="group-name">
                                             <div>
                                                 <div style={{ fontWeight: "bold" }}>{X.name}</div>
-                                                <div style={{ fontStyle: "italic" }}>{X.summary}</div>
+                                                <div style={{ fontStyle: "italic" }}>
+                                                    {X.summary}
+                                                </div>
                                             </div>
                                         </div>
                                     ),

@@ -19,7 +19,13 @@ import * as React from "react";
 import { _, pgettext, interpolate } from "translate";
 import { post, get } from "requests";
 import { PopOver, popover, close_all_popovers } from "popover";
-import { BlockState, getBlocks, setIgnore, setGameBlock, setAnnouncementBlock } from "./BlockPlayer";
+import {
+    BlockState,
+    getBlocks,
+    setIgnore,
+    setGameBlock,
+    setAnnouncementBlock,
+} from "./BlockPlayer";
 
 interface BlockPlayerModalProperties {
     playerId: number;

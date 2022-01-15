@@ -155,7 +155,12 @@ class Index extends React.PureComponent<{}, any> {
                     ))}
 
                     <div className="section">
-                        <h2>{pgettext("Tutorial - what's next after learning the game?", "What's next?")}</h2>
+                        <h2>
+                            {pgettext(
+                                "Tutorial - what's next after learning the game?",
+                                "What's next?",
+                            )}
+                        </h2>
                         <div className="contents">
                             {(!user || user.anonymous) && (
                                 <CardLink className={"done"} to={`/register`}>
@@ -172,7 +177,11 @@ class Index extends React.PureComponent<{}, any> {
                                     <i className="ogs-goban" />
                                     <div>
                                         <h1>{_("Play Go!")}</h1>
-                                        <h3>{_("Play people from around the world, or against the computer")}</h3>
+                                        <h3>
+                                            {_(
+                                                "Play people from around the world, or against the computer",
+                                            )}
+                                        </h3>
                                     </div>
                                 </CardLink>
                             )}
@@ -262,7 +271,10 @@ class SectionNav extends React.Component<{}, any> {
     }
 
     resetProgress = () => {
-        swal({ text: _("Are you sure you wish to reset your tutorial progress?"), showCancelButton: true })
+        swal({
+            text: _("Are you sure you wish to reset your tutorial progress?"),
+            showCancelButton: true,
+        })
             .then(() => {
                 data.removePrefix("learning-hub.");
                 browserHistory.push("/learn-to-play-go");

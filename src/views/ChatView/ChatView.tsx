@@ -38,8 +38,12 @@ export function ChatView(props: ChatViewProperties): JSX.Element {
 
     data.set("chat.active_channel", channel);
 
-    const [showing_channels, set_showing_channels]: [boolean, (tf: boolean) => void] = useState(false as boolean);
-    const [showing_users, set_showing_users]: [boolean, (tf: boolean) => void] = useState(false as boolean);
+    const [showing_channels, set_showing_channels]: [boolean, (tf: boolean) => void] = useState(
+        false as boolean,
+    );
+    const [showing_users, set_showing_users]: [boolean, (tf: boolean) => void] = useState(
+        false as boolean,
+    );
 
     useEffect(() => {
         set_showing_channels(false);
@@ -76,7 +80,11 @@ export function ChatView(props: ChatViewProperties): JSX.Element {
 
     return (
         <div
-            className={"ChatView " + (showing_channels ? " show-channels" : "") + (showing_users ? " show-users" : "")}
+            className={
+                "ChatView " +
+                (showing_channels ? " show-channels" : "") +
+                (showing_users ? " show-users" : "")
+            }
         >
             <ChatChannelList {...subprops} />
             <ChatLog autoFocus={true} updateTitle={true} {...subprops} />

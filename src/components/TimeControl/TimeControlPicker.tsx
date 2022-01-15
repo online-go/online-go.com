@@ -34,7 +34,10 @@ interface TimeControlPickerProperties {
 // that TypeScript would have a better time with if we were a little more
 // precise in what properties we're looking for:
 //     if ("initial_time" in this.state) { doSomething(this.state.initial_time; }
-export class TimeControlPicker extends React.PureComponent<TimeControlPickerProperties, any /*TimeControl*/> {
+export class TimeControlPicker extends React.PureComponent<
+    TimeControlPickerProperties,
+    any /*TimeControl*/
+> {
     time_control: TimeControl;
 
     constructor(props) {
@@ -43,7 +46,10 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
         const speed = data.get("time_control.speed", "correspondence") || "correspondence";
         const system = data.get("time_control.system", "fischer") || "fischer";
 
-        this.state = Object.assign(recallTimeControlSettings(speed, system), this.props.value || {});
+        this.state = Object.assign(
+            recallTimeControlSettings(speed, system),
+            this.props.value || {},
+        );
         if (this.state.time_control) {
             (this.state as any).system = this.state.time_control;
         }
@@ -137,7 +143,9 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
 
     setSpeedBracket = (bracket) => {
         this.syncTimeControl(
-            Object.assign({}, recallTimeControlSettings(bracket, this.state.system), { speed: bracket }),
+            Object.assign({}, recallTimeControlSettings(bracket, this.state.system), {
+                speed: bracket,
+            }),
         );
     };
     setTimeControlSystem = (time_control_system) => {
@@ -148,19 +156,24 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
         );
     };
     update_speed_bracket = (ev) => this.setSpeedBracket((ev.target as HTMLSelectElement).value);
-    update_time_control_system = (ev) => this.setTimeControlSystem((ev.target as HTMLSelectElement).value);
+    update_time_control_system = (ev) =>
+        this.setTimeControlSystem((ev.target as HTMLSelectElement).value);
     update_initial_time = (ev) => this.syncTimeControl({ initial_time: parseInt(ev.target.value) });
-    update_time_increment = (ev) => this.syncTimeControl({ time_increment: parseInt(ev.target.value) });
+    update_time_increment = (ev) =>
+        this.syncTimeControl({ time_increment: parseInt(ev.target.value) });
     update_max_time = (ev) => this.syncTimeControl({ max_time: parseInt(ev.target.value) });
     update_per_move = (ev) => this.syncTimeControl({ per_move: parseInt(ev.target.value) });
     update_main_time = (ev) => this.syncTimeControl({ main_time: parseInt(ev.target.value) });
     //update_main_time            = (ev)=>this.syncTimeControl({main_time: ev.target.value});
     update_period_time = (ev) => this.syncTimeControl({ period_time: parseInt(ev.target.value) });
-    update_periods = (ev) => this.syncTimeControl({ periods: Math.max(1, Math.min(300, parseInt(ev.target.value))) });
+    update_periods = (ev) =>
+        this.syncTimeControl({ periods: Math.max(1, Math.min(300, parseInt(ev.target.value))) });
     //update_period_time          = (ev)=>this.syncTimeControl({period_time: ev.target.value});
-    update_stones_per_period = (ev) => this.syncTimeControl({ stones_per_period: parseInt(ev.target.value) });
+    update_stones_per_period = (ev) =>
+        this.syncTimeControl({ stones_per_period: parseInt(ev.target.value) });
     update_total_time = (ev) => this.syncTimeControl({ total_time: parseInt(ev.target.value) });
-    update_pause_on_weekends = (ev) => this.syncTimeControl({ pause_on_weekends: ev.target.checked });
+    update_pause_on_weekends = (ev) =>
+        this.syncTimeControl({ pause_on_weekends: ev.target.checked });
 
     saveSettings() {
         const speed = this.state.speed;
@@ -215,14 +228,19 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                                 <option value="byoyomi">{_("Byo-Yomi")}</option>
                                 <option value="canadian">{_("Canadian")}</option>
                                 <option value="absolute">{_("Absolute")}</option>
-                                {(speed === "correspondence" || null) && <option value="none">{_("None")}</option>}
+                                {(speed === "correspondence" || null) && (
+                                    <option value="none">{_("None")}</option>
+                                )}
                             </select>
                         </div>
                     </div>
                 </div>
 
                 {(this.state.system === "fischer" || null) && (
-                    <div id="challenge-initial-time-group" className="form-group challenge-time-group">
+                    <div
+                        id="challenge-initial-time-group"
+                        className="form-group challenge-time-group"
+                    >
                         <label
                             id="challenge-initial-time-label"
                             className=" control-label"
@@ -238,11 +256,13 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                                     value={this.state.initial_time}
                                     onChange={this.update_initial_time}
                                 >
-                                    {time_options[speed]["fischer"]["initial_time"].map((it, idx) => (
-                                        <option key={idx} value={it.time}>
-                                            {it.label}
-                                        </option>
-                                    ))}
+                                    {time_options[speed]["fischer"]["initial_time"].map(
+                                        (it, idx) => (
+                                            <option key={idx} value={it.time}>
+                                                {it.label}
+                                            </option>
+                                        ),
+                                    )}
                                 </select>
                             </div>
                         </div>
@@ -250,7 +270,11 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                 )}
                 {(this.state.system === "fischer" || null) && (
                     <div id="challenge-inc-time-group" className="form-group challenge-time-group">
-                        <label id="challenge-inc-time-label" className=" control-label" htmlFor="challenge-inc-time">
+                        <label
+                            id="challenge-inc-time-label"
+                            className=" control-label"
+                            htmlFor="challenge-inc-time"
+                        >
                             {_("Time Increment")}
                         </label>
                         <div className="controls">
@@ -261,11 +285,13 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                                     value={this.state.time_increment}
                                     onChange={this.update_time_increment}
                                 >
-                                    {time_options[speed]["fischer"]["time_increment"].map((it, idx) => (
-                                        <option key={idx} value={it.time}>
-                                            {it.label}
-                                        </option>
-                                    ))}
+                                    {time_options[speed]["fischer"]["time_increment"].map(
+                                        (it, idx) => (
+                                            <option key={idx} value={it.time}>
+                                                {it.label}
+                                            </option>
+                                        ),
+                                    )}
                                 </select>
                             </div>
                         </div>
@@ -296,7 +322,10 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                 )}
 
                 {(this.state.system === "simple" || null) && (
-                    <div id="challenge-per-move-time-group" className="form-group challenge-time-group">
+                    <div
+                        id="challenge-per-move-time-group"
+                        className="form-group challenge-time-group"
+                    >
                         <label
                             id="challenge-per-move-time-label"
                             className=" control-label"
@@ -325,7 +354,11 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
 
                 {(this.state.system === "canadian" || null) && (
                     <div className="form-group challenge-time-group">
-                        <label id="challenge-main-time-label" className=" control-label" htmlFor="challenge-main-time">
+                        <label
+                            id="challenge-main-time-label"
+                            className=" control-label"
+                            htmlFor="challenge-main-time"
+                        >
                             {_("Main Time")}
                         </label>
                         <div className="controls">
@@ -348,7 +381,11 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                 )}
                 {(this.state.system === "byoyomi" || null) && (
                     <div className="form-group challenge-time-group">
-                        <label id="challenge-main-time-label" className=" control-label" htmlFor="challenge-main-time">
+                        <label
+                            id="challenge-main-time-label"
+                            className=" control-label"
+                            htmlFor="challenge-main-time"
+                        >
                             {_("Main Time")}
                         </label>
                         <div className="controls">
@@ -370,7 +407,10 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                     </div>
                 )}
                 {(this.state.system === "byoyomi" || null) && (
-                    <div id="challenge-per-period-time-group" className="form-group challenge-time-group">
+                    <div
+                        id="challenge-per-period-time-group"
+                        className="form-group challenge-time-group"
+                    >
                         <label
                             id="challenge-per-period-time-label"
                             className=" control-label"
@@ -386,11 +426,13 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                                     value={this.state.period_time}
                                     onChange={this.update_period_time}
                                 >
-                                    {time_options[speed]["byoyomi"]["period_time"].map((it, idx) => (
-                                        <option key={idx} value={it.time}>
-                                            {it.label}
-                                        </option>
-                                    ))}
+                                    {time_options[speed]["byoyomi"]["period_time"].map(
+                                        (it, idx) => (
+                                            <option key={idx} value={it.time}>
+                                                {it.label}
+                                            </option>
+                                        ),
+                                    )}
                                 </select>
                             </div>
                         </div>
@@ -398,7 +440,11 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                 )}
                 {(this.state.system === "byoyomi" || null) && (
                     <div id="challenge-periods-group" className="form-group challenge-time-group">
-                        <label id="challenge-periods-label" className=" control-label" htmlFor="challenge-periods">
+                        <label
+                            id="challenge-periods-label"
+                            className=" control-label"
+                            htmlFor="challenge-periods"
+                        >
                             {_("Periods")}
                         </label>
                         <div className="controls">
@@ -418,7 +464,10 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                 )}
 
                 {(this.state.system === "canadian" || null) && (
-                    <div id="challenge-per-canadian-period-time-group" className="form-group challenge-time-group">
+                    <div
+                        id="challenge-per-canadian-period-time-group"
+                        className="form-group challenge-time-group"
+                    >
                         <label
                             id="challenge-per-canadian-period-time-label"
                             className=" control-label"
@@ -434,18 +483,23 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                                     value={this.state.period_time}
                                     onChange={this.update_period_time}
                                 >
-                                    {time_options[speed]["canadian"]["period_time"].map((it, idx) => (
-                                        <option key={idx} value={it.time}>
-                                            {it.label}
-                                        </option>
-                                    ))}
+                                    {time_options[speed]["canadian"]["period_time"].map(
+                                        (it, idx) => (
+                                            <option key={idx} value={it.time}>
+                                                {it.label}
+                                            </option>
+                                        ),
+                                    )}
                                 </select>
                             </div>
                         </div>
                     </div>
                 )}
                 {(this.state.system === "canadian" || null) && (
-                    <div id="challenge-canadian-stones-group" className="form-group challenge-time-group">
+                    <div
+                        id="challenge-canadian-stones-group"
+                        className="form-group challenge-time-group"
+                    >
                         <label
                             id="challenge-canadian-stones-label"
                             className=" control-label"
@@ -470,7 +524,10 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                 )}
 
                 {(this.state.system === "absolute" || null) && (
-                    <div id="challenge-total-time-group" className="form-group challenge-time-group">
+                    <div
+                        id="challenge-total-time-group"
+                        className="form-group challenge-time-group"
+                    >
                         <label
                             id="challenge-total-time-label"
                             className=" control-label"
@@ -486,19 +543,26 @@ export class TimeControlPicker extends React.PureComponent<TimeControlPickerProp
                                     value={this.state.total_time}
                                     onChange={this.update_total_time}
                                 >
-                                    {time_options[speed]["absolute"]["total_time"].map((it, idx) => (
-                                        <option key={idx} value={it.time}>
-                                            {it.label}
-                                        </option>
-                                    ))}
+                                    {time_options[speed]["absolute"]["total_time"].map(
+                                        (it, idx) => (
+                                            <option key={idx} value={it.time}>
+                                                {it.label}
+                                            </option>
+                                        ),
+                                    )}
                                 </select>
                             </div>
                         </div>
                     </div>
                 )}
 
-                {((this.state.speed === "correspondence" && this.state.system !== "none") || null) && (
-                    <div id="challenge-pause-on-weekends-div" className="form-group" style={{ position: "relative" }}>
+                {((this.state.speed === "correspondence" && this.state.system !== "none") ||
+                    null) && (
+                    <div
+                        id="challenge-pause-on-weekends-div"
+                        className="form-group"
+                        style={{ position: "relative" }}
+                    >
                         <label className="control-label" htmlFor="challenge-pause-on-weekends">
                             {_("Pause on Weekends")}
                         </label>

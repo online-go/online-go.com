@@ -86,9 +86,14 @@ export function popover(config: PopoverConfig): PopOver {
     const minHeight: number = config.minHeight || 25;
     let x = 0;
     let y = 0;
-    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0;
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    const bounds = { x: scrollLeft + window.innerWidth - 16, y: scrollTop + window.innerHeight - 16 };
+    const scrollLeft =
+        window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0;
+    const scrollTop =
+        window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    const bounds = {
+        x: scrollLeft + window.innerWidth - 16,
+        y: scrollTop + window.innerHeight - 16,
+    };
 
     if (config.at) {
         x = config.at.x;
@@ -113,7 +118,11 @@ export function popover(config: PopoverConfig): PopOver {
         } else {
             // Don't overlap the element we were supposed to be below.
             // If there is no space below, just go above it instead.
-            container.css({ minWidth: minWidth, bottom: $(window).height() - rectangle.top - window.scrollY, left: x });
+            container.css({
+                minWidth: minWidth,
+                bottom: $(window).height() - rectangle.top - window.scrollY,
+                left: x,
+            });
         }
     }
 

@@ -48,7 +48,9 @@ export class Subscriber {
         return this.subscriber.channels().map((id) => parseInt(id));
     }
 
-    private to_strings(players: number | PlayerCacheEntry | Array<number | PlayerCacheEntry>): Array<string> {
+    private to_strings(
+        players: number | PlayerCacheEntry | Array<number | PlayerCacheEntry>,
+    ): Array<string> {
         const result: Array<string> = [];
         if (!(players instanceof Array)) {
             players = [players];
@@ -160,7 +162,10 @@ export function lookup_by_username(username: string): PlayerCacheEntry | null {
     return null;
 }
 
-export function fetch_by_username(username: string, required_fields?: Array<string>): Promise<PlayerCacheEntry> {
+export function fetch_by_username(
+    username: string,
+    required_fields?: Array<string>,
+): Promise<PlayerCacheEntry> {
     const user = lookup_by_username(username);
     if (user) {
         return fetch(user.id, required_fields);
@@ -170,7 +175,12 @@ export function fetch_by_username(username: string, required_fields?: Array<stri
                 return fetch(res.results[0].id, required_fields);
             } else {
                 console.error("Attempted to fetch invalid player name: ", username);
-                cache_by_username[username] = { id: null, username: username, ui_class: "provisional", pro: false };
+                cache_by_username[username] = {
+                    id: null,
+                    username: username,
+                    ui_class: "provisional",
+                    pro: false,
+                };
                 return Promise.reject("invalid player name");
             }
         });
@@ -178,7 +188,10 @@ export function fetch_by_username(username: string, required_fields?: Array<stri
     }
 }
 
-export function fetch(player_id: number, required_fields?: Array<string>): Promise<PlayerCacheEntry> {
+export function fetch(
+    player_id: number,
+    required_fields?: Array<string>,
+): Promise<PlayerCacheEntry> {
     if (!player_id) {
         console.error("Attempted to fetch invalid player id: ", player_id);
         return Promise.reject("invalid player id");
@@ -203,7 +216,10 @@ export function fetch(player_id: number, required_fields?: Array<string>): Promi
             return Promise.resolve(cache[player_id]);
         }
 
-        debug.log(`Fetching ${player_id} for fields ${missing_fields.join(", ")}.`, cache[player_id]);
+        debug.log(
+            `Fetching ${player_id} for fields ${missing_fields.join(", ")}.`,
+            cache[player_id],
+        );
     } else {
         debug.log(`Fetching ${player_id} because no user information was in our cache.`);
     }
@@ -262,7 +278,9 @@ const fetch_player = new Batcher<FetchEntry>((fetch_queue) => {
                 if ("error" in err.responseJSON) {
                     if (/Player ([0-9]+) not found in cassandra/gi.test(err.responseJSON.error)) {
                         const err_player_id = Number(
-                            /Player ([0-9]+) not found in cassandra/gi.exec(err.responseJSON.error)[1],
+                            /Player ([0-9]+) not found in cassandra/gi.exec(
+                                err.responseJSON.error,
+                            )[1],
                         );
                         // create a dummy entry for missing player
                         let idx = 0;

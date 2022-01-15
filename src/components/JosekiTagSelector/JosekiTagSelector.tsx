@@ -33,7 +33,10 @@ interface JosekiTagSelectorState {
     tag_map: {};
 }
 
-export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProps, JosekiTagSelectorState> {
+export class JosekiTagSelector extends React.PureComponent<
+    JosekiTagSelectorProps,
+    JosekiTagSelectorState
+> {
     constructor(props) {
         super(props);
         this.state = {
@@ -50,7 +53,10 @@ export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProp
             .then((res) => res.json())
             .then((body) => {
                 // console.log("Server response to tag GET:", body);
-                const available_tags = body.tags.map((tag, i) => ({ label: tag.description, value: tag.id }));
+                const available_tags = body.tags.map((tag, i) => ({
+                    label: tag.description,
+                    value: tag.id,
+                }));
                 const tag_map = {};
                 for (const tag of available_tags) {
                     tag_map[tag.value] = tag;
@@ -90,7 +96,9 @@ export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProp
                         <div
                             ref={innerRef}
                             {...innerProps}
-                            className={(isFocused ? "focused " : "") + (isSelected ? "selected" : "")}
+                            className={
+                                (isFocused ? "focused " : "") + (isSelected ? "selected" : "")
+                            }
                         >
                             {data.label}
                         </div>

@@ -51,9 +51,16 @@ export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, 
         const user = data.get("config.user");
         const notes = this.state.notes.trim();
         if (notes) {
-            data.set(`player-notes.${user.id}.${this.props.playerId}`, notes, data.Replication.REMOTE_OVERWRITES_LOCAL);
+            data.set(
+                `player-notes.${user.id}.${this.props.playerId}`,
+                notes,
+                data.Replication.REMOTE_OVERWRITES_LOCAL,
+            );
         } else {
-            data.remove(`player-notes.${user.id}.${this.props.playerId}`, data.Replication.REMOTE_OVERWRITES_LOCAL);
+            data.remove(
+                `player-notes.${user.id}.${this.props.playerId}`,
+                data.Replication.REMOTE_OVERWRITES_LOCAL,
+            );
         }
         this.close();
     };
@@ -62,7 +69,11 @@ export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, 
         return (
             <div className="Modal PlayerNotesModal" ref="modal">
                 <div className="body">
-                    <textarea placeholder={_("(no notes yet)")} value={this.state.notes} onChange={this.updateNotes} />
+                    <textarea
+                        placeholder={_("(no notes yet)")}
+                        value={this.state.notes}
+                        onChange={this.updateNotes}
+                    />
                 </div>
                 <div className="buttons">
                     <button onClick={this.close}>{_("Cancel")}</button>

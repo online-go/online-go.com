@@ -52,8 +52,12 @@ export class ServerTimeDisplay extends React.Component<{}, ServerTimeState> {
         if (day === 6 || day === 0) {
             /* Saturday or Sunday */
             const midnight_sunday =
-                day === 6 ? moment().utcOffset(0).add(1, "day").endOf("day") : moment().utcOffset(0).endOf("day");
-            return interpolate(_("Weekend ends {{time_from_now}}"), { time_from_now: midnight_sunday.fromNow() });
+                day === 6
+                    ? moment().utcOffset(0).add(1, "day").endOf("day")
+                    : moment().utcOffset(0).endOf("day");
+            return interpolate(_("Weekend ends {{time_from_now}}"), {
+                time_from_now: midnight_sunday.fromNow(),
+            });
         } else {
             return interpolate(_("Weekend starts {{time_from_now}}"), {
                 time_from_now: moment().utcOffset(0).isoWeekday(5).endOf("day").fromNow(),
@@ -64,7 +68,11 @@ export class ServerTimeDisplay extends React.Component<{}, ServerTimeState> {
     render() {
         return (
             <div className="server-time-display">
-                <div>{interpolate(_("Server Time: {{time}}"), { time: this.state.time.format("dddd LTS z") })}</div>
+                <div>
+                    {interpolate(_("Server Time: {{time}}"), {
+                        time: this.state.time.format("dddd LTS z"),
+                    })}
+                </div>
                 <div>{this.weekendTransitionText()}</div>
             </div>
         );

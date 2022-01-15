@@ -11,7 +11,10 @@ window["ogs_locales"] = {
         "context\u0004singular\u0005plural": ["tr_singular_2", "tr_plural_2"],
     },
 };
-window["ogs_countries"] = { en: { us: "United States" }, test_language: { test_cc: "test_country" } };
+window["ogs_countries"] = {
+    en: { us: "United States" },
+    test_language: { test_cc: "test_country" },
+};
 
 import {
     gettext,
@@ -84,12 +87,20 @@ test("interpolate array", () => {
 });
 
 test("interpolate object", () => {
-    expect(interpolate("{{key_1}} {{key_2}} {{key_3}}", { key_1: "One", key_2: "Two", key_3: "Three" })).toBe(
-        "One Two Three",
-    );
-    expect(interpolate("{{key_3}} {{key_2}} {{key_3}}", { key_1: "One", key_2: "Two", key_3: "Three" })).toBe(
-        "Three Two Three",
-    );
+    expect(
+        interpolate("{{key_1}} {{key_2}} {{key_3}}", {
+            key_1: "One",
+            key_2: "Two",
+            key_3: "Three",
+        }),
+    ).toBe("One Two Three");
+    expect(
+        interpolate("{{key_3}} {{key_2}} {{key_3}}", {
+            key_1: "One",
+            key_2: "Two",
+            key_3: "Three",
+        }),
+    ).toBe("Three Two Three");
 });
 
 test("cc_to_country_name", () => {

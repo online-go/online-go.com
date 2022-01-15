@@ -46,7 +46,9 @@ export function format_message(props: MessageProps): string {
         case "tournamentname_offensive":
         case "puzzlename_offensive":
         case "puzzlecollectionname_offensive":
-            return _("Sorry that name might be offensive to some players, please pick a different one");
+            return _(
+                "Sorry that name might be offensive to some players, please pick a different one",
+            );
 
         case "username_reserved":
             return _("Sorry that name has been reserved, please pick a different one");
@@ -58,7 +60,9 @@ export function format_message(props: MessageProps): string {
             return _("To begin an AI review, you must be a player in the game.");
 
         case "ai_review_queue_full":
-            return _("Please wait until your current reviews are completed before requesting more.");
+            return _(
+                "Please wait until your current reviews are completed before requesting more.",
+            );
 
         case "stone_already_placed_here":
         case "move_is_suicidal":

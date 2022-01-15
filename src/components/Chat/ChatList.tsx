@@ -17,7 +17,13 @@
 
 import * as React from "react";
 import { _, pgettext, interpolate } from "translate";
-import { group_channels, tournament_channels, global_channels, ChatChannelProxy, chat_manager } from "chat_manager";
+import {
+    group_channels,
+    tournament_channels,
+    global_channels,
+    ChatChannelProxy,
+    chat_manager,
+} from "chat_manager";
 import * as data from "data";
 import { PersistentElement } from "PersistentElement";
 import { Flag } from "Flag";
@@ -178,9 +184,11 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
     }
 
     updateConnectedChannels() {
-        let visible_global_channels = !this.state.hide_global && this.state.show_unjoined && global_channels.length > 0;
+        let visible_global_channels =
+            !this.state.hide_global && this.state.show_unjoined && global_channels.length > 0;
         let visible_group_channels = this.state.show_unjoined && group_channels.length > 0;
-        let visible_tournament_channels = this.state.show_unjoined && tournament_channels.length > 0;
+        let visible_tournament_channels =
+            this.state.show_unjoined && tournament_channels.length > 0;
         for (let idx = 0; idx < global_channels.length; idx = idx + 1) {
             const watched = this._join_or_part(global_channels[idx].id);
             if (watched) {
@@ -295,11 +303,17 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             }
             if (channel in this.channels) {
                 chan_class = chan_class + " chat-subscribed";
-                if (getUnreadChatPreference(channel) && this.channels[channel].channel.unread_ct > 0) {
+                if (
+                    getUnreadChatPreference(channel) &&
+                    this.channels[channel].channel.unread_ct > 0
+                ) {
                     chan_class = chan_class + " unread";
                     unread = true;
                 }
-                if (getMentionedChatPreference(channel) && this.channels[channel].channel.mentioned) {
+                if (
+                    getMentionedChatPreference(channel) &&
+                    this.channels[channel].channel.mentioned
+                ) {
                     chan_class = chan_class + " mentioned";
                     unread = true;
                 }
@@ -355,7 +369,8 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             >
                 <div
                     className={
-                        "channels" + (!this.state.collapsed_channel_groups["groups"] ? channel_visibility() : "")
+                        "channels" +
+                        (!this.state.collapsed_channel_groups["groups"] ? channel_visibility() : "")
                     }
                 >
                     {(this.state.visible_group_channels || null) && (
@@ -365,7 +380,9 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
                                 onClick={this.toggleShowAllGroupChannels}
                                 className={
                                     "channel-expand-toggle " +
-                                    (this.state.collapsed_channel_groups["groups"] ? "fa fa-minus" : "fa fa-plus")
+                                    (this.state.collapsed_channel_groups["groups"]
+                                        ? "fa fa-minus"
+                                        : "fa fa-plus")
                                 }
                             />
                         </div>
@@ -374,7 +391,8 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
                         <div
                             key={chan.id}
                             className={
-                                (this.state.highlight_active_channel && this.state.active_channel === "group-" + chan.id
+                                (this.state.highlight_active_channel &&
+                                this.state.active_channel === "group-" + chan.id
                                     ? "channel active"
                                     : "channel") + chan_class("group-" + chan.id)
                             }
@@ -391,7 +409,10 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
 
                 <div
                     className={
-                        "channels" + (!this.state.collapsed_channel_groups["tournaments"] ? channel_visibility() : "")
+                        "channels" +
+                        (!this.state.collapsed_channel_groups["tournaments"]
+                            ? channel_visibility()
+                            : "")
                     }
                 >
                     {(this.state.visible_tournament_channels || null) && (
@@ -401,7 +422,9 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
                                 onClick={this.toggleShowAllTournamentChannels}
                                 className={
                                     "channel-expand-toggle " +
-                                    (this.state.collapsed_channel_groups["tournaments"] ? "fa fa-minus" : "fa fa-plus")
+                                    (this.state.collapsed_channel_groups["tournaments"]
+                                        ? "fa fa-minus"
+                                        : "fa fa-plus")
                                 }
                             />
                         </div>
@@ -428,7 +451,8 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
 
                 <div
                     className={
-                        "channels" + (!this.state.collapsed_channel_groups["global"] ? channel_visibility() : "")
+                        "channels" +
+                        (!this.state.collapsed_channel_groups["global"] ? channel_visibility() : "")
                     }
                 >
                     {(this.state.visible_global_channels || null) && (
@@ -438,7 +462,9 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
                                 onClick={this.toggleShowAllGlobalChannels}
                                 className={
                                     "channel-expand-toggle " +
-                                    (this.state.collapsed_channel_groups["global"] ? "fa fa-minus" : "fa fa-plus")
+                                    (this.state.collapsed_channel_groups["global"]
+                                        ? "fa fa-minus"
+                                        : "fa fa-plus")
                                 }
                             />
                         </div>
@@ -447,7 +473,8 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
                         <div
                             key={chan.id}
                             className={
-                                (this.state.highlight_active_channel && this.state.active_channel === chan.id
+                                (this.state.highlight_active_channel &&
+                                this.state.active_channel === chan.id
                                     ? "channel active"
                                     : "channel") + chan_class(chan.id)
                             }
@@ -459,7 +486,9 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
                                     country={chan.country}
                                     language={
                                         chan.language &&
-                                        (typeof chan.language === "string" ? chan.language : chan.language[0])
+                                        (typeof chan.language === "string"
+                                            ? chan.language
+                                            : chan.language[0])
                                     }
                                     user_country={user_country}
                                 />{" "}

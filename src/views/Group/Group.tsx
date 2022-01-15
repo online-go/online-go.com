@@ -301,28 +301,42 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
         this.setState({ group: Object.assign({}, this.state.group, { name: ev.target.value }) });
     };
     setShortDescription = (ev) => {
-        this.setState({ group: Object.assign({}, this.state.group, { short_description: ev.target.value }) });
+        this.setState({
+            group: Object.assign({}, this.state.group, { short_description: ev.target.value }),
+        });
     };
     setDescription = (ev) => {
-        this.setState({ group: Object.assign({}, this.state.group, { description: ev.target.value }) });
+        this.setState({
+            group: Object.assign({}, this.state.group, { description: ev.target.value }),
+        });
     };
     setWebsite = (ev) => {
         this.setState({ group: Object.assign({}, this.state.group, { website: ev.target.value }) });
     };
     setLocation = (ev) => {
-        this.setState({ group: Object.assign({}, this.state.group, { location: ev.target.value }) });
+        this.setState({
+            group: Object.assign({}, this.state.group, { location: ev.target.value }),
+        });
     };
     setBulletin = (ev) => {
-        this.setState({ group: Object.assign({}, this.state.group, { bulletin: ev.target.value }) });
+        this.setState({
+            group: Object.assign({}, this.state.group, { bulletin: ev.target.value }),
+        });
     };
     setOpenToThePublic = (ev) => {
-        this.setState({ group: Object.assign({}, this.state.group, { is_public: ev.target.checked }) });
+        this.setState({
+            group: Object.assign({}, this.state.group, { is_public: ev.target.checked }),
+        });
     };
     setHideDetails = (ev) => {
-        this.setState({ group: Object.assign({}, this.state.group, { hide_details: ev.target.checked }) });
+        this.setState({
+            group: Object.assign({}, this.state.group, { hide_details: ev.target.checked }),
+        });
     };
     setDisableInvitationRequests = (ev) => {
-        this.setState({ group: Object.assign({}, this.state.group, { require_invitation: ev.target.checked }) });
+        this.setState({
+            group: Object.assign({}, this.state.group, { require_invitation: ev.target.checked }),
+        });
     };
     setNewNewsTitle = (ev) => {
         this.setState({ new_news_title: ev.target.value });
@@ -428,7 +442,9 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
     };
 
     inviteUser = (ev) => {
-        post("group/%%/members", this.state.group_id, { username: this.state.user_to_invite.username })
+        post("group/%%/members", this.state.group_id, {
+            username: this.state.user_to_invite.username,
+        })
             .then((res) => {
                 console.log(res);
                 _("Player invited"); /* for translations */
@@ -463,13 +479,25 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
 
         return (
             <div className="Group container">
-                <UIPush event="players-updated" channel={`group-${group.id}`} action={this.refreshPlayerList} />
-                <UIPush event="reload-group" channel={`group-${group.id}`} action={this.refreshGroup} />
+                <UIPush
+                    event="players-updated"
+                    channel={`group-${group.id}`}
+                    action={this.refreshPlayerList}
+                />
+                <UIPush
+                    event="reload-group"
+                    channel={`group-${group.id}`}
+                    action={this.refreshGroup}
+                />
 
                 {(editing || group.has_banner || null) && (
                     <div className="banner">
                         {editing ? (
-                            <Dropzone className="Dropzone" onDrop={this.updateBanner} multiple={false}>
+                            <Dropzone
+                                className="Dropzone"
+                                onDrop={this.updateBanner}
+                                multiple={false}
+                            >
                                 {this.state.new_banner ? (
                                     <img src={this.state.new_banner.preview} />
                                 ) : group.banner ? (
@@ -490,7 +518,10 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                         <Card style={{ minHeight: "10rem", position: "relative" }}>
                             {/* Main card  */}
                             {(this.state.is_admin || user.is_moderator || null) && (
-                                <i className={editing ? "fa fa-save" : "fa fa-pencil"} onClick={this.toggleEdit} />
+                                <i
+                                    className={editing ? "fa fa-save" : "fa fa-pencil"}
+                                    onClick={this.toggleEdit}
+                                />
                             )}
 
                             <div className="row">
@@ -504,17 +535,26 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                             {this.state.new_icon ? (
                                                 <img
                                                     src={this.state.new_icon.preview}
-                                                    style={{ maxHeight: "128px", maxWidth: "128px" }}
+                                                    style={{
+                                                        maxHeight: "128px",
+                                                        maxWidth: "128px",
+                                                    }}
                                                 />
                                             ) : (
                                                 <img
                                                     src={group.icon}
-                                                    style={{ maxHeight: "128px", maxWidth: "128px" }}
+                                                    style={{
+                                                        maxHeight: "128px",
+                                                        maxWidth: "128px",
+                                                    }}
                                                 />
                                             )}
                                         </Dropzone>
                                     ) : (
-                                        <img src={group.icon} style={{ maxHeight: "128px", maxWidth: "128px" }} />
+                                        <img
+                                            src={group.icon}
+                                            style={{ maxHeight: "128px", maxWidth: "128px" }}
+                                        />
                                     )}
                                 </div>
                                 <div className="col-sm-10">
@@ -537,7 +577,8 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                         ))}
                                     </div>
 
-                                    {((this.state.group_loaded && editing && user.is_moderator) || null) && (
+                                    {((this.state.group_loaded && editing && user.is_moderator) ||
+                                        null) && (
                                         <div>
                                             <button className="reject" onClick={this.deleteGroup}>
                                                 {_("Delete Group")}
@@ -549,11 +590,15 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                         (group.is_member ? (
                                             this.state.is_admin ? (
                                                 editing ? (
-                                                    (user.id === (group.founder && group.founder.id) ||
+                                                    (user.id ===
+                                                        (group.founder && group.founder.id) ||
                                                         user.is_moderator ||
                                                         null) && (
                                                         <div>
-                                                            <button className="reject" onClick={this.deleteGroup}>
+                                                            <button
+                                                                className="reject"
+                                                                onClick={this.deleteGroup}
+                                                            >
                                                                 {_("Delete Group")}
                                                             </button>
                                                         </div>
@@ -567,7 +612,10 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                                         >
                                                             {_("Create news post")}
                                                         </button>
-                                                        <button className="primary sm" onClick={this.createTournament}>
+                                                        <button
+                                                            className="primary sm"
+                                                            onClick={this.createTournament}
+                                                        >
                                                             {_("Create tournament")}
                                                         </button>
                                                         <button
@@ -587,7 +635,10 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                                     >
                                                         {_("Leave Group")}
                                                     </button>
-                                                    <button className="primary sm" onClick={this.createTournament}>
+                                                    <button
+                                                        className="primary sm"
+                                                        onClick={this.createTournament}
+                                                    >
                                                         {_("Create tournament")}
                                                     </button>
                                                     <button
@@ -607,7 +658,11 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                                 {_("Join Group")}
                                             </button>
                                         ) : group.require_invitation ? (
-                                            <i>{_("This is a private group, you must be invited to join")}</i>
+                                            <i>
+                                                {_(
+                                                    "This is a private group, you must be invited to join",
+                                                )}
+                                            </i>
                                         ) : this.state.invitation_request_pending ? (
                                             <i>
                                                 {_(
@@ -625,7 +680,9 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                         ))}
 
                                     <div className="pad">
-                                        {(editing || group.website || null) && <b>{_("Website")}: </b>}
+                                        {(editing || group.website || null) && (
+                                            <b>{_("Website")}: </b>
+                                        )}
                                         {((!editing && group.website) || null) && (
                                             <span>
                                                 {
@@ -637,17 +694,28 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                         )}
                                         {(editing || null) && (
                                             <span>
-                                                <input type="url" value={group.website} onChange={this.setWebsite} />
+                                                <input
+                                                    type="url"
+                                                    value={group.website}
+                                                    onChange={this.setWebsite}
+                                                />
                                             </span>
                                         )}
                                     </div>
 
                                     <div className="pad">
-                                        {(editing || group.location || null) && <b>{_("Location")}: </b>}
-                                        {((!editing && group.location) || null) && <span>{group.location}</span>}
+                                        {(editing || group.location || null) && (
+                                            <b>{_("Location")}: </b>
+                                        )}
+                                        {((!editing && group.location) || null) && (
+                                            <span>{group.location}</span>
+                                        )}
                                         {(editing || null) && (
                                             <span>
-                                                <input value={group.location} onChange={this.setLocation} />
+                                                <input
+                                                    value={group.location}
+                                                    onChange={this.setLocation}
+                                                />
                                             </span>
                                         )}
                                     </div>
@@ -661,7 +729,9 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                                     checked={group.is_public}
                                                     onChange={this.setOpenToThePublic}
                                                 />
-                                                <label htmlFor="public-group">{_("Public group")}</label>
+                                                <label htmlFor="public-group">
+                                                    {_("Public group")}
+                                                </label>
                                             </div>
                                         )}
                                     </div>
@@ -692,7 +762,9 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                                     checked={group.hide_details}
                                                     onChange={this.setHideDetails}
                                                 />
-                                                <label htmlFor="hide-details">{_("Hide group details")}</label>
+                                                <label htmlFor="hide-details">
+                                                    {_("Hide group details")}
+                                                </label>
                                             </div>
                                         )}
                                     </div>
@@ -706,13 +778,26 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                     rows={7}
                                     value={group.description}
                                     onChange={this.setDescription}
-                                    placeholder={_("Description") /* translators: Description of the group */}
+                                    placeholder={
+                                        _("Description") /* translators: Description of the group */
+                                    }
                                 />
                             )}
                             {(editing || null) && (
                                 <div>
-                                    <b>{_("Short Description") /* translators: Short description of the group */}: </b>
-                                    <i>{_("This will be visible on the group list and search page")}</i>
+                                    <b>
+                                        {
+                                            _(
+                                                "Short Description",
+                                            ) /* translators: Short description of the group */
+                                        }
+                                        :{" "}
+                                    </b>
+                                    <i>
+                                        {_(
+                                            "This will be visible on the group list and search page",
+                                        )}
+                                    </i>
                                     <textarea
                                         value={group.short_description}
                                         onChange={this.setShortDescription}
@@ -783,13 +868,17 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                                     this.state.editing_news.id === entry.id ? (
                                                         <h2>
                                                             <input
-                                                                value={this.state.editing_news.title}
+                                                                value={
+                                                                    this.state.editing_news.title
+                                                                }
                                                                 style={{ width: "100%" }}
                                                                 onChange={this.updateNewsTitle}
                                                             />
                                                         </h2>
                                                     ) : (
-                                                        <h2>{localize_time_strings(entry.title)}</h2>
+                                                        <h2>
+                                                            {localize_time_strings(entry.title)}
+                                                        </h2>
                                                     )}
                                                     <i>
                                                         {moment(entry.posted).format("llll")} -{" "}
@@ -798,21 +887,31 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                                     {this.state.is_admin && (
                                                         <div>
                                                             {this.state.editing_news &&
-                                                            this.state.editing_news.id === entry.id ? (
-                                                                <button className="sm" onClick={this.updateNewsPost}>
+                                                            this.state.editing_news.id ===
+                                                                entry.id ? (
+                                                                <button
+                                                                    className="sm"
+                                                                    onClick={this.updateNewsPost}
+                                                                >
                                                                     {_("Save")}
                                                                 </button>
                                                             ) : (
                                                                 <button
                                                                     className="sm"
-                                                                    onClick={this.editNewsPost.bind(this, entry)}
+                                                                    onClick={this.editNewsPost.bind(
+                                                                        this,
+                                                                        entry,
+                                                                    )}
                                                                 >
                                                                     {_("Edit")}
                                                                 </button>
                                                             )}
                                                             <button
                                                                 className="sm reject"
-                                                                onClick={this.deleteNewsPost.bind(this, entry)}
+                                                                onClick={this.deleteNewsPost.bind(
+                                                                    this,
+                                                                    entry,
+                                                                )}
                                                             >
                                                                 {_("Delete")}
                                                             </button>
@@ -837,7 +936,10 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                         )}
 
                         {((group.is_public && !group.hide_details) || group.is_member || null) && (
-                            <EmbeddedChatCard channel={`group-${this.state.group.id}`} updateTitle={false} />
+                            <EmbeddedChatCard
+                                channel={`group-${this.state.group.id}`}
+                                updateTitle={false}
+                            />
                         )}
 
                         <Card>
@@ -858,9 +960,9 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                                 render: (tournament) => (
                                                     <div className="tournament-name">
                                                         <Link
-                                                            to={`/tournament-record/${tournament.id}/${slugify(
-                                                                tournament.name,
-                                                            )}`}
+                                                            to={`/tournament-record/${
+                                                                tournament.id
+                                                            }/${slugify(tournament.name)}`}
                                                         >
                                                             {tournament.name}
                                                         </Link>
@@ -875,21 +977,30 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                             {(group.has_open_tournaments || null) && (
                                 <div>
                                     <h3>{_("Open Tournaments")}</h3>
-                                    <TournamentList phase="open" group={this.props.match.params.group_id} />
+                                    <TournamentList
+                                        phase="open"
+                                        group={this.props.match.params.group_id}
+                                    />
                                 </div>
                             )}
 
                             {(group.has_active_tournaments || null) && (
                                 <div>
                                     <h3>{_("Active Tournaments")}</h3>
-                                    <TournamentList phase="active" group={this.props.match.params.group_id} />
+                                    <TournamentList
+                                        phase="active"
+                                        group={this.props.match.params.group_id}
+                                    />
                                 </div>
                             )}
 
                             {(group.has_finished_tournaments || null) && (
                                 <div>
                                     <h3>{_("Finished Tournaments")}</h3>
-                                    <TournamentList phase="finished" group={this.props.match.params.group_id} />
+                                    <TournamentList
+                                        phase="finished"
+                                        group={this.props.match.params.group_id}
+                                    />
                                 </div>
                             )}
                         </Card>
@@ -899,7 +1010,10 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                         <Card style={{ minHeight: "12rem" }}>
                             {this.state.is_admin && (
                                 <div className="invite-input">
-                                    <div className="input-group" id="tournament-invite-user-container">
+                                    <div
+                                        className="input-group"
+                                        id="tournament-invite-user-container"
+                                    >
                                         <PlayerAutocomplete onComplete={this.setUserToInvite} />
                                         <button
                                             className="btn primary sm"
@@ -931,26 +1045,32 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                             />
                         </Card>
 
-                        {((group.invitation_requests && group.invitation_requests.length > 0) || null) && (
+                        {((group.invitation_requests && group.invitation_requests.length > 0) ||
+                            null) && (
                             <Card className="invitation-requests">
                                 <h4>{_("Invitation requests")}</h4>
                                 {group.invitation_requests.map((ir) => {
                                     const accept = () => {
-                                        group.invitation_requests = group.invitation_requests.filter(
-                                            (x) => x.id !== ir.id,
-                                        );
+                                        group.invitation_requests =
+                                            group.invitation_requests.filter((x) => x.id !== ir.id);
                                         this.setState({ refresh: this.state.refresh + 1 });
                                         post("me/groups/invitations", { request_id: ir.id })
-                                            .then(() => console.log("Accepted invitation request", ir))
+                                            .then(() =>
+                                                console.log("Accepted invitation request", ir),
+                                            )
                                             .catch((err) => console.error(err));
                                     };
                                     const reject = () => {
-                                        group.invitation_requests = group.invitation_requests.filter(
-                                            (x) => x.id !== ir.id,
-                                        );
+                                        group.invitation_requests =
+                                            group.invitation_requests.filter((x) => x.id !== ir.id);
                                         this.setState({ refresh: this.state.refresh + 1 });
-                                        post("me/groups/invitations", { delete: true, request_id: ir.id })
-                                            .then(() => console.log("Deleted invitation request", ir))
+                                        post("me/groups/invitations", {
+                                            delete: true,
+                                            request_id: ir.id,
+                                        })
+                                            .then(() =>
+                                                console.log("Deleted invitation request", ir),
+                                            )
                                             .catch((err) => console.error(err));
                                     };
 
@@ -970,10 +1090,14 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                 <Link to={`/ladder/${group.ladder_ids[0]}`}>{_("9x9 Ladder")}</Link>
                             </div>
                             <div>
-                                <Link to={`/ladder/${group.ladder_ids[1]}`}>{_("13x13 Ladder")}</Link>
+                                <Link to={`/ladder/${group.ladder_ids[1]}`}>
+                                    {_("13x13 Ladder")}
+                                </Link>
                             </div>
                             <div>
-                                <Link to={`/ladder/${group.ladder_ids[2]}`}>{_("19x19 Ladder")}</Link>
+                                <Link to={`/ladder/${group.ladder_ids[2]}`}>
+                                    {_("19x19 Ladder")}
+                                </Link>
                             </div>
                         </Card>
 
@@ -1081,7 +1205,10 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
             focusCancel: true,
         })
             .then(() => {
-                post("groups/%%/members", this.state.group_id, { delete: true, player_id: player_id })
+                post("groups/%%/members", this.state.group_id, {
+                    delete: true,
+                    player_id: player_id,
+                })
                     .then((res) => {
                         this.resolve(this.state.group_id);
                     })

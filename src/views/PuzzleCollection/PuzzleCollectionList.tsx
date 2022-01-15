@@ -116,7 +116,9 @@ export function PuzzleCollectionList({
                                 render: (X) => (
                                     <span>
                                         <StarRating value={X.rating} />{" "}
-                                        <span className="rating-count">({unitify(X.rating_count)})</span>
+                                        <span className="rating-count">
+                                            ({unitify(X.rating_count)})
+                                        </span>
                                     </span>
                                 ),
                             },
