@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { _, pgettext, interpolate } from "translate";
+import { _ } from "translate";
 import { get } from "requests";
 import { errorAlerter } from "misc";
 import { Player } from "Player";

@@ -18,7 +18,6 @@
 import * as React from "react";
 import { _ } from "translate";
 import { Modal, openModal } from "Modal";
-import * as data from "data";
 
 interface Events {}
 

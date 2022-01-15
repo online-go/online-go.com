@@ -25,9 +25,8 @@ import { emitNotification } from "Notifications";
 import { bounded_rank } from "rank_utils";
 import { ActiveTournamentList, GroupList } from "types";
 import { _, interpolate } from "translate";
-import { shadowban } from "src/views/Moderator";
 import { getBlocks } from "BlockPlayer";
-import { insert_into_sorted_list, string_splitter, n2s, dup, Timeout } from "misc";
+import { insert_into_sorted_list, string_splitter, n2s, Timeout } from "misc";
 
 export interface ChatMessage {
     channel: string;

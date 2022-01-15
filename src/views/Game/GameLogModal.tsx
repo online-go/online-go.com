@@ -18,15 +18,9 @@
 import * as React from "react";
 import * as moment from "moment";
 import * as data from "data";
-import { _, pgettext, interpolate } from "translate";
-import { post, get, patch, del } from "requests";
+import { _ } from "translate";
 import { openModal, Modal } from "Modal";
-import { timeControlDescription } from "TimeControl";
 import { Player } from "Player";
-import { handicapText } from "GameAcceptModal";
-import { errorAlerter, ignore, rulesText } from "misc";
-import { rankString } from "rank_utils";
-import { browserHistory } from "ogsHistory";
 import { termination_socket } from "sockets";
 import { GoMath } from "goban";
 

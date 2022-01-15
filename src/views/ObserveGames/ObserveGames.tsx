@@ -16,7 +16,6 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
 import { ObserveGamesComponent } from "ObserveGamesComponent";
 
 export class ObserveGames extends React.PureComponent {

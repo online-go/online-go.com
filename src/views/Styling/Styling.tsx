@@ -27,7 +27,6 @@ import { StarRating } from "StarRating";
 import { PlayerAutocomplete } from "PlayerAutocomplete";
 import { GroupAutocomplete } from "GroupAutocomplete";
 import { Markdown } from "Markdown";
-import { PersistentElement } from "PersistentElement";
 import { Steps } from "Steps";
 import { errcodeAlerter } from "ErrcodeModal";
 import * as moment from "moment";

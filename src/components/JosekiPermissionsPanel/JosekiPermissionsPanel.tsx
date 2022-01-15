@@ -16,7 +16,6 @@
  */
 
 import * as React from "react";
-import { _, pgettext, interpolate } from "translate";
 
 import * as data from "data";
 

@@ -18,13 +18,12 @@
 import * as React from "react";
 import * as data from "data";
 import { Link } from "react-router-dom";
-import { Card, CardLink } from "material";
-import { _, pgettext, interpolate } from "translate";
-import { LearningHubSection } from "./LearningHubSection";
+import { CardLink } from "material";
+import { _, pgettext } from "translate";
 import { sections, allsections } from "./sections";
 import { Ribbon } from "misc-ui";
 import { getSectionCompletion, getSectionByName } from "./util";
-import { ignore, errorAlerter, getPrintableError } from "misc";
+import { ignore } from "misc";
 import { browserHistory } from "ogsHistory";
 import { MiniGoban } from "MiniGoban";
 import swal from "sweetalert2";

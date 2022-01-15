@@ -15,17 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as data from "data";
-import * as player_cache from "player_cache";
 import * as React from "react";
 import { browserHistory } from "ogsHistory";
 import { put } from "requests";
 import { errorAlerter } from "misc";
 import { Player } from "Player";
-import { _, pgettext, interpolate } from "translate";
+import { _ } from "translate";
 
 import { Modal, openModal } from "Modal";
-import { NumberFormatValues } from "react-number-format";
 
 interface Events {}
 

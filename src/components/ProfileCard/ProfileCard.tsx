@@ -16,7 +16,6 @@
  */
 
 import * as React from "react";
-import { Link } from "react-router-dom";
 import { getUserRating, is_novice, is_provisional, humble_rating } from "rank_utils";
 import { Player } from "Player";
 import { PlayerIcon } from "PlayerIcon";

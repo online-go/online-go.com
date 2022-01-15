@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { get, put } from "requests";
+import { put } from "requests";
 import * as data from "data";
-import { ignore, errorAlerter, errorLogger } from "misc";
+import { errorAlerter, errorLogger } from "misc";
 import ITC from "ITC";
 import cached from "cached";
 import * as player_cache from "player_cache";

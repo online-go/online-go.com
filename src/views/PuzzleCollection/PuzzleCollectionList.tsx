@@ -18,7 +18,7 @@
 import * as React from "react";
 import * as moment from "moment";
 import { _ } from "translate";
-import { post, get, del, patch, abort_requests_in_flight } from "requests";
+import { post } from "requests";
 import { ignore, errorAlerter, navigateTo, unitify } from "misc";
 import { PaginatedTable } from "PaginatedTable";
 import { longRankString, rankString } from "rank_utils";

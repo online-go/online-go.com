@@ -16,9 +16,8 @@
  */
 
 import * as React from "react";
-import { _, pgettext, interpolate } from "translate";
-import { post, get } from "requests";
-import { PopOver, popover, close_all_popovers } from "popover";
+import { _ } from "translate";
+import { PopOver, popover } from "popover";
 import {
     BlockState,
     getBlocks,

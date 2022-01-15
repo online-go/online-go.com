@@ -16,8 +16,7 @@
  */
 
 import * as React from "react";
-import { browserHistory } from "ogsHistory";
-import { _, pgettext, interpolate } from "translate";
+import { _, pgettext } from "translate";
 import { Modal, openModal } from "Modal";
 import {
     challenge,
@@ -30,9 +29,7 @@ import {
     correspondence_config,
 } from "ChallengeModal";
 import { shortShortTimeControl } from "TimeControl";
-import { errorAlerter, ignore } from "misc";
 import * as preferences from "preferences";
-import * as data from "data";
 import { bot_count } from "bots";
 import swal from "sweetalert2";
 

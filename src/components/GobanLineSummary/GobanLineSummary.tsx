@@ -17,10 +17,9 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { _, interpolate } from "translate";
+import { interpolate } from "translate";
 import { Goban } from "goban";
 import * as data from "data";
-import { PersistentElement } from "PersistentElement";
 import { rankString } from "rank_utils";
 import { Player } from "Player";
 import { Clock } from "Clock";

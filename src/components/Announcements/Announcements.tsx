@@ -17,7 +17,6 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { _ } from "translate";
 import { get } from "requests";
 import { UIPush } from "UIPush";
 import { TypedEventEmitter } from "TypedEventEmitter";

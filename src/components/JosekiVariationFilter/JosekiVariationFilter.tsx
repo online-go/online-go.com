@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { _, pgettext, interpolate } from "translate";
+import { _ } from "translate";
 
 import * as player_cache from "player_cache";
 import { JosekiTagSelector } from "../JosekiTagSelector";

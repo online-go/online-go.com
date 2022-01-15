@@ -17,9 +17,9 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { _, pgettext, interpolate } from "translate";
+import { _ } from "translate";
 import { comm_socket } from "sockets";
-import { post, get } from "requests";
+import { post } from "requests";
 import * as data from "data";
 import * as preferences from "preferences";
 import { Player } from "Player";

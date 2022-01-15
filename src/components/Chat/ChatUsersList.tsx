@@ -21,7 +21,7 @@ import { Player } from "Player";
 import { _, interpolate } from "translate";
 import { comm_socket } from "sockets";
 import { useEffect, useState, useCallback } from "react";
-import { string_splitter, n2s, dup, Timeout } from "misc";
+import { Timeout } from "misc";
 import { PlayerCacheEntry } from "player_cache";
 import { chat_manager, users_by_rank, ChatChannelProxy } from "chat_manager";
 

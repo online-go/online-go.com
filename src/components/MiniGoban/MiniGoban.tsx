@@ -17,15 +17,13 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { browserHistory } from "ogsHistory";
-import { _, npgettext, interpolate } from "translate";
+import { npgettext, interpolate } from "translate";
 import * as moment from "moment";
 import * as preferences from "preferences";
 import { Goban } from "goban";
-import { termination_socket } from "sockets";
 import * as data from "data";
 import { PersistentElement } from "PersistentElement";
-import { rankString, getUserRating } from "rank_utils";
+import { getUserRating } from "rank_utils";
 import { Clock } from "Clock";
 import { fetch } from "player_cache";
 import { getGameResultText } from "misc";

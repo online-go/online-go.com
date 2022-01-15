@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as data from "data";
-import { _, pgettext, interpolate } from "translate";
+import { _ } from "translate";
 import { Modal, openModal } from "Modal";
 import { Goban } from "goban";
 import { PlayerAutocomplete } from "PlayerAutocomplete";

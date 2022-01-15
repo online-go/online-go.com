@@ -17,9 +17,7 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { _, pgettext, interpolate } from "translate";
-import { post, get } from "requests";
-import { browserHistory } from "ogsHistory";
+import { _ } from "translate";
 import { PaginatedTable } from "PaginatedTable";
 import { SearchInput } from "misc-ui";
 import { navigateTo } from "misc";

@@ -21,10 +21,9 @@ import { browserHistory } from "ogsHistory";
 
 import * as data from "data";
 
-import { _, current_language, languages } from "translate";
+import { _ } from "translate";
 import { PlayerIcon } from "PlayerIcon";
-import { post, get, abort_requests_in_flight } from "requests";
-import { TypedEventEmitter } from "TypedEventEmitter";
+import { get, abort_requests_in_flight } from "requests";
 import {
     acceptGroupInvite,
     acceptTournamentInvite,
@@ -34,7 +33,7 @@ import {
     errorLogger,
 } from "misc";
 import { LineText } from "misc-ui";
-import { challenge, createDemoBoard } from "ChallengeModal";
+import { createDemoBoard } from "ChallengeModal";
 import { openNewGameModal } from "NewGameModal";
 import { KBShortcut } from "KBShortcut";
 import { LanguagePicker } from "LanguagePicker";

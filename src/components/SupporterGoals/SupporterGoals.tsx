@@ -16,8 +16,6 @@
  */
 
 import * as React from "react";
-import { _, interpolate } from "translate";
-import { Link } from "react-router-dom";
 import * as data from "data";
 
 interface SupporterGoalsProperties {

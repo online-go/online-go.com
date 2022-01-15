@@ -141,7 +141,6 @@ import { browserHistory } from "./ogsHistory";
 import { routes } from "./routes";
 
 //import {Promise} from "es6-promise";
-import { get } from "requests";
 import { errorAlerter, uuid } from "misc";
 import { close_all_popovers } from "popover";
 import * as sockets from "sockets";

@@ -19,7 +19,6 @@ import * as React from "react";
 import * as data from "data";
 import * as preferences from "preferences";
 import { _, pgettext, interpolate } from "translate";
-import { post, get } from "requests";
 import { dup } from "misc";
 import { GameList } from "GameList";
 import { ActiveAnnouncements } from "Announcements";

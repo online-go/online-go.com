@@ -19,7 +19,6 @@ import * as React from "react";
 
 import Select, { components } from "react-select";
 
-import { _, pgettext, interpolate } from "translate";
 
 interface JosekiTagSelectorProps {
     oje_headers: HeadersInit;

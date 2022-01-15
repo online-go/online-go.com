@@ -18,11 +18,10 @@
 import * as React from "react";
 import * as data from "data";
 import { _, pgettext } from "translate";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Flag } from "Flag";
-import { get } from "requests";
 import { browserHistory } from "ogsHistory";
-import { errorLogger, shouldOpenNewTab, slugify } from "misc";
+import { errorLogger, slugify } from "misc";
 import {
     chat_manager,
     ChatChannelProxy,

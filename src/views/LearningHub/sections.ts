@@ -15,9 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { _, pgettext, interpolate } from "translate";
+import { pgettext } from "translate";
 import { LearningHubSection } from "./LearningHubSection";
-import { DummyPage } from "./LearningPage";
 import { Capture } from "./Capture";
 import { Defend } from "./Defend";
 import { SnapBack } from "./SnapBack";

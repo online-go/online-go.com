@@ -46,7 +46,6 @@ import {
 import { isLiveGame } from "TimeControl";
 import { termination_socket, get_network_latency, get_clock_drift } from "sockets";
 import { Dock } from "Dock";
-import tooltip from "tooltip";
 import { Player, setExtraActionCallback } from "Player";
 import { Flag } from "Flag";
 import * as player_cache from "player_cache";

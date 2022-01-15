@@ -18,7 +18,6 @@
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 import { Link } from "react-router-dom";
-import { browserHistory } from "ogsHistory";
 import { _, pgettext, interpolate } from "translate";
 import { post, get } from "requests";
 import { errorAlerter } from "misc";

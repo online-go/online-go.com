@@ -16,12 +16,9 @@
  */
 
 import * as React from "react";
-import { Link } from "react-router-dom";
-import * as moment from "moment";
 import {
     chat_manager,
     ChatChannelProxy,
-    UnreadChanged,
     global_channels,
     group_channels,
     tournament_channels,
@@ -31,7 +28,6 @@ import { KBShortcut } from "../KBShortcut";
 import { ChatList } from "Chat";
 import * as preferences from "preferences";
 import { TypedEventEmitter } from "TypedEventEmitter";
-import { event } from "d3";
 
 interface Events {
     subscription_changed: void;

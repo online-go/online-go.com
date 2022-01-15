@@ -18,7 +18,7 @@
 import * as React from "react";
 import * as data from "data";
 import { _, pgettext } from "translate";
-import { ignore, errorAlerter, navigateTo, unitify } from "misc";
+import { ignore, errorAlerter, navigateTo } from "misc";
 import { get, del, put, abort_requests_in_flight } from "requests";
 import { SortablePuzzleList } from "./SortablePuzzleList";
 import { openACLModal } from "ACLModal";

@@ -16,10 +16,7 @@
  */
 
 import * as React from "react";
-import { _, pgettext, interpolate } from "translate";
-import { post, get } from "requests";
 import { comm_socket } from "sockets";
-import * as Sentry from "@sentry/browser";
 
 interface UIPushProperties {
     event: string;

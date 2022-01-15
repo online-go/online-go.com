@@ -17,17 +17,10 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { _, interpolate } from "translate";
+import { _ } from "translate";
 import { Card } from "material";
 import { GameList } from "GameList";
-import { createOpenChallenge } from "ChallengeModal";
-import { UIPush } from "UIPush";
 import { post, get, abort_requests_in_flight } from "requests";
-import { Goban } from "goban";
-import { toast } from "toast";
-import { Player } from "Player";
-import { PlayerIcon } from "PlayerIcon";
-import online_status from "online_status";
 import * as data from "data";
 import cached from "cached";
 import * as preferences from "preferences";
@@ -40,7 +33,7 @@ import { SupporterGoals } from "SupporterGoals";
 import { ProfileCard } from "ProfileCard";
 import { notification_manager } from "Notifications";
 import { ActiveAnnouncements } from "Announcements";
-import { FabX, FabCheck } from "material";
+import { FabX } from "material";
 
 const UserRating = (props: { rating: number }) => {
     const wholeRating = Math.floor(props.rating);

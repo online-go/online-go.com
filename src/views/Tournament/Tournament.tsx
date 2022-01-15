@@ -34,7 +34,6 @@ import { UIPush } from "UIPush";
 import { Card } from "material";
 import { EmbeddedChatCard } from "Chat";
 import * as data from "data";
-import { PaginatedTable } from "PaginatedTable";
 import { PersistentElement } from "PersistentElement";
 import { PlayerAutocomplete } from "PlayerAutocomplete";
 import { MiniGoban } from "MiniGoban";

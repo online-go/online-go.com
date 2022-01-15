@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Goban, JGOFClock, JGOFPlayerClock, JGOFTimeControl, shortDurationString } from "goban";
+import { Goban, JGOFClock, JGOFPlayerClock, JGOFTimeControl } from "goban";
 import { _, pgettext, interpolate, ngettext } from "translate";
 
 type clock_color = "black" | "white" | "stone-removal";
