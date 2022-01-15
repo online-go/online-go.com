@@ -74,7 +74,7 @@ export class FriendList extends React.PureComponent<{}, any> {
         return ret;
     }
     setShowOfflineFriends = (ev) => {
-        preferences.set("show-offline-friends", ev.target.checked),
+        preferences.set("show-offline-friends", ev.target.checked);
         this.setState({show_offline_friends: preferences.get("show-offline-friends")});
         ev.stopPropagation();
     };
