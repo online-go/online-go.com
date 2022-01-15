@@ -20,9 +20,7 @@ import * as React from "react";
 import {Link} from "react-router-dom";
 import {Markdown} from "Markdown";
 import {browserHistory} from "ogsHistory";
-import {_, pgettext, interpolate} from "translate";
-import {Goban} from "goban";
-import {PersistentElement} from "PersistentElement";
+import {_} from "translate";
 import {InstructionalGoban} from "./InstructionalGoban";
 import {openNewGameModal} from "NewGameModal";
 
