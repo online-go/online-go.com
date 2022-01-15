@@ -64,8 +64,6 @@ export class KBShortcut extends React.Component<KBProps> {
     }
 }
 
-
-
 const keymap = {
     27: "esc",
     9: "tab",
@@ -112,25 +110,24 @@ const input_enabled_keys = {
     121: "f10",
 };
 
-
 const modifiers = {
-    "shift": "shift",
-    "alt": "alt",
-    "meta": "meta",
-    "ctrl": "ctrl"
+    shift: "shift",
+    alt: "alt",
+    meta: "meta",
+    ctrl: "ctrl",
 };
 
 // It looks like this should be something like
 //    `let bound_shortcuts: {[x: string]: Binding} = {};
 // but I won't touch this for now -BPJ
 // eslint-disable-next-line id-denylist
-const bound_shortcuts = {string: Binding};
+const bound_shortcuts = { string: Binding };
 
 function sanitize_shortcut(shortcut) {
     const shift = shortcut.indexOf("shift-") >= 0;
-    const ctrl  = shortcut.indexOf("ctrl-") >= 0;
-    const alt   = shortcut.indexOf("alt-") >= 0;
-    const meta  = shortcut.indexOf("meta-") >= 0;
+    const ctrl = shortcut.indexOf("ctrl-") >= 0;
+    const alt = shortcut.indexOf("alt-") >= 0;
+    const meta = shortcut.indexOf("meta-") >= 0;
 
     shortcut = shortcut.toLowerCase();
     shortcut = shortcut.replace(/([^+-])[+]/g, "$1-");
@@ -148,21 +145,25 @@ function sanitize_shortcut(shortcut) {
     shortcut = shortcut.replace("shift-", "");
     shortcut = shortcut.replace("ctrl-", "");
     shortcut = shortcut.replace("alt-", "");
-    shortcut = (shift ? "shift-" : "") + (alt ? "alt-" : "") + (ctrl ? "ctrl-" : "") + (meta ? "meta-" : "") + shortcut;
+    shortcut =
+        (shift ? "shift-" : "") +
+        (alt ? "alt-" : "") +
+        (ctrl ? "ctrl-" : "") +
+        (meta ? "meta-" : "") +
+        shortcut;
 
     return shortcut;
 }
 
-
-
 $(() => {
     $(document).on("keydown", (e) => {
         try {
-            if (document.activeElement.tagName === "INPUT" ||
+            if (
+                document.activeElement.tagName === "INPUT" ||
                 document.activeElement.tagName === "TEXTAREA" ||
                 document.activeElement.tagName === "SELECT" ||
-                document.activeElement.className === "qc-option") {
-
+                document.activeElement.className === "qc-option"
+            ) {
                 if (!(e.keyCode in input_enabled_keys)) {
                     return true;
                 }
@@ -173,11 +174,18 @@ $(() => {
         }
 
         let shortcut = "";
-        if (e.shiftKey) { shortcut += "shift-"; }
-        if (e.ctrlKey)  { shortcut += "ctrl-";  }
-        if (e.altKey)   { shortcut += "alt-";   }
-        if (e.metaKey)  { shortcut += "meta-";  }
-
+        if (e.shiftKey) {
+            shortcut += "shift-";
+        }
+        if (e.ctrlKey) {
+            shortcut += "ctrl-";
+        }
+        if (e.altKey) {
+            shortcut += "alt-";
+        }
+        if (e.metaKey) {
+            shortcut += "meta-";
+        }
 
         if (e.keyCode in keymap) {
             shortcut += keymap[e.keyCode];
@@ -186,7 +194,7 @@ $(() => {
         }
         shortcut = sanitize_shortcut(shortcut);
 
-        if (!preferences.get('function-keys-enabled')) {
+        if (!preferences.get("function-keys-enabled")) {
             if (/f[0-9]/.test(shortcut)) {
                 return true;
             }
@@ -219,8 +227,6 @@ $(() => {
     });
 });
 
-
-
 export function kb_bind(shortcut, fn, priority) {
     if (!priority) {
         priority = 0;
@@ -233,14 +239,12 @@ export function kb_bind(shortcut, fn, priority) {
     }
 
     bound_shortcuts[shortcut].push(b);
-    bound_shortcuts[shortcut].sort(
-        (a, b) => {
-            if (a.priority === b.priority) {
-                return a.id - b.id;
-            }
-            return a.priority - b.priority;
+    bound_shortcuts[shortcut].sort((a, b) => {
+        if (a.priority === b.priority) {
+            return a.id - b.id;
         }
-    );
+        return a.priority - b.priority;
+    });
     return b;
 }
 

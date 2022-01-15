@@ -54,11 +54,13 @@ export default class Debug {
     };
 
     assert(assertion: boolean, message: string, ...rest: Array<any>) {
-        if (assertion) { return; }
+        if (assertion) {
+            return;
+        }
         console.error(this.format(message), ...rest);
 
         // TODO: Phone home to tell of our distress.
     }
 }
 
-window['debug'] = debug;
+window["debug"] = debug;

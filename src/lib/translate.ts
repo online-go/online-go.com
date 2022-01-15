@@ -15,18 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { setGobanTranslations } from 'goban';
+import { setGobanTranslations } from "goban";
 
 const w = window as { [key: string]: any }; // Add index signature
-export let current_language: string = w["ogs_current_language"] as string || 'en';
+export let current_language: string = (w["ogs_current_language"] as string) || "en";
 //export let languages: { [key: string]: string } = w["ogs_languages"] || { 'en': 'English' };
-export const languages: { [key: string]: string } = w["supported_languages"] || { 'en': 'English' };
-export const countries: { [key: string]: { [key: string]: string } } =
-    w["ogs_countries"] || { 'en': { 'us': 'United States' } };
-export const locales: { [key: string]: { [key: string]: string[] } } =
-    w["ogs_locales"] || { 'en': {} };
+export const languages: { [key: string]: string } = w["supported_languages"] || { en: "English" };
+export const countries: { [key: string]: { [key: string]: string } } = w["ogs_countries"] || {
+    en: { us: "United States" },
+};
+export const locales: { [key: string]: { [key: string]: string[] } } = w["ogs_locales"] || {
+    en: {},
+};
 export const sorted_locale_countries: { cc: string; name: string }[] = [];
-
 
 let catalog: { [key: string]: string[] };
 try {
@@ -36,7 +37,7 @@ try {
 }
 
 function isInteger(n: number) {
-    return (n % 1) === 0;
+    return n % 1 === 0;
 }
 
 // Range is inclusive
@@ -49,72 +50,97 @@ function isInRange(n: number, min: number, max: number) {
 export let pluralidx: (count: number) => number;
 function setPluralIdx(lang: string) {
     switch (current_language) {
-        case 'vi':    // Vietnamese
-        case 'zh-tw': // Traditional Chinese
-        case 'zh-cn': // Simplified Chinese
-        case 'ja':    // Japanese
-        case 'ko':    // Korean
+        case "vi": // Vietnamese
+        case "zh-tw": // Traditional Chinese
+        case "zh-cn": // Simplified Chinese
+        case "ja": // Japanese
+        case "ko": // Korean
             // No differentiation between singular and plural
             pluralidx = (count: number) => 0;
             break;
-        case 'cs':    // Czech
+        case "cs": // Czech
             pluralidx = (count: number) => {
-                if (count === 1) { return 0; }
-                if (isInteger(count) && isInRange(count, 2, 4)) { return 1; }
-                if (!isInteger(count)) { return 2; }
+                if (count === 1) {
+                    return 0;
+                }
+                if (isInteger(count) && isInRange(count, 2, 4)) {
+                    return 1;
+                }
+                if (!isInteger(count)) {
+                    return 2;
+                }
                 return 3;
             };
             break;
-        case 'ru':    // Russian
-        case 'pl':    // Polish
-        case 'uk':    // Ukrainian
+        case "ru": // Russian
+        case "pl": // Polish
+        case "uk": // Ukrainian
         // Croatian and Serbian are not strictly the same as Russian and Polish, but since this function does not take a string,
         // we cannot properly handle decimals.
         // TODO: allow this function to take a string and handle this case accordingly
         // break omitted
-        case 'hr':    // Croatian
-        case 'sr':    // Serbian
+        case "hr": // Croatian
+        case "sr": // Serbian
             pluralidx = (count: number) => {
-                if (!isInteger(count)) { return 3; }
+                if (!isInteger(count)) {
+                    return 3;
+                }
 
-                if ((count % 10) === 1 && (count % 100) !== 11) { return 0; }   // 1, 21, 31, 41, 51, 61...
-                if (isInRange(count % 10, 2, 4) && !isInRange(count % 100, 12, 14)) { return 1; }   // 2, 3, 4, 22, 23, 24...
-                return 2;   // 0, 5, 6, 7, 8, 9
+                if (count % 10 === 1 && count % 100 !== 11) {
+                    return 0;
+                } // 1, 21, 31, 41, 51, 61...
+                if (isInRange(count % 10, 2, 4) && !isInRange(count % 100, 12, 14)) {
+                    return 1;
+                } // 2, 3, 4, 22, 23, 24...
+                return 2; // 0, 5, 6, 7, 8, 9
             };
             break;
-        case 'ro':    // Romanian
+        case "ro": // Romanian
             pluralidx = (count: number) => {
-                if (count === 1) { return 0; }
-                if (!isInteger(count) || count === 0 || isInRange(count % 100, 2, 19)) { return 1; }
+                if (count === 1) {
+                    return 0;
+                }
+                if (!isInteger(count) || count === 0 || isInRange(count % 100, 2, 19)) {
+                    return 1;
+                }
                 return 2;
             };
             break;
-        case 'fr':    // French
+        case "fr": // French
             pluralidx = (count: number) => {
-                if (isInRange(Math.trunc(count), 0, 1)) { return 0; }
+                if (isInRange(Math.trunc(count), 0, 1)) {
+                    return 0;
+                }
                 return 1;
             };
             break;
-        case 'da':    // Danish
+        case "da": // Danish
             pluralidx = (count: number) => {
-                if (count > 0 && count < 2) { return 0; }
+                if (count > 0 && count < 2) {
+                    return 0;
+                }
                 return 1;
             };
             break;
-        case 'he':    // Hebrew
+        case "he": // Hebrew
             pluralidx = (count: number) => {
-                if (count === 1) { return 0; }
-                if (count === 2) { return 1; }
-                if (!isInRange(count, 0, 10) && (count % 10) === 0) { return 2; }
+                if (count === 1) {
+                    return 0;
+                }
+                if (count === 2) {
+                    return 1;
+                }
+                if (!isInRange(count, 0, 10) && count % 10 === 0) {
+                    return 2;
+                }
                 return 3;
             };
             break;
         default:
-            pluralidx = (count: number) => (count === 1) ? 0 : 1;
+            pluralidx = (count: number) => (count === 1 ? 0 : 1);
     }
 }
 setPluralIdx(current_language);
-
 
 const debug_wrap = current_language === "debug" ? (s: string) => `[${s}]` : (s: string) => s;
 
@@ -133,11 +159,13 @@ export function gettext(msgid: string) {
  * Like gettext(), but for plural forms.
  */
 export function ngettext(singular: string, plural: string, count: number) {
-    const key = singular + '\u0005' + plural;
+    const key = singular + "\u0005" + plural;
 
     if (key in catalog) {
         const idx = pluralidx(count);
-        if (idx < catalog[key].length) { return catalog[key][idx]; }
+        if (idx < catalog[key].length) {
+            return catalog[key][idx];
+        }
 
         if (catalog[key].length === 1) {
             /* If we don't have a plural translation in a multi-message-id
@@ -188,7 +216,9 @@ export function npgettext(context: string, singular: string, plural: string, cou
     const pkey = context + "\u0004" + plural;
     if (key in catalog) {
         const idx = pluralidx(count);
-        if (idx < catalog[key].length) { return catalog[key][idx]; }
+        if (idx < catalog[key].length) {
+            return catalog[key][idx];
+        }
 
         if (catalog[key].length === 1) {
             /* If we don't have a plural translation in a multi-message-id
@@ -226,7 +256,6 @@ export function npgettext(context: string, singular: string, plural: string, cou
         return catalog[singular][0];
     }
 
-
     return debug_wrap(count === 1 ? singular : plural);
 }
 
@@ -245,12 +274,23 @@ gettext_formats["DATE_INPUT_FORMATS"] = ["%Y-%m-%d", "%m/%d/%Y", "%m/%d/%y"];
 gettext_formats["YEAR_MONTH_FORMAT"] = "F Y";
 gettext_formats["SHORT_DATE_FORMAT"] = "m/d/Y";
 gettext_formats["SHORT_DATETIME_FORMAT"] = "m/d/Y P";
-gettext_formats["DATETIME_INPUT_FORMATS"] = ["%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d", "%m/%d/%Y %H:%M:%S", "%m/%d/%Y %H:%M", "%m/%d/%Y", "%m/%d/%y %H:%M:%S", "%m/%d/%y %H:%M", "%m/%d/%y", "%Y-%m-%d %H:%M:%S.%f"];
+gettext_formats["DATETIME_INPUT_FORMATS"] = [
+    "%Y-%m-%d %H:%M:%S",
+    "%Y-%m-%d %H:%M",
+    "%Y-%m-%d",
+    "%m/%d/%Y %H:%M:%S",
+    "%m/%d/%Y %H:%M",
+    "%m/%d/%Y",
+    "%m/%d/%y %H:%M:%S",
+    "%m/%d/%y %H:%M",
+    "%m/%d/%y",
+    "%Y-%m-%d %H:%M:%S.%f",
+];
 
 // TODO: remove this function after confirming it is not used elsewhere.
 export function get_format(format_type: string) {
     const value = gettext_formats[format_type];
-    if (typeof (value) === "undefined") {
+    if (typeof value === "undefined") {
         return format_type;
     } else {
         return value;
@@ -290,7 +330,7 @@ fantasy_countries.push(["_United_Federation_of_Planets", gettext("United Federat
 fantasy_countries.push(["_Pirate", gettext("Pirate")]);
 fantasy_countries.push(["_Starfleet", gettext("Starfleet")]);
 fantasy_countries.push(["_DOOP", gettext("DOOP")]);
-fantasy_countries.push(["_Esperanto", gettext("Esperantujo")]);  // Esperanto speakers pretend they come from Esperantujo!  Who knew!
+fantasy_countries.push(["_Esperanto", gettext("Esperantujo")]); // Esperanto speakers pretend they come from Esperantujo!  Who knew!
 fantasy_countries.push(["_GoT_Arryn", gettext("House Arryn")]);
 fantasy_countries.push(["_GoT_Baratheon", gettext("House Baratheon")]);
 fantasy_countries.push(["_GoT_Greyjoy", gettext("House Greyjoy")]);
@@ -314,7 +354,6 @@ try {
     console.error((e as Error).message);
 }
 
-
 /**
  * Return str with any placeholders populated by the contents of params.
  *
@@ -333,7 +372,7 @@ export function interpolate(str: string, params: Array<any> | { [key: string]: a
             return params[idx++];
         });
     }
-    if (typeof (params) === "object") {
+    if (typeof params === "object") {
         return str.replace(/{{([^}]+)}}/g, (_, key, position) => {
             if (!(key in params)) {
                 //throw new Error(`Missing interpolation key: ${key} for string: ${str}`);
@@ -363,8 +402,6 @@ export function cc_to_country_name(country_code: string) {
     }
 }
 
-
-
 languages["auto"] = gettext("Automatic");
 const current_countries = countries[current_language];
 for (const cc in current_countries) {
@@ -374,23 +411,26 @@ for (const cc in current_countries) {
     });
 }
 sorted_locale_countries.sort((a, b) => {
-    if ((a.cc in fantasy_countries_cc) && !(b.cc in fantasy_countries_cc)) {
+    if (a.cc in fantasy_countries_cc && !(b.cc in fantasy_countries_cc)) {
         return 1;
     }
-    if (!(a.cc in fantasy_countries_cc) && (b.cc in fantasy_countries_cc)) {
+    if (!(a.cc in fantasy_countries_cc) && b.cc in fantasy_countries_cc) {
         return -1;
     }
 
     return a.name.localeCompare(b.name);
 });
 
-
 function sanitize(language_or_country: string): string {
-    return language_or_country.replace(/[^a-zA-Z0-9_-]/g, '');
+    return language_or_country.replace(/[^a-zA-Z0-9_-]/g, "");
 }
 
 export function getLanguageFlag(language: string, user_country: string, default_flag: string) {
-    if (language === "english" && ["ca", "gb", "au", "nz", "pk", "ng", "ph", "za", "sg", "ie", "us"].indexOf(user_country) >= 0) {
+    if (
+        language === "english" &&
+        ["ca", "gb", "au", "nz", "pk", "ng", "ph", "za", "sg", "ie", "us"].indexOf(user_country) >=
+            0
+    ) {
         return sanitize(user_country);
     }
     if (language === "spanish" && ["mx", "co", "cl", "ar"].indexOf(user_country) >= 0) {
@@ -415,13 +455,22 @@ export function getLanguageFlag(language: string, user_country: string, default_
     return getCountryFlagClass(default_flag);
 }
 
-
 export function getCountryFlagClass(country_code: string) {
-    if (!country_code) { return "un"; }
-    if (country_code === "eu") { return "_European_Union"; }
-    if (country_code === "un") { return "_United_Nations"; }
-    if (parseInt(country_code) > 0) { return "_United_Nations"; }
-    if (country_code.length > 2) { return sanitize(country_code); }
+    if (!country_code) {
+        return "un";
+    }
+    if (country_code === "eu") {
+        return "_European_Union";
+    }
+    if (country_code === "un") {
+        return "_United_Nations";
+    }
+    if (parseInt(country_code) > 0) {
+        return "_United_Nations";
+    }
+    if (country_code.length > 2) {
+        return sanitize(country_code);
+    }
     return sanitize(country_code);
 }
 
@@ -429,54 +478,55 @@ export function setCurrentLanguage(language_code: string) {
     current_language = language_code;
 
     setGobanTranslations({
-        'Your move': _('Your move'),
-        'White': _('White'),
-        'Black': _('Black'),
-        'Illegal Ko Move': _('Illegal Ko Move'),
-        'Move is suicidal': _('Move is suicidal'),
-        'Loading...': _('Loading...'),
-        'Processing...': _('Processing...'),
-        'Submitting...': _('Submitting...'),
-        'A stone has already been placed here': _('A stone has already been placed here'),
-        'Illegal board repetition': _('Illegal board repetition'),
-        'Error submitting move': _('Error submitting move'),
-        'Game Finished': _('Game Finished'),
-        'Black to move': _('Black to move'),
-        'White to move': _('White to move'),
-        'Your move - opponent passed': _('Your move - opponent passed'),
-        'Review': _('Review'),
-        'Control passed to %s': _('Control passed to %s'),
-        'Synchronization error, reloading': _('Synchronization error, reloading'),
-        'Stone Removal': _('Stone Removal'),
-        'Stone Removal Phase': _('Stone Removal Phase'),
-        'Enter the label you want to add to the board': _('Enter the label you want to add to the board'),
+        "Your move": _("Your move"),
+        White: _("White"),
+        Black: _("Black"),
+        "Illegal Ko Move": _("Illegal Ko Move"),
+        "Move is suicidal": _("Move is suicidal"),
+        "Loading...": _("Loading..."),
+        "Processing...": _("Processing..."),
+        "Submitting...": _("Submitting..."),
+        "A stone has already been placed here": _("A stone has already been placed here"),
+        "Illegal board repetition": _("Illegal board repetition"),
+        "Error submitting move": _("Error submitting move"),
+        "Game Finished": _("Game Finished"),
+        "Black to move": _("Black to move"),
+        "White to move": _("White to move"),
+        "Your move - opponent passed": _("Your move - opponent passed"),
+        Review: _("Review"),
+        "Control passed to %s": _("Control passed to %s"),
+        "Synchronization error, reloading": _("Synchronization error, reloading"),
+        "Stone Removal": _("Stone Removal"),
+        "Stone Removal Phase": _("Stone Removal Phase"),
+        "Enter the label you want to add to the board": _(
+            "Enter the label you want to add to the board",
+        ),
 
-        'Black Walnut': _('Black Walnut'),
-        'Book': _('Book'),
-        'Glass': _('Glass'),
-        'Granite': _('Granite'),
-        'HNG Night': _('HNG Night'),
-        'HNG': _('HNG'),
-        'Kaya': _('Kaya'),
-        'Night Play': _('Night Play'),
-        'Night': _('Night'),
-        'Persimmon': _('Persimmon'),
-        'Plain': _('Plain'),
-        'Red Oak': _('Red Oak'),
-        'Shell': _('Shell'),
-        'Slate': _('Slate'),
-        'Worn Glass': _('Worn Glass'),
+        "Black Walnut": _("Black Walnut"),
+        Book: _("Book"),
+        Glass: _("Glass"),
+        Granite: _("Granite"),
+        "HNG Night": _("HNG Night"),
+        HNG: _("HNG"),
+        Kaya: _("Kaya"),
+        "Night Play": _("Night Play"),
+        Night: _("Night"),
+        Persimmon: _("Persimmon"),
+        Plain: _("Plain"),
+        "Red Oak": _("Red Oak"),
+        Shell: _("Shell"),
+        Slate: _("Slate"),
+        "Worn Glass": _("Worn Glass"),
 
-        '%swk': pgettext("Short time (weeks)", "%swk"),
-        '%sd': pgettext("Short time (days)", "%sd"),
-        '%sh': pgettext("Short time (hours)", "%sh"),
-        '%sm': pgettext("Short time (minutes)", "%sm"),
-        '%ss': pgettext("Short time (seconds)", "%ss"),
+        "%swk": pgettext("Short time (weeks)", "%swk"),
+        "%sd": pgettext("Short time (days)", "%sd"),
+        "%sh": pgettext("Short time (hours)", "%sh"),
+        "%sm": pgettext("Short time (minutes)", "%sm"),
+        "%ss": pgettext("Short time (seconds)", "%ss"),
     });
     setPluralIdx(language_code);
 }
 setCurrentLanguage(current_language);
-
 
 export default {
     gettext: gettext,
@@ -494,14 +544,13 @@ export default {
     _: _,
 };
 
-
 /* Extra translation strings */
 _("Not allowed to access this game");
 _("Not allowed to access this review");
 
-w['gettext'] = gettext;
-w['pgettext'] = pgettext;
-w['ngettext'] = ngettext;
-w['npgettext'] = npgettext;
-w['get_format'] = get_format;
-w['interpolate'] = interpolate;
+w["gettext"] = gettext;
+w["pgettext"] = pgettext;
+w["ngettext"] = ngettext;
+w["npgettext"] = npgettext;
+w["get_format"] = get_format;
+w["interpolate"] = interpolate;

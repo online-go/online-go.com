@@ -17,8 +17,7 @@
 
 import * as React from "react";
 import * as player_cache from "player_cache";
-import {errorLogger} from "misc";
-
+import { errorLogger } from "misc";
 
 interface PlayerIconProps {
     id?: number;
@@ -32,13 +31,12 @@ export function icon_size_url(url: string, size: number): string {
 }
 
 export function getPlayerIconURL(id: number, size: number): Promise<string> {
-    return player_cache.fetch(id, ["icon"]).then(user => icon_size_url(user.icon, size));
+    return player_cache.fetch(id, ["icon"]).then((user) => icon_size_url(user.icon, size));
 }
 
-
-export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
+export class PlayerIcon extends React.PureComponent<PlayerIconProps, { url }> {
     mounted: boolean = false;
-    subscriber = new player_cache.Subscriber(user => this.fetch(user.id, this.props));
+    subscriber = new player_cache.Subscriber((user) => this.fetch(user.id, this.props));
 
     constructor(props: PlayerIconProps) {
         super(props);
@@ -49,9 +47,9 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
         }
 
         const user = player_cache.lookup(id);
-        const size = typeof(props.size) === 'number' ? props.size : parseInt(props.size);
+        const size = typeof props.size === "number" ? props.size : parseInt(props.size);
         this.state = {
-            url: user && user.icon ? icon_size_url(user.icon, size) : null
+            url: user && user.icon ? icon_size_url(user.icon, size) : null,
         };
         if (!this.state.url) {
             this.fetch(id, props);
@@ -67,14 +65,15 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
     }
 
     fetch(id, props) {
-        getPlayerIconURL(id, props.size).then((url) => {
-            if (id === this.getId(props)) {
-                if (this.mounted && this.state.url !== url) {
-                    this.setState({url: url});
+        getPlayerIconURL(id, props.size)
+            .then((url) => {
+                if (id === this.getId(props)) {
+                    if (this.mounted && this.state.url !== url) {
+                        this.setState({ url: url });
+                    }
                 }
-            }
-        })
-        .catch(errorLogger);
+            })
+            .catch(errorLogger);
     }
     componentDidMount() {
         this.mounted = true;
@@ -92,7 +91,7 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
         const current_id = this.getId(this.props);
         const next_id = this.getId(next_props);
         if (current_id !== next_id) {
-            this.setState({url: null});
+            this.setState({ url: null });
             this.subscriber.off(this.subscriber.players());
             if (next_id > 0) {
                 this.subscriber.on(next_id);
@@ -104,9 +103,20 @@ export class PlayerIcon extends React.PureComponent<PlayerIconProps, {url}> {
     }
     render() {
         if (this.state.url) {
-            return <img className={`PlayerIcon PlayerIcon-${this.props.size} ${this.props.className || ""}`} src={this.state.url} />;
+            return (
+                <img
+                    className={`PlayerIcon PlayerIcon-${this.props.size} ${
+                        this.props.className || ""
+                    }`}
+                    src={this.state.url}
+                />
+            );
         }
 
-        return <span className={`PlayerIcon PlayerIcon-${this.props.size} ${this.props.className || ""}`} />;
+        return (
+            <span
+                className={`PlayerIcon PlayerIcon-${this.props.size} ${this.props.className || ""}`}
+            />
+        );
     }
 }

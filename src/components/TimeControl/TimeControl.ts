@@ -17,7 +17,13 @@
 
 export namespace TimeControlTypes {
     export type TimeControlSpeed = "blitz" | "live" | "correspondence";
-    export type TimeControlSystem = "fischer" | "byoyomi" | "canadian" | "simple" | "absolute" | "none";
+    export type TimeControlSystem =
+        | "fischer"
+        | "byoyomi"
+        | "canadian"
+        | "simple"
+        | "absolute"
+        | "none";
 
     export interface Fischer {
         system: "fischer";
@@ -62,10 +68,10 @@ export namespace TimeControlTypes {
     }
 }
 
-
-export type TimeControl = TimeControlTypes.Fischer
-                        | TimeControlTypes.ByoYomi
-                        | TimeControlTypes.Simple
-                        | TimeControlTypes.Canadian
-                        | TimeControlTypes.Absolute
-                        | TimeControlTypes.None;
+export type TimeControl =
+    | TimeControlTypes.Fischer
+    | TimeControlTypes.ByoYomi
+    | TimeControlTypes.Simple
+    | TimeControlTypes.Canadian
+    | TimeControlTypes.Absolute
+    | TimeControlTypes.None;

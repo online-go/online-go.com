@@ -22,7 +22,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { Flag } from "Flag";
 import { get } from "requests";
 import { browserHistory } from "ogsHistory";
-import { errorLogger, shouldOpenNewTab, slugify } from 'misc';
+import { errorLogger, shouldOpenNewTab, slugify } from "misc";
 import {
     chat_manager,
     ChatChannelProxy,
@@ -31,11 +31,10 @@ import {
     tournament_channels,
     ChannelInformation,
     resolveChannelInformation,
-    cachedChannelInformation
-} from 'chat_manager';
+    cachedChannelInformation,
+} from "chat_manager";
 
-
-data.setDefault("chat.joined", {'global-english': true});
+data.setDefault("chat.joined", { "global-english": true });
 
 try {
     const joined_defaults: any = {};
@@ -63,11 +62,9 @@ try {
     console.error(e);
 }
 
-
 interface ChatChannelListProperties {
     channel: string;
 }
-
 
 function autojoin_channels() {
     const joined_channels = data.get("chat.joined");
@@ -86,7 +83,7 @@ function autojoin_channels() {
         }
     }
     for (const chan of global_channels) {
-        if (chan.id.indexOf('supporter') >= 0 || chan.id.indexOf('shadowban') >= 0) {
+        if (chan.id.indexOf("supporter") >= 0 || chan.id.indexOf("shadowban") >= 0) {
             if (!(chan.id in parted_channels)) {
                 joined_channels[chan.id] = 1;
             }
@@ -96,20 +93,22 @@ function autojoin_channels() {
     data.set("chat.joined", joined_channels);
 }
 
-
-export function ChatChannelList({channel}: ChatChannelListProperties): JSX.Element {
+export function ChatChannelList({ channel }: ChatChannelListProperties): JSX.Element {
     autojoin_channels();
 
     const joined_channels = data.get("chat.joined");
     const using_resolved_channel = !(
-        group_channels.filter(chan => `group-${chan.id}` === channel).length
-        + tournament_channels.filter(chan => `tournament-${chan.id}` === channel).length
-        + global_channels.filter(chan => chan.id === channel).length
+        group_channels.filter((chan) => `group-${chan.id}` === channel).length +
+        tournament_channels.filter((chan) => `tournament-${chan.id}` === channel).length +
+        global_channels.filter((chan) => chan.id === channel).length
     );
 
     const [more, set_more]: [boolean, (tf: boolean) => void] = useState(false as boolean);
     const [search, set_search]: [string, (text: string) => void] = useState("");
-    const [resolved_channel, set_resolved_channel]: [ChannelInformation | null, (s: ChannelInformation | null) => void] = useState(null);
+    const [resolved_channel, set_resolved_channel]: [
+        ChannelInformation | null,
+        (s: ChannelInformation | null) => void,
+    ] = useState(null);
 
     //pgettext("Joining chat channel", "Joining"));
 
@@ -121,12 +120,12 @@ export function ChatChannelList({channel}: ChatChannelListProperties): JSX.Eleme
         let still_resolving = true;
         if (using_resolved_channel && !cachedChannelInformation(channel)) {
             resolveChannelInformation(channel)
-            .then((info) => {
-                if (still_resolving) {
-                    set_resolved_channel(info);
-                }
-            })
-            .catch(errorLogger);
+                .then((info) => {
+                    if (still_resolving) {
+                        set_resolved_channel(info);
+                    }
+                })
+                .catch(errorLogger);
         }
 
         return () => {
@@ -134,10 +133,9 @@ export function ChatChannelList({channel}: ChatChannelListProperties): JSX.Eleme
         };
     }, [channel]);
 
-
     let more_channels: JSX.Element;
 
-    function chanSearch(chan: {name: string}): boolean {
+    function chanSearch(chan: { name: string }): boolean {
         const s = search.toLowerCase().trim();
 
         if (s === "") {
@@ -150,60 +148,73 @@ export function ChatChannelList({channel}: ChatChannelListProperties): JSX.Eleme
     if (more) {
         more_channels = (
             <React.Fragment>
-                <button className='primary' onClick={() => set_more(false)}>
-                    <span className='triangle'>&#9651;</span><span className='text'>{_("More channels")}</span>
+                <button className="primary" onClick={() => set_more(false)}>
+                    <span className="triangle">&#9651;</span>
+                    <span className="text">{_("More channels")}</span>
                 </button>
 
-                <div className='joinable'>
-                    <input type="search"
+                <div className="joinable">
+                    <input
+                        type="search"
                         autoFocus={true}
                         value={search}
                         onChange={(ev) => set_search(ev.target.value)}
                         placeholder={_("Search")}
                     />
 
-                    {group_channels.filter(chan => !(`group-${chan.id}` in joined_channels) && chanSearch(chan)).map((chan) => (
-                        <ChatChannel
-                            key={`group-${chan.id}`}
-                            channel={`group-${chan.id}`}
-                            icon={chan.icon}
-                            name={chan.name}
-                        />
-                    ))}
+                    {group_channels
+                        .filter(
+                            (chan) => !(`group-${chan.id}` in joined_channels) && chanSearch(chan),
+                        )
+                        .map((chan) => (
+                            <ChatChannel
+                                key={`group-${chan.id}`}
+                                channel={`group-${chan.id}`}
+                                icon={chan.icon}
+                                name={chan.name}
+                            />
+                        ))}
 
-                    {tournament_channels.filter(chan => !(`tournament-${chan.id}` in joined_channels) && chanSearch(chan)).map((chan) => (
-                        <ChatChannel
-                            key={`tournament-${chan.id}`}
-                            channel={`tournament-${chan.id}`}
-                            name={chan.name}
-                        />
-                    ))}
+                    {tournament_channels
+                        .filter(
+                            (chan) =>
+                                !(`tournament-${chan.id}` in joined_channels) && chanSearch(chan),
+                        )
+                        .map((chan) => (
+                            <ChatChannel
+                                key={`tournament-${chan.id}`}
+                                channel={`tournament-${chan.id}`}
+                                name={chan.name}
+                            />
+                        ))}
 
-                    {global_channels.filter(chan => !(chan.id in joined_channels) && chanSearch(chan)).map((chan) => (
-                        <ChatChannel
-                            key={chan.id}
-                            channel={chan.id}
-                            name={chan.name}
-                            language={chan.language}
-                            country={chan.country}
-                        />
-                    ))}
+                    {global_channels
+                        .filter((chan) => !(chan.id in joined_channels) && chanSearch(chan))
+                        .map((chan) => (
+                            <ChatChannel
+                                key={chan.id}
+                                channel={chan.id}
+                                name={chan.name}
+                                language={chan.language}
+                                country={chan.country}
+                            />
+                        ))}
                 </div>
             </React.Fragment>
         );
     } else {
         more_channels = (
-            <button className='default' onClick={() => set_more(true)}>
-                <span className='triangle'>&#9661;</span><span className='text'>{_("More channels")}</span>
+            <button className="default" onClick={() => set_more(true)}>
+                <span className="triangle">&#9661;</span>
+                <span className="text">{_("More channels")}</span>
             </button>
         );
     }
 
-
     return (
-        <div className='ChatChannelList'>
-            {using_resolved_channel
-                ? <ChatChannel
+        <div className="ChatChannelList">
+            {using_resolved_channel ? (
+                <ChatChannel
                     key={channel}
                     channel={channel}
                     name={resolved_channel?.name || pgettext("Joining chat channel", "Joining...")}
@@ -211,48 +222,51 @@ export function ChatChannelList({channel}: ChatChannelListProperties): JSX.Eleme
                     active={true}
                     joined={true}
                 />
-                : null
-            }
+            ) : null}
 
-            {group_channels.filter(chan => `group-${chan.id}` in joined_channels).map((chan) => (
-                <ChatChannel
-                    key={`group-${chan.id}`}
-                    channel={`group-${chan.id}`}
-                    active={channel === `group-${chan.id}`}
-                    icon={chan.icon}
-                    name={chan.name}
-                    joined={true}
-                />
-            ))}
+            {group_channels
+                .filter((chan) => `group-${chan.id}` in joined_channels)
+                .map((chan) => (
+                    <ChatChannel
+                        key={`group-${chan.id}`}
+                        channel={`group-${chan.id}`}
+                        active={channel === `group-${chan.id}`}
+                        icon={chan.icon}
+                        name={chan.name}
+                        joined={true}
+                    />
+                ))}
 
-            {tournament_channels.filter(chan => `tournament-${chan.id}` in joined_channels).map((chan) => (
-                <ChatChannel
-                    key={`tournament-${chan.id}`}
-                    channel={`tournament-${chan.id}`}
-                    active={channel === `tournament-${chan.id}`}
-                    name={chan.name}
-                    joined={true}
-                />
-            ))}
+            {tournament_channels
+                .filter((chan) => `tournament-${chan.id}` in joined_channels)
+                .map((chan) => (
+                    <ChatChannel
+                        key={`tournament-${chan.id}`}
+                        channel={`tournament-${chan.id}`}
+                        active={channel === `tournament-${chan.id}`}
+                        name={chan.name}
+                        joined={true}
+                    />
+                ))}
 
-            {global_channels.filter(chan => chan.id in joined_channels || chan.id === channel).map((chan) => (
-                <ChatChannel
-                    key={chan.id}
-                    channel={chan.id}
-                    active={channel === chan.id}
-                    name={chan.name}
-                    language={chan.language}
-                    country={chan.country}
-                    joined={true}
-                />
-            ))}
+            {global_channels
+                .filter((chan) => chan.id in joined_channels || chan.id === channel)
+                .map((chan) => (
+                    <ChatChannel
+                        key={chan.id}
+                        channel={chan.id}
+                        active={channel === chan.id}
+                        name={chan.name}
+                        language={chan.language}
+                        country={chan.country}
+                        joined={true}
+                    />
+                ))}
 
             {more_channels}
         </div>
     );
 }
-
-
 
 interface ChatChannelProperties {
     channel: string;
@@ -264,18 +278,24 @@ interface ChatChannelProperties {
     joined?: boolean;
 }
 
-export function ChatChannel(
-    {channel, name, active, country, language, icon, joined}: ChatChannelProperties
-): JSX.Element {
-    const user = data.get('user');
-    const user_country = user?.country || 'un';
+export function ChatChannel({
+    channel,
+    name,
+    active,
+    country,
+    language,
+    icon,
+    joined,
+}: ChatChannelProperties): JSX.Element {
+    const user = data.get("user");
+    const user_country = user?.country || "un";
 
-    if (language && typeof(language) !== "string") {
+    if (language && typeof language !== "string") {
         language = language[0];
     }
 
-
-    const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
+    const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] =
+        useState(null);
     const [unread_ct, set_unread_ct]: [number, (x: number) => void] = useState(0);
 
     const setChannel = useCallback(() => {
@@ -334,15 +354,16 @@ export function ChatChannel(
         }
     }, [active, proxy]);
 
-
     let icon_element: JSX.Element;
 
-    if (channel.indexOf('tournament') === 0) {
+    if (channel.indexOf("tournament") === 0) {
         icon_element = <i className="fa fa-trophy" />;
-    } else if (channel.indexOf('global') === 0 || channel === 'shadowban') {
-        icon_element = <Flag country={country} language={language as string} user_country={user_country} />;
-    } else if (channel.indexOf('group') === 0) {
-        icon_element = <img src={icon}/>;
+    } else if (channel.indexOf("global") === 0 || channel === "shadowban") {
+        icon_element = (
+            <Flag country={country} language={language as string} user_country={user_country} />
+        );
+    } else if (channel.indexOf("group") === 0) {
+        icon_element = <img src={icon} />;
     }
 
     const mentioned = proxy?.channel.mentioned;
@@ -351,7 +372,6 @@ export function ChatChannel(
     if (unread_ct) {
         unread = <span className="unread-count" data-count={`(${unread_ct})`} />;
     }
-
 
     let cls = "channel";
     if (active) {
@@ -370,13 +390,12 @@ export function ChatChannel(
     }
 
     return (
-        <div className={cls} onClick={setChannel} >
+        <div className={cls} onClick={setChannel}>
             <span className="channel-name">
                 {icon_element}
-                <span className='name'>{name}</span>
+                <span className="name">{name}</span>
                 {unread}
             </span>
         </div>
     );
 }
-

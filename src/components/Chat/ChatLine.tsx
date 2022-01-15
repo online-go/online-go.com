@@ -19,20 +19,25 @@ import * as React from "react";
 import * as moment from "moment";
 import * as data from "data";
 import { Player } from "Player";
-import { chat_markup } from './chat_markup';
-import { ChatMessage } from 'chat_manager';
-
+import { chat_markup } from "./chat_markup";
+import { ChatMessage } from "chat_manager";
 
 let name_match_regex = /^loading...$/;
 data.watch("config.user", (user) => {
     const cleaned_username_regex = user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&");
     name_match_regex = new RegExp(
-        "\\b"  + cleaned_username_regex + "\\b"
-        + "|\\bplayer ?" + user.id + "\\b"
-        + "|\\bhttps?:\\/\\/online-go\\.com\\/user\\/view\\/" + user.id + "\\b"
-        , "i");
+        "\\b" +
+            cleaned_username_regex +
+            "\\b" +
+            "|\\bplayer ?" +
+            user.id +
+            "\\b" +
+            "|\\bhttps?:\\/\\/online-go\\.com\\/user\\/view\\/" +
+            user.id +
+            "\\b",
+        "i",
+    );
 });
-
 
 interface ChatLineInterface {
     line: ChatMessage;
@@ -45,7 +50,7 @@ export function ChatLine(props: ChatLineInterface): JSX.Element {
     const user = line;
 
     if (line.system) {
-        return ( <div className="chat-line system">{chat_markup(line.message.m)}</div>);
+        return <div className="chat-line system">{chat_markup(line.message.m)}</div>;
     }
 
     const message = line.message;
@@ -57,36 +62,35 @@ export function ChatLine(props: ChatLineInterface): JSX.Element {
 
     if (!lastline || (ts && ts_ll)) {
         if (ts) {
-            if (!lastline || (moment(ts).format("YYYY-MM-DD") !== moment(ts_ll).format("YYYY-MM-DD"))) {
+            if (
+                !lastline ||
+                moment(ts).format("YYYY-MM-DD") !== moment(ts_ll).format("YYYY-MM-DD")
+            ) {
                 show_date = <div className="date">{moment(ts).format("LL")}</div>;
             }
         }
     }
 
-    if (typeof(body) === 'string') {
-        if (body.substr(0, 4) === '/me ') {
-            third_person = (body.substr(0, 4) === "/me ");
+    if (typeof body === "string") {
+        if (body.substr(0, 4) === "/me ") {
+            third_person = body.substr(0, 4) === "/me ";
             body = body.substr(4);
         }
 
         if (/^\/senseis?\s/.test(body)) {
             body = generateChatSearchLine(
-                'http://senseis.xmp.net/?search=',
+                "http://senseis.xmp.net/?search=",
                 /^\/senseis?\s/.exec(body)[0],
-                body
+                body,
             );
         }
 
-        if (body.substr(0, 8) === '/google ') {
-            body = generateChatSearchLine(
-                'https://www.google.com/#q=', '/google ', body
-            );
+        if (body.substr(0, 8) === "/google ") {
+            body = generateChatSearchLine("https://www.google.com/#q=", "/google ", body);
         }
 
-        if (body.substr(0, 8) === '/lmgtfy ') {
-            body = generateChatSearchLine(
-                'https://www.lmgtfy.com/?q=', '/lmgtfy ', body
-            );
+        if (body.substr(0, 8) === "/lmgtfy ") {
+            body = generateChatSearchLine("https://www.lmgtfy.com/?q=", "/lmgtfy ", body);
         }
     }
 
@@ -98,39 +102,47 @@ export function ChatLine(props: ChatLineInterface): JSX.Element {
         const minutes = ts.getMinutes();
 
         timestamp_str =
-            (hours < 10 ? ` ${hours}` : hours.toString())
-            + ":" + (minutes < 10 ? `0${minutes}` : minutes.toString());
+            (hours < 10 ? ` ${hours}` : hours.toString()) +
+            ":" +
+            (minutes < 10 ? `0${minutes}` : minutes.toString());
     }
 
     return (
-        <div className={
-            (third_person ? "chat-line third-person" : "chat-line")
-             + (user.id === data.get("config.user").id ? " self" : ` chat-user-${user.id}`)
-             + (mentions ? " mentions" : "")
-        }
-        data-chat-id={message.i}
+        <div
+            className={
+                (third_person ? "chat-line third-person" : "chat-line") +
+                (user.id === data.get("config.user").id ? " self" : ` chat-user-${user.id}`) +
+                (mentions ? " mentions" : "")
+            }
+            data-chat-id={message.i}
         >
             {show_date}
-            {(ts) && <span className="timestamp">[{timestamp_str}]</span>}
-            {(user.id || null) && <Player user={user} flare rank={false} noextracontrols disableCacheUpdate/>}{(third_person ? " " : ": ")}
+            {ts && <span className="timestamp">[{timestamp_str}]</span>}
+            {(user.id || null) && (
+                <Player user={user} flare rank={false} noextracontrols disableCacheUpdate />
+            )}
+            {third_person ? " " : ": "}
             <span className="body">{chat_markup(body)}</span>
         </div>
     );
 }
 
 function generateChatSearchLine(urlString, command, body) {
-    let target = '';
+    let target = "";
     const bodyString = body.substr(command.length);
-    if (bodyString.split(' ')[0] === '-user') {
-        target = bodyString.split(' ')[1] + ' ';
+    if (bodyString.split(" ")[0] === "-user") {
+        target = bodyString.split(" ")[1] + " ";
     }
 
-    const params = body.split(' ');
+    const params = body.split(" ");
     if (target.length > 0) {
-        return  target.slice(0, target.length - 1) + ": " +
-            searchString(urlString, params.slice(3, params.length));
+        return (
+            target.slice(0, target.length - 1) +
+            ": " +
+            searchString(urlString, params.slice(3, params.length))
+        );
     } else {
-        return  searchString(urlString, params.slice(1, params.length));
+        return searchString(urlString, params.slice(1, params.length));
     }
 }
 
@@ -139,6 +151,5 @@ function searchString(site, parameters) {
         return site + parameters[0];
     }
 
-    return site + parameters[0] + '+' +
-        parameters.slice(1, parameters.length).join('+').slice(0);
+    return site + parameters[0] + "+" + parameters.slice(1, parameters.length).join("+").slice(0);
 }

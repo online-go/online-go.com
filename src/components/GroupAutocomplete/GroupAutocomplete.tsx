@@ -16,9 +16,9 @@
  */
 
 import * as React from "react";
-import {_, pgettext, interpolate} from "translate";
-import {post, get, abort_requests_in_flight} from "requests";
-import * as Autosuggest from 'react-autosuggest';
+import { _, pgettext, interpolate } from "translate";
+import { post, get, abort_requests_in_flight } from "requests";
+import * as Autosuggest from "react-autosuggest";
 
 interface GroupAutocompleteProperties {
     onComplete: (user) => void;
@@ -33,7 +33,7 @@ const getSuggestionValue = (suggestion: Suggestion) => {
     return suggestion.name;
 };
 
-const renderSuggestion = (suggestion: Suggestion) => ( <div>{suggestion.name}</div>);
+const renderSuggestion = (suggestion: Suggestion) => <div>{suggestion.name}</div>;
 
 const groups_by_name = {};
 
@@ -42,7 +42,10 @@ interface GroupAutocompleteState {
     suggestions: Suggestion[];
 }
 
-export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProperties, GroupAutocompleteState> {
+export class GroupAutocomplete extends React.PureComponent<
+    GroupAutocompleteProperties,
+    GroupAutocompleteState
+> {
     last_on_complete_username = null;
     current_search = null;
     tabbed_out = false;
@@ -51,13 +54,12 @@ export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProp
         super(props);
         this.state = {
             value: "",
-            suggestions: []
+            suggestions: [],
         };
-
     }
 
     clear() {
-        this.setState({value: ""});
+        this.setState({ value: "" });
     }
     complete(groupname) {
         if (groupname in groups_by_name) {
@@ -72,7 +74,7 @@ export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProp
     }
     onChange = (event, { newValue }) => {
         this.setState({
-            value: newValue
+            value: newValue,
         });
         this.complete(newValue);
     };
@@ -85,39 +87,39 @@ export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProp
         this.current_search = value;
 
         if (value.length > 1) {
-            get("groups/", {name__istartswith: value, page_size: 10})
-            .then((res: { results: Suggestion[] }) => {
-                for (const group of res.results) {
-                    groups_by_name[group.name] = group;
-                }
+            get("groups/", { name__istartswith: value, page_size: 10 })
+                .then((res: { results: Suggestion[] }) => {
+                    for (const group of res.results) {
+                        groups_by_name[group.name] = group;
+                    }
 
-                this.setState({
-                    suggestions: res.results
+                    this.setState({
+                        suggestions: res.results,
+                    });
+
+                    if (this.state.value in groups_by_name) {
+                        this.complete(this.state.value);
+                    }
+                })
+                .catch((err) => {
+                    console.log(err);
                 });
-
-                if (this.state.value in groups_by_name) {
-                    this.complete(this.state.value);
-                }
-            })
-            .catch((err) => {
-                console.log(err);
-            });
         } else {
             this.setState({
-                suggestions: []
+                suggestions: [],
             });
         }
     };
     onSuggestionsClearRequested = () => {
         this.setState({
-            suggestions: []
+            suggestions: [],
         });
     };
     //onBlur = (ev, {focusedSuggestion}) => {
-    onBlur = (ev, {highlightedSuggestion}) => {
+    onBlur = (ev, { highlightedSuggestion }) => {
         if (this.tabbed_out) {
             if (highlightedSuggestion) {
-                this.setState({value: getSuggestionValue(highlightedSuggestion)});
+                this.setState({ value: getSuggestionValue(highlightedSuggestion) });
                 this.complete(getSuggestionValue(highlightedSuggestion));
             }
         }
@@ -138,7 +140,7 @@ export class GroupAutocomplete extends React.PureComponent<GroupAutocompleteProp
             value,
             onBlur: this.onBlur,
             onKeyDown: this.onKeyDown,
-            onChange: this.onChange
+            onChange: this.onChange,
         };
 
         return (

@@ -53,11 +53,20 @@ export const RulesMatrix = (props) => (
 
                 <tr>
                     <th>Handicap Score Adjustment</th>
-                    <td>When Area scoring is in effect, White receives an additional point of compensation for each black Handicap stone after the first.</td>
+                    <td>
+                        When Area scoring is in effect, White receives an additional point of
+                        compensation for each black Handicap stone after the first.
+                    </td>
                     <td>None</td>
-                    <td>White receives an additional point of compensation for each black Handicap stone.</td>
+                    <td>
+                        White receives an additional point of compensation for each black Handicap
+                        stone.
+                    </td>
                     <td>None</td>
-                    <td>White receives an additional point of compensation for each black Handicap stone.</td>
+                    <td>
+                        White receives an additional point of compensation for each black Handicap
+                        stone.
+                    </td>
                     <td>None</td>
                 </tr>
                 <tr>
@@ -81,15 +90,23 @@ export const RulesMatrix = (props) => (
                 <tr>
                     <th>Super-Ko</th>
                     <td>Repetitions are forbidden</td>
-                    <td>Board repetition is allowed, if neither side is willing to break the loop the game is annulled</td>
+                    <td>
+                        Board repetition is allowed, if neither side is willing to break the loop
+                        the game is annulled
+                    </td>
                     <td>Repetitions are forbidden</td>
-                    <td>Board repetition is allowed, if neither side is willing to break the loop the game is annulled</td>
+                    <td>
+                        Board repetition is allowed, if neither side is willing to break the loop
+                        the game is annulled
+                    </td>
                     <td>Forces avoidance of repetition through special SST Ko Rule</td>
                     <td>Repetitions are forbidden</td>
                 </tr>
                 <tr>
                     <th>Ending the Game</th>
-                    <td>Either two or three consecutive passes, with White being the last to pass.</td>
+                    <td>
+                        Either two or three consecutive passes, with White being the last to pass.
+                    </td>
                     <td>Two passes</td>
                     <td>Two passes</td>
                     <td>Two passes</td>
@@ -134,7 +151,10 @@ export const RulesMatrix = (props) => (
                 </tr>
                 <tr>
                     <th>Scoring</th>
-                    <td>Area <strong>or</strong> Territory minus prisoners (Resulting winner is always the same in either case)</td>
+                    <td>
+                        Area <strong>or</strong> Territory minus prisoners (Resulting winner is
+                        always the same in either case)
+                    </td>
                     <td>Territory minus prisoners</td>
                     <td>Area</td>
                     <td>Territory minus prisoners</td>

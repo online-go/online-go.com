@@ -16,12 +16,11 @@
  */
 
 import * as React from "react";
-import {_} from 'translate';
-import {Modal, openModal} from "Modal";
+import { _ } from "translate";
+import { Modal, openModal } from "Modal";
 import * as data from "data";
 
-interface Events {
-}
+interface Events {}
 
 interface MergeReportLine {
     info?: string;
@@ -44,12 +43,17 @@ export class MergeReportModal extends Modal<Events, MergeReportModalProperties, 
             <div className="Modal MergeReportModal" ref="modal">
                 <div className="body">
                     {this.props.error && <h3>{this.props.error}</h3>}
-                    <div className='lines'>
+                    <div className="lines">
                         {this.props.report.map((e, idx) => {
-                            const cls = 'error' in e ? 'error' : ('warn' in e ? 'warn' : 'info');
+                            const cls = "error" in e ? "error" : "warn" in e ? "warn" : "info";
                             const msg = e[cls];
 
-                            return (<div key={idx} className={`line merge-${cls}`}><span className='fixed'>{idx + 1}</span>{msg}</div>);
+                            return (
+                                <div key={idx} className={`line merge-${cls}`}>
+                                    <span className="fixed">{idx + 1}</span>
+                                    {msg}
+                                </div>
+                            );
                         })}
                     </div>
                 </div>

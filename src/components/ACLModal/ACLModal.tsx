@@ -16,23 +16,20 @@
  */
 
 import * as React from "react";
-import {_} from "translate";
-import {post, get, del} from "requests";
-import {openModal, Modal} from "Modal";
-import {Player} from "Player";
-import {PlayerAutocomplete, PlayerAutocompleteRef} from "PlayerAutocomplete";
-import {GroupAutocomplete} from "GroupAutocomplete";
-import {errorAlerter, rulesText} from "misc";
+import { _ } from "translate";
+import { post, get, del } from "requests";
+import { openModal, Modal } from "Modal";
+import { Player } from "Player";
+import { PlayerAutocomplete, PlayerAutocompleteRef } from "PlayerAutocomplete";
+import { GroupAutocomplete } from "GroupAutocomplete";
+import { errorAlerter, rulesText } from "misc";
 
-interface Events {
-}
+interface Events {}
 
 type ACLModalProperties =
-    { game_id: number }
+    | { game_id: number }
     | { review_id: number }
-    | { puzzle_collection_id?: number }
-;
-
+    | { puzzle_collection_id?: number };
 
 export class ACLModal extends Modal<Events, ACLModalProperties, any> {
     player_autocomplete_ref = React.createRef<PlayerAutocompleteRef>();
@@ -48,13 +45,13 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
             selected_group: null,
         };
 
-        if ('game_id' in props) {
+        if ("game_id" in props) {
             this.url = `games/${props.game_id}/acl`;
             this.del_url = `games/acl/%%`;
-        } else if ('review_id' in props) {
+        } else if ("review_id" in props) {
             this.url = `reviews/${props.review_id}/acl`;
             this.del_url = `reviews/acl/%%`;
-        } else if ('puzzle_collection_id' in props) {
+        } else if ("puzzle_collection_id" in props) {
             this.url = `puzzles/collections/${props.puzzle_collection_id}/acl`;
             this.del_url = `puzzles/collections/acl/%%`;
         } else {
@@ -66,12 +63,11 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
         this.refresh();
     }
 
-    componentWillUnmount() {
-    }
+    componentWillUnmount() {}
     refresh = () => {
         get(this.url)
-        .then((acl) => this.setState({acl: acl}))
-        .catch(errorAlerter);
+            .then((acl) => this.setState({ acl: acl }))
+            .catch(errorAlerter);
     };
 
     removeACLEntry(obj) {
@@ -82,18 +78,21 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
                 new_acl.push(entry);
             }
         }
-        this.setState({acl: new_acl});
+        this.setState({ acl: new_acl });
 
         del(this.del_url, obj.id)
-        .then(this.refresh)
-        .catch((e) => { this.refresh(); errorAlerter(e); });
+            .then(this.refresh)
+            .catch((e) => {
+                this.refresh();
+                errorAlerter(e);
+            });
     }
 
     playerComplete = (user) => {
-        this.setState({selected_player: user});
+        this.setState({ selected_player: user });
     };
     groupComplete = (group) => {
-        this.setState({selected_group: group});
+        this.setState({ selected_group: group });
     };
 
     grantAccess = () => {
@@ -110,16 +109,13 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
         if (group_id) {
             obj.group_id = group_id;
         }
-        post(this.url, obj)
-        .then(this.refresh)
-        .catch(errorAlerter);
+        post(this.url, obj).then(this.refresh).catch(errorAlerter);
 
         this.setState({
             selected_player: null,
             selected_group: null,
         });
     };
-
 
     render() {
         return (
@@ -129,20 +125,38 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
                 </div>
                 <div className="body">
                     <div className="grant">
-                        <PlayerAutocomplete ref={this.player_autocomplete_ref} onComplete={this.playerComplete} />
-                        <GroupAutocomplete ref={this.group_autocomplete_ref} onComplete={this.groupComplete} />
-                        <button className="primary sm" onClick={this.grantAccess} >{_("Grant access")}</button>
+                        <PlayerAutocomplete
+                            ref={this.player_autocomplete_ref}
+                            onComplete={this.playerComplete}
+                        />
+                        <GroupAutocomplete
+                            ref={this.group_autocomplete_ref}
+                            onComplete={this.groupComplete}
+                        />
+                        <button className="primary sm" onClick={this.grantAccess}>
+                            {_("Grant access")}
+                        </button>
                     </div>
 
                     <div className="acl-entries">
                         {this.state.acl.map((obj, idx) => (
                             <div key={idx} className="acl-entry">
-                                <i className="fa fa-remove clickable" onClick={this.removeACLEntry.bind(this, obj)} />
+                                <i
+                                    className="fa fa-remove clickable"
+                                    onClick={this.removeACLEntry.bind(this, obj)}
+                                />
 
-                                {obj.group_id
-                                ? <a target="_blank" href={`/group/${obj.group_id}`} className="group">{obj.group_name}</a>
-                                : <Player user={obj.player_id} />
-                                }
+                                {obj.group_id ? (
+                                    <a
+                                        target="_blank"
+                                        href={`/group/${obj.group_id}`}
+                                        className="group"
+                                    >
+                                        {obj.group_name}
+                                    </a>
+                                ) : (
+                                    <Player user={obj.player_id} />
+                                )}
                             </div>
                         ))}
                     </div>

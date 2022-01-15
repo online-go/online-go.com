@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import * as data from './data';
-import * as preferences from './preferences';
-import { Howl, Howler } from 'howler';
-import { sprite_packs, SpritePack } from './sfx_sprites';
-import { current_language } from './translate';
+import * as data from "./data";
+import * as preferences from "./preferences";
+import { Howl, Howler } from "howler";
+import { sprite_packs, SpritePack } from "./sfx_sprites";
+import { current_language } from "./translate";
 
 Howler.autoUnlock = true;
 
@@ -73,10 +73,10 @@ const UnusedSounds = [
     "main_time",
     "entering_byoyomi",
     "entering_overtime",
-    "1_period_left",                   // we say "last period" instead
+    "1_period_left", // we say "last period" instead
 
-    "your_partner_has_disconnected",   // will use when we do rengo
-    "your_partner_has_reconnected",    // will use when we do rengo
+    "your_partner_has_disconnected", // will use when we do rengo
+    "your_partner_has_reconnected", // will use when we do rengo
 
     "draw",
     "time",
@@ -90,15 +90,67 @@ const UnusedSounds = [
     "your_move",
 ];
 
-
-
 const CountdownSounds = [
-    "0" , "1" , "2" , "3" , "4" , "5" , "6" , "7" , "8" , "9" ,
-    "10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
-    "20", "21", "22", "23", "24", "25", "26", "27", "28", "29",
-    "30", "31", "32", "33", "34", "35", "36", "37", "38", "39",
-    "40", "41", "42", "43", "44", "45", "46", "47", "48", "49",
-    "50", "51", "52", "53", "54", "55", "56", "57", "58", "59",
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21",
+    "22",
+    "23",
+    "24",
+    "25",
+    "26",
+    "27",
+    "28",
+    "29",
+    "30",
+    "31",
+    "32",
+    "33",
+    "34",
+    "35",
+    "36",
+    "37",
+    "38",
+    "39",
+    "40",
+    "41",
+    "42",
+    "43",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "50",
+    "51",
+    "52",
+    "53",
+    "54",
+    "55",
+    "56",
+    "57",
+    "58",
+    "59",
     "60",
 ] as const;
 
@@ -143,63 +195,74 @@ const EffectsSounds = [
     "tutorial-ping",
 ] as const;
 
-export type ValidSound = (typeof GameVoiceSounds | typeof UnusedSounds |typeof CountdownSounds | typeof StoneSounds | typeof EffectsSounds)[number];
+export type ValidSound = (
+    | typeof GameVoiceSounds
+    | typeof UnusedSounds
+    | typeof CountdownSounds
+    | typeof StoneSounds
+    | typeof EffectsSounds
+)[number];
 
-export type ValidSoundGroup = 'master' | 'game_voice' | 'countdown' | 'effects' | 'stones';
-export const SpriteGroups: {[id in ValidSoundGroup]: Array<SpritePack>} = {
-    'master': [],
+export type ValidSoundGroup = "master" | "game_voice" | "countdown" | "effects" | "stones";
+export const SpriteGroups: { [id in ValidSoundGroup]: Array<SpritePack> } = {
+    master: [],
 
-    'game_voice': Object.keys(sprite_packs).filter(pack_id => {
-        if (pack_id.indexOf('effects-2012') > 0) {
+    game_voice: Object.keys(sprite_packs)
+        .filter((pack_id) => {
+            if (pack_id.indexOf("effects-2012") > 0) {
+                return false;
+            }
+
+            for (const key in sprite_packs[pack_id].definitions) {
+                if (GameVoiceSounds.filter((s) => s === key).length > 0) {
+                    return true;
+                }
+
+                if (UnusedSounds.filter((s) => s === key).length > 0) {
+                    return true;
+                }
+            }
             return false;
-        }
+        })
+        .map((pack_id) => sprite_packs[pack_id]),
 
-        for (const key in sprite_packs[pack_id].definitions) {
-            if (GameVoiceSounds.filter(s => s === key).length > 0) {
-                return true;
+    countdown: Object.keys(sprite_packs)
+        .filter((pack_id) => {
+            if (pack_id.indexOf("effects-2012") > 0) {
+                return false;
             }
 
-            if (UnusedSounds.filter(s => s === key).length > 0) {
-                return true;
+            for (const key in sprite_packs[pack_id].definitions) {
+                if (CountdownSounds.filter((s) => s === key).length > 0) {
+                    return true;
+                }
             }
-        }
-        return false;
-    }).map(pack_id => sprite_packs[pack_id]),
-
-    'countdown': Object.keys(sprite_packs).filter(pack_id => {
-        if (pack_id.indexOf('effects-2012') > 0) {
             return false;
-        }
+        })
+        .map((pack_id) => sprite_packs[pack_id]),
 
-        for (const key in sprite_packs[pack_id].definitions) {
-
-            if (CountdownSounds.filter(s => s === key).length > 0) {
-                return true;
+    effects: Object.keys(sprite_packs)
+        .filter((pack_id) => {
+            for (const key in sprite_packs[pack_id].definitions) {
+                if (EffectsSounds.filter((s) => s === key).length > 0) {
+                    return true;
+                }
             }
-        }
-        return false;
-    }).map(pack_id => sprite_packs[pack_id]),
+            return false;
+        })
+        .map((pack_id) => sprite_packs[pack_id]),
 
-    'effects': Object.keys(sprite_packs).filter(pack_id => {
-        for (const key in sprite_packs[pack_id].definitions) {
-            if (EffectsSounds.filter(s => s === key).length > 0) {
-                return true;
+    stones: Object.keys(sprite_packs)
+        .filter((pack_id) => {
+            for (const key in sprite_packs[pack_id].definitions) {
+                if (StoneSounds.filter((s) => s === key).length > 0) {
+                    return true;
+                }
             }
-        }
-        return false;
-    }).map(pack_id => sprite_packs[pack_id]),
-
-    'stones': Object.keys(sprite_packs).filter(pack_id => {
-        for (const key in sprite_packs[pack_id].definitions) {
-            if (StoneSounds.filter(s => s === key).length > 0) {
-                return true;
-            }
-        }
-        return false;
-    }).map(pack_id => sprite_packs[pack_id]),
+            return false;
+        })
+        .map((pack_id) => sprite_packs[pack_id]),
 };
-
-
 
 export class SFXSprite {
     private id?: number;
@@ -218,7 +281,7 @@ export class SFXSprite {
     }
 
     get volume(): number {
-        const master_volume = sfx.getVolume('master');
+        const master_volume = sfx.getVolume("master");
 
         return this._volume * master_volume;
     }
@@ -232,14 +295,18 @@ export class SFXSprite {
 
     public play(repeat_breaker_ms?: number): void {
         if (this.volume < 0.01) {
-            console.log('*NOT* Playing sound bite:', this.name, 'volume was', this.volume);
+            console.log("*NOT* Playing sound bite:", this.name, "volume was", this.volume);
             return;
         }
 
         if (repeat_breaker_ms && Date.now() - this.last_time_played < repeat_breaker_ms) {
-            console.log('*NOT* Playing sound bite:', this.name,
-                'as it was already played within the last',
-                repeat_breaker_ms, 'ms');
+            console.log(
+                "*NOT* Playing sound bite:",
+                this.name,
+                "as it was already played within the last",
+                repeat_breaker_ms,
+                "ms",
+            );
             return;
         }
 
@@ -252,7 +319,7 @@ export class SFXSprite {
     }
     public then(fn: () => void): void {
         if (this.id) {
-            this.howl.once('end', fn, this.id);
+            this.howl.once("end", fn, this.id);
         }
     }
     public stop(): void {
@@ -266,7 +333,6 @@ export class SFXSprite {
         }
     }
 }
-
 
 export class SFXManager {
     private enabled: boolean = false;
@@ -284,8 +350,7 @@ export class SFXManager {
         [id: string]: SFXSprite;
     } = {};
 
-    constructor() {
-    }
+    constructor() {}
     public enable(): void {
         this.enabled = true;
         this.sync();
@@ -295,21 +360,21 @@ export class SFXManager {
             return this.enabled && this.synced;
         }
 
-        const vol = this.getVolume('master');
+        const vol = this.getVolume("master");
 
         if (vol) {
             this.synced = true;
-            this.load('stones');
-            this.load('countdown');
-            this.load('game_voice');
-            this.load('effects');
+            this.load("stones");
+            this.load("countdown");
+            this.load("game_voice");
+            this.load("effects");
         }
 
         return this.synced;
     }
     public hasSoundSample(sound_name: ValidSound): boolean {
         try {
-            const pack_id = this.getPackId('game_voice');
+            const pack_id = this.getPackId("game_voice");
             const sprite_pack = sprite_packs[pack_id];
             if (sprite_pack && sound_name in sprite_pack.definitions) {
                 return true;
@@ -340,8 +405,8 @@ export class SFXManager {
             } else {
                 try {
                     console.trace("Unknown sound to play: ", sound_name);
-                    if (sound_name !== 'error') {
-                        this.play('error');
+                    if (sound_name !== "error") {
+                        this.play("error");
                     }
                 } catch (e) {
                     //
@@ -378,26 +443,30 @@ export class SFXManager {
         */
 
         const sprite_pack = sprite_packs[pack_id];
-        const release_base: string = data.get('config.cdn_release');
+        const release_base: string = data.get("config.cdn_release");
         const howl = new Howl({
-            src: (window as any).safari !== undefined  // As of safari 14.1, their webm implementation cannot play our webm audio files correctly.
-            ?  [
-                `${release_base}/sound/${sprite_pack.filename_prefix}.mp3`,
-            ]
-            :  [
-                `${release_base}/sound/${sprite_pack.filename_prefix}.webm`,
-                `${release_base}/sound/${sprite_pack.filename_prefix}.mp3`,
-            ],
+            src:
+                (window as any).safari !== undefined // As of safari 14.1, their webm implementation cannot play our webm audio files correctly.
+                    ? [`${release_base}/sound/${sprite_pack.filename_prefix}.mp3`]
+                    : [
+                          `${release_base}/sound/${sprite_pack.filename_prefix}.webm`,
+                          `${release_base}/sound/${sprite_pack.filename_prefix}.mp3`,
+                      ],
             autoplay: false,
-            sprite: sprite_pack.definitions as {[id: string]: [number, number]},
+            sprite: sprite_pack.definitions as { [id: string]: [number, number] },
         });
         this.howls[group_name] = howl;
 
         const sound_list: Array<ValidSound> =
-            group_name === 'game_voice' ? ((GameVoiceSounds as any).concat(UnusedSounds as any)) as unknown as Array<ValidSound> :
-            group_name === 'countdown' ? CountdownSounds as unknown as Array<ValidSound> :
-            group_name === 'stones' ? StoneSounds as unknown as Array<ValidSound> :
-            EffectsSounds as unknown as Array<ValidSound>;
+            group_name === "game_voice"
+                ? ((GameVoiceSounds as any).concat(
+                      UnusedSounds as any,
+                  ) as unknown as Array<ValidSound>)
+                : group_name === "countdown"
+                ? (CountdownSounds as unknown as Array<ValidSound>)
+                : group_name === "stones"
+                ? (StoneSounds as unknown as Array<ValidSound>)
+                : (EffectsSounds as unknown as Array<ValidSound>);
         for (const sprite_name in sprite_pack.definitions) {
             if (sound_list.indexOf(sprite_name as ValidSound) >= 0) {
                 this.sprites[sprite_name] = new SFXSprite(howl, group_name, sprite_name);
@@ -406,7 +475,7 @@ export class SFXManager {
         }
 
         // For effects, everything also goes into effectSprites so we can fall back to them on demand or error
-        if (group_name === 'effects') {
+        if (group_name === "effects") {
             for (const sprite_name in sprite_pack.definitions) {
                 this.effectSprites[sprite_name] = new SFXSprite(howl, group_name, sprite_name);
                 this.effectSprites[sprite_name].volume = this.getVolume(group_name);
@@ -414,10 +483,14 @@ export class SFXManager {
         }
 
         try {
-            howl.on('unlock', () => {
-                console.info("Audio group ", group_name, " unlocked successfully, sounds should now work");
+            howl.on("unlock", () => {
+                console.info(
+                    "Audio group ",
+                    group_name,
+                    " unlocked successfully, sounds should now work",
+                );
             });
-            const silence = new SFXSprite(howl, group_name, 'silence');
+            const silence = new SFXSprite(howl, group_name, "silence");
             silence.play();
             silence.then(() => {
                 console.debug("Successfully played silence from ", group_name);
@@ -427,18 +500,18 @@ export class SFXManager {
         }
     }
     public getPackId(group_name: ValidSoundGroup): string {
-        const pack_id = data.get(`sound.pack.${group_name}`) || 'auto';
+        const pack_id = data.get(`sound.pack.${group_name}`) || "auto";
 
         if (pack_id in sprite_packs) {
             return pack_id;
         }
 
-        if (group_name === 'stones') {
-            return 'zz-un-floor-goban';
+        if (group_name === "stones") {
+            return "zz-un-floor-goban";
         }
 
-        if (group_name === 'effects') {
-            return 'zz-un-effects';
+        if (group_name === "effects") {
+            return "zz-un-effects";
         }
 
         // Otherwise, we're dealing with game voice or clock countdown - select
@@ -446,7 +519,7 @@ export class SFXManager {
         let lang = current_language;
         const to_check: Array<string> = [];
 
-        lang = lang.replace(/-[a-zA-Z].*/, '');
+        lang = lang.replace(/-[a-zA-Z].*/, "");
 
         try {
             for (let navlang of navigator.languages) {
@@ -462,20 +535,20 @@ export class SFXManager {
         to_check.push(lang);
 
         for (const l of to_check) {
-            if (l.indexOf('en') === 0) {
+            if (l.indexOf("en") === 0) {
                 /* Default to Claire, our old "Amy" is a valid option but we shouldn't be using
                  * it by default even for US players because it doesn't have most numbers available */
-                if (group_name === 'countdown' && 'en-gb-claire-numbers' in sprite_packs) {
-                    return 'en-gb-claire-numbers';
+                if (group_name === "countdown" && "en-gb-claire-numbers" in sprite_packs) {
+                    return "en-gb-claire-numbers";
                 }
 
-                if (group_name === 'game_voice' && 'en-gb-claire-phrases' in sprite_packs) {
-                    return 'en-gb-claire-phrases';
+                if (group_name === "game_voice" && "en-gb-claire-phrases" in sprite_packs) {
+                    return "en-gb-claire-phrases";
                 }
             }
 
             for (const pack of SpriteGroups[group_name]) {
-                const lang_code = pack.language + '-' + pack.country;
+                const lang_code = pack.language + "-" + pack.country;
                 //console.log(lang_code, l);
                 if (lang_code.indexOf(l) >= 0) {
                     return pack.pack_id;
@@ -483,7 +556,7 @@ export class SFXManager {
             }
         }
 
-        return 'zz-un-effects';
+        return "zz-un-effects";
     }
     public setPackId(group_name: ValidSoundGroup, pack_id: string): void {
         data.set(`sound.pack.${group_name}`, pack_id);
@@ -500,7 +573,7 @@ export class SFXManager {
             }
         }
 
-        if (group_name === 'effects') {
+        if (group_name === "effects") {
             for (const sprite_name in this.effectSprites) {
                 this.effectSprites[sprite_name].volume = volume;
             }
@@ -520,13 +593,19 @@ export class SFXManager {
         return data.get(`sound.voice-enabled.${sprite_name}`, true);
     }
 
-    public playStonePlacementSound(x: number, y: number, width: number, height: number, color: 'black' | 'white'): void {
+    public playStonePlacementSound(
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        color: "black" | "white",
+    ): void {
         try {
-            let pan = ((x / Math.max(1, (width - 1))) - 0.5) * 0.3;
+            let pan = (x / Math.max(1, width - 1) - 0.5) * 0.3;
             const rnum = (Math.round(Math.random() * 100000) % 5) + 1;
-            const stone_sound: ValidSound = (color + '-' + rnum) as ValidSound;
+            const stone_sound: ValidSound = (color + "-" + rnum) as ValidSound;
 
-            if (!preferences.get('sound.positional-stone-placement-effect')) {
+            if (!preferences.get("sound.positional-stone-placement-effect")) {
                 pan = 0;
             }
 
@@ -540,7 +619,7 @@ export class SFXManager {
         }
 
         try {
-            if (preferences.get('sound.vibrate-on-stone-placement') && navigator.vibrate) {
+            if (preferences.get("sound.vibrate-on-stone-placement") && navigator.vibrate) {
                 navigator.vibrate(30);
             }
         } catch (e) {
@@ -549,14 +628,13 @@ export class SFXManager {
     }
 }
 
-
-export { sprite_packs } from './sfx_sprites';
+export { sprite_packs } from "./sfx_sprites";
 export const sfx = new SFXManager();
-(window as any)['sfx'] = sfx;
+(window as any)["sfx"] = sfx;
 
 const I = setInterval(() => {
     /* postpone downloading stuff till more important things have begun loading */
-    const release_base: string = data.get('config.cdn_release');
+    const release_base: string = data.get("config.cdn_release");
 
     if (release_base) {
         clearInterval(I);
@@ -564,10 +642,9 @@ const I = setInterval(() => {
     }
 }, 100);
 
-
 /* Check and warn if we don't have an effect mapping for every sound voice sound */
-window['sprite_packs'] = sprite_packs;
-const effects = sprite_packs['zz-un-effects'];
+window["sprite_packs"] = sprite_packs;
+const effects = sprite_packs["zz-un-effects"];
 for (const pack of [GameVoiceSounds, CountdownSounds, StoneSounds, EffectsSounds]) {
     for (const name of pack) {
         if (!(name in effects.definitions)) {
@@ -576,11 +653,15 @@ for (const pack of [GameVoiceSounds, CountdownSounds, StoneSounds, EffectsSounds
     }
 }
 
-navigator.vibrate = navigator.vibrate || (navigator as any).webkitVibrate || (navigator as any).mozVibrate || (navigator as any).msVibrate;
+navigator.vibrate =
+    navigator.vibrate ||
+    (navigator as any).webkitVibrate ||
+    (navigator as any).mozVibrate ||
+    (navigator as any).msVibrate;
 
-data.setDefault('sound.enabled.disconnected', false);
-data.setDefault('sound.enabled.reconnected', false);
-data.setDefault('sound.enabled.player_disconnected', false);
-data.setDefault('sound.enabled.player_reconnected', false);
-data.setDefault('sound.enabled.your_opponent_has_disconnected', false);
-data.setDefault('sound.enabled.your_opponent_has_reconnected', false);
+data.setDefault("sound.enabled.disconnected", false);
+data.setDefault("sound.enabled.reconnected", false);
+data.setDefault("sound.enabled.player_disconnected", false);
+data.setDefault("sound.enabled.player_reconnected", false);
+data.setDefault("sound.enabled.your_opponent_has_disconnected", false);
+data.setDefault("sound.enabled.your_opponent_has_reconnected", false);

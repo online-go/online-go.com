@@ -16,11 +16,9 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import * as data from "data";
 import * as moment from "moment";
-
-
 
 export class TournamentIndicator extends React.PureComponent<{}, any> {
     update_interval = null;
@@ -28,12 +26,12 @@ export class TournamentIndicator extends React.PureComponent<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
-            tournament: null
+            tournament: null,
         };
     }
     UNSAFE_componentWillMount() {
         data.watch("active-tournament", (tournament) => {
-            this.setState({tournament: tournament});
+            this.setState({ tournament: tournament });
             if (this.update_interval) {
                 clearInterval(this.update_interval);
             }
@@ -57,16 +55,21 @@ export class TournamentIndicator extends React.PureComponent<{}, any> {
         }
 
         const m = Math.floor(t / 60);
-        let s: any = Math.floor(t - (m * 60));
+        let s: any = Math.floor(t - m * 60);
         if (s < 10) {
             s = "0" + s;
         }
 
         return (
-            <Link to={this.state.tournament.link} className="TournamentIndicator"
-                title={this.state.tournament.text} >
-                <i className="fa fa-trophy"/>
-                <span className="time">{m}:{s}</span>
+            <Link
+                to={this.state.tournament.link}
+                className="TournamentIndicator"
+                title={this.state.tournament.text}
+            >
+                <i className="fa fa-trophy" />
+                <span className="time">
+                    {m}:{s}
+                </span>
             </Link>
         );
     }

@@ -17,14 +17,13 @@
 
 import * as React from "react";
 import * as data from "data";
-import {_, pgettext, interpolate} from "translate";
+import { _, pgettext, interpolate } from "translate";
 import { useState, useEffect, useCallback } from "react";
 
 //import {post, get} from "requests";
 //import {errorAlerter} from "misc";
 //import {Chat} from "Chat";
 import { ChatChannelList, ChatLog, ChatUsersList } from "Chat";
-
 
 interface ChatViewProperties {
     match: {
@@ -34,34 +33,42 @@ interface ChatViewProperties {
     };
 }
 
-
 export function ChatView(props: ChatViewProperties): JSX.Element {
     const channel = props.match.params.channel;
 
-    data.set('chat.active_channel', channel);
+    data.set("chat.active_channel", channel);
 
-    const [showing_channels, set_showing_channels]: [boolean, (tf: boolean) => void] = useState(false as boolean);
-    const [showing_users, set_showing_users]: [boolean, (tf: boolean) => void] = useState(false as boolean);
+    const [showing_channels, set_showing_channels]: [boolean, (tf: boolean) => void] = useState(
+        false as boolean,
+    );
+    const [showing_users, set_showing_users]: [boolean, (tf: boolean) => void] = useState(
+        false as boolean,
+    );
 
     useEffect(() => {
         set_showing_channels(false);
         set_showing_users(false);
     }, [channel]);
 
-    const onShowChannels = useCallback((tf: boolean) => {
-        if (tf !== showing_channels) {
-            set_showing_channels(tf);
-            set_showing_users(false);
-        }
-    }, [channel, showing_channels]);
+    const onShowChannels = useCallback(
+        (tf: boolean) => {
+            if (tf !== showing_channels) {
+                set_showing_channels(tf);
+                set_showing_users(false);
+            }
+        },
+        [channel, showing_channels],
+    );
 
-    const onShowUsers = useCallback((tf: boolean) => {
-        if (tf !== showing_users) {
-            set_showing_users(tf);
-            set_showing_channels(false);
-        }
-    }, [channel, showing_users]);
-
+    const onShowUsers = useCallback(
+        (tf: boolean) => {
+            if (tf !== showing_users) {
+                set_showing_users(tf);
+                set_showing_channels(false);
+            }
+        },
+        [channel, showing_users],
+    );
 
     const subprops = {
         channel: channel,
@@ -72,9 +79,15 @@ export function ChatView(props: ChatViewProperties): JSX.Element {
     };
 
     return (
-        <div className={'ChatView ' + (showing_channels ? ' show-channels' : '') + (showing_users ? ' show-users' : '')} >
+        <div
+            className={
+                "ChatView " +
+                (showing_channels ? " show-channels" : "") +
+                (showing_users ? " show-users" : "")
+            }
+        >
             <ChatChannelList {...subprops} />
-            <ChatLog  autoFocus={true} updateTitle={true} {...subprops} />
+            <ChatLog autoFocus={true} updateTitle={true} {...subprops} />
             <ChatUsersList {...subprops} />
         </div>
     );

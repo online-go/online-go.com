@@ -20,14 +20,14 @@ import device from "device";
 import * as preferences from "preferences";
 import * as React from "react";
 import * as moment from "moment";
-import {LineText} from "misc-ui";
-import {Link} from "react-router-dom";
-import {_, ngettext, pgettext, interpolate} from "translate";
-import {Player} from "Player";
-import {profanity_filter} from "profanity_filter";
-import {Game} from './Game';
-import {ChatUserList, ChatUserCount} from "ChatUserList";
-import {TabCompleteInput} from "TabCompleteInput";
+import { LineText } from "misc-ui";
+import { Link } from "react-router-dom";
+import { _, ngettext, pgettext, interpolate } from "translate";
+import { Player } from "Player";
+import { profanity_filter } from "profanity_filter";
+import { Game } from "./Game";
+import { ChatUserList, ChatUserCount } from "ChatUserList";
+import { TabCompleteInput } from "TabCompleteInput";
 import { chat_markup } from "components/Chat";
 
 let active_game_view: Game = null;
@@ -51,7 +51,7 @@ interface GameChatLineProperties {
 }
 
 interface GameChatState {
-    chat_log: 'main'|'malkovich'|'moderator';
+    chat_log: "main" | "malkovich" | "moderator";
     show_player_list: boolean;
     qc_visible: boolean;
     qc_editing: boolean;
@@ -106,12 +106,16 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
     }
 
     updateScrollPosition() {
-        const tf = this.ref_chat_log.scrollHeight - this.ref_chat_log.scrollTop - 10 < this.ref_chat_log.offsetHeight;
+        const tf =
+            this.ref_chat_log.scrollHeight - this.ref_chat_log.scrollTop - 10 <
+            this.ref_chat_log.offsetHeight;
         if (tf !== this.scrolled_to_bottom) {
-            this.scrolled_to_bottom  = tf;
+            this.scrolled_to_bottom = tf;
             this.ref_chat_log.className = "chat-log " + (tf ? "autoscrolling" : "");
         }
-        this.scrolled_to_bottom = this.ref_chat_log.scrollHeight - this.ref_chat_log.scrollTop - 10 < this.ref_chat_log.offsetHeight;
+        this.scrolled_to_bottom =
+            this.ref_chat_log.scrollHeight - this.ref_chat_log.scrollTop - 10 <
+            this.ref_chat_log.offsetHeight;
     }
     autoscroll() {
         if (this.scrolled_to_bottom) {
@@ -128,7 +132,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
         this.setState({
             chat_log: new_chat_log,
             qc_visible: false,
-            qc_editing: false
+            qc_editing: false,
         });
         this.props.onChatLogChanged(new_chat_log);
     };
@@ -137,17 +141,16 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
         this.setState({
             chat_log: new_chat_log,
             qc_visible: false,
-            qc_editing: false
+            qc_editing: false,
         });
         this.props.onChatLogChanged(new_chat_log);
     };
     togglePlayerList = () => {
         this.setState({
-            show_player_list: !this.state.show_player_list
+            show_player_list: !this.state.show_player_list,
         });
     };
-    togglePlayerListSortOrder = () => {
-    };
+    togglePlayerListSortOrder = () => {};
 
     sendQuickChat = (msg: string) => {
         this.props.gameview.goban.sendChat(msg, this.state.chat_log);
@@ -156,20 +159,20 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
 
     showQCOptions = () => {
         this.setState({
-            qc_visible: true
+            qc_visible: true,
         });
     };
 
     hideQCOptions = () => {
         this.setState({
             qc_visible: false,
-            qc_editing: false
+            qc_editing: false,
         });
     };
 
     startEdit = () => {
         this.setState({
-            qc_editing: true
+            qc_editing: true,
         });
     };
 
@@ -185,25 +188,43 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
     finishEdit = () => {
         this.qc_editableMsgs = null;
         this.setState({
-            qc_editing: false
+            qc_editing: false,
         });
     };
 
     render() {
         let last_line = null;
         const user = data.get("user");
-        const channel = this.props.gameview.game_id ? `game-${this.props.gameview.game_id}` : `review-${this.props.gameview.review_id}`;
+        const channel = this.props.gameview.game_id
+            ? `game-${this.props.gameview.game_id}`
+            : `review-${this.props.gameview.review_id}`;
 
         return (
             <div className="chat-container">
-                <div className={"log-player-container" + (this.state.show_player_list ? " show-player-list" : "")}>
+                <div
+                    className={
+                        "log-player-container" +
+                        (this.state.show_player_list ? " show-player-list" : "")
+                    }
+                >
                     <div className="chat-log-container">
-                        <div ref={el => this.ref_chat_log = el} className="chat-log autoscrolling" onScroll={this.updateScrollPosition}>
+                        <div
+                            ref={(el) => (this.ref_chat_log = el)}
+                            className="chat-log autoscrolling"
+                            onScroll={this.updateScrollPosition}
+                        >
                             {this.props.chatlog.map((line, idx) => {
                                 const ll = last_line;
                                 last_line = line;
                                 //jreturn <GameChatLine key={line.chat_id} line={line} lastline={ll} gameview={this.props.gameview} />
-                                return <GameChatLine key={line.chat_id} line={line} lastline={ll} gameview={this.props.gameview} />;
+                                return (
+                                    <GameChatLine
+                                        key={line.chat_id}
+                                        line={line}
+                                        lastline={ll}
+                                        gameview={this.props.gameview}
+                                    />
+                                );
                             })}
 
                             {/*
@@ -212,47 +233,80 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
                             */}
                         </div>
                     </div>
-                    {(this.state.show_player_list || null) &&
-                        <ChatUserList channel={channel} />
-                    }
+                    {(this.state.show_player_list || null) && <ChatUserList channel={channel} />}
                 </div>
                 {this.renderQC(user)}
                 <div className="chat-input-container input-group">
-                    {((this.props.userIsPlayer && data.get('user').email_validated) || null) &&
+                    {((this.props.userIsPlayer && data.get("user").email_validated) || null) && (
                         <button
                             className={`chat-input-chat-log-toggle sm ${this.state.chat_log}`}
                             onClick={this.toggleChatLog}
                         >
-                            {this.state.chat_log === "malkovich" ? _("Malkovich") : _("Chat")} <i className={"fa " + (this.state.chat_log === "malkovich" ? "fa-caret-up" : "fa-caret-down")}/>
+                            {this.state.chat_log === "malkovich" ? _("Malkovich") : _("Chat")}{" "}
+                            <i
+                                className={
+                                    "fa " +
+                                    (this.state.chat_log === "malkovich"
+                                        ? "fa-caret-up"
+                                        : "fa-caret-down")
+                                }
+                            />
                         </button>
-                    }
-                    {((!this.props.userIsPlayer && data.get('user').is_moderator) || null) &&
+                    )}
+                    {((!this.props.userIsPlayer && data.get("user").is_moderator) || null) && (
                         <button
                             className={`chat-input-chat-log-toggle sm ${this.state.chat_log}`}
                             onClick={this.toggleModeratorChatLog}
                         >
-                            {this.state.chat_log === "moderator" ? _("Moderator") : _("Chat")} <i className={"fa " + (this.state.chat_log === "moderator" ? "fa-caret-up" : "fa-caret-down")}/>
+                            {this.state.chat_log === "moderator" ? _("Moderator") : _("Chat")}{" "}
+                            <i
+                                className={
+                                    "fa " +
+                                    (this.state.chat_log === "moderator"
+                                        ? "fa-caret-up"
+                                        : "fa-caret-down")
+                                }
+                            />
                         </button>
-                    }
+                    )}
                     <TabCompleteInput
                         ref={(elt) => 0}
                         className={`chat-input  ${this.state.chat_log}`}
-                        disabled={user.anonymous || !data.get('user').email_validated}
-                        placeholder={user.anonymous
-                            ? _("Sign in to chat")
-                            : !data.get('user').email_validated ? _("Chat will be enabled once your email address has been validated")
-                                : (this.state.chat_log === "malkovich"
-                                    ? pgettext("Malkovich logs are only visible after the game has ended", "Visible after the game")
-                                    : pgettext("This is the placeholder text for the chat input field in games, chat channels, and private messages", interpolate("Message {{who}}", {who: "..."}))
+                        disabled={user.anonymous || !data.get("user").email_validated}
+                        placeholder={
+                            user.anonymous
+                                ? _("Sign in to chat")
+                                : !data.get("user").email_validated
+                                ? _(
+                                      "Chat will be enabled once your email address has been validated",
+                                  )
+                                : this.state.chat_log === "malkovich"
+                                ? pgettext(
+                                      "Malkovich logs are only visible after the game has ended",
+                                      "Visible after the game",
+                                  )
+                                : pgettext(
+                                      "This is the placeholder text for the chat input field in games, chat channels, and private messages",
+                                      interpolate("Message {{who}}", { who: "..." }),
                                   )
                         }
                         onKeyPress={this.onKeyPress}
                         onFocus={this.onFocus}
                     />
-                    {this.props.userIsPlayer && user.email_validated && this.props.gameview.game_id && this.state.chat_log === "main"
-                        ? <i className={"qc-toggle fa " + (this.state.qc_visible ? "fa-caret-down" : "fa-caret-up")} onClick={this.state.qc_visible ? this.hideQCOptions : this.showQCOptions}/>
-                        : null
-                    }
+                    {this.props.userIsPlayer &&
+                    user.email_validated &&
+                    this.props.gameview.game_id &&
+                    this.state.chat_log === "main" ? (
+                        <i
+                            className={
+                                "qc-toggle fa " +
+                                (this.state.qc_visible ? "fa-caret-down" : "fa-caret-up")
+                            }
+                            onClick={
+                                this.state.qc_visible ? this.hideQCOptions : this.showQCOptions
+                            }
+                        />
+                    ) : null}
                     <ChatUserCount
                         chat={this}
                         active={this.state.show_player_list}
@@ -275,7 +329,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
                         _("Have fun") + ".",
                         _("Sorry - misclick") + ".",
                         _("Good game") + ".",
-                        _("Thanks for the game") + "."
+                        _("Thanks for the game") + ".",
                     ];
                     localStorage.setItem("ogs.qc.messages", JSON.stringify(user.qc_phrases));
                 } else {
@@ -283,52 +337,71 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
                 }
             }
 
-            const lis = user.qc_phrases.map((msg, index) =>
+            const lis = user.qc_phrases.map((msg, index) => (
                 <li
                     className="qc-option"
                     key={index}
                     contentEditable={this.state.qc_editing}
                     onKeyPress={this.onKeyPress}
-                    ref={this.state.qc_editing
+                    ref={
+                        this.state.qc_editing
                             ? (input) => {
-                                this.qc_editableMsgs = (index === 0 ? [] : this.qc_editableMsgs);
-                                this.qc_editableMsgs.push(input);
-                            }
+                                  this.qc_editableMsgs = index === 0 ? [] : this.qc_editableMsgs;
+                                  this.qc_editableMsgs.push(input);
+                              }
                             : null
                     }
                 >
-                    {
-                        this.state.qc_editing
-                        ? msg
-                        : (<a onClick={() => {this.sendQuickChat(msg); }} >{msg}</a>)
-                    }
+                    {this.state.qc_editing ? (
+                        msg
+                    ) : (
+                        <a
+                            onClick={() => {
+                                this.sendQuickChat(msg);
+                            }}
+                        >
+                            {msg}
+                        </a>
+                    )}
                 </li>
-            );
+            ));
 
-            quick_chat =
-            <div className="qc-option-list-container">
-                {this.state.qc_editing
-                    ? (<span className="qc-edit">
-                        <button onClick={() => {this.saveEdit(); }} className='xs edit-button'><i className={"fa fa-save"}/> {_("Save")}</button>
-                        <button onClick={this.finishEdit} className='xs edit-button'><i className={"fa fa-times-circle"}/> {_("Cancel")}</button>
-                    </span>)
-                    : (<span className="qc-edit">
-                        <button onClick={this.startEdit} className='xs edit-button'><i className={"fa fa-pencil"}/> {_("Edit")}</button>
-                    </span>)
-                }
-                <ul>{lis}</ul>
-            </div>;
+            quick_chat = (
+                <div className="qc-option-list-container">
+                    {this.state.qc_editing ? (
+                        <span className="qc-edit">
+                            <button
+                                onClick={() => {
+                                    this.saveEdit();
+                                }}
+                                className="xs edit-button"
+                            >
+                                <i className={"fa fa-save"} /> {_("Save")}
+                            </button>
+                            <button onClick={this.finishEdit} className="xs edit-button">
+                                <i className={"fa fa-times-circle"} /> {_("Cancel")}
+                            </button>
+                        </span>
+                    ) : (
+                        <span className="qc-edit">
+                            <button onClick={this.startEdit} className="xs edit-button">
+                                <i className={"fa fa-pencil"} /> {_("Edit")}
+                            </button>
+                        </span>
+                    )}
+                    <ul>{lis}</ul>
+                </div>
+            );
         }
         return quick_chat;
     };
 }
 
-
 function parsePosition(position: string) {
     if (!active_game_view || !position) {
         return {
             i: -1,
-            j: -1
+            j: -1,
         };
     }
     const goban = active_game_view.goban;
@@ -343,10 +416,12 @@ function parsePosition(position: string) {
         i = -1;
         j = -1;
     }
-    return {i: i, j: j};
+    return { i: i, j: j };
 }
 function highlight_position(event) {
-    if (!active_game_view) { return; }
+    if (!active_game_view) {
+        return;
+    }
 
     const pos = parsePosition(event.target.innerText);
     if (pos.i >= 0) {
@@ -355,7 +430,9 @@ function highlight_position(event) {
     }
 }
 function unhighlight_position(event) {
-    if (!active_game_view) { return; }
+    if (!active_game_view) {
+        return;
+    }
 
     const pos = parsePosition(event.target.innerText);
     if (pos.i >= 0) {
@@ -371,17 +448,28 @@ export class GameChatLine extends React.Component<GameChatLineProperties> {
         super(props);
     }
 
-    markup(body): JSX.Element|Array<JSX.Element> {
-        if (typeof(body) === "string") {
+    markup(body): JSX.Element | Array<JSX.Element> {
+        if (typeof body === "string") {
             return chat_markup(body, [
-                {split: /(\b[a-zA-Z][0-9]{1,2}\b)/mg, pattern: /\b([a-zA-Z][0-9]{1,2})\b/mg,
+                {
+                    split: /(\b[a-zA-Z][0-9]{1,2}\b)/gm,
+                    pattern: /\b([a-zA-Z][0-9]{1,2})\b/gm,
                     replacement: (m, idx) => {
                         const pos = m[1];
                         if (parsePosition(pos).i < 0) {
-                            return (<span key={idx}>{m[1]}</span>);
+                            return <span key={idx}>{m[1]}</span>;
                         }
-                        return (<span key={idx} className="position" onMouseEnter={highlight_position} onMouseLeave={unhighlight_position}>{m[1]}</span>);
-                    }
+                        return (
+                            <span
+                                key={idx}
+                                className="position"
+                                onMouseEnter={highlight_position}
+                                onMouseLeave={unhighlight_position}
+                            >
+                                {m[1]}
+                            </span>
+                        );
+                    },
                 },
             ]);
         } else {
@@ -391,11 +479,12 @@ export class GameChatLine extends React.Component<GameChatLineProperties> {
                         if (!preferences.get("variations-in-chat-enabled")) {
                             return (
                                 <span>
-                                    {_("Variation") + ": " + (body.name ? profanity_filter(body.name) : "<error>")}
+                                    {_("Variation") +
+                                        ": " +
+                                        (body.name ? profanity_filter(body.name) : "<error>")}
                                 </span>
                             );
                         }
-
 
                         const gameview = this.props.gameview;
                         const goban = gameview.goban;
@@ -403,9 +492,14 @@ export class GameChatLine extends React.Component<GameChatLineProperties> {
                         let stashed_pen_marks = goban.pen_marks;
                         let orig_marks = null;
 
-                        const v = parseInt("" + (body.name ? body.name.replace(/^[^0-9]*/, "") : 0));
+                        const v = parseInt(
+                            "" + (body.name ? body.name.replace(/^[^0-9]*/, "") : 0),
+                        );
                         if (v) {
-                            this.props.gameview.last_variation_number = Math.max(v, this.props.gameview.last_variation_number);
+                            this.props.gameview.last_variation_number = Math.max(
+                                v,
+                                this.props.gameview.last_variation_number,
+                            );
                         }
 
                         const onLeave = () => {
@@ -425,7 +519,10 @@ export class GameChatLine extends React.Component<GameChatLineProperties> {
                         const onEnter = () => {
                             this.props.gameview.in_pushed_analysis = true;
                             this.props.gameview.leave_pushed_analysis = onLeave;
-                            const turn = "branch_move" in body ? body.branch_move - 1 : body.from; /* branch_move exists in old games, and was +1 from our current counting */
+                            const turn =
+                                "branch_move" in body
+                                    ? body.branch_move - 1
+                                    : body.from; /* branch_move exists in old games, and was +1 from our current counting */
                             const moves = body.moves;
 
                             orig_move = goban.engine.cur_move;
@@ -461,17 +558,24 @@ export class GameChatLine extends React.Component<GameChatLineProperties> {
                         };
 
                         return (
-                            <span className="variation"
+                            <span
+                                className="variation"
                                 onMouseEnter={onEnter}
                                 onMouseLeave={onLeave}
                                 onClick={onClick}
                             >
-                                {_("Variation") + ": " + (body.name ? profanity_filter(body.name) : "<error>")}
+                                {_("Variation") +
+                                    ": " +
+                                    (body.name ? profanity_filter(body.name) : "<error>")}
                             </span>
                         );
                     }
                     case "review":
-                        return <Link to={`/review/${body.review_id}`}>{interpolate(_("Review: ##{{id}}"), {"id": body.review_id})}</Link>;
+                        return (
+                            <Link to={`/review/${body.review_id}`}>
+                                {interpolate(_("Review: ##{{id}}"), { id: body.review_id })}
+                            </Link>
+                        );
                     default:
                         return <span>[error loading chat line]</span>;
                 }
@@ -524,7 +628,6 @@ export class GameChatLine extends React.Component<GameChatLineProperties> {
             //last_move_number[type] = line.from;
             //last_moves[type] = line.moves;
         }
-
     };
 
     render() {
@@ -532,8 +635,8 @@ export class GameChatLine extends React.Component<GameChatLineProperties> {
         const lastline = this.props.lastline;
         const ts = line.date ? new Date(line.date * 1000) : null;
         let third_person = "";
-        if (typeof(line.body) === "string" && line.body.substr(0, 4) === "/me ") {
-            third_person = (line.body.substr(0, 4) === "/me ") ? "third-person" : "";
+        if (typeof line.body === "string" && line.body.substr(0, 4) === "/me ") {
+            third_person = line.body.substr(0, 4) === "/me " ? "third-person" : "";
             line.body = line.body.substr(4);
         }
         const msg = this.markup(line.body);
@@ -542,36 +645,67 @@ export class GameChatLine extends React.Component<GameChatLineProperties> {
 
         if (!lastline || (line.date && lastline.date)) {
             if (line.date) {
-                if (!lastline || moment(new Date(line.date * 1000)).format("YYYY-MM-DD") !== moment(new Date(lastline.date * 1000)).format("YYYY-MM-DD")) {
-                    show_date = <div className="date">{moment(new Date(line.date * 1000)).format("LL")}</div>;
+                if (
+                    !lastline ||
+                    moment(new Date(line.date * 1000)).format("YYYY-MM-DD") !==
+                        moment(new Date(lastline.date * 1000)).format("YYYY-MM-DD")
+                ) {
+                    show_date = (
+                        <div className="date">
+                            {moment(new Date(line.date * 1000)).format("LL")}
+                        </div>
+                    );
                 }
             }
         }
 
-        if (!lastline || (line.move_number !== lastline.move_number) || (line.from !== lastline.from) || (line.moves !== lastline.moves)) {
-            move_number = <LineText className="move-number" onClick={this.jumpToMove}>Move {
-                ("move_number" in line
-                    ? line.move_number
-                    : ("moves" in line ? (line.from + (line.moves.length ? " + " + line.moves.length / 2 : "")) : "")
-                )
-            }</LineText>;
+        if (
+            !lastline ||
+            line.move_number !== lastline.move_number ||
+            line.from !== lastline.from ||
+            line.moves !== lastline.moves
+        ) {
+            move_number = (
+                <LineText className="move-number" onClick={this.jumpToMove}>
+                    Move{" "}
+                    {"move_number" in line
+                        ? line.move_number
+                        : "moves" in line
+                        ? line.from + (line.moves.length ? " + " + line.moves.length / 2 : "")
+                        : ""}
+                </LineText>
+            );
         }
 
-        let chat_id = this.props.gameview.review_id ? ('r.' + this.props.gameview.review_id) : ('g.' + this.props.gameview.game_id);
-        chat_id += '.' + line.channel + '.' + line.chat_id;
+        let chat_id = this.props.gameview.review_id
+            ? "r." + this.props.gameview.review_id
+            : "g." + this.props.gameview.game_id;
+        chat_id += "." + line.channel + "." + line.chat_id;
 
         return (
             <div className={`chat-line-container`} data-chat-id={chat_id}>
                 {move_number}
                 {show_date}
-                <div className={`chat-line ${line.channel} ${third_person} chat-user-${line.player_id}`}>
-                    {(ts) && <span className="timestamp">[{ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes()}] </span>}
+                <div
+                    className={`chat-line ${line.channel} ${third_person} chat-user-${line.player_id}`}
+                >
+                    {ts && (
+                        <span className="timestamp">
+                            [
+                            {ts.getHours() +
+                                ":" +
+                                (ts.getMinutes() < 10 ? "0" : "") +
+                                ts.getMinutes()}
+                            ]{" "}
+                        </span>
+                    )}
                     {(line.player_id || null) && <Player user={line} flare disableCacheUpdate />}
-                    <span className="body">{third_person ? " " : ": "}{msg}</span>
+                    <span className="body">
+                        {third_person ? " " : ": "}
+                        {msg}
+                    </span>
                 </div>
             </div>
         );
     }
 }
-
-

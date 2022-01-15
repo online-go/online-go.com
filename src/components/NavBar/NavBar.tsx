@@ -16,31 +16,38 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router-dom";
-import {browserHistory} from "ogsHistory";
+import { Link } from "react-router-dom";
+import { browserHistory } from "ogsHistory";
 
 import * as data from "data";
 
-import {_, current_language, languages} from "translate";
-import {PlayerIcon} from "PlayerIcon";
-import {post, get, abort_requests_in_flight} from "requests";
+import { _, current_language, languages } from "translate";
+import { PlayerIcon } from "PlayerIcon";
+import { post, get, abort_requests_in_flight } from "requests";
 import { TypedEventEmitter } from "TypedEventEmitter";
-import {acceptGroupInvite, acceptTournamentInvite, rejectGroupInvite, rejectTournamentInvite, ignore, errorLogger} from "misc";
-import {LineText} from "misc-ui";
-import {challenge, createDemoBoard} from "ChallengeModal";
-import {openNewGameModal} from "NewGameModal";
-import {KBShortcut} from "KBShortcut";
-import {LanguagePicker} from "LanguagePicker";
-import {GobanThemePicker} from "GobanThemePicker";
-import {IncidentReportTracker} from "IncidentReportTracker";
-import {NotificationIndicator, TurnIndicator, NotificationList} from "Notifications";
-import {TournamentIndicator} from "Announcements";
-import {FriendIndicator} from "FriendList";
-import {Player} from "Player";
+import {
+    acceptGroupInvite,
+    acceptTournamentInvite,
+    rejectGroupInvite,
+    rejectTournamentInvite,
+    ignore,
+    errorLogger,
+} from "misc";
+import { LineText } from "misc-ui";
+import { challenge, createDemoBoard } from "ChallengeModal";
+import { openNewGameModal } from "NewGameModal";
+import { KBShortcut } from "KBShortcut";
+import { LanguagePicker } from "LanguagePicker";
+import { GobanThemePicker } from "GobanThemePicker";
+import { IncidentReportTracker } from "IncidentReportTracker";
+import { NotificationIndicator, TurnIndicator, NotificationList } from "Notifications";
+import { TournamentIndicator } from "Announcements";
+import { FriendIndicator } from "FriendList";
+import { Player } from "Player";
 import * as player_cache from "player_cache";
 import * as preferences from "preferences";
-import cached from 'cached';
-import {ChatIndicator} from "Chat";
+import cached from "cached";
+import { ChatIndicator } from "Chat";
 
 const body = $(document.body);
 
@@ -77,13 +84,13 @@ const setThemeDark = setTheme.bind(null, "dark");
 const setThemeAccessible = setTheme.bind(null, "accessible");
 
 export function logout() {
-    get("/api/v0/logout").then((config) => {
-        data.set(cached.config, config);
-        window.location.href = '/';
-    })
-    .catch(errorLogger);
+    get("/api/v0/logout")
+        .then((config) => {
+            data.set(cached.config, config);
+            window.location.href = "/";
+        })
+        .catch(errorLogger);
 }
-
 
 export class NavBar extends React.PureComponent<{}, any> {
     refs: {
@@ -111,7 +118,6 @@ export class NavBar extends React.PureComponent<{}, any> {
             omnisearch_groups: [],
             omnisearch_tournaments: [],
 
-
             path: window.location.pathname,
         };
 
@@ -120,22 +126,22 @@ export class NavBar extends React.PureComponent<{}, any> {
         this.toggleRightNav = this.toggleRightNav.bind(this);
         this.toggleDebug = this.toggleDebug.bind(this);
 
-        data.watch("theme", _update_theme);  // here we are watching in case 'theme' is updated by the remote-storage update mechanism, which doesn't call setTheme()
+        data.watch("theme", _update_theme); // here we are watching in case 'theme' is updated by the remote-storage update mechanism, which doesn't call setTheme()
     }
 
     UNSAFE_componentWillMount() {
-        data.watch("config.user", (user) => this.setState({"user": user}));
+        data.watch("config.user", (user) => this.setState({ user: user }));
 
-        browserHistory.listen(location => {
+        browserHistory.listen((location) => {
             this.closeNavbar();
-            this.setState({path: location.pathname});
+            this.setState({ path: location.pathname });
         });
     }
 
     closeNavbar() {
         this.setState({
             left_nav_active: false,
-            right_nav_active: false
+            right_nav_active: false,
         });
         this.clearOmnisearch();
     }
@@ -148,13 +154,13 @@ export class NavBar extends React.PureComponent<{}, any> {
         } else {
             this.clearOmnisearch();
         }
-        this.setState({left_nav_active: !this.state.left_nav_active});
+        this.setState({ left_nav_active: !this.state.left_nav_active });
     }
     toggleRightNav() {
         if (this.state.right_nav_active === false) {
             this.refs.notification_list.markAllAsRead();
         }
-        this.setState({right_nav_active: !this.state.right_nav_active});
+        this.setState({ right_nav_active: !this.state.right_nav_active });
     }
 
     toggleDebug() {
@@ -213,17 +219,17 @@ export class NavBar extends React.PureComponent<{}, any> {
                     omnisearch_groups: [],
                 });
 
-                get("ui/omniSearch", {q: q.trim()})
-                .then((res) => {
-                    player_cache.update(res.players);
-                    this.setState({
-                        omnisearch_loading: false,
-                        omnisearch_players: res.players,
-                        omnisearch_tournaments: res.tournaments,
-                        omnisearch_groups: res.groups,
-                    });
-                })
-                .catch(ignore);
+                get("ui/omniSearch", { q: q.trim() })
+                    .then((res) => {
+                        player_cache.update(res.players);
+                        this.setState({
+                            omnisearch_loading: false,
+                            omnisearch_players: res.players,
+                            omnisearch_tournaments: res.tournaments,
+                            omnisearch_groups: res.groups,
+                        });
+                    })
+                    .catch(ignore);
             }
         } catch (e) {
             console.log(e);
@@ -235,7 +241,8 @@ export class NavBar extends React.PureComponent<{}, any> {
         try {
             if (ev.keyCode === 27) {
                 this.clearOmnisearch();
-            } else if (ev.keyCode === 192) { /* grav */
+            } else if (ev.keyCode === 192) {
+                /* grav */
                 if (this.state.omnisearch_string === "") {
                     this.clearOmnisearch();
                 }
@@ -245,7 +252,6 @@ export class NavBar extends React.PureComponent<{}, any> {
             // ignore
         }
     };
-
 
     render() {
         const user = this.state.user.anonymous ? null : this.state.user;
@@ -271,23 +277,29 @@ export class NavBar extends React.PureComponent<{}, any> {
             this.state.omnisearch_players.length +
             this.state.omnisearch_tournaments.length +
             this.state.omnisearch_groups.length +
-            this.state.omnisearch_sitemap.length ;
+            this.state.omnisearch_sitemap.length;
 
         return (
-            <div id="NavBar" className={(this.state.left_nav_active || this.state.right_nav_active) ? "active" : ""}>
-                <KBShortcut shortcut="`" action={this.toggleLeftNav}/>
-                <KBShortcut shortcut="alt-`" action={this.toggleRightNav}/>
-                <KBShortcut shortcut="shift-`" action={this.toggleRightNav}/>
-                <KBShortcut shortcut="escape" action={this.closeNavbar}/>
+            <div
+                id="NavBar"
+                className={
+                    this.state.left_nav_active || this.state.right_nav_active ? "active" : ""
+                }
+            >
+                <KBShortcut shortcut="`" action={this.toggleLeftNav} />
+                <KBShortcut shortcut="alt-`" action={this.toggleRightNav} />
+                <KBShortcut shortcut="shift-`" action={this.toggleRightNav} />
+                <KBShortcut shortcut="escape" action={this.closeNavbar} />
 
                 <span className="ogs-nav-logo-container" onClick={this.toggleLeftNav}>
-                    <i className="fa fa-bars"/>
-                    <span className="ogs-nav-logo"/>
+                    <i className="fa fa-bars" />
+                    <span className="ogs-nav-logo" />
                 </span>
 
-
                 <section className="left">
-                    {(!this.state.user.anonymous || null) && <Link to="/overview">{_("Home")}</Link>}
+                    {(!this.state.user.anonymous || null) && (
+                        <Link to="/overview">{_("Home")}</Link>
+                    )}
                     {user && <Link to="/play">{_("Play")}</Link>}
                     <Link to="/observe-games">{_("Games")}</Link>
                     <Link to="/chat">{_("Chat")}</Link>
@@ -297,33 +309,37 @@ export class NavBar extends React.PureComponent<{}, any> {
                     <Link to="/ladders">{_("Ladders")}</Link>
                     <Link to="/groups">{_("Groups")}</Link>
                     <Link to="/leaderboards">{_("Leaderboards")}</Link>
-                    <a target="_blank" href="https://forums.online-go.com/" rel="noopener">{_("Forums")}</a>
+                    <a target="_blank" href="https://forums.online-go.com/" rel="noopener">
+                        {_("Forums")}
+                    </a>
                     {user && <Link to={`/user/view/${user.id}`}>{_("Profile")}</Link>}
                     {/*
                 <a href='https://ogs.readme.io/'>{_("Help")}</a>
                 */}
                 </section>
 
-                { this.state.user.anonymous ?
-                <section className="right">
-                    <i className="fa fa-adjust" onClick={toggleTheme} />
-                    <LanguagePicker />
-                    <Link className="sign-in" to={"/sign-in#" + this.state.path}>{_("Sign In")}</Link>
-                </section>
-                :
-                <section className="right">
-                    { !preferences.get("hide-incident-reports") && <IncidentReportTracker /> }
-                    { preferences.get("show-tournament-indicator") && <TournamentIndicator /> }
-                    <ChatIndicator />
-                    <FriendIndicator />
-                    <TurnIndicator />
-                    <span className="icon-container" onClick={this.toggleRightNav}>
-                        <NotificationIndicator />
-                        <PlayerIcon user={this.state.user} size="64"/>
-                        <i className="fa fa-caret-down" />
-                    </span>
-                </section>
-                }
+                {this.state.user.anonymous ? (
+                    <section className="right">
+                        <i className="fa fa-adjust" onClick={toggleTheme} />
+                        <LanguagePicker />
+                        <Link className="sign-in" to={"/sign-in#" + this.state.path}>
+                            {_("Sign In")}
+                        </Link>
+                    </section>
+                ) : (
+                    <section className="right">
+                        {!preferences.get("hide-incident-reports") && <IncidentReportTracker />}
+                        {preferences.get("show-tournament-indicator") && <TournamentIndicator />}
+                        <ChatIndicator />
+                        <FriendIndicator />
+                        <TurnIndicator />
+                        <span className="icon-container" onClick={this.toggleRightNav}>
+                            <NotificationIndicator />
+                            <PlayerIcon user={this.state.user} size="64" />
+                            <i className="fa fa-caret-down" />
+                        </span>
+                    </section>
+                )}
 
                 {/*
 
@@ -336,219 +352,423 @@ export class NavBar extends React.PureComponent<{}, any> {
 
             */}
 
-
-                <div className={"nav-menu-modal-backdrop " + ((this.state.left_nav_active || this.state.right_nav_active) ? "active" : "")} onClick={this.closeNavbar}/>
+                <div
+                    className={
+                        "nav-menu-modal-backdrop " +
+                        (this.state.left_nav_active || this.state.right_nav_active ? "active" : "")
+                    }
+                    onClick={this.closeNavbar}
+                />
 
                 {/* Right Nav */}
-                {user &&
-            <div className={"rightnav " + (this.state.right_nav_active ? "active" : "")}>
-                <div style={{'textAlign': 'right'}}>
-                    <Player user={user}  disable-cache-update />
-                </div>
+                {user && (
+                    <div className={"rightnav " + (this.state.right_nav_active ? "active" : "")}>
+                        <div style={{ textAlign: "right" }}>
+                            <Player user={user} disable-cache-update />
+                        </div>
 
-                <NotificationList ref="notification_list" />
+                        <NotificationList ref="notification_list" />
 
-                <LineText>{_("Theme")}</LineText>
+                        <LineText>{_("Theme")}</LineText>
 
-                <div className="theme-selectors">
-                    <button className="theme-button light"
-                        onClick={setThemeLight}
-                    ><i className="fa fa-sun-o"/></button>
-                    <button className="theme-button dark"
-                        onClick={setThemeDark}
-                    ><i className="fa fa-moon-o"/></button>
-                    <button className="theme-button accessible"
-                        onClick={setThemeAccessible}
-                    ><i className="fa fa-eye"/></button>
-                </div>
+                        <div className="theme-selectors">
+                            <button className="theme-button light" onClick={setThemeLight}>
+                                <i className="fa fa-sun-o" />
+                            </button>
+                            <button className="theme-button dark" onClick={setThemeDark}>
+                                <i className="fa fa-moon-o" />
+                            </button>
+                            <button
+                                className="theme-button accessible"
+                                onClick={setThemeAccessible}
+                            >
+                                <i className="fa fa-eye" />
+                            </button>
+                        </div>
 
-                <div className="theme-selectors">
-                    <GobanThemePicker />
-                </div>
+                        <div className="theme-selectors">
+                            <GobanThemePicker />
+                        </div>
 
-                {(show_debug || null) && <LineText>{_("Debug")}</LineText>}
-                {(show_debug || null) &&
-                    <div style={{textAlign: "center"}}>
-                        <button className={debug ? "sm info" : "sm"} onClick={this.toggleDebug}>{debug ? "Turn debugging off" : "Turn debugging on"}</button>
+                        {(show_debug || null) && <LineText>{_("Debug")}</LineText>}
+                        {(show_debug || null) && (
+                            <div style={{ textAlign: "center" }}>
+                                <button
+                                    className={debug ? "sm info" : "sm"}
+                                    onClick={this.toggleDebug}
+                                >
+                                    {debug ? "Turn debugging off" : "Turn debugging on"}
+                                </button>
+                            </div>
+                        )}
                     </div>
-                }
-            </div>
-                }
-
+                )}
 
                 {/* Left Nav */}
                 <div className={"leftnav " + (this.state.left_nav_active ? "active" : "")}>
                     <div className="search-row">
-                        <i className="fa fa-search"/>
-                        <input ref="omnisearch_input" type="text"
+                        <i className="fa fa-search" />
+                        <input
+                            ref="omnisearch_input"
+                            type="text"
                             className="OmniSearch-input"
                             value={this.state.omnisearch_string}
-                            onKeyDown={this.onOmnisearchKeyPress} onChange={this.updateOmnisearch} placeholder={_("Search")} />
+                            onKeyDown={this.onOmnisearchKeyPress}
+                            onChange={this.updateOmnisearch}
+                            placeholder={_("Search")}
+                        />
                     </div>
-                    {(!omnisearch_searching || null) &&
-                    <ul id="items">
-                        {user && <li><Link to="/overview"><i className="fa fa-home"></i>{_("Home")}</Link></li>}
-                        {anon && <li><Link to="/sign-in"><i className="fa fa-sign-in"></i>{_("Sign In")}</Link></li>}
-                        {user && <li><Link to="/play"><i className="fa ogs-goban"></i>{_("Play")}</Link></li>}
-                        {/* user && <li><span className="fakelink" onClick={this.newGame}><i className="fa fa-plus"></i>{_("New Game")}</span></li> */}
-                        {user && <li><span className="fakelink" onClick={this.newDemo}><i className="fa fa-plus"></i>{_("Demo Board")}</span></li>}
-                        <li><Link to="/observe-games"><i className="fa fa-eye"></i>{_("Games")}</Link></li>
-                        <li><Link to="/leaderboards"><i className="fa fa-list-ol"></i>{_("Leaderboards")}</Link></li>
-                        <li><Link to="/chat"><i className="fa fa-comment-o"></i>{_("Chat")}</Link></li>
-                        <li className="divider"></li>
-                        {/*
+                    {(!omnisearch_searching || null) && (
+                        <ul id="items">
+                            {user && (
+                                <li>
+                                    <Link to="/overview">
+                                        <i className="fa fa-home"></i>
+                                        {_("Home")}
+                                    </Link>
+                                </li>
+                            )}
+                            {anon && (
+                                <li>
+                                    <Link to="/sign-in">
+                                        <i className="fa fa-sign-in"></i>
+                                        {_("Sign In")}
+                                    </Link>
+                                </li>
+                            )}
+                            {user && (
+                                <li>
+                                    <Link to="/play">
+                                        <i className="fa ogs-goban"></i>
+                                        {_("Play")}
+                                    </Link>
+                                </li>
+                            )}
+                            {/* user && <li><span className="fakelink" onClick={this.newGame}><i className="fa fa-plus"></i>{_("New Game")}</span></li> */}
+                            {user && (
+                                <li>
+                                    <span className="fakelink" onClick={this.newDemo}>
+                                        <i className="fa fa-plus"></i>
+                                        {_("Demo Board")}
+                                    </span>
+                                </li>
+                            )}
+                            <li>
+                                <Link to="/observe-games">
+                                    <i className="fa fa-eye"></i>
+                                    {_("Games")}
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="/leaderboards">
+                                    <i className="fa fa-list-ol"></i>
+                                    {_("Leaderboards")}
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="/chat">
+                                    <i className="fa fa-comment-o"></i>
+                                    {_("Chat")}
+                                </Link>
+                            </li>
+                            <li className="divider"></li>
+                            {/*
                         <li ng-if='::global_user'><Link to='/mail'><i className='fa fa-envelope'></i>{_("Mail")}
                             <ogs-on-ui-push event='mail-update' action='mail_unread_count = data["unread-count"]'></ogs-on-ui-push>
                             <span ng-if='mail_unread_count > 0' style='font-weight: bold; display: inline;'> ({mail_unread_count})</span>
                         </Link></li>
                         */}
 
-                        <li><Link to="/learn-to-play-go"><i className='fa fa-graduation-cap'></i>{_("Learn to play Go")}</Link></li>
-                        <li><Link to="/puzzles"><i className="fa fa-puzzle-piece"></i>{_("Puzzles")}</Link></li>
-                        <li><Link to="/joseki"><i className="fa fa-sitemap"></i>{_("Joseki")}</Link></li>
-                        {/* <li><Link to='/library'><i className='fa fa-university'></i>{_("Server Library")}</Link></li> */}
-                        {user && <li><Link to={`/library/${user.id}`}><i className="fa fa-book"></i>{_("SGF Library")}</Link></li>}
-                        {/* {user && <li><Link to='/library/game-history'><i className='fa fa-archive'></i>{_("Game History")}</Link></li>} */}
+                            <li>
+                                <Link to="/learn-to-play-go">
+                                    <i className="fa fa-graduation-cap"></i>
+                                    {_("Learn to play Go")}
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="/puzzles">
+                                    <i className="fa fa-puzzle-piece"></i>
+                                    {_("Puzzles")}
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="/joseki">
+                                    <i className="fa fa-sitemap"></i>
+                                    {_("Joseki")}
+                                </Link>
+                            </li>
+                            {/* <li><Link to='/library'><i className='fa fa-university'></i>{_("Server Library")}</Link></li> */}
+                            {user && (
+                                <li>
+                                    <Link to={`/library/${user.id}`}>
+                                        <i className="fa fa-book"></i>
+                                        {_("SGF Library")}
+                                    </Link>
+                                </li>
+                            )}
+                            {/* {user && <li><Link to='/library/game-history'><i className='fa fa-archive'></i>{_("Game History")}</Link></li>} */}
 
-                        {/* <li className='divider'></li> */}
+                            {/* <li className='divider'></li> */}
 
-                        <li><Link to="/tournaments"><i className="fa fa-trophy"></i>{_("Tournaments")}</Link></li>
-                        <li><Link to="/ladders"><i className="fa fa-list-ol"></i>{_("Ladders")}</Link></li>
-                        <li><Link to="/groups"><i className="fa fa-users"></i>{_("Groups")}</Link></li>
-                        <li><a href="http://forums.online-go.com/" target="_blank"><i className="fa fa-comments"></i>{_("Forums")}</a></li>
-                        <li><Link to="/docs/about"><i className="fa fa-info-circle"></i>{_("About")}</Link></li>
-                        <li><a href="https://github.com/online-go/online-go.com/wiki"><i className="fa fa-question-circle"></i>{_("Documentation & FAQ")}</a></li>
-                        <li><Link to="/docs/other-go-resources"><i className="fa fa-link"></i>{_("Other Go Resources")}</Link></li>
+                            <li>
+                                <Link to="/tournaments">
+                                    <i className="fa fa-trophy"></i>
+                                    {_("Tournaments")}
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="/ladders">
+                                    <i className="fa fa-list-ol"></i>
+                                    {_("Ladders")}
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="/groups">
+                                    <i className="fa fa-users"></i>
+                                    {_("Groups")}
+                                </Link>
+                            </li>
+                            <li>
+                                <a href="http://forums.online-go.com/" target="_blank">
+                                    <i className="fa fa-comments"></i>
+                                    {_("Forums")}
+                                </a>
+                            </li>
+                            <li>
+                                <Link to="/docs/about">
+                                    <i className="fa fa-info-circle"></i>
+                                    {_("About")}
+                                </Link>
+                            </li>
+                            <li>
+                                <a href="https://github.com/online-go/online-go.com/wiki">
+                                    <i className="fa fa-question-circle"></i>
+                                    {_("Documentation & FAQ")}
+                                </a>
+                            </li>
+                            <li>
+                                <Link to="/docs/other-go-resources">
+                                    <i className="fa fa-link"></i>
+                                    {_("Other Go Resources")}
+                                </Link>
+                            </li>
 
-                        {user && <li className="divider"></li>}
-                        <li><Link to="/supporter"><i className="fa fa-star"></i>{_("Support OGS")}</Link></li>
-                        {user && <li><Link to={`/user/view/${user.id}`}><i className="fa fa-user"></i>{_("Profile")}</Link></li>}
-                        {user && <li><Link to="/user/settings"><i className="fa fa-gear"></i>{_("Settings")}</Link></li>}
-                        {user && <li><span className="fakelink" onClick={logout}><i className="fa fa-sign-out"></i>{_("Logout")}</span></li>}
+                            {user && <li className="divider"></li>}
+                            <li>
+                                <Link to="/supporter">
+                                    <i className="fa fa-star"></i>
+                                    {_("Support OGS")}
+                                </Link>
+                            </li>
+                            {user && (
+                                <li>
+                                    <Link to={`/user/view/${user.id}`}>
+                                        <i className="fa fa-user"></i>
+                                        {_("Profile")}
+                                    </Link>
+                                </li>
+                            )}
+                            {user && (
+                                <li>
+                                    <Link to="/user/settings">
+                                        <i className="fa fa-gear"></i>
+                                        {_("Settings")}
+                                    </Link>
+                                </li>
+                            )}
+                            {user && (
+                                <li>
+                                    <span className="fakelink" onClick={logout}>
+                                        <i className="fa fa-sign-out"></i>
+                                        {_("Logout")}
+                                    </span>
+                                </li>
+                            )}
 
+                            {user && (user.is_moderator || user.is_announcer) && (
+                                <li className="divider"></li>
+                            )}
+                            {user && user.is_moderator && (
+                                <li>
+                                    <Link className="admin-link" to="/moderator">
+                                        <i className="fa fa-gavel"></i>
+                                        {_("Moderator Center")}
+                                    </Link>
+                                </li>
+                            )}
+                            {user && (user.is_moderator || user.is_announcer) && (
+                                <li>
+                                    <Link className="admin-link" to="/announcement-center">
+                                        <i className="fa fa-bullhorn"></i>
+                                        {_("Announcement Center")}
+                                    </Link>
+                                </li>
+                            )}
+                            {user && user.is_superuser && (
+                                <li>
+                                    <Link className="admin-link" to="/admin">
+                                        <i className="fa fa-wrench"></i> Admin
+                                    </Link>
+                                </li>
+                            )}
 
-
-                        {user && (user.is_moderator || user.is_announcer) && <li className="divider"></li>}
-                        {user && user.is_moderator && <li><Link className="admin-link" to="/moderator"><i className="fa fa-gavel"></i>{_("Moderator Center")}</Link></li>}
-                        {user && (user.is_moderator || user.is_announcer) && <li><Link className="admin-link" to="/announcement-center"><i className="fa fa-bullhorn"></i>{_("Announcement Center")}</Link></li>}
-                        {user && user.is_superuser && <li><Link className="admin-link" to="/admin"><i className="fa fa-wrench"></i> Admin</Link></li>}
-
-                        {(tournament_invites.length || tournaments.length || false) && <li className="divider"></li>}
-                        {(tournament_invites.length || tournaments.length || false) &&
-                            <ul>
-                                <li><h5>{_("Tournaments")}</h5></li>
-                                {tournament_invites.map((ti, idx) => (
-                                    <li key={idx}>
-                                        <img src={ti.icon} height="15" width="15"/>
-                                        <i className="fa fa-check accept clickable" onClick={() => acceptTournamentInvite(ti.id)}></i>
-                                        <i className="fa fa-times reject clickable" onClick={() => rejectTournamentInvite(ti.id)}></i>
-                                        <Link to={`/tournament/${ti.tournament_id}/`} title={ti.message}> {ti.name}</Link>
+                            {(tournament_invites.length || tournaments.length || false) && (
+                                <li className="divider"></li>
+                            )}
+                            {(tournament_invites.length || tournaments.length || false) && (
+                                <ul>
+                                    <li>
+                                        <h5>{_("Tournaments")}</h5>
                                     </li>
-                                ))}
-                                {tournaments.map((tournament, idx) => (
-                                    <li key={idx}>
-                                        <Link to={`/tournament/${tournament.id}/`}><img src={tournament.icon} height="15" width="15"/> {tournament.name}</Link>
+                                    {tournament_invites.map((ti, idx) => (
+                                        <li key={idx}>
+                                            <img src={ti.icon} height="15" width="15" />
+                                            <i
+                                                className="fa fa-check accept clickable"
+                                                onClick={() => acceptTournamentInvite(ti.id)}
+                                            ></i>
+                                            <i
+                                                className="fa fa-times reject clickable"
+                                                onClick={() => rejectTournamentInvite(ti.id)}
+                                            ></i>
+                                            <Link
+                                                to={`/tournament/${ti.tournament_id}/`}
+                                                title={ti.message}
+                                            >
+                                                {" "}
+                                                {ti.name}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                    {tournaments.map((tournament, idx) => (
+                                        <li key={idx}>
+                                            <Link to={`/tournament/${tournament.id}/`}>
+                                                <img src={tournament.icon} height="15" width="15" />{" "}
+                                                {tournament.name}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                            {(ladders.length || false) && <li className="divider"></li>}
+                            {(ladders.length || false) && (
+                                <ul>
+                                    <li>
+                                        <h5>{_("Ladders")}</h5>
                                     </li>
-                                ))}
-                            </ul>
-                        }
-                        {(ladders.length || false) && <li className="divider"></li>}
-                        {(ladders.length || false) &&
-                            <ul>
-                                <li><h5>{_("Ladders")}</h5></li>
-                                {ladders.map((ladder, idx) => (
-                                    <li key={idx} className="group">
-                                        <Link to={`/ladder/${ladder.id}/`}>#{ladder.rank} <img src={ladder.icon} height="15" width="15"/> {_(ladder.name)}</Link>
+                                    {ladders.map((ladder, idx) => (
+                                        <li key={idx} className="group">
+                                            <Link to={`/ladder/${ladder.id}/`}>
+                                                #{ladder.rank}{" "}
+                                                <img src={ladder.icon} height="15" width="15" />{" "}
+                                                {_(ladder.name)}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                            {(group_invites.length || groups.length || false) && (
+                                <li className="divider"></li>
+                            )}
+                            {(group_invites.length || groups.length || false) && (
+                                <ul>
+                                    <li>
+                                        <h5>{_("Groups")}</h5>
                                     </li>
-                                ))}
-                            </ul>
-                        }
-                        {(group_invites.length || groups.length || false) && <li className="divider"></li>}
-                        {(group_invites.length || groups.length || false) &&
-                            <ul>
-                                <li><h5>{_("Groups")}</h5></li>
 
-                                {group_invites.map((gi, idx) => (
-                                    <li key={idx} className="invite">
-                                        <img src={gi.icon} height="15" width="15"/>
-                                        <i className="fa fa-check accept clickable" onClick={() => acceptGroupInvite(gi.id)}></i>
-                                        <i className="fa fa-times reject clickable" onClick={() => rejectGroupInvite(gi.id)}></i>
-                                        <Link to={`/group/${gi.group_id}/`}> {gi.name}</Link>
-                                    </li>
-                                ))}
-                                {groups.map((group, idx) => (
-                                    <li key={idx} className="group">
-                                        <Link to={`/group/${group.id}/`}><img src={group.icon} height="15" width="15"/> {group.name}</Link>
-                                    </li>
-                                ))}
-                            </ul>
-                        }
-                    </ul>
-                    }
-                    {(omnisearch_searching || null) &&
-                    <div className="OmniSearch-results">
-                        {(this.state.omnisearch_sitemap.length || null) &&
-                            <div>
-                                <h3>{_("Site")}</h3>
-                                {this.state.omnisearch_sitemap.map((e, idx) => (
-                                    <div key={idx}>
-                                        {e?.[1]?.[0] === "/"
-                                            ? <Link to={e[1]}>{e[0]}</Link>
-                                            : <a href={e[1]} target="_blank">{e[0]}</a>
-                                        }
-                                    </div>
-                                ))}
-                            </div>
-                        }
-                        {(this.state.omnisearch_loading || null) &&
-                            <div className="loading">
-                                {_("Loading...")}
-                            </div>
-                        }
-                        {(!this.state.omnisearch_loading && omnisearch_result_count === 0 || null) &&
-                            <div className="no-results">
-                                {_("No results.") /* translators: No search results */}
-                            </div>
-                        }
+                                    {group_invites.map((gi, idx) => (
+                                        <li key={idx} className="invite">
+                                            <img src={gi.icon} height="15" width="15" />
+                                            <i
+                                                className="fa fa-check accept clickable"
+                                                onClick={() => acceptGroupInvite(gi.id)}
+                                            ></i>
+                                            <i
+                                                className="fa fa-times reject clickable"
+                                                onClick={() => rejectGroupInvite(gi.id)}
+                                            ></i>
+                                            <Link to={`/group/${gi.group_id}/`}> {gi.name}</Link>
+                                        </li>
+                                    ))}
+                                    {groups.map((group, idx) => (
+                                        <li key={idx} className="group">
+                                            <Link to={`/group/${group.id}/`}>
+                                                <img src={group.icon} height="15" width="15" />{" "}
+                                                {group.name}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </ul>
+                    )}
+                    {(omnisearch_searching || null) && (
+                        <div className="OmniSearch-results">
+                            {(this.state.omnisearch_sitemap.length || null) && (
+                                <div>
+                                    <h3>{_("Site")}</h3>
+                                    {this.state.omnisearch_sitemap.map((e, idx) => (
+                                        <div key={idx}>
+                                            {e?.[1]?.[0] === "/" ? (
+                                                <Link to={e[1]}>{e[0]}</Link>
+                                            ) : (
+                                                <a href={e[1]} target="_blank">
+                                                    {e[0]}
+                                                </a>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {(this.state.omnisearch_loading || null) && (
+                                <div className="loading">{_("Loading...")}</div>
+                            )}
+                            {((!this.state.omnisearch_loading && omnisearch_result_count === 0) ||
+                                null) && (
+                                <div className="no-results">
+                                    {_("No results.") /* translators: No search results */}
+                                </div>
+                            )}
 
-                        {(this.state.omnisearch_players.length || null) &&
-                            <div>
-                                <h3>{_("Players")}</h3>
-                                {this.state.omnisearch_players.map((e, idx) => (
-                                    <div key={idx}><Player user={e} icon rank /></div>
-                                ))}
-                            </div>
-                        }
-                        {(this.state.omnisearch_groups.length || null) &&
-                            <div>
-                                <h3>{_("Groups")}</h3>
-                                {this.state.omnisearch_groups.map((e, idx) => (
-                                    <div key={idx}>
-                                        <img src={e.icon}/> <Link to={`/group/${e.id}`}>{e.name}</Link>
-                                    </div>
-                                ))}
-                            </div>
-                        }
-                        {(this.state.omnisearch_tournaments.length || null) &&
-                            <div>
-                                <h3>{_("Tournaments")}</h3>
-                                {this.state.omnisearch_tournaments.map((e, idx) => (
-                                    <div key={idx}>
-                                        <img src={e.icon}/> <Link to={`/tournament/${e.id}`}>{e.name}</Link>
-                                    </div>
-                                ))}
-                            </div>
-                        }
-
-                    </div>
-                    }
+                            {(this.state.omnisearch_players.length || null) && (
+                                <div>
+                                    <h3>{_("Players")}</h3>
+                                    {this.state.omnisearch_players.map((e, idx) => (
+                                        <div key={idx}>
+                                            <Player user={e} icon rank />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {(this.state.omnisearch_groups.length || null) && (
+                                <div>
+                                    <h3>{_("Groups")}</h3>
+                                    {this.state.omnisearch_groups.map((e, idx) => (
+                                        <div key={idx}>
+                                            <img src={e.icon} />{" "}
+                                            <Link to={`/group/${e.id}`}>{e.name}</Link>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {(this.state.omnisearch_tournaments.length || null) && (
+                                <div>
+                                    <h3>{_("Tournaments")}</h3>
+                                    {this.state.omnisearch_tournaments.map((e, idx) => (
+                                        <div key={idx}>
+                                            <img src={e.icon} />{" "}
+                                            <Link to={`/tournament/${e.id}`}>{e.name}</Link>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         );
     }
 }
-
-
 
 declare let ogs_version;
 const omnisearch_sitemap = {};
@@ -586,8 +806,10 @@ omnisearch_sitemap[_("Refund Policy")] = [_("Refund Policy"), "/docs/refund-poli
 omnisearch_sitemap[_("Terms of Service")] = [_("Terms of Service"), "/docs/terms-of-service"];
 omnisearch_sitemap["ToS"] = [_("Terms of Service"), "/docs/terms-of-service"];
 omnisearch_sitemap[_("Privacy Policy")] = [_("Privacy Policy"), "/docs/privacy-policy"];
-omnisearch_sitemap[_("Contact Information")] = [_("Contact Information"), "/docs/contact-information"];
-
+omnisearch_sitemap[_("Contact Information")] = [
+    _("Contact Information"),
+    "/docs/contact-information",
+];
 
 function match_sitemap(q) {
     q = q.trim().toLowerCase();
@@ -595,7 +817,7 @@ function match_sitemap(q) {
     const res = [];
 
     for (const k in omnisearch_sitemap) {
-        if (q.length >= (Math.min(5, k.length)) && k.toLowerCase().indexOf(q) === 0) {
+        if (q.length >= Math.min(5, k.length) && k.toLowerCase().indexOf(q) === 0) {
             res.push(omnisearch_sitemap[k]);
         }
     }

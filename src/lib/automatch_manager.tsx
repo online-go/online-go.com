@@ -16,17 +16,17 @@
  */
 
 import * as React from "react";
-import {_, pgettext, interpolate} from "translate";
-import {termination_socket} from "sockets";
-import {TypedEventEmitter} from "TypedEventEmitter";
-import {browserHistory} from "ogsHistory";
-import {Toast, toast} from 'toast';
+import { _, pgettext, interpolate } from "translate";
+import { termination_socket } from "sockets";
+import { TypedEventEmitter } from "TypedEventEmitter";
+import { browserHistory } from "ogsHistory";
+import { Toast, toast } from "toast";
 import { AutomatchPreferencesBase, Size, Speed } from "./types";
 
 interface Events {
-    'start': any;
-    'entry': any;
-    'cancel': any;
+    start: any;
+    entry: any;
+    cancel: any;
 }
 
 export type AutomatchPreferences = AutomatchPreferencesBase & {
@@ -41,7 +41,7 @@ class AutomatchToast extends React.PureComponent<{}, any> {
         super(props);
         this.state = {
             start: Date.now(),
-            elapsed: '00:00',
+            elapsed: "00:00",
         };
     }
 
@@ -51,7 +51,7 @@ class AutomatchToast extends React.PureComponent<{}, any> {
             const seconds = elapsed % 60;
             const minutes = Math.floor((elapsed - seconds) / 60);
             const display = seconds < 10 ? `${minutes}:0${seconds}` : `${minutes}:${seconds}`;
-            this.setState({elapsed: display});
+            this.setState({ elapsed: display });
         }, 1000);
     }
     componentWillUnmount() {
@@ -60,8 +60,13 @@ class AutomatchToast extends React.PureComponent<{}, any> {
 
     render() {
         return (
-            <div className='AutomatchToast'>
-                {interpolate(pgettext("Automatch search message", "{{elapsed_time}} Finding a game..."), {"elapsed_time": this.state.elapsed})}
+            <div className="AutomatchToast">
+                {interpolate(
+                    pgettext("Automatch search message", "{{elapsed_time}} Finding a game..."),
+                    {
+                        elapsed_time: this.state.elapsed,
+                    },
+                )}
             </div>
         );
     }
@@ -69,11 +74,9 @@ class AutomatchToast extends React.PureComponent<{}, any> {
 
 class AutomatchManager extends TypedEventEmitter<Events> {
     active_live_automatcher: AutomatchPreferences;
-    active_correspondence_automatchers: {[id: string]: AutomatchPreferences} = {};
+    active_correspondence_automatchers: { [id: string]: AutomatchPreferences } = {};
     last_find_match_uuid: string;
     active_toast: Toast;
-
-
 
     constructor() {
         super();
@@ -81,12 +84,12 @@ class AutomatchManager extends TypedEventEmitter<Events> {
             this.clearState();
             termination_socket.send("automatch/list");
         });
-        termination_socket.on('disconnect', () => {
+        termination_socket.on("disconnect", () => {
             this.clearState();
         });
-        termination_socket.on('automatch/start', this.onAutomatchStart);
-        termination_socket.on('automatch/entry', this.onAutomatchEntry);
-        termination_socket.on('automatch/cancel', this.onAutomatchCancel);
+        termination_socket.on("automatch/start", this.onAutomatchStart);
+        termination_socket.on("automatch/entry", this.onAutomatchEntry);
+        termination_socket.on("automatch/cancel", this.onAutomatchCancel);
     }
 
     private onAutomatchEntry = (entry: AutomatchPreferences) => {
@@ -95,14 +98,14 @@ class AutomatchManager extends TypedEventEmitter<Events> {
         }
 
         for (const opt of entry.size_speed_options) {
-            if (opt.speed === 'correspondence') {
+            if (opt.speed === "correspondence") {
                 this.active_correspondence_automatchers[entry.uuid] = entry;
             } else {
                 this.active_live_automatcher = entry;
             }
         }
 
-        this.emit('entry', entry);
+        this.emit("entry", entry);
     };
     private onAutomatchStart = (entry) => {
         this.remove(entry.uuid);
@@ -112,10 +115,10 @@ class AutomatchManager extends TypedEventEmitter<Events> {
             //sfx.play("match_found");
         }
 
-        this.emit('start', entry);
+        this.emit("start", entry);
     };
     private onAutomatchCancel = (entry) => {
-        if (!entry)  {
+        if (!entry) {
             if (this.active_live_automatcher) {
                 entry = this.active_live_automatcher;
             } else {
@@ -123,7 +126,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
             }
         }
         this.remove(entry.uuid);
-        this.emit('cancel', entry);
+        this.emit("cancel", entry);
     };
     private remove(uuid: string) {
         if (this.active_live_automatcher && this.active_live_automatcher.uuid === uuid) {
@@ -150,10 +153,14 @@ class AutomatchManager extends TypedEventEmitter<Events> {
     }
 
     public findMatch(preferences: AutomatchPreferences) {
-        termination_socket.emit('automatch/find_match', preferences);
+        termination_socket.emit("automatch/find_match", preferences);
 
         /* live game? track it, and pop up our searching toast */
-        if (preferences.size_speed_options.filter((opt) => opt.speed === 'blitz' || opt.speed === 'live').length) {
+        if (
+            preferences.size_speed_options.filter(
+                (opt) => opt.speed === "blitz" || opt.speed === "live",
+            ).length
+        ) {
             this.last_find_match_uuid = preferences.uuid;
             if (this.active_toast) {
                 this.active_toast.close();
@@ -164,7 +171,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
     }
     public cancel(uuid?: string) {
         this.remove(uuid);
-        termination_socket.emit('automatch/cancel', uuid);
+        termination_socket.emit("automatch/cancel", uuid);
     }
 }
 

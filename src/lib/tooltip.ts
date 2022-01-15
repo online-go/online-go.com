@@ -34,18 +34,18 @@ export default function tooltip(event) {
         if (current_tooltip) {
             clearTooltip();
         } else {
-            current_tooltip = $("<div class='ogs-tooltip'>").text(title).css({left: X, top: Y});
+            current_tooltip = $("<div class='ogs-tooltip'>").text(title).css({ left: X, top: Y });
             $("body").append(current_tooltip);
         }
     } else if (event.type === "mouseover") {
         clearTooltip();
-        current_tooltip = $("<div class='ogs-tooltip'>").text(title).css({left: X, top: Y});
+        current_tooltip = $("<div class='ogs-tooltip'>").text(title).css({ left: X, top: Y });
         $("body").append(current_tooltip);
     } else if (event.type === "mouseout") {
         clearTooltip();
     } else if (event.type === "mousemove") {
         if (current_tooltip) {
-            current_tooltip.css({left: X, top: Y});
+            current_tooltip.css({ left: X, top: Y });
         }
     } else {
         console.warn("Unhandled event type: ", event.type);

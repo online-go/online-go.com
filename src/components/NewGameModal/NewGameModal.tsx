@@ -16,23 +16,29 @@
  */
 
 import * as React from "react";
-import {browserHistory} from "ogsHistory";
-import {_, pgettext, interpolate} from "translate";
-import {Modal, openModal} from "Modal";
-import {challenge, challengeComputer, createCorrespondence, createBlitz,
-    createLive, blitz_config, live_config, correspondence_config} from "ChallengeModal";
-import {shortShortTimeControl} from "TimeControl";
-import {errorAlerter, ignore} from "misc";
+import { browserHistory } from "ogsHistory";
+import { _, pgettext, interpolate } from "translate";
+import { Modal, openModal } from "Modal";
+import {
+    challenge,
+    challengeComputer,
+    createCorrespondence,
+    createBlitz,
+    createLive,
+    blitz_config,
+    live_config,
+    correspondence_config,
+} from "ChallengeModal";
+import { shortShortTimeControl } from "TimeControl";
+import { errorAlerter, ignore } from "misc";
 import * as preferences from "preferences";
 import * as data from "data";
-import {bot_count} from "bots";
-import swal from 'sweetalert2';
+import { bot_count } from "bots";
+import swal from "sweetalert2";
 
-interface Events {
-}
+interface Events {}
 
-interface NewGameModalProperties {
-}
+interface NewGameModalProperties {}
 
 export class NewGameModal extends Modal<Events, NewGameModalProperties, any> {
     size9;
@@ -42,7 +48,7 @@ export class NewGameModal extends Modal<Events, NewGameModalProperties, any> {
     constructor(props) {
         super(props);
         this.state = {
-            board_size: preferences.get("new-game-board-size")
+            board_size: preferences.get("new-game-board-size"),
         };
         this.size9 = this.updateBoardSize.bind(this, 9);
         this.size13 = this.updateBoardSize.bind(this, 13);
@@ -50,7 +56,7 @@ export class NewGameModal extends Modal<Events, NewGameModalProperties, any> {
     }
 
     updateBoardSize(num) {
-        this.setState({board_size: num});
+        this.setState({ board_size: num });
         preferences.set("new-game-board-size", num);
     }
 
@@ -87,34 +93,112 @@ export class NewGameModal extends Modal<Events, NewGameModalProperties, any> {
                 </div>
                 <div className="body">
                     <div className="board-size-selection input-group">
-                        <button className={this.state.board_size === 9 ? "active" : ""} onClick={this.size9}>9x9</button>
-                        <button className={this.state.board_size === 13 ? "active" : ""} onClick={this.size13}>13x13</button>
-                        <button className={this.state.board_size === 19 ? "active" : ""} onClick={this.size19}>19x19</button>
+                        <button
+                            className={this.state.board_size === 9 ? "active" : ""}
+                            onClick={this.size9}
+                        >
+                            9x9
+                        </button>
+                        <button
+                            className={this.state.board_size === 13 ? "active" : ""}
+                            onClick={this.size13}
+                        >
+                            13x13
+                        </button>
+                        <button
+                            className={this.state.board_size === 19 ? "active" : ""}
+                            onClick={this.size19}
+                        >
+                            19x19
+                        </button>
                     </div>
 
                     <div className="new-game-button" onClick={this.newBlitz}>
                         <i className="fa fa-bolt" />
                         <h2>{_("Blitz")}</h2>
                         <div>{shortShortTimeControl(blitz_config.time_control)}</div>
-                        {(this.state.board_size === 9 || null) && <i>{pgettext("How long does a blitz game take?", "Around 3 to 7 minutes")}</i>}
-                        {(this.state.board_size === 13 || null) && <i>{pgettext("How long does a blitz game take?", "Around 5 to 11 minutes")}</i>}
-                        {(this.state.board_size === 19 || null) && <i>{pgettext("How long does a blitz game take?", "Around 7 to 16 minutes")}</i>}
+                        {(this.state.board_size === 9 || null) && (
+                            <i>
+                                {pgettext(
+                                    "How long does a blitz game take?",
+                                    "Around 3 to 7 minutes",
+                                )}
+                            </i>
+                        )}
+                        {(this.state.board_size === 13 || null) && (
+                            <i>
+                                {pgettext(
+                                    "How long does a blitz game take?",
+                                    "Around 5 to 11 minutes",
+                                )}
+                            </i>
+                        )}
+                        {(this.state.board_size === 19 || null) && (
+                            <i>
+                                {pgettext(
+                                    "How long does a blitz game take?",
+                                    "Around 7 to 16 minutes",
+                                )}
+                            </i>
+                        )}
                     </div>
                     <div className="new-game-button" onClick={this.newLive}>
                         <i className="fa fa-clock-o" />
                         <h2>{_("Live")}</h2>
                         <div>{shortShortTimeControl(live_config.time_control)}</div>
-                        {(this.state.board_size === 9 || null) && <i>{pgettext("How long does a live game take?", "Around 5 to 15 minutes")}</i>}
-                        {(this.state.board_size === 13 || null) && <i>{pgettext("How long does a live game take?", "Around 8 to 20 minutes")}</i>}
-                        {(this.state.board_size === 19 || null) && <i>{pgettext("How long does a live game take?", "Around 15 to 30 minutes")}</i>}
+                        {(this.state.board_size === 9 || null) && (
+                            <i>
+                                {pgettext(
+                                    "How long does a live game take?",
+                                    "Around 5 to 15 minutes",
+                                )}
+                            </i>
+                        )}
+                        {(this.state.board_size === 13 || null) && (
+                            <i>
+                                {pgettext(
+                                    "How long does a live game take?",
+                                    "Around 8 to 20 minutes",
+                                )}
+                            </i>
+                        )}
+                        {(this.state.board_size === 19 || null) && (
+                            <i>
+                                {pgettext(
+                                    "How long does a live game take?",
+                                    "Around 15 to 30 minutes",
+                                )}
+                            </i>
+                        )}
                     </div>
                     <div className="new-game-button" onClick={this.newCorrespondence}>
                         <i className="ogs-turtle" />
                         <h2>{_("Correspondence")}</h2>
                         <div>{shortShortTimeControl(correspondence_config.time_control)}</div>
-                        {(this.state.board_size === 9 || null) && <i>{pgettext("How long does a correspondence game take?", "Around 10 to 20 days")}</i>}
-                        {(this.state.board_size === 13 || null) && <i>{pgettext("How long does a correspondence game take?", "Around 13 to 30 days")}</i>}
-                        {(this.state.board_size === 19 || null) && <i>{pgettext("How long does a correspondence game take?", "Around 30 to 70 days")}</i>}
+                        {(this.state.board_size === 9 || null) && (
+                            <i>
+                                {pgettext(
+                                    "How long does a correspondence game take?",
+                                    "Around 10 to 20 days",
+                                )}
+                            </i>
+                        )}
+                        {(this.state.board_size === 13 || null) && (
+                            <i>
+                                {pgettext(
+                                    "How long does a correspondence game take?",
+                                    "Around 13 to 30 days",
+                                )}
+                            </i>
+                        )}
+                        {(this.state.board_size === 19 || null) && (
+                            <i>
+                                {pgettext(
+                                    "How long does a correspondence game take?",
+                                    "Around 30 to 70 days",
+                                )}
+                            </i>
+                        )}
                     </div>
 
                     <div className="new-game-button" onClick={this.newCustom}>
@@ -123,7 +207,10 @@ export class NewGameModal extends Modal<Events, NewGameModalProperties, any> {
                         <i>{_("Create a custom game")}</i>
                     </div>
 
-                    <div className={"new-game-button " + (bot_count() === 0 ? "disabled" : "")} onClick={this.newComputer}>
+                    <div
+                        className={"new-game-button " + (bot_count() === 0 ? "disabled" : "")}
+                        onClick={this.newComputer}
+                    >
                         <i className="fa fa-laptop" />
                         <h2>{_("Computer")}</h2>
                         <i>{_("Play against the computer")}</i>

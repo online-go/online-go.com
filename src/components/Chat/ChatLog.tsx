@@ -19,7 +19,7 @@ import * as React from "react";
 import * as data from "data";
 import * as moment from "moment";
 import Linkify from "react-linkify";
-import Split from 'react-split';
+import Split from "react-split";
 import { Card } from "material";
 import { Link } from "react-router-dom";
 import { comm_socket } from "sockets";
@@ -37,8 +37,8 @@ import {
     ChannelInformation,
     resolveChannelInformation,
     cachedChannelInformation,
-} from 'chat_manager';
-import { ChatLine } from './ChatLine';
+} from "chat_manager";
+import { ChatLine } from "./ChatLine";
 import { TabCompleteInput } from "TabCompleteInput";
 import { Markdown } from "Markdown";
 import { browserHistory } from "ogsHistory";
@@ -46,7 +46,7 @@ import { ObserveGamesComponent } from "ObserveGamesComponent";
 import { profanity_filter } from "profanity_filter";
 import { popover } from "popover";
 import { ChatDetails } from "Chat";
-import swal from 'sweetalert2';
+import swal from "sweetalert2";
 import { GroupList } from "src/lib/types";
 
 interface ChatLogState {
@@ -77,20 +77,25 @@ interface InternalChatLogProperties extends ChatLogProperties {
 let deferred_chat_update: Timeout = null;
 
 function saveSplitSizes(sizes: Array<number>): void {
-    data.set('chat.split-sizes', sizes);
+    data.set("chat.split-sizes", sizes);
 }
 
 export function ChatLog(props: ChatLogProperties): JSX.Element {
     /* eslint-disable prefer-const */
-    let [showing_games, set_showing_games]: [boolean, (tf: boolean) => void] = useState(data.get('chat.show-games', true) as boolean);
+    let [showing_games, set_showing_games]: [boolean, (tf: boolean) => void] = useState(
+        data.get("chat.show-games", true) as boolean,
+    );
     let [height, set_height]: [number, (tf: number) => void] = useState(document.body.clientHeight);
     /* eslint-enable prefer-const */
-    const onShowGames = useCallback((tf: boolean) => {
-        //if (tf !== showing_games) {
-        set_showing_games(tf);
-        data.set('chat.show-games', tf);
-        //}
-    }, [props.channel, showing_games]);
+    const onShowGames = useCallback(
+        (tf: boolean) => {
+            //if (tf !== showing_games) {
+            set_showing_games(tf);
+            data.set("chat.show-games", tf);
+            //}
+        },
+        [props.channel, showing_games],
+    );
 
     useEffect(() => {
         function update_height() {
@@ -113,7 +118,7 @@ export function ChatLog(props: ChatLogProperties): JSX.Element {
     }
 
     let canShowGames = /^(group-|global)/.test(props.channel);
-    const game_channel = /^(group-)/.test(props.channel) ? props.channel : '' /* global */;
+    const game_channel = /^(group-)/.test(props.channel) ? props.channel : ""; /* global */
 
     if (height <= 300) {
         canShowGames = false;
@@ -128,75 +133,80 @@ export function ChatLog(props: ChatLogProperties): JSX.Element {
     }
 
     return (
-        <div className='ChatLog'>
-            <ChannelTopic {...props} showingGames={showing_games} onShowGames={onShowGames} canShowGames={canShowGames} />
-            {showing_games
-                ? <Split
-                    className='split'
+        <div className="ChatLog">
+            <ChannelTopic
+                {...props}
+                showingGames={showing_games}
+                onShowGames={onShowGames}
+                canShowGames={canShowGames}
+            />
+            {showing_games ? (
+                <Split
+                    className="split"
                     direction="vertical"
-                    sizes={data.get('chat.split-sizes', [25, 75])}
+                    sizes={data.get("chat.split-sizes", [25, 75])}
                     gutterSize={7}
                     minSize={50}
                     onDragEnd={saveSplitSizes}
                 >
-                    <div className='game-list'>
+                    <div className="game-list">
                         <ObserveGamesComponent
                             announcements={false}
                             updateTitle={false}
                             channel={game_channel}
                             namesByGobans={true}
-                            miniGobanProps={{noText: true, displayWidth: 64}}
+                            miniGobanProps={{ noText: true, displayWidth: 64 }}
                             preferenceNamespace="chat"
                         />
                     </div>
                     <ChatLines {...props} />
                 </Split>
-
-                : <ChatLines {...props} />
-            }
+            ) : (
+                <ChatLines {...props} />
+            )}
             <ChatInput {...props} />
         </div>
     );
 }
 
-
-function ChannelTopic(
-    {
-        channel,
-        hideTopic,
-        onShowChannels,
-        onShowUsers,
-        onShowGames,
-        showingChannels,
-        showingUsers,
-        showingGames,
-        canShowGames
-    }: InternalChatLogProperties
-): JSX.Element {
+function ChannelTopic({
+    channel,
+    hideTopic,
+    onShowChannels,
+    onShowUsers,
+    onShowGames,
+    showingChannels,
+    showingUsers,
+    showingGames,
+    canShowGames,
+}: InternalChatLogProperties): JSX.Element {
     if (hideTopic) {
         return null;
     }
 
-    const user = data.get('user');
+    const user = data.get("user");
 
     const [editing, set_editing]: [boolean, (tf: boolean) => void] = useState(false as boolean);
     const [topic, set_topic]: [string, (tf: string) => void] = useState("");
-    const [topic_updated, set_topic_updated]: [boolean, (tf: boolean) => void] = useState(false as boolean);
+    const [topic_updated, set_topic_updated]: [boolean, (tf: boolean) => void] = useState(
+        false as boolean,
+    );
     const [name, set_name]: [string, (tf: string) => void] = useState(channel);
     const [group_id, set_group_id]: [number | null, (tf: number) => void] = useState(null);
-    const [tournament_id, set_tournament_id]: [number | null, (tf: number) => void] = useState(null);
+    const [tournament_id, set_tournament_id]: [number | null, (tf: number) => void] =
+        useState(null);
     const [banner, set_banner]: [string, (s: string) => void] = useState("");
-    const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
+    const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] =
+        useState(null);
     const [title_hover, set_title_hover]: [string, (s: string) => void] = useState("");
 
-    const groups = data.get<GroupList>('cached.groups', []);
+    const groups = data.get<GroupList>("cached.groups", []);
 
     // member of group, or a moderator, or a tournament channel
-    const topic_editable = user.is_moderator
-        || groups.filter(g => `group-${g.id}` === channel).length > 0
-        || channel.indexOf('tournament-') === 0
-    ;
-
+    const topic_editable =
+        user.is_moderator ||
+        groups.filter((g) => `group-${g.id}` === channel).length > 0 ||
+        channel.indexOf("tournament-") === 0;
     useEffect(() => {
         set_group_id(null);
         set_tournament_id(null);
@@ -206,17 +216,17 @@ function ChannelTopic(
         set_banner("");
 
         resolveChannelInformation(channel)
-        .then((info: ChannelInformation) => {
-            set_name(info.name);
-            if (info.group_id) {
-                set_group_id(info.group_id);
-                set_banner(info.banner);
-            }
-            if (info.tournament_id) {
-                set_tournament_id(info.tournament_id);
-            }
-        })
-        .catch(errorLogger);
+            .then((info: ChannelInformation) => {
+                set_name(info.name);
+                if (info.group_id) {
+                    set_group_id(info.group_id);
+                    set_banner(info.banner);
+                }
+                if (info.tournament_id) {
+                    set_tournament_id(info.tournament_id);
+                }
+            })
+            .catch(errorLogger);
     }, [channel]);
 
     useEffect(() => {
@@ -231,21 +241,24 @@ function ChannelTopic(
 
         function getTitleHover(topic: TopicMessage | null): string {
             if (topic && topic.username && topic.timestamp) {
-                return topic.username + " - " + moment(new Date(topic.timestamp)).format('LL');
+                return topic.username + " - " + moment(new Date(topic.timestamp)).format("LL");
             }
 
             return "";
         }
     }, [channel]);
 
-    const updateTopic = useCallback((ev: React.ChangeEvent<HTMLInputElement>) => {
-        set_topic(ev.target.value);
-        set_topic_updated(true);
-    }, [channel]);
+    const updateTopic = useCallback(
+        (ev: React.ChangeEvent<HTMLInputElement>) => {
+            set_topic(ev.target.value);
+            set_topic_updated(true);
+        },
+        [channel],
+    );
 
     const partChannel = useCallback(() => {
         const joined = data.get("chat.joined");
-        data.set('chat.active_channel', null);
+        data.set("chat.active_channel", null);
         delete joined[channel];
         data.set("chat.joined", joined);
 
@@ -253,7 +266,7 @@ function ChannelTopic(
         parted_channels[channel] = 1;
         data.set("chat.parted", parted_channels);
 
-        browserHistory.push('/chat');
+        browserHistory.push("/chat");
         //proxy?.channel.emit('should-part', channel);
     }, [proxy]);
 
@@ -280,38 +293,48 @@ function ChannelTopic(
         }
     }, [topic, topic_updated, proxy]);
 
-    const channelDetails = useCallback((event) => {
-        popover({
-            elt: (
-                <ChatDetails
-                    chatChannelId={channel}
-                    subscribable={!(channel.startsWith("global") || channel === "shadowban")}
-                    partFunc={partChannel}/>
-            ),
-            below: event.currentTarget,
-            minWidth: 130,
-        });
-    }, [channel, partChannel]);
-
+    const channelDetails = useCallback(
+        (event) => {
+            popover({
+                elt: (
+                    <ChatDetails
+                        chatChannelId={channel}
+                        subscribable={!(channel.startsWith("global") || channel === "shadowban")}
+                        partFunc={partChannel}
+                    />
+                ),
+                below: event.currentTarget,
+                minWidth: 130,
+            });
+        },
+        [channel, partChannel],
+    );
 
     //const channel_leavable = global_channels.filter(chan => chan.id === channel && chan.primary_language).length === 0;
 
     return (
-        <div className='ChatHeader' style={banner ? {'backgroundImage': `url("${banner}")`} : {}}>
-            <div className='backdrop' />
-            <div className='foreground'>
-                <i className={'header-icon fa fa-list' + (showingChannels ? ' active' : '')} onClick={toggleShowChannels} />
+        <div className="ChatHeader" style={banner ? { backgroundImage: `url("${banner}")` } : {}}>
+            <div className="backdrop" />
+            <div className="foreground">
+                <i
+                    className={"header-icon fa fa-list" + (showingChannels ? " active" : "")}
+                    onClick={toggleShowChannels}
+                />
 
-                {canShowGames && (
-                    showingGames
-                        ? <i className='header-icon ogs-goban active' onClick={() => onShowGames(false)} />
-                        : <i className='header-icon ogs-goban' onClick={() => onShowGames(true)} />
-                )}
+                {canShowGames &&
+                    (showingGames ? (
+                        <i
+                            className="header-icon ogs-goban active"
+                            onClick={() => onShowGames(false)}
+                        />
+                    ) : (
+                        <i className="header-icon ogs-goban" onClick={() => onShowGames(true)} />
+                    ))}
 
-                {(editing && topic_editable)
-                    ?  <React.Fragment>
-                        <i className='header-icon fa fa-save' onClick={saveEdits} />
-                        <div className='channel-topic'>
+                {editing && topic_editable ? (
+                    <React.Fragment>
+                        <i className="header-icon fa fa-save" onClick={saveEdits} />
+                        <div className="channel-topic">
                             <input
                                 value={topic}
                                 className="channel-topic-edit"
@@ -321,20 +344,25 @@ function ChannelTopic(
                             />
                         </div>
                     </React.Fragment>
-                    : <React.Fragment>
-                        {topic_editable && <i className='header-icon fa fa-pencil' onClick={startEditing} />}
-                        <div className='channel-topic' title={title_hover}>
-                            <div className='topic'>
-                                <span className='content'><Linkify>{localize_time_strings(profanity_filter(topic.trim())) || name}</Linkify></span>
+                ) : (
+                    <React.Fragment>
+                        {topic_editable && (
+                            <i className="header-icon fa fa-pencil" onClick={startEditing} />
+                        )}
+                        <div className="channel-topic" title={title_hover}>
+                            <div className="topic">
+                                <span className="content">
+                                    <Linkify>
+                                        {localize_time_strings(profanity_filter(topic.trim())) ||
+                                            name}
+                                    </Linkify>
+                                </span>
                             </div>
                         </div>
                     </React.Fragment>
-                }
+                )}
 
-
-                <i className={'header-icon fa fa-gear'}
-                    onClick={channelDetails}
-                />
+                <i className={"header-icon fa fa-gear"} onClick={channelDetails} />
                 {/*channel_leavable &&
                     <i className={'header-icon fa fa-times'}
                         title={pgettext("Leave the selected channel.", "Leave Channel")}
@@ -342,21 +370,29 @@ function ChannelTopic(
                         />
                 */}
 
-                <i className={'header-icon fa fa-users' + (showingUsers ? ' active' : '')} onClick={toggleShowUsers} />
+                <i
+                    className={"header-icon fa fa-users" + (showingUsers ? " active" : "")}
+                    onClick={toggleShowUsers}
+                />
             </div>
         </div>
     );
 }
 
-
 let scrolled_to_bottom = true;
-function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers}: InternalChatLogProperties): JSX.Element {
+function ChatLines({
+    channel,
+    autoFocus,
+    updateTitle,
+    onShowChannels,
+    onShowUsers,
+}: InternalChatLogProperties): JSX.Element {
     const user = data.get("user");
     const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;
     const chat_log_div = useRef(null);
     const [, refresh]: [number, (n: number) => void] = useState(0);
-    const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
-
+    const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] =
+        useState(null);
 
     useEffect(() => {
         const proxy = chat_manager.join(channel);
@@ -426,19 +462,23 @@ function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers
         scrolled_to_bottom = true;
     }, [channel]);
 
-    const onScroll = useCallback((event: React.UIEvent<HTMLDivElement>): void => {
-        const div = chat_log_div.current;
-        if (!div) {
-            return;
-        }
+    const onScroll = useCallback(
+        (event: React.UIEvent<HTMLDivElement>): void => {
+            const div = chat_log_div.current;
+            if (!div) {
+                return;
+            }
 
-        const tf = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
-        if (tf !== scrolled_to_bottom) {
-            scrolled_to_bottom  = tf;
-            div.className = (rtl_mode ? "rtl chat-lines " : "chat-lines ") + (tf ? "autoscrolling" : "");
-        }
-        scrolled_to_bottom = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
-    }, [channel]);
+            const tf = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
+            if (tf !== scrolled_to_bottom) {
+                scrolled_to_bottom = tf;
+                div.className =
+                    (rtl_mode ? "rtl chat-lines " : "chat-lines ") + (tf ? "autoscrolling" : "");
+            }
+            scrolled_to_bottom = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
+        },
+        [channel],
+    );
 
     window.requestAnimationFrame(() => {
         const div = chat_log_div.current;
@@ -454,7 +494,7 @@ function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers
                 } catch (e) {
                     // ignore error
                 }
-            } , 100);
+            }, 100);
         }
     });
 
@@ -470,18 +510,20 @@ function ChatLines({channel, autoFocus, updateTitle, onShowChannels, onShowUsers
             {proxy?.channel.chat_log.slice(-500).map((line, idx) => {
                 const ll = last_line;
                 last_line = line;
-                return <ChatLine key={line.message.i || `system-${idx}`} line={line} lastline={ll} />;
+                return (
+                    <ChatLine key={line.message.i || `system-${idx}`} line={line} lastline={ll} />
+                );
             })}
         </div>
     );
 }
 
-
-function ChatInput({channel, autoFocus}: InternalChatLogProperties): JSX.Element {
+function ChatInput({ channel, autoFocus }: InternalChatLogProperties): JSX.Element {
     const user = data.get("user");
     const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;
     const input = useRef(null);
-    const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] = useState(null);
+    const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] =
+        useState(null);
     const [show_say_hi_placeholder, set_show_say_hi_placeholder] = useState(true);
     const [channel_name, set_channel_name] = useState(cachedChannelInformation(channel)?.name);
 
@@ -489,45 +531,58 @@ function ChatInput({channel, autoFocus}: InternalChatLogProperties): JSX.Element
         const proxy = chat_manager.join(channel);
         setProxy(proxy);
 
-        resolveChannelInformation(channel).then((info) => {
-            set_channel_name(info.name);
-        }).catch(err => 0);
+        resolveChannelInformation(channel)
+            .then((info) => {
+                set_channel_name(info.name);
+            })
+            .catch((err) => 0);
     }, [channel]);
 
-    const onKeyPress = useCallback((event: React.KeyboardEvent<HTMLInputElement>): boolean => {
-        if (event.charCode === 13) {
-            const input = event.target as HTMLInputElement;
-            if (!comm_socket.connected) {
-                void swal(_("Connection to server lost"));
+    const onKeyPress = useCallback(
+        (event: React.KeyboardEvent<HTMLInputElement>): boolean => {
+            if (event.charCode === 13) {
+                const input = event.target as HTMLInputElement;
+                if (!comm_socket.connected) {
+                    void swal(_("Connection to server lost"));
+                    return false;
+                }
+
+                if (proxy) {
+                    proxy.channel.send(input.value);
+                    if (show_say_hi_placeholder) {
+                        set_show_say_hi_placeholder(false);
+                    }
+                    input.value = "";
+                }
                 return false;
             }
 
-            if (proxy) {
-                proxy.channel.send(input.value);
-                if (show_say_hi_placeholder) {
-                    set_show_say_hi_placeholder(false);
-                }
-                input.value = "";
-            }
-            return false;
-        }
-
-        return;
-    }, [channel, proxy]);
+            return;
+        },
+        [channel, proxy],
+    );
 
     return (
-        <TabCompleteInput ref={input} id="chat-input" className={rtl_mode ? "rtl" : ""}
+        <TabCompleteInput
+            ref={input}
+            id="chat-input"
+            className={rtl_mode ? "rtl" : ""}
             autoFocus={autoFocus}
             placeholder={
-                !user.email_validated ? _("Chat will be enabled once your email address has been validated") :
-                show_say_hi_placeholder ? pgettext("This is the placeholder text for the chat input field in games, chat channels, and private messages", interpolate("Message {{who}}", {who: channel_name || "..."})) : ""
+                !user.email_validated
+                    ? _("Chat will be enabled once your email address has been validated")
+                    : show_say_hi_placeholder
+                    ? pgettext(
+                          "This is the placeholder text for the chat input field in games, chat channels, and private messages",
+                          interpolate("Message {{who}}", { who: channel_name || "..." }),
+                      )
+                    : ""
             }
-            disabled={user.anonymous || !data.get('user').email_validated}
+            disabled={user.anonymous || !data.get("user").email_validated}
             onKeyPress={onKeyPress}
         />
     );
 }
-
 
 export function EmbeddedChatCard(props: ChatLogProperties): JSX.Element {
     return (

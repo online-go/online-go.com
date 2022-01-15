@@ -16,23 +16,22 @@
  */
 
 import * as React from "react";
-import {_} from "translate";
-import {Card} from "material";
-import {del, post, get} from "requests";
-import {browserHistory} from "ogsHistory";
+import { _ } from "translate";
+import { Card } from "material";
+import { del, post, get } from "requests";
+import { browserHistory } from "ogsHistory";
 import * as data from "data";
-import {UIPush} from "UIPush";
-import {Player} from "Player";
-import {PlayerIcon} from "PlayerIcon";
+import { UIPush } from "UIPush";
+import { Player } from "Player";
+import { PlayerIcon } from "PlayerIcon";
 import * as player_cache from "player_cache";
-import {profanity_filter} from "profanity_filter";
-import {challenge_text_description} from "ChallengeModal";
-import {FabX, FabCheck} from "material";
-import {ignore} from "misc";
-import cached from 'cached';
+import { profanity_filter } from "profanity_filter";
+import { challenge_text_description } from "ChallengeModal";
+import { FabX, FabCheck } from "material";
+import { ignore } from "misc";
+import cached from "cached";
 
-
-export class ChallengesList extends React.PureComponent<{onAccept: () => void}, any> {
+export class ChallengesList extends React.PureComponent<{ onAccept: () => void }, any> {
     constructor(props) {
         super(props);
         this.state = {
@@ -47,58 +46,59 @@ export class ChallengesList extends React.PureComponent<{onAccept: () => void}, 
         data.unwatch(cached.challenge_list, this.update);
     }
     update = (challenge_list) => {
-        this.setState({"challenges": challenge_list});
+        this.setState({ challenges: challenge_list });
     };
 
     deleteChallenge(challenge) {
-        del("me/challenges/%%", challenge.id)
-        .then(ignore)
-        .catch(ignore);
-        this.setState({challenges: this.state.challenges.filter(c => c.id !== challenge.id)});
+        del("me/challenges/%%", challenge.id).then(ignore).catch(ignore);
+        this.setState({ challenges: this.state.challenges.filter((c) => c.id !== challenge.id) });
     }
     acceptChallenge(challenge) {
         post("me/challenges/%%/accept", challenge.id, {})
-        .then((res) => {
-            if (res.time_per_move > 0 && res.time_per_move < 1800) {
-                browserHistory.push(`/game/${res.game}`);
-            } else {
-                if (this.props.onAccept) {
-                    this.props.onAccept();
+            .then((res) => {
+                if (res.time_per_move > 0 && res.time_per_move < 1800) {
+                    browserHistory.push(`/game/${res.game}`);
+                } else {
+                    if (this.props.onAccept) {
+                        this.props.onAccept();
+                    }
                 }
-            }
-        })
-        .catch(ignore);
-        this.setState({challenges: this.state.challenges.filter(c => c.id !== challenge.id)});
+            })
+            .catch(ignore);
+        this.setState({ challenges: this.state.challenges.filter((c) => c.id !== challenge.id) });
     }
 
     render() {
-        const user = data.get('user');
+        const user = data.get("user");
 
         return (
             <div className="ChallengesList">
-                {(this.state.challenges.length > 0) &&
-                    <h2>{_("Challenges")}</h2>
-                }
-                <div className='challenge-cards'>
+                {this.state.challenges.length > 0 && <h2>{_("Challenges")}</h2>}
+                <div className="challenge-cards">
                     {this.state.challenges.map((challenge) => {
-                        const opponent = challenge.challenger.id === user.id ? challenge.challenged : challenge.challenger;
+                        const opponent =
+                            challenge.challenger.id === user.id
+                                ? challenge.challenged
+                                : challenge.challenger;
 
                         return (
                             <Card key={challenge.id}>
-                                <div className='icon-name'>
-                                    <PlayerIcon id={opponent.id} size={64}/>
-                                    <div className='name'>
-                                        {challenge.challenged.id === user.id &&
-                                        <FabCheck onClick={this.acceptChallenge.bind(this, challenge)} />
-                                        }
-                                        <FabX onClick={this.deleteChallenge.bind(this, challenge)} />
+                                <div className="icon-name">
+                                    <PlayerIcon id={opponent.id} size={64} />
+                                    <div className="name">
+                                        {challenge.challenged.id === user.id && (
+                                            <FabCheck
+                                                onClick={this.acceptChallenge.bind(this, challenge)}
+                                            />
+                                        )}
+                                        <FabX
+                                            onClick={this.deleteChallenge.bind(this, challenge)}
+                                        />
                                         <h4>{profanity_filter(challenge.game.name)}</h4>
-                                        <Player user={opponent}/>
+                                        <Player user={opponent} />
                                     </div>
                                 </div>
-                                <div>
-                                    {challenge_text_description(challenge)}
-                                </div>
+                                <div>{challenge_text_description(challenge)}</div>
                             </Card>
                         );
                     })}

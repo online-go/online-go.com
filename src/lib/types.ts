@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { PlayerCacheEntry } from 'player_cache';
-import { GoEngineRules, JGOFTimeControl } from 'goban';
+import { PlayerCacheEntry } from "player_cache";
+import { GoEngineRules, JGOFTimeControl } from "goban";
 
 export interface Player extends PlayerCacheEntry {
     professional: boolean;
@@ -26,19 +26,26 @@ export interface Group {
     hide_details: boolean;
     icon: string;
     id: number;
-    is_public:  boolean;
+    is_public: boolean;
     member_count: number;
     name: string;
-    require_invitation:  boolean;
+    require_invitation: boolean;
     summary: string;
 }
 
 export type GroupList = Array<Group>;
 
-
 export type TournamentPairingMethod = "slaughter" | "random" | "slide" | "strength";
 export type TournamentExclusivity = "open" | "group" | "invite";
-export type TournamentType = 'mcmahon' | 's_mcmahon' | 'roundrobin' | 'swiss' | 's_title' | 's_elimination' | 'elimination' | 'double_elimination';
+export type TournamentType =
+    | "mcmahon"
+    | "s_mcmahon"
+    | "roundrobin"
+    | "swiss"
+    | "s_title"
+    | "s_elimination"
+    | "elimination"
+    | "double_elimination";
 
 export interface ActiveTournament {
     active_round: number;
@@ -75,10 +82,10 @@ export interface ActiveTournament {
 
 export type ActiveTournamentList = Array<ActiveTournament>;
 
-export type Speed = 'blitz' | 'live' | 'correspondence';
-export type Size = '9x9' | '13x13' | '19x19';
-export type AutomatchCondition = 'required' | 'preferred' | 'no-preference';
-export type RuleSet = 'japanese' | 'chinese' | 'aga' | 'korean' | 'nz' | 'ing';
+export type Speed = "blitz" | "live" | "correspondence";
+export type Size = "9x9" | "13x13" | "19x19";
+export type AutomatchCondition = "required" | "preferred" | "no-preference";
+export type RuleSet = "japanese" | "chinese" | "aga" | "korean" | "nz" | "ing";
 
 // AutomatchSettings and automatch_manager handle size, speed and uuid
 // differently, but everything else is the same.  Hence a shared base.
@@ -88,12 +95,12 @@ export interface AutomatchPreferencesBase {
     upper_rank_diff: number;
     rules: {
         condition: AutomatchCondition;
-        value: 'japanese' | 'chinese' | 'aga' | 'korean' | 'nz' | 'ing';
+        value: "japanese" | "chinese" | "aga" | "korean" | "nz" | "ing";
     };
     time_control: {
         condition: AutomatchCondition;
         value: {
-            system: 'byoyomi' | 'fischer' | 'simple' | 'canadian';
+            system: "byoyomi" | "fischer" | "simple" | "canadian";
             initial_time?: number;
             time_increment?: number;
             max_time?: number;
@@ -107,6 +114,6 @@ export interface AutomatchPreferencesBase {
     };
     handicap: {
         condition: AutomatchCondition;
-        value: 'enabled' | 'disabled';
+        value: "enabled" | "disabled";
     };
 }

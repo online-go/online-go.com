@@ -16,29 +16,28 @@
  */
 
 import * as React from "react";
-import {get} from 'requests';
-import {errorAlerter} from "misc";
+import { get } from "requests";
+import { errorAlerter } from "misc";
 import * as player_cache from "player_cache";
-import {User} from './User';
+import { User } from "./User";
 import { RouteComponentProps } from "react-router";
 
-
-type UserByNameProperties = RouteComponentProps<{username: string}>;
+type UserByNameProperties = RouteComponentProps<{ username: string }>;
 
 export function UserByName(props: UserByNameProperties): JSX.Element {
     const username = props.match.params.username;
     const [user_id, set_user_id] = React.useState<number>(null);
 
     const doFetch = (username: string) => {
-        get("players", {username: username})
-        .then((res) => {
-            if (res.results.length) {
-                set_user_id(res.results[0].id);
-            } else {
-                set_user_id(-1);
-            }
-        })
-        .catch(errorAlerter);
+        get("players", { username: username })
+            .then((res) => {
+                if (res.results.length) {
+                    set_user_id(res.results[0].id);
+                } else {
+                    set_user_id(-1);
+                }
+            })
+            .catch(errorAlerter);
     };
 
     React.useEffect(() => {
@@ -52,11 +51,9 @@ export function UserByName(props: UserByNameProperties): JSX.Element {
     }, [username]);
 
     if (user_id) {
-        return <User
-            match={{ params: { user_id: user_id.toString() } }}
-            location={props.location}
-        />;
+        return (
+            <User match={{ params: { user_id: user_id.toString() } }} location={props.location} />
+        );
     }
     return null;
 }
-

@@ -25,11 +25,7 @@ type Challenge = socket_api.seekgraph_global.Challenge;
 interface RengoTeamManagementPaneProps {
     challenge_list: Challenge[];
     challenge_id: number;
-    assignToTeam: (
-        player_id: number,
-        team: string,
-        challenge: Challenge,
-        done: () => void) => void;
+    assignToTeam: (player_id: number, team: string, challenge: Challenge, done: () => void) => void;
 }
 
 interface RengoTeamManagementPaneState {
@@ -38,8 +34,8 @@ interface RengoTeamManagementPaneState {
 
 export class RengoTeamManagementPane extends React.PureComponent<
     RengoTeamManagementPaneProps,
-    RengoTeamManagementPaneState> {
-
+    RengoTeamManagementPaneState
+> {
     constructor(props) {
         super(props);
         this.state = {
@@ -49,29 +45,33 @@ export class RengoTeamManagementPane extends React.PureComponent<
 
     done = () => {
         //console.log("assign done called... ap", this.state.assignment_pending, this.props.challenge_id);
-        this.setState({assignment_pending: false});
+        this.setState({ assignment_pending: false });
     };
 
-    _assignToTeam = (
-        player_id: number,
-        team: string,
-        challenge: Challenge
-    ) => {
-        this.setState({assignment_pending: true});
+    _assignToTeam = (player_id: number, team: string, challenge: Challenge) => {
+        this.setState({ assignment_pending: true });
         this.props.assignToTeam(player_id, team, challenge, this.done.bind(self));
     };
 
     render = () => {
-        const the_challenge = this.props.challenge_list.find((c) => (c.challenge_id === this.props.challenge_id));
+        const the_challenge = this.props.challenge_list.find(
+            (c) => c.challenge_id === this.props.challenge_id,
+        );
 
         // this function should not be called if the user doesn't have a rengo challenge open...
         if (the_challenge === undefined) {
-            return <div>{_("(oops - if you had a rengo challenge open, the details would be showing here!)")}</div>;
+            return (
+                <div>
+                    {_(
+                        "(oops - if you had a rengo challenge open, the details would be showing here!)",
+                    )}
+                </div>
+            );
         }
 
-        const nominees = the_challenge['rengo_nominees'];
-        const black_team = the_challenge['rengo_black_team'];
-        const white_team = the_challenge['rengo_white_team'];
+        const nominees = the_challenge["rengo_nominees"];
+        const black_team = the_challenge["rengo_black_team"];
+        const white_team = the_challenge["rengo_white_team"];
 
         if (nominees.length + black_team.length + white_team.length === 0) {
             // This should be at most transitory, since the creator is added as a player on creation!
@@ -80,64 +80,104 @@ export class RengoTeamManagementPane extends React.PureComponent<
 
         return (
             <div className="RengoTeamManagementPane">
-                <div className={'rengo-admin-container' + (this.state.assignment_pending ? " pending" : "")}>
-                    <div className='rengo-admin-header'>
-                        {_("Black:")}
-                    </div>
-                    {(black_team.length === 0 || null) &&
-                        <div className="no-rengo-players-to-admin">{_("(none yet)")}</div>
+                <div
+                    className={
+                        "rengo-admin-container" + (this.state.assignment_pending ? " pending" : "")
                     }
+                >
+                    <div className="rengo-admin-header">{_("Black:")}</div>
+                    {(black_team.length === 0 || null) && (
+                        <div className="no-rengo-players-to-admin">{_("(none yet)")}</div>
+                    )}
                     {black_team.map((n, i) => (
-                        <div className='rengo-assignment-row' key={i}>
-                            {(the_challenge.user_challenge || null) &&
+                        <div className="rengo-assignment-row" key={i}>
+                            {(the_challenge.user_challenge || null) && (
                                 <React.Fragment>
-                                    <i className="fa fa-lg fa-times-circle-o unassign"
-                                        onClick={this._assignToTeam.bind(self, n, 'none', the_challenge)}/>
-                                    <i className="fa fa-lg fa-arrow-down"
-                                        onClick={this._assignToTeam.bind(self, n, 'rengo_white_team', the_challenge)}/>
+                                    <i
+                                        className="fa fa-lg fa-times-circle-o unassign"
+                                        onClick={this._assignToTeam.bind(
+                                            self,
+                                            n,
+                                            "none",
+                                            the_challenge,
+                                        )}
+                                    />
+                                    <i
+                                        className="fa fa-lg fa-arrow-down"
+                                        onClick={this._assignToTeam.bind(
+                                            self,
+                                            n,
+                                            "rengo_white_team",
+                                            the_challenge,
+                                        )}
+                                    />
                                 </React.Fragment>
-                            }
-                            <Player user={n} rank={true} key={i}/>
+                            )}
+                            <Player user={n} rank={true} key={i} />
                         </div>
                     ))}
 
-                    <div className='rengo-admin-header'>
-                        {_("White:")}
-                    </div>
-                    {(white_team.length === 0 || null) &&
+                    <div className="rengo-admin-header">{_("White:")}</div>
+                    {(white_team.length === 0 || null) && (
                         <div className="no-rengo-players-to-admin">{_("(none yet)")}</div>
-                    }
+                    )}
                     {white_team.map((n, i) => (
-                        <div className='rengo-assignment-row' key={i}>
-                            {(the_challenge.user_challenge || null) &&
+                        <div className="rengo-assignment-row" key={i}>
+                            {(the_challenge.user_challenge || null) && (
                                 <React.Fragment>
-                                    <i className="fa fa-lg fa-times-circle-o unassign"
-                                        onClick={this._assignToTeam.bind(self, n, 'none', the_challenge)}/>
-                                    <i className="fa fa-lg fa-arrow-up"
-                                        onClick={this._assignToTeam.bind(self, n, 'rengo_black_team', the_challenge)}/>
+                                    <i
+                                        className="fa fa-lg fa-times-circle-o unassign"
+                                        onClick={this._assignToTeam.bind(
+                                            self,
+                                            n,
+                                            "none",
+                                            the_challenge,
+                                        )}
+                                    />
+                                    <i
+                                        className="fa fa-lg fa-arrow-up"
+                                        onClick={this._assignToTeam.bind(
+                                            self,
+                                            n,
+                                            "rengo_black_team",
+                                            the_challenge,
+                                        )}
+                                    />
                                 </React.Fragment>
-                            }
-                            <Player user={n} rank={true} key={i}/>
+                            )}
+                            <Player user={n} rank={true} key={i} />
                         </div>
                     ))}
 
-                    <div className='rengo-admin-header'>
-                        {_("Unassigned:")}
-                    </div>
-                    {(nominees.length === 0 || null) &&
+                    <div className="rengo-admin-header">{_("Unassigned:")}</div>
+                    {(nominees.length === 0 || null) && (
                         <div className="no-rengo-players-to-admin">{_("(none left)")}</div>
-                    }
+                    )}
                     {nominees.map((n, i) => (
-                        <div className='rengo-assignment-row' key={i}>
-                            {(the_challenge.user_challenge || null) &&
+                        <div className="rengo-assignment-row" key={i}>
+                            {(the_challenge.user_challenge || null) && (
                                 <React.Fragment>
-                                    <i className="fa fa-lg fa-arrow-up black"
-                                        onClick={this._assignToTeam.bind(self, n, 'rengo_black_team', the_challenge)}/>
-                                    <i className="fa fa-lg fa-arrow-up white"
-                                        onClick={this._assignToTeam.bind(self, n, 'rengo_white_team', the_challenge)}/>
+                                    <i
+                                        className="fa fa-lg fa-arrow-up black"
+                                        onClick={this._assignToTeam.bind(
+                                            self,
+                                            n,
+                                            "rengo_black_team",
+                                            the_challenge,
+                                        )}
+                                    />
+                                    <i
+                                        className="fa fa-lg fa-arrow-up white"
+                                        onClick={this._assignToTeam.bind(
+                                            self,
+                                            n,
+                                            "rengo_white_team",
+                                            the_challenge,
+                                        )}
+                                    />
                                 </React.Fragment>
-                            }
-                            <Player user={n} rank={true} key={i}/>
+                            )}
+                            <Player user={n} rank={true} key={i} />
                         </div>
                     ))}
                 </div>
@@ -145,4 +185,3 @@ export class RengoTeamManagementPane extends React.PureComponent<
         );
     };
 }
-

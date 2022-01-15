@@ -32,16 +32,17 @@ export function image_resizer(file: File, max_width: number, max_height?: number
     const image = new Image();
     const canvas = document.createElement("canvas");
     const dataURItoBlob = (dataURI: string) => {
-        const bytes = dataURI.split(",")[0].indexOf("base64") >= 0 ?
-            atob(dataURI.split(",")[1]) :
-            decodeURIComponent(dataURI.split(",")[1]);
+        const bytes =
+            dataURI.split(",")[0].indexOf("base64") >= 0
+                ? atob(dataURI.split(",")[1])
+                : decodeURIComponent(dataURI.split(",")[1]);
         const mime = dataURI.split(",")[0].split(":")[1].split(";")[0];
         const max = bytes.length;
         const ia = new Uint8Array(max);
         for (let i = 0; i < max; i++) {
             ia[i] = bytes.charCodeAt(i);
         }
-        return new Blob([ia], {type: mime});
+        return new Blob([ia], { type: mime });
     };
     const resize = (): File => {
         let width = image.width;
