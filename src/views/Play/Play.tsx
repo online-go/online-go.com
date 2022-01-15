@@ -957,7 +957,7 @@ export class Play extends React.Component<{}, PlayState> {
             :
             live_list.map((C) => (
                 this.visibleInChallengeList(C) ?
-                    this.rengoListItem(C, user)
+                    <this.rengoListItem C={C} user={user} key={`rengo-list-item-{C.challenge_id}`}/>
                 : null
             )),
 
@@ -984,9 +984,9 @@ export class Play extends React.Component<{}, PlayState> {
             corre_list.map((C) => (
                 (this.visibleInChallengeList(C) || null) &&
                     <React.Fragment key={C.challenge_id}>
-                        {this.rengoListItem(C, user)}
+                        <this.rengoListItem C={C} user={user}/>
                         {(this.state.show_in_rengo_management_pane.includes(C.challenge_id) || null) &&
-                            this.rengoManageListItem(C, user)
+                            <this.rengoManageListItem C={C} user={user}/>
                         }
                     </React.Fragment>
             ))
@@ -1002,9 +1002,10 @@ export class Play extends React.Component<{}, PlayState> {
         }
     };
 
-    rengoManageListItem = (C, user) => {
+    rengoManageListItem = (props: {C: Challenge; user: any}) => {
+        const {C, user} = {...props};
         return (
-            <tr key={`manage-list-item-${C.challenge_id}`} className={"challenge-row rengo-management-row"}>
+            <tr className={"challenge-row rengo-management-row"}>
                 <td className='cell' colSpan={8}>
                     <Card className='rengo-management-list-item' >
                         <div className='rengo-management-header'>
@@ -1039,10 +1040,8 @@ export class Play extends React.Component<{}, PlayState> {
     rengoListItem = (props: {C: Challenge; user: any}) => {
         const {C, user} = {...props};
 
-        const showing_manage_interface = this.state.show_in_rengo_management_pane === C.challenge_id;
-
         return (
-            <tr key={`rengo-list-item-${C.challenge_id}`} className={"challenge-row"}>
+            <tr className={"challenge-row"}>
                 <td className={"cell rengo-list-buttons"}>
                     {user.is_moderator &&
                         <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left ">
