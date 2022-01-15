@@ -16,15 +16,11 @@
  */
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
-import {Link} from "react-router-dom";
-import {browserHistory} from "ogsHistory";
-import {_, pgettext, interpolate} from "translate";
+import {_} from "translate";
 import {abort_requests_in_flight, del, put, post, get} from "requests";
 import {Markdown} from "Markdown";
 import {PaginatedTable, PaginatedTableRef} from "PaginatedTable";
 import {Player} from "Player";
-import * as moment from "moment";
 import * as data from "data";
 import {ignore, errorAlerter, dup} from "misc";
 import {rankString, allRanks} from "rank_utils";

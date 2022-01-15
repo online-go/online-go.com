@@ -17,7 +17,6 @@
 
 
 import * as React from "react";
-import {post, get} from "requests";
 import {Goban} from "goban";
 import {PersistentElement} from "PersistentElement";
 
@@ -169,5 +168,3 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps>
         );
     }
 }
-
-
