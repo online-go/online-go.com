@@ -195,7 +195,6 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 e.user_challenge = false;
                 e.joined_rengo = e.rengo && e.rengo_participants.includes(this_userid);
 
-                console.log(e);
                 if (data.get("user").anonymous) {
                     e.eligible = false;
                     e.ineligible_reason = _("Not logged in");

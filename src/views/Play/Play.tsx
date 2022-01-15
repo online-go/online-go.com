@@ -61,7 +61,7 @@ interface PlayState {
     automatch_size_options: Size[];
     freeze_challenge_list: boolean; // Don't change the challenge list while they are trying to point the mouse at it
     pending_challenges: Array<Challenge>; // challenges received while frozen
-    show_in_rengo_management_pane: number; // a challenge_id for challenge to show in the rengo challenge management pane
+    show_in_rengo_management_pane: number[]; // a challenge_ids for challenges to show with pane open in the rengo challenge list
 }
 
 export class Play extends React.Component<{}, PlayState> {
@@ -90,7 +90,7 @@ export class Play extends React.Component<{}, PlayState> {
             automatch_size_options: data.get('automatch.size_options', ['19x19']),
             freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
             pending_challenges: [], // challenges received while frozen
-            show_in_rengo_management_pane: 0,
+            show_in_rengo_management_pane: [],
         };
         this.canvas = document.createElement("canvas");
         this.list_freeze_timeout = null;
@@ -205,16 +205,22 @@ export class Play extends React.Component<{}, PlayState> {
     acceptOpenChallenge = (challenge: Challenge) => {
         openGameAcceptModal(challenge).then((challenge) => {
             browserHistory.push(`/game/${challenge.game_id}`);
-            //window['openGame'](obj.game);
+            //window['openGame'](obj.game);_
             this.unfreezeChallenges();
         }).catch(errorAlerter);
     };
 
-    cancelOpenChallenge = (challenge) => {
-        console.log("Canceling", challenge);
-        if (challenge.challenge_id === this.state.show_in_rengo_management_pane) {
-            this.setState({show_in_rengo_management_pane: 0});
+    closeChallengeManagementPane = (challenge: Challenge) => {
+        if (this.state.show_in_rengo_management_pane.includes(challenge.challenge_id)) {
+            this.setState({show_in_rengo_management_pane: this.state.show_in_rengo_management_pane.filter((c) => (c !== challenge.challenge_id))});
         }
+    };
+
+    cancelOpenChallenge = (challenge: Challenge) => {
+        // stop trying to show the cancelled challenge
+        this.closeChallengeManagementPane(challenge);
+
+        // then tell the server
         del("challenges/%%", challenge.challenge_id).then(() => 0).catch(errorAlerter);
         this.unfreezeChallenges();
     };
@@ -542,12 +548,18 @@ export class Play extends React.Component<{}, PlayState> {
                                 <span className="cell break">
                                     {_("Rengo")}
                                 </span>
-                                {this.cellBreaks(7)}
                             </div>
 
-                            {this.anyChallengesToShow(this.state.rengo_list) ? this.rengoListHeaders() : null}
 
-                            {this.rengoList()}
+                            <table id='rengo-table'>
+                                <thead>
+                                    {this.anyChallengesToShow(this.state.rengo_list) ? this.rengoListHeaders() : null}
+                                </thead>
+
+                                <tbody>
+                                    {this.rengoList()}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -862,7 +874,7 @@ export class Play extends React.Component<{}, PlayState> {
         </div>;
     }
 
-    unNominateForRengoChallenge = (C) => {
+    unNominateForRengoChallenge = (C: Challenge) => {
         swal({
             text: _("Withdrawing..."),   // translator: the server is processing their request to withdraw from a rengo challenge
             type: "info",
@@ -871,9 +883,7 @@ export class Play extends React.Component<{}, PlayState> {
             allowEscapeKey: false,
         }).catch(swal.noop);
 
-        if (C.challenge_id === this.state.show_in_rengo_management_pane) {
-            this.setState({show_in_rengo_management_pane: 0});
-        }
+        this.closeChallengeManagementPane(C);
 
         del("challenges/%%/join", C.challenge_id, {})
         .then(() => {
@@ -887,10 +897,7 @@ export class Play extends React.Component<{}, PlayState> {
 
     rengoListHeaders() {
         return (
-            <React.Fragment>
-                <colgroup>
-                    <col span={8}></col>
-                </colgroup>
+            <>
                 <tr className="challenge-row">
                     <td className="head " style={{textAlign: "right"}}>{_("")}</td>
                     <td className="head organizer">{_("Organizer")}</td>
@@ -902,23 +909,27 @@ export class Play extends React.Component<{}, PlayState> {
                     <td className="head" style={{textAlign: "left"}}>{_("Name")}</td>
                     <td className="head" style={{textAlign: "left"}}>{_("Rules")}</td>
                 </tr>
-            </React.Fragment>
+            </>
         );
     }
 
     nominateAndShow = (C) => {
-        this.manageRengoChallenge(C);
+        this.toggleRengoChallengePane(C);
         nominateForRengoChallenge(C);
     };
 
     rengoList = () => {
         if (!this.anyChallengesToShow(this.state.rengo_list)) {
             return (
-                <div className="ineligible">
-                    {this.state.show_all_challenges ?
-                        _("(none)") /* translators: There are no challenges in the system, nothing to list here */ :
-                        _("(none available)") /* translators: There are no challenges that this person is eligible for */}
-                </div>
+                <tr key="none-available">
+                    <td colSpan={8}>
+                        <div className="ineligible">
+                            {this.state.show_all_challenges ?
+                                _("(none)") /* translators: There are no challenges in the system, nothing to list here */ :
+                                _("(none available)") /* translators: There are no challenges that this person is eligible for */}
+                        </div>
+                    </td>
+                </tr>
             );
         }
 
@@ -930,23 +941,23 @@ export class Play extends React.Component<{}, PlayState> {
         return [
             // the live list
             <tr className="challenge-row" key="live">
-                <span className="cell">
+                <td className="cell">
                     {_("Live:")}
-                </span>
+                </td>
             </tr>,
 
             !this.anyChallengesToShow(live_list) ?
                 <tr className="challenge-row ineligible" key="live-ineligible">
-                    <span className="cell" style={{textAlign: "center"}}>
+                    <td className="cell" style={{textAlign: "center"}}>
                         {this.state.show_all_challenges ?
                             _("(none)") /* translators: There are no challenges in the system, nothing to list here */ :
                             _("(none available)") /* translators: There are no challenges that this person is eligible for */}
-                    </span>
+                    </td>
                 </tr>
             :
             live_list.map((C) => (
                 this.visibleInChallengeList(C) ?
-                    this.rengoListItem(C, user)
+                    <this.rengoListItem C={C} user={user} key={`rengo-list-item-{C.challenge_id}`}/>
                 : null
             )),
 
@@ -956,55 +967,52 @@ export class Play extends React.Component<{}, PlayState> {
 
             // the correspondence list
             <tr className="challenge-row" key="corre">
-                <span className="cell">
+                <td className="cell">
                     {_("Correspondence:")}
-                </span>
+                </td>
             </tr>,
 
             !this.anyChallengesToShow(corre_list) ?
                 <tr className="ineligible" key="corre-ineligible">
-                    <span style={{textAlign: "center"}}>
+                    <td style={{textAlign: "center"}}>
                         {this.state.show_all_challenges ?
                             _("(none)") /* translators: There are no challenges in the system, nothing to list here */ :
                             _("(none available)") /* translators: There are no challenges that this person is eligible for */}
-                    </span>
+                    </td>
                 </tr>
             :
             corre_list.map((C) => (
                 (this.visibleInChallengeList(C) || null) &&
-                    <>
-                        {this.rengoListItem(C, user)}
-                        {(this.state.show_in_rengo_management_pane === C.challenge_id || null) &&
-                            this.rengoManageListItem(C, user)
+                    <React.Fragment key={C.challenge_id}>
+                        <this.rengoListItem C={C} user={user}/>
+                        {(this.state.show_in_rengo_management_pane.includes(C.challenge_id) || null) &&
+                            <this.rengoManageListItem C={C} user={user}/>
                         }
-                    </>
+                    </React.Fragment>
             ))
         ];
     };
 
-    manageRengoChallenge = (C) => {
-        //console.log("managing ", C);
-        if (this.state.show_in_rengo_management_pane === C.challenge_id) {
-            this.setState({show_in_rengo_management_pane: 0});
+
+    toggleRengoChallengePane = (C: Challenge) => {
+        if (this.state.show_in_rengo_management_pane.includes(C.challenge_id)) {
+            this.closeChallengeManagementPane(C);
         } else {
-            this.setState({show_in_rengo_management_pane: C.challenge_id});
+            this.setState({show_in_rengo_management_pane: [C.challenge_id, ... this.state.show_in_rengo_management_pane]});
         }
     };
 
-    stopManagingRengoChallenge = () => {
-        this.setState({show_in_rengo_management_pane: 0});
-    };
-
-    rengoManageListItem = (C, user) => {
+    rengoManageListItem = (props: {C: Challenge; user: any}) => {
+        const {C, user} = {...props};
         return (
-            <tr key={C.challenge_id} className={"challenge-row rengo-management-row"}>
+            <tr className={"challenge-row rengo-management-row"}>
                 <td className='cell' colSpan={8}>
                     <Card className='rengo-management-list-item' >
                         <div className='rengo-management-header'>
                             <span>{C.name}</span>
                             <div>
                                 <i className="fa fa-lg fa-times-circle-o"
-                                    onClick={this.stopManagingRengoChallenge}/>
+                                    onClick={this.closeChallengeManagementPane.bind(self, C)}/>
                             </div>
                         </div>
                         <RengoManagementPane
@@ -1029,12 +1037,12 @@ export class Play extends React.Component<{}, PlayState> {
         );
     };
 
-    rengoListItem = (C, user) => {
-        const showing_manage_interface = this.state.show_in_rengo_management_pane === C.challenge_id;
+    rengoListItem = (props: {C: Challenge; user: any}) => {
+        const {C, user} = {...props};
 
         return (
-            <tr key={C.challenge_id} className={"challenge-row"}>
-                <span className={"cell rengo-list-buttons"}>
+            <tr className={"challenge-row"}>
+                <td className={"cell rengo-list-buttons"}>
                     {user.is_moderator &&
                         <button onClick={this.cancelOpenChallenge.bind(this, C)} className="btn danger xs pull-left ">
                             <i className='fa fa-trash' /></button>}
@@ -1049,7 +1057,7 @@ export class Play extends React.Component<{}, PlayState> {
 
                     {!isLiveGame(C.time_control_parameters) &&
                         <button
-                            onClick={this.manageRengoChallenge.bind(this, C)}
+                            onClick={this.toggleRengoChallengePane.bind(this, C)}
                             className="btn primary xs"
                         >
                             {C.user_challenge ?  _("Manage") : _("View")}
@@ -1064,28 +1072,28 @@ export class Play extends React.Component<{}, PlayState> {
                     {((!C.eligible || C.removed) && !C.user_challenge || null) &&
                         <span className="ineligible" title={C.ineligible_reason}>
                             {_("Can't accept")}</span>}
-                </span>
-                <span className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
+                </td>
+                <td className="cell" style={{textAlign: "left", maxWidth: "10em", overflow: "hidden"}}>
                     <Player user={this.extractUser(C)} rank={true} />
-                </span>
-                <span className={"cell " + ((C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19)) ? "bold" : "")}>
+                </td>
+                <td className={"cell " + ((C.width !== C.height || (C.width !== 9 && C.width !== 13 && C.width !== 19)) ? "bold" : "")}>
                     {C.width}x{C.height}
-                </span>
-                <span>
+                </td>
+                <td>
                     {shortShortTimeControl(C.time_control_parameters)}
-                </span>
-                <span className="cell">
+                </td>
+                <td className="cell">
                     {C.rengo_participants.length}
-                </span>
-                <span className="cell">
+                </td>
+                <td className="cell">
                     {C.handicap_text}
-                </span>
-                <span className="cell">
+                </td>
+                <td className="cell">
                     {C.name}
-                </span>
-                <span className="cell">
+                </td>
+                <td className="cell">
                     {rulesText(C.rules)}
-                </span>
+                </td>
             </tr>
         );
     };

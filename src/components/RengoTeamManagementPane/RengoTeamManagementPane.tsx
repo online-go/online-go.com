@@ -64,7 +64,6 @@ export class RengoTeamManagementPane extends React.PureComponent<
     render = () => {
         const the_challenge = this.props.challenge_list.find((c) => (c.challenge_id === this.props.challenge_id));
 
-        console.log("render", the_challenge);
         // this function should not be called if the user doesn't have a rengo challenge open...
         if (the_challenge === undefined) {
             return <div>{_("(oops - if you had a rengo challenge open, the details would be showing here!)")}</div>;
