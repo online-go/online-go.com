@@ -19,7 +19,6 @@
 
 import * as React from "react";
 
-
 interface ThrobberProps {
     throb: boolean;
 }
@@ -28,39 +27,50 @@ interface ThrobberState {
 }
 
 export class Throbber extends React.PureComponent<ThrobberProps, ThrobberState> {
-
     throb_delay_timer: any;
 
     constructor(props) {
         super(props);
         this.state = {
-            throbbing: this.props.throb
+            throbbing: this.props.throb,
         };
     }
 
     turnOnThrob = () => {
         // console.log("turning on throb");
-        this.setState({throbbing: true});
+        this.setState({ throbbing: true });
     };
 
     componentDidUpdate = (prevProps, prevState) => {
         // console.log("throb request", this.props.throb);
         if (this.props.throb) {
             if (!prevState.throbbing) {
-                this.throb_delay_timer = setTimeout(this.turnOnThrob , 150);
+                this.throb_delay_timer = setTimeout(this.turnOnThrob, 150);
             }
         } else {
             clearTimeout(this.throb_delay_timer);
-            this.setState({throbbing: false});
+            this.setState({ throbbing: false });
         }
     };
 
     render = () => {
         return (
-            <div className={"throbber" + (this.state.throbbing ? "" :" throbber-off")}>
-                <div className="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+            <div className={"throbber" + (this.state.throbbing ? "" : " throbber-off")}>
+                <div className="lds-spinner">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
             </div>
         );
     };
 }
-

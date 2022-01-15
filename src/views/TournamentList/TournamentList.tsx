@@ -16,35 +16,34 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router-dom";
-import {_, pgettext, interpolate} from "translate";
-import {get} from "requests";
+import { Link } from "react-router-dom";
+import { _, pgettext, interpolate } from "translate";
+import { get } from "requests";
 import * as preferences from "preferences";
-import {errorAlerter} from "misc";
-import {shortTimeControl, shortShortTimeControl} from "TimeControl";
-import {computeAverageMoveTime} from 'goban';
-import {PaginatedTable} from "PaginatedTable";
+import { errorAlerter } from "misc";
+import { shortTimeControl, shortShortTimeControl } from "TimeControl";
+import { computeAverageMoveTime } from "goban";
+import { PaginatedTable } from "PaginatedTable";
 import * as moment from "moment";
-import {TOURNAMENT_TYPE_NAMES, shortRankRestrictionText} from "Tournament";
+import { TOURNAMENT_TYPE_NAMES, shortRankRestrictionText } from "Tournament";
 import tooltip from "tooltip";
 import { Toggle } from "Toggle";
 
 interface TournamentListProperties {
-    phase: 'open'|'active'|'finished';
-    speed?: 'live'|'correspondence';
-    hide_stale?: boolean;     // Hides tournaments that were supposed to have started already
+    phase: "open" | "active" | "finished";
+    speed?: "live" | "correspondence";
+    hide_stale?: boolean; // Hides tournaments that were supposed to have started already
     hide_exclusive?: boolean; // Hides tournaments that are invite-only or members-only
     group?: number;
 }
 
 interface TournamentListMainViewState {
-    tab: 'schedule'|'live'|'archive'|'correspondence';
+    tab: "schedule" | "live" | "archive" | "correspondence";
     show_all: boolean;
 }
 
-
 interface TournamentListMainViewState {
-    tab: 'schedule'|'live'|'archive'|'correspondence';
+    tab: "schedule" | "live" | "archive" | "correspondence";
 }
 
 export class TournamentListMainView extends React.PureComponent<{}, TournamentListMainViewState> {
@@ -67,42 +66,52 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
     setTabCorrespondence = () => this.setTab("correspondence");
 
     setTab(tab) {
-        this.setState({tab: tab});
+        this.setState({ tab: tab });
         preferences.set("tournaments-tab", tab);
     }
     toggleShowAll(show_all: boolean) {
-        this.setState({show_all: show_all});
+        this.setState({ show_all: show_all });
         preferences.set("tournaments-show-all", show_all);
     }
 
     render() {
         const tab = this.state.tab;
 
-        const frag_open_tournament = (speed: 'live'|'correspondence') => (
+        const frag_open_tournament = (speed: "live" | "correspondence") => (
             <React.Fragment>
                 <div className="open-tourney-header">
                     <h3>{_("Open Tournaments")}</h3>
                     <div>
                         {_("Show all")}
-                        <Toggle height={14} width={30} checked={this.state.show_all} onChange={tf => this.toggleShowAll(tf)} />
+                        <Toggle
+                            height={14}
+                            width={30}
+                            checked={this.state.show_all}
+                            onChange={(tf) => this.toggleShowAll(tf)}
+                        />
                     </div>
                 </div>
                 <TournamentList
-                    phase='open'
+                    phase="open"
                     speed={speed}
                     hide_stale={!this.state.show_all}
                     hide_exclusive={!this.state.show_all}
                 />
-            </React.Fragment>);
+            </React.Fragment>
+        );
 
         return (
-
             <div className="page-width">
                 <div className="TournamentList container">
                     <div className="tabhead">
-                        <h2><i className="fa fa-trophy"></i> {_("Tournaments")}</h2>
+                        <h2>
+                            <i className="fa fa-trophy"></i> {_("Tournaments")}
+                        </h2>
                         <div>
-                            <span className={"tab" + (tab === "schedule" ? " active" : "")} onClick={this.setTabSchedule}>
+                            <span
+                                className={"tab" + (tab === "schedule" ? " active" : "")}
+                                onClick={this.setTabSchedule}
+                            >
                                 <i className="fa fa-calendar"></i>
                                 {_("Schedule")}
                             </span>
@@ -110,7 +119,10 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
                                 <i className="fa fa-clock-o"></i>
                                 {_("Live")}
                             </span>
-                            <span className={"tab" + (tab === "correspondence" ? " active" : "")} onClick={this.setTabCorrespondence}>
+                            <span
+                                className={"tab" + (tab === "correspondence" ? " active" : "")}
+                                onClick={this.setTabCorrespondence}
+                            >
                                 <i className="ogs-turtle"></i>
                                 {_("Correspondence")}
                             </span>
@@ -120,29 +132,29 @@ export class TournamentListMainView extends React.PureComponent<{}, TournamentLi
                             </span>
                         </div>
                     </div>
-                    <hr/>
+                    <hr />
 
-                    {tab === "schedule" && <Schedule/>}
+                    {tab === "schedule" && <Schedule />}
                     {tab === "live" && (
                         <div>
-                            {frag_open_tournament('live')}
+                            {frag_open_tournament("live")}
 
                             <h3>{_("Active Tournaments")}</h3>
-                            <TournamentList phase='active' speed='live'/>
+                            <TournamentList phase="active" speed="live" />
                         </div>
                     )}
                     {tab === "correspondence" && (
                         <div>
-                            {frag_open_tournament('correspondence')}
+                            {frag_open_tournament("correspondence")}
 
                             <h3>{_("Active Tournaments")}</h3>
-                            <TournamentList phase='active' speed='correspondence'/>
+                            <TournamentList phase="active" speed="correspondence" />
                         </div>
                     )}
                     {tab === "archive" && (
                         <div>
                             <h3>{_("Finished Tournaments")}</h3>
-                            <TournamentList phase='finished'/>
+                            <TournamentList phase="finished" />
                         </div>
                     )}
                 </div>
@@ -155,25 +167,24 @@ class Schedule extends React.PureComponent<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
-            schedules: []
+            schedules: [],
         };
     }
 
     componentDidMount() {
-        get("tournament_schedules/", {page_size: 100})
-        .then((res) => {
-            res.results.sort((a, b) => {
-                return new Date(a.next_run).getTime() - new Date(b.next_run).getTime();
-            });
-            this.setState({schedules: res.results});
-        } )
-        .catch(errorAlerter);
+        get("tournament_schedules/", { page_size: 100 })
+            .then((res) => {
+                res.results.sort((a, b) => {
+                    return new Date(a.next_run).getTime() - new Date(b.next_run).getTime();
+                });
+                this.setState({ schedules: res.results });
+            })
+            .catch(errorAlerter);
     }
 
     render() {
         return (
             <div className="TournamentList-Schedule">
-
                 <table className="schedule-table">
                     <thead>
                         <tr>
@@ -185,31 +196,35 @@ class Schedule extends React.PureComponent<{}, any> {
                     </thead>
                     <tbody>
                         {this.state.schedules.map((entry, idx) => (
-                            <tr key={idx} >
+                            <tr key={idx}>
                                 <td>
                                     <h4>
                                         <i className={speedIcon(entry) + " site-tourny"}></i>
                                         {entry.name}
                                     </h4>
-                                    <div><i>{rrule_description(entry)}</i></div>
+                                    <div>
+                                        <i>{rrule_description(entry)}</i>
+                                    </div>
                                 </td>
                                 <td>
                                     <div>{typeDescription(entry)}</div>
                                 </td>
                                 <td>
                                     <div>{datefmt(entry.next_run)}</div>
-                                    <div><i>{fromNow(entry.next_run)}</i></div>
+                                    <div>
+                                        <i>{fromNow(entry.next_run)}</i>
+                                    </div>
                                 </td>
                                 <td>
                                     <div>{datefmt(entry.next_run, entry.lead_time_seconds)}</div>
-                                    <div><i>{fromNow(entry.next_run, entry.lead_time_seconds)}</i></div>
+                                    <div>
+                                        <i>{fromNow(entry.next_run, entry.lead_time_seconds)}</i>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
-
-
             </div>
         );
     }
@@ -224,8 +239,8 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
         speed?: "live" | "correspondence",
         hide_stale?: boolean,
         hide_exclusive?: boolean,
-        group?: number) {
-
+        group?: number,
+    ) {
         const filter: { [key: string]: any } = {};
         switch (phase) {
             case "open":
@@ -255,7 +270,7 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
         }
 
         if (hide_stale) {
-            filter["time_start__gte"] = (new Date()).toISOString();
+            filter["time_start__gte"] = new Date().toISOString();
         }
 
         if (hide_exclusive) {
@@ -275,7 +290,8 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
             this.props.speed,
             this.props.hide_stale,
             this.props.hide_exclusive,
-            this.props.group);
+            this.props.group,
+        );
 
         return (
             <div className="TournamentList">
@@ -291,38 +307,56 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
                             className: () => "name",
                             render: (tournament: rest_api.Tournament) => (
                                 <div className="tournament-name">
-                                    <i className={timeIcon(tournament.time_per_move) + (tournament.group ? " group-tourny" : " site-tourny")} />
-                                    {tournament.group
-                                    ? <Link to={`/group/${tournament.group.id}`}>
-                                        <img src={mk32icon(tournament.icon)}
-                                            data-title={tournament.group.name}
+                                    <i
+                                        className={
+                                            timeIcon(tournament.time_per_move) +
+                                            (tournament.group ? " group-tourny" : " site-tourny")
+                                        }
+                                    />
+                                    {tournament.group ? (
+                                        <Link to={`/group/${tournament.group.id}`}>
+                                            <img
+                                                src={mk32icon(tournament.icon)}
+                                                data-title={tournament.group.name}
+                                                onMouseOver={tooltip}
+                                                onMouseOut={tooltip}
+                                                onMouseMove={tooltip}
+                                            />
+                                        </Link>
+                                    ) : (
+                                        <img
+                                            src={tournament.icon}
+                                            data-title={_("OGS Site Wide Tournament")}
                                             onMouseOver={tooltip}
                                             onMouseOut={tooltip}
                                             onMouseMove={tooltip}
                                         />
-                                    </Link>
-                                    : <img src={tournament.icon}
-                                        data-title={_("OGS Site Wide Tournament")}
-                                        onMouseOver={tooltip}
-                                        onMouseOut={tooltip}
-                                        onMouseMove={tooltip}
-                                    />
-                                    }
+                                    )}
                                     <Link to={`/tournament/${tournament.id}`}>{tournament.name}</Link>
                                 </div>
-                            )
+                            ),
                         },
 
-                        {header: _("When")        , className: "nobr" , render: (tournament) => when(tournament.time_start)},
-                        {header: _("Time Control"), className: "nobr" , render: (tournament) => shortShortTimeControl(tournament.time_control_parameters)},
-                        {header: _("Size")        , className: "nobr" , render: (tournament) => (`${tournament.board_size}x${tournament.board_size}`)},
-                        {header: _("Players")     , className: "nobr" , render: (tournament) => tournament.player_count},
-                        {header: _("Ranks")       , className: "nobr" , render: (tournament) => shortRankRestrictionText(tournament.min_ranking, tournament.max_ranking)},
+                        { header: _("When"), className: "nobr", render: (tournament) => when(tournament.time_start) },
+                        {
+                            header: _("Time Control"),
+                            className: "nobr",
+                            render: (tournament) => shortShortTimeControl(tournament.time_control_parameters),
+                        },
+                        {
+                            header: _("Size"),
+                            className: "nobr",
+                            render: (tournament) => `${tournament.board_size}x${tournament.board_size}`,
+                        },
+                        { header: _("Players"), className: "nobr", render: (tournament) => tournament.player_count },
+                        {
+                            header: _("Ranks"),
+                            className: "nobr",
+                            render: (tournament) =>
+                                shortRankRestrictionText(tournament.min_ranking, tournament.max_ranking),
+                        },
                     ]}
                 />
-
-
-
             </div>
         );
     }
@@ -365,29 +399,70 @@ function rrule_description(entry) {
         console.log("error parsing rrule interval:", rrule);
     }
 
-    if (/freq.daily/i.test(rrule))    { unit = "daily";   }
-    if (/freq.hourly/i.test(rrule))   { unit = "hourly";   }
-    if (/freq.minutely/i.test(rrule)) { unit = "minutely"; }
-    if (/freq.weekly/i.test(rrule))   { unit = "weekly";   }
-    if (/freq.monthly/i.test(rrule))  { unit = "monthly";  }
-    if (/freq.yearly/i.test(rrule))   { unit = "yearly";   }
+    if (/freq.daily/i.test(rrule)) {
+        unit = "daily";
+    }
+    if (/freq.hourly/i.test(rrule)) {
+        unit = "hourly";
+    }
+    if (/freq.minutely/i.test(rrule)) {
+        unit = "minutely";
+    }
+    if (/freq.weekly/i.test(rrule)) {
+        unit = "weekly";
+    }
+    if (/freq.monthly/i.test(rrule)) {
+        unit = "monthly";
+    }
+    if (/freq.yearly/i.test(rrule)) {
+        unit = "yearly";
+    }
 
     if (interval === 1) {
         switch (unit) {
-            case "hourly": return m.format("m") !== "0" ? interpolate(_("Occurs %s minutes past the hour every hour"), [m.format("m")]) : _("Occurs every hour on the hour");
-            case "daily": return interpolate(_("Occurs daily at %s"), [m.format("LT")]);
-            case "weekly": return interpolate(pgettext("Every <day of week> at <time>", "Occurs every %s at %s"), [m.format("dddd"), m.format("LT")]);
-            case "monthly": return interpolate(pgettext("The <day of month> at <time>", "Occurs on the %s of every month at %s"), [m.format("Do"), m.format("LT")]);
-            case "yearly": return interpolate(pgettext("<day of year> of every year at <time>", "Occurs %s of every year at %s"), [m.format("MMMM Do"), m.format("LT")]);
+            case "hourly":
+                return m.format("m") !== "0"
+                    ? interpolate(_("Occurs %s minutes past the hour every hour"), [m.format("m")])
+                    : _("Occurs every hour on the hour");
+            case "daily":
+                return interpolate(_("Occurs daily at %s"), [m.format("LT")]);
+            case "weekly":
+                return interpolate(pgettext("Every <day of week> at <time>", "Occurs every %s at %s"), [
+                    m.format("dddd"),
+                    m.format("LT"),
+                ]);
+            case "monthly":
+                return interpolate(pgettext("The <day of month> at <time>", "Occurs on the %s of every month at %s"), [
+                    m.format("Do"),
+                    m.format("LT"),
+                ]);
+            case "yearly":
+                return interpolate(pgettext("<day of year> of every year at <time>", "Occurs %s of every year at %s"), [
+                    m.format("MMMM Do"),
+                    m.format("LT"),
+                ]);
         }
     } else {
         switch (unit) {
-            case "minutely": return interpolate(_("Occurs every %s minutes"), [interval]);
-            case "hourly": return m.format("m") !== "0" ? interpolate(_("Occurs %s minutes past the hour every %s hours"), [m.format("m"), interval])
-                                                        : interpolate(_("Occurs every %s hours on the hour"), [interval]);
-            case "daily": return interpolate(_("Occurs every %s days at %s"), [interval, m.format("LT")]);
-            case "weekly": return interpolate(_("Occurs every %s weeks on %s at %s"), [interval, m.format("dddd"), m.format("LT")]);
-            case "monthly": return interpolate(pgettext("The <day of month> every <n> months at <time>", "Occurs on the %s every %s months at %s"), [m.format("Do"), interval,  m.format("LT")]);
+            case "minutely":
+                return interpolate(_("Occurs every %s minutes"), [interval]);
+            case "hourly":
+                return m.format("m") !== "0"
+                    ? interpolate(_("Occurs %s minutes past the hour every %s hours"), [m.format("m"), interval])
+                    : interpolate(_("Occurs every %s hours on the hour"), [interval]);
+            case "daily":
+                return interpolate(_("Occurs every %s days at %s"), [interval, m.format("LT")]);
+            case "weekly":
+                return interpolate(_("Occurs every %s weeks on %s at %s"), [
+                    interval,
+                    m.format("dddd"),
+                    m.format("LT"),
+                ]);
+            case "monthly":
+                return interpolate(
+                    pgettext("The <day of month> every <n> months at <time>", "Occurs on the %s every %s months at %s"),
+                    [m.format("Do"), interval, m.format("LT")],
+                );
         }
     }
     console.log("Failed: ", unit, interval);

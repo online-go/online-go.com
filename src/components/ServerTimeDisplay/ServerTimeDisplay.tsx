@@ -17,27 +17,23 @@
 
 import * as React from "react";
 import * as moment from "moment";
-import {_, interpolate} from "translate";
+import { _, interpolate } from "translate";
 
 interface ServerTimeState {
     time: moment.Moment;
 }
 export class ServerTimeDisplay extends React.Component<{}, ServerTimeState> {
-
     intervalID;
 
     constructor(props) {
         super(props);
         this.state = {
-            time: moment().utcOffset(0)
+            time: moment().utcOffset(0),
         };
     }
 
     componentDidMount() {
-        this.intervalID = setInterval(
-            () => this.tick(),
-            1000
-        );
+        this.intervalID = setInterval(() => this.tick(), 1000);
     }
 
     componentWillUnmount() {
@@ -46,34 +42,30 @@ export class ServerTimeDisplay extends React.Component<{}, ServerTimeState> {
 
     tick() {
         this.setState({
-            time: moment().utcOffset(0)
+            time: moment().utcOffset(0),
         });
     }
 
     weekendTransitionText() {
         const day = new Date().getUTCDay();
 
-        if (day === 6 || day === 0) { /* Saturday or Sunday */
-            const midnight_sunday = day === 6
-                ?  moment().utcOffset(0).add(1, 'day').endOf('day')
-                :  moment().utcOffset(0).endOf('day')
-            ;
-
-            return interpolate(_("Weekend ends {{time_from_now}}"), {"time_from_now": midnight_sunday.fromNow()});
+        if (day === 6 || day === 0) {
+            /* Saturday or Sunday */
+            const midnight_sunday =
+                day === 6 ? moment().utcOffset(0).add(1, "day").endOf("day") : moment().utcOffset(0).endOf("day");
+            return interpolate(_("Weekend ends {{time_from_now}}"), { time_from_now: midnight_sunday.fromNow() });
         } else {
-            return interpolate(_("Weekend starts {{time_from_now}}"), {"time_from_now": moment().utcOffset(0).isoWeekday(5).endOf('day').fromNow()});
+            return interpolate(_("Weekend starts {{time_from_now}}"), {
+                time_from_now: moment().utcOffset(0).isoWeekday(5).endOf("day").fromNow(),
+            });
         }
     }
 
     render() {
         return (
             <div className="server-time-display">
-                <div>
-                    {interpolate(_("Server Time: {{time}}"), {"time": this.state.time.format('dddd LTS z')})}
-                </div>
-                <div>
-                    {this.weekendTransitionText()}
-                </div>
+                <div>{interpolate(_("Server Time: {{time}}"), { time: this.state.time.format("dddd LTS z") })}</div>
+                <div>{this.weekendTransitionText()}</div>
             </div>
         );
     }

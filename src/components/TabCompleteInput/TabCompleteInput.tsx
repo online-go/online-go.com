@@ -34,5 +34,5 @@ export const TabCompleteInput = React.forwardRef<HTMLInputElement, React.HTMLPro
         }, [(ref as any).current]);
 
         return <input ref={ref} {...props} />;
-    }
+    },
 );

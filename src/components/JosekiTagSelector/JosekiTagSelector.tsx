@@ -17,7 +17,7 @@
 
 import * as React from "react";
 
-import Select, { components } from 'react-select';
+import Select, { components } from "react-select";
 
 import { _, pgettext, interpolate } from "translate";
 
@@ -44,26 +44,25 @@ export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProp
 
     componentDidMount = () => {
         fetch(this.props.tag_list_url, {
-            mode: 'cors',
-            headers: this.props.oje_headers
+            mode: "cors",
+            headers: this.props.oje_headers,
         })
-        .then(res => res.json())
-        .then(body => {
-            // console.log("Server response to tag GET:", body);
-            const available_tags = body.tags.map((tag, i) => (
-                { label: tag.description, value: tag.id }
-            ));
-            const tag_map = {};
-            for (const tag of available_tags) {
-                tag_map[tag.value] = tag;
-            }
-            this.setState({
-                tag_list: available_tags,
-                tag_map: tag_map,
+            .then((res) => res.json())
+            .then((body) => {
+                // console.log("Server response to tag GET:", body);
+                const available_tags = body.tags.map((tag, i) => ({ label: tag.description, value: tag.id }));
+                const tag_map = {};
+                for (const tag of available_tags) {
+                    tag_map[tag.value] = tag;
+                }
+                this.setState({
+                    tag_list: available_tags,
+                    tag_map: tag_map,
+                });
+            })
+            .catch((r) => {
+                console.log("Tags GET failed:", r);
             });
-        }).catch((r) => {
-            console.log("Tags GET failed:", r);
-        });
     };
 
     onTagChange = (e) => {
@@ -84,17 +83,19 @@ export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProp
                 options={this.state.tag_list}
                 isMulti={true}
                 onChange={this.onTagChange}
-                getOptionLabel={o => o.label}
-                getOptionValue={o => o.value}
+                getOptionLabel={(o) => o.label}
+                getOptionValue={(o) => o.value}
                 components={{
-                    Option: ({innerRef, innerProps, isFocused, isSelected, data}) => (
-                        <div ref={innerRef} {...innerProps}
-                            className={(isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}>
+                    Option: ({ innerRef, innerProps, isFocused, isSelected, data }) => (
+                        <div
+                            ref={innerRef}
+                            {...innerProps}
+                            className={(isFocused ? "focused " : "") + (isSelected ? "selected" : "")}
+                        >
                             {data.label}
                         </div>
                     ),
                 }}
-
             />
         );
     }
@@ -103,4 +104,3 @@ export class JosekiTagSelector extends React.PureComponent<JosekiTagSelectorProp
 const MultiValue = (props) => {
     return <components.MultiValue {...props} key={props.data} />;
 };
-

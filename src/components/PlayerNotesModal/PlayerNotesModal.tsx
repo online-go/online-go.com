@@ -16,12 +16,11 @@
  */
 
 import * as React from "react";
-import {_} from 'translate';
-import {Modal, openModal} from "Modal";
+import { _ } from "translate";
+import { Modal, openModal } from "Modal";
 import * as data from "data";
 
-interface Events {
-}
+interface Events {}
 
 interface PlayerNotesModalProperties {
     playerId: number;
@@ -31,25 +30,25 @@ export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, 
     constructor(props) {
         super(props);
         this.state = {
-            notes: undefined
+            notes: undefined,
         };
     }
 
     componentDidMount = () => {
         super.componentDidMount(); /* this.close() doesn't work if you don't do this */
-        const user = data.get('config.user');
+        const user = data.get("config.user");
         this.setState({ notes: data.get(`player-notes.${user.id}.${this.props.playerId}`) });
     };
 
     updateNotes = (ev) => {
         const new_notes = ev.target.value;
         if (new_notes.length < 5000) {
-            this.setState({notes: ev.target.value});
+            this.setState({ notes: ev.target.value });
         }
     };
 
     saveNotes = () => {
-        const user = data.get('config.user');
+        const user = data.get("config.user");
         const notes = this.state.notes.trim();
         if (notes) {
             data.set(`player-notes.${user.id}.${this.props.playerId}`, notes, data.Replication.REMOTE_OVERWRITES_LOCAL);
@@ -67,7 +66,9 @@ export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, 
                 </div>
                 <div className="buttons">
                     <button onClick={this.close}>{_("Cancel")}</button>
-                    <button className="primary bold" onClick={this.saveNotes}>{_("Save")}</button>
+                    <button className="primary bold" onClick={this.saveNotes}>
+                        {_("Save")}
+                    </button>
                 </div>
             </div>
         );

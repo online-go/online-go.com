@@ -62,10 +62,10 @@ export namespace TimeControlTypes {
     }
 }
 
-
-export type TimeControl = TimeControlTypes.Fischer
-                        | TimeControlTypes.ByoYomi
-                        | TimeControlTypes.Simple
-                        | TimeControlTypes.Canadian
-                        | TimeControlTypes.Absolute
-                        | TimeControlTypes.None;
+export type TimeControl =
+    | TimeControlTypes.Fischer
+    | TimeControlTypes.ByoYomi
+    | TimeControlTypes.Simple
+    | TimeControlTypes.Canadian
+    | TimeControlTypes.Absolute
+    | TimeControlTypes.None;

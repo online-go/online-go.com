@@ -25,7 +25,7 @@ import { put } from "requests";
 import { cached } from "cached";
 
 export function ForceUsernameChange(): JSX.Element {
-    const user = data.get('config.user');
+    const user = data.get("config.user");
     const [username, setUsername] = React.useState("");
     const inputRef = React.useRef();
 
@@ -38,10 +38,10 @@ export function ForceUsernameChange(): JSX.Element {
 
     function saveUsername() {
         put("players/%%", user.id, { username })
-        .then((res) => {
-            cached.refresh.config(() => window.location.reload());
-        })
-        .catch(errorAlerter);
+            .then((res) => {
+                cached.refresh.config(() => window.location.reload());
+            })
+            .catch(errorAlerter);
     }
 
     return (
@@ -50,10 +50,22 @@ export function ForceUsernameChange(): JSX.Element {
                 <div>
                     <Card>
                         <h2>{_("Welcome to Online-Go.com!")}</h2>
-                        <h4>{_("Please enter a username to continue. This name is what other players will know you by.")}</h4>
+                        <h4>
+                            {_(
+                                "Please enter a username to continue. This name is what other players will know you by.",
+                            )}
+                        </h4>
 
-                        <input type='text' name='username' placeholder={_("Username")} onChange={ev => setUsername(ev.target.value)}  ref={inputRef}/>
-                        <button className='primary' disabled={username.length < 3} onClick={saveUsername} >Continue</button>
+                        <input
+                            type="text"
+                            name="username"
+                            placeholder={_("Username")}
+                            onChange={(ev) => setUsername(ev.target.value)}
+                            ref={inputRef}
+                        />
+                        <button className="primary" disabled={username.length < 3} onClick={saveUsername}>
+                            Continue
+                        </button>
                     </Card>
                 </div>
             </div>

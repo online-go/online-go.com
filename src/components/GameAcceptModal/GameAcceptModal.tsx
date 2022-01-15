@@ -16,16 +16,15 @@
  */
 
 import * as React from "react";
-import {_} from "translate";
-import {post} from "requests";
-import {openModal, Modal} from "Modal";
-import {timeControlDescription, usedForCheating} from "TimeControl";
-import {Player} from "Player";
-import {errorAlerter, yesno} from "misc";
-import swal from 'sweetalert2';
+import { _ } from "translate";
+import { post } from "requests";
+import { openModal, Modal } from "Modal";
+import { timeControlDescription, usedForCheating } from "TimeControl";
+import { Player } from "Player";
+import { errorAlerter, yesno } from "misc";
+import swal from "sweetalert2";
 
-interface Events {
-}
+interface Events {}
 
 interface GameAcceptModalProperties {
     challenge: any;
@@ -34,7 +33,6 @@ interface GameAcceptModalProperties {
     // user?: any,
     // callback?: ()=>any,
 }
-
 
 export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}> {
     constructor(props) {
@@ -51,15 +49,15 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
         }).catch(swal.noop);
 
         post("challenges/%%/accept", this.props.challenge.challenge_id, {})
-        .then(() => {
-            swal.close();
-            this.close();
-            this.props.onAccept(this.props.challenge);
-        })
-        .catch((err) => {
-            swal.close();
-            errorAlerter(err);
-        });
+            .then(() => {
+                swal.close();
+                this.close();
+                this.props.onAccept(this.props.challenge);
+            })
+            .catch((err) => {
+                swal.close();
+                errorAlerter(err);
+            });
     };
 
     render() {
@@ -82,59 +80,83 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
                 <div className="header">
                     <div>
                         <h2>
-                            <Player icon iconSize={32} user={challenge}/>
+                            <Player icon iconSize={32} user={challenge} />
                         </h2>
-                        <h4>
-                            {challenge.name}
-                        </h4>
+                        <h4>{challenge.name}</h4>
                     </div>
                 </div>
                 <div className="body">
                     <p>{time_control_description}</p>
-                    {usedForCheating(challenge.time_control_parameters) ?
-                    <p className="cheat-warning"><i className="fa fa-exclamation-triangle cheat-alert"></i>{_("Note: this time setting sometimes causes problems.  Accept at your own risk.")}</p> :
-                    ""}
-                    {challenge.komi ?
-                    <p className="cheat-warning"><i className="fa fa-exclamation-triangle cheat-alert"></i>{_("Note: Custom komi.  Accept at your own risk.")}</p> :
-                    ""}
-                    <hr/>
+                    {usedForCheating(challenge.time_control_parameters) ? (
+                        <p className="cheat-warning">
+                            <i className="fa fa-exclamation-triangle cheat-alert"></i>
+                            {_("Note: this time setting sometimes causes problems.  Accept at your own risk.")}
+                        </p>
+                    ) : (
+                        ""
+                    )}
+                    {challenge.komi ? (
+                        <p className="cheat-warning">
+                            <i className="fa fa-exclamation-triangle cheat-alert"></i>
+                            {_("Note: Custom komi.  Accept at your own risk.")}
+                        </p>
+                    ) : (
+                        ""
+                    )}
+                    <hr />
                     <dl className="horizontal">
-                        <dt>{_("Your color")}</dt><dd>{player_color}</dd>
-                        <dt>{_("Ranked")}</dt><dd>{challenge.ranked ? _("Yes") : _("No")}</dd>
-                        <dt>{_("Handicap")}</dt><dd>{handicapText(challenge.handicap)}</dd>
+                        <dt>{_("Your color")}</dt>
+                        <dd>{player_color}</dd>
+                        <dt>{_("Ranked")}</dt>
+                        <dd>{challenge.ranked ? _("Yes") : _("No")}</dd>
+                        <dt>{_("Handicap")}</dt>
+                        <dd>{handicapText(challenge.handicap)}</dd>
                         <dt>{_("Komi")}</dt>
                         <dd>
-                            {challenge.komi ?
-                    <span title={_("Custom komi setting")}>{challenge.komi}<i className="fa fa-exclamation-triangle cheat-alert"></i></span>
-                    : _("Automatic")}
+                            {challenge.komi ? (
+                                <span title={_("Custom komi setting")}>
+                                    {challenge.komi}
+                                    <i className="fa fa-exclamation-triangle cheat-alert"></i>
+                                </span>
+                            ) : (
+                                _("Automatic")
+                            )}
                         </dd>
-                        <dt>{_("Board Size")}</dt><dd>{challenge.width}x{challenge.height}</dd>
-                        <dt>{_("In-game analysis")}</dt><dd>{yesno(!challenge.disable_analysis)}</dd>
+                        <dt>{_("Board Size")}</dt>
+                        <dd>
+                            {challenge.width}x{challenge.height}
+                        </dd>
+                        <dt>{_("In-game analysis")}</dt>
+                        <dd>{yesno(!challenge.disable_analysis)}</dd>
                         {(challenge.time_per_move > 3600 || null) && <dt>{_("Pause on weekends")}</dt>}
-                        {(challenge.time_per_move > 3600 || null) && <dd>{yesno(challenge.time_control_parameters.pause_on_weekends)}</dd>}
+                        {(challenge.time_per_move > 3600 || null) && (
+                            <dd>{yesno(challenge.time_control_parameters.pause_on_weekends)}</dd>
+                        )}
                     </dl>
                 </div>
                 <div className="buttons">
                     <button onClick={this.close}>{_("Close")}</button>
-                    <button onClick={this.accept} className="primary">{_("Accept Game")}</button>
+                    <button onClick={this.accept} className="primary">
+                        {_("Accept Game")}
+                    </button>
                 </div>
             </div>
         );
     }
 }
 
-
 export function openGameAcceptModal(challenge): Promise<any> {
-
     return new Promise((resolve, reject) => {
         openModal(<GameAcceptModal challenge={challenge} onAccept={resolve} fastDismiss />);
     });
 }
 
 export function handicapText(handicap) {
-    if (handicap < 0)   { return _("Auto"); }
-    if (handicap === 0) { return _("None"); }
+    if (handicap < 0) {
+        return _("Auto");
+    }
+    if (handicap === 0) {
+        return _("None");
+    }
     return handicap;
 }
-
-

@@ -53,7 +53,7 @@ interface PaginatedTableProperties<RawEntryT, GroomedEntryT = RawEntryT> {
     className: string;
     filter?: Filter;
     orderBy?: Array<string>;
-    groom?: ((data: Array<RawEntryT>) => Array<GroomedEntryT>);
+    groom?: (data: Array<RawEntryT>) => Array<GroomedEntryT>;
     onRowClick?: (row, ev) => any;
     debug?: boolean;
     pageSizeOptions?: Array<number>;
@@ -66,18 +66,23 @@ export interface PaginatedTableRef {
     refresh: () => void;
 }
 
+export const PaginatedTable = React.forwardRef<PaginatedTableRef, PaginatedTableProperties<any>>(_PaginatedTable);
 
-export const PaginatedTable = React.forwardRef<PaginatedTableRef, PaginatedTableProperties<any> >(_PaginatedTable);
-
-function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(props: PaginatedTableProperties<RawEntryT, GroomedEntryT>, ref): JSX.Element {
+function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
+    props: PaginatedTableProperties<RawEntryT, GroomedEntryT>,
+    ref,
+): JSX.Element {
     const table_name = props.name || "default";
     const [rows, setRows]: [any[], (x: any[]) => void] = React.useState([]);
     const [total, setTotal]: [number, (x: number) => void] = React.useState(-1);
     const [page, _setPage]: [number, (x: number) => void] = React.useState(props.startingPage || 1);
-    const [page_input_text, _setPageInputText]: [string, (s: string) => void] = React.useState((props.startingPage || 1).toString());
+    const [page_input_text, _setPageInputText]: [string, (s: string) => void] = React.useState(
+        (props.startingPage || 1).toString(),
+    );
     const [num_pages, setNumPages]: [number, (x: number) => void] = React.useState(0);
-    const [page_size, _setPageSize]: [number, (x: number) => void] =
-        React.useState(data.get(`paginated-table.${table_name}.page_size`, props.pageSize || 10));
+    const [page_size, _setPageSize]: [number, (x: number) => void] = React.useState(
+        data.get(`paginated-table.${table_name}.page_size`, props.pageSize || 10),
+    );
     const [order_by, setOrderBy]: [string[], (x: string[]) => void] = React.useState(props.orderBy || []);
     const [loading, setLoading]: [boolean, (x: boolean) => void] = React.useState(false as boolean);
     const [load_again_refresh, setLoadAgainRefresh]: [number, (x: number) => void] = React.useState(0);
@@ -86,11 +91,10 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(props: Pagi
     const last_loaded = React.useRef([] as any[]);
     const filter: any = props.filter;
 
-
     React.useImperativeHandle(ref, () => ({
         refresh: () => {
             refresh(true);
-        }
+        },
     }));
 
     React.useEffect(refresh, [order_by, page, page_size, filter, load_again_refresh]);
@@ -117,7 +121,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(props: Pagi
 
         setLoading(true);
         load_again.current = false;
-        if (typeof(props.source) === "string") {
+        if (typeof props.source === "string") {
             [promise, cancel] = ajax_loader();
         } else {
             promise = props.source(filter, order_by);
@@ -169,20 +173,18 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(props: Pagi
     }
 
     function ajax_loader(): [Promise<any>, () => void] {
-        if (typeof(props.source) === "string") {
+        if (typeof props.source === "string") {
             const url = props.source as string;
             const method = props.method || "GET";
 
             const query = { page_size, page };
             for (const k in filter) {
                 if (
-                    (
-                        (k.indexOf("__istartswith") > 0) ||
-                        (k.indexOf("__startswith") > 0) ||
-                        (k.indexOf("__icontains") > 0) ||
-                        (k.indexOf("__contains") > 0)
-                    )
-                    && filter[k] === ""
+                    (k.indexOf("__istartswith") > 0 ||
+                        k.indexOf("__startswith") > 0 ||
+                        k.indexOf("__icontains") > 0 ||
+                        k.indexOf("__contains") > 0) &&
+                    filter[k] === ""
                 ) {
                     continue;
                 }
@@ -208,7 +210,6 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(props: Pagi
         throw new Error(`Source was not a url`);
     }
 
-
     function setPage(page: number, skip_bounds_check?: boolean): void {
         const new_page = Math.max(1, Math.min(page, num_pages));
         _setPage(new_page);
@@ -230,7 +231,6 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(props: Pagi
             setPage(parseInt(page_input_text));
         }
     }
-
 
     function setPageSize(new_page_size: number) {
         const old_page_size = page_size;
@@ -265,26 +265,31 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(props: Pagi
             } else {
                 clsName = "fa fa-sort";
             }
-            el = (<a className="sort-link">{header} <i className={clsName}/></a>);
+            el = (
+                <a className="sort-link">
+                    {header} <i className={clsName} />
+                </a>
+            );
         } else {
-            el = (<>{header}</>);
+            el = <>{header}</>;
         }
         return el;
     }
 
     /** RENDER **/
 
-    const extra_classes = [
-        props.className || "",
-        props.onRowClick ? "clickable-rows" : "",
-    ].join(" ");
+    const extra_classes = [props.className || "", props.onRowClick ? "clickable-rows" : ""].join(" ");
     const columns = props.columns.filter((c) => !!c);
     const blank_rows = [];
     const page_sizes = props.pageSizeOptions || [10, 25, 50];
 
     if (props.fillBlankRows) {
         for (let i = 0; i < page_size - rows.length; ++i) {
-            blank_rows.push(<tr key={"blank-" + i}><td className="blank" colSpan={columns.length} /></tr>);
+            blank_rows.push(
+                <tr key={"blank-" + i}>
+                    <td className="blank" colSpan={columns.length} />
+                </tr>,
+            );
         }
     }
     if (props.pageSize) {
@@ -294,66 +299,92 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(props: Pagi
     }
     page_sizes.sort();
 
-
     return (
         <div className={`PaginatedTable ${extra_classes} ${loading ? "loading" : ""}`}>
-            <div className='loading-overlay'>
-                {_("Loading")}
-            </div>
+            <div className="loading-overlay">{_("Loading")}</div>
             <table className={extra_classes}>
                 <thead>
                     <tr>
-                        {columns.map((column, idx) => <th key={idx} className={cls(null, column)} {...column.headerProps} onClick={column.orderBy ? () => {_sort(column.orderBy); } : null}>{getHeader(column.orderBy, column.header)}</th>)}
+                        {columns.map((column, idx) => (
+                            <th
+                                key={idx}
+                                className={cls(null, column)}
+                                {...column.headerProps}
+                                onClick={
+                                    column.orderBy
+                                        ? () => {
+                                              _sort(column.orderBy);
+                                          }
+                                        : null
+                                }
+                            >
+                                {getHeader(column.orderBy, column.header)}
+                            </th>
+                        ))}
                     </tr>
                 </thead>
                 <tbody>
                     {rows.map((row, i) => {
                         const cols = columns.map((column, idx) => (
-                            <td key={idx} className={cls(row, column)} {...column.cellProps}>{column_render(column, row)}</td>
+                            <td key={idx} className={cls(row, column)} {...column.cellProps}>
+                                {column_render(column, row)}
+                            </td>
                         ));
                         if (props.onRowClick) {
-                            return (<tr key={row.id} onMouseUp={(ev) => props.onRowClick(row, ev)}>{cols}</tr>);
+                            return (
+                                <tr key={row.id} onMouseUp={(ev) => props.onRowClick(row, ev)}>
+                                    {cols}
+                                </tr>
+                            );
                         } else {
-                            return (<tr key={row.id}>{cols}</tr>);
+                            return <tr key={row.id}>{cols}</tr>;
                         }
                     })}
                     {blank_rows}
                 </tbody>
             </table>
-            {(!props.hidePageControls || null) &&
+            {(!props.hidePageControls || null) && (
                 <div className="page-controls">
                     <div className="left">
-                        {page > 1
-                            ? <i className="fa fa-step-backward" onClick={() => setPage(page - 1)}/>
-                            : <i className="fa"/>
-                        }
-                        <input value={page_input_text}
+                        {page > 1 ? (
+                            <i className="fa fa-step-backward" onClick={() => setPage(page - 1)} />
+                        ) : (
+                            <i className="fa" />
+                        )}
+                        <input
+                            value={page_input_text}
                             type="tel"
                             onChange={(ev) => setPageInputText(ev.target.value)}
                             onKeyDown={(ev) => ev.keyCode === 13 && syncPageInputTextToPage()}
                             onBlur={(ev) => syncPageInputTextToPage()}
                         />
-                        <span className="of"> /  </span><span className="total">{num_pages}</span>
-                        {page < num_pages
-                            ? <i className="fa fa-step-forward" onClick={() => setPage(page + 1)}/>
-                            : <i className="fa"/>
-                        }
+                        <span className="of"> / </span>
+                        <span className="total">{num_pages}</span>
+                        {page < num_pages ? (
+                            <i className="fa fa-step-forward" onClick={() => setPage(page + 1)} />
+                        ) : (
+                            <i className="fa" />
+                        )}
                     </div>
                     <div className="right">
-                        {(page_sizes.length > 1 || null) &&
+                        {(page_sizes.length > 1 || null) && (
                             <select onChange={(ev) => setPageSize(parseInt(ev.target.value))} value={page_size}>
-                                {page_sizes.map((v, idx) => <option key={idx} value={v}>{v}</option>)}
+                                {page_sizes.map((v, idx) => (
+                                    <option key={idx} value={v}>
+                                        {v}
+                                    </option>
+                                ))}
                             </select>
-                        }
+                        )}
                     </div>
                 </div>
-            }
+            )}
         </div>
     );
 }
 
-function column_render(column, row): JSX.Element | string | number{
-    if (typeof(column.render) === "function") {
+function column_render(column, row): JSX.Element | string | number {
+    if (typeof column.render === "function") {
         return column.render(row);
     }
     return column.render;
@@ -363,7 +394,7 @@ function cls(row, column): string {
     if (!column.className) {
         return "";
     }
-    if (typeof(column.className) === "function") {
+    if (typeof column.className === "function") {
         return column.className(row, column);
     }
     return column.className;
@@ -392,11 +423,11 @@ function reverseOrder(order: string[]): string[] {
 }
 
 function softEquals(a: any, b: any) {
-    if (typeof(a) !== typeof(b)) {
+    if (typeof a !== typeof b) {
         return false;
     }
 
-    if (typeof(a) === "object") {
+    if (typeof a === "object") {
         if (Array.isArray(a) && Array.isArray(b)) {
             if (a.length !== b.length) {
                 return false;
@@ -407,7 +438,7 @@ function softEquals(a: any, b: any) {
                 }
             }
         } else {
-            const done: {[k: string]: boolean} = {};
+            const done: { [k: string]: boolean } = {};
             for (const k in a) {
                 done[k] = true;
                 if (!(k in b) || !softEquals(a[k], b[k])) {
@@ -423,15 +454,13 @@ function softEquals(a: any, b: any) {
         return true;
     }
 
-    if (typeof(a) === "function") {
+    if (typeof a === "function") {
         return a.toString() === b.toString();
     }
 
-    if (typeof(a) === "undefined") {
+    if (typeof a === "undefined") {
         return true;
     }
 
     return a === b;
 }
-
-

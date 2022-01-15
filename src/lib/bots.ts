@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {termination_socket} from "sockets";
-import {getUserRating} from 'rank_utils';
+import { termination_socket } from "sockets";
+import { getUserRating } from "rank_utils";
 
 let active_bots = {};
 let _bots_list = [];

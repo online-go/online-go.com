@@ -16,13 +16,12 @@
  */
 
 import * as React from "react";
-import {browserHistory} from "ogsHistory";
-import {Modal, openModal} from "Modal";
+import { browserHistory } from "ogsHistory";
+import { Modal, openModal } from "Modal";
 import { _ } from "translate";
 //import {SiteSupporterText} from "./Supporter";
-import {Supporter} from "./Supporter";
-import {PriceBox} from "./Supporter";
-
+import { Supporter } from "./Supporter";
+import { PriceBox } from "./Supporter";
 
 export class BecomeASiteSupporterModal extends Modal<{}, {}, any> {
     constructor(props) {

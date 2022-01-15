@@ -17,7 +17,7 @@
 
 import * as React from "react";
 
-import {_, pgettext} from "translate";
+import { _, pgettext } from "translate";
 
 interface RengoManagementPaneProperties {
     user_id: number;
@@ -31,80 +31,87 @@ interface RengoManagementPaneProperties {
     dontShowCancelButton?: boolean;
 }
 
-interface RengoManagementPaneState {
-}
-
+interface RengoManagementPaneState {}
 
 export class RengoManagementPane extends React.PureComponent<RengoManagementPaneProperties, RengoManagementPaneState> {
     constructor(props) {
         super(props);
 
-        this.state = {
-        };
+        this.state = {};
     }
 
     rengoReadyToStart = (challenge): boolean => {
         return (
-            challenge.rengo_black_team.length && challenge.rengo_white_team.length &&
-            (challenge.rengo_black_team.length + challenge.rengo_white_team.length > 2)
+            challenge.rengo_black_team.length &&
+            challenge.rengo_white_team.length &&
+            challenge.rengo_black_team.length + challenge.rengo_white_team.length > 2
         );
     };
 
     render() {
-        const the_challenge = this.props.rengo_challenge_list.find((c) => (c.challenge_id === this.props.challenge_id));
+        const the_challenge = this.props.rengo_challenge_list.find((c) => c.challenge_id === this.props.challenge_id);
 
-        const our_rengo_challenges = this.props.rengo_challenge_list.filter((c) => (c.user_id === this.props.user_id));
-        const own_challenge = our_rengo_challenges.find((c) => (c.challenge_id === this.props.challenge_id));
+        const our_rengo_challenges = this.props.rengo_challenge_list.filter((c) => c.user_id === this.props.user_id);
+        const own_challenge = our_rengo_challenges.find((c) => c.challenge_id === this.props.challenge_id);
         const participating = the_challenge.rengo_participants.includes(this.props.user_id);
         const challenge_ready_to_start = this.rengoReadyToStart(the_challenge);
 
-        return(
-            <div className='RengoManagementPane'>
-                <div className='rengo-challenge-status'>
-                    {own_challenge && challenge_ready_to_start ? _("Waiting for your decision to start...") :
-                        challenge_ready_to_start ? _("Waiting for organiser to start...") :
-                            _("Waiting for Rengo players...")}
+        return (
+            <div className="RengoManagementPane">
+                <div className="rengo-challenge-status">
+                    {own_challenge && challenge_ready_to_start
+                        ? _("Waiting for your decision to start...")
+                        : challenge_ready_to_start
+                        ? _("Waiting for organiser to start...")
+                        : _("Waiting for Rengo players...")}
                 </div>
 
-                {React.Children.only(this.props.children)  /* intended to be RengoTeamManagementPane */ }
+                {React.Children.only(this.props.children) /* intended to be RengoTeamManagementPane */}
 
                 <div className="rengo-challenge-buttons">
-
-                    {((own_challenge) || null) &&
+                    {(own_challenge || null) && (
                         <React.Fragment>
-                            {(!this.props.dontShowCancelButton)
-                                ?
-                                <button className='danger sm' onClick={this.props.cancelChallenge.bind(self, the_challenge)}>
+                            {!this.props.dontShowCancelButton ? (
+                                <button
+                                    className="danger sm"
+                                    onClick={this.props.cancelChallenge.bind(self, the_challenge)}
+                                >
                                     {_("Cancel challenge")}
                                 </button>
-                                : <span/>
-                            }
+                            ) : (
+                                <span />
+                            )}
 
-                            <button className='success sm'
+                            <button
+                                className="success sm"
                                 onClick={this.props.startRengoChallenge.bind(self, the_challenge)}
-                                disabled = {!challenge_ready_to_start}
+                                disabled={!challenge_ready_to_start}
                             >
                                 {pgettext("Start game", "Start")}
                             </button>
                         </React.Fragment>
-                    }
-                    {(!own_challenge || null) &&
-                        <div className='automatch-settings'>
-                            <button onClick={this.props.withdrawFromRengoChallenge.bind(this, the_challenge)}
+                    )}
+                    {(!own_challenge || null) && (
+                        <div className="automatch-settings">
+                            <button
+                                onClick={this.props.withdrawFromRengoChallenge.bind(this, the_challenge)}
                                 className="btn danger xs"
-                                disabled = {!participating}
+                                disabled={!participating}
                             >
                                 {_("Withdraw")}
                             </button>
                         </div>
-                    }
-                    {(!participating || null) &&
-                        <div className='automatch-settings'>
-                            <button onClick={this.props.joinRengoChallenge.bind(this, the_challenge)} className="btn success xs">
+                    )}
+                    {(!participating || null) && (
+                        <div className="automatch-settings">
+                            <button
+                                onClick={this.props.joinRengoChallenge.bind(this, the_challenge)}
+                                className="btn success xs"
+                            >
                                 {_("Join")}
                             </button>
                         </div>
-                    }
+                    )}
                 </div>
             </div>
         );

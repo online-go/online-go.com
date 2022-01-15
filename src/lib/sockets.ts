@@ -17,7 +17,7 @@
 
 import * as data from "data";
 import Debug from "debug";
-import { current_language } from 'translate';
+import { current_language } from "translate";
 import { io } from "socket.io-client";
 
 declare let ogs_language_version;
@@ -41,19 +41,18 @@ const ai_config = {
     upgrade: false,
 };
 
-
-export const termination_socket = window['websocket_host'] ? io(window['websocket_host'], io_config) : io(io_config);
+export const termination_socket = window["websocket_host"] ? io(window["websocket_host"], io_config) : io(io_config);
 export const comm_socket = termination_socket;
 
-export let ai_host = '';
-if (window.location.hostname.indexOf('dev.beta') >= 0 && window['websocket_host'] === "https://online-go.com") {
+export let ai_host = "";
+if (window.location.hostname.indexOf("dev.beta") >= 0 && window["websocket_host"] === "https://online-go.com") {
     // if we're developing locally but connecting to the production system, use our local system for estimation
     ai_host = `http://localhost:13284`;
     console.log("AI Host set to: ", ai_host);
-} else if (window.location.hostname.indexOf('beta') >= 0 || window.location.hostname.indexOf('dev') >= 0) {
-    ai_host = 'https://beta-ai.online-go.com';
-} else if (window.location.hostname.indexOf('online-go.com') >= 0) {
-    ai_host = 'https://ai.online-go.com';
+} else if (window.location.hostname.indexOf("beta") >= 0 || window.location.hostname.indexOf("dev") >= 0) {
+    ai_host = "https://beta-ai.online-go.com";
+} else if (window.location.hostname.indexOf("online-go.com") >= 0) {
+    ai_host = "https://ai.online-go.com";
 } else {
     ai_host = `${window.location.protocol}//${window.location.hostname}:13284`;
 }
@@ -65,10 +64,10 @@ ai_socket.send = ai_socket.emit;
 
 termination_socket.on("connect", () => {
     debug.log("Connection to server established.");
-    termination_socket.emit('hostinfo');
+    termination_socket.emit("hostinfo");
 });
-termination_socket.on('HUP', () => window.location.reload());
-termination_socket.on('hostinfo', (hostinfo) => {
+termination_socket.on("HUP", () => window.location.reload());
+termination_socket.on("hostinfo", (hostinfo) => {
     debug.log("Termination server", hostinfo);
 });
 
@@ -88,7 +87,7 @@ function ping() {
 function handle_pong(data) {
     const now = Date.now();
     const latency = now - data.client;
-    const drift = ((now - latency / 2) - data.server);
+    const drift = now - latency / 2 - data.server;
     last_latency = latency;
     last_clock_drift = drift;
 }
@@ -110,8 +109,6 @@ termination_socket.on("connect", ping);
 termination_socket.on("connect", send_client_info);
 setInterval(ping, 10000);
 
-
-
 function ai_ping() {
     if (ai_socket.connected) {
         ai_socket.send("net/ping", {
@@ -130,7 +127,6 @@ ai_socket.on("connect", ai_ping);
 ai_socket.on("net/pong", ai_handle_pong);
 setInterval(ai_ping, 20000);
 
-
 export default {
     termination_socket: termination_socket,
     comm_socket: comm_socket,
@@ -138,4 +134,3 @@ export default {
     get_clock_drift: get_clock_drift,
     get_network_latency: get_network_latency,
 };
-

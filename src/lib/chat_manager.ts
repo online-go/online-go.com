@@ -15,20 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import cached from 'cached';
+import cached from "cached";
 import * as data from "data";
 import * as player_cache from "player_cache";
 import { comm_socket } from "sockets";
 import { get } from "requests";
 import { TypedEventEmitter } from "TypedEventEmitter";
 import { emitNotification } from "Notifications";
-import { bounded_rank } from 'rank_utils';
-import { ActiveTournamentList, GroupList } from 'types';
-import {_, interpolate } from "translate";
+import { bounded_rank } from "rank_utils";
+import { ActiveTournamentList, GroupList } from "types";
+import { _, interpolate } from "translate";
 import { shadowban } from "src/views/Moderator";
 import { getBlocks } from "BlockPlayer";
 import { insert_into_sorted_list, string_splitter, n2s, dup, Timeout } from "misc";
-
 
 export interface ChatMessage {
     channel: string;
@@ -43,7 +42,7 @@ export interface ChatMessage {
         t: number; // epoch in seconds
         m: string; // the text
     };
-    system_message_type?: 'flood';
+    system_message_type?: "flood";
     system?: boolean; // true if it's a system message
 }
 
@@ -74,69 +73,65 @@ export interface TopicMessage {
     timestamp: number;
 }
 
-
 interface Events {
-    "chat": ChatMessage | null;
-    "topic": TopicMessage;
+    chat: ChatMessage | null;
+    topic: TopicMessage;
     "chat-removed": any;
-    "join": Array<any>;
-    "part": any;
+    join: Array<any>;
+    part: any;
     "unread-count-changed": any;
 }
 
 export interface UnreadChanged {
-    "channel": string;
-    "unread_ct": number;
-    "unread_delta": number;
-    "mentioned": Boolean;
-    "previous_mentioned": Boolean;
+    channel: string;
+    unread_ct: number;
+    unread_delta: number;
+    mentioned: Boolean;
+    previous_mentioned: Boolean;
 }
 
-
-const channel_information_cache: {[channel: string]: ChannelInformation} = {};
-const channel_information_resolvers: {[channel: string]: Promise<ChannelInformation>} = {};
-
+const channel_information_cache: { [channel: string]: ChannelInformation } = {};
+const channel_information_resolvers: { [channel: string]: Promise<ChannelInformation> } = {};
 
 export const global_channels: Array<ChannelInformation> = [
-    {"id": "global-english"    , "name": "English"    , "country": "us"           , language: "en"}    ,
-    {"id": "global-help"       , "name": "Help"       , "country": "un"}          ,
-    {"id": "global-offtopic"   , "name": "Off Topic"  , "country": "un"}          ,
-    {"id": "global-rengo"      , "name": "Rengo"      , "country": "un"}          ,
-    {"id": "global-japanese"   , "name": "日本語 "    , "country": "jp"           , language: "ja"}    ,
-    {"id": "global-zh-hans"    , "name": "中文"       , "country": "cn"           , language: ["zh", "zh_hans", "zh_cn"]}    ,
-    {"id": "global-zh-hant"    , "name": "廣東話"     , "country": "hk"           , language: ["zh-hk", "zh_hk", "zh_hant", "zh_tw"]} ,
-    {"id": "global-korean"     , "name": "한국어"     , "country": "kr"           , language: "ko"}    ,
-    {"id": "global-russian"    , "name": "Русский"    , "country": "ru"           , language: "ru"}    ,
-    {"id": "global-polish"     , "name": "Polski"     , "country": "pl"           , language: "pl"}    ,
-    {"id": "global-arabic"     , "name": "العَرَبِيَّةُ"    , "country": "_Arab_League" , language: "ar"     , "rtl": true} ,
-    {"id": "global-bulgarian"  , "name": "Български"  , "country": "bg"           , language: "bg"}    ,
-    {"id": "global-catalan"    , "name": "Català"     , "country": "_cat"         , language: "ca"}    ,
-    {"id": "global-czech"      , "name": "Čeština"    , "country": "cz"           , language: "cs"}    ,
-    {"id": "global-esperanto"  , "name": "Esperanto"  , "country": "_Esperanto"   , language: "eo"}    ,
-    {"id": "global-german"     , "name": "Deutsch"    , "country": "de"           , language: "de"}    ,
-    {"id": "global-spanish"    , "name": "Español"    , "country": "es"           , language: "es"}    ,
-    {"id": "global-french"     , "name": "Français"   , "country": "fr"           , language: "fr"}    ,
-    {"id": "global-filipino"   , "name": "Filipino"   , "country": "ph"           , language: "fil"}   ,
-    {"id": "global-indonesian" , "name": "Indonesian" , "country": "id"           , language: "id"}    ,
-    {"id": "global-hebrew"     , "name": "עִבְרִית"      , "country": "il"           , language: "he"     , "rtl": true} ,
-    {"id": "global-hindi"      , "name": "हिन्दी"        , "country": "in"           , language: "hi"}    ,
-    {"id": "global-nepali"     , "name": "नेपाली"        , "country": "np"           , language: "ne"}    ,
-    {"id": "global-bangla"     , "name": "বাংলা"         , "country": "bd"           , language: "bn"}    ,
-    {"id": "global-lithuanian" , "name": "Lietuvių"   , "country": "lt"           , language: "lt"}    ,
-    {"id": "global-hungarian"  , "name": "Magyar"     , "country": "hu"           , language: "hu"}    ,
-    {"id": "global-dutch"      , "name": "Nederlands" , "country": "nl"           , language: "nl"}    ,
-    {"id": "global-norwegian"  , "name": "Norsk"      , "country": "no"           , language: "no"}    ,
-    {"id": "global-italian"    , "name": "Italiano"   , "country": "it"           , language: "it"}    ,
-    {"id": "global-portuguese" , "name": "Português"  , "country": "pt"           , language: "pt"}    ,
-    {"id": "global-romanian"   , "name": "Română"     , "country": "ro"           , language: "ro"}    ,
-    {"id": "global-swedish"    , "name": "Svenska"    , "country": "se"           , language: "sv"}    ,
-    {"id": "global-finnish"    , "name": "Suomi"      , "country": "fi"           , language: "fi"}    ,
-    {"id": "global-turkish"    , "name": "Türkçe"     , "country": "tr"           , language: "tr"}    ,
-    {"id": "global-ukrainian"  , "name": "Українська" , "country": "ua"           , language: "uk"}    ,
-    {"id": "global-vietnamese" , "name": "Tiếng Việt" , "country": "vn"           , language: "vi"}    ,
-    {"id": "global-thai"       , "name": "ภาษาไทย"    , "country": "th"           , language: "th"}    ,
+    { id: "global-english", name: "English", country: "us", language: "en" },
+    { id: "global-help", name: "Help", country: "un" },
+    { id: "global-offtopic", name: "Off Topic", country: "un" },
+    { id: "global-rengo", name: "Rengo", country: "un" },
+    { id: "global-japanese", name: "日本語 ", country: "jp", language: "ja" },
+    { id: "global-zh-hans", name: "中文", country: "cn", language: ["zh", "zh_hans", "zh_cn"] },
+    { id: "global-zh-hant", name: "廣東話", country: "hk", language: ["zh-hk", "zh_hk", "zh_hant", "zh_tw"] },
+    { id: "global-korean", name: "한국어", country: "kr", language: "ko" },
+    { id: "global-russian", name: "Русский", country: "ru", language: "ru" },
+    { id: "global-polish", name: "Polski", country: "pl", language: "pl" },
+    { id: "global-arabic", name: "العَرَبِيَّةُ", country: "_Arab_League", language: "ar", rtl: true },
+    { id: "global-bulgarian", name: "Български", country: "bg", language: "bg" },
+    { id: "global-catalan", name: "Català", country: "_cat", language: "ca" },
+    { id: "global-czech", name: "Čeština", country: "cz", language: "cs" },
+    { id: "global-esperanto", name: "Esperanto", country: "_Esperanto", language: "eo" },
+    { id: "global-german", name: "Deutsch", country: "de", language: "de" },
+    { id: "global-spanish", name: "Español", country: "es", language: "es" },
+    { id: "global-french", name: "Français", country: "fr", language: "fr" },
+    { id: "global-filipino", name: "Filipino", country: "ph", language: "fil" },
+    { id: "global-indonesian", name: "Indonesian", country: "id", language: "id" },
+    { id: "global-hebrew", name: "עִבְרִית", country: "il", language: "he", rtl: true },
+    { id: "global-hindi", name: "हिन्दी", country: "in", language: "hi" },
+    { id: "global-nepali", name: "नेपाली", country: "np", language: "ne" },
+    { id: "global-bangla", name: "বাংলা", country: "bd", language: "bn" },
+    { id: "global-lithuanian", name: "Lietuvių", country: "lt", language: "lt" },
+    { id: "global-hungarian", name: "Magyar", country: "hu", language: "hu" },
+    { id: "global-dutch", name: "Nederlands", country: "nl", language: "nl" },
+    { id: "global-norwegian", name: "Norsk", country: "no", language: "no" },
+    { id: "global-italian", name: "Italiano", country: "it", language: "it" },
+    { id: "global-portuguese", name: "Português", country: "pt", language: "pt" },
+    { id: "global-romanian", name: "Română", country: "ro", language: "ro" },
+    { id: "global-swedish", name: "Svenska", country: "se", language: "sv" },
+    { id: "global-finnish", name: "Suomi", country: "fi", language: "fi" },
+    { id: "global-turkish", name: "Türkçe", country: "tr", language: "tr" },
+    { id: "global-ukrainian", name: "Українська", country: "ua", language: "uk" },
+    { id: "global-vietnamese", name: "Tiếng Việt", country: "vn", language: "vi" },
+    { id: "global-thai", name: "ภาษาไทย", country: "th", language: "th" },
 ];
-
 
 try {
     let sort_order = 0;
@@ -145,15 +140,14 @@ try {
         sort_order += 1;
     }
 
-
     let primary_language = true;
 
     for (let language of navigator.languages) {
-        language = language.toLowerCase().replace('-', '_');
+        language = language.toLowerCase().replace("-", "_");
 
         for (const chan of global_channels) {
             if (chan.language) {
-                const chan_lang_list = typeof(chan.language) === "string" ? [chan.language] : chan.language;
+                const chan_lang_list = typeof chan.language === "string" ? [chan.language] : chan.language;
                 for (const chan_lang of chan_lang_list) {
                     if (chan_lang === language && !chan.navigator_language) {
                         chan.navigator_language = true;
@@ -170,7 +164,8 @@ try {
         }
     }
 
-    if (primary_language === true) { // not found
+    if (primary_language === true) {
+        // not found
         global_channels[0].primary_language = true; /* default to english as primary */
     }
 
@@ -179,27 +174,23 @@ try {
     console.error(e);
 }
 
-
-
-data.watch('user', (user) => {
-    if (user.supporter && global_channels.filter(c => c.id === 'global-supporter').length === 0) {
+data.watch("user", (user) => {
+    if (user.supporter && global_channels.filter((c) => c.id === "global-supporter").length === 0) {
         global_channels.splice(0, 0, {
-            "id": "global-supporter",
-            "name": _("Site Supporters"),
-            "country": "un",
+            id: "global-supporter",
+            name: _("Site Supporters"),
+            country: "un",
         });
     }
 
-    if (user.is_moderator && global_channels.filter(c => c.id === 'shadowban').length === 0) {
+    if (user.is_moderator && global_channels.filter((c) => c.id === "shadowban").length === 0) {
         global_channels.splice(0, 0, {
-            "id": "shadowban",
-            "country": "_Pirate",
-            "name": "Shadowban",
+            id: "shadowban",
+            country: "_Pirate",
+            name: "Shadowban",
         });
     }
 });
-
-
 
 /*
 data.watch("config.ogs", (settings) => {
@@ -209,36 +200,34 @@ data.watch("config.ogs", (settings) => {
 });
 */
 
-
-
 export function resolveChannelDisplayName(channel: string): string {
     if (channel === "shadowban") {
         return global_channels[channel];
     }
     if (channel.startsWith("global-")) {
-        global_channels.forEach(element => {
+        global_channels.forEach((element) => {
             if (channel === element.id) {
                 return element.name;
             }
         });
     } else if (channel.startsWith("tournament-")) {
         const id: number = parseInt(channel.substring(11));
-        tournament_channels.forEach(element => {
+        tournament_channels.forEach((element) => {
             if (id === element.id) {
                 return element.name;
             }
         });
     } else if (channel.startsWith("group-")) {
         const id: number = parseInt(channel.substring(6));
-        group_channels.forEach(element => {
+        group_channels.forEach((element) => {
             if (id === element.id) {
                 return element.name;
             }
         });
     } else if (channel.startsWith("game-")) {
-        return interpolate(_("Game {{number}}"), { number: channel.substring(5) });  // eslint-disable-line id-denylist
+        return interpolate(_("Game {{number}}"), { number: channel.substring(5) }); // eslint-disable-line id-denylist
     } else if (channel.startsWith("review-")) {
-        return interpolate(_("Review {{number}}"), { number: channel.substring(7) });  // eslint-disable-line id-denylist
+        return interpolate(_("Review {{number}}"), { number: channel.substring(7) }); // eslint-disable-line id-denylist
     }
     return "<error>";
 }
@@ -255,19 +244,24 @@ function updateTournaments(tournaments: ActiveTournamentList) {
 data.watch(cached.groups, updateGroups);
 data.watch(cached.active_tournaments, updateTournaments);
 
-
 let user_id: number;
 let name_match_regex = /^loading...$/;
 data.watch("config.user", (user) => {
     const cleaned_username_regex = user.username.replace(/[\\^$*+.()|[\]{}]/g, "\\$&");
     name_match_regex = new RegExp(
-        "\\b"  + cleaned_username_regex + "\\b"
-        + "|\\bplayer ?" + user.id + "\\b"
-        + "|\\bhttps?:\\/\\/online-go\\.com\\/user\\/view\\/" + user.id + "\\b"
-        , "i");
+        "\\b" +
+            cleaned_username_regex +
+            "\\b" +
+            "|\\bplayer ?" +
+            user.id +
+            "\\b" +
+            "|\\bhttps?:\\/\\/online-go\\.com\\/user\\/view\\/" +
+            user.id +
+            "\\b",
+        "i",
+    );
     user_id = user.id;
 });
-
 
 const rtl_channels = {
     "global-arabic": true,
@@ -276,28 +270,25 @@ const rtl_channels = {
 
 let last_proxy_id = 0;
 
-
 class ChatChannel extends TypedEventEmitter<Events> {
     channel: string;
     name: string;
-    proxies: {[id: number]: ChatChannelProxy} = {};
+    proxies: { [id: number]: ChatChannelProxy } = {};
     joining: boolean = false;
-    chat_log: Array<ChatMessage>   = [];
-    chat_ids   = {};
+    chat_log: Array<ChatMessage> = [];
+    chat_ids = {};
     has_unread = false;
     unread_ct = 0;
     mentioned = false;
-    user_list  = {};
+    user_list = {};
     users_by_rank = [];
     users_by_name = [];
     user_count = 0;
-    rtl_mode   = false;
+    rtl_mode = false;
     last_seen_timestamp: number;
     send_tokens = 5;
     flood_protection: Timeout = null;
     topic: TopicMessage;
-
-
 
     constructor(channel: string, display_name: string) {
         super();
@@ -305,7 +296,10 @@ class ChatChannel extends TypedEventEmitter<Events> {
         this.name = display_name;
         this.rtl_mode = channel in rtl_channels;
         this.joining = true;
-        setTimeout(() => this.joining = false, 10000); /* don't notify for name matches within 10s of joining a channel */
+        setTimeout(
+            () => (this.joining = false),
+            10000,
+        ); /* don't notify for name matches within 10s of joining a channel */
         comm_socket.on("connect", this._rejoin);
         this._rejoin();
         const last_seen = data.get("chat-manager.last-seen", {});
@@ -317,7 +311,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
     }
 
     markAsRead() {
-        const unread_delta = - this.unread_ct;
+        const unread_delta = -this.unread_ct;
         const previous_mentioned = this.mentioned;
         this.unread_ct = 0;
         this.mentioned = false;
@@ -325,13 +319,13 @@ class ChatChannel extends TypedEventEmitter<Events> {
         last_seen[this.channel] = this.last_seen_timestamp;
         data.set("chat-manager.last-seen", last_seen);
         try {
-            this.emit("unread-count-changed",
-                {channel: this.channel,
-                    unread_ct: this.unread_ct,
-                    unread_delta: unread_delta,
-                    mentioned: this.mentioned,
-                    previous_mentioned: previous_mentioned
-                });
+            this.emit("unread-count-changed", {
+                channel: this.channel,
+                unread_ct: this.unread_ct,
+                unread_delta: unread_delta,
+                mentioned: this.mentioned,
+                previous_mentioned: previous_mentioned,
+            });
         } catch (e) {
             console.error(e);
         }
@@ -339,12 +333,12 @@ class ChatChannel extends TypedEventEmitter<Events> {
 
     _rejoin = () => {
         if (comm_socket.connected) {
-            comm_socket.emit("chat/join", {"channel": this.channel});
+            comm_socket.emit("chat/join", { channel: this.channel });
         }
     };
     _destroy() {
         if (comm_socket.connected) {
-            comm_socket.emit("chat/part", {"channel": this.channel});
+            comm_socket.emit("chat/part", { channel: this.channel });
         }
         comm_socket.off("connect", this._rejoin);
         this.removeAllListeners();
@@ -378,14 +372,16 @@ class ChatChannel extends TypedEventEmitter<Events> {
         let unread_delta = 0;
 
         try {
-            if (typeof(obj.message.m) === "string") {
-                if (!(getBlocks(obj.id).block_chat || obj.id === user_id)) { // ignore messages from blocked users or oneself
+            if (typeof obj.message.m === "string") {
+                if (!(getBlocks(obj.id).block_chat || obj.id === user_id)) {
+                    // ignore messages from blocked users or oneself
                     if (name_match_regex.test(obj.message.m)) {
-                        if (obj.message.t > this.last_seen_timestamp) { // TODO remember chat read position
+                        if (obj.message.t > this.last_seen_timestamp) {
+                            // TODO remember chat read position
                             this.mentioned = true;
                             emitNotification(
                                 "[" + this.name + "]: " + obj.username,
-                                "[" + this.name + "] " + obj.username + ": " + obj.message.m
+                                "[" + this.name + "] " + obj.username + ": " + obj.message.m,
                             );
                         } else {
                             //console.debug("Not sending name match notification since we just joined the channel ", obj.channel);
@@ -397,7 +393,8 @@ class ChatChannel extends TypedEventEmitter<Events> {
             console.error(e);
         }
 
-        if (!(getBlocks(obj.id).block_chat || obj.id === user_id)) { // ignore messages from blocked users or oneself
+        if (!(getBlocks(obj.id).block_chat || obj.id === user_id)) {
+            // ignore messages from blocked users or oneself
             if (obj.message.t > this.last_seen_timestamp) {
                 this.unread_ct++;
                 unread_delta = 1;
@@ -407,16 +404,13 @@ class ChatChannel extends TypedEventEmitter<Events> {
 
         try {
             if (unread_delta !== 0 || this.mentioned !== previous_mentioned) {
-                this.emit("unread-count-changed",
-                    {
-                        channel: this.channel,
-                        unread_ct: this.unread_ct,
-                        unread_delta: unread_delta,
-                        mentioned: this.mentioned,
-                        previous_mentioned: previous_mentioned
-
-                    }
-                );
+                this.emit("unread-count-changed", {
+                    channel: this.channel,
+                    unread_ct: this.unread_ct,
+                    unread_delta: unread_delta,
+                    mentioned: this.mentioned,
+                    previous_mentioned: previous_mentioned,
+                });
             }
         } catch (e) {
             console.log(e);
@@ -459,7 +453,6 @@ class ChatChannel extends TypedEventEmitter<Events> {
         } catch (e) {
             console.error(e);
         }
-
     }
     handlePart(user): void {
         if (user.id in this.user_list) {
@@ -476,23 +469,15 @@ class ChatChannel extends TypedEventEmitter<Events> {
     }
 
     _insert_into_sorted_lists(new_user) {
-        insert_into_sorted_list(
-            this.users_by_name,
-            (a, b) => a.username.localeCompare(b.username),
-            new_user);
+        insert_into_sorted_list(this.users_by_name, (a, b) => a.username.localeCompare(b.username), new_user);
 
-        insert_into_sorted_list(
-            this.users_by_rank,
-            users_by_rank,
-            new_user
-        );
+        insert_into_sorted_list(this.users_by_rank, users_by_rank, new_user);
     }
 
     _remove_from_sorted_lists(user) {
         this.users_by_name = this.users_by_name.filter((existing_user) => existing_user.id !== user.id);
         this.users_by_rank = this.users_by_rank.filter((existing_user) => existing_user.id !== user.id);
     }
-
 
     public send(text: string): void {
         if (text.length > 300) {
@@ -519,11 +504,10 @@ class ChatChannel extends TypedEventEmitter<Events> {
             }
 
             this.systemMessage(
-                interpolate(
-                    _("Anti-flood system engaged. You will be able to talk again in {{time}} seconds."),
-                    {"time": chillout_time}
-                )
-                , "flood"
+                interpolate(_("Anti-flood system engaged. You will be able to talk again in {{time}} seconds."), {
+                    time: chillout_time,
+                }),
+                "flood",
             );
             const start = Date.now();
             this.flood_protection = setInterval(() => {
@@ -533,9 +517,9 @@ class ChatChannel extends TypedEventEmitter<Events> {
                     this.systemMessage(
                         interpolate(
                             _("Anti-flood system engaged. You will be able to talk again in {{time}} seconds."),
-                            {"time": Math.round(left / 1000)}
-                        )
-                        , "flood"
+                            { time: Math.round(left / 1000) },
+                        ),
+                        "flood",
                     );
                 } else {
                     clearInterval(this.flood_protection);
@@ -545,14 +529,16 @@ class ChatChannel extends TypedEventEmitter<Events> {
             return;
         }
         --this.send_tokens;
-        setTimeout(() => { this.send_tokens = Math.min(5, this.send_tokens + 1); }, 2000);
+        setTimeout(() => {
+            this.send_tokens = Math.min(5, this.send_tokens + 1);
+        }, 2000);
 
         const user = data.get("config.user");
 
         const _send_obj = {
-            "channel": this.channel,
-            "uuid": n2s(user.id) + "." + n2s(Date.now()),
-            "message": text
+            channel: this.channel,
+            uuid: n2s(user.id) + "." + n2s(Date.now()),
+            message: text,
         };
 
         comm_socket.send("chat/send", _send_obj);
@@ -563,14 +549,14 @@ class ChatChannel extends TypedEventEmitter<Events> {
             ranking: user.ranking,
             professional: user.professional,
             ui_class: user.ui_class,
-            message: {"i": _send_obj.uuid, "t": Math.floor(Date.now() / 1000), "m": text},
+            message: { i: _send_obj.uuid, t: Math.floor(Date.now() / 1000), m: text },
         };
         this.chat_log.push(obj);
         this.chat_ids[obj.message.i] = true;
         this.emit("chat", obj);
     }
     public setTopic(topic: string) {
-        const user = data.get('user');
+        const user = data.get("user");
 
         const msg: TopicMessage = {
             channel: this.channel,
@@ -587,14 +573,14 @@ class ChatChannel extends TypedEventEmitter<Events> {
         this.topic = msg;
     }
 
-    public systemMessage(text: string, system_message_type: 'flood'): void {
+    public systemMessage(text: string, system_message_type: "flood"): void {
         const obj: ChatMessage = {
             channel: this.channel,
-            username: 'system',
+            username: "system",
             id: -1,
             ranking: 99,
             professional: false,
-            ui_class: '',
+            ui_class: "",
             message: {
                 i: n2s(Date.now()),
                 t: Date.now() / 1000,
@@ -608,7 +594,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         this.emit("chat", obj);
     }
 
-    public clearSystemMessages(system_message_type: 'flood'): void {
+    public clearSystemMessages(system_message_type: "flood"): void {
         for (let i = 0; i < this.chat_log.length; ++i) {
             if (this.chat_log[i].system && system_message_type === this.chat_log[i].system_message_type) {
                 this.chat_log.splice(i, 1);
@@ -617,8 +603,6 @@ class ChatChannel extends TypedEventEmitter<Events> {
         }
         this.emit("chat", null);
     }
-
-
 }
 
 export function users_by_rank(a, b) {
@@ -640,7 +624,6 @@ export function users_by_rank(a, b) {
     }
     return b_rank - a_rank;
 }
-
 
 export class ChatChannelProxy extends TypedEventEmitter<Events> {
     id: number = ++last_proxy_id;
@@ -691,9 +674,8 @@ export class ChatChannelProxy extends TypedEventEmitter<Events> {
     }
 }
 
-
 class ChatManager {
-    channels: {[channel: string]: ChatChannel} = {};
+    channels: { [channel: string]: ChatChannel } = {};
 
     constructor() {
         comm_socket.on("chat-message", this.onMessage);
@@ -708,15 +690,18 @@ class ChatManager {
             return;
         }
 
-        if (obj.id && obj.username)  {
-            player_cache.update({
-                id: obj.id,
-                username: obj.username,
-                ui_class: obj.ui_class,
-                country: obj.country,
-                ranking: obj.ranking,
-                professional: obj.professional,
-            }, true);
+        if (obj.id && obj.username) {
+            player_cache.update(
+                {
+                    id: obj.id,
+                    username: obj.username,
+                    ui_class: obj.ui_class,
+                    country: obj.country,
+                    ranking: obj.ranking,
+                    professional: obj.professional,
+                },
+                true,
+            );
         }
 
         this.channels[obj.channel].handleTopic(obj);
@@ -726,15 +711,18 @@ class ChatManager {
             return;
         }
 
-        if (!obj.system && obj.id && obj.username)  {
-            player_cache.update({
-                id: obj.id,
-                username: obj.username,
-                ui_class: obj.ui_class,
-                country: obj.country,
-                ranking: obj.ranking,
-                professional: obj.professional,
-            }, true);
+        if (!obj.system && obj.id && obj.username) {
+            player_cache.update(
+                {
+                    id: obj.id,
+                    username: obj.username,
+                    ui_class: obj.ui_class,
+                    country: obj.country,
+                    ranking: obj.ranking,
+                    professional: obj.professional,
+                },
+                true,
+            );
         }
 
         this.channels[obj.channel].handleChat(obj);
@@ -780,8 +768,6 @@ class ChatManager {
 
 export const chat_manager = new ChatManager();
 
-
-
 /* Channel information resolver */
 
 export function cachedChannelInformation(channel: string): ChannelInformation | null {
@@ -797,13 +783,12 @@ export function updateCachedChannelInformation(channel: string, info: ChannelInf
 
 export function resolveChannelInformation(channel: string): Promise<ChannelInformation> {
     if (channel in channel_information_cache) {
-        return Promise.resolve( channel_information_cache[channel]);
+        return Promise.resolve(channel_information_cache[channel]);
     }
 
     if (channel in channel_information_resolvers) {
         return channel_information_resolvers[channel];
     }
-
 
     let resolver: Promise<ChannelInformation>;
 
@@ -829,16 +814,16 @@ export function resolveChannelInformation(channel: string): Promise<ChannelInfor
     if (ret.group_id) {
         resolver = new Promise<ChannelInformation>((resolve, reject) => {
             get(`/termination-api/group/${ret.group_id}`)
-            .then((res: any): ChannelInformation => {
-                ret.name = res.name;
-                ret.icon = res.icon;
-                ret.banner = res.banner;
-                updateCachedChannelInformation(channel, ret);
-                delete channel_information_resolvers[channel];
-                resolve(ret);
-                return ret;
-            })
-            .catch(reject);
+                .then((res: any): ChannelInformation => {
+                    ret.name = res.name;
+                    ret.icon = res.icon;
+                    ret.banner = res.banner;
+                    updateCachedChannelInformation(channel, ret);
+                    delete channel_information_resolvers[channel];
+                    resolve(ret);
+                    return ret;
+                })
+                .catch(reject);
         });
     } else if (ret.tournament_id) {
         updateCachedChannelInformation(channel, ret);
@@ -848,10 +833,8 @@ export function resolveChannelInformation(channel: string): Promise<ChannelInfor
         resolver = Promise.resolve(ret);
     }
 
-
-    return channel_information_resolvers[channel] = resolver;
+    return (channel_information_resolvers[channel] = resolver);
 }
-
 
 for (const chan of global_channels) {
     updateCachedChannelInformation(chan.id, chan);
