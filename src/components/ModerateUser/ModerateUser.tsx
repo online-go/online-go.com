@@ -116,7 +116,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     setRanking = (ev) => this.setState({ ranking: ev.target.value });
     setUiClassExtra = (ev) => this.setState({ ui_class_extra: ev.target.value });
 
-    deleteAccount = (ev) => {
+    deleteAccount = () => {
         const user_id = this.props.playerId;
         const username = lookup(user_id)?.username || "";
 
@@ -126,7 +126,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
         })
             .then(() => {
                 del(`players/${user_id}`, {})
-                    .then((obj) => {
+                    .then(() => {
                         swal("Done").catch(swal.noop);
                     })
                     .catch(errorAlerter);

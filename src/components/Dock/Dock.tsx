@@ -34,7 +34,7 @@ export class Dock extends React.Component<DockProperties, DockState> {
         };
     }
 
-    mouseEntered = (ev) => {
+    mouseEntered = () => {
         let delay = this.state.dock_delay;
         if (delay === MAX_DOCK_DELAY) {
             console.log("NO slide out");
@@ -48,7 +48,7 @@ export class Dock extends React.Component<DockProperties, DockState> {
         dock.style.webkitTransition = modified_transition;
     };
 
-    mouseExited = (ev) => {
+    mouseExited = () => {
         // always close fast
         const fast_transition = `all 0.1s ease-in 0s`;
         const dock = document.getElementsByClassName("Dock")[0] as HTMLElement;

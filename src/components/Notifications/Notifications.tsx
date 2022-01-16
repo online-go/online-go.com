@@ -87,8 +87,7 @@ function formatTime(seconds) {
     return _("no time left");
 }
 
-let boot_time = Date.now();
-const already_asked_for_permission = false;
+const boot_time = Date.now();
 let notification_timeout = null;
 const sent = {};
 $(window).on("storage", (event) => {
@@ -124,13 +123,13 @@ export function emitNotification(title, body, cb?) {
                             onClick={() => {
                                 try {
                                     Notification.requestPermission()
-                                        .then((perm) => {
+                                        .then(() => {
                                             emitNotification(title, body, cb);
                                         })
                                         .catch((err) => console.error(err));
                                 } catch (e) {
                                     /* deprecated usage, but only way supported on safari currently */
-                                    Notification.requestPermission((perm) => {
+                                    Notification.requestPermission(() => {
                                         emitNotification(title, body, cb);
                                     });
                                 }
@@ -213,10 +212,6 @@ export function emitNotification(title, body, cb?) {
         console.log("Error emitting notification: ", e);
     }
 }
-function silenceNotificationsFor5Seconds() {
-    boot_time = Date.now();
-}
-
 class NotificationManager {
     user;
     notifications;
@@ -519,7 +514,7 @@ class NotificationManager {
 
         return comm_socket;
     }
-    onNavigate = (location) => {
+    onNavigate = () => {
         const current_game_id = getCurrentGameId();
         if (current_game_id) {
             let found = false;
@@ -683,7 +678,7 @@ export class NotificationList extends React.Component<{}, any> {
                 {this.state.list.length !== 0 && (
                     <div className="contents">
                         <div className="list">
-                            {this.state.list.map((notification, idx) => (
+                            {this.state.list.map((notification) => (
                                 <NotificationEntry
                                     key={notification.id}
                                     notification={notification}

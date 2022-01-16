@@ -26,16 +26,6 @@ interface JosekiAdminProps {
     server_url: string;
 }
 
-// This state is accurate, but updatePermissions needs to be slightly modified
-// to be able to use it.
-interface JosekiAdminState {
-    userid: string;
-    can_comment: boolean;
-    can_edit: boolean;
-    can_admin: boolean;
-    throb: boolean;
-}
-
 export class JosekiPermissionsPanel extends React.PureComponent<
     JosekiAdminProps,
     any /*JosekiAdminState*/

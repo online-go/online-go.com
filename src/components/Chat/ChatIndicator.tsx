@@ -52,16 +52,12 @@ function onChatSubscribeGroupMentionsChange(pref) {
     chat_subscribe_new_group_chat_mentioned = pref;
     event_emiter.emit("subscription_changed");
 }
-let chat_subscribe_new_tournament_chat_messages = false;
 preferences.watch("chat-subscribe-tournament-chat-unread", onChatSubscribeTournamentMessageChange);
-function onChatSubscribeTournamentMessageChange(pref) {
-    chat_subscribe_new_tournament_chat_messages = pref;
+function onChatSubscribeTournamentMessageChange() {
     event_emiter.emit("subscription_changed");
 }
-let chat_subscribe_new_tournament_chat_mentioned = false;
 preferences.watch("chat-subscribe-tournament-mentions", onChatSubscribeTournamentMentionsChange);
-function onChatSubscribeTournamentMentionsChange(pref) {
-    chat_subscribe_new_tournament_chat_mentioned = pref;
+function onChatSubscribeTournamentMentionsChange() {
     event_emiter.emit("subscription_changed");
 }
 
@@ -100,8 +96,6 @@ export function watchChatSubscriptionChanged(cb: () => void, dont_call_imediatel
 export function unwatchChatSubscriptionChanged(cb: () => void): void {
     event_emiter.off("subscription_changed", cb);
 }
-
-let chat_indicator_sinleton: ChatIndicator;
 
 export class ChatIndicator extends React.PureComponent<{}, any> {
     channels: { [channel: string]: ChatChannelProxy } = {};
@@ -166,7 +160,7 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
         this.forceUpdate();
     };
 
-    onUnreadCountChange = (obj) => {
+    onUnreadCountChange = () => {
         this.updateStats();
     };
 
@@ -202,7 +196,7 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
         });
     };
 
-    partFunc = (channel: string, dont_autoset_active: boolean, dont_clear_joined: boolean) => {
+    partFunc = (channel: string) => {
         chat_subscriptions[channel] = {
             mentioned: false,
             unread: false,

@@ -121,7 +121,7 @@ export class ObserveGamesComponent extends React.PureComponent<
         }
     };
 
-    componentDidUpdate(prevProps: ObserveGamesComponentProperties, prevState: any) {
+    componentDidUpdate(prevProps: ObserveGamesComponentProperties) {
         if (this.props.channel !== prevProps.channel) {
             console.log("Should be reconnecting");
             this.destroy();
@@ -403,7 +403,7 @@ export class ObserveGamesComponent extends React.PureComponent<
     private filterOption(filter_field: string, name: string): JSX.Element {
         const self = this;
 
-        function toggle(ev) {
+        function toggle() {
             const new_filters = dup(self.state.filters);
 
             if (!new_filters[filter_field]) {

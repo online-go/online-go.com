@@ -108,7 +108,7 @@ export class LadderComponent extends React.PureComponent<
                 post("ladders/%%/players/challenge", this.props.ladderId, {
                     player_id: ladder_player.player.id,
                 })
-                    .then((res) => {
+                    .then(() => {
                         this.updatePlayers();
                     })
                     .catch(errorAlerter);

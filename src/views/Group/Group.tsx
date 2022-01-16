@@ -207,7 +207,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
 
     leaveGroup = () => {
         post("groups/%%/members", this.state.group_id, { delete: true })
-            .then((res) => {
+            .then(() => {
                 this.resolve(this.state.group_id);
             })
             .catch(errorAlerter);
@@ -343,7 +343,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
     setNewNewsBody = (ev) => {
         this.setState({ new_news_body: ev.target.value });
     };
-    postNewNews = (ev) => {
+    postNewNews = () => {
         if (this.state.new_news_title.trim().length < 5) {
             swal({ title: _("Please provide a title") })
                 .then(() => this.refs.new_news_title.focus())
@@ -440,7 +440,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
         });
     };
 
-    inviteUser = (ev) => {
+    inviteUser = () => {
         post("group/%%/members", this.state.group_id, {
             username: this.state.user_to_invite.username,
         })
@@ -467,7 +467,6 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
     render() {
         const user = data.get("user");
         const group = this.state.group;
-        const news = this.state.news;
         const editing = this.state.editing;
 
         let group_website_href = group.website;
@@ -1120,7 +1119,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
             </div>
         );
     }
-    renderExtraPlayerActions = (player_id: number, user: any) => {
+    renderExtraPlayerActions = (player_id: number) => {
         if (!this.state.is_admin && !data.get("user").is_moderator) {
             return null;
         }
@@ -1208,7 +1207,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                     delete: true,
                     player_id: player_id,
                 })
-                    .then((res) => {
+                    .then(() => {
                         this.resolve(this.state.group_id);
                     })
                     .catch(errorAlerter);

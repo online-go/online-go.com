@@ -20,9 +20,6 @@ import * as data from "data";
 import { _ } from "translate";
 import * as Sentry from "@sentry/browser";
 
-declare let ogs_current_language;
-declare let ogs_version;
-
 export class ErrorBoundary extends React.Component<{}, any> {
     constructor(props) {
         super(props);
@@ -49,8 +46,6 @@ export class ErrorBoundary extends React.Component<{}, any> {
         }
 
         try {
-            const user = data.get("user") || { id: 0, username: "guest" };
-
             Sentry.withScope((scope) => {
                 try {
                     scope.setUser({

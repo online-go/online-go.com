@@ -81,10 +81,6 @@ const position_url = (node_id: string, variation_filter?: any, mode?: string) =>
 };
 
 const joseki_sources_url = server_url + "josekisources";
-const tags_url = server_url + "tags";
-
-const tag_count_url = (node_id: number, tag_id: number): string =>
-    server_url + "position/tagcount?id=" + node_id + "&tfilterid=" + tag_id;
 
 const tagscount_url = (node_id: string): string => server_url + "position/tagcounts?id=" + node_id;
 
@@ -1447,8 +1443,6 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
             this.state.mode === PageMode.Explore ||
             (this.state.mode === PageMode.Edit && this.state.move_string === "") // you can't edit the empty board
         ) {
-            // hacklily lock down comments on the old server, because (1) it is old and (2) the comment PUT route changed.
-            const allow_comments = server_url.includes("oje") ? this.state.user_can_comment : false;
             return (
                 <ExplorePane
                     description={this.state.position_description}
@@ -1641,7 +1635,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
         }
     }
 
-    componentDidUpdate = (prevProps, prevState) => {
+    componentDidUpdate = (prevProps) => {
         if (prevProps.position_id !== this.props.position_id) {
             this.setState({
                 extra_info_selected: "none",
@@ -2217,7 +2211,7 @@ class EditPane extends React.Component<EditProps, EditState> {
         this.setState({ new_description });
     };
 
-    saveNewInfo = (e) => {
+    saveNewInfo = () => {
         this.props.save_new_info(
             this.state.move_type,
             this.state.variation_label,
@@ -2261,7 +2255,7 @@ class EditPane extends React.Component<EditProps, EditState> {
         */
     };
 
-    promptForJosekiSource = (e) => {
+    promptForJosekiSource = () => {
         openModal(<JosekiSourceModal add_joseki_source={this.addJosekiSource} fastDismiss />);
     };
 

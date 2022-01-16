@@ -17,15 +17,6 @@
 
 import * as React from "react";
 
-interface ResizableProperties {
-    id?: string;
-    className?: string;
-    onResize?: (w, h) => void;
-    // id?: any,
-    // user?: any,
-    // callback?: ()=>any,
-}
-
 export class Resizable extends React.Component<any, {}> {
     div: HTMLDivElement = null;
 

@@ -258,15 +258,15 @@ export class Play extends React.Component<{}, PlayState> {
         };
     }
 
-    onAutomatchEntry = (entry) => {
+    onAutomatchEntry = () => {
         this.forceUpdate();
     };
 
-    onAutomatchStart = (entry) => {
+    onAutomatchStart = () => {
         this.forceUpdate();
     };
 
-    onAutomatchCancel = (entry) => {
+    onAutomatchCancel = () => {
         this.forceUpdate();
     };
 
@@ -297,7 +297,7 @@ export class Play extends React.Component<{}, PlayState> {
         };
         preferences.uuid = uuid();
         automatch_manager.findMatch(preferences);
-        this.onAutomatchEntry(preferences);
+        this.onAutomatchEntry();
 
         if (speed === "correspondence") {
             this.setState({ showLoadingSpinnerForCorrespondence: true });

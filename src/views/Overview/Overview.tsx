@@ -35,23 +35,6 @@ import { notification_manager } from "Notifications";
 import { ActiveAnnouncements } from "Announcements";
 import { FabX } from "material";
 
-const UserRating = (props: { rating: number }) => {
-    const wholeRating = Math.floor(props.rating);
-    const tenthsRating = Math.floor(props.rating * 10) % 10;
-    return (
-        <span className="UserRating">
-            {wholeRating}
-            {tenthsRating > 0 && (
-                <sup>
-                    <span className="frac">
-                        <sup>{tenthsRating}</sup>&frasl;<sub>10</sub>
-                    </span>
-                </sup>
-            )}
-        </span>
-    );
-};
-
 declare let ogs_missing_translation_count;
 
 export class Overview extends React.Component<{}, any> {
@@ -248,14 +231,14 @@ export class Overview extends React.Component<{}, any> {
         );
     }
 
-    dismissTranslationDialog = (ev) => {
+    dismissTranslationDialog = () => {
         preferences.set("translation-dialog-dismissed", Date.now());
         this.setState({
             show_translation_dialog: false,
         });
     };
 
-    neverShowTranslationDialog = (ev) => {
+    neverShowTranslationDialog = () => {
         preferences.set("translation-dialog-never-show", true);
         this.setState({
             show_translation_dialog: false,

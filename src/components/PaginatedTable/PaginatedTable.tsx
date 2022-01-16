@@ -35,18 +35,15 @@ interface Filter {
     [key: string]: string | number | boolean;
 }
 
-interface PagedResults<EntryT = any> {
+interface PagedResults {
     count: number; // total results
     results: Array<any>;
 }
 
-type SourceFunction<EntryT> = (
-    filter: Filter,
-    sorting: Array<string>,
-) => Promise<PagedResults<EntryT>>;
+type SourceFunction = (filter: Filter, sorting: Array<string>) => Promise<PagedResults>;
 
 interface PaginatedTableProperties<RawEntryT, GroomedEntryT = RawEntryT> {
-    source: string | SourceFunction<RawEntryT>;
+    source: string | SourceFunction;
     method?: "GET" | "POST";
     pageSize?: number;
     columns: Array<PaginatedTableColumnProperties<GroomedEntryT>>;
@@ -78,7 +75,6 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
 ): JSX.Element {
     const table_name = props.name || "default";
     const [rows, setRows]: [any[], (x: any[]) => void] = React.useState([]);
-    const [total, setTotal]: [number, (x: number) => void] = React.useState(-1);
     const [page, _setPage]: [number, (x: number) => void] = React.useState(props.startingPage || 1);
     const [page_input_text, _setPageInputText]: [string, (s: string) => void] = React.useState(
         (props.startingPage || 1).toString(),
@@ -158,7 +154,6 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
                     load_again.current = false;
                     setLoadAgainRefresh(load_again_refresh + 1);
                 }
-                setTotal(res.count);
                 setRows(new_rows);
                 setNumPages(Math.ceil(res.count / page_size));
                 if (page > Math.ceil(res.count / page_size)) {
@@ -217,7 +212,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
         throw new Error(`Source was not a url`);
     }
 
-    function setPage(page: number, skip_bounds_check?: boolean): void {
+    function setPage(page: number): void {
         const new_page = Math.max(1, Math.min(page, num_pages));
         _setPage(new_page);
         setPageInputText(new_page.toString());
@@ -333,7 +328,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
                     </tr>
                 </thead>
                 <tbody>
-                    {rows.map((row, i) => {
+                    {rows.map((row) => {
                         const cols = columns.map((column, idx) => (
                             <td key={idx} className={cls(row, column)} {...column.cellProps}>
                                 {column_render(column, row)}
@@ -365,7 +360,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
                             type="tel"
                             onChange={(ev) => setPageInputText(ev.target.value)}
                             onKeyDown={(ev) => ev.keyCode === 13 && syncPageInputTextToPage()}
-                            onBlur={(ev) => syncPageInputTextToPage()}
+                            onBlur={() => syncPageInputTextToPage()}
                         />
                         <span className="of"> / </span>
                         <span className="total">{num_pages}</span>

@@ -133,6 +133,7 @@ export class GroupAutocomplete extends React.PureComponent<
     };
 
     render() {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { suggestions, value } = this.state;
 
         const inputProps = {

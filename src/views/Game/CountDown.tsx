@@ -63,7 +63,7 @@ export class CountDown extends React.PureComponent<{ to: Date }, any> {
         this.update();
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate() {
         this.update();
     }
 

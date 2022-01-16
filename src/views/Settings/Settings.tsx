@@ -62,7 +62,7 @@ function logoutOtherDevices() {
         text: "Logout of other devices you are logged in to?",
         showCancelButton: true,
     })
-        .then((password) => {
+        .then(() => {
             ITC.send("logout", data.get("device.uuid"));
             swal("Other devices have been logged out").then(ignore).catch(ignore);
         })
@@ -73,7 +73,7 @@ function logoutOtherDevices() {
 function logoutAndClearLocalData() {
     try {
         get("/api/v0/logout")
-            .then((config) => {
+            .then(() => {
                 window.location.href = "/";
             })
             .catch(errorLogger);
@@ -403,12 +403,12 @@ function VacationSettings(props: SettingGroupProps): JSX.Element {
 
     function endVacation() {
         del("me/vacation")
-            .then((data) => props.refresh())
+            .then(() => props.refresh())
             .catch(errorAlerter);
     }
     function startVacation() {
         put("me/vacation")
-            .then((data) => props.refresh())
+            .then(() => props.refresh())
             .catch(errorAlerter);
     }
 
@@ -461,7 +461,7 @@ function VacationSettings(props: SettingGroupProps): JSX.Element {
     );
 }
 
-function LogoutPreferences(props: SettingGroupProps): JSX.Element {
+function LogoutPreferences(): JSX.Element {
     return (
         <div className="LogoutButtons">
             <div>
@@ -542,7 +542,7 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
                 new_password: password1,
                 old_password: "!",
             })
-                .then((obj) => {
+                .then(() => {
                     props.refresh();
                     refreshAccountSettings();
                     swal(_("Password updated successfully!")).catch(swal.noop);
@@ -558,7 +558,7 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
                         old_password: password,
                         new_password: password1,
                     })
-                        .then((obj) => {
+                        .then(() => {
                             swal(_("Password updated successfully!")).catch(swal.noop);
                         })
                         .catch(errorAlerter);
@@ -704,7 +704,7 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
                 <dt>{_("Social account linking")}</dt>
                 {settings.social_auth_accounts && (
                     <dd>
-                        {settings.social_auth_accounts.map((account, idx) => (
+                        {settings.social_auth_accounts.map((account) => (
                             <div key={account.provider}>
                                 <div className="social-link">
                                     {account.provider === "google-oauth2" && (
@@ -760,7 +760,7 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
     );
 }
 
-function ChatPreferences(props: SettingGroupProps): JSX.Element {
+function ChatPreferences(): JSX.Element {
     const [show_empty_chat_notification, _setEmptyChatNotification]: [
         boolean,
         (x: boolean) => void,
@@ -856,7 +856,7 @@ function EmailPreferences(props: SettingGroupProps): JSX.Element {
     return (
         <div>
             {_("Email me a notification when ...")}
-            {Object.keys(props.state.notifications).map((k, idx) => (
+            {Object.keys(props.state.notifications).map((k) => (
                 <EmailNotificationToggle
                     key={k}
                     name={_(props.state.notifications[k].description)}
@@ -868,7 +868,7 @@ function EmailPreferences(props: SettingGroupProps): JSX.Element {
     );
 }
 
-function BlockedPlayerPreferences(props: SettingGroupProps): JSX.Element {
+function BlockedPlayerPreferences(): JSX.Element {
     const [blocked_players, setBlockedPlayers]: [
         Array<any> | null,
         (x: Array<any> | null) => void,
@@ -910,7 +910,7 @@ function BlockedPlayerPreferences(props: SettingGroupProps): JSX.Element {
     );
 }
 
-function AnnouncementPreferences(props: SettingGroupProps): JSX.Element {
+function AnnouncementPreferences(): JSX.Element {
     const [blocked_players, setBlockedPlayers]: [
         Array<any> | null,
         (x: Array<any> | null) => void,
@@ -1031,7 +1031,7 @@ function AnnouncementPreferences(props: SettingGroupProps): JSX.Element {
     );
 }
 
-function GamePreferences(props: SettingGroupProps): JSX.Element {
+function GamePreferences(): JSX.Element {
     const [dock_delay, _setDockDelay]: [number, (x: number) => void] = React.useState(
         preferences.get("dock-delay"),
     );
@@ -1039,12 +1039,6 @@ function GamePreferences(props: SettingGroupProps): JSX.Element {
         React.useState(preferences.get("ai-review-enabled"));
     const [variations_in_chat, _setVariationsInChat]: [boolean, (x: boolean) => void] =
         React.useState(preferences.get("variations-in-chat-enabled"));
-    const [live_submit_mode, _setLiveSubmitMode]: [string, (x: string) => void] = React.useState(
-        getSubmitMode("live"),
-    );
-    const [corr_submit_mode, _setCorrSubmitMode]: [string, (x: string) => void] = React.useState(
-        getSubmitMode("correspondence"),
-    );
     const [board_labeling, _setBoardLabeling]: [string, (x: string) => void] = React.useState(
         preferences.get("board-labeling"),
     );
@@ -1121,12 +1115,6 @@ function GamePreferences(props: SettingGroupProps): JSX.Element {
                 preferences.set(`double-click-submit-${speed}` as ValidPreference, false);
                 preferences.set(`one-click-submit-${speed}` as ValidPreference, false);
                 break;
-        }
-        if (speed === "live") {
-            _setLiveSubmitMode(getSubmitMode(speed));
-        }
-        if (speed === "correspondence") {
-            _setCorrSubmitMode(getSubmitMode(speed));
         }
     }
     function setLiveSubmitMode(value) {
@@ -1311,8 +1299,6 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
         React.useState(Object.keys(preferences.get("profanity-filter")));
     const [game_list_threshold, _setGameListThreshold]: [number, (x: number) => void] =
         React.useState(preferences.get("game-list-threshold"));
-    const [desktop_notifications, _setDesktopNotifications]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("desktop-notifications"));
     const [show_offline_friends, _setShowOfflineFriends]: [boolean, (x: boolean) => void] =
         React.useState(preferences.get("show-offline-friends"));
     const [unicode_filter_usernames, _setUnicodeFilterUsernames]: [boolean, (x: boolean) => void] =
@@ -1402,7 +1388,6 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
 
         try {
             preferences.set("desktop-notifications", enabled);
-            _setDesktopNotifications(enabled);
 
             if (enabled) {
                 if ((Notification as any).permission === "denied") {
@@ -1865,7 +1850,7 @@ function AssociationSelect({
     );
 }
 
-function SoundPreferences(props: SettingGroupProps): JSX.Element {
+function SoundPreferences(): JSX.Element {
     const [tick_tock_start, __setTickTockStart]: [number, (x: number) => void] = React.useState(
         preferences.get("sound.countdown.tick-tock.start"),
     );
@@ -2741,7 +2726,7 @@ function SoundPackSelect(props: {
         sfx.getPackId(props.group),
     );
 
-    function filter({ label, value, data }, text: string): boolean {
+    function filter({ data }, text: string): boolean {
         if (!text) {
             text = "";
         }
@@ -2820,7 +2805,7 @@ function Volume(props: {
         setVolume(parseFloat(ev.target.value));
     }
 
-    function toggleVolumeHandler(ev: any): void {
+    function toggleVolumeHandler(): void {
         if (volume > 0) {
             setVolume(0);
         } else {
@@ -2863,7 +2848,7 @@ function PlayButton(props: { sample: ValidSound | Array<ValidSound> }): JSX.Elem
     const samples: Array<ValidSound> =
         typeof props.sample === "string" ? [props.sample] : props.sample;
 
-    function play(ev: any): void {
+    function play(): void {
         const _samples = samples.slice();
         if (play_timeout) {
             clearTimeout(play_timeout);
@@ -2876,7 +2861,6 @@ function PlayButton(props: { sample: ValidSound | Array<ValidSound> }): JSX.Elem
             play_timeout = null;
             if (_samples.length) {
                 const sample = _samples.shift();
-                const start = Date.now();
                 play_timeout = setTimeout(process_next, 1000);
                 sfx.play(sample);
             } else {
@@ -2888,7 +2872,7 @@ function PlayButton(props: { sample: ValidSound | Array<ValidSound> }): JSX.Elem
         setPlaying(true);
     }
 
-    function stop(ev: any): void {
+    function stop(): void {
         play_emitter.emit("stop");
         clearTimeout(play_timeout);
         play_timeout = null;

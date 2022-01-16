@@ -222,10 +222,6 @@ export class AutomatchSettings extends Modal<
         const settings = this.getSelectedSettings();
         const tab = this.state.tab;
 
-        const size_enabled = (size) => {
-            return settings.size_options.indexOf(size) >= 0;
-        };
-
         return (
             <div className="Modal AutomatchSettings" ref="modal">
                 <div className="header">

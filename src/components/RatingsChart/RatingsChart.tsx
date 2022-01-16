@@ -167,7 +167,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
             this.y_axis_rank_labels.style("display", "none");
         }
     }
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
         if (
             this.props.playerId !== prevProps.playerId ||
             this.props.speed !== prevProps.speed ||
@@ -1071,7 +1071,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
                 .append("rect")
                 .attr("class", "win-loss-bar transparent")
                 .attr("x", (d: RatingEntry) => X(d, 0))
-                .attr("y", (d: RatingEntry) => Y(this.max_games_played_in_a_month))
+                .attr("y", () => Y(this.max_games_played_in_a_month))
                 .attr("width", (d: RatingEntry) => W(d, 0.999))
                 .attr("height", (d: RatingEntry) => H(this.max_games_played_in_a_month - d.count)),
         );

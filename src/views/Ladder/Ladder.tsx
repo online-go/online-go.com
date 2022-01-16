@@ -73,7 +73,7 @@ export class Ladder extends React.PureComponent<LadderProperties, LadderState> {
             this.resolve(next_props.match.params.ladder_id);
         }
     }
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
         if (this.props.match.params.ladder_id !== prevProps.match.params.ladder_id) {
             this.setState({ ladder_id: this.props.match.params.ladder_id });
         }
@@ -196,6 +196,7 @@ export class Ladder extends React.PureComponent<LadderProperties, LadderState> {
         );
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     renderRow = ({ index, isScrolling, isVisible, key, style }) => {
         return (
             <div className="LadderRow-container" key={key} style={style}>
@@ -332,7 +333,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
         return false;
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
         if (
             prevProps.index !== this.props.index ||
             this.props.isScrolling !== prevProps.isScrolling ||
@@ -451,7 +452,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                     player_id: player.id,
                     rank: new_rank,
                 })
-                    .then((res) => {
+                    .then(() => {
                         close_all_popovers();
                         this.props.ladder.invalidate();
                     })
@@ -512,7 +513,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                                     <span
                                         key={idx}
                                         className="fake-link challenge-link"
-                                        onClick={(ev) =>
+                                        onClick={() =>
                                             browserHistory.push(`/game/${challenge.game_id}`)
                                         }
                                     >
@@ -542,7 +543,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                                     <span
                                         key={idx}
                                         className="fake-link challenge-link"
-                                        onClick={(ev) =>
+                                        onClick={() =>
                                             browserHistory.push(`/game/${challenge.game_id}`)
                                         }
                                     >
@@ -594,7 +595,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                         player_id: ladder_player.player.id,
                     },
                 )
-                    .then((res) => {
+                    .then(() => {
                         this.props.ladder.invalidate();
                     })
                     .catch(errorAlerter);

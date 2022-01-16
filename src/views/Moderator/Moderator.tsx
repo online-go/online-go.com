@@ -443,12 +443,12 @@ export class ColorTableToggle extends React.Component<{}, any> {
         }));
 
         if (this.state.timerID === "") {
-            this.setState((prevState) => ({
+            this.setState(() => ({
                 timerID: setInterval(this.colorTable, 1000),
             }));
         } else {
             clearInterval(this.state.timerID);
-            this.setState((prevState) => ({
+            this.setState(() => ({
                 timerID: "",
             }));
         }
@@ -572,7 +572,7 @@ export class ColorTableToggle extends React.Component<{}, any> {
     componentWillUnmount() {
         if (this.state.timerID !== "") {
             clearInterval(this.state.timerID);
-            this.setState((prevState) => ({
+            this.setState(() => ({
                 timerID: "",
             }));
         }

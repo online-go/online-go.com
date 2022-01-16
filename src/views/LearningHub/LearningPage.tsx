@@ -222,6 +222,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         }
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onStoneRemoval(stone_removal_string: string): void {
         // stub to be overridden
     }
