@@ -41,7 +41,7 @@ function scramble(...args) {
     return shuffleArray(args);
 }
 
-export const GoResources = (props) => {
+export const GoResources = () => {
     window.document.title = _("Other Go Resources");
 
     const country = data.get("user").country || "us";

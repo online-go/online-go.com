@@ -21,7 +21,7 @@ import { _, pgettext, interpolate } from "translate";
 import { get } from "requests";
 import * as preferences from "preferences";
 import { errorAlerter } from "misc";
-import { shortTimeControl, shortShortTimeControl } from "TimeControl";
+import { shortShortTimeControl } from "TimeControl";
 import { computeAverageMoveTime } from "goban";
 import { PaginatedTable } from "PaginatedTable";
 import * as moment from "moment";
@@ -508,15 +508,6 @@ function datefmt(d, offset?) {
         offset = 0;
     }
     return moment(new Date(d)).add(offset, "seconds").format("llll");
-}
-function timeControlDescription(e) {
-    return shortTimeControl(e.time_control_parameters);
-}
-function calendar(d, offset?) {
-    if (!offset) {
-        offset = 0;
-    }
-    return moment(new Date(d)).add(offset, "seconds").calendar();
 }
 function fromNow(d, offset?) {
     if (!offset) {

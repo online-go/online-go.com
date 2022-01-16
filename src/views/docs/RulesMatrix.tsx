@@ -17,7 +17,7 @@
 
 import * as React from "react";
 
-export const RulesMatrix = (props) => (
+export const RulesMatrix = () => (
     <div id="RulesMatrix">
         <div id="docs-go-rules-comparison-matrix">
             <table className="rules">

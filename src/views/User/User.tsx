@@ -1141,7 +1141,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                 width={30}
                                                 checked={this.state.show_ratings_in_rating_grid}
                                                 id="show-ratings-or-ranks"
-                                                onChange={(checked, ev, id) => {
+                                                onChange={(checked) => {
                                                     this.setState({
                                                         show_ratings_in_rating_grid: checked,
                                                     });
@@ -1193,7 +1193,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                         width={20}
                                         checked={this.state.rating_graph_plot_by_games}
                                         id="show-ratings-in-days"
-                                        onChange={(checked, ev, id) => {
+                                        onChange={(checked) => {
                                             this.setState({ rating_graph_plot_by_games: checked });
                                             preferences.set("rating-graph-plot-by-games", checked);
                                         }}
@@ -1571,7 +1571,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                                   (X && X.annulled
                                                                       ? " annulled"
                                                                       : ""),
-                                                              render: (X) => "",
+                                                              render: () => "",
                                                           },
                                                           {
                                                               header: _(""),
@@ -1580,7 +1580,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                                   (X && X.annulled
                                                                       ? " annulled"
                                                                       : ""),
-                                                              render: (X) => "",
+                                                              render: () => "",
                                                           },
                                                           {
                                                               header: _("Date"),
@@ -1601,7 +1601,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                                   (X && X.annulled
                                                                       ? " annulled"
                                                                       : ""),
-                                                              render: (X) => "",
+                                                              render: () => "",
                                                           },
                                                           {
                                                               header: _(""),
@@ -1653,10 +1653,9 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                                           },
                                                           {
                                                               header: _("Result"),
-                                                              className: (X) => " annulled",
-                                                              /* a nice background color for this... */ render: (
-                                                                  X,
-                                                              ) => _("fun was had"),
+                                                              className: () => " annulled",
+                                                              /* a nice background color for this... */ render: () =>
+                                                                  _("fun was had"),
                                                           },
                                                       ]
                                                     : []),
