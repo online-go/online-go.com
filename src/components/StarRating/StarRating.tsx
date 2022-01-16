@@ -54,9 +54,9 @@ export class StarRating extends React.PureComponent<any, { rating }> {
         }
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-        if (this.props.value !== nextProps.value) {
-            this.setState({ rating: Math.max(0, Math.min(5, nextProps.value)) });
+    componentDidUpdate(oldProps) {
+        if (this.props.value !== oldProps.value) {
+            this.setState({ rating: Math.max(0, Math.min(5, oldProps.value)) });
         }
     }
 

@@ -12,7 +12,6 @@ module.exports = {
         "eslint-plugin-jsdoc",
         "@typescript-eslint",
         "@typescript-eslint/tslint",
-        "unused-imports",
         "prettier"
     ],
     "extends": [
@@ -31,7 +30,7 @@ module.exports = {
         "@typescript-eslint/no-explicit-any": "off", // 535 warnings
         "@typescript-eslint/no-namespace": "off", // 1 error
         "@typescript-eslint/no-this-alias": "off", // 4 errors
-        "@typescript-eslint/no-unused-vars": "off", // 675 warnings
+        "@typescript-eslint/no-unused-vars": "off", // 203 errors
         "@typescript-eslint/triple-slash-reference": "off", // 1 error
 
         "no-empty-pattern": "off", // 1 error
@@ -40,7 +39,6 @@ module.exports = {
         "no-self-assign": "off", // 2 errors
         "no-useless-escape": "off", // 24 errors
         "prefer-spread": "off", // 7 errors
-        "unused-imports/no-unused-vars": "off",
 
         //==============================================================
 
@@ -122,7 +120,6 @@ module.exports = {
             { "allowNamedFunctions": true }
         ],
         "prettier/prettier": "error",
-        "unused-imports/no-unused-imports": "error",
         "use-isnan": "error",
         "@typescript-eslint/tslint/config": [
             "error",

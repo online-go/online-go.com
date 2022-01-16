@@ -52,7 +52,7 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps>
         }
     }
 
-    onResize = (no_debounce?: boolean) => {
+    onResize = () => {
         /*
         if (this.resize_debounce) {
             clearTimeout(this.resize_debounce);
