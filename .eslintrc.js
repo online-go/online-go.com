@@ -11,8 +11,7 @@ module.exports = {
     "plugins": [
         "eslint-plugin-jsdoc",
         "@typescript-eslint",
-        "@typescript-eslint/tslint",
-        "unused-imports"
+        "@typescript-eslint/tslint"
     ],
     "extends": [
         "eslint:recommended",
@@ -39,7 +38,6 @@ module.exports = {
         "no-self-assign": "off", // 2 errors
         "no-useless-escape": "off", // 24 errors
         "prefer-spread": "off", // 7 errors
-        "unused-imports/no-unused-vars": "off",
 
         //==============================================================
 
@@ -120,7 +118,6 @@ module.exports = {
             "error",
             { "allowNamedFunctions": true }
         ],
-        "unused-imports/no-unused-imports": "error",
         "use-isnan": "error",
         "@typescript-eslint/tslint/config": [
             "error",
