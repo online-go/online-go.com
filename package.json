@@ -87,6 +87,7 @@
     "@types/sanitize-html": "^1.22.0",
     "array-move": "^2.2.1",
     "d3": "^5.15.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "eventemitter3": "^4.0.7",
     "howler": "^2.2.1",
     "jquery": "^3.6.0",
@@ -125,8 +126,7 @@
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
-      "eslint",
-      "prettier --check"
+      "eslint"
     ]
   }
 }
