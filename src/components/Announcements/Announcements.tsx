@@ -85,7 +85,7 @@ export class Announcements extends React.PureComponent<{}, AnnouncementsState> {
         });
     }
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         setTimeout(() => {
             /* Defer this get so we can load whatever page we're on first */
             get("announcements")
