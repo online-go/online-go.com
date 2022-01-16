@@ -207,7 +207,7 @@ export class Markdown extends React.PureComponent<MarkdownProps, { html }> {
         return source;
     }
 
-    componentDidUpate(oldProps) {
+    componentDidUpdate(oldProps) {
         if (oldProps.source !== this.props.source) {
             this.setState({
                 html: oldProps.source
