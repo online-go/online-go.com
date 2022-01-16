@@ -12,7 +12,8 @@ module.exports = {
         "eslint-plugin-jsdoc",
         "@typescript-eslint",
         "@typescript-eslint/tslint",
-        "unused-imports"
+        "unused-imports",
+        "prettier"
     ],
     "extends": [
         "eslint:recommended",
@@ -120,6 +121,7 @@ module.exports = {
             "error",
             { "allowNamedFunctions": true }
         ],
+        "prettier/prettier": "error",
         "unused-imports/no-unused-imports": "error",
         "use-isnan": "error",
         "@typescript-eslint/tslint/config": [
