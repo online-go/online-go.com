@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Goban, GoMath } from "goban";
+import { Goban } from "goban";
 
 export class PuzzleNavigation {
     _goban: Goban;

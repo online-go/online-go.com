@@ -17,7 +17,6 @@
 
 import * as React from "react";
 import * as data from "data";
-import { _, pgettext, interpolate } from "translate";
 import { useState, useEffect, useCallback } from "react";
 
 //import {post, get} from "requests";

@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { _ } from "translate";
-import { Modal, openModal } from "Modal";
+import { Modal } from "Modal";
 
 interface Events {}
 

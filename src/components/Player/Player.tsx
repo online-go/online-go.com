@@ -16,12 +16,11 @@
  */
 
 import * as React from "react";
-import { Link } from "react-router-dom";
 import { routes } from "routes";
 import { browserHistory } from "ogsHistory";
 import * as data from "data";
 import { shouldOpenNewTab, errorLogger, unicodeFilter } from "misc";
-import { rankString, getUserRating, is_novice, PROVISIONAL_RATING_CUTOFF } from "rank_utils";
+import { rankString, getUserRating, PROVISIONAL_RATING_CUTOFF } from "rank_utils";
 import { close_all_popovers, popover } from "popover";
 import { close_friend_list } from "FriendList/FriendIndicator";
 import { PlayerDetails } from "./PlayerDetails";
@@ -31,7 +30,6 @@ import { PlayerIcon } from "PlayerIcon";
 import * as player_cache from "player_cache";
 import * as preferences from "preferences";
 import online_status from "online_status";
-import { pgettext } from "translate";
 
 interface PlayerProperties {
     // id?: any,

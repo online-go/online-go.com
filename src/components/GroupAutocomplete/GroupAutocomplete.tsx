@@ -16,8 +16,8 @@
  */
 
 import * as React from "react";
-import { _, pgettext, interpolate } from "translate";
-import { post, get, abort_requests_in_flight } from "requests";
+import { _ } from "translate";
+import { get, abort_requests_in_flight } from "requests";
 import * as Autosuggest from "react-autosuggest";
 
 interface GroupAutocompleteProperties {

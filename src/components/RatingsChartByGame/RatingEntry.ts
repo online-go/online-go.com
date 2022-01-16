@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { get_handicap_adjustment, effective_outcome, EffectiveOutcome } from "rank_utils";
+import { effective_outcome, EffectiveOutcome } from "rank_utils";
 
 export class RatingEntry {
     ended: Date;

@@ -22,7 +22,7 @@ import { Chart } from "react-charts";
 import * as data from "data";
 
 import { _ } from "translate";
-import { Modal, openModal } from "Modal";
+import { Modal } from "Modal";
 
 interface Events {}
 

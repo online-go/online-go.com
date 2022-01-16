@@ -19,7 +19,6 @@ import * as React from "react";
 import * as markdownit from "markdown-it";
 import * as sanitizeHtml from "sanitize-html";
 //import * as moment from "moment";
-import * as moment from "moment-timezone";
 import { profanity_filter } from "profanity_filter";
 import { localize_time_strings } from "localize-time";
 

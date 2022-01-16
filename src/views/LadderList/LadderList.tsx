@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { _, pgettext, interpolate } from "translate";
+import { _, interpolate } from "translate";
 import { Link } from "react-router-dom";
 import { post, get } from "requests";
 import { LadderComponent } from "LadderComponent";

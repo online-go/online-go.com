@@ -16,7 +16,7 @@
  */
 
 import { computeAverageMoveTime } from "goban";
-import { _, pgettext, ngettext, npgettext, interpolate } from "translate";
+import { _, pgettext, ngettext, interpolate } from "translate";
 import { TimeControl, TimeControlTypes } from "./TimeControl";
 
 const times = [

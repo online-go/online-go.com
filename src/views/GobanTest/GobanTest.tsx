@@ -16,11 +16,8 @@
  */
 
 import * as React from "react";
-import { KBShortcut } from "KBShortcut";
 import { PersistentElement } from "PersistentElement";
-import { errorAlerter, dup, ignore } from "misc";
 import { Goban, GoMath, GobanConfig } from "goban";
-import { Resizable } from "Resizable";
 
 /* This class exists to demonstrate how to tie into the ogs-goban code base */
 export class GobanTest extends React.Component<{}, any> {

@@ -16,13 +16,9 @@
  */
 
 import * as React from "react";
-import { Link } from "react-router-dom";
 import online_status from "online_status";
 import * as data from "data";
-import { get } from "requests";
-import * as moment from "moment";
 import { FriendList } from "./FriendList";
-import { UIPush } from "UIPush";
 import { KBShortcut } from "KBShortcut";
 import cached from "cached";
 

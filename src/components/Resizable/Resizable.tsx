@@ -16,8 +16,6 @@
  */
 
 import * as React from "react";
-import { _, pgettext, interpolate } from "translate";
-import { post, get } from "requests";
 
 interface ResizableProperties {
     id?: string;

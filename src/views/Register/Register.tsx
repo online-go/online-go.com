@@ -17,12 +17,10 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { browserHistory } from "ogsHistory";
 import * as data from "data";
 import { _ } from "translate";
 import { Card } from "material";
 import { errorAlerter } from "misc";
-import { LineText } from "misc-ui";
 import { post } from "requests";
 import { get_ebi } from "SignIn";
 import cached from "cached";

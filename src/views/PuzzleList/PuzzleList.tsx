@@ -17,9 +17,7 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { browserHistory } from "ogsHistory";
-import { _, pgettext, interpolate } from "translate";
-import { post, get } from "requests";
+import { _ } from "translate";
 import { PaginatedTable } from "PaginatedTable";
 import { Player } from "Player";
 import { MiniGoban } from "MiniGoban";

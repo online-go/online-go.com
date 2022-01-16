@@ -24,10 +24,8 @@ import { post, del } from "requests";
 import { Modal, openModal } from "Modal";
 import { termination_socket } from "sockets";
 import {
-    longRankString,
     rankString,
     getUserRating,
-    MaxRank,
     amateurRanks,
     allRanks,
     rankList,

@@ -18,7 +18,7 @@
 import * as React from "react";
 import { MessageId, MessageObject } from "messages";
 import { GobanMoveErrorMessageObject } from "goban";
-import { _, pgettext, interpolate } from "translate";
+import { _ } from "translate";
 
 export interface MessageProps {
     message?: MessageObject;

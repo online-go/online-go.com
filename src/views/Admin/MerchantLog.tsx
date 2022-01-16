@@ -16,14 +16,7 @@
  */
 
 import * as React from "react";
-import { Link } from "react-router-dom";
-import { _, cc_to_country_name } from "translate";
-import { post, put } from "requests";
 import { PaginatedTable } from "PaginatedTable";
-import { Card } from "material";
-import { UIPush } from "UIPush";
-import { SearchInput } from "misc-ui";
-import { Player } from "Player";
 import * as moment from "moment";
 
 export class MerchantLog extends React.PureComponent<{}, any> {

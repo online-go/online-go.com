@@ -16,7 +16,6 @@
  */
 
 import * as React from "react";
-import { post, get } from "requests";
 import { Goban } from "goban";
 import { sfx } from "sfx";
 import { PersistentElement } from "PersistentElement";

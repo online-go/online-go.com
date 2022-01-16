@@ -16,7 +16,6 @@
  */
 
 import * as React from "react";
-import * as data from "data";
 import { cc_to_country_name, getCountryFlagClass, getLanguageFlag } from "translate";
 
 interface FlagProperties {

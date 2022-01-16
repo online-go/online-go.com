@@ -19,7 +19,6 @@ import * as moment from "moment";
 import "moment-duration-format";
 
 import * as React from "react";
-import { _, pgettext, interpolate } from "translate";
 
 interface GameTimingProperties {
     moves: any;

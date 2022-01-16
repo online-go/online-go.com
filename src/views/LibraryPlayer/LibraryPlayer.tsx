@@ -17,11 +17,10 @@
 
 import * as React from "react";
 import * as data from "data";
-import { _, pgettext, interpolate } from "translate";
+import { _, interpolate } from "translate";
 import { Link } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
-import { PlayerAutocomplete } from "PlayerAutocomplete";
-import { abort_requests_in_flight, del, put, post, get } from "requests";
+import { abort_requests_in_flight, post, get } from "requests";
 import { errorAlerter, ignore, getOutcomeTranslation } from "misc";
 import { Player } from "Player";
 import { Card } from "material";

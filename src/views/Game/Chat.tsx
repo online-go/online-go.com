@@ -16,13 +16,12 @@
  */
 
 import * as data from "data";
-import device from "device";
 import * as preferences from "preferences";
 import * as React from "react";
 import * as moment from "moment";
 import { LineText } from "misc-ui";
 import { Link } from "react-router-dom";
-import { _, ngettext, pgettext, interpolate } from "translate";
+import { _, pgettext, interpolate } from "translate";
 import { Player } from "Player";
 import { profanity_filter } from "profanity_filter";
 import { Game } from "./Game";

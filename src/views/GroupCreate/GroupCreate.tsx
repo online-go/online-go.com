@@ -16,8 +16,8 @@
  */
 
 import * as React from "react";
-import { _, pgettext, interpolate } from "translate";
-import { post, get } from "requests";
+import { _ } from "translate";
+import { post } from "requests";
 import { errorAlerter } from "misc";
 import { browserHistory } from "ogsHistory";
 

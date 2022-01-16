@@ -19,7 +19,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext, interpolate } from "translate";
-import { post, del } from "requests";
+import { del } from "requests";
 import { comm_socket } from "sockets";
 import { TypedEventEmitter } from "TypedEventEmitter";
 import * as data from "data";

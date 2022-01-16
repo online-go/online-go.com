@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { _, pgettext, interpolate } from "translate";
+import { _ } from "translate";
 import { Modal, openModal } from "Modal";
 import { Errcode } from "Errcode";
 import { MessageId } from "messages";

@@ -44,7 +44,6 @@ import { LoadingPage } from "Loading";
 import { browserHistory } from "ogsHistory";
 import { IAssociation, associations } from "associations";
 import { BlockPlayerModal, getAllBlocksWithUsernames } from "BlockPlayer";
-import { object } from "prop-types";
 import { Player } from "Player";
 import { PaginatedTable } from "PaginatedTable";
 import { SocialLoginButtons } from "SignIn";

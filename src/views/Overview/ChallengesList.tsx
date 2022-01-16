@@ -18,13 +18,11 @@
 import * as React from "react";
 import { _ } from "translate";
 import { Card } from "material";
-import { del, post, get } from "requests";
+import { del, post } from "requests";
 import { browserHistory } from "ogsHistory";
 import * as data from "data";
-import { UIPush } from "UIPush";
 import { Player } from "Player";
 import { PlayerIcon } from "PlayerIcon";
-import * as player_cache from "player_cache";
 import { profanity_filter } from "profanity_filter";
 import { challenge_text_description } from "ChallengeModal";
 import { FabX, FabCheck } from "material";

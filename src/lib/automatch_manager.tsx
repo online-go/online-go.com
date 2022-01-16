@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { _, pgettext, interpolate } from "translate";
+import { pgettext, interpolate } from "translate";
 import { termination_socket } from "sockets";
 import { TypedEventEmitter } from "TypedEventEmitter";
 import { browserHistory } from "ogsHistory";

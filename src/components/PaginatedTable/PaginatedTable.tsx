@@ -16,9 +16,8 @@
  */
 
 import * as React from "react";
-import { _, pgettext, interpolate } from "translate";
-import { post, get, abort_requests_in_flight } from "requests";
-import { deepCompare } from "misc";
+import { _ } from "translate";
+import { post, get } from "requests";
 import * as data from "data";
 
 interface PaginatedTableColumnProperties<EntryT> {

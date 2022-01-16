@@ -16,12 +16,11 @@
  */
 
 import * as React from "react";
-import { _, pgettext, interpolate } from "translate";
+import { _, pgettext } from "translate";
 import * as preferences from "preferences";
 import { MiniGoban } from "MiniGoban";
 import { GobanLineSummary } from "GobanLineSummary";
 import { Player } from "Player";
-import * as data from "data";
 
 interface GameListProps {
     list: Array<any>;

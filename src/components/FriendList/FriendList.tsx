@@ -16,12 +16,10 @@
  */
 
 import * as React from "react";
-import { _, pgettext, interpolate } from "translate";
-import { errorAlerter } from "misc";
+import { _ } from "translate";
 import online_status from "online_status";
 import * as data from "data";
 import * as preferences from "preferences";
-import { post, get, abort_requests_in_flight } from "requests";
 import { Player } from "Player";
 import cached from "cached";
 

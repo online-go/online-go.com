@@ -17,8 +17,8 @@
 
 import * as React from "react";
 import { PuzzleConfig, GoEngineConfig } from "goban";
-import { LearningPage, DummyPage } from "./LearningPage";
-import { _, pgettext, interpolate } from "translate";
+import { LearningPage } from "./LearningPage";
+import { _, pgettext } from "translate";
 import { LearningHubSection } from "./LearningHubSection";
 
 export class EndingTheGame extends LearningHubSection {

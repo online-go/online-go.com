@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as data from "data";
 import Debug from "debug";
 import { current_language } from "translate";
 import { io } from "socket.io-client";

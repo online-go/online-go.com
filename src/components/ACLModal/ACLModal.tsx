@@ -22,7 +22,7 @@ import { openModal, Modal } from "Modal";
 import { Player } from "Player";
 import { PlayerAutocomplete, PlayerAutocompleteRef } from "PlayerAutocomplete";
 import { GroupAutocomplete } from "GroupAutocomplete";
-import { errorAlerter, rulesText } from "misc";
+import { errorAlerter } from "misc";
 
 interface Events {}
 

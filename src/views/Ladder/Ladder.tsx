@@ -16,16 +16,13 @@
  */
 
 import * as React from "react";
-import { Link } from "react-router-dom";
 import { del, get, put, post, abort_requests_in_flight } from "requests";
 import { errorAlerter } from "misc";
 import { _, pgettext, interpolate } from "translate";
-import { LadderComponent } from "LadderComponent";
 import * as data from "data";
-import { List, AutoSizer, WindowScroller } from "react-virtualized";
+import { List, AutoSizer } from "react-virtualized";
 import { Player } from "Player";
 import { UIPush } from "UIPush";
-import tooltip from "tooltip";
 import { PlayerAutocomplete } from "PlayerAutocomplete";
 import { close_all_popovers, popover } from "popover";
 import { browserHistory } from "ogsHistory";

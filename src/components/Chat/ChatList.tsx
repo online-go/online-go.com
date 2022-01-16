@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { _, pgettext, interpolate } from "translate";
+import { _ } from "translate";
 import {
     group_channels,
     tournament_channels,
@@ -25,11 +25,9 @@ import {
     chat_manager,
 } from "chat_manager";
 import * as data from "data";
-import { PersistentElement } from "PersistentElement";
 import { Flag } from "Flag";
 import { shouldOpenNewTab } from "misc";
 import { browserHistory } from "ogsHistory";
-import * as preferences from "preferences";
 import { popover } from "popover";
 import {
     ChatDetails,

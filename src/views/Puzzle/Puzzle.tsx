@@ -20,13 +20,13 @@ import ReactResizeDetector from "react-resize-detector";
 import { Link } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext, interpolate } from "translate";
-import { abort_requests_in_flight, post, get, put, del } from "requests";
+import { post, get, put, del } from "requests";
 import { KBShortcut } from "KBShortcut";
 import { goban_view_mode, goban_view_squashed } from "Game";
 import { PersistentElement } from "PersistentElement";
-import { errorAlerter, errorLogger, dup, ignore } from "misc";
+import { errorAlerter, errorLogger, ignore } from "misc";
 import { longRankString, rankList } from "rank_utils";
-import { Goban, GoMath, GobanCanvas, GobanCanvasConfig, PuzzlePlacementSetting } from "goban";
+import { Goban, GobanCanvas, GobanCanvasConfig, PuzzlePlacementSetting } from "goban";
 import { Markdown } from "Markdown";
 import { Player } from "Player";
 import { StarRating } from "StarRating";
@@ -36,7 +36,6 @@ import * as data from "data";
 import { TransformSettings, PuzzleTransform } from "./PuzzleTransform";
 import { PuzzleNavigation } from "./PuzzleNavigation";
 import { PuzzleEditor } from "./PuzzleEditing";
-import { MoveTree } from "goban";
 import swal from "sweetalert2";
 
 interface PuzzleProperties {

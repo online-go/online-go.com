@@ -15,10 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
 import { PuzzleConfig } from "goban";
 import { LearningPage } from "./LearningPage";
-import { _, pgettext, interpolate } from "translate";
+import { _, pgettext } from "translate";
 import { LearningHubSection } from "./LearningHubSection";
 
 export class Capture extends LearningHubSection {

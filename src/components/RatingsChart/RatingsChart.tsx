@@ -21,7 +21,6 @@
 import * as d3 from "d3";
 import * as moment from "moment";
 import * as React from "react";
-import * as data from "data";
 import ReactResizeDetector from "react-resize-detector";
 import { _, pgettext, interpolate } from "translate";
 import { PersistentElement } from "PersistentElement";

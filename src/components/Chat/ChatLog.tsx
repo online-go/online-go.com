@@ -21,7 +21,6 @@ import * as moment from "moment";
 import Linkify from "react-linkify";
 import Split from "react-split";
 import { Card } from "material";
-import { Link } from "react-router-dom";
 import { comm_socket } from "sockets";
 import { _, pgettext, interpolate } from "translate";
 import { localize_time_strings } from "localize-time";
@@ -40,7 +39,6 @@ import {
 } from "chat_manager";
 import { ChatLine } from "./ChatLine";
 import { TabCompleteInput } from "TabCompleteInput";
-import { Markdown } from "Markdown";
 import { browserHistory } from "ogsHistory";
 import { ObserveGamesComponent } from "ObserveGamesComponent";
 import { profanity_filter } from "profanity_filter";

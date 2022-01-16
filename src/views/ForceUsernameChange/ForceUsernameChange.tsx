@@ -17,10 +17,9 @@
 
 import * as React from "react";
 import * as data from "data";
-import { browserHistory } from "ogsHistory";
 import { _ } from "translate";
 import { Card } from "material";
-import { errorAlerter, ignore } from "misc";
+import { errorAlerter } from "misc";
 import { put } from "requests";
 import { cached } from "cached";
 

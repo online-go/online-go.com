@@ -16,11 +16,10 @@
  */
 
 import * as React from "react";
-import * as data from "data";
 import { _ } from "translate";
-import { ignore, errorAlerter, navigateTo, unitify } from "misc";
-import { get, del, put, abort_requests_in_flight } from "requests";
-import { longRankString, rankString } from "rank_utils";
+import { errorAlerter, navigateTo } from "misc";
+import { get, put } from "requests";
+import { longRankString } from "rank_utils";
 import { MiniGoban } from "MiniGoban";
 import { SortableContainer, SortableElement } from "react-sortable-hoc";
 import arrayMove from "array-move";
