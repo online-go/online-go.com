@@ -35,7 +35,6 @@
     "eslint-plugin-jsdoc": "^37.0.3",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-unicorn": "^36.0.0",
-    "eslint-plugin-unused-imports": "^2.0.0",
     "express": "^4.17.1",
     "express-http-proxy": "^1.6.0",
     "fork-ts-checker-webpack-plugin": "^6.3.4",
