@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -20,7 +20,7 @@ import * as React from "react";
 interface PersistentElementProps {
     elt: HTMLElement | JQuery;
     className?: string;
-    extra_props?: object;  // hash of new props to put on the element
+    extra_props?: object; // hash of new props to put on the element
 }
 
 export class PersistentElement extends React.Component<PersistentElementProps> {
@@ -34,6 +34,12 @@ export class PersistentElement extends React.Component<PersistentElementProps> {
     }
 
     render() {
-        return <div className={this.props.className || ""} {...this.props.extra_props} ref={e => this.container = e} />;
+        return (
+            <div
+                className={this.props.className || ""}
+                {...this.props.extra_props}
+                ref={(e) => (this.container = e)}
+            />
+        );
     }
 }

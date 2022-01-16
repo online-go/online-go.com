@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,15 +16,15 @@
  */
 
 import * as data from "data";
-import {sections, allsections} from './sections';
-import {LearningHubSection} from './LearningHubSection';
+import { sections, allsections } from "./sections";
+import { LearningHubSection } from "./LearningHubSection";
 
 interface SectionCompletion {
-    first: boolean;      /* if this is the first section in a category */
-    started: boolean;    /* if this has been started */
-    completed: boolean;  /* if we've completed this section */
-    finished: number;    /* number of pages completed in the section */
-    total: number;       /* total number of pages in the section */
+    first: boolean /* if this is the first section in a category */;
+    started: boolean /* if this has been started */;
+    completed: boolean /* if we've completed this section */;
+    finished: number /* number of pages completed in the section */;
+    total: number /* total number of pages in the section */;
 }
 
 export function getSectionCompletion(section_name: string): SectionCompletion {
@@ -64,7 +64,7 @@ export function getSectionCompletion(section_name: string): SectionCompletion {
         started,
         completed,
         finished,
-        total
+        total,
     };
 }
 

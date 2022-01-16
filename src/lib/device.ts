@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -26,6 +26,5 @@ class Device {
         this.is_mobile = this.width < 600;
     }
 }
-
 
 export default new Device();

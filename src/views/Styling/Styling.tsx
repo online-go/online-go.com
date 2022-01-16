@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,22 +16,22 @@
  */
 
 import * as React from "react";
-import {Card, FabX, FabCheck, FabAdd } from "material";
-import {Link} from "react-router-dom";
-import {Ribbon} from "misc-ui";
-import {Player} from "Player";
-import {PlayerIcon} from "PlayerIcon";
-import {toast} from "toast";
+import { Card, FabX, FabCheck, FabAdd } from "material";
+import { Link } from "react-router-dom";
+import { Ribbon } from "misc-ui";
+import { Player } from "Player";
+import { PlayerIcon } from "PlayerIcon";
+import { toast } from "toast";
 import Datetime from "react-datetime";
-import {StarRating} from "StarRating";
-import {PlayerAutocomplete} from "PlayerAutocomplete";
-import {GroupAutocomplete} from "GroupAutocomplete";
-import {Markdown} from "Markdown";
-import {PersistentElement} from "PersistentElement";
-import {Steps} from "Steps";
-import {errcodeAlerter} from "ErrcodeModal";
+import { StarRating } from "StarRating";
+import { PlayerAutocomplete } from "PlayerAutocomplete";
+import { GroupAutocomplete } from "GroupAutocomplete";
+import { Markdown } from "Markdown";
+import { PersistentElement } from "PersistentElement";
+import { Steps } from "Steps";
+import { errcodeAlerter } from "ErrcodeModal";
 import * as moment from "moment";
-import swal from 'sweetalert2';
+import swal from "sweetalert2";
 
 export class Styling extends React.PureComponent<{}, any> {
     ccinput = null;
@@ -39,7 +39,7 @@ export class Styling extends React.PureComponent<{}, any> {
     constructor(props) {
         super(props);
         this.state = {
-            star_ratings: [ 0, 0.1, 0.5, 1.0, 1.1,  1.6, 2.0, 2.7, 3.0, 3.8, 4.1, 4.7, 5, 6 ],
+            star_ratings: [0, 0.1, 0.5, 1.0, 1.1, 1.6, 2.0, 2.7, 3.0, 3.8, 4.1, 4.7, 5, 6],
             autocompleted_player: null,
             autocompleted_group: null,
             markdown_source: "## hello\n* world\n* from\n\nhere",
@@ -57,18 +57,18 @@ export class Styling extends React.PureComponent<{}, any> {
     setStarRating(idx, v) {
         const cpy = this.state.star_ratings.slice();
         cpy[idx] = v;
-        this.setState({star_ratings: cpy});
+        this.setState({ star_ratings: cpy });
     }
 
     updateAutocompletedPlayer = (user) => {
-        this.setState({autocompleted_player: user});
+        this.setState({ autocompleted_player: user });
     };
     updateAutocompletedGroup = (group) => {
-        this.setState({autocompleted_group: group});
+        this.setState({ autocompleted_group: group });
     };
 
     setMarkdown = (ev) => {
-        this.setState({markdown_source: ev.target.value});
+        this.setState({ markdown_source: ev.target.value });
     };
 
     render() {
@@ -76,16 +76,20 @@ export class Styling extends React.PureComponent<{}, any> {
             <div className="Styling container">
                 <div className="row">
                     <div className="col-xs-5">
-                        <Steps completed={3} selected={2} total={6}/>
+                        <Steps completed={3} selected={2} total={6} />
 
                         <Steps completed={1} selected={1} total={1}>
-                            <span title="single"/>
+                            <span title="single" />
                         </Steps>
 
-                        <Steps completed={this.state.selected_step} selected={this.state.selected_step} onChange={(idx) => this.setState({selected_step: idx})}>
-                            <span title="first"/>
-                            <span/>
-                            <span/>
+                        <Steps
+                            completed={this.state.selected_step}
+                            selected={this.state.selected_step}
+                            onChange={(idx) => this.setState({ selected_step: idx })}
+                        >
+                            <span title="first" />
+                            <span />
+                            <span />
                         </Steps>
 
                         <Steps selected={1} completed={1} minWidth="10rem">
@@ -93,7 +97,9 @@ export class Styling extends React.PureComponent<{}, any> {
                             <span title="second">World</span>
                             <div title="third">
                                 <div>And the world was bright and shiny</div>
-                                <button onClick={() => errcodeAlerter({"errcode": "test"})}>Errcode test</button>
+                                <button onClick={() => errcodeAlerter({ errcode: "test" })}>
+                                    Errcode test
+                                </button>
                             </div>
                         </Steps>
                     </div>
@@ -101,12 +107,16 @@ export class Styling extends React.PureComponent<{}, any> {
                         <Card>
                             <PlayerAutocomplete onComplete={this.updateAutocompletedPlayer} />
                             <div>
-                                {this.state.autocompleted_player && <Player icon user={this.state.autocompleted_player} />}
+                                {this.state.autocompleted_player && (
+                                    <Player icon user={this.state.autocompleted_player} />
+                                )}
                             </div>
 
                             <GroupAutocomplete onComplete={this.updateAutocompletedGroup} />
                             <div>
-                                {this.state.autocompleted_group && <div>{this.state.autocompleted_group.name}</div>}
+                                {this.state.autocompleted_group && (
+                                    <div>{this.state.autocompleted_group.name}</div>
+                                )}
                             </div>
                         </Card>
                     </div>
@@ -114,7 +124,12 @@ export class Styling extends React.PureComponent<{}, any> {
                 <div className="row">
                     <div className="col-xs-6">
                         <Card>
-                            <textarea rows={10} style={{width: "100%"}} value={this.state.markdown_source} onChange={this.setMarkdown} />
+                            <textarea
+                                rows={10}
+                                style={{ width: "100%" }}
+                                value={this.state.markdown_source}
+                                onChange={this.setMarkdown}
+                            />
                         </Card>
                     </div>
                     <div className="col-xs-6">
@@ -130,15 +145,23 @@ export class Styling extends React.PureComponent<{}, any> {
                                 <dt>Hello</dt>
                                 <dd>World</dd>
                                 <dt>Checkbox</dt>
-                                <dd><input type="checkbox"/></dd>
+                                <dd>
+                                    <input type="checkbox" />
+                                </dd>
                                 <dt>Input</dt>
-                                <dd><input type="text"/></dd>
+                                <dd>
+                                    <input type="text" />
+                                </dd>
                                 <dt>Input</dt>
-                                <dd><input type="text"/></dd>
+                                <dd>
+                                    <input type="text" />
+                                </dd>
                                 <dt>Hello two and three four</dt>
                                 <dd>World 2</dd>
                                 <dt>Checkbox</dt>
-                                <dd><input type="checkbox"/></dd>
+                                <dd>
+                                    <input type="checkbox" />
+                                </dd>
                             </dl>
                         </Card>
                     </div>
@@ -160,7 +183,7 @@ export class Styling extends React.PureComponent<{}, any> {
                         </Card>
                     </div>
                     <div className="col-xs-3">
-                        <div style={{paddingTop: "1em"}}/>
+                        <div style={{ paddingTop: "1em" }} />
                         <div className="bg-shade0">Shade 0</div>
                         <div className="bg-shade1">Shade 1</div>
                         <div className="bg-shade2">Shade 2</div>
@@ -188,11 +211,21 @@ export class Styling extends React.PureComponent<{}, any> {
                         </div>
                         <div>
                             <button disabled>Default</button>
-                            <button disabled className="primary">Primary</button>
-                            <button disabled className="danger">Danger</button>
-                            <button disabled className="success">Success</button>
-                            <button disabled className="info">Info</button>
-                            <button disabled className="reject">Reject</button>
+                            <button disabled className="primary">
+                                Primary
+                            </button>
+                            <button disabled className="danger">
+                                Danger
+                            </button>
+                            <button disabled className="success">
+                                Success
+                            </button>
+                            <button disabled className="info">
+                                Info
+                            </button>
+                            <button disabled className="reject">
+                                Reject
+                            </button>
                         </div>
                         <div>
                             <button className="active">Active</button>
@@ -236,7 +269,7 @@ export class Styling extends React.PureComponent<{}, any> {
                                 <button className="xs danger">D</button>
                             </div>
 
-                            <br/>
+                            <br />
 
                             <div className="btn-toolbar">
                                 <div className="btn-group">
@@ -301,10 +334,14 @@ export class Styling extends React.PureComponent<{}, any> {
                             </div>
                         </Card>
                         <div className="well">
-                    Well contents<br/>
-                    Well contents<br/>
-                    Well contents<br/>
-                    Well contents<br/>
+                            Well contents
+                            <br />
+                            Well contents
+                            <br />
+                            Well contents
+                            <br />
+                            Well contents
+                            <br />
                         </div>
                     </div>
                     <div className="col-xs-6">
@@ -317,12 +354,12 @@ export class Styling extends React.PureComponent<{}, any> {
                                 </select>
                             </div>
                             <div>
-                                <input type="text" placeholder="text"/>
-                                <input type="number" placeholder="number"/>
-                                <input type="email" placeholder="email"/>
+                                <input type="text" placeholder="text" />
+                                <input type="number" placeholder="number" />
+                                <input type="email" placeholder="email" />
 
-                                <input type="date" placeholder="Date"/>
-                                <input type="datetime-local" placeholder="Date Time"/>
+                                <input type="date" placeholder="Date" />
+                                <input type="datetime-local" placeholder="Date Time" />
                                 <Datetime onChange={(time) => console.log(time)} />
                             </div>
                         </Card>
@@ -355,7 +392,11 @@ export class Styling extends React.PureComponent<{}, any> {
                                 <Card>
                                     {this.state.star_ratings.map((v, idx) => (
                                         <div key={idx}>
-                                            <StarRating value={v} onChange={this.setStarRating.bind(this, idx)} /> {v}
+                                            <StarRating
+                                                value={v}
+                                                onChange={this.setStarRating.bind(this, idx)}
+                                            />{" "}
+                                            {v}
                                         </div>
                                     ))}
                                 </Card>
@@ -367,20 +408,29 @@ export class Styling extends React.PureComponent<{}, any> {
                 <div className="row">
                     <div className="col-xs-4">
                         <Card>
-                            <Player user={{"id": 1, "username": "anoek"}}/>
-                            <PlayerIcon id={1}/>
+                            <Player user={{ id: 1, username: "anoek" }} />
+                            <PlayerIcon id={1} />
                         </Card>
                         <Card>
-                            <div style={{fontSize: "1.5em"}}>
-                                <i className="ogs-coordinates"/>&nbsp;
-                                <i className="ogs-goban"/>&nbsp;
-                                <i className="ogs-japanese-coordinates"/>&nbsp;
-                                <i className="ogs-label-circle"/>&nbsp;
-                                <i className="ogs-label-number"/>&nbsp;
-                                <i className="ogs-label-square"/>&nbsp;
-                                <i className="ogs-label-triangle"/>&nbsp;
-                                <i className="ogs-label-x"/>&nbsp;
-                                <i className="ogs-move-number"/>&nbsp;
+                            <div style={{ fontSize: "1.5em" }}>
+                                <i className="ogs-coordinates" />
+                                &nbsp;
+                                <i className="ogs-goban" />
+                                &nbsp;
+                                <i className="ogs-japanese-coordinates" />
+                                &nbsp;
+                                <i className="ogs-label-circle" />
+                                &nbsp;
+                                <i className="ogs-label-number" />
+                                &nbsp;
+                                <i className="ogs-label-square" />
+                                &nbsp;
+                                <i className="ogs-label-triangle" />
+                                &nbsp;
+                                <i className="ogs-label-x" />
+                                &nbsp;
+                                <i className="ogs-move-number" />
+                                &nbsp;
                                 <i className="ogs-turtle" />
                             </div>
                         </Card>
@@ -390,30 +440,47 @@ export class Styling extends React.PureComponent<{}, any> {
                             <h2>Progress Bars</h2>
 
                             <div className="progress">
-                                <div className="progress-bar success" style={{width: "30%"}}>30</div>
-                                <div className="progress-bar primary" style={{width: "30%"}}>30</div>
-                                <div className="progress-bar info" style={{width: "40%"}}>40</div>
+                                <div className="progress-bar success" style={{ width: "30%" }}>
+                                    30
+                                </div>
+                                <div className="progress-bar primary" style={{ width: "30%" }}>
+                                    30
+                                </div>
+                                <div className="progress-bar info" style={{ width: "40%" }}>
+                                    40
+                                </div>
                             </div>
 
                             <div className="progress">
-                                <div className="progress-bar success" style={{width: "10%"}}>10</div>
-                                <div className="progress-bar primary" style={{width: "15%"}}>15</div>
-                                <div className="progress-bar info" style={{width: "20%"}}>20</div>
+                                <div className="progress-bar success" style={{ width: "10%" }}>
+                                    10
+                                </div>
+                                <div className="progress-bar primary" style={{ width: "15%" }}>
+                                    15
+                                </div>
+                                <div className="progress-bar info" style={{ width: "20%" }}>
+                                    20
+                                </div>
                             </div>
 
                             <div className="progress">
-                                <div className="progress-bar success" style={{width: "30%"}}>30</div>
+                                <div className="progress-bar success" style={{ width: "30%" }}>
+                                    30
+                                </div>
                             </div>
                             <div className="progress">
-                                <div className="progress-bar primary" style={{width: "50%"}}>50</div>
+                                <div className="progress-bar primary" style={{ width: "50%" }}>
+                                    50
+                                </div>
                             </div>
                             <div className="progress">
-                                <div className="progress-bar info" style={{width: "70%"}}>70</div>
+                                <div className="progress-bar info" style={{ width: "70%" }}>
+                                    70
+                                </div>
                             </div>
                         </Card>
                     </div>
                 </div>
-
 
                 <Card>
                     <h1>H1 - Some big fat text</h1>
@@ -421,60 +488,56 @@ export class Styling extends React.PureComponent<{}, any> {
                     <h3>H3 - Some big fat text</h3>
                     <h4>H4 - Some big fat text</h4>
                     <h5>H5 - Some big fat text</h5>
-                    <hr/>
+                    <hr />
                     <p>Pargraph block</p>
                     <div>Normal text</div>
-                    <div><Link to='/styling'>Link text</Link></div>
+                    <div>
+                        <Link to="/styling">Link text</Link>
+                    </div>
                     <code>Code block</code>
-                    <div className='big'>Big text</div>
-                    <div className='mid'>Mid text</div>
-                    <div className='normal'>Normal text</div>
-                    <div className='small'>Small text</div>
-                    <div className='smaller'>Smaller text</div>
-                    <div className='extra-small'>Extra small text</div>
+                    <div className="big">Big text</div>
+                    <div className="mid">Mid text</div>
+                    <div className="normal">Normal text</div>
+                    <div className="small">Small text</div>
+                    <div className="smaller">Smaller text</div>
+                    <div className="extra-small">Extra small text</div>
                 </Card>
 
-                <div className='row'>
-                    <div className='col-xs-4'>
-                        <Card className='next h4rem Ribboned'>
+                <div className="row">
+                    <div className="col-xs-4">
+                        <Card className="next h4rem Ribboned">
                             <Ribbon>Next</Ribbon>
-
                         </Card>
                     </div>
-                    <div className='col-xs-4'>
-                        <Card className='todo h4rem Ribboned'>
+                    <div className="col-xs-4">
+                        <Card className="todo h4rem Ribboned">
                             <Ribbon>Todo</Ribbon>
                         </Card>
                     </div>
-                    <div className='col-xs-4'>
-                        <Card className='done h4rem Ribboned'>
+                    <div className="col-xs-4">
+                        <Card className="done h4rem Ribboned">
                             <Ribbon>Done</Ribbon>
                         </Card>
                     </div>
                 </div>
-
-
             </div>
         );
     }
 }
 
-
 function smalltoast() {
-    toast((<div>Hello world!</div>));
+    toast(<div>Hello world!</div>);
 }
 function bigtoast() {
-    toast((
+    toast(
         <div>
             <h1>Big stuff</h1>
-             is comming to a place near you!
+            is comming to a place near you!
             <button onClick={() => swal("HI")}> Click me </button>
-        </div>
-    ))
-    .on("close", () => {
+        </div>,
+    ).on("close", () => {
         console.log("Toast closed");
     });
-
 }
 function swal_popup() {
     swal({
@@ -484,5 +547,3 @@ function swal_popup() {
         showCancelButton: true,
     }).catch(swal.noop);
 }
-
-

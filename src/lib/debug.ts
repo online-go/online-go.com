@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -54,11 +54,13 @@ export default class Debug {
     };
 
     assert(assertion: boolean, message: string, ...rest: Array<any>) {
-        if (assertion) { return; }
+        if (assertion) {
+            return;
+        }
         console.error(this.format(message), ...rest);
 
         // TODO: Phone home to tell of our distress.
     }
 }
 
-window['debug'] = debug;
+window["debug"] = debug;

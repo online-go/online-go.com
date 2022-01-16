@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -27,12 +27,13 @@ interface TabCompleteInputProperties {
     autoFocus?: boolean;
 }
 
-export const TabCompleteInput = React.forwardRef<HTMLInputElement, React.HTMLProps<HTMLInputElement>>(
-    (props: TabCompleteInputProperties, ref): JSX.Element => {
-        React.useEffect(() => {
-            ($((ref as any).current) as any).nicknameTabComplete();
-        }, [(ref as any).current]);
+export const TabCompleteInput = React.forwardRef<
+    HTMLInputElement,
+    React.HTMLProps<HTMLInputElement>
+>((props: TabCompleteInputProperties, ref): JSX.Element => {
+    React.useEffect(() => {
+        ($((ref as any).current) as any).nicknameTabComplete();
+    }, [(ref as any).current]);
 
-        return <input ref={ref} {...props} />;
-    }
-);
+    return <input ref={ref} {...props} />;
+});

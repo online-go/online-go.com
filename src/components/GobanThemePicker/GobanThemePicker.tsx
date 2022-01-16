@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,11 +16,11 @@
  */
 
 import * as React from "react";
-import {_, pgettext} from "translate";
-import {GoThemesSorted} from "goban";
-import {getSelectedThemes} from "preferences";
+import { _, pgettext } from "translate";
+import { GoThemesSorted } from "goban";
+import { getSelectedThemes } from "preferences";
 import * as preferences from "preferences";
-import {PersistentElement} from "PersistentElement";
+import { PersistentElement } from "PersistentElement";
 import * as data from "data";
 
 interface GobanThemePickerProperties {
@@ -38,9 +38,12 @@ interface GobanThemePickerState {
     blackCustom: string;
     urlCustom: string;
 }
-export class GobanThemePicker extends React.PureComponent<GobanThemePickerProperties, GobanThemePickerState> {
-    canvases: {[k: string]: JQuery[]} = {};
-    selectTheme: {[k: string]: {[k: string]: () => void}} = {};
+export class GobanThemePicker extends React.PureComponent<
+    GobanThemePickerProperties,
+    GobanThemePickerState
+> {
+    canvases: { [k: string]: JQuery[] } = {};
+    selectTheme: { [k: string]: { [k: string]: () => void } } = {};
 
     constructor(props: GobanThemePickerProperties) {
         super(props);
@@ -56,20 +59,22 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
             lineCustom: this.getCustom("line"),
             whiteCustom: this.getCustom("white"),
             blackCustom: this.getCustom("black"),
-            urlCustom: this.getCustom("url")
+            urlCustom: this.getCustom("url"),
         };
 
         for (const k in GoThemesSorted) {
             this.canvases[k] = [];
             this.selectTheme[k] = {};
             for (const theme of GoThemesSorted[k]) {
-                this.canvases[k].push($("<canvas>").attr("width", this.state.size).attr("height", this.state.size));
+                this.canvases[k].push(
+                    $("<canvas>").attr("width", this.state.size).attr("height", this.state.size),
+                );
                 theme.styles = Object.assign(
                     {
                         height: this.state.size + "px",
-                        width: this.state.size + "px"
+                        width: this.state.size + "px",
                     },
-                    theme.getReactStyles()
+                    theme.getReactStyles(),
                 ) as unknown as { [style_name: string]: string };
 
                 this.selectTheme[k][theme.theme_name] = () => {
@@ -80,21 +85,24 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
                 };
             }
         }
-
     }
 
     componentDidMount() {
         setTimeout(() => this.renderPickers(), 50);
     }
 
-    componentWillUnmount() {
-    }
+    componentWillUnmount() {}
 
     getCustom(key: string): string {
         return data.get(`custom.${key}`);
     }
-    setCustom(key: string, event: React.MouseEvent<HTMLButtonElement, MouseEvent> | React.ChangeEvent<HTMLInputElement>) {
-        if ('value' in event.target) {
+    setCustom(
+        key: string,
+        event:
+            | React.MouseEvent<HTMLButtonElement, MouseEvent>
+            | React.ChangeEvent<HTMLInputElement>,
+    ) {
+        if ("value" in event.target) {
             data.set(`custom.${key}`, event.target.value);
         } else {
             data.remove(`custom.${key}`);
@@ -104,90 +112,156 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
         this.setState(up);
         this.renderPickers();
 
-        if (key === "url") { // Changing the custom image should update the board theme
+        if (key === "url") {
+            // Changing the custom image should update the board theme
             key = "board";
         }
 
-        if (key === "line") { // Changing the line color should update the board theme
+        if (key === "line") {
+            // Changing the line color should update the board theme
             key = "board";
         }
         preferences.set(`goban-theme-${key}`, this.state[key]);
     }
 
     render() {
-        const inputStyle = {height: `${this.state.size}px`, width: `${this.state.size * 1.5}px`};
-        const {boardCustom, lineCustom, whiteCustom, blackCustom, urlCustom} = this.state;
+        const inputStyle = { height: `${this.state.size}px`, width: `${this.state.size * 1.5}px` };
+        const { boardCustom, lineCustom, whiteCustom, blackCustom, urlCustom } = this.state;
 
         return (
             <div className="GobanThemePicker">
                 <div className="theme-set">
                     {GoThemesSorted.board.map((theme, idx) => (
-                        <div key={theme.theme_name} title={_(theme.theme_name)}
-                            className={"selector" + (this.state.board === theme.theme_name ? " active" : "")}
+                        <div
+                            key={theme.theme_name}
+                            title={_(theme.theme_name)}
+                            className={
+                                "selector" +
+                                (this.state.board === theme.theme_name ? " active" : "")
+                            }
                             style={{
                                 ...theme.styles,
-                                ...(theme.theme_name === "Plain" ? {backgroundImage: "linear-gradient(-45deg, orange,yellow,green,blue,indigo,violet)"} : {})
+                                ...(theme.theme_name === "Plain"
+                                    ? {
+                                          backgroundImage:
+                                              "linear-gradient(-45deg, orange,yellow,green,blue,indigo,violet)",
+                                      }
+                                    : {}),
                             }}
                             onClick={this.selectTheme["board"][theme.theme_name]}
                         >
-
-                            {theme.theme_name === "Plain"
-                                ? <span>{pgettext("Custom board theme", "Custom")}</span>
-                                : <PersistentElement elt={this.canvases.board[idx]} />
-                            }
+                            {theme.theme_name === "Plain" ? (
+                                <span>{pgettext("Custom board theme", "Custom")}</span>
+                            ) : (
+                                <PersistentElement elt={this.canvases.board[idx]} />
+                            )}
                         </div>
                     ))}
-                    {this.state.board === "Plain" &&
+                    {this.state.board === "Plain" && (
                         <div>
-                            <input type="color" style={inputStyle} value={boardCustom} onChange={this.setCustom.bind(this, "board")} />
-                            <button className="color-reset" onClick={this.setCustom.bind(this, "board")}><i className="fa fa-undo"/></button>
-                            <input type="color" style={inputStyle} value={lineCustom} onChange={this.setCustom.bind(this, "line")} />
-                            <button className="color-reset" onClick={this.setCustom.bind(this, "line")}><i className="fa fa-undo"/></button>
-                            <input className="customUrlSelector"
+                            <input
+                                type="color"
+                                style={inputStyle}
+                                value={boardCustom}
+                                onChange={this.setCustom.bind(this, "board")}
+                            />
+                            <button
+                                className="color-reset"
+                                onClick={this.setCustom.bind(this, "board")}
+                            >
+                                <i className="fa fa-undo" />
+                            </button>
+                            <input
+                                type="color"
+                                style={inputStyle}
+                                value={lineCustom}
+                                onChange={this.setCustom.bind(this, "line")}
+                            />
+                            <button
+                                className="color-reset"
+                                onClick={this.setCustom.bind(this, "line")}
+                            >
+                                <i className="fa fa-undo" />
+                            </button>
+                            <input
+                                className="customUrlSelector"
                                 type="text"
                                 value={urlCustom}
-                                placeholder={pgettext("Custom background image url for the goban", "Custom background URL")}
-                                onFocus={e => e.target.select()}
+                                placeholder={pgettext(
+                                    "Custom background image url for the goban",
+                                    "Custom background URL",
+                                )}
+                                onFocus={(e) => e.target.select()}
                                 onChange={this.setCustom.bind(this, "url")}
                             />
                         </div>
-                    }
+                    )}
                 </div>
 
                 <div className="theme-set">
                     {GoThemesSorted.white.map((theme, idx) => (
-                        <div key={theme.theme_name} title={_(theme.theme_name)}
-                            className={"selector" + (this.state.white === theme.theme_name ? " active" : "")}
+                        <div
+                            key={theme.theme_name}
+                            title={_(theme.theme_name)}
+                            className={
+                                "selector" +
+                                (this.state.white === theme.theme_name ? " active" : "")
+                            }
                             style={theme.styles}
                             onClick={this.selectTheme["white"][theme.theme_name]}
                         >
                             <PersistentElement elt={this.canvases.white[idx]} />
                         </div>
                     ))}
-                    {this.state.white === "Plain" &&
+                    {this.state.white === "Plain" && (
                         <div>
-                            <input type="color" style={inputStyle} value={whiteCustom} onChange={this.setCustom.bind(this, "white")} />
-                            <button className="color-reset" onClick={this.setCustom.bind(this, "white")}><i className="fa fa-undo"/></button>
+                            <input
+                                type="color"
+                                style={inputStyle}
+                                value={whiteCustom}
+                                onChange={this.setCustom.bind(this, "white")}
+                            />
+                            <button
+                                className="color-reset"
+                                onClick={this.setCustom.bind(this, "white")}
+                            >
+                                <i className="fa fa-undo" />
+                            </button>
                         </div>
-                    }
+                    )}
                 </div>
 
                 <div className="theme-set">
                     {GoThemesSorted.black.map((theme, idx) => (
-                        <div key={theme.theme_name} title={_(theme.theme_name)}
-                            className={"selector" + (this.state.black === theme.theme_name ? " active" : "")}
+                        <div
+                            key={theme.theme_name}
+                            title={_(theme.theme_name)}
+                            className={
+                                "selector" +
+                                (this.state.black === theme.theme_name ? " active" : "")
+                            }
                             style={theme.styles}
                             onClick={this.selectTheme["black"][theme.theme_name]}
                         >
                             <PersistentElement elt={this.canvases.black[idx]} />
                         </div>
                     ))}
-                    {this.state.black === "Plain" &&
+                    {this.state.black === "Plain" && (
                         <div>
-                            <input type="color" style={inputStyle} value={blackCustom} onChange={this.setCustom.bind(this, "black")} />
-                            <button className="color-reset" onClick={this.setCustom.bind(this, "black")}><i className="fa fa-undo"/></button>
+                            <input
+                                type="color"
+                                style={inputStyle}
+                                value={blackCustom}
+                                onChange={this.setCustom.bind(this, "black")}
+                            />
+                            <button
+                                className="color-reset"
+                                onClick={this.setCustom.bind(this, "black")}
+                            >
+                                <i className="fa fa-undo" />
+                            </button>
                         </div>
-                    }
+                    )}
                 </div>
             </div>
         );
@@ -213,12 +287,12 @@ export class GobanThemePicker extends React.PureComponent<GobanThemePickerProper
             ctx.lineTo(square_size / 2 - 0.5, square_size - 0.5);
             ctx.stroke();
 
-            ctx.font = "bold " + (square_size / 4) + "px Verdana,Courier,Arial,serif";
+            ctx.font = "bold " + square_size / 4 + "px Verdana,Courier,Arial,serif";
             ctx.fillStyle = theme.getLabelTextColor();
             ctx.textBaseline = "middle";
             const metrics = ctx.measureText("A");
             const xx = square_size / 2 - metrics.width / 2;
-            const yy = (square_size / 4);
+            const yy = square_size / 4;
             ctx.fillText("A", xx + 0.5, yy + 0.5);
         }
 

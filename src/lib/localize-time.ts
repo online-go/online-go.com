@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as moment from 'moment-timezone';
+import * as moment from "moment-timezone";
 
 export function localize_time_strings(str: string): string {
     //console.log(momenttz);
@@ -29,7 +29,7 @@ export function localize_time_strings(str: string): string {
                 //return t.format(fmt || "LLLL Z z");
                 //return t.format(fmt || "LLLL Z z");
                 //return momenttz.tz(`${date} ${time}`, tz).local().format(fmt || "LLLL");
-            }
+            },
         );
 
         // handle [date=... time=.. timezone=...]
@@ -39,11 +39,10 @@ export function localize_time_strings(str: string): string {
                 const t = moment.tz(`${date} ${time}`, tz).tz(moment.tz.guess());
                 return t.format(fmt || "LLLL Z z");
                 //return momenttz.tz(`${date} ${time}`, tz).local().format(fmt || "LLLL");
-            }
+            },
         );
 
         return str;
-
     } catch (e) {
         console.log(e.toString());
         return str;

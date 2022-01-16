@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -19,18 +19,18 @@ import * as moment from "moment";
 import * as React from "react";
 import * as data from "data";
 import * as preferences from "preferences";
-import Select, { components } from 'react-select';
+import Select, { components } from "react-select";
 import { UIPush } from "UIPush";
 import { AIReviewStream, ai_request_variation_analysis } from "AIReviewStream";
 import { openBecomeASiteSupporterModal } from "Supporter";
-import { errorAlerter, errorLogger, Timeout } from 'misc';
-import { get, post } from 'requests';
+import { errorAlerter, errorLogger, Timeout } from "misc";
+import { get, post } from "requests";
 import { _, pgettext, interpolate } from "translate";
-import { Game } from './Game';
+import { Game } from "./Game";
 import { close_all_popovers } from "popover";
-import { Errcode } from 'Errcode';
-import { AIReviewChart } from './AIReviewChart';
-import { Toggle } from 'Toggle';
+import { Errcode } from "Errcode";
+import { AIReviewChart } from "./AIReviewChart";
+import { Toggle } from "Toggle";
 import {
     GoMath,
     MoveTree,
@@ -41,8 +41,8 @@ import {
     ColoredCircle,
     getWorstMoves,
     AIReviewWorstMoveEntry,
-} from 'goban';
-import swal from 'sweetalert2';
+} from "goban";
+import swal from "sweetalert2";
 
 export interface AIReviewEntry {
     move_number: number;
@@ -87,15 +87,15 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             reviewing: false,
             ai_reviews: [],
             updatecount: 0,
-            use_score: preferences.get('ai-review-use-score'),
+            use_score: preferences.get("ai-review-use-score"),
             // TODO: allow users to view more than 3 of these key moves
             // See https://forums.online-go.com/t/top-3-moves-score-a-better-metric/32702/15
             worst_moves_shown: 6,
             table_set: false,
-            table_hidden : preferences.get('ai-summary-table-show'),
+            table_hidden: preferences.get("ai-summary-table-show"),
         };
         this.state = state;
-        window['aireview'] = this;
+        window["aireview"] = this;
     }
 
     componentDidMount() {
@@ -105,11 +105,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         this.avg_score_loss = ai_table_out.avg_score_loss;
         this.moves_pending = ai_table_out.moves_pending;
         this.max_entries = ai_table_out.max_entries;
-        if (!data.get("user").is_moderator){
+        if (!data.get("user").is_moderator) {
             this.setState({
                 table_set: true,
-            }
-            );
+            });
         }
     }
     componentDidUpdate(prevProps: AIReviewProperties, prevState: any) {
@@ -124,8 +123,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             this.max_entries = ai_table_out.max_entries;
         }
     }
-    componentWillUnmount() {
-    }
+    componentWillUnmount() {}
 
     getGameId(props?: AIReviewProperties) {
         if (!props) {
@@ -146,57 +144,58 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
 
         get(`games/${game_id}/ai_reviews`)
-        .then((lst: Array<JGOFAIReview>) => {
-            this.setState({
-                loading: false,
-                ai_reviews: lst,
-            });
-
-            if (lst.length) {
-                /* Select the best AI review */
-                lst = lst.sort((a, b) => {
-                    if (a.type !== b.type) {
-                        return a.type === 'full' ? -1 : 1;
-                    }
-
-                    if (a.network_size < b.network_size) {
-                        return 1;
-                    }
-                    if (b.network_size < a.network_size) {
-                        return -1;
-                    }
-
-                    if (a.strength - b.strength !== 0) {
-                        return b.strength - a.strength;
-                    }
-
-                    return a.date - b.date;
+            .then((lst: Array<JGOFAIReview>) => {
+                this.setState({
+                    loading: false,
+                    ai_reviews: lst,
                 });
-                //console.log("List: ", lst);
-                this.setSelectedAIReview(lst[0]);
-            } else {
-                post(`games/${game_id}/ai_reviews`, {
-                    'engine': 'katago',
-                    'type': 'auto',
-                })
-                .then(res => {
-                    sanityCheck(res);
-                    if (res.id) {
-                        this.setState({reviewing: true});
-                    }
-                })
-                .catch(errorLogger);
-            }
-        })
-        .catch(errorLogger);
+
+                if (lst.length) {
+                    /* Select the best AI review */
+                    lst = lst.sort((a, b) => {
+                        if (a.type !== b.type) {
+                            return a.type === "full" ? -1 : 1;
+                        }
+
+                        if (a.network_size < b.network_size) {
+                            return 1;
+                        }
+                        if (b.network_size < a.network_size) {
+                            return -1;
+                        }
+
+                        if (a.strength - b.strength !== 0) {
+                            return b.strength - a.strength;
+                        }
+
+                        return a.date - b.date;
+                    });
+                    //console.log("List: ", lst);
+                    this.setSelectedAIReview(lst[0]);
+                } else {
+                    post(`games/${game_id}/ai_reviews`, {
+                        engine: "katago",
+                        type: "auto",
+                    })
+                        .then((res) => {
+                            sanityCheck(res);
+                            if (res.id) {
+                                this.setState({ reviewing: true });
+                            }
+                        })
+                        .catch(errorLogger);
+                }
+            })
+            .catch(errorLogger);
     }
 
     handicapOffset(): number {
-        if (this.props.game
-            && this.props.game.goban
-            && this.props.game.goban.engine
-            && this.props.game.goban.engine.free_handicap_placement
-            && this.props.game.goban.engine.handicap > 0
+        if (
+            this.props.game &&
+            this.props.game.goban &&
+            this.props.game.goban.engine &&
+            this.props.game.goban.engine.free_handicap_placement &&
+            this.props.game.goban.engine.handicap > 0
         ) {
             return this.props.game.goban.engine.handicap;
         }
@@ -234,7 +233,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             last_win_rate = ai_review.win_rates[move_number];
         }
 
-
         /* TODO: Blunder count & top3 move array */
 
         this.setState({
@@ -266,22 +264,21 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         this.syncAIReview();
     };
     startNewAIReview(analysis_type: "fast" | "full", engine: "leela_zero" | "katago") {
-        const user = data.get('user');
+        const user = data.get("user");
 
         if (user.anonymous) {
             swal(_("Please sign in first")).catch(swal.noop);
         } else {
-
             if (user.supporter || user.professional || user.is_moderator) {
                 post(`games/${this.getGameId()}/ai_reviews`, {
-                    "type": analysis_type,
-                    "engine": engine,
+                    type: analysis_type,
+                    engine: engine,
                 })
-                .then((res) => {
-                    sanityCheck(res);
-                    swal("Analysis started").catch(swal.noop);
-                })
-                .catch(errorAlerter);
+                    .then((res) => {
+                        sanityCheck(res);
+                        swal("Analysis started").catch(swal.noop);
+                    })
+                    .catch(errorAlerter);
             } else {
                 openBecomeASiteSupporterModal();
             }
@@ -295,11 +292,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         } else {
             for (const k in ai_review) {
                 //console.log("Updating", k, ai_review[k]);
-                if (k !== 'moves' || !this.ai_review['moves']) {
+                if (k !== "moves" || !this.ai_review["moves"]) {
                     this.ai_review[k] = ai_review[k];
                 } else {
-                    for (const move in ai_review['moves']) {
-                        this.ai_review['moves'][move] = ai_review['moves'][move];
+                    for (const move in ai_review["moves"]) {
+                        this.ai_review["moves"][move] = ai_review["moves"][move];
                     }
                 }
             }
@@ -310,7 +307,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     }
 
     deferred_update_timeout?: Timeout;
-    deferred_queue?: {[key: string]: any};
+    deferred_queue?: { [key: string]: any };
 
     updateAiReview = (data: any) => {
         if (this.deferred_queue) {
@@ -326,9 +323,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
                 for (const key in data) {
                     const value = data[key];
-                    if (key === 'metadata') {
+                    if (key === "metadata") {
                         this.updateAIReviewMetadata(value as JGOFAIReview);
-                    } else if (key === 'error') {
+                    } else if (key === "error") {
                         if (this.ai_review) {
                             this.ai_review.error = value;
                         } else {
@@ -336,7 +333,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         }
                     } else if (/move-[0-9]+/.test(key)) {
                         if (!this.ai_review) {
-                            console.warn("AI Review move received but ai review not initialized yet");
+                            console.warn(
+                                "AI Review move received but ai review not initialized yet",
+                            );
                             return;
                         }
 
@@ -348,7 +347,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                             this.ai_review.analyzed_variations = {};
                         }
                         if (!this.ai_review) {
-                            console.warn("AI Review move received but ai review not initialized yet");
+                            console.warn(
+                                "AI Review move received but ai review not initialized yet",
+                            );
                             return;
                         }
                         const m = key.match(/variation-([0-9a-z.A-Z-]+)/);
@@ -369,7 +370,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     };
 
     ai_review_update = (data: any) => {
-        if ('refresh' in data) {
+        if ("refresh" in data) {
             this.getAIReviewList();
         }
     };
@@ -386,7 +387,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             const varkey = `${trunk_move.move_number}-${varstring}`;
 
             // if we have an interactive review move, that's what we're interested in
-            if (this.ai_review.analyzed_variations && varkey in this.ai_review.analyzed_variations) {
+            if (
+                this.ai_review.analyzed_variations &&
+                varkey in this.ai_review.analyzed_variations
+            ) {
                 const analysis = this.ai_review.analyzed_variations[varkey];
                 ret.push({
                     move_number: analysis.move_number,
@@ -416,7 +420,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const cur_move = this.props.move;
         const trunk_move = cur_move.getBranchPoint();
         const move_number = trunk_move.move_number;
-        let next_move_pretty_coords = '';
+        let next_move_pretty_coords = "";
 
         const trunk_move_string = trunk_move.getMoveStringToThisPoint();
         const cur_move_string = cur_move.getMoveStringToThisPoint();
@@ -430,8 +434,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             have_variation_results = true;
             ai_review_move = this.ai_review.analyzed_variations[varkey];
         } else {
-            if (this.ai_review.moves[move_number]) { /* check if the nearest trunk move was one of the top three moves reviewed by ai */
-                ai_review_move = this.ai_review.moves[move_number]; /* ai_review_move now contains data regarding all the branches played out by the AI */
+            if (this.ai_review.moves[move_number]) {
+                /* check if the nearest trunk move was one of the top three moves reviewed by ai */
+                ai_review_move =
+                    this.ai_review.moves[
+                        move_number
+                    ]; /* ai_review_move now contains data regarding all the branches played out by the AI */
             }
 
             if (this.ai_review.moves[move_number + 1]) {
@@ -449,7 +457,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             win_rate = win_rates[move_number] || this.ai_review.win_rate;
             score = scores[move_number];
             if (!score && score !== 0) {
-              this.ai_review.scores ? this.ai_review.scores[-1] : 0;
+                this.ai_review.scores ? this.ai_review.scores[-1] : 0;
             }
         }
 
@@ -461,11 +469,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             next_score = scores[move_number + 1] || score;
         }
 
-        const marks: {[mark: string]: string} = {};
+        const marks: { [mark: string]: string } = {};
         const colored_circles: ColoredCircle[] = [];
         let heatmap: Array<Array<number>> | null = null;
         try {
-            if ((cur_move.trunk || have_variation_results) && ai_review_move) { /* if we are on a trunk move that was AI reviewed */
+            if ((cur_move.trunk || have_variation_results) && ai_review_move) {
+                /* if we are on a trunk move that was AI reviewed */
                 next_move = cur_move.trunk_next;
                 const branches = ai_review_move.branches.slice(0, 6);
                 //let branches = ai_review_move.branches;
@@ -477,7 +486,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 // it was upon further analysis (use next move's win rate)
                 let found_next_move = false;
                 for (const branch of branches) {
-                    if (branch.moves.length === 0){
+                    if (branch.moves.length === 0) {
                         continue;
                     }
                     if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
@@ -507,21 +516,22 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     heatmap.push(r);
                 }
 
-                for (let i = 0 ; i < branches.length; ++i) {
+                for (let i = 0; i < branches.length; ++i) {
                     const branch = branches[i];
                     const mv = branch.moves[0];
 
-                    if (mv === undefined || mv.x === -1 ) {
+                    if (mv === undefined || mv.x === -1) {
                         continue;
                     }
 
                     if (this.props.game.goban.engine.board[mv.y][mv.x]) {
-                        console.error("ERROR: AI is suggesting moves on intersections that have already been played, this is likely a move indexing error.");
+                        console.error(
+                            "ERROR: AI is suggesting moves on intersections that have already been played, this is likely a move indexing error.",
+                        );
                         console.info("AIReview: ", this.ai_review);
                     }
 
                     heatmap[mv.y][mv.x] = branch.visits / strength;
-
 
                     let next_player: JGOFNumericPlayerColor;
 
@@ -529,29 +539,35 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         next_player = next_move.player;
                     } else {
                         // we don't always use this because when we are looking at handicap stones, it doesn't flip.
-                        next_player = cur_move.player === JGOFNumericPlayerColor.BLACK
-                            ? JGOFNumericPlayerColor.WHITE
-                            : JGOFNumericPlayerColor.BLACK;
+                        next_player =
+                            cur_move.player === JGOFNumericPlayerColor.BLACK
+                                ? JGOFNumericPlayerColor.WHITE
+                                : JGOFNumericPlayerColor.BLACK;
                     }
 
-                    const delta: number = this.state.use_score && this.ai_review.scores
-                        ? (next_player === JGOFNumericPlayerColor.WHITE
-                            ? (ai_review_move.score - branch.score)
-                            : (branch.score) - (ai_review_move.score))
-                        : 100 * (next_player === JGOFNumericPlayerColor.WHITE
-                            ? (ai_review_move.win_rate) - (branch.win_rate)
-                            : (branch.win_rate) - (ai_review_move.win_rate));
+                    const delta: number =
+                        this.state.use_score && this.ai_review.scores
+                            ? next_player === JGOFNumericPlayerColor.WHITE
+                                ? ai_review_move.score - branch.score
+                                : branch.score - ai_review_move.score
+                            : 100 *
+                              (next_player === JGOFNumericPlayerColor.WHITE
+                                  ? ai_review_move.win_rate - branch.win_rate
+                                  : branch.win_rate - ai_review_move.win_rate);
 
-                    let key = (delta).toFixed(1);
+                    let key = delta.toFixed(1);
                     if (key === "0.0" || key === "-0.0") {
                         key = "0";
                     }
                     // only show numbers for well explored moves
                     // show number for AI choice and played moves[0] as well
-                    if (mv && ((i === 0) ||
-                               //true || // debugging
-                               (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) ||
-                               (branch.visits >= Math.min(50, 0.1 * strength)))) {
+                    if (
+                        mv &&
+                        (i === 0 ||
+                            //true || // debugging
+                            (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) ||
+                            branch.visits >= Math.min(50, 0.1 * strength))
+                    ) {
                         if (parseFloat(key).toPrecision(2).length < key.length) {
                             key = parseFloat(key).toPrecision(2);
                         }
@@ -560,7 +576,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
                     const circle: ColoredCircle = {
                         move: branch.moves[0],
-                        color: 'rgba(0,0,0,0)',
+                        color: "rgba(0,0,0,0)",
                     };
 
                     if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
@@ -568,34 +584,42 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         this.props.game.goban.setMark(mv.x, mv.y, "blue_move", true);
 
                         circle.border_width = 0.1;
-                        circle.border_color = 'rgb(0, 0, 0)';
+                        circle.border_color = "rgb(0, 0, 0)";
                         if (i === 0) {
-                            circle.color = 'rgba(0, 130, 255, 0.7)';
+                            circle.color = "rgba(0, 130, 255, 0.7)";
                         } else {
-                            circle.color = 'rgba(255, 255, 255, 0.3)';
+                            circle.color = "rgba(255, 255, 255, 0.3)";
                         }
                         colored_circles.push(circle);
-                    } else if (i === 0) { // blue move, not what player made
+                    } else if (i === 0) {
+                        // blue move, not what player made
                         this.props.game.goban.setMark(mv.x, mv.y, "blue_move", true);
                         circle.border_width = 0.2;
-                        circle.border_color = 'rgb(0, 130, 255)';
-                        circle.color = 'rgba(0, 130, 255, 0.7)';
+                        circle.border_color = "rgb(0, 130, 255)";
+                        circle.color = "rgba(0, 130, 255, 0.7)";
                         colored_circles.push(circle);
                     }
                 }
-            } else { /* if not on trunk move which was ai reviewed, see if we have some reviewed data */
+            } else {
+                /* if not on trunk move which was ai reviewed, see if we have some reviewed data */
                 if (!cur_move.trunk) {
                     this.requestAnalysisOfVariation(cur_move, trunk_move);
                 }
-                this.fillAIMarksBacktracking(cur_move, trunk_move, marks); /* fill marks object with AI ghost marks, if we are on a sequence the AI played out */
+                this.fillAIMarksBacktracking(
+                    cur_move,
+                    trunk_move,
+                    marks,
+                ); /* fill marks object with AI ghost marks, if we are on a sequence the AI played out */
             }
-
         } catch (e) {
             errorLogger(e);
         }
 
         try {
-            this.props.game.goban.setMarks(marks, true); /* draw the remaining AI sequence as ghost marks, if any */
+            this.props.game.goban.setMarks(
+                marks,
+                true,
+            ); /* draw the remaining AI sequence as ghost marks, if any */
             this.props.game.goban.setHeatmap(heatmap, true);
             this.props.game.goban.setColoredCircles(colored_circles, false);
         } catch (e) {
@@ -610,15 +634,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
 
         if (next_move) {
-            next_move_pretty_coords = this.props.game.goban.engine.prettyCoords(next_move.x, next_move.y);
+            next_move_pretty_coords = this.props.game.goban.engine.prettyCoords(
+                next_move.x,
+                next_move.y,
+            );
         }
 
-        return [
-            win_rate,
-            score,
-            next_move_delta_win_rate,
-            next_move_pretty_coords,
-        ];
+        return [win_rate, score, next_move_delta_win_rate, next_move_pretty_coords];
     }
 
     private requestAnalysisOfVariation(cur_move: MoveTree, trunk_move: MoveTree): boolean {
@@ -626,7 +648,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             return false;
         }
 
-        const user = data.get('user');
+        const user = data.get("user");
         if (user.anonymous) {
             //console.debug("Anonymous user, not performing analysis of variation");
             return false;
@@ -655,7 +677,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             return false;
         }
 
-        ai_request_variation_analysis(this.ai_review.uuid, this.props.game.game_id, this.state.selected_ai_review?.id, cur_move, trunk_move);
+        ai_request_variation_analysis(
+            this.ai_review.uuid,
+            this.props.game.game_id,
+            this.state.selected_ai_review?.id,
+            cur_move,
+            trunk_move,
+        );
     }
 
     /** This method attempts to match our cur_move sequence with any of the AI
@@ -667,8 +695,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
      * remaining AI sequence.
      * @returns true if we found some data, false otherwise
      */
-    private fillAIMarksBacktracking(cur_move: MoveTree, trunk_move: MoveTree, marks: {[mark: string]: string}): boolean {
-        for (let j = 0; j <= trunk_move.move_number; j++) { /* for each of the trunk moves starting from the nearest */
+    private fillAIMarksBacktracking(
+        cur_move: MoveTree,
+        trunk_move: MoveTree,
+        marks: { [mark: string]: string },
+    ): boolean {
+        for (let j = 0; j <= trunk_move.move_number; j++) {
+            /* for each of the trunk moves starting from the nearest */
             const ai_review_move = this.ai_review.moves[trunk_move.move_number - j];
             if (!ai_review_move) {
                 continue;
@@ -698,7 +731,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     const mv = decoded_moves[i];
                     const encoded_mv = GoMath.encodeMove(mv.x, mv.y);
                     marks[i + cur_move.getDistance(trunk_move) + 1] = encoded_mv;
-                    if (((this.props.game.goban.engine.player - 1) + i) % 2 === 1) {
+                    if ((this.props.game.goban.engine.player - 1 + i) % 2 === 1) {
                         white += encoded_mv;
                     } else {
                         black += encoded_mv;
@@ -717,63 +750,99 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         return false;
     }
 
-    private getPlayerColorsMoveList(){
+    private getPlayerColorsMoveList() {
         const init_move = this.props.game.goban.engine.move_tree;
         const move_list = [];
         let cur_move = init_move.trunk_next;
 
-        while (cur_move !== undefined){
+        while (cur_move !== undefined) {
             move_list.push(cur_move.player);
             cur_move = cur_move.trunk_next;
         }
         return move_list;
-
     }
 
-    private AiSummaryTableRowList(){
-        const summary_moves_list = [ ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""] ];
-        const ai_table_rows = [[_("Excellent")], [_("Great")], [_("Good")], [_("Inaccuracy")], [_("Mistake")], [_("Blunder")]];
+    private AiSummaryTableRowList() {
+        const summary_moves_list = [
+            ["", "", "", ""],
+            ["", "", "", ""],
+            ["", "", "", ""],
+            ["", "", "", ""],
+            ["", "", "", ""],
+            ["", "", "", ""],
+        ];
+        const ai_table_rows = [
+            [_("Excellent")],
+            [_("Great")],
+            [_("Good")],
+            [_("Inaccuracy")],
+            [_("Mistake")],
+            [_("Blunder")],
+        ];
         const default_table_rows = [["", "", "", "", ""]];
         const avg_score_loss = [0, 0];
         let moves_missing = 0;
         let max_entries = 0;
 
-        if (!this.ai_review ) {
-            return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
+        if (!this.ai_review) {
+            return {
+                ai_table_rows: default_table_rows,
+                avg_score_loss,
+                moves_pending: moves_missing,
+                max_entries,
+            };
         }
 
-        if (this.ai_review.engine !== "katago"){
+        if (this.ai_review.engine !== "katago") {
             this.setState({
-                table_set: true
+                table_set: true,
             });
-            return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
+            return {
+                ai_table_rows: default_table_rows,
+                avg_score_loss,
+                moves_pending: moves_missing,
+                max_entries,
+            };
         }
 
         const handicap = this.props.game.goban.engine.handicap;
         //only useful when there's free placement, handicap = 1 no offset needed.
         let hoffset = this.handicapOffset();
-        hoffset = (hoffset === 1) ? 0 : hoffset;
-        const bplayer = (hoffset > 0 || handicap > 1) ? 1 : 0;
+        hoffset = hoffset === 1 ? 0 : hoffset;
+        const bplayer = hoffset > 0 || handicap > 1 ? 1 : 0;
         const move_player_list = this.getPlayerColorsMoveList();
         //forked games might have white stones on the board.
         const other_game_type = this.props.game.goban.engine.initial_state.white !== "";
 
-        if (this.ai_review?.type === "fast" ){
+        if (this.ai_review?.type === "fast") {
             const scores = this.ai_review?.scores;
-            const is_uploaded = (this.props.game.goban.config.original_sgf !== undefined);
+            const is_uploaded = this.props.game.goban.config.original_sgf !== undefined;
             //one more ai review point than moves in the game, since initial board gets a score.
 
-            if (scores === undefined){
-                return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
+            if (scores === undefined) {
+                return {
+                    ai_table_rows: default_table_rows,
+                    avg_score_loss,
+                    moves_pending: moves_missing,
+                    max_entries,
+                };
             }
-            const check1 = !is_uploaded &&
-            (this.props.game.goban.config.moves.length !== (this.ai_review?.scores.length - 1));
+            const check1 =
+                !is_uploaded &&
+                this.props.game.goban.config.moves.length !== this.ai_review?.scores.length - 1;
             // extra initial ! in all_moves which matches extra empty board score, except in handicap games for some reason.
             // so subtract 1 if black goes second == bplayer
-            const check2 = is_uploaded &&
-            ((this.props.game.goban.config["all_moves"].split("!").length - bplayer) !== this.ai_review?.scores.length);
-            if (check1 || check2){
-                return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
+            const check2 =
+                is_uploaded &&
+                this.props.game.goban.config["all_moves"].split("!").length - bplayer !==
+                    this.ai_review?.scores.length;
+            if (check1 || check2) {
+                return {
+                    ai_table_rows: default_table_rows,
+                    avg_score_loss,
+                    moves_pending: moves_missing,
+                    max_entries,
+                };
             }
 
             // we don't need the first two rows, as they're for full reviews.
@@ -784,12 +853,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             const othercounters = Array(2).fill(0);
             let wtotal = 0;
             let btotal = 0;
-            for (let j = hoffset; j < scores.length - 1; j++ ){
+            for (let j = hoffset; j < scores.length - 1; j++) {
                 let scorediff = scores[j + 1] - scores[j];
                 const is_bplayer = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
-                const offset = (is_bplayer) ? 0 : num_rows;
-                const player_index = (is_bplayer) ? 0 : 1;
-                scorediff = (is_bplayer) ? (-1) * scorediff : scorediff;
+                const offset = is_bplayer ? 0 : num_rows;
+                const player_index = is_bplayer ? 0 : 1;
+                scorediff = is_bplayer ? -1 * scorediff : scorediff;
                 avg_score_loss[player_index] += scorediff;
 
                 if (scorediff < 1) {
@@ -798,58 +867,65 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 } else if (scorediff < 2) {
                     movecounters[offset + 1] += 1;
                     //console.log("inaccuracy");
-                }else if (scorediff < 5) {
+                } else if (scorediff < 5) {
                     movecounters[offset + 2] += 1;
                     //console.log("mistake");
                 } else if (scorediff >= 5) {
                     movecounters[offset + 3] += 1;
                     //console.log("blunder");
-                } else{
+                } else {
                     othercounters[player_index] += 1;
                 }
             }
 
-            for (let j = 0; j < num_rows; j++ ){
+            for (let j = 0; j < num_rows; j++) {
                 btotal += movecounters[j];
                 wtotal += movecounters[num_rows + j];
             }
 
-            avg_score_loss[0] = (btotal > 0) ? Math.round(10 * avg_score_loss[0] / btotal) / 10 : 0;
-            avg_score_loss[1] = (wtotal > 0) ? Math.round(10 * avg_score_loss[1] / wtotal) / 10 : 0;
+            avg_score_loss[0] = btotal > 0 ? Math.round((10 * avg_score_loss[0]) / btotal) / 10 : 0;
+            avg_score_loss[1] = wtotal > 0 ? Math.round((10 * avg_score_loss[1]) / wtotal) / 10 : 0;
 
-            for (let j = 0; j < num_rows; j++ ){
+            for (let j = 0; j < num_rows; j++) {
                 summary_moves_list[j][0] = movecounters[j].toString();
-                summary_moves_list[j][1] = (btotal > 0) ? (Math.round(1000 * movecounters[j] / btotal) / 10).toString() : "";
+                summary_moves_list[j][1] =
+                    btotal > 0
+                        ? (Math.round((1000 * movecounters[j]) / btotal) / 10).toString()
+                        : "";
                 summary_moves_list[j][2] = movecounters[num_rows + j].toString();
-                summary_moves_list[j][3] = (wtotal > 0) ? (Math.round(1000 * movecounters[num_rows + j] / wtotal) / 10).toString() : "";
+                summary_moves_list[j][3] =
+                    wtotal > 0
+                        ? (Math.round((1000 * movecounters[num_rows + j]) / wtotal) / 10).toString()
+                        : "";
             }
 
-            for (let j = 0; j < ai_table_rows.length; j++){
+            for (let j = 0; j < ai_table_rows.length; j++) {
                 ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
             }
 
             this.setState({
-                table_set: true
+                table_set: true,
             });
-            return {ai_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
-
-        } else if (this.ai_review?.type === "full" ) {
+            return { ai_table_rows, avg_score_loss, moves_pending: moves_missing, max_entries };
+        } else if (this.ai_review?.type === "full") {
             const num_rows = ai_table_rows.length;
-            const movekeys = Object.keys( this.ai_review?.moves);
-            const is_uploaded = (this.props.game.goban.config.original_sgf !== undefined);
+            const movekeys = Object.keys(this.ai_review?.moves);
+            const is_uploaded = this.props.game.goban.config.original_sgf !== undefined;
             // should be one more ai review score and move branches for empty board.
-            const check1 = !is_uploaded &&
-            (this.props.game.goban.config.moves.length !== (movekeys.length - 1));
+            const check1 =
+                !is_uploaded && this.props.game.goban.config.moves.length !== movekeys.length - 1;
             // extra initial ! in all_moves which matches extra empty board score, except in handicap games for some reason.
             // so subtract 1 if black goes second == bplayer
-            const check2 = is_uploaded &&
-            ((this.props.game.goban.config["all_moves"].split("!").length - bplayer) !== movekeys.length);
+            const check2 =
+                is_uploaded &&
+                this.props.game.goban.config["all_moves"].split("!").length - bplayer !==
+                    movekeys.length;
 
-            if (this.state.loading || this.ai_review.scores === undefined ){
-                for (let j = 0; j < ai_table_rows.length; j++){
+            if (this.state.loading || this.ai_review.scores === undefined) {
+                for (let j = 0; j < ai_table_rows.length; j++) {
                     ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
                 }
-                return {ai_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
+                return { ai_table_rows, avg_score_loss, moves_pending: moves_missing, max_entries };
             }
 
             max_entries = this.ai_review.scores.length;
@@ -858,8 +934,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             let wtotal = 0;
             let btotal = 0;
 
-            for (let j = hoffset; j < this.ai_review?.scores.length - 1; j++ ){
-                if (this.ai_review?.moves[j] === undefined || this.ai_review?.moves[j + 1] === undefined ){
+            for (let j = hoffset; j < this.ai_review?.scores.length - 1; j++) {
+                if (
+                    this.ai_review?.moves[j] === undefined ||
+                    this.ai_review?.moves[j + 1] === undefined
+                ) {
                     moves_missing += 1;
                     continue;
                 }
@@ -868,29 +947,31 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 const current_branches = this.ai_review?.moves[j].branches.slice(0, 6);
                 const bluemove = current_branches[0].moves[0];
                 const is_bplayer = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
-                const offset = (is_bplayer) ? 0 : num_rows;
-                const player_index = (is_bplayer) ? 0 : 1;
+                const offset = is_bplayer ? 0 : num_rows;
+                const player_index = is_bplayer ? 0 : 1;
                 let scorediff = this.ai_review?.moves[j + 1].score - this.ai_review?.moves[j].score;
-                scorediff = (is_bplayer) ? (-1) * scorediff : scorediff;
+                scorediff = is_bplayer ? -1 * scorediff : scorediff;
                 avg_score_loss[player_index] += scorediff;
 
-                if (bluemove === undefined ){
+                if (bluemove === undefined) {
                     othercounters[player_index] += 1;
-                } else if ( playermove.x === -1){
+                } else if (playermove.x === -1) {
                     othercounters[player_index] += 1;
                     //console.log("pass etc");
                 } else {
-                    if (isEqualMoveIntersection(bluemove, playermove)){
+                    if (isEqualMoveIntersection(bluemove, playermove)) {
                         movecounters[offset] += 1;
                         //console.log("blue Excellent");
-                    } else if (current_branches.some(
-                        (branch, index) => {
+                    } else if (
+                        current_branches.some((branch, index) => {
                             if (!branch.moves.length) {
                                 return false;
                             }
 
-                            const check = index > 0 && isEqualMoveIntersection(branch.moves[0], playermove) &&
-                            (branch.visits >= Math.min(50, 0.1 * this.ai_review?.strength));
+                            const check =
+                                index > 0 &&
+                                isEqualMoveIntersection(branch.moves[0], playermove) &&
+                                branch.visits >= Math.min(50, 0.1 * this.ai_review?.strength);
                             return check;
                         })
                     ) {
@@ -908,40 +989,51 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     } else if (scorediff >= 5) {
                         movecounters[offset + 5] += 1;
                         //console.log("blunder");
-                    } else{
+                    } else {
                         othercounters[player_index] += 1;
                     }
                 }
             }
 
-            for (let j = 0; j < num_rows; j++ ){
+            for (let j = 0; j < num_rows; j++) {
                 btotal += movecounters[j];
                 wtotal += movecounters[num_rows + j];
             }
 
-            avg_score_loss[0] = (btotal > 0) ? Math.round(10 * avg_score_loss[0] / btotal) / 10 : 0;
-            avg_score_loss[1] = (wtotal > 0) ? Math.round(10 * avg_score_loss[1] / wtotal) / 10 : 0;
+            avg_score_loss[0] = btotal > 0 ? Math.round((10 * avg_score_loss[0]) / btotal) / 10 : 0;
+            avg_score_loss[1] = wtotal > 0 ? Math.round((10 * avg_score_loss[1]) / wtotal) / 10 : 0;
 
-            for (let j = 0; j < num_rows; j++ ){
+            for (let j = 0; j < num_rows; j++) {
                 summary_moves_list[j][0] = movecounters[j].toString();
-                summary_moves_list[j][1] = (btotal > 0) ? (Math.round(1000 * movecounters[j] / btotal) / 10).toString() : "";
+                summary_moves_list[j][1] =
+                    btotal > 0
+                        ? (Math.round((1000 * movecounters[j]) / btotal) / 10).toString()
+                        : "";
                 summary_moves_list[j][2] = movecounters[num_rows + j].toString();
-                summary_moves_list[j][3] = (wtotal > 0) ? (Math.round(1000 * movecounters[num_rows + j] / wtotal) / 10).toString() : "";
+                summary_moves_list[j][3] =
+                    wtotal > 0
+                        ? (Math.round((1000 * movecounters[num_rows + j]) / wtotal) / 10).toString()
+                        : "";
             }
 
-            for (let j = 0; j < ai_table_rows.length; j++){
+            for (let j = 0; j < ai_table_rows.length; j++) {
                 ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
             }
 
-            if (!check1 && !check2 ){
+            if (!check1 && !check2) {
                 this.setState({
-                    table_set: true
+                    table_set: true,
                 });
             }
 
-            return {ai_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
+            return { ai_table_rows, avg_score_loss, moves_pending: moves_missing, max_entries };
         } else {
-            return {"ai_table_rows" : default_table_rows, avg_score_loss, "moves_pending":moves_missing, max_entries};
+            return {
+                ai_table_rows: default_table_rows,
+                avg_score_loss,
+                moves_pending: moves_missing,
+                max_entries,
+            };
         }
     }
 
@@ -960,26 +1052,33 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
         if (!this.ai_review || this.props.hidden) {
             return (
-                <div className='AIReview'>
-                    <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
+                <div className="AIReview">
+                    <UIPush
+                        event="ai-review"
+                        channel={`game-${this.props.game.game_id}`}
+                        action={this.ai_review_update}
+                    />
                     <AIReviewStream
                         uuid={this.state.selected_ai_review?.uuid}
                         game_id={this.props.game.game_id}
                         ai_review_id={this.state.selected_ai_review?.id}
                         callback={this.updateAiReview}
                     />
-                    { ((!this.props.hidden && ((this.state.ai_reviews.length === 0 && this.state.reviewing))) || null) &&
-                        <div className='reviewing'>
+                    {((!this.props.hidden &&
+                        this.state.ai_reviews.length === 0 &&
+                        this.state.reviewing) ||
+                        null) && (
+                        <div className="reviewing">
                             <span>{_("Queuing AI review")}</span>
-                            <i className='fa fa-desktop slowstrobe'></i>
+                            <i className="fa fa-desktop slowstrobe"></i>
                         </div>
-                    }
+                    )}
                 </div>
             );
         }
 
         let show_full_ai_review_button: null | true = null;
-        const user = data.get('user');
+        const user = data.get("user");
 
         try {
             if (
@@ -998,43 +1097,53 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             show_full_ai_review_button = null;
         }
 
-
-        const [
-            win_rate,
-            score,
-            next_move_delta_win_rate,
-            next_move_pretty_coords,
-        ] = this.updateHighlightsMarksAndHeatmaps();
+        const [win_rate, score, next_move_delta_win_rate, next_move_pretty_coords] =
+            this.updateHighlightsMarksAndHeatmaps();
 
         const win_rate_p = win_rate * 100.0;
         const next_move_delta_p = next_move_delta_win_rate * 100.0;
 
-        const ai_review_chart_entries: Array<AIReviewEntry> = this.ai_review.win_rates?.map((x, idx) => {
-            return {
-                move_number: idx,
-                win_rate: x,
-                score: this.ai_review?.moves[idx]?.score || 0,
-                num_variations: this.ai_review?.moves[idx]?.branches.length || 0,
-            };
-        }) || [];
+        const ai_review_chart_entries: Array<AIReviewEntry> =
+            this.ai_review.win_rates?.map((x, idx) => {
+                return {
+                    move_number: idx,
+                    win_rate: x,
+                    score: this.ai_review?.moves[idx]?.score || 0,
+                    num_variations: this.ai_review?.moves[idx]?.branches.length || 0,
+                };
+            }) || [];
 
-        const ai_review_chart_variation_entries: Array<AIReviewEntry> = this.getVariationReviewEntries();
+        const ai_review_chart_variation_entries: Array<AIReviewEntry> =
+            this.getVariationReviewEntries();
 
         const cur_move = this.props.move;
         const trunk_move = cur_move.getBranchPoint();
         const move_number = trunk_move.move_number;
-        const variation_move_number = cur_move.move_number !== trunk_move.move_number ? cur_move.move_number : -1;
+        const variation_move_number =
+            cur_move.move_number !== trunk_move.move_number ? cur_move.move_number : -1;
 
         let black_moves = 0;
         let white_moves = 0;
 
-        let worst_move_list = getWorstMoves(this.props.game.goban.engine.move_tree, this.ai_review, 100);
-        worst_move_list = worst_move_list.filter(move => move.player === 1 && black_moves++ < 3 || move.player === 2 && white_moves++ < 3);
+        let worst_move_list = getWorstMoves(
+            this.props.game.goban.engine.move_tree,
+            this.ai_review,
+            100,
+        );
+        worst_move_list = worst_move_list.filter(
+            (move) =>
+                (move.player === 1 && black_moves++ < 3) ||
+                (move.player === 2 && white_moves++ < 3),
+        );
         worst_move_list.sort((a, b) => a.move_number - b.move_number);
 
         return (
-            <div className='AIReview'>
-                <UIPush event="ai-review" channel={`game-${this.props.game.game_id}`} action={this.ai_review_update} />
+            <div className="AIReview">
+                <UIPush
+                    event="ai-review"
+                    channel={`game-${this.props.game.game_id}`}
+                    action={this.ai_review_update}
+                />
                 <AIReviewStream
                     uuid={this.state.selected_ai_review?.uuid}
                     game_id={this.props.game.game_id}
@@ -1042,87 +1151,115 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     callback={this.updateAiReview}
                 />
 
-                { (this.state.ai_reviews.length >= 1 || null) &&
+                {(this.state.ai_reviews.length >= 1 || null) && (
                     <Select
-                        classNamePrefix='ogs-react-select'
+                        classNamePrefix="ogs-react-select"
                         value={this.state.selected_ai_review}
                         options={this.state.ai_reviews}
                         onChange={this.setSelectedAIReview as any}
                         isClearable={false}
                         autoBlur={true}
                         isSearchable={false}
-                        components = {{
-                            Option: ({innerRef, innerProps, isFocused, data, getValue}) => {
+                        components={{
+                            Option: ({ innerRef, innerProps, isFocused, data, getValue }) => {
                                 const value = getValue();
                                 const isSelected = value && value[0].id === data.id;
 
                                 return (
-                                    <div ref={innerRef} {...innerProps}
-                                        className={'ai-review-option-container '
-                                            + (isFocused ? 'focused ' :'') + (isSelected ? 'selected' : '')}
+                                    <div
+                                        ref={innerRef}
+                                        {...innerProps}
+                                        className={
+                                            "ai-review-option-container " +
+                                            (isFocused ? "focused " : "") +
+                                            (isSelected ? "selected" : "")
+                                        }
                                     >
                                         <ReviewStrengthIcon review={data} />
-                                        <div className='ai-review-information'>
+                                        <div className="ai-review-information">
                                             <div>
                                                 {interpolate(
-                                                    pgettext("AI Review technical information",
-                                                        "{{engine}} {{engine_version}} using the {{network_size}} network {{network}}."), {
+                                                    pgettext(
+                                                        "AI Review technical information",
+                                                        "{{engine}} {{engine_version}} using the {{network_size}} network {{network}}.",
+                                                    ),
+                                                    {
                                                         engine: engineName(data.engine),
                                                         engine_version: data.engine_version,
                                                         network_size: data.network_size,
-                                                        network: extractShortNetworkVersion(data.network),
-                                                    }
-                                                )
-                                                }
+                                                        network: extractShortNetworkVersion(
+                                                            data.network,
+                                                        ),
+                                                    },
+                                                )}
                                             </div>
-                                            <div className='date'>
-                                                {moment(new Date(data.date)).format('lll')}
+                                            <div className="date">
+                                                {moment(new Date(data.date)).format("lll")}
                                             </div>
                                         </div>
                                     </div>
                                 );
                             },
-                            SingleValue: ({data}) => (
+                            SingleValue: ({ data }) => (
                                 <React.Fragment>
                                     <ReviewStrengthIcon review={data} />
-                                    {(win_rate >= 0 && win_rate <= 1.0)
-                                        ? (this.state.use_score && this.ai_review.scores
-                                            ? <div className="progress">
-                                                {(score > 0
-                                                  ? <div className="progress-bar black-background" style={{width: "100%"}}>{
-                                                      interpolate(
-                                                          pgettext(
-                                                              "AI Review: Black ahead by {score}",
-                                                              "B+{{score}}"
-                                                          ),
-                                                          { "score": score.toFixed(1) }
-                                                      )}</div>
-                                                  : <div className="progress-bar white-background" style={{width: "100%"}}>{
-                                                      interpolate(
-                                                          pgettext(
-                                                              "AI Review: White ahead by {score}",
-                                                              "W+{{score}}"
-                                                          ),
-                                                          { "score": (-score).toFixed(1) }
-                                                      )}</div>
+                                    {win_rate >= 0 && win_rate <= 1.0 ? (
+                                        this.state.use_score && this.ai_review.scores ? (
+                                            <div className="progress">
+                                                {score > 0 ? (
+                                                    <div
+                                                        className="progress-bar black-background"
+                                                        style={{ width: "100%" }}
+                                                    >
+                                                        {interpolate(
+                                                            pgettext(
+                                                                "AI Review: Black ahead by {score}",
+                                                                "B+{{score}}",
+                                                            ),
+                                                            { score: score.toFixed(1) },
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <div
+                                                        className="progress-bar white-background"
+                                                        style={{ width: "100%" }}
+                                                    >
+                                                        {interpolate(
+                                                            pgettext(
+                                                                "AI Review: White ahead by {score}",
+                                                                "W+{{score}}",
+                                                            ),
+                                                            { score: (-score).toFixed(1) },
+                                                        )}
+                                                    </div>
                                                 )}
                                             </div>
-                                            : <div className="progress">
-                                                <div className="progress-bar black-background" style={{width: win_rate_p + "%"}}>{win_rate_p.toFixed(1)}%</div>
-                                                <div className="progress-bar white-background" style={{width: (100.0 - win_rate_p) + "%"}}>{(100 - win_rate_p).toFixed(1)}%</div>
-                                            </div>)
-                                        : <div className="pending">
-                                            <i className='fa fa-desktop slowstrobe'></i>
+                                        ) : (
+                                            <div className="progress">
+                                                <div
+                                                    className="progress-bar black-background"
+                                                    style={{ width: win_rate_p + "%" }}
+                                                >
+                                                    {win_rate_p.toFixed(1)}%
+                                                </div>
+                                                <div
+                                                    className="progress-bar white-background"
+                                                    style={{ width: 100.0 - win_rate_p + "%" }}
+                                                >
+                                                    {(100 - win_rate_p).toFixed(1)}%
+                                                </div>
+                                            </div>
+                                        )
+                                    ) : (
+                                        <div className="pending">
+                                            <i className="fa fa-desktop slowstrobe"></i>
                                             {_("Processing")}
                                         </div>
-                                    }
-
+                                    )}
                                 </React.Fragment>
                             ),
-                            ValueContainer: ({children}) => (
-                                <div className='ai-review-win-rate-container'>
-                                    {children}
-                                </div>
+                            ValueContainer: ({ children }) => (
+                                <div className="ai-review-win-rate-container">{children}</div>
                             ),
                             MenuList: (props) => {
                                 const goban = this.props.game.goban;
@@ -1130,34 +1267,45 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 return (
                                     <components.MenuList {...props}>
                                         {props.children}
-                                        {show_full_ai_review_button &&
-                                            <div className='ai-review-new-review'>
-                                                <button onClick={() => this.startNewAIReview("full", "katago")}>
-                                                    <i className='fa fa-plus' /> KataGo
+                                        {show_full_ai_review_button && (
+                                            <div className="ai-review-new-review">
+                                                <button
+                                                    onClick={() =>
+                                                        this.startNewAIReview("full", "katago")
+                                                    }
+                                                >
+                                                    <i className="fa fa-plus" /> KataGo
                                                 </button>
-                                                {((goban.width === 19 && goban.height === 19) || null) &&
-                                                    <button onClick={() => this.startNewAIReview("full", "leela_zero")}>
-                                                        <i className='fa fa-plus' /> Leela Zero
+                                                {((goban.width === 19 && goban.height === 19) ||
+                                                    null) && (
+                                                    <button
+                                                        onClick={() =>
+                                                            this.startNewAIReview(
+                                                                "full",
+                                                                "leela_zero",
+                                                            )
+                                                        }
+                                                    >
+                                                        <i className="fa fa-plus" /> Leela Zero
                                                     </button>
-                                                }
+                                                )}
                                             </div>
-                                        }
+                                        )}
                                     </components.MenuList>
                                 );
                             },
                         }}
                     />
-                }
+                )}
 
-                {this.ai_review.error
-                    ?
+                {this.ai_review.error ? (
                     <React.Fragment>
                         <h3>{_("Error")}</h3>
                         <Errcode message={this.ai_review.error} />
                     </React.Fragment>
-                    :
+                ) : (
                     <React.Fragment>
-                        {((this.ai_review && this.ai_review.win_rates) || null) &&
+                        {((this.ai_review && this.ai_review.win_rates) || null) && (
                             <React.Fragment>
                                 <AIReviewChart
                                     ai_review={this.ai_review}
@@ -1168,94 +1316,142 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                     variation_move_number={variation_move_number}
                                     setmove={this.props.game.nav_goto_move}
                                     use_score={this.state.use_score}
-                                    highlighted_moves={
-                                        worst_move_list
-                                            .slice(0, this.state.worst_moves_shown)
-                                            .map(m => m.move_number - 1)
-                                    }
+                                    highlighted_moves={worst_move_list
+                                        .slice(0, this.state.worst_moves_shown)
+                                        .map((m) => m.move_number - 1)}
                                 />
-                                <div className = "worst-moves-summary-toggle-container">
+                                <div className="worst-moves-summary-toggle-container">
                                     {this.renderWorstMoveList(worst_move_list)}
-                                    {(user.is_moderator || null) &&
-                                        <div className = 'ai-summary-toggler'>
-                                            <span><i className="fa fa-table"></i></span>
+                                    {(user.is_moderator || null) && (
+                                        <div className="ai-summary-toggler">
                                             <span>
-                                                <Toggle checked={this.state.table_hidden} onChange={b => {
-                                                    preferences.set('ai-summary-table-show', b);
-                                                    this.setState({table_hidden: b});
-                                                    //console.log(this.state.table_hidden);
-                                                }}/>
+                                                <i className="fa fa-table"></i>
+                                            </span>
+                                            <span>
+                                                <Toggle
+                                                    checked={this.state.table_hidden}
+                                                    onChange={(b) => {
+                                                        preferences.set("ai-summary-table-show", b);
+                                                        this.setState({ table_hidden: b });
+                                                        //console.log(this.state.table_hidden);
+                                                    }}
+                                                />
                                             </span>
                                         </div>
-                                    }
+                                    )}
                                 </div>
-                                {this.ai_review.scores &&
-                                    <div className='win-score-toggler'>
-                                        <span className='win-toggle' onClick={() => {
-                                            preferences.set('ai-review-use-score', false);
-                                            this.setState({use_score: false});
-                                        }}>{pgettext("Display the win % that the AI estimates", "Win %")}</span>
-
-                                        <span >
-                                            <Toggle checked={this.state.use_score} onChange={b => {
-                                                preferences.set('ai-review-use-score', b);
-                                                this.setState({use_score: b});
-                                            }} />
+                                {this.ai_review.scores && (
+                                    <div className="win-score-toggler">
+                                        <span
+                                            className="win-toggle"
+                                            onClick={() => {
+                                                preferences.set("ai-review-use-score", false);
+                                                this.setState({ use_score: false });
+                                            }}
+                                        >
+                                            {pgettext(
+                                                "Display the win % that the AI estimates",
+                                                "Win %",
+                                            )}
                                         </span>
 
-                                        <span className='score-toggle' onClick={() => {
-                                            preferences.set('ai-review-use-score', true);
-                                            this.setState({use_score: true});
-                                        }}>{pgettext("Display the game score that the AI estimates", "Score")}</span>
+                                        <span>
+                                            <Toggle
+                                                checked={this.state.use_score}
+                                                onChange={(b) => {
+                                                    preferences.set("ai-review-use-score", b);
+                                                    this.setState({ use_score: b });
+                                                }}
+                                            />
+                                        </span>
+
+                                        <span
+                                            className="score-toggle"
+                                            onClick={() => {
+                                                preferences.set("ai-review-use-score", true);
+                                                this.setState({ use_score: true });
+                                            }}
+                                        >
+                                            {pgettext(
+                                                "Display the game score that the AI estimates",
+                                                "Score",
+                                            )}
+                                        </span>
                                     </div>
-                                }
+                                )}
                             </React.Fragment>
-                        }
+                        )}
 
-                        {((this.ai_review?.type === 'fast') || null) &&
-                        <div className='key-moves'>
-                            {show_full_ai_review_button &&
-                                <div>
-                                    <button
-                                        className='primary'
-                                        onClick={() => this.startNewAIReview("full", "katago")}>
-                                        {_("Full AI Review")}
-                                    </button>
-                                </div>
-                            }
-                        </div>}
+                        {(this.ai_review?.type === "fast" || null) && (
+                            <div className="key-moves">
+                                {show_full_ai_review_button && (
+                                    <div>
+                                        <button
+                                            className="primary"
+                                            onClick={() => this.startNewAIReview("full", "katago")}
+                                        >
+                                            {_("Full AI Review")}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </React.Fragment>
-                }
+                )}
 
-                {(!this.ai_review || null) &&
-                    <div className='pending'>
+                {(!this.ai_review || null) && (
+                    <div className="pending">
                         {_("AI review has been queued for processing.")}
-                        <i className='fa fa-desktop slowstrobe'></i>
+                        <i className="fa fa-desktop slowstrobe"></i>
                     </div>
-                }
+                )}
 
-                {null && next_move_pretty_coords && next_move_delta_win_rate !== null &&
-                    <div className='next-move-delta-container'>
-                        <span className={"next-move-coordinates " +
-                            (this.props.game.goban.engine.colorToMove() === "white" ? "white-background" : "black-background")}>
+                {null && next_move_pretty_coords && next_move_delta_win_rate !== null && (
+                    <div className="next-move-delta-container">
+                        <span
+                            className={
+                                "next-move-coordinates " +
+                                (this.props.game.goban.engine.colorToMove() === "white"
+                                    ? "white-background"
+                                    : "black-background")
+                            }
+                        >
                             <i className="ogs-label-triangle"></i> {next_move_pretty_coords}
                         </span>
 
-                        <span className={"next-move-delta " +
-                            (next_move_delta_p <= -0.1 ? 'negative' : (next_move_delta_p >= 0.1 ? 'positive' : ''))}>
-                            {next_move_delta_p <= -0.1 ? <span>&minus;</span> :
-                                (next_move_delta_p >= 0.1 ? <span>&#43;</span> : <span>&nbsp;&nbsp;</span>)
-                            } {Math.abs(next_move_delta_p).toFixed(1)}pp
+                        <span
+                            className={
+                                "next-move-delta " +
+                                (next_move_delta_p <= -0.1
+                                    ? "negative"
+                                    : next_move_delta_p >= 0.1
+                                    ? "positive"
+                                    : "")
+                            }
+                        >
+                            {next_move_delta_p <= -0.1 ? (
+                                <span>&minus;</span>
+                            ) : next_move_delta_p >= 0.1 ? (
+                                <span>&#43;</span>
+                            ) : (
+                                <span>&nbsp;&nbsp;</span>
+                            )}{" "}
+                            {Math.abs(next_move_delta_p).toFixed(1)}pp
                         </span>
                     </div>
-                }
-                { (data.get("user").is_moderator && this.ai_review?.engine === "katago") &&
-                <div>
-                    <AiSummaryTable headinglist = {[_("Type"), _("Black"), "%", _("White"), "%"]} bodylist = {this.table_rows}
-                        avg_loss = {this.avg_score_loss} table_hidden = {this.state.table_hidden} pending_entries = {this.moves_pending}
-                        max_entries = {this.max_entries} />
-                </div>
-                }
+                )}
+                {data.get("user").is_moderator && this.ai_review?.engine === "katago" && (
+                    <div>
+                        <AiSummaryTable
+                            headinglist={[_("Type"), _("Black"), "%", _("White"), "%"]}
+                            bodylist={this.table_rows}
+                            avg_loss={this.avg_score_loss}
+                            table_hidden={this.state.table_hidden}
+                            pending_entries={this.moves_pending}
+                            max_entries={this.max_entries}
+                        />
+                    </div>
+                )}
             </div>
         );
     }
@@ -1270,25 +1466,40 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         /* {pgettext("Moves that were the biggest mistakes, according to the AI", "Key moves")}: */
 
         return (
-            <div className='worst-move-list-container'>
-                <div className='move-list'>
+            <div className="worst-move-list-container">
+                <div className="move-list">
                     {lst.slice(0, this.state.worst_moves_shown).map((de, idx) => {
-                        const pretty_coords = this.props.game.goban.engine.prettyCoords(de.move.x, de.move.y);
+                        const pretty_coords = this.props.game.goban.engine.prettyCoords(
+                            de.move.x,
+                            de.move.y,
+                        );
                         return (
                             <span
                                 key={`${idx}-${de.move_number}`}
-                                className={de.player === JGOFNumericPlayerColor.BLACK ? 'move black-background' : 'move white-background'}
+                                className={
+                                    de.player === JGOFNumericPlayerColor.BLACK
+                                        ? "move black-background"
+                                        : "move white-background"
+                                }
                                 onClick={() => this.props.game.nav_goto_move(de.move_number - 1)}
                             >
                                 {pretty_coords}
                             </span>
                         );
                     })}
-                    {(more_ct > 0 || null) &&
+                    {(more_ct > 0 || null) && (
                         <span>
-                            {interpolate(pgettext("Number of big mistake moves not listed", "+ {{more_ct}} more"), {more_ct})}
+                            {interpolate(
+                                pgettext(
+                                    "Number of big mistake moves not listed",
+                                    "+ {{more_ct}} more",
+                                ),
+                                {
+                                    more_ct,
+                                },
+                            )}
                         </span>
-                    }
+                    )}
                 </div>
             </div>
         );
@@ -1296,13 +1507,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 }
 
 function sanityCheck(ai_review: JGOFAIReview) {
-
-    if (ai_review.moves['0']) {
-        if (ai_review.moves['0'].move.x !== -1) {
-            console.error("AI Review move '0' is not a pass move, was ", ai_review.moves['0'].move);
+    if (ai_review.moves["0"]) {
+        if (ai_review.moves["0"].move.x !== -1) {
+            console.error("AI Review move '0' is not a pass move, was ", ai_review.moves["0"].move);
         }
     }
-    if ((typeof(ai_review.moves) !== "object")) {
+    if (typeof ai_review.moves !== "object") {
         console.error("AI Review moves was not an object", JSON.stringify(ai_review.moves));
     }
 }
@@ -1310,38 +1520,38 @@ function sanityCheck(ai_review: JGOFAIReview) {
 function isEqualMoveIntersection(a: JGOFIntersection, b: JGOFIntersection): boolean {
     return a.x === b.x && a.y === b.y;
 }
-function ReviewStrengthIcon({review}: {review: JGOFAIReview}): JSX.Element {
+function ReviewStrengthIcon({ review }: { review: JGOFAIReview }): JSX.Element {
     let strength: string;
-    let content = '';
-    if (review.type === 'fast') {
-        strength = 'ai-review-fast';
-        content = '';
+    let content = "";
+    if (review.type === "fast") {
+        strength = "ai-review-fast";
+        content = "";
     } else {
         if (review.strength >= 10000) {
-            strength = 'ai-review-strength-4';
-            content = 'IV';
+            strength = "ai-review-strength-4";
+            content = "IV";
         } else if (review.strength >= 1600) {
-            strength = 'ai-review-strength-3';
-            content = 'III';
+            strength = "ai-review-strength-3";
+            content = "III";
         } else if (review.strength >= 800) {
-            strength = 'ai-review-strength-2';
-            content = 'II';
+            strength = "ai-review-strength-2";
+            content = "II";
         } else if (review.strength >= 300) {
-            strength = 'ai-review-strength-1';
-            content = 'I';
+            strength = "ai-review-strength-1";
+            content = "I";
         } else {
-            strength = 'ai-review-strength-0';
-            content = '';
+            strength = "ai-review-strength-0";
+            content = "";
         }
     }
 
-    return <span className={'ai-review-strength-icon ' + strength}>{content}</span>;
+    return <span className={"ai-review-strength-icon " + strength}>{content}</span>;
 }
 function engineName(engine: string) {
     switch (engine) {
-        case 'leela_zero':
+        case "leela_zero":
             return "Leela Zero";
-        case 'katago':
+        case "katago":
             return "KataGo";
     }
     return "AI";
@@ -1349,63 +1559,78 @@ function engineName(engine: string) {
 function extractShortNetworkVersion(network: string): string {
     // the first part of the katago version describes the network size,
     // second/third is hash I think
-    if (network.indexOf('-') > 0) {
+    if (network.indexOf("-") > 0) {
         network = network.match(/[^-]*[-]([^-]*)/)[1];
     }
     return network.substr(0, 6);
 }
 
-class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummaryTableState>{
+class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummaryTableState> {
     constructor(props: AiSummaryTableProperties) {
         super(props);
     }
 
     render(): JSX.Element {
-
-        return(
-            <div className = "ai-summary-container">
-                <table className = "ai-summary-table" style = {{display: this.props.table_hidden ? "block" : "none"}}>
+        return (
+            <div className="ai-summary-container">
+                <table
+                    className="ai-summary-table"
+                    style={{ display: this.props.table_hidden ? "block" : "none" }}
+                >
                     <thead>
                         <tr>
-                            {this.props.headinglist.map( (head, index) => {
+                            {this.props.headinglist.map((head, index) => {
                                 return <th key={index}>{head}</th>;
                             })}
                         </tr>
                     </thead>
                     <tbody>
-                        {this.props.bodylist.map(
-                            (body, bindex) => {
-                                return <tr key = { bindex }>{
-                                    body.map(
-                                        (element, eindex) => {
-                                            return <td key = { eindex } >{element}</td>;
-                                        })
-                                }</tr>;
-                            }
-                        )
-                        }
-                        {(this.props.pending_entries > 0) &&
+                        {this.props.bodylist.map((body, bindex) => {
+                            return (
+                                <tr key={bindex}>
+                                    {body.map((element, eindex) => {
+                                        return <td key={eindex}>{element}</td>;
+                                    })}
+                                </tr>
+                            );
+                        })}
+                        {this.props.pending_entries > 0 && (
                             <React.Fragment>
                                 <tr>
-                                    <td colSpan={2}>{"Moves Pending"}</td><td colSpan={3}>{this.props.pending_entries}</td>
+                                    <td colSpan={2}>{"Moves Pending"}</td>
+                                    <td colSpan={3}>{this.props.pending_entries}</td>
                                 </tr>
-                                <tr><td colSpan={5}><progress value = {this.props.max_entries - this.props.pending_entries}
-                                    max = {this.props.max_entries}></progress></td></tr>
-                            </React.Fragment>}
-                        <tr><td colSpan={5}>{"Average score loss per move"}</td></tr>
-                        <tr><td colSpan={2}>{"Black"}</td><td colSpan={3}>{this.props.avg_loss[0]}</td></tr>
-                        <tr><td colSpan={2}>{"White"}</td><td colSpan={3}>{this.props.avg_loss[1]}</td></tr>
+                                <tr>
+                                    <td colSpan={5}>
+                                        <progress
+                                            value={
+                                                this.props.max_entries - this.props.pending_entries
+                                            }
+                                            max={this.props.max_entries}
+                                        ></progress>
+                                    </td>
+                                </tr>
+                            </React.Fragment>
+                        )}
+                        <tr>
+                            <td colSpan={5}>{"Average score loss per move"}</td>
+                        </tr>
+                        <tr>
+                            <td colSpan={2}>{"Black"}</td>
+                            <td colSpan={3}>{this.props.avg_loss[0]}</td>
+                        </tr>
+                        <tr>
+                            <td colSpan={2}>{"White"}</td>
+                            <td colSpan={3}>{this.props.avg_loss[1]}</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         );
-
     }
-
 }
 
-interface AiSummaryTableState {
-}
+interface AiSummaryTableState {}
 
 interface AiSummaryTableProperties {
     /** headings for ai review table */

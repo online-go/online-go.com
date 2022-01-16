@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,15 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {comm_socket} from "sockets";
-import {TypedEventEmitter} from "TypedEventEmitter";
+import { comm_socket } from "sockets";
+import { TypedEventEmitter } from "TypedEventEmitter";
 import { Batcher } from "batcher";
 
 interface Events {
     "users-online-updated": never;
 }
 
-const listeners: {[id: number]: Array<any>} = {};
+const listeners: { [id: number]: Array<any> } = {};
 const state = {};
 const event_emitter = new TypedEventEmitter<Events>();
 
@@ -58,7 +58,7 @@ comm_socket.on("disconnect", () => {
     event_emitter.emit("users-online-updated");
 });
 
-const subscribe_queue = new Batcher<number>(ids => {
+const subscribe_queue = new Batcher<number>((ids) => {
     comm_socket.send("user/monitor", ids);
 });
 
@@ -91,7 +91,6 @@ function is_player_online(player_id) {
     }
     return false;
 }
-
 
 export default {
     subscribe: subscribe,

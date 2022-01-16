@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,18 +16,18 @@
  */
 
 import * as data from "data";
-import {GoThemes} from "goban";
-import {current_language} from "translate";
+import { GoThemes } from "goban";
+import { current_language } from "translate";
 
 const defaults = {
     "ai-review-enabled": true,
     "ai-review-use-score": false,
-    "ai-summary-table-show":false,
+    "ai-summary-table-show": false,
     "always-disable-analysis": false,
     "asked-to-enable-desktop-notifications": false,
     "auto-advance-after-submit": true,
     "autoplay-delay": 10000,
-    "board-labeling": 'automatic',
+    "board-labeling": "automatic",
     "chat.show-all-global-channels": true,
     "chat.show-all-group-channels": true,
     "chat.show-all-tournament-channels": true,
@@ -47,7 +47,7 @@ const defaults = {
     "hide-ranks": false,
     "label-positioning": "all",
     "label-positioning-puzzles": "all",
-    "language": "auto",
+    language: "auto",
     "move-tree-numbering": "move-number",
     "new-game-board-size": 19,
     "notification-timeout": 10,
@@ -59,7 +59,7 @@ const defaults = {
     "observed-games-force-list": false,
     "one-click-submit-correspondence": false,
     "one-click-submit-live": true,
-    "profanity-filter": {"en": true},
+    "profanity-filter": { en: true },
     "puzzle.randomize.color": true,
     "puzzle.randomize.transform": true,
     "puzzle.zoom": true,
@@ -79,7 +79,7 @@ const defaults = {
     "show-tournament-indicator": true,
     "show-variation-move-numbers": false,
 
-    "sound-voice-countdown-main" : false,
+    "sound-voice-countdown-main": false,
     "sound-voice-countdown": true,
 
     "sound.volume.master": 1.0,
@@ -113,8 +113,7 @@ const defaults = {
     "table-color-default-on": false,
 };
 
-defaults['profanity-filter'][current_language] = true;
-
+defaults["profanity-filter"][current_language] = true;
 
 for (const k in defaults) {
     data.setDefault(`preferences.${k}`, defaults[k]);
@@ -125,7 +124,9 @@ export type ValidPreference = keyof typeof defaults;
 export function get(key: ValidPreference): any {
     if (!(key in defaults)) {
         if ((key as string) === "sound-volume") {
-            console.error("You have an extension installed that is not using the newer sound system, volume will not be controllable");
+            console.error(
+                "You have an extension installed that is not using the newer sound system, volume will not be controllable",
+            );
             return 1.0;
         }
 
@@ -136,7 +137,12 @@ export function get(key: ValidPreference): any {
 export function set(key: string, value: any, replication?: data.Replication): any {
     return data.set(`preferences.${key}`, value, replication);
 }
-export function watch(key: string, cb: (d: any) => void, call_on_undefined?: boolean, dont_call_immediately?: boolean): void {
+export function watch(
+    key: string,
+    cb: (d: any) => void,
+    call_on_undefined?: boolean,
+    dont_call_immediately?: boolean,
+): void {
     data.watch(`preferences.${key}`, cb, call_on_undefined, dont_call_immediately);
 }
 export function unwatch(key: string, cb: (d: any) => void): void {
@@ -147,22 +153,28 @@ export function dump(): void {
     data.dump("preferences.", true);
 }
 
-export function getSelectedThemes(): {"board": string; "black": string; "white": string} {
+export function getSelectedThemes(): { board: string; black: string; white: string } {
     //let default_plain = $.browser.mobile || ($(window).width() * (window.devicePixelRatio || 1)) <= 768;
-    const default_plain = ($(window).width() * (window.devicePixelRatio || 1)) <= 768;
+    const default_plain = $(window).width() * (window.devicePixelRatio || 1) <= 768;
 
     let board = get("goban-theme-board") || (default_plain ? "Plain" : "Kaya");
     let white = get("goban-theme-white") || (default_plain ? "Plain" : "Shell");
     let black = get("goban-theme-black") || (default_plain ? "Plain" : "Slate");
 
-    if (!(board in GoThemes["board"])) { board = default_plain ? "Plain" : "Kaya"; }
-    if (!(white in GoThemes["white"])) { white = default_plain ? "Plain" : "Shell"; }
-    if (!(black in GoThemes["black"])) { black = default_plain ? "Plain" : "Slate"; }
+    if (!(board in GoThemes["board"])) {
+        board = default_plain ? "Plain" : "Kaya";
+    }
+    if (!(white in GoThemes["white"])) {
+        white = default_plain ? "Plain" : "Shell";
+    }
+    if (!(black in GoThemes["black"])) {
+        black = default_plain ? "Plain" : "Slate";
+    }
 
     return {
-        "board": board,
-        "white": white,
-        "black": black
+        board: board,
+        white: white,
+        black: black,
     };
 }
 
@@ -184,6 +196,6 @@ export function watchSelectedThemes(cb) {
             unwatch("goban-theme-board", call_cb);
             unwatch("goban-theme-black", call_cb);
             unwatch("goban-theme-white", call_cb);
-        }
+        },
     };
 }

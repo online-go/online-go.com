@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,8 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {deepCompare} from "misc";
-
+import { deepCompare } from "misc";
 
 export function api1ify(path) {
     if (path.indexOf("/api/v") === 0) {
@@ -42,7 +41,7 @@ function initialize() {
     initialized = true;
 
     function csrfSafeMethod(method) {
-        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        return /^(GET|HEAD|OPTIONS|TRACE)$/.test(method);
     }
     $.ajaxSetup({
         crossDomain: false, // obviates need for sameOrigin test
@@ -50,10 +49,9 @@ function initialize() {
             if (!csrfSafeMethod(settings.type)) {
                 xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
             }
-        }
+        },
     });
 }
-
 
 interface Request {
     promise?: Promise<any>;
@@ -63,9 +61,9 @@ interface Request {
     request?: JQueryXHR;
 }
 
-const requests_in_flight: {[id: string]: Request} = {};
+const requests_in_flight: { [id: string]: Request } = {};
 let last_request_id = 0;
-type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface RequestFunction {
     (url: string): Promise<any>;
@@ -103,12 +101,20 @@ export function request(method: Method): RequestFunction {
             console.trace();
         }
 
-        const real_url: string = ((typeof(id) === "number" && isFinite(id)) || (typeof(id) === 'string')) ? url.replace("%%", id.toString()) : url;
+        const real_url: string =
+            (typeof id === "number" && isFinite(id)) || typeof id === "string"
+                ? url.replace("%%", id.toString())
+                : url;
         const real_data = data;
 
         for (const req_id in requests_in_flight) {
             const req = requests_in_flight[req_id];
-            if (req.promise && (req.url === real_url) && (method === req.type) && deepCompare(req.data, real_data)) {
+            if (
+                req.promise &&
+                req.url === real_url &&
+                method === req.type &&
+                deepCompare(req.data, real_data)
+            ) {
                 //console.log("Duplicate in flight request, chaining");
                 return req.promise;
             }
@@ -123,7 +129,6 @@ export function request(method: Method): RequestFunction {
             data: real_data,
         };
 
-
         requests_in_flight[request_id].promise = new Promise((resolve, reject) => {
             const opts: JQueryAjaxSettings = {
                 url: api1ify(real_url),
@@ -137,20 +142,24 @@ export function request(method: Method): RequestFunction {
                 },
                 error: (err) => {
                     delete requests_in_flight[request_id];
-                    if (err.status !== 0) { /* Ignore aborts */
+                    if (err.status !== 0) {
+                        /* Ignore aborts */
                         console.warn(api1ify(real_url), err.status, err.statusText);
                         console.warn(traceback.stack);
                     }
                     reject(err);
-                }
+                },
             };
             if (real_data) {
-                if ((real_data instanceof Blob) || (Array.isArray(real_data) && real_data[0] instanceof Blob)) {
+                if (
+                    real_data instanceof Blob ||
+                    (Array.isArray(real_data) && real_data[0] instanceof Blob)
+                ) {
                     opts.data = new FormData();
                     if (real_data instanceof Blob) {
                         opts.data.append("file", real_data);
                     } else {
-                        for (const file of (real_data as Array<Blob>)) {
+                        for (const file of real_data as Array<Blob>) {
                             opts.data.append("file", file);
                         }
                     }
@@ -178,7 +187,7 @@ export function getCookie(name) {
         const cookies = document.cookie.split(";");
         for (let i = 0; i < cookies.length; i++) {
             const cookie = jQuery.trim(cookies[i]);
-            if (cookie.substring(0, name.length + 1) === (name + "=")) {
+            if (cookie.substring(0, name.length + 1) === name + "=") {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
             }
@@ -196,7 +205,7 @@ export const del = request("DELETE");
 export function abort_requests_in_flight(url, method?: Method) {
     for (const id in requests_in_flight) {
         const req = requests_in_flight[id];
-        if ((req.url === url) && (!method || method === req.type)) {
+        if (req.url === url && (!method || method === req.type)) {
             req.request.abort();
         }
     }

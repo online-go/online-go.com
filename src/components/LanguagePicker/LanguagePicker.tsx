@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,15 +16,13 @@
  */
 
 import * as React from "react";
-import {_, setCurrentLanguage, current_language, languages} from "translate";
-import {Modal, openModal} from "Modal";
+import { _, setCurrentLanguage, current_language, languages } from "translate";
+import { Modal, openModal } from "Modal";
 import * as preferences from "preferences";
 
-interface Events {
-}
+interface Events {}
 
-interface LanguagePickerProperties {
-}
+interface LanguagePickerProperties {}
 
 let language_modal = null;
 
@@ -34,16 +32,24 @@ function openLanguageModal() {
 }
 
 function language_sorter(a, b) {
-    if (a === "auto") { return -1; }
-    if (b === "auto") { return 1; }
-    if (languages[a] < languages[b]) { return -1; }
-    if (languages[a] > languages[b]) { return 1; }
+    if (a === "auto") {
+        return -1;
+    }
+    if (b === "auto") {
+        return 1;
+    }
+    if (languages[a] < languages[b]) {
+        return -1;
+    }
+    if (languages[a] > languages[b]) {
+        return 1;
+    }
     return 0;
 }
 
 export const LanguagePicker = (props: LanguagePickerProperties) => (
     <span className="LanguagePicker fakelink" onClick={openLanguageModal}>
-        <i className="fa fa-language"/>
+        <i className="fa fa-language" />
         {languages[current_language]}
     </span>
 );
@@ -52,7 +58,7 @@ class LanguagePickerModal extends Modal<Events, LanguagePickerProperties, any> {
     constructor(props) {
         super(props);
         this.state = {
-            selected_language: current_language
+            selected_language: current_language,
         };
     }
 
@@ -84,12 +90,17 @@ class LanguagePickerModal extends Modal<Events, LanguagePickerProperties, any> {
         return (
             <div className="Modal LanguagePickerModal">
                 <div className="body">
-                    {
-                        Object.keys(languages).sort(language_sorter).map((lc, idx) => (
-                            <span key={idx} className={computeClass(lc) + " fakelink language-option"}
-                                onClick={() => this.setLanguage(lc)}>{languages[lc]}</span>
-                        ))
-                    }
+                    {Object.keys(languages)
+                        .sort(language_sorter)
+                        .map((lc, idx) => (
+                            <span
+                                key={idx}
+                                className={computeClass(lc) + " fakelink language-option"}
+                                onClick={() => this.setLanguage(lc)}
+                            >
+                                {languages[lc]}
+                            </span>
+                        ))}
                 </div>
                 <div className="footer">
                     <button onClick={this.close}>{_("Cancel")}</button>

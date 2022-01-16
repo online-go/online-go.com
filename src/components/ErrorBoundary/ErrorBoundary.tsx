@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,10 +16,9 @@
  */
 
 import * as React from "react";
-import * as data from 'data';
-import { _ } from 'translate';
-import * as Sentry from '@sentry/browser';
-
+import * as data from "data";
+import { _ } from "translate";
+import * as Sentry from "@sentry/browser";
 
 declare let ogs_current_language;
 declare let ogs_version;
@@ -31,7 +30,7 @@ export class ErrorBoundary extends React.Component<{}, any> {
             hasError: false,
             error: null,
             info: null,
-            eventId: null
+            eventId: null,
         };
     }
 
@@ -50,13 +49,13 @@ export class ErrorBoundary extends React.Component<{}, any> {
         }
 
         try {
-            const user = data.get('user') || {id:0, username: 'guest'};
+            const user = data.get("user") || { id: 0, username: "guest" };
 
-            Sentry.withScope(scope => {
+            Sentry.withScope((scope) => {
                 try {
                     scope.setUser({
-                        'id': data.get('user').id,
-                        'username': data.get('user').username,
+                        id: data.get("user").id,
+                        username: data.get("user").username,
                     });
                 } catch (e) {
                     console.error(e);
@@ -67,10 +66,9 @@ export class ErrorBoundary extends React.Component<{}, any> {
                     }
                 }
 
-
                 scope.setExtras(info);
                 const eventId = Sentry.captureException(error);
-                this.setState({eventId});
+                this.setState({ eventId });
             });
         } catch (e) {
             console.error(e);
@@ -80,12 +78,17 @@ export class ErrorBoundary extends React.Component<{}, any> {
     render() {
         if (this.state.hasError) {
             return (
-                <div className='ErrorBoundary'  onClick={() => Sentry.showReportDialog({eventId: this.state.eventId})}>
+                <div
+                    className="ErrorBoundary"
+                    onClick={() => Sentry.showReportDialog({ eventId: this.state.eventId })}
+                >
                     <h3>{_("Congratulations, you found a bug!")}</h3>
                     <div>
-                        {_("Our team has been notified of the bug, however if you have more details you'd like to provide, please click here to fill out a report.")}
+                        {_(
+                            "Our team has been notified of the bug, however if you have more details you'd like to provide, please click here to fill out a report.",
+                        )}
                     </div>
-                    <hr/>
+                    <hr />
                     <h5>{this.state.error.message}</h5>
                     <pre>{this.state.info.componentStack}</pre>
                 </div>
@@ -95,9 +98,9 @@ export class ErrorBoundary extends React.Component<{}, any> {
     }
 }
 
-window['test_sentry'] = () => {
+window["test_sentry"] = () => {
     try {
-        throw new Error('SENTRY TEST');
+        throw new Error("SENTRY TEST");
     } catch (e) {
         console.log(Sentry.captureException(e));
     }

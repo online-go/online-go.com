@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,13 +16,13 @@
  */
 
 import * as React from "react";
-import {Link} from "react-router-dom";
-import {GoMath, PuzzleConfig} from 'goban';
-import {sfx} from 'sfx';
-import {InstructionalGoban} from "./InstructionalGoban";
-import {browserHistory} from "ogsHistory";
-import {setSectionPageCompleted, getSectionPageCompleted} from './util';
-import {_} from "translate";
+import { Link } from "react-router-dom";
+import { GoMath, PuzzleConfig } from "goban";
+import { sfx } from "sfx";
+import { InstructionalGoban } from "./InstructionalGoban";
+import { browserHistory } from "ogsHistory";
+import { setSectionPageCompleted, getSectionPageCompleted } from "./util";
+import { _ } from "translate";
 
 interface LearningPageProperties {
     title: string;
@@ -39,30 +39,34 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
     wrong_answer_triggered: boolean = false;
     error_triggered: boolean = false;
 
-    static underConstruction(): boolean { return false; }
+    static underConstruction(): boolean {
+        return false;
+    }
 
     constructor(props) {
         super(props);
-        this._config = Object.assign({
-            width: 9,
-            height: 9,
-            onCorrectAnswer: this.onCorrectAnswer,
-            onWrongAnswer: this.onWrongAnswer,
-            onError: this.onError,
-            puzzle_opponent_move_mode: 'automatic',
-            puzzle_player_move_mode: 'free',
-            players: {
-                black: {
-                    username: "black",
-                    id: 0,
+        this._config = Object.assign(
+            {
+                width: 9,
+                height: 9,
+                onCorrectAnswer: this.onCorrectAnswer,
+                onWrongAnswer: this.onWrongAnswer,
+                onError: this.onError,
+                puzzle_opponent_move_mode: "automatic",
+                puzzle_player_move_mode: "free",
+                players: {
+                    black: {
+                        username: "black",
+                        id: 0,
+                    },
+                    white: {
+                        username: "white",
+                        id: 0,
+                    },
                 },
-                white: {
-                    username: "white",
-                    id: 0,
-                }
             },
-
-        }, this.config());
+            this.config(),
+        );
         // State appears to be unused.
         // TODO: remove this and instances of SetState
         this.state = {
@@ -78,9 +82,11 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         this.wrong_answer_triggered = false;
 
         if (this.props.curpage + 1 < this.props.npages) {
-            browserHistory.push(window.location.pathname.replace(/\/[0-9]+/, '') + '/' + (this.props.curpage + 1));
+            browserHistory.push(
+                window.location.pathname.replace(/\/[0-9]+/, "") + "/" + (this.props.curpage + 1),
+            );
         } else {
-            browserHistory.push('/learn-to-play-go/' + this.props.nextSection);
+            browserHistory.push("/learn-to-play-go/" + this.props.nextSection);
         }
     };
     reset = () => {
@@ -92,7 +98,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
     };
 
     componentDidMount() {
-        this.setState({show_next: this.complete()});
+        this.setState({ show_next: this.complete() });
         //sfx.play("tutorial-ping");
     }
     showReset(): boolean {
@@ -138,7 +144,12 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         //this.forceUpdate();
     };
 
-    makePuzzleMoveTree(_correct: Array<string>, _wrong: Array<string>, width: number = 9, height: number = 9) {
+    makePuzzleMoveTree(
+        _correct: Array<string>,
+        _wrong: Array<string>,
+        width: number = 9,
+        height: number = 9,
+    ) {
         const correct: Array<any> = [];
         const wrong: Array<any> = [];
         for (const s of _correct) {
@@ -179,11 +190,11 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         }
 
         for (const arr of correct) {
-            walk(ret, arr, (node) => node.correct_answer = true);
+            walk(ret, arr, (node) => (node.correct_answer = true));
         }
 
         for (const arr of wrong) {
-            walk(ret, arr, (node) => node.wrong_answer = true);
+            walk(ret, arr, (node) => (node.wrong_answer = true));
         }
 
         return ret;
@@ -191,7 +202,9 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
 
     abstract text();
     abstract config(): PuzzleConfig;
-    button(): any { return null; }
+    button(): any {
+        return null;
+    }
     complete(): boolean {
         return false;
     }
@@ -202,10 +215,10 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
     setGobanRef = (r) => {
         this.instructional_goban = r;
         if (this.instructional_goban) {
-            this.instructional_goban.goban.on('set-for-removal', () => {
+            this.instructional_goban.goban.on("set-for-removal", () => {
                 this.onStoneRemoval(this.instructional_goban.goban.engine.getStoneRemovalString());
             });
-            window['global_goban'] = r.goban;
+            window["global_goban"] = r.goban;
         }
     };
 
@@ -217,11 +230,21 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         const links = [];
         for (let i = 0; i < this.props.npages; ++i) {
             if (i === this.props.curpage) {
-                links.push(<span key={i} onClick={this.reset} className='page active'>{i + 1}</span>);
+                links.push(
+                    <span key={i} onClick={this.reset} className="page active">
+                        {i + 1}
+                    </span>,
+                );
             } else {
-                links.push(<Link key={i} to={this.pagehref(i)} className='page'>
-                    {getSectionPageCompleted(this.props.section, i) ? <i className='fa fa-star' /> : <span>{i + 1}</span>}
-                </Link>);
+                links.push(
+                    <Link key={i} to={this.pagehref(i)} className="page">
+                        {getSectionPageCompleted(this.props.section, i) ? (
+                            <i className="fa fa-star" />
+                        ) : (
+                            <span>{i + 1}</span>
+                        )}
+                    </Link>,
+                );
             }
         }
 
@@ -229,41 +252,41 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         const fail: boolean = this.error_triggered || this.wrong_answer_triggered || this.failed();
 
         return (
-            <div className='LearningPage'>
+            <div className="LearningPage">
                 <InstructionalGoban
                     ref={this.setGobanRef}
                     config={this._config}
                     onUpdate={this.onUpdate}
                 />
 
-                <div className='LearningPage-pages'>
-                    <div className='header'>
+                <div className="LearningPage-pages">
+                    <div className="header">
                         <h1>{this.props.title}</h1>
                     </div>
 
-                    <div className='text'>
-                        {!correct && fail &&
-                                <div className='failed'>
-                                    <h1>{ _("Puzzle failed!") }</h1>
-                                    <button className='reject' onClick={this.reset} >Retry</button>
-                                </div>
-                        }
-                        {correct &&
-                                <div className='complete'>
-                                    <h1>{ _("Great job!") }</h1>
-                                </div>
-                        }
-                        {!correct && !fail &&
-                                <div>
-                                    {this.text()}
-                                    {this.button()}
-                                </div>
-                        }
+                    <div className="text">
+                        {!correct && fail && (
+                            <div className="failed">
+                                <h1>{_("Puzzle failed!")}</h1>
+                                <button className="reject" onClick={this.reset}>
+                                    Retry
+                                </button>
+                            </div>
+                        )}
+                        {correct && (
+                            <div className="complete">
+                                <h1>{_("Great job!")}</h1>
+                            </div>
+                        )}
+                        {!correct && !fail && (
+                            <div>
+                                {this.text()}
+                                {this.button()}
+                            </div>
+                        )}
                     </div>
 
-                    <div className='pages'>
-                        {links}
-                    </div>
+                    <div className="pages">{links}</div>
                 </div>
             </div>
         );
@@ -284,19 +307,22 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
     }
 }
 
-
 export class DummyPage extends LearningPage {
-    constructor(props) { super(props); }
-    static underConstruction(): boolean { return true; }
+    constructor(props) {
+        super(props);
+    }
+    static underConstruction(): boolean {
+        return true;
+    }
     text() {
         return "Dummy page";
     }
     config(): PuzzleConfig {
         return {
-            'initial_state': {
-                'black': 'd5e6f5',
-                'white': 'e5'
-            }
+            initial_state: {
+                black: "d5e6f5",
+                white: "e5",
+            },
         };
     }
     complete() {

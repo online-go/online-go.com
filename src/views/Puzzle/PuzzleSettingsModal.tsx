@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,14 +17,14 @@
 
 import * as React from "react";
 import * as preferences from "preferences";
-import {_} from "translate";
+import { _ } from "translate";
 
 interface PuzzleSettingsModalState {
     randomize_transform: boolean;
     randomize_color: boolean;
 }
 
-export class PuzzleSettingsModal extends React.PureComponent<{},  PuzzleSettingsModalState> {
+export class PuzzleSettingsModal extends React.PureComponent<{}, PuzzleSettingsModalState> {
     constructor(props) {
         super(props);
         this.state = {
@@ -35,22 +35,32 @@ export class PuzzleSettingsModal extends React.PureComponent<{},  PuzzleSettings
 
     toggleTransform = () => {
         preferences.set("puzzle.randomize.transform", !this.state.randomize_transform);
-        this.setState({randomize_transform: !this.state.randomize_transform});
+        this.setState({ randomize_transform: !this.state.randomize_transform });
     };
     toggleColor = () => {
         preferences.set("puzzle.randomize.color", !this.state.randomize_color);
-        this.setState({randomize_color: !this.state.randomize_color});
+        this.setState({ randomize_color: !this.state.randomize_color });
     };
     render() {
         return (
             <div className="PuzzleSettingsModal">
                 <div className="details">
                     <div className="option">
-                        <input id="transform" type="checkbox" checked={this.state.randomize_transform} onChange={this.toggleTransform} />
+                        <input
+                            id="transform"
+                            type="checkbox"
+                            checked={this.state.randomize_transform}
+                            onChange={this.toggleTransform}
+                        />
                         <label htmlFor="transform">{_("Randomly transform puzzles")}</label>
                     </div>
                     <div className="option">
-                        <input id="color" type="checkbox" checked={this.state.randomize_color}  onChange={this.toggleColor} />
+                        <input
+                            id="color"
+                            type="checkbox"
+                            checked={this.state.randomize_color}
+                            onChange={this.toggleColor}
+                        />
                         <label htmlFor="color">{_("Randomize colors")}</label>
                     </div>
                 </div>

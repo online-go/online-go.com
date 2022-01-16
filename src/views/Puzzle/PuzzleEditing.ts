@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,30 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-    GobanCanvasConfig,
-    GoMath,
-    PuzzleConfig,
-    PuzzlePlacementSetting,
-} from "goban";
-import {errorAlerter, dup} from "misc";
-import {PuzzleTransform} from './PuzzleTransform';
-import {Puzzle} from './Puzzle';
+import { GobanCanvasConfig, GoMath, PuzzleConfig, PuzzlePlacementSetting } from "goban";
+import { errorAlerter, dup } from "misc";
+import { PuzzleTransform } from "./PuzzleTransform";
+import { Puzzle } from "./Puzzle";
 import * as data from "data";
-import {abort_requests_in_flight, post, get} from "requests";
+import { abort_requests_in_flight, post, get } from "requests";
 import * as preferences from "preferences";
-
 
 export class PuzzleEditor {
     orig_puzzle_config: PuzzleConfig = null;
     puzzle_config: PuzzleConfig = null;
     puzzle: Puzzle;
-    transform: PuzzleTransform ;
+    transform: PuzzleTransform;
 
-    constructor(
-        puzzle: Puzzle,
-        transform: PuzzleTransform
-    ) {
+    constructor(puzzle: Puzzle, transform: PuzzleTransform) {
         this.puzzle = puzzle;
         this.transform = transform;
     }
@@ -71,36 +62,36 @@ export class PuzzleEditor {
             }
 
             obj = Object.assign(obj, {
-                "id": 242,
-                "owner": data.get("user"),
-                "name": "",
-                "created": "",
-                "modified": "",
-                "puzzle": {
-                    "puzzle_player_move_mode": "free",
-                    "puzzle_rank": "18",
-                    "name": "",
+                id: 242,
+                owner: data.get("user"),
+                name: "",
+                created: "",
+                modified: "",
+                puzzle: {
+                    puzzle_player_move_mode: "free",
+                    puzzle_rank: "18",
+                    name: "",
                     //"move_tree": { },
-                    "initial_player": "black",
-                    "puzzle_opponent_move_mode": "automatic",
-                    "height": 19,
-                    "width": 19,
-                    "mode": "puzzle",
-                    "puzzle_collection": collection_id,
-                    "puzzle_type": "life_and_death",
-                    "initial_state": {
-                        "white": "",
-                        "black": ""
+                    initial_player: "black",
+                    puzzle_opponent_move_mode: "automatic",
+                    height: 19,
+                    width: 19,
+                    mode: "puzzle",
+                    puzzle_collection: collection_id,
+                    puzzle_type: "life_and_death",
+                    initial_state: {
+                        white: "",
+                        black: "",
                     },
-                    "puzzle_description": ""
+                    puzzle_description: "",
                 },
-                "private": false,
-                "width": 19,
-                "height": 19,
-                "type": "life_and_death",
-                "has_solution": false,
-                "rank": 18,
-                "collection": { },
+                private: false,
+                width: 19,
+                height: 19,
+                type: "life_and_death",
+                has_solution: false,
+                rank: 18,
+                collection: {},
             });
             this.orig_puzzle_config = obj.puzzle;
             obj.puzzle_collection_summary = [];
@@ -117,18 +108,20 @@ export class PuzzleEditor {
     createPuzzleCollection(puzzle: any, name: string): Promise<any> {
         let postResult;
         return post("puzzles/collections/", {
-            "name": name,
-            "private": false,
-            "price": "0.00",
-        }).then((res) => {
-            postResult = res;
-            return get("puzzles/collections/", {page_size: 100, owner: data.get("user").id});
-        }).then((collections) => {
-            return {
-                puzzle: Object.assign({}, puzzle, {puzzle_collection: postResult.id}),
-                puzzle_collections: collections.results
-            };
-        });
+            name: name,
+            private: false,
+            price: "0.00",
+        })
+            .then((res) => {
+                postResult = res;
+                return get("puzzles/collections/", { page_size: 100, owner: data.get("user").id });
+            })
+            .then((collections) => {
+                return {
+                    puzzle: Object.assign({}, puzzle, { puzzle_collection: postResult.id }),
+                    puzzle_collections: collections.results,
+                };
+            });
     }
 
     /**
@@ -139,17 +132,17 @@ export class PuzzleEditor {
     fetchPuzzle(puzzle_id: number, callback: (state: any, editing: boolean) => void) {
         abort_requests_in_flight(`puzzles/`, "GET");
         if (isNaN(puzzle_id)) {
-            get("puzzles/collections/", {page_size: 100, owner: data.get("user").id})
-            .then((collections) => {
-                callback(
-                    Object.assign(
-                        { puzzle_collections: collections.results },
-                        this.editPuzzle(true)
-                    ),
-                    true
-                );
-            })
-            .catch(errorAlerter);
+            get("puzzles/collections/", { page_size: 100, owner: data.get("user").id })
+                .then((collections) => {
+                    callback(
+                        Object.assign(
+                            { puzzle_collections: collections.results },
+                            this.editPuzzle(true),
+                        ),
+                        true,
+                    );
+                })
+                .catch(errorAlerter);
             return;
         }
 
@@ -158,45 +151,58 @@ export class PuzzleEditor {
             get("puzzles/%%/collection_summary", puzzle_id),
             get("puzzles/%%/rate", puzzle_id),
         ])
-        .then((arr) => {
-            const rating = arr[2];
-            const puzzle = arr[0].puzzle;
-            const collection = arr[0].collection;
+            .then((arr) => {
+                const rating = arr[2];
+                const puzzle = arr[0].puzzle;
+                const collection = arr[0].collection;
 
-            let randomize_transform = preferences.get("puzzle.randomize.transform"); /* only randomize when we are getting a new puzzle */
-            let randomize_color = preferences.get("puzzle.randomize.color"); /* only randomize when we are getting a new puzzle */
+                let randomize_transform = preferences.get(
+                    "puzzle.randomize.transform",
+                ); /* only randomize when we are getting a new puzzle */
+                let randomize_color =
+                    preferences.get(
+                        "puzzle.randomize.color",
+                    ); /* only randomize when we are getting a new puzzle */
 
-            randomize_transform &= collection.position_transform_enabled;
-            randomize_color &= collection.color_transform_enabled;
+                randomize_transform &= collection.position_transform_enabled;
+                randomize_color &= collection.color_transform_enabled;
 
-            this.transform.settings.zoom = preferences.get("puzzle.zoom");
+                this.transform.settings.zoom = preferences.get("puzzle.zoom");
 
-            this.transform.settings.transform_color = randomize_color && Math.random() > 0.5;
-            this.transform.settings.transform_h = randomize_transform && Math.random() > 0.5;
-            this.transform.settings.transform_v = randomize_transform && Math.random() > 0.5;
-            this.transform.settings.transform_x = randomize_transform && Math.random() > 0.5;
+                this.transform.settings.transform_color = randomize_color && Math.random() > 0.5;
+                this.transform.settings.transform_h = randomize_transform && Math.random() > 0.5;
+                this.transform.settings.transform_v = randomize_transform && Math.random() > 0.5;
+                this.transform.settings.transform_x = randomize_transform && Math.random() > 0.5;
 
-            const new_state = Object.assign({
-                puzzle_collection_summary: arr[1],
-                loaded: true,
-                my_rating: rating.rating,
-                rated: !("error" in rating),
-                zoom: this.transform.settings.zoom,
-                collection: collection,
-                transform_color: this.transform.settings.transform_color,
-                transform_h: this.transform.settings.transform_h,
-                transform_v: this.transform.settings.transform_v,
-                transform_x: this.transform.settings.transform_x,
-            }, arr[0]);
+                const new_state = Object.assign(
+                    {
+                        puzzle_collection_summary: arr[1],
+                        loaded: true,
+                        my_rating: rating.rating,
+                        rated: !("error" in rating),
+                        zoom: this.transform.settings.zoom,
+                        collection: collection,
+                        transform_color: this.transform.settings.transform_color,
+                        transform_h: this.transform.settings.transform_h,
+                        transform_v: this.transform.settings.transform_v,
+                        transform_x: this.transform.settings.transform_x,
+                    },
+                    arr[0],
+                );
 
-            this.orig_puzzle_config = puzzle;
+                this.orig_puzzle_config = puzzle;
 
-            const bounds = this.getBounds(puzzle, puzzle.width, puzzle.height);
-            new_state.zoomable = bounds && (bounds.left > 0 || bounds.top > 0 || bounds.right < puzzle.width - 1 || bounds.bottom < puzzle.height - 1);
+                const bounds = this.getBounds(puzzle, puzzle.width, puzzle.height);
+                new_state.zoomable =
+                    bounds &&
+                    (bounds.left > 0 ||
+                        bounds.top > 0 ||
+                        bounds.right < puzzle.width - 1 ||
+                        bounds.bottom < puzzle.height - 1);
 
-            callback(new_state, false);
-        })
-        .catch(errorAlerter);
+                callback(new_state, false);
+            })
+            .catch(errorAlerter);
     }
 
     /**
@@ -205,8 +211,12 @@ export class PuzzleEditor {
      * @param editing True if it is editing
      * @return Goban options
      */
-    reset(goban_div: HTMLDivElement, editing: boolean, replacementSettingsFunction: () => PuzzlePlacementSetting): GobanCanvasConfig {
-        const puzzle = this.puzzle_config = dup(this.orig_puzzle_config);
+    reset(
+        goban_div: HTMLDivElement,
+        editing: boolean,
+        replacementSettingsFunction: () => PuzzlePlacementSetting,
+    ): GobanCanvasConfig {
+        const puzzle = (this.puzzle_config = dup(this.orig_puzzle_config));
 
         if (!puzzle) {
             throw new Error("No puzzle loaded");
@@ -215,7 +225,9 @@ export class PuzzleEditor {
         if (!editing) {
             this.transform.transformPuzzle(puzzle);
         }
-        let bounds = this.transform.settings.zoom ? this.getBounds(puzzle, puzzle.width, puzzle.height) : null;
+        let bounds = this.transform.settings.zoom
+            ? this.getBounds(puzzle, puzzle.width, puzzle.height)
+            : null;
         if (editing) {
             bounds = null;
         }
@@ -226,20 +238,24 @@ export class PuzzleEditor {
             goban_div.removeChild(goban_div.firstChild);
         }
 
-        const opts: GobanCanvasConfig = Object.assign({
-            "board_div": goban_div,
-            "interactive": true,
-            "mode": "puzzle" as const,
-            "draw_top_labels": (label_position === "all" || label_position.indexOf("top") >= 0),
-            "draw_left_labels": (label_position === "all" || label_position.indexOf("left") >= 0),
-            "draw_right_labels": (label_position === "all" || label_position.indexOf("right") >= 0),
-            "draw_bottom_labels": (label_position === "all" || label_position.indexOf("bottom") >= 0),
-            "getPuzzlePlacementSetting": () => ({ "mode": "play" as const}),
-            "bounds": bounds,
-            "player_id": 0,
-            "server_socket": null,
-            "square_size": 4
-        }, puzzle);
+        const opts: GobanCanvasConfig = Object.assign(
+            {
+                board_div: goban_div,
+                interactive: true,
+                mode: "puzzle" as const,
+                draw_top_labels: label_position === "all" || label_position.indexOf("top") >= 0,
+                draw_left_labels: label_position === "all" || label_position.indexOf("left") >= 0,
+                draw_right_labels: label_position === "all" || label_position.indexOf("right") >= 0,
+                draw_bottom_labels:
+                    label_position === "all" || label_position.indexOf("bottom") >= 0,
+                getPuzzlePlacementSetting: () => ({ mode: "play" as const }),
+                bounds: bounds,
+                player_id: 0,
+                server_socket: null,
+                square_size: 4,
+            },
+            puzzle,
+        );
 
         if (editing) {
             opts.getPuzzlePlacementSetting = replacementSettingsFunction;
@@ -256,7 +272,6 @@ export class PuzzleEditor {
 
         return opts;
     }
-
 
     getBounds(puzzle: PuzzleConfig, width: number, height: number) {
         const ret = {
@@ -275,9 +290,9 @@ export class PuzzleEditor {
             }
 
             if (pos.x >= 0) {
-                ret.left   = Math.min(pos.x, ret.left);
-                ret.right  = Math.max(pos.x, ret.right);
-                ret.top    = Math.min(pos.y, ret.top);
+                ret.left = Math.min(pos.x, ret.left);
+                ret.right = Math.max(pos.x, ret.right);
+                ret.top = Math.min(pos.y, ret.top);
                 ret.bottom = Math.max(pos.y, ret.bottom);
             }
 
@@ -322,6 +337,4 @@ export class PuzzleEditor {
 
         return ret;
     }
-
-
 }

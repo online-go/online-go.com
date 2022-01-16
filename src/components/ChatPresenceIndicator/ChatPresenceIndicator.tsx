@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,8 +17,7 @@
 
 import * as React from "react";
 import { _ } from "translate";
-import {chat_manager, ChatChannelProxy} from "chat_manager";
-
+import { chat_manager, ChatChannelProxy } from "chat_manager";
 
 interface ChatPresenceIndicatorProperties {
     channel: string;
@@ -29,7 +28,10 @@ interface ChatPresenceIndicatorState {
     online: boolean;
 }
 
-export class ChatPresenceIndicator extends React.PureComponent<ChatPresenceIndicatorProperties, ChatPresenceIndicatorState> {
+export class ChatPresenceIndicator extends React.PureComponent<
+    ChatPresenceIndicatorProperties,
+    ChatPresenceIndicatorState
+> {
     proxy: ChatChannelProxy;
 
     constructor(props) {
@@ -66,15 +68,18 @@ export class ChatPresenceIndicator extends React.PureComponent<ChatPresenceIndic
     update = (user_id) => {
         const online = user_id in this.proxy.channel.user_list;
         if (this.state.online !== online) {
-            this.setState({online: online});
+            this.setState({ online: online });
         }
-
     };
 
     render() {
         return (
-            <i className={`ChatPresenceIndicator ${this.state.online ? "online" : ""} fa fa-circle`} title={this.state.online ? _("Online") : _("Offline")} />
+            <i
+                className={`ChatPresenceIndicator ${
+                    this.state.online ? "online" : ""
+                } fa fa-circle`}
+                title={this.state.online ? _("Online") : _("Offline")}
+            />
         );
     }
 }
-

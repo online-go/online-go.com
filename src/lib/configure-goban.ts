@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,15 +17,14 @@
 
 import * as preferences from "preferences";
 import * as data from "data";
-import {get_clock_drift, get_network_latency, termination_socket} from 'sockets';
-import {_, interpolate, pgettext, current_language} from "translate";
-import {Goban, GoEngine, GoThemes} from 'goban';
-import {sfx} from "sfx";
+import { get_clock_drift, get_network_latency, termination_socket } from "sockets";
+import { _, interpolate, pgettext, current_language } from "translate";
+import { Goban, GoEngine, GoThemes } from "goban";
+import { sfx } from "sfx";
 
-
-window['Goban'] = Goban;
-window['GoThemes'] = GoThemes;
-window['GoEngine'] = GoEngine;
+window["Goban"] = Goban;
+window["GoThemes"] = GoThemes;
+window["GoEngine"] = GoEngine;
 
 data.setDefault("custom.black", "#000000");
 data.setDefault("custom.white", "#FFFFFF");
@@ -37,27 +36,28 @@ export function configure_goban() {
     Goban.setHooks({
         defaultConfig: () => {
             return {
-                server_socket : termination_socket,
-                player_id     : (data.get("user").anonymous ? 0 : data.get("user").id),
+                server_socket: termination_socket,
+                player_id: data.get("user").anonymous ? 0 : data.get("user").id,
             };
         },
 
-        getCoordinateDisplaySystem: (): 'A1'|'1-1' => {
-            switch (preferences.get('board-labeling')) {
-                case 'A1':
-                    return 'A1';
-                case '1-1':
-                    return '1-1';
-                default: // auto
+        getCoordinateDisplaySystem: (): "A1" | "1-1" => {
+            switch (preferences.get("board-labeling")) {
+                case "A1":
+                    return "A1";
+                case "1-1":
+                    return "1-1";
+                default:
+                    // auto
                     switch (current_language) {
-                        case 'ko':
-                        case 'ja':
-                        case 'zh-cn':
-                        case 'zh-hk':
-                        case 'zh-tw':
-                            return '1-1';
+                        case "ko":
+                        case "ja":
+                        case "zh-cn":
+                        case "zh-hk":
+                        case "zh-tw":
+                            return "1-1";
                         default:
-                            return 'A1';
+                            return "A1";
                     }
             }
         },
@@ -85,10 +85,11 @@ export function configure_goban() {
         getLocation: (): string => window.location.pathname,
         getShowMoveNumbers: (): boolean => !!preferences.get("show-move-numbers"),
         getShowVariationMoveNumbers: (): boolean => preferences.get("show-variation-move-numbers"),
-        getMoveTreeNumbering: (): "none" | "move-number" | "move-coordinates" => preferences.get("move-tree-numbering"),
-        getCDNReleaseBase: (): string => data.get('config.cdn_release'),
-        getSoundEnabled: (): boolean => sfx.getVolume('master') > 0,
-        getSoundVolume: (): number => sfx.getVolume('master'),
+        getMoveTreeNumbering: (): "none" | "move-number" | "move-coordinates" =>
+            preferences.get("move-tree-numbering"),
+        getCDNReleaseBase: (): string => data.get("config.cdn_release"),
+        getSoundEnabled: (): boolean => sfx.getVolume("master") > 0,
+        getSoundVolume: (): number => sfx.getVolume("master"),
 
         watchSelectedThemes: (cb) => preferences.watchSelectedThemes(cb),
         getSelectedThemes: () => preferences.getSelectedThemes(),

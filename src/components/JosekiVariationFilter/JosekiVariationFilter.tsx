@@ -28,16 +28,16 @@ interface JosekiVariationFilterProps {
     tag_list_url: string;
     source_list_url: string;
     set_variation_filter: any;
-    current_filter: {contributor: number; tags: number[]; source: number};
+    current_filter: { contributor: number; tags: number[]; source: number };
 }
 
-type ResolvedContributor = {resolved: true; player: PlayerCacheEntry};
-type UnresolvedContributor = {resolved: false; player: number};
+type ResolvedContributor = { resolved: true; player: PlayerCacheEntry };
+type UnresolvedContributor = { resolved: false; player: number };
 
 interface JosekiVariationFilterState {
-    contributor_list: (ResolvedContributor|UnresolvedContributor)[];
+    contributor_list: (ResolvedContributor | UnresolvedContributor)[];
     tag_list: [];
-    source_list: {id: string; description: string}[];
+    source_list: { id: string; description: string }[];
     selected_filter: {
         tags: number[];
         contributor: number;
@@ -45,7 +45,10 @@ interface JosekiVariationFilterState {
     };
 }
 
-export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFilterProps, JosekiVariationFilterState> {
+export class JosekiVariationFilter extends React.PureComponent<
+    JosekiVariationFilterProps,
+    JosekiVariationFilterState
+> {
     constructor(props) {
         super(props);
         this.state = {
@@ -53,85 +56,93 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
             tag_list: [],
             source_list: [],
             selected_filter: {
-                tags: this.props.current_filter['tags'],
-                contributor: this.props.current_filter['contributor'],
-                source: this.props.current_filter['source']
-            }
+                tags: this.props.current_filter["tags"],
+                contributor: this.props.current_filter["contributor"],
+                source: this.props.current_filter["source"],
+            },
         };
     }
 
     componentDidMount = () => {
         // Get the list of contributors to chose from
         fetch(this.props.contributor_list_url, {
-            mode: 'cors',
-            headers: this.props.oje_headers
+            mode: "cors",
+            headers: this.props.oje_headers,
         })
-        .then(res => res.json())
-        .then(body => {
-            // console.log("Server response to contributors GET:", body);
-            const contributor_list = [];
-            body.forEach((id, idx) => {
-                // console.log("Looking up player", id, idx);
-                const player = player_cache.lookup(id);
-                contributor_list[idx] = {resolved: player !== null, player: player === null ? id : player};
+            .then((res) => res.json())
+            .then((body) => {
+                // console.log("Server response to contributors GET:", body);
+                const contributor_list = [];
+                body.forEach((id, idx) => {
+                    // console.log("Looking up player", id, idx);
+                    const player = player_cache.lookup(id);
+                    contributor_list[idx] = {
+                        resolved: player !== null,
+                        player: player === null ? id : player,
+                    };
 
-                if (player === null) {
-                    // console.log("fetching player", id, idx);
-                    player_cache.fetch(id).then((p) => {
-                        // console.log("fetched player", p, id, idx); // by some javascript miracle this is the correct value of idx
-                        const contributor_list = [...this.state.contributor_list];
-                        contributor_list[idx] = {resolved: true, player: p};
-                        this.setState({contributor_list});
-                    }).catch((r) => {
-                        console.log("Player cache fetch failed:", r);
-                    });
-                }
+                    if (player === null) {
+                        // console.log("fetching player", id, idx);
+                        player_cache
+                            .fetch(id)
+                            .then((p) => {
+                                // console.log("fetched player", p, id, idx); // by some javascript miracle this is the correct value of idx
+                                const contributor_list = [...this.state.contributor_list];
+                                contributor_list[idx] = { resolved: true, player: p };
+                                this.setState({ contributor_list });
+                            })
+                            .catch((r) => {
+                                console.log("Player cache fetch failed:", r);
+                            });
+                    }
+                });
+                this.setState({ contributor_list });
+            })
+            .catch((r) => {
+                console.log("Contributors GET failed:", r);
             });
-            this.setState({contributor_list});
-        }).catch((r) => {
-            console.log("Contributors GET failed:", r);
-        });
 
         fetch(this.props.source_list_url, {
-            mode: 'cors',
-            headers: this.props.oje_headers
+            mode: "cors",
+            headers: this.props.oje_headers,
         })
-        .then(res => res.json())
-        .then(body => {
-            // This can possibly be changed to !== undefined or != null,
-            // But I don't want to touch this right now -BPJ
-            // eslint-disable-next-line eqeqeq
-            if (body.sources != undefined) { // Sentry reports that we somehow receive a body with undefined source_list!?
-                this.setState({source_list: body.sources});
-            }
-        }).catch((r) => {
-            console.log("Sources GET failed:", r);
-        });
+            .then((res) => res.json())
+            .then((body) => {
+                // This can possibly be changed to !== undefined or != null,
+                // But I don't want to touch this right now -BPJ
+                // eslint-disable-next-line eqeqeq
+                if (body.sources != undefined) {
+                    // Sentry reports that we somehow receive a body with undefined source_list!?
+                    this.setState({ source_list: body.sources });
+                }
+            })
+            .catch((r) => {
+                console.log("Sources GET failed:", r);
+            });
     };
 
     onTagChange = (tags) => {
         // console.log("Variation filter update:", e);
         //const tags = (e === null || e.length === 0) ? null : e.map(t => typeof(t) === 'number' ? t : t.value);
-        const new_filter = {...this.state.selected_filter, tags};
+        const new_filter = { ...this.state.selected_filter, tags };
 
         // console.log("new tag filter", new_filter);
         this.props.set_variation_filter(new_filter);
-        this.setState({selected_filter: new_filter});
+        this.setState({ selected_filter: new_filter });
     };
 
     onContributorChange = (e) => {
-
-        const val = e.target.value === 'none' ? null : parseInt(e.target.value);
-        const new_filter = {...this.state.selected_filter, contributor: val};
+        const val = e.target.value === "none" ? null : parseInt(e.target.value);
+        const new_filter = { ...this.state.selected_filter, contributor: val };
         this.props.set_variation_filter(new_filter);
-        this.setState({selected_filter: new_filter});
+        this.setState({ selected_filter: new_filter });
     };
 
     onSourceChange = (e) => {
-        const val = e.target.value === 'none' ? null : parseInt(e.target.value);
-        const new_filter = {...this.state.selected_filter, source: val};
+        const val = e.target.value === "none" ? null : parseInt(e.target.value);
+        const new_filter = { ...this.state.selected_filter, source: val };
         this.props.set_variation_filter(new_filter);
-        this.setState({selected_filter: new_filter});
+        this.setState({ selected_filter: new_filter });
     };
 
     render() {
@@ -144,22 +155,44 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
 
         const contributors = this.state.contributor_list.map((c, i) => {
             if (c.resolved === true) {
-                return <option key={i} value={c.player.id}>{c.player.username}</option>;
+                return (
+                    <option key={i} value={c.player.id}>
+                        {c.player.username}
+                    </option>
+                );
             } else {
-                return <option key={i} value={c.player}>{"(player " + c.player + ")"}</option>;
+                return (
+                    <option key={i} value={c.player}>
+                        {"(player " + c.player + ")"}
+                    </option>
+                );
             }
         });
 
-        contributors.unshift(<option key={-1} value={'none'}>({_("none")})</option>);
+        contributors.unshift(
+            <option key={-1} value={"none"}>
+                ({_("none")})
+            </option>,
+        );
 
-        const sources = this.state.source_list.map((s, i) => (<option key={i} value={s.id}>{s.description}</option>));
-        sources.unshift(<option key={-1} value={'none'}>({_("none")})</option>);
+        const sources = this.state.source_list.map((s, i) => (
+            <option key={i} value={s.id}>
+                {s.description}
+            </option>
+        ));
+        sources.unshift(
+            <option key={-1} value={"none"}>
+                ({_("none")})
+            </option>,
+        );
 
-        const current_contributor = (this.state.selected_filter.contributor === null) ?
-             'none' :this.state.selected_filter.contributor;
+        const current_contributor =
+            this.state.selected_filter.contributor === null
+                ? "none"
+                : this.state.selected_filter.contributor;
 
-        const current_source = (this.state.selected_filter.source === null) ?
-             'none' :this.state.selected_filter.source;
+        const current_source =
+            this.state.selected_filter.source === null ? "none" : this.state.selected_filter.source;
 
         return (
             <div className="joseki-variation-filter">
@@ -190,4 +223,3 @@ export class JosekiVariationFilter extends React.PureComponent<JosekiVariationFi
         );
     }
 }
-

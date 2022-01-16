@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {termination_socket} from "sockets";
-import {getUserRating} from 'rank_utils';
+import { termination_socket } from "sockets";
+import { getUserRating } from "rank_utils";
 
 let active_bots = {};
 let _bots_list = [];

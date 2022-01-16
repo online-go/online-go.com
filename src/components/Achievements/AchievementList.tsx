@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -27,38 +27,35 @@ interface AchievementEntry {
     progress: number;
 }
 
-
 interface AchievementListProps {
     list: Array<AchievementEntry>;
 }
 
-export function AchievementList({list}: AchievementListProps): JSX.Element {
-    return (
-        <div className='AchievementList'>
-            {list.map(render_achievement_entry)}
-        </div>
-    );
+export function AchievementList({ list }: AchievementListProps): JSX.Element {
+    return <div className="AchievementList">{list.map(render_achievement_entry)}</div>;
 }
 
 function render_achievement_entry(entry: AchievementEntry): JSX.Element {
-    let title = '';
-    let description = '';
+    let title = "";
+    let description = "";
 
     switch (entry.name) {
-        case 'wdc2021':
-            title = 'Western Dan Challenge Contender';
-            description = 'Played 100 or more games during the 2021 Western Dan Challenge';
+        case "wdc2021":
+            title = "Western Dan Challenge Contender";
+            description = "Played 100 or more games during the 2021 Western Dan Challenge";
             break;
     }
 
     return (
-        <div key={entry.name + '-' + entry.nth_time_awarded} className={'AchievementEntry ' + entry.name}>
-            <span className='icon' />
-            <div className='achievement-info'>
-                <div className='title'>{title}</div>
-                <div className='description'>{description}</div>
+        <div
+            key={entry.name + "-" + entry.nth_time_awarded}
+            className={"AchievementEntry " + entry.name}
+        >
+            <span className="icon" />
+            <div className="achievement-info">
+                <div className="title">{title}</div>
+                <div className="description">{description}</div>
             </div>
         </div>
     );
 }
-

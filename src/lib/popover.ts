@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,10 +17,10 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {TypedEventEmitter} from "TypedEventEmitter";
+import { TypedEventEmitter } from "TypedEventEmitter";
 
 interface Events {
-    "close": never;
+    close: never;
 }
 
 interface PopupCoordinates {
@@ -61,7 +61,7 @@ export class PopOver extends TypedEventEmitter<Events> {
     }
 
     close = (ev) => {
-        if (!ev || (ev.target === this.backdrop || ev.target === this.container)) {
+        if (!ev || ev.target === this.backdrop || ev.target === this.container) {
             ReactDOM.unmountComponentAtNode(this.container);
             $(this.container).remove();
             $(this.backdrop).remove();
@@ -86,9 +86,14 @@ export function popover(config: PopoverConfig): PopOver {
     const minHeight: number = config.minHeight || 25;
     let x = 0;
     let y = 0;
-    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0;
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    const bounds = {x: scrollLeft + window.innerWidth - 16 , y: scrollTop + window.innerHeight - 16};
+    const scrollLeft =
+        window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0;
+    const scrollTop =
+        window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    const bounds = {
+        x: scrollLeft + window.innerWidth - 16,
+        y: scrollTop + window.innerHeight - 16,
+    };
 
     if (config.at) {
         x = config.at.x;
@@ -97,9 +102,9 @@ export function popover(config: PopoverConfig): PopOver {
         x = Math.min(x, bounds.x - minWidth);
 
         if (y < bounds.y - minHeight) {
-            container.css({minWidth: minWidth, top: y, left: x});
+            container.css({ minWidth: minWidth, top: y, left: x });
         } else {
-            container.css({minWidth: minWidth, bottom: $(window).height() - y, left: x});
+            container.css({ minWidth: minWidth, bottom: $(window).height() - y, left: x });
         }
     } else if (config.below) {
         const rectangle = (ReactDOM.findDOMNode(config.below) as Element).getBoundingClientRect();
@@ -109,11 +114,15 @@ export function popover(config: PopoverConfig): PopOver {
         y = rectangle.bottom + window.scrollY;
 
         if (y < bounds.y - minHeight) {
-            container.css({minWidth: minWidth, top: y, left: x});
+            container.css({ minWidth: minWidth, top: y, left: x });
         } else {
             // Don't overlap the element we were supposed to be below.
             // If there is no space below, just go above it instead.
-            container.css({minWidth: minWidth, bottom: $(window).height() - rectangle.top - window.scrollY, left: x});
+            container.css({
+                minWidth: minWidth,
+                bottom: $(window).height() - rectangle.top - window.scrollY,
+                left: x,
+            });
         }
     }
 

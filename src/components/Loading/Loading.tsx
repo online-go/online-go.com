@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -24,15 +24,15 @@ interface LoadingProps {
 
 export function Loading(props: LoadingProps): JSX.Element {
     return (
-        <span className={'Loading' + (props.small ? ' small' : '') + (props.large ? ' large' : '')}>
-            <span className='loading-spinner' />
+        <span className={"Loading" + (props.small ? " small" : "") + (props.large ? " large" : "")}>
+            <span className="loading-spinner" />
         </span>
     );
 }
 
 export function LoadingPage(props: LoadingProps): JSX.Element {
     return (
-        <span className='LoadingPage'>
+        <span className="LoadingPage">
             <Loading {...props} />
         </span>
     );

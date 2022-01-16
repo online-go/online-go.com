@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,13 +17,13 @@
 
 import * as React from "react";
 
-export class CountDown extends React.PureComponent<{to: Date}, any> {
+export class CountDown extends React.PureComponent<{ to: Date }, any> {
     timeout: any;
 
     constructor(props) {
         super(props);
         this.state = {
-            display: this.format(props.to.getTime() - Date.now())
+            display: this.format(props.to.getTime() - Date.now()),
         };
     }
 
@@ -39,12 +39,12 @@ export class CountDown extends React.PureComponent<{to: Date}, any> {
             this.timeout = setTimeout(() => this.update(), 100);
         }
 
-        this.setState({display: this.format(left)});
+        this.setState({ display: this.format(left) });
     }
 
     format(ms) {
         if (ms < 0) {
-            return '0:00.0';
+            return "0:00.0";
         }
 
         const minutes = Math.floor(ms / 60000);

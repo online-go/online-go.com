@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2020  Online-Go.com
+ * Copyright 2012-2022  Online-Go.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {EventEmitter} from 'eventemitter3';
+import { EventEmitter } from "eventemitter3";
 
 export class TypedEventEmitter<T> {
     private emitter = new EventEmitter();
@@ -35,7 +35,10 @@ export class TypedEventEmitter<T> {
         this.emitter.once(event, listener);
         return this;
     }
-    removeListener<K extends Extract<keyof T, string>>(event: K, listener: (arg?: T[K]) => any): this {
+    removeListener<K extends Extract<keyof T, string>>(
+        event: K,
+        listener: (arg?: T[K]) => any,
+    ): this {
         this.emitter.removeListener(event, listener);
         return this;
     }

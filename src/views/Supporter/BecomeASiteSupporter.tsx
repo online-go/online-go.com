@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,13 +16,12 @@
  */
 
 import * as React from "react";
-import {browserHistory} from "ogsHistory";
-import {Modal, openModal} from "Modal";
+import { browserHistory } from "ogsHistory";
+import { Modal, openModal } from "Modal";
 import { _ } from "translate";
 //import {SiteSupporterText} from "./Supporter";
-import {Supporter} from "./Supporter";
-import {PriceBox} from "./Supporter";
-
+import { Supporter } from "./Supporter";
+import { PriceBox } from "./Supporter";
 
 export class BecomeASiteSupporterModal extends Modal<{}, {}, any> {
     constructor(props) {

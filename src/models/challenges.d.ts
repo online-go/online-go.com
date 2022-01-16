@@ -16,51 +16,48 @@
  */
 
 declare namespace socket_api {
+    namespace seekgraph_global {
+        /**
+         * One element from `seekgraph/global`
+         *
+         * This is a work in progress. Trust these values at your own risk.
+         * */
+        export interface Challenge {
+            challenge_id: number;
+            user_id: number;
+            username: string;
+            rank: number;
+            pro: number;
+            min_rank: 19;
+            max_rank: 27;
+            game_id: 40220391;
+            name: string;
+            ranked: boolean;
+            handicap: number;
+            komi?: number;
+            rules: import("../lib/types").RuleSet;
+            width: number;
+            height: number;
+            challenger_color: "black" | "white" | "automatic";
+            disable_analysis: true;
+            time_control: import("../components/TimeControl").TimeControlTypes.TimeControlSystem;
+            time_control_parameters: import("../components/TimeControl").TimeControl;
+            time_per_move: number;
+            rengo: boolean;
+            rengo_nominees: number[]; // array of player ids
+            rengo_black_team: number[]; // array of player ids
+            rengo_white_team: number[]; // array of player ids
+            rengo_participants: number[]; // array of player ids
 
-namespace seekgraph_global {
-/**
- * One element from `seekgraph/global`
- *
- * This is a work in progress. Trust these values at your own risk.
- * */
-export interface Challenge {
-    "challenge_id": number;
-    "user_id": number;
-    "username": string;
-    "rank": number;
-    "pro": number;
-    "min_rank": 19;
-    "max_rank": 27;
-    "game_id": 40220391;
-    "name": string;
-    "ranked": boolean;
-    "handicap": number;
-    "komi"?: number;
-    "rules": import('../lib/types').RuleSet;
-    "width": number;
-    "height": number;
-    "challenger_color": "black" | "white" | "automatic";
-    "disable_analysis": true;
-    "time_control": import('../components/TimeControl').TimeControlTypes.TimeControlSystem;
-    "time_control_parameters": import('../components/TimeControl').TimeControl;
-    "time_per_move": number;
-    "rengo": boolean;
-    "rengo_nominees": number[];  // array of player ids
-    "rengo_black_team": number[];   // array of player ids
-    "rengo_white_team": number[];   // array of player ids
-    "rengo_participants": number[];  // array of player ids
-
-    // All this stuff seems to get added *after* we get a challenge from the api
-    // but I don't have a good idea where to put it for now...
-    "system_message_id"?: any; // Don't know what this is, but it's accessed in SeekGraph
-    "ranked_text"?: string;
-    "handicap_text"?: string|number;
-    "removed"?: boolean;
-    "ineligible_reason"?: string;
-    "user_challenge"?: boolean;
-    "eligible"?: boolean;
-}
-
-}
-
+            // All this stuff seems to get added *after* we get a challenge from the api
+            // but I don't have a good idea where to put it for now...
+            system_message_id?: any; // Don't know what this is, but it's accessed in SeekGraph
+            ranked_text?: string;
+            handicap_text?: string | number;
+            removed?: boolean;
+            ineligible_reason?: string;
+            user_challenge?: boolean;
+            eligible?: boolean;
+        }
+    }
 }

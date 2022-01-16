@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,17 +18,16 @@
 import * as data from "data";
 import * as player_cache from "player_cache";
 import * as React from "react";
-import {browserHistory} from "ogsHistory";
-import {put} from "requests";
-import {errorAlerter} from "misc";
-import {Player} from "Player";
-import {_, pgettext, interpolate} from "translate";
+import { browserHistory } from "ogsHistory";
+import { put } from "requests";
+import { errorAlerter } from "misc";
+import { Player } from "Player";
+import { _, pgettext, interpolate } from "translate";
 
-import {Modal, openModal} from "Modal";
+import { Modal, openModal } from "Modal";
 import { NumberFormatValues } from "react-number-format";
 
-interface Events {
-}
+interface Events {}
 
 interface ModNoteModalProperties {
     player_id: number;
@@ -36,36 +35,34 @@ interface ModNoteModalProperties {
 }
 
 export class ModNoteModal extends Modal<Events, ModNoteModalProperties, any> {
-
     constructor(props) {
         super(props);
 
         this.state = {
-            current_draft: this.props.draft
+            current_draft: this.props.draft,
         };
     }
 
     submitNote = () => {
         put(`players/${this.props.player_id}/moderate`, {
-            moderation_note: this.state.current_draft
+            moderation_note: this.state.current_draft,
         })
-        .then(() => {
-        })
-        .catch(errorAlerter);
+            .then(() => {})
+            .catch(errorAlerter);
 
         this.close();
     };
 
     updateDraft = (e) => {
         this.setState({
-            current_draft: e.target.value
+            current_draft: e.target.value,
         });
     };
 
     render() {
-        const current_draft: [string] = this.state.current_draft.split('\n').map((line, idx) => (
-            <div key={idx}>{line}</div>
-        ));
+        const current_draft: [string] = this.state.current_draft
+            .split("\n")
+            .map((line, idx) => <div key={idx}>{line}</div>);
 
         return (
             <div className="Modal ModNoteModal" ref="modal">
@@ -74,13 +71,18 @@ export class ModNoteModal extends Modal<Events, ModNoteModalProperties, any> {
                         {_("Add moderator note for: ")} <Player user={this.props.player_id} />
                     </h2>
                 </div>
-                <textarea id="mod-note-text" placeholder={_("New moderator note...")}
+                <textarea
+                    id="mod-note-text"
+                    placeholder={_("New moderator note...")}
                     rows={5}
                     value={this.state.current_draft}
-                    onChange={this.updateDraft}/>
+                    onChange={this.updateDraft}
+                />
 
                 <div className="buttons">
-                    <button className="primary" onClick={this.submitNote}>{_("Submit")}</button>
+                    <button className="primary" onClick={this.submitNote}>
+                        {_("Submit")}
+                    </button>
                 </div>
             </div>
         );
@@ -88,5 +90,5 @@ export class ModNoteModal extends Modal<Events, ModNoteModalProperties, any> {
 }
 export function createModeratorNote(player_id: number, draft: string) {
     browserHistory.push(`/user/view/${player_id}?show_mod_log=1`);
-    return openModal(<ModNoteModal player_id={player_id} draft={draft}/>);
+    return openModal(<ModNoteModal player_id={player_id} draft={draft} />);
 }

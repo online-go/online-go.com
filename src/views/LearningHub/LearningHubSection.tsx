@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,8 +16,8 @@
  */
 
 import * as React from "react";
-import {LearningPage, DummyPage} from './LearningPage';
-import {getFirstUncompletedPage} from './util';
+import { LearningPage, DummyPage } from "./LearningPage";
+import { getFirstUncompletedPage } from "./util";
 
 interface LearningHubSectionProperties {
     page: number;
@@ -33,27 +33,31 @@ export abstract class LearningHubSection extends React.PureComponent<LearningHub
     }
 
     static pages(): Array<typeof LearningPage> {
-        return [
-            DummyPage,
-            DummyPage,
-            DummyPage,
-        ];
+        return [DummyPage, DummyPage, DummyPage];
     }
-    static section(): string { return "missing"; }
-    static title(): string { return "Missing"; }
-    static subtext(): string { return "Missing"; }
+    static section(): string {
+        return "missing";
+    }
+    static title(): string {
+        return "Missing";
+    }
+    static subtext(): string {
+        return "Missing";
+    }
 
     render() {
         let page = this.props.page || getFirstUncompletedPage(this.props.section);
         page = Math.min(page, this.props.pages.length);
         page = Math.max(page, 0);
         const P: typeof LearningPage = this.props.pages[page];
-        return <P
-            title={this.props.title}
-            npages={this.props.pages.length}
-            curpage={page}
-            section={this.props.section}
-            nextSection={this.props.nextSection}
-        />;
+        return (
+            <P
+                title={this.props.title}
+                npages={this.props.pages.length}
+                curpage={page}
+                section={this.props.section}
+                nextSection={this.props.nextSection}
+            />
+        );
     }
 }

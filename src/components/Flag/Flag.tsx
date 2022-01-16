@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as data from "data";
-import {cc_to_country_name, getCountryFlagClass, getLanguageFlag} from "translate";
+import { cc_to_country_name, getCountryFlagClass, getLanguageFlag } from "translate";
 
 interface FlagProperties {
     country: string;
@@ -26,15 +26,18 @@ interface FlagProperties {
     big?: boolean;
 }
 
-
 export function Flag(props: FlagProperties): JSX.Element {
     if (props.language && props.user_country) {
         return (
             <span className={props.big ? "f32" : "f16"} title={cc_to_country_name(props.country)}>
-                <span className={"flag " + getLanguageFlag(props.language, props.user_country, props.country)} />
+                <span
+                    className={
+                        "flag " + getLanguageFlag(props.language, props.user_country, props.country)
+                    }
+                />
             </span>
         );
-    }  else {
+    } else {
         return (
             <span className={props.big ? "f32" : "f16"} title={cc_to_country_name(props.country)}>
                 <span className={"flag " + getCountryFlagClass(props.country)} />

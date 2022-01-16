@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,13 +17,13 @@
 
 import * as d3 from "d3";
 import * as React from "react";
-import * as JSNoise from 'js-noise';
+import * as JSNoise from "js-noise";
 import * as data from "data";
-import ReactResizeDetector from 'react-resize-detector';
-import { AIReviewEntry } from './AIReview';
-import { PersistentElement } from 'PersistentElement';
-import { deepCompare } from 'misc';
-import { JGOFAIReview, } from 'goban';
+import ReactResizeDetector from "react-resize-detector";
+import { AIReviewEntry } from "./AIReview";
+import { PersistentElement } from "PersistentElement";
+import { deepCompare } from "misc";
+import { JGOFAIReview } from "goban";
 
 interface AIReviewChartProperties {
     entries: Array<AIReviewEntry>;
@@ -37,7 +37,9 @@ interface AIReviewChartProperties {
     highlighted_moves?: number[];
 }
 
-const bisector = d3.bisector((d: AIReviewEntry) => { return d.move_number; }).left;
+const bisector = d3.bisector((d: AIReviewEntry) => {
+    return d.move_number;
+}).left;
 //let margin = { top: 15, right: 20, bottom: 30, left: 20 };
 const MARGIN = { top: 15, right: 5, bottom: 30, left: 5 };
 const INITIAL_WIDTH = 600 - MARGIN.left - MARGIN.right;
@@ -84,7 +86,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             hovered_month: null,
             date_extents: [],
         };
-        this.chart_div = document.createElement('div');
+        this.chart_div = document.createElement("div");
     }
     componentDidMount() {
         this.initialize();
@@ -96,12 +98,14 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
         this.deinitialize();
     }
     shouldComponentUpdate(nextProps: AIReviewChartProperties, nextState: any) {
-        return !deepCompare(nextProps.entries, this.props.entries) ||
+        return (
+            !deepCompare(nextProps.entries, this.props.entries) ||
             !deepCompare(nextProps.variation_entries, this.props.variation_entries) ||
             this.props.updatecount !== nextProps.updatecount ||
             this.props.move_number !== nextProps.move_number ||
             this.props.variation_move_number !== nextProps.variation_move_number ||
-            this.props.use_score !== nextProps.use_score;
+            this.props.use_score !== nextProps.use_score
+        );
     }
 
     initialize() {
@@ -111,97 +115,108 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
 
         this.width = INITIAL_WIDTH;
         this.height = INITIAL_HEIGHT;
-        this.svg = d3.select(this.chart_div)
-            .append('svg')
-            .attr('class', 'chart')
-            .attr('width', this.width + MARGIN.left + MARGIN.right)
-            .attr('height', this.height + MARGIN.top + MARGIN.bottom + 0);
+        this.svg = d3
+            .select(this.chart_div)
+            .append("svg")
+            .attr("class", "chart")
+            .attr("width", this.width + MARGIN.left + MARGIN.right)
+            .attr("height", this.height + MARGIN.top + MARGIN.bottom + 0);
 
         if (!this.svg) {
             throw new Error(`AI SVG creation failed`);
         }
 
-        this.prediction_graph = this.svg.append('g')
-            .attr('transform', 'translate(' + MARGIN.left + ',' + MARGIN.top + ')');
+        this.prediction_graph = this.svg
+            .append("g")
+            .attr("transform", "translate(" + MARGIN.left + "," + MARGIN.top + ")");
 
         if (!this.prediction_graph) {
             throw new Error(`AI Review graph creation failed`);
         }
 
+        this.win_rate_area_container = this.prediction_graph
+            .append("path")
+            .attr("class", "win-rate-area");
 
-        this.win_rate_area_container = this.prediction_graph.append('path')
-            .attr('class', 'win-rate-area');
-
-        this.variation_win_rate_line_container = this.prediction_graph.append('path')
-            .attr('class', 'variation-win-rate-line');
+        this.variation_win_rate_line_container = this.prediction_graph
+            .append("path")
+            .attr("class", "variation-win-rate-line");
 
         this.x = d3.scaleLinear().rangeRound([0, this.width]);
         this.y = d3.scaleLinear().rangeRound([this.height, 0]);
 
-
         this.y.domain(d3.extent([0.0, 100.0]) as [number, number]);
-
 
         this.x_axis = this.prediction_graph.append("g");
         this.y_axis = this.prediction_graph.append("g");
 
         this.highlighted_move_circle_container = this.prediction_graph.append("g");
 
-        this.move_crosshair = this.prediction_graph.append('g')
-            .attr('class', 'move crosshairs')
-            .append('line')
-            .attr('x0', 0)
-            .attr('y0', 0)
-            .attr('x1', 0)
-            .attr('y1', this.height);
+        this.move_crosshair = this.prediction_graph
+            .append("g")
+            .attr("class", "move crosshairs")
+            .append("line")
+            .attr("x0", 0)
+            .attr("y0", 0)
+            .attr("x1", 0)
+            .attr("y1", this.height);
 
-        this.variation_move_crosshair = this.prediction_graph.append('g')
-            .attr('class', 'variation move crosshairs')
-            .append('line')
-            .attr('x0', 0)
-            .attr('y0', 0)
-            .attr('x1', 0)
-            .attr('y1', this.height);
+        this.variation_move_crosshair = this.prediction_graph
+            .append("g")
+            .attr("class", "variation move crosshairs")
+            .append("line")
+            .attr("x0", 0)
+            .attr("y0", 0)
+            .attr("x1", 0)
+            .attr("y1", this.height);
 
-        this.move_crosshair.attr('transform', 'translate(' + this.x(this.props.move_number) + ', 0)');
-        this.variation_move_crosshair.attr('transform', 'translate(' + this.x(this.props.variation_move_number) + ', 0)');
+        this.move_crosshair.attr(
+            "transform",
+            "translate(" + this.x(this.props.move_number) + ", 0)",
+        );
+        this.variation_move_crosshair.attr(
+            "transform",
+            "translate(" + this.x(this.props.variation_move_number) + ", 0)",
+        );
 
-        this.cursor_crosshair = this.prediction_graph.append('g')
-            .attr('class', 'cursor crosshairs')
-            .append('line')
-            .style('display', 'none')
-            .attr('x0', 0)
-            .attr('y0', 0)
-            .attr('x1', 0)
-            .attr('y1', this.height);
+        this.cursor_crosshair = this.prediction_graph
+            .append("g")
+            .attr("class", "cursor crosshairs")
+            .append("line")
+            .style("display", "none")
+            .attr("x0", 0)
+            .attr("y0", 0)
+            .attr("x1", 0)
+            .attr("y1", this.height);
 
-        this.full_crosshair = this.prediction_graph.append('g')
-            .attr('class', 'full crosshairs')
-            .append('line')
-            .style('display', 'none')
-            .attr('x0', 0)
-            .attr('y0', 0)
-            .attr('y1', 0)
-            .attr('x1', this.width);
+        this.full_crosshair = this.prediction_graph
+            .append("g")
+            .attr("class", "full crosshairs")
+            .append("line")
+            .style("display", "none")
+            .attr("x0", 0)
+            .attr("y0", 0)
+            .attr("y1", 0)
+            .attr("x1", this.width);
 
         let mouse_down = false;
         let last_move = -1;
-        this.mouse_rect = this.svg.append('g').append('rect');
+        this.mouse_rect = this.svg.append("g").append("rect");
         this.mouse_rect
-            .attr('class', 'overlay')
-            .attr('transform', 'translate(' + MARGIN.left + ',' + MARGIN.top + ')')
-            .attr('width', this.width)
-            .attr('height', this.height)
-            .on('mouseover', () => {
-                this.cursor_crosshair?.style('display', null);
-                this.full_crosshair?.style('display', null);
+            .attr("class", "overlay")
+            .attr("transform", "translate(" + MARGIN.left + "," + MARGIN.top + ")")
+            .attr("width", this.width)
+            .attr("height", this.height)
+            .on("mouseover", () => {
+                this.cursor_crosshair?.style("display", null);
+                this.full_crosshair?.style("display", null);
             })
-            .on('mouseout', () => {
+            .on("mouseout", () => {
                 mouse_down = false;
-                this.cursor_crosshair?.style('display', 'none');
-                this.full_crosshair?.style('display', 'none');
+                this.cursor_crosshair?.style("display", "none");
+                this.full_crosshair?.style("display", "none");
             })
-            .on('mousemove', function() {
+            .on("mousemove", function () {
                 // eslint-disable-next-line @typescript-eslint/no-invalid-this
                 const x0 = self.x.invert(d3.mouse(this as d3.ContainerElement)[0]);
 
@@ -221,8 +236,16 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
                 }
 
                 const d = x0 - d0.move_number > d1.move_number - x0 ? d1 : d0;
-                self.cursor_crosshair?.attr('transform', 'translate(' + self.x(d.move_number) + ', 0)');
-                self.full_crosshair?.attr('transform', 'translate(0, ' + self.y(self.props.use_score ? d.score : d.win_rate * 100.0) + ')');
+                self.cursor_crosshair?.attr(
+                    "transform",
+                    "translate(" + self.x(d.move_number) + ", 0)",
+                );
+                self.full_crosshair?.attr(
+                    "transform",
+                    "translate(0, " +
+                        self.y(self.props.use_score ? d.score : d.win_rate * 100.0) +
+                        ")",
+                );
 
                 if (mouse_down && !variation) {
                     if (d.move_number !== last_move) {
@@ -231,7 +254,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
                     }
                 }
             })
-            .on('mousedown', function() {
+            .on("mousedown", function () {
                 mouse_down = true;
                 last_move = -1;
 
@@ -260,10 +283,9 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
                     self.onResize();
                 }
             })
-            .on('mouseup', () => {
+            .on("mouseup", () => {
                 mouse_down = false;
-            })
-        ;
+            });
 
         this.plot();
 
@@ -277,24 +299,24 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
         let entries: Array<AIReviewEntry>;
         let variation_entries: Array<AIReviewEntry> = [];
 
-        const use_score_safe = this.props.use_score
-          && this.props.ai_review.scores != null;
+        const use_score_safe = this.props.use_score && this.props.ai_review.scores != null;
 
         if (this.props.entries.length > 0) {
             entries = this.props.entries.map((x, i) => {
                 return {
                     win_rate: x.win_rate,
-                    score: x.score === 0 && use_score_safe ? this.props.ai_review.scores[i] : x.score,
+                    score:
+                        x.score === 0 && use_score_safe ? this.props.ai_review.scores[i] : x.score,
                     move_number: x.move_number,
                     num_variations: x.num_variations,
                 };
             });
-            entries.unshift({win_rate: 0.5, score: 0.0, move_number: 0, num_variations: 0});
+            entries.unshift({ win_rate: 0.5, score: 0.0, move_number: 0, num_variations: 0 });
             entries.push({
                 win_rate: 0.5,
                 score: 0.0,
                 move_number: entries[entries.length - 1].move_number,
-                num_variations: 0
+                num_variations: 0,
             });
         } else {
             // no entries? draw a traveling sine wave while processing
@@ -302,20 +324,24 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             const n_moves_to_render = 100;
             const sine_step = (Math.PI / n_moves_to_render) * 4;
             for (let i = 0; i < n_moves_to_render; ++i) {
-                const unitNoiseLine = simplex.getValue(Date.now() * 0.001, i * sine_step, 0.5) * 0.4;
+                const unitNoiseLine =
+                    simplex.getValue(Date.now() * 0.001, i * sine_step, 0.5) * 0.4;
                 entries.push({
                     //win_rate: Math.sin((Date.now() * 0.005 + i) * sine_step) * 0.4 + 0.5,
                     win_rate: unitNoiseLine + 0.5,
                     score: unitNoiseLine * 50,
                     move_number: i,
-                    num_variations: 0
+                    num_variations: 0,
                 });
             }
 
             this.replot_timeout = setTimeout(() => this.plot(), 50);
         }
 
-        if (this.props.variation_entries.length > 0 && entries.length > this.props.move_number + 1) {
+        if (
+            this.props.variation_entries.length > 0 &&
+            entries.length > this.props.move_number + 1
+        ) {
             variation_entries = this.props.variation_entries.map((x, i) => {
                 return {
                     win_rate: x.win_rate,
@@ -329,17 +355,28 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
                 win_rate: 0.5,
                 score: 0.0,
                 move_number: variation_entries[variation_entries.length - 1].move_number,
-                num_variations: 0
+                num_variations: 0,
             });
         }
 
-        this.x.domain(d3.extent([0, Math.max(entries[entries.length - 1].move_number, this.props.variation_move_number)]) as [number, number]);
+        this.x.domain(
+            d3.extent([
+                0,
+                Math.max(entries[entries.length - 1].move_number, this.props.variation_move_number),
+            ]) as [number, number],
+        );
         if (use_score_safe) {
-            this.max_score = Math.max(0, Math.max(... entries.map(e => e.score)));
-            this.min_score = Math.min(0, Math.min(... entries.map(e => e.score)));
+            this.max_score = Math.max(0, Math.max(...entries.map((e) => e.score)));
+            this.min_score = Math.min(0, Math.min(...entries.map((e) => e.score)));
             if (variation_entries && variation_entries.length > 0) {
-                this.max_score = Math.max(this.max_score, Math.max(... variation_entries.map(e => e.score)));
-                this.min_score = Math.min(this.min_score, Math.min(... variation_entries.map(e => e.score)));
+                this.max_score = Math.max(
+                    this.max_score,
+                    Math.max(...variation_entries.map((e) => e.score)),
+                );
+                this.min_score = Math.min(
+                    this.min_score,
+                    Math.min(...variation_entries.map((e) => e.score)),
+                );
             }
 
             this.y.domain(d3.extent([this.min_score, this.max_score]) as [number, number]);
@@ -347,27 +384,25 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             this.y.domain(d3.extent([0.0, 100.0]) as [number, number]);
         }
 
-        this.win_rate_area = d3.area<AIReviewEntry>()
+        this.win_rate_area = d3
+            .area<AIReviewEntry>()
             .curve(d3.curveMonotoneX)
-            .x1(d => this.x(d.move_number))
-            .y1(d => this.y(use_score_safe ? d.score * 1.0 : d.win_rate * 100.0))
-            .x0(d => this.x(d.move_number))
-            .y0(d => this.y(use_score_safe ? 0 : 50))
-        ;
+            .x1((d) => this.x(d.move_number))
+            .y1((d) => this.y(use_score_safe ? d.score * 1.0 : d.win_rate * 100.0))
+            .x0((d) => this.x(d.move_number))
+            .y0((d) => this.y(use_score_safe ? 0 : 50));
 
-        this.win_rate_line = d3.line<AIReviewEntry>()
+        this.win_rate_line = d3
+            .line<AIReviewEntry>()
             .curve(d3.curveMonotoneX)
-            .x(d => this.x(d.move_number))
-            .y(d => this.y(use_score_safe ? d.score : d.win_rate * 100.0));
+            .x((d) => this.x(d.move_number))
+            .y((d) => this.y(use_score_safe ? d.score : d.win_rate * 100.0));
 
-
-        this.win_rate_area_container
-            ?.datum(entries)
-            .attr('d', this.win_rate_area as any);
+        this.win_rate_area_container?.datum(entries).attr("d", this.win_rate_area as any);
 
         this.variation_win_rate_line_container
             ?.datum(variation_entries)
-            .attr('d', this.win_rate_line as any);
+            .attr("d", this.win_rate_line as any);
 
         const show_all = Object.keys(this.props.ai_review.moves).length <= 3;
         const circle_coords = entries.filter((x) => {
@@ -379,8 +414,10 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
                 }
 
                 // The review is in progress, so mark discontinuities
-                if (!this.props.ai_review.moves[x.move_number + 1]
-                    && x.move_number !== this.props.ai_review.win_rates.length - 1) {
+                if (
+                    !this.props.ai_review.moves[x.move_number + 1] &&
+                    x.move_number !== this.props.ai_review.win_rates.length - 1
+                ) {
                     return true;
                 }
 
@@ -394,7 +431,6 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             return false;
         });
 
-
         let gradient_transition_point = 50;
         if (use_score_safe) {
             const yRange = this.max_score - this.min_score;
@@ -403,35 +439,49 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             }
         }
         this.svg.select("linearGradient").remove();
-        this.svg.append("linearGradient")
+        this.svg
+            .append("linearGradient")
             .attr("id", "win-rate-area-gradient")
             .attr("gradientUnits", "userSpaceOnUse")
-            .attr("x1", 0).attr("y1", 0)
-            .attr("x2", 0).attr("y2", this.height)
+            .attr("x1", 0)
+            .attr("y1", 0)
+            .attr("x2", 0)
+            .attr("y2", this.height)
             .selectAll("stop")
             .data(
                 // assuming "accessible" and "dark" are similar
-                data.get('theme') === 'light'
+                data.get("theme") === "light"
                     ? [
-                        {offset: "0%", color: "#222222"},
-                        {offset: (gradient_transition_point - 1).toFixed(0) + "%", color: "#444444"},
-                        {offset: gradient_transition_point.toFixed(0) + "%", color: "#888888"},
-                        {offset: (gradient_transition_point + 1).toFixed(0) + "%", color: "#cccccc"},
-                        {offset: "100%", color: "#eeeeee"}
-                    ]
+                          { offset: "0%", color: "#222222" },
+                          {
+                              offset: (gradient_transition_point - 1).toFixed(0) + "%",
+                              color: "#444444",
+                          },
+                          { offset: gradient_transition_point.toFixed(0) + "%", color: "#888888" },
+                          {
+                              offset: (gradient_transition_point + 1).toFixed(0) + "%",
+                              color: "#cccccc",
+                          },
+                          { offset: "100%", color: "#eeeeee" },
+                      ]
                     : [
-                        {offset: "0%", color: "#000000"},
-                        {offset: (gradient_transition_point - 1).toFixed(0) + "%", color: "#333333"},
-                        {offset: gradient_transition_point.toFixed(0) + "%", color: "#888888"},
-                        {offset: (gradient_transition_point + 1).toFixed(0) + "%", color: "#909090"},
-                        {offset: "100%", color: "#999999"}
-                    ]
+                          { offset: "0%", color: "#000000" },
+                          {
+                              offset: (gradient_transition_point - 1).toFixed(0) + "%",
+                              color: "#333333",
+                          },
+                          { offset: gradient_transition_point.toFixed(0) + "%", color: "#888888" },
+                          {
+                              offset: (gradient_transition_point + 1).toFixed(0) + "%",
+                              color: "#909090",
+                          },
+                          { offset: "100%", color: "#999999" },
+                      ],
             )
             .enter()
             .append("stop")
-            .attr("offset", d => d.offset)
-            .attr("stop-color", d => d.color)
-        ;
+            .attr("offset", (d) => d.offset)
+            .attr("stop-color", (d) => d.color);
 
         this.x_axis.remove();
         this.x_axis = this.prediction_graph.append("g");
@@ -444,35 +494,43 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
         this.y_axis.remove();
         this.y_axis = this.prediction_graph.append("g");
         if (use_score_safe) {
-            this.y_axis
-                .attr("transform", "translate(0,0)")
-                .call(d3.axisRight(this.y).ticks(7));
+            this.y_axis.attr("transform", "translate(0,0)").call(d3.axisRight(this.y).ticks(7));
             // Remove the zero'th tick label
-            this.y_axis.selectAll(".tick")
-                .filter(d => d === 0)
+            this.y_axis
+                .selectAll(".tick")
+                .filter((d) => d === 0)
                 .remove();
         }
 
-
-        this.highlighted_move_circles =
-            this.highlighted_move_circle_container
-                .selectAll('circle')
-                .data(circle_coords) as d3.Selection<SVGCircleElement, AIReviewEntry, SVGSVGElement, unknown>;
+        this.highlighted_move_circles = this.highlighted_move_circle_container
+            .selectAll("circle")
+            .data(circle_coords) as d3.Selection<
+            SVGCircleElement,
+            AIReviewEntry,
+            SVGSVGElement,
+            unknown
+        >;
         // remove any data points that were removed
         const removes = this.highlighted_move_circles.exit().remove();
         // add circles that were added
-        const adds = this.highlighted_move_circles.enter().append('circle');
+        const adds = this.highlighted_move_circles.enter().append("circle");
         // update positions for our circles
         this.highlighted_move_circles
             .transition()
             .duration(200)
-            .attr('cx', d => this.x(d.move_number))
-            .attr('cy', d => this.y(use_score_safe ? d.score : d.win_rate * 100))
-            .attr('r', d => 3)
-            .attr('fill', d => '#FF0000');
+            .attr("cx", (d) => this.x(d.move_number))
+            .attr("cy", (d) => this.y(use_score_safe ? d.score : d.win_rate * 100))
+            .attr("r", (d) => 3)
+            .attr("fill", (d) => "#FF0000");
 
-        this.move_crosshair?.attr('transform', 'translate(' + this.x(this.props.move_number) + ', 0)');
-        this.variation_move_crosshair?.attr('transform', 'translate(' + this.x(this.props.variation_move_number) + ', 0)');
+        this.move_crosshair?.attr(
+            "transform",
+            "translate(" + this.x(this.props.move_number) + ", 0)",
+        );
+        this.variation_move_crosshair?.attr(
+            "transform",
+            "translate(" + this.x(this.props.variation_move_number) + ", 0)",
+        );
 
         try {
             // I'm not sure why this is needed, but without it, the first pass
@@ -512,43 +570,48 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             return;
         }
 
-        this.width = Math.max(100, (this.container?.clientWidth || 0)  - MARGIN.left - MARGIN.right);
+        this.width = Math.max(100, (this.container?.clientWidth || 0) - MARGIN.left - MARGIN.right);
 
-        this.svg?.attr('width', this.width + MARGIN.left + MARGIN.right);
+        this.svg?.attr("width", this.width + MARGIN.left + MARGIN.right);
 
         this.x.range([0, this.width]);
 
-        const entries = this.props.entries.map(x => x);
-        entries.unshift({win_rate: 0.5, score: 0.0, move_number: 0, num_variations: 0});
+        const entries = this.props.entries.map((x) => x);
+        entries.unshift({ win_rate: 0.5, score: 0.0, move_number: 0, num_variations: 0 });
         entries.push({
             win_rate: 0.5,
             score: 0.0,
-            move_number: this.props.entries?.length >= 1 ? this.props.entries[this.props.entries.length - 1].move_number : 0,
-            num_variations: 0
+            move_number:
+                this.props.entries?.length >= 1
+                    ? this.props.entries[this.props.entries.length - 1].move_number
+                    : 0,
+            num_variations: 0,
         });
 
-        const variation_entries = this.props.variation_entries.map(x => x);
-        variation_entries.unshift({win_rate: 0.5, score: 0.0, move_number: 0, num_variations: 0});
+        const variation_entries = this.props.variation_entries.map((x) => x);
+        variation_entries.unshift({ win_rate: 0.5, score: 0.0, move_number: 0, num_variations: 0 });
         variation_entries.push({
             win_rate: 0.5,
             score: 0.0,
-            move_number: this.props.variation_entries?.length >= 1 ? this.props.variation_entries[this.props.variation_entries.length - 1].move_number : 0,
-            num_variations: 0
+            move_number:
+                this.props.variation_entries?.length >= 1
+                    ? this.props.variation_entries[this.props.variation_entries.length - 1]
+                          .move_number
+                    : 0,
+            num_variations: 0,
         });
 
-        this.win_rate_area_container
-            ?.datum(entries)
-            .attr('d', this.win_rate_area as any);
+        this.win_rate_area_container?.datum(entries).attr("d", this.win_rate_area as any);
 
         this.variation_win_rate_line_container
             ?.datum(variation_entries)
-            .attr('d', this.win_rate_line as any);
+            .attr("d", this.win_rate_line as any);
 
         this.mouse_rect
-            ?.attr('transform', 'translate(' + MARGIN.left + ',' + MARGIN.top + ')')
-            .attr('width', this.width);
+            ?.attr("transform", "translate(" + MARGIN.left + "," + MARGIN.top + ")")
+            .attr("width", this.width);
 
-        this.full_crosshair?.attr('x1', this.width);
+        this.full_crosshair?.attr("x1", this.width);
 
         this.plot();
     };
@@ -569,9 +632,8 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
         return (
             <div ref={this.setContainer} className="AIReviewChart">
                 <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
-                <PersistentElement elt={this.chart_div}/>
+                <PersistentElement elt={this.chart_div} />
             </div>
         );
     }
 }
-

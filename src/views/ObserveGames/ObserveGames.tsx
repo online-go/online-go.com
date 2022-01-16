@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,9 +16,8 @@
  */
 
 import * as React from "react";
-import {_} from "translate";
-import { ObserveGamesComponent } from 'ObserveGamesComponent';
-
+import { _ } from "translate";
+import { ObserveGamesComponent } from "ObserveGamesComponent";
 
 export class ObserveGames extends React.PureComponent {
     constructor(props) {
@@ -29,7 +28,7 @@ export class ObserveGames extends React.PureComponent {
         return (
             <div className="ObserveGames">
                 <div className="container">
-                    <ObserveGamesComponent announcements={true} updateTitle={true} channel='' />
+                    <ObserveGamesComponent announcements={true} updateTitle={true} channel="" />
                 </div>
             </div>
         );

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2020  Online-Go.com
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -16,14 +16,12 @@
  */
 
 import * as React from "react";
-import {_, pgettext, interpolate} from 'translate';
-import {Modal, openModal} from "Modal";
-import {Errcode} from 'Errcode';
-import { MessageId } from 'messages';
+import { _, pgettext, interpolate } from "translate";
+import { Modal, openModal } from "Modal";
+import { Errcode } from "Errcode";
+import { MessageId } from "messages";
 
-
-interface Events {
-}
+interface Events {}
 
 interface ErrcodeModalProperties {
     message_id: MessageId;
@@ -39,8 +37,8 @@ export class ErrcodeModal extends Modal<Events, ErrcodeModalProperties, any> {
         let body = null;
 
         switch (this.props.message_id) {
-            case 'ai_review_queue_full':
-                header = <i className='fa fa-clock-o' />;
+            case "ai_review_queue_full":
+                header = <i className="fa fa-clock-o" />;
                 break;
         }
 
@@ -48,23 +46,18 @@ export class ErrcodeModal extends Modal<Events, ErrcodeModalProperties, any> {
 
         return (
             <div className="Modal ErrcodeModal" ref="modal">
-                {header &&
-                  <div className="header">
-                      {header}
-                  </div>
-                }
-                <div className="body">
-                    {body}
-                </div>
+                {header && <div className="header">{header}</div>}
+                <div className="body">{body}</div>
                 <div className="buttons">
-                    <button className='primary' onClick={this.close}>{_("OK")}</button>
+                    <button className="primary" onClick={this.close}>
+                        {_("OK")}
+                    </button>
                 </div>
             </div>
         );
     }
 }
 
-
-export function errcodeAlerter(errobj: {errcode: MessageId}): void {
+export function errcodeAlerter(errobj: { errcode: MessageId }): void {
     openModal(<ErrcodeModal message_id={errobj.errcode} />);
 }
