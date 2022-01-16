@@ -7,6 +7,7 @@ then simply clone the repository and within the working directory run the follow
 # You only need to run this the first time
 sudo npm install -g yarn
 yarn install
+npx husky install
 
 # Run this to start the development server and build system
 npm run dev
@@ -17,13 +18,6 @@ If you're on linux, you can simply type `make` and it will do all this for you a
 Once running, you can then navigate to [http://dev.beta.online-go.com:8080/](http://dev.beta.online-go.com:8080/)
 which loads the interface from your local server that you just started with gulp, and
 connects to the beta server for testing.
-
-If you want to work on Joseki Explorer front-end code, you also need to point to the beta Joseki Explorer server.
-
-Do this by executing `data.set("joseki-url", "https:beta.online-go.com/oje/")` in the javascript console of your browser,
-after confirming that the dev server loaded as above.
-
-This repo uses ESLint to keep keep code consistent and try to catch bugs.  ESLint will be run on every pull request, but you can also set it up so that it runs before every commit locally.  To do this, run `npx husky install`.
 
 ## Getting Started
 * Sign up for a [GitHub account](https://github.com/signup/free).

@@ -1,16 +1,19 @@
 NODE_PATH:=node_modules:$(NODE_PATH)
 PATH:=node_modules/.bin/:$(PATH)
 
-dev: node_modules
+dev: node_modules .husky
 	npm run dev
+
+.husky: 
+	npx husky install
 
 node_modules: package.json
 	npm ls yarn || npm install yarn
 	npm run yarn install
 
-pretty prettier:
-	npm run prettytsx
-	npm run prettyts
+pretty prettier lint-fix:
+	npm run prettier
+	npm run lint:fix
 
 min: minjs mincss
 
