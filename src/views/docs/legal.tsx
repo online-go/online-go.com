@@ -17,7 +17,7 @@
 
 import * as React from "react";
 
-export const TermsOfService = (props) => (
+export const TermsOfService = () => (
     <div className="container">
         <div className="column well">
             <div className="legal-paragraph">
@@ -299,7 +299,7 @@ export const TermsOfService = (props) => (
     </div>
 );
 
-export const PrivacyPolicy = (props) => (
+export const PrivacyPolicy = () => (
     <div className="container">
         <div className="column well">
             <div className="legal-paragraph">
@@ -424,7 +424,7 @@ export const PrivacyPolicy = (props) => (
         </div>
     </div>
 );
-export const ContactInformation = (props) => (
+export const ContactInformation = () => (
     <div style={{ textAlign: "center", padding: "4em" }}>
         <h3>
             For <span style={{ fontWeight: "bold", textDecoration: "underline" }}>non-support</span>{" "}
@@ -438,7 +438,7 @@ export const ContactInformation = (props) => (
         <a href="http://forums.online-go.com">http://forums.online-go.com</a>.
     </div>
 );
-export const RefundPolicy = (props) => (
+export const RefundPolicy = () => (
     <div className="container">
         <div className="column well">
             <h1>Refund Policy</h1>

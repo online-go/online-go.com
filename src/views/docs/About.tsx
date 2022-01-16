@@ -22,7 +22,6 @@ import { termination_socket } from "sockets";
 import * as data from "data";
 import { ServerTimeDisplay } from "ServerTimeDisplay";
 
-declare let ogs_release;
 declare let ogs_version;
 declare let ogs_current_language;
 
