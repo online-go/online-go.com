@@ -128,8 +128,8 @@ export class NavBar extends React.PureComponent<{}, any> {
         data.watch("theme", _update_theme); // here we are watching in case 'theme' is updated by the remote-storage update mechanism, which doesn't call setTheme()
     }
 
-    UNSAFE_componentWillMount() {
-        data.watch("config.user", (user) => this.setState({ user: user }));
+    componentDidMount() {
+        data.watch("config.user", (user) => this.setState({ user }));
 
         browserHistory.listen((location) => {
             this.closeNavbar();

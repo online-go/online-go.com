@@ -60,7 +60,6 @@ export class Team extends React.PureComponent<{}, any> {
         const es = getLanguageFlag("spanish", country, "es");
         const de = getLanguageFlag("german", country, "de");
         const cn = getLanguageFlag("chinese", country, "cn");
-        const hi = getLanguageFlag("hindi", country, "in");
         const gb = getLanguageFlag("gb", country, "gb");
         const se = getLanguageFlag("swedish", country, "se");
         const cz = getLanguageFlag("czech", country, "cz");
@@ -115,10 +114,10 @@ export class Team extends React.PureComponent<{}, any> {
                 <div className="row" style={{ paddingLeft: "2em" }}>
                     <div className="col-sm-6">
                         <h3>{_("Moderators")}</h3>
-                        {moderators.map((u, idx) => (
+                        {moderators.map((u) => (
                             <div key={u.id}>
                                 <span className="flags">
-                                    {u.country.map((c, idx) => (
+                                    {u.country.map((c) => (
                                         <Flag key={c} country={c} />
                                     ))}
                                 </span>
@@ -126,7 +125,7 @@ export class Team extends React.PureComponent<{}, any> {
                                     <Player user={u} />
                                 </span>
                                 {_("Languages")}:{" "}
-                                {u.languages.map((c, idx) => (
+                                {u.languages.map((c) => (
                                     <span key={c}>
                                         <Flag country={c} />
                                     </span>
@@ -136,10 +135,10 @@ export class Team extends React.PureComponent<{}, any> {
                     </div>
                     <div className="col-sm-6">
                         <h3>{_("Lead Developers")}</h3>
-                        {developers.map((u, idx) => (
+                        {developers.map((u) => (
                             <div key={u.id}>
                                 <span className="flags">
-                                    {u.country.map((c, idx) => (
+                                    {u.country.map((c) => (
                                         <span key={c}>
                                             <Flag country={c} />
                                         </span>
@@ -149,7 +148,7 @@ export class Team extends React.PureComponent<{}, any> {
                                     <Player user={u} />
                                 </span>
                                 {_("Languages")}:{" "}
-                                {u.languages.map((c, idx) => (
+                                {u.languages.map((c) => (
                                     <span key={c}>
                                         <Flag country={c} />
                                     </span>

@@ -21,7 +21,6 @@ import { abort_requests_in_flight, del, put, post, get } from "requests";
 import { Markdown } from "Markdown";
 import { PaginatedTable, PaginatedTableRef } from "PaginatedTable";
 import { Player } from "Player";
-import * as data from "data";
 import { ignore, errorAlerter, dup } from "misc";
 import { rankString, allRanks } from "rank_utils";
 import { createDemoBoard } from "ChallengeModal";
@@ -85,7 +84,7 @@ export class TournamentRecord extends React.PureComponent<
 
     componentDidMount() {
         if (this.state.tournament_record_id) {
-            this.resolve(this.state.tournament_record_id);
+            this.resolve();
         }
     }
 
@@ -97,7 +96,7 @@ export class TournamentRecord extends React.PureComponent<
         abort_requests_in_flight(`tournament_records/${this.state.tournament_record_id}`);
     }
 
-    resolve(tournament_record_id: number) {
+    resolve() {
         this.abort_requests();
 
         get(`tournament_records/${this.state.tournament_record_id}`)
@@ -161,7 +160,7 @@ export class TournamentRecord extends React.PureComponent<
         this.setState({ rounds });
     }
 
-    addRound = (ev) => {
+    addRound = () => {
         if (this.state.new_round_name.trim().length < 2) {
             $(".round-name-editor").focus();
             return;
@@ -179,7 +178,7 @@ export class TournamentRecord extends React.PureComponent<
             .catch(errorAlerter);
     };
 
-    addPlayer = (ev) => {
+    addPlayer = () => {
         const name = this.state.new_player_name;
         const rank = this.state.new_player_rank;
 
@@ -243,7 +242,7 @@ export class TournamentRecord extends React.PureComponent<
             text: round.name,
             showCancelButton: true,
         })
-            .then((url) => {
+            .then(() => {
                 del(`tournament_records/${this.state.tournament_record_id}/round/${round.id}/`)
                     .then(() => {
                         for (let i = 0; i < this.state.rounds.length; ++i) {
@@ -296,7 +295,6 @@ export class TournamentRecord extends React.PureComponent<
     };
 
     render() {
-        const user = data.get("user");
         const editing = this.state.editing || null;
         const editable = this.state.editable_by_current_user || null;
 
@@ -478,7 +476,7 @@ export class TournamentRecord extends React.PureComponent<
                         <div className="round-entries-container">
                             <table className="round-entries">
                                 <tbody>
-                                    {round.entries.map((entry, idx) => (
+                                    {round.entries.map((entry) => (
                                         <tr key={entry.id} className="round-entry">
                                             {editable && (
                                                 <td>

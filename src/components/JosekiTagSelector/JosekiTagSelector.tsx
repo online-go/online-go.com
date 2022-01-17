@@ -19,7 +19,6 @@ import * as React from "react";
 
 import Select, { components } from "react-select";
 
-
 interface JosekiTagSelectorProps {
     oje_headers: HeadersInit;
     tag_list_url: string;

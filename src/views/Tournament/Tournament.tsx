@@ -502,14 +502,14 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
     };
     joinTournament = () => {
         post("tournaments/%%/players", this.state.tournament_id, {})
-            .then((res) => {
+            .then(() => {
                 this.setState({ is_joined: true });
             })
             .catch(errorAlerter);
     };
     partTournament = () => {
         post("tournaments/%%/players", this.state.tournament_id, { delete: true })
-            .then((res) => {
+            .then(() => {
                 this.setState({ is_joined: false });
             })
             .catch(errorAlerter);
@@ -539,15 +539,11 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             }
 
             const elimination_tree = this.elimination_tree[0];
-            const position_scale = 10.0;
-            const spacing = 0;
             const container = this.elimination_tree_container;
             const lastbucket = {};
             let lastcurbucket = {};
             let curbucket = {};
-            const depths = [];
             const em_4 = ($("#em10").width() * 0.4) / 10.0;
-            const em_5 = ($("#em10").width() * 0.5) / 10.0;
             const em_6 = ($("#em10").width() * 0.6) / 10.0;
             const em2_5 = ($("#em10").width() * 2.5) / 10.0;
             const namewidth = ($("#em10").width() * 12.0) / 10.0;
@@ -939,7 +935,6 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             //let line_style = "basis";
             //let line_style = "linear";
             //let line_style = "step-before";
-            const line_style = "monotone";
 
             const drawLine = (path) => {
                 const line_function = d3
@@ -1517,7 +1512,6 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
 
             let min_bar = "";
             let max_bar = "";
-            let maximum_players = 0;
             let num_rounds = 0;
             let group_size = 0;
             try {
@@ -1525,11 +1519,6 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                 max_bar = rankString(parseInt(tournament.settings.upper_bar));
             } catch (e) {
                 // ignore error
-            }
-            try {
-                maximum_players = parseInt(tournament.settings.maximum_players as string);
-            } catch (e) {
-                console.error(e);
             }
             try {
                 num_rounds = parseInt(tournament.settings.num_rounds);
@@ -1588,12 +1577,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
 
             const time_per_move = computeAverageMoveTime(tournament.time_control_parameters);
 
-            let use_elimination_trees = false;
             if (
                 tournament.tournament_type === "elimination" ||
                 tournament.tournament_type === "double_elimination"
             ) {
-                use_elimination_trees = true;
                 setTimeout(() => this.updateEliminationTrees(), 1);
             }
 
@@ -2458,7 +2445,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                 )}
                                 {(this.state.sorted_players.length > 0 || null) && (
                                     <Card>
-                                        {this.state.sorted_players.map((player, idx) => (
+                                        {this.state.sorted_players.map((player) => (
                                             <div key={player.id}>
                                                 <Player icon user={player} />
                                             </div>
@@ -3141,7 +3128,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             showCancelButton: true,
             focusCancel: true,
         })
-            .then((val) => {
+            .then(() => {
                 post("tournaments/%%/players", this.state.tournament.id, {
                     delete: true,
                     player_id: user.id,
@@ -3191,7 +3178,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             showCancelButton: true,
             focusCancel: true,
         })
-            .then((val) => {
+            .then(() => {
                 put("tournaments/%%/players", this.state.tournament.id, {
                     disqualify: user.id,
                 })
@@ -3203,7 +3190,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
         close_all_popovers();
     }
 
-    renderExtraPlayerActions = (player_id: number, ignored: any) => {
+    renderExtraPlayerActions = (player_id: number) => {
         const user = data.get("user");
         if (
             !(
@@ -3237,20 +3224,14 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
     };
 }
 
-function OpenGothaRoster({
-    tournament,
-    players,
-}: {
-    tournament: any;
-    players: Array<any>;
-}): JSX.Element {
+function OpenGothaRoster({ players }: { tournament: any; players: Array<any> }): JSX.Element {
     window["players"] = players;
     players.sort((a, b) => a.username.localeCompare(b.username));
     return (
         <div className="OpenGothaRoster">
             <table>
                 <tbody>
-                    {players.map((player, idx) => (
+                    {players.map((player) => (
                         <tr key={player.id}>
                             <td>
                                 <Player user={player} disable-cache-update rank={false} />
@@ -3275,7 +3256,6 @@ function OpenGothaTournamentRound({
     tournament,
     roundNotes,
     selectedRound,
-    players,
     rounds,
 }: {
     tournament: any;
@@ -3302,7 +3282,6 @@ function OpenGothaTournamentRound({
     }
     function save_notes() {
         set_notes_updated(false);
-        const up: any = {};
         put(`tournaments/${tournament.id}/rounds/${selectedRound}`, { notes: notes })
             .then(() => console.log("Notes saved"))
             .catch(errorAlerter);
@@ -3481,7 +3460,7 @@ function OpenGothaTournamentRound({
 
                 <table className="scheduled-matches">
                     <tbody>
-                        {matches.map((match, idx) => (
+                        {matches.map((match) => (
                             <tr key={`${match.black.id}v${match.white.id}`}>
                                 <td className="player1">
                                     <Player user={match.black} disable-cache-update />

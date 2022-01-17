@@ -35,7 +35,6 @@
     "eslint-plugin-jsdoc": "^37.0.3",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-unicorn": "^36.0.0",
-    "eslint-plugin-unused-imports": "^2.0.0",
     "express": "^4.17.1",
     "express-http-proxy": "^1.6.0",
     "fork-ts-checker-webpack-plugin": "^6.3.4",
@@ -89,6 +88,7 @@
     "@types/sanitize-html": "^1.22.0",
     "array-move": "^2.2.1",
     "d3": "^5.15.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "eventemitter3": "^4.0.7",
     "howler": "^2.2.1",
     "jquery": "^3.6.0",
@@ -127,8 +127,7 @@
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
-      "eslint",
-      "prettier --check"
+      "eslint"
     ]
   }
 }
