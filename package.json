@@ -55,6 +55,7 @@
     "postcss": "^8.3.9",
     "postcss-inline-svg": "^5.0.0",
     "prettier": "2.4.1",
+    "prettier-eslint": "^13.0.0",
     "pump": "^3.0.0",
     "source-map-loader": "^0.2.4",
     "stylus": "0.54.7",
