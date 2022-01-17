@@ -41,6 +41,7 @@ import { Size } from "src/lib/types";
 
 import { RengoManagementPane } from "RengoManagementPane";
 import { RengoTeamManagementPane } from "RengoTeamManagementPane";
+import { timeHours } from "d3";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 type Challenge = socket_api.seekgraph_global.Challenge;
@@ -1123,31 +1124,7 @@ export class Play extends React.Component<{}, PlayState> {
                 <td className="cell">{_("Live:")}</td>
             </tr>,
 
-            !this.anyChallengesToShow(live_list) ? (
-                <tr className="challenge-row ineligible" key="live-ineligible">
-                    <td className="cell" style={{ textAlign: "center" }}>
-                        {
-                            this.state.show_all_challenges
-                                ? _(
-                                      "(none)",
-                                  ) /* translators: There are no challenges in the system, nothing to list here */
-                                : _(
-                                      "(none available)",
-                                  ) /* translators: There are no challenges that this person is eligible for */
-                        }
-                    </td>
-                </tr>
-            ) : (
-                live_list.map((C) =>
-                    this.visibleInChallengeList(C) ? (
-                        <this.rengoListItem
-                            C={C}
-                            user={user}
-                            key={`rengo-list-item-{C.challenge_id}`}
-                        />
-                    ) : null,
-                )
-            ),
+            <this.rengoChallengeManagementList challenge_list={live_list} user={user} />,
 
             <tr className="challenge-row" key="hr">
                 <td className="cell" colSpan={8}>
@@ -1160,7 +1137,13 @@ export class Play extends React.Component<{}, PlayState> {
                 <td className="cell">{_("Correspondence:")}</td>
             </tr>,
 
-            !this.anyChallengesToShow(corre_list) ? (
+            <this.rengoChallengeManagementList challenge_list={corre_list} user={user} />,
+        ];
+    };
+
+    rengoChallengeManagementList = (props: { challenge_list: Challenge[]; user: any }) => (
+        <>
+            {!this.anyChallengesToShow(props.challenge_list) ? (
                 <tr className="ineligible" key="corre-ineligible">
                     <td style={{ textAlign: "center" }}>
                         {
@@ -1175,21 +1158,21 @@ export class Play extends React.Component<{}, PlayState> {
                     </td>
                 </tr>
             ) : (
-                corre_list.map(
+                props.challenge_list.map(
                     (C) =>
                         (this.visibleInChallengeList(C) || null) && (
                             <React.Fragment key={C.challenge_id}>
-                                <this.rengoListItem C={C} user={user} />
+                                <this.rengoListItem C={C} user={props.user} />
                                 {(this.state.show_in_rengo_management_pane.includes(
                                     C.challenge_id,
                                 ) ||
-                                    null) && <this.rengoManageListItem C={C} user={user} />}
+                                    null) && <this.rengoManageListItem C={C} user={props.user} />}
                             </React.Fragment>
                         ),
                 )
-            ),
-        ];
-    };
+            )}
+        </>
+    );
 
     toggleRengoChallengePane = (C: Challenge) => {
         if (this.state.show_in_rengo_management_pane.includes(C.challenge_id)) {
@@ -1278,14 +1261,12 @@ export class Play extends React.Component<{}, PlayState> {
                         </button>
                     )}
 
-                    {!isLiveGame(C.time_control_parameters) && (
-                        <button
-                            onClick={this.toggleRengoChallengePane.bind(this, C)}
-                            className="btn primary xs"
-                        >
-                            {C.user_challenge ? _("Manage") : _("View")}
-                        </button>
-                    )}
+                    <button
+                        onClick={this.toggleRengoChallengePane.bind(this, C)}
+                        className="btn primary xs"
+                    >
+                        {C.user_challenge ? _("Manage") : _("View")}
+                    </button>
 
                     {((C.eligible &&
                         !C.removed &&

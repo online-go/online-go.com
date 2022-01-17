@@ -88,8 +88,8 @@ export class NavBar extends React.PureComponent<{}, any> {
     refs: {
         input: any;
         notification_list: NotificationList;
-        omnisearch_input;
     };
+    omnisearch_input_ref = React.createRef<HTMLInputElement>();
 
     constructor(props) {
         super(props);
@@ -141,7 +141,7 @@ export class NavBar extends React.PureComponent<{}, any> {
     toggleLeftNav(ev?) {
         if (!this.state.left_nav_active) {
             if (ev && ev.type === "keydown") {
-                this.refs.omnisearch_input.focus();
+                this.omnisearch_input_ref.current.focus();
             }
         } else {
             this.clearOmnisearch();
@@ -181,7 +181,7 @@ export class NavBar extends React.PureComponent<{}, any> {
             omnisearch_tournaments: [],
             omnisearch_sitemap: [],
         });
-        $(this.refs.omnisearch_input).blur();
+        $(this.omnisearch_input_ref.current).blur();
     }
     abortOmnisearch() {
         abort_requests_in_flight("ui/omniSearch");
@@ -259,7 +259,7 @@ export class NavBar extends React.PureComponent<{}, any> {
 
         let omnisearch_searching = false;
         try {
-            omnisearch_searching = !!this.refs.omnisearch_input.value.trim();
+            omnisearch_searching = !!this.omnisearch_input_ref.current.value.trim();
         } catch (e) {
             // ignore
         }
@@ -400,7 +400,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                     <div className="search-row">
                         <i className="fa fa-search" />
                         <input
-                            ref="omnisearch_input"
+                            ref={this.omnisearch_input_ref}
                             type="text"
                             className="OmniSearch-input"
                             value={this.state.omnisearch_string}

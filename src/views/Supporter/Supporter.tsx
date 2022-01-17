@@ -434,17 +434,28 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                                 {config.payments.map((p, idx) => (
                                     <div key={idx} className="Payment">
                                         <span className="date">
-                                            {moment(p.updated).format("lll")}
+                                            {p.updated
+                                                ? moment(p.updated).format("lll")
+                                                : _("Pending")}
                                         </span>
                                         <span className="amount">
-                                            {formatMoney(p.currency, p.amount)}
+                                            {p.currency && p.amount
+                                                ? formatMoney(p.currency, p.amount)
+                                                : ""}
                                         </span>
                                         <PaymentMethod payment={p} />
                                         <span className="status">
-                                            {p.status === "succeeded" ? (
-                                                <i className="fa fa-check" />
+                                            {p.currency ? (
+                                                p.status === "succeeded" ? (
+                                                    <i className="fa fa-check" />
+                                                ) : (
+                                                    <i className="fa fa-times" />
+                                                )
                                             ) : (
-                                                <i className="fa fa-times" />
+                                                <i
+                                                    className="fa fa-question-circle"
+                                                    title={p.status}
+                                                />
                                             )}
                                         </span>
                                     </div>
@@ -1315,6 +1326,9 @@ function zero_decimal_to_paypal_amount_string(currency_code: string, amount: num
 }
 
 function formatMoney(currency_code: string, amount: number): string {
+    if (!currency_code) {
+        return "?";
+    }
     const currency = currencies[currency_code];
     const ret = Intl.NumberFormat(navigator.language, {
         style: "currency",
