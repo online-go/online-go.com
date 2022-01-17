@@ -167,7 +167,9 @@ export class TimeControlPicker extends React.PureComponent<
     //update_main_time            = (ev)=>this.syncTimeControl({main_time: ev.target.value});
     update_period_time = (ev) => this.syncTimeControl({ period_time: parseInt(ev.target.value) });
     update_periods = (ev) =>
-        this.syncTimeControl({ periods: Math.max(1, Math.min(300, parseInt(ev.target.value) || 1)) });
+        this.syncTimeControl({
+            periods: Math.max(1, Math.min(300, parseInt(ev.target.value) || 1)),
+        });
     //update_period_time          = (ev)=>this.syncTimeControl({period_time: ev.target.value});
     update_stones_per_period = (ev) =>
         this.syncTimeControl({ stones_per_period: parseInt(ev.target.value) });
