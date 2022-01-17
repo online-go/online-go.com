@@ -470,18 +470,18 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
             ? this.show_comments_requested
             : false;
 
-        console.log("Fetch next moves for ", node_id);
-        console.log("... cache: ", this.cached_positions);
+        // console.log("Fetch next moves for ", node_id);
+        // console.log("... cache: ", this.cached_positions);
 
         // Because of tricky sequencing of state update from server responses, caching works only with
         // explore mode  ... the other modes need processNewMoves to happen after completion of fetchNextFilteredMovesFor() (IE this procedure)
         // which doesn't work with caching... needs some reorganisation to make that work
         if (this.state.mode === PageMode.Explore && this.cached_positions.hasOwnProperty(node_id)) {
-            console.log("cached position:", node_id);
+            // console.log("cached position:", node_id);
             this.processNewMoves(node_id, this.cached_positions[node_id]);
             this.prefetchFor(node_id, variation_filter);
         } else {
-            console.log("fetching position for node", node_id, this.state.mode);
+            // console.log("fetching position for node", node_id, this.state.mode);
             // First, get the required position from the server as soon as possible
             fetch(position_url(node_id, variation_filter, this.state.mode), {
                 mode: "cors",
@@ -504,7 +504,12 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
                             ...this.cached_positions,
                         };
                     } else {
-                        // console.log("Ignoring server response ", target_node, " looking for ", this.waiting_for);
+                        /* console.log(
+                            "Ignoring server response ",
+                            target_node,
+                            " looking for ",
+                            this.waiting_for,
+                        );*/
                     }
                 })
                 .catch((r) => {
@@ -523,10 +528,10 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
         // Prefetch the next nodes, by calling the prefetch API, unless we already have a pre-fetch in flight
         // (no point in driving server load up with overlapping and expensive prefetches!)
         if (!this.prefetching) {
-            console.log("checking if we already prefetched at", node_id, this.prefetched[node_id]);
+            // console.log("checking if we already prefetched at", node_id, this.prefetched[node_id]);
             if (!this.prefetched[node_id]) {
                 this.prefetching = true;
-                console.log("... prefetching", node_id);
+                // console.log("... prefetching", node_id);
                 fetch(prefetch_url(node_id, variation_filter, this.state.mode), {
                     mode: "cors",
                     headers: oje_headers(),
@@ -535,7 +540,7 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
                     .then((body) => {
                         this.prefetching = false;
                         this.prefetched[node_id] = true;
-                        console.log("Prefetch Server response:", body);
+                        // console.log("Prefetch Server response:", body);
                         body.forEach((move_info) => {
                             this.cached_positions = {
                                 [move_info["node_id"]]: move_info,
@@ -750,7 +755,7 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
                 : "pass"
             : "root";
 
-        console.log("Processing placement at:", placement, move_string);
+        // console.log("Processing placement at:", placement, move_string);
 
         if (this.backstepping) {
             const play = ".root." + move_string.replace(/,/g, ".");
@@ -1159,7 +1164,11 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
     };
 
     render() {
-        // console.log("Joseki app rendering ", this.state.move_string, this.state.current_move_category);
+        /* console.log(
+            "Joseki app rendering ",
+            this.state.move_string,
+            this.state.position_description,
+        );  */
 
         const tenuki_type =
             this.state.pass_available &&
@@ -1769,6 +1778,8 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
 
         const description = applyJosekiMarkdown(this.props.description);
 
+        // console.log("Explore Pane rendering", description, this.props.position_type);
+
         return (
             <div className="explore-pane">
                 <div className="description-column">
@@ -1777,7 +1788,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
                             <Markdown source={description} />
                         </div>
                     ) : (
-                        ""
+                        "" // "(new)"
                     )}
                 </div>
                 <div className={"extra-info-column extra-info-open"}>
@@ -2294,12 +2305,12 @@ class EditPane extends React.Component<EditProps, EditState> {
     };
 
     render = () => {
-        console.log(
+        /*console.log(
             "rendering EditPane with ",
             this.state.move_type,
             this.state.new_description,
             this.state.variation_label,
-        );
+        );*/
 
         // create the set of select option elements from the valid MoveCategory items, with the current one at the top
         const selections = Object.keys(MoveCategory).map((selection, i) => (
