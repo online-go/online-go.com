@@ -435,7 +435,9 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                                 {config.payments.map((p, idx) => (
                                     <div key={idx} className="Payment">
                                         <span className="date">
-                                            {moment(p.updated).format("lll")}
+                                            {p.updated
+                                                ? moment(p.updated).format("lll")
+                                                : _("Pending")}
                                         </span>
                                         <span className="amount">
                                             {p.currency
