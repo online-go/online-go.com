@@ -440,9 +440,9 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                                                 : _("Pending")}
                                         </span>
                                         <span className="amount">
-                                            {p.currency
+                                            {p.currency && p.amount
                                                 ? formatMoney(p.currency, p.amount)
-                                                : p.amount}
+                                                : ""}
                                         </span>
                                         <PaymentMethod payment={p} />
                                         <span className="status">
