@@ -27,6 +27,8 @@ interface MarkdownProps {
     className?: string;
 }
 
+interface MarkdownState {}
+
 const md = markdownit({
     html: true,
     linkify: true,
@@ -181,12 +183,12 @@ function sanitize(src) {
     });
 }
 
-export class Markdown extends React.PureComponent<MarkdownProps, { html }> {
+// this component is protected from calling sanitizeHtml to often by memoising, below.
+
+class _Markdown extends React.PureComponent<MarkdownProps, MarkdownState> {
     constructor(props) {
         super(props);
-        this.state = {
-            html: this.props.source ? sanitize(md.render(this.preprocess(this.props.source))) : "",
-        };
+        this.state = {};
     }
 
     //
@@ -206,20 +208,18 @@ export class Markdown extends React.PureComponent<MarkdownProps, { html }> {
         return source;
     }
 
-    componentDidUpdate(oldProps) {
-        if (oldProps.source !== this.props.source) {
-            this.setState({
-                html: oldProps.source ? sanitize(md.render(this.preprocess(oldProps.source))) : "",
-            });
-        }
-    }
-
     render() {
+        const html = this.props.source
+            ? sanitize(md.render(this.preprocess(this.props.source)))
+            : "";
+
         return (
             <div
                 className={this.props.className ? this.props.className : ""}
-                dangerouslySetInnerHTML={{ __html: this.state.html }}
+                dangerouslySetInnerHTML={{ __html: html }}
             />
         );
     }
 }
+
+export const Markdown = React.memo(_Markdown);
