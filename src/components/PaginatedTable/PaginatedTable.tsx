@@ -35,15 +35,18 @@ interface Filter {
     [key: string]: string | number | boolean;
 }
 
-interface PagedResults {
+interface PagedResults<EntryT = any> {
     count: number; // total results
-    results: Array<any>;
+    results: Array<EntryT>;
 }
 
-type SourceFunction = (filter: Filter, sorting: Array<string>) => Promise<PagedResults>;
+type SourceFunction<EntryT> = (
+    filter: Filter,
+    sorting: Array<string>,
+) => Promise<PagedResults<EntryT>>;
 
 interface PaginatedTableProperties<RawEntryT, GroomedEntryT = RawEntryT> {
-    source: string | SourceFunction;
+    source: string | SourceFunction<RawEntryT>;
     method?: "GET" | "POST";
     pageSize?: number;
     columns: Array<PaginatedTableColumnProperties<GroomedEntryT>>;
