@@ -1116,27 +1116,33 @@ export class Play extends React.Component<{}, PlayState> {
             (c) => !isLiveGame(c.time_control_parameters),
         );
 
-        return [
-            // the live list
-            <tr className="challenge-row" key="live-header">
-                <td className="cell">{_("Live:")}</td>
-            </tr>,
+        return (
+            <>
+                <tr className="challenge-row">
+                    <td className="cell">{_("Live:")}</td>
+                </tr>
+                <this.rengoChallengeManagementList
+                    challenge_list={live_list}
+                    user={user}
+                    key="live"
+                />
 
-            <this.rengoChallengeManagementList challenge_list={live_list} user={user} key="live" />,
+                <tr className="challenge-row">
+                    <td className="cell" colSpan={8}>
+                        <hr />
+                    </td>
+                </tr>
 
-            <tr className="challenge-row" key="hr">
-                <td className="cell" colSpan={8}>
-                    <hr />
-                </td>
-            </tr>,
-
-            // the correspondence list
-            <tr className="challenge-row" key="corre-header">
-                <td className="cell">{_("Correspondence:")}</td>
-            </tr>,
-
-            <this.rengoChallengeManagementList challenge_list={corr_list} user={user} key="corr" />,
-        ];
+                <tr className="challenge-row">
+                    <td className="cell">{_("Correspondence:")}</td>
+                </tr>
+                <this.rengoChallengeManagementList
+                    challenge_list={corr_list}
+                    user={user}
+                    key="corr"
+                />
+            </>
+        );
     };
 
     rengoChallengeManagementList = (props: { challenge_list: Challenge[]; user: any }) => (
