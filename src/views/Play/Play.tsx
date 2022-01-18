@@ -686,8 +686,6 @@ export class Play extends React.Component<{}, PlayState> {
 
         const rengo_challenge_to_show = own_live_rengo_challenge || joined_live_rengo_challenge;
 
-        console.log("automatch container rengo to show", rengo_challenge_to_show);
-
         //  Construction of the pane we need to show...
         if (automatch_manager.active_live_automatcher) {
             return (
@@ -1114,17 +1112,17 @@ export class Play extends React.Component<{}, PlayState> {
         const live_list = this.state.rengo_list.filter((c) =>
             isLiveGame(c.time_control_parameters),
         );
-        const corre_list = this.state.rengo_list.filter(
+        const corr_list = this.state.rengo_list.filter(
             (c) => !isLiveGame(c.time_control_parameters),
         );
 
         return [
             // the live list
-            <tr className="challenge-row" key="live">
+            <tr className="challenge-row" key="live-header">
                 <td className="cell">{_("Live:")}</td>
             </tr>,
 
-            <this.rengoChallengeManagementList challenge_list={live_list} user={user} />,
+            <this.rengoChallengeManagementList challenge_list={live_list} user={user} key="live" />,
 
             <tr className="challenge-row" key="hr">
                 <td className="cell" colSpan={8}>
@@ -1133,11 +1131,11 @@ export class Play extends React.Component<{}, PlayState> {
             </tr>,
 
             // the correspondence list
-            <tr className="challenge-row" key="corre">
+            <tr className="challenge-row" key="corre-header">
                 <td className="cell">{_("Correspondence:")}</td>
             </tr>,
 
-            <this.rengoChallengeManagementList challenge_list={corre_list} user={user} />,
+            <this.rengoChallengeManagementList challenge_list={corr_list} user={user} key="corr" />,
         ];
     };
 
