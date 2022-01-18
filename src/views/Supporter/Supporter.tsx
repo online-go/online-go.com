@@ -671,7 +671,7 @@ export function PriceBox({
                                 <i className="payment-method card" />
                                 <i className="payment-method apple" />
                                 <i className="payment-method google" />
-                                <i className="payment-method alipay" />
+                                {/* <i className="payment-method alipay" /> */}
                                 <i className="payment-method bank" />
                                 <i className="payment-method sepa" />
                             </div>
