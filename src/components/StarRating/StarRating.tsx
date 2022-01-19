@@ -19,7 +19,7 @@ import * as React from "react";
 
 interface StarRatingProperties {
     value: number;
-    rated: boolean;
+    rated?: boolean;
     onChange?: (value) => void;
 }
 
