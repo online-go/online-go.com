@@ -74,7 +74,6 @@ export class ObserveGamesComponent extends React.PureComponent<
     private next_refresh: any;
     private auto_refresh: number;
     private channel?: string;
-    private show_announcements: boolean;
 
     constructor(props) {
         super(props);
@@ -93,7 +92,6 @@ export class ObserveGamesComponent extends React.PureComponent<
             filters: this.namespacedPreferenceGet("observed-games-filter") as GameListWhere,
         };
         this.channel = props.channel;
-        this.show_announcements = props.show_announcements;
     }
 
     namespacedPreferenceGet(key: preferences.ValidPreference): any {
