@@ -40,13 +40,8 @@ interface PagedResults<EntryT = any> {
     results: Array<EntryT>;
 }
 
-type SourceFunction<EntryT> = (
-    filter: Filter,
-    sorting: Array<string>,
-) => Promise<PagedResults<EntryT>>;
-
 interface PaginatedTableProperties<RawEntryT, GroomedEntryT = RawEntryT> {
-    source: string | SourceFunction<RawEntryT>;
+    source: string;
     method?: "GET" | "POST";
     pageSize?: number;
     columns: Array<PaginatedTableColumnProperties<GroomedEntryT>>;
@@ -122,16 +117,9 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
             return;
         }
 
-        let promise: Promise<PagedResults>;
-        let cancel: () => void;
-
         setLoading(true);
         load_again.current = false;
-        if (typeof props.source === "string") {
-            [promise, cancel] = ajax_loader();
-        } else {
-            promise = props.source(filter, order_by);
-        }
+        const [promise, cancel] = ajax_loader();
 
         promise
             .then((res: PagedResults) => {
