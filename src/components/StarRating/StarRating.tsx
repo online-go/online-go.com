@@ -17,6 +17,12 @@
 
 import * as React from "react";
 
+interface StarRatingProperties {
+    value: number;
+    rated: boolean;
+    onChange?: (value) => void;
+}
+
 function star_class(rating, v) {
     if (rating - (v - 1) < 1.0) {
         if (rating - (v - 1) >= 0.5) {
@@ -29,7 +35,7 @@ function star_class(rating, v) {
     return "fa-star";
 }
 
-export class StarRating extends React.PureComponent<any, { rating }> {
+export class StarRating extends React.PureComponent<StarRatingProperties, { rating: number }> {
     setters = [];
     preview = [];
 
