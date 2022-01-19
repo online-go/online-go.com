@@ -52,8 +52,10 @@ function onChatSubscribeGroupMentionsChange(pref) {
     chat_subscribe_new_group_chat_mentioned = pref;
     event_emiter.emit("subscription_changed");
 }
+let chat_subscribe_new_tournament_chat_mentioned = false;
 preferences.watch("chat-subscribe-tournament-chat-unread", onChatSubscribeTournamentMessageChange);
-function onChatSubscribeTournamentMessageChange() {
+function onChatSubscribeTournamentMessageChange(pref) {
+    chat_subscribe_new_tournament_chat_mentioned = pref;
     event_emiter.emit("subscription_changed");
 }
 preferences.watch("chat-subscribe-tournament-mentions", onChatSubscribeTournamentMentionsChange);
@@ -69,7 +71,7 @@ export function getUnreadChatPreference(channel: string): boolean {
         return chat_subscribe_new_group_chat_messages;
     }
     if (channel.startsWith("tournament-")) {
-        return chat_subscribe_new_group_chat_messages;
+        return chat_subscribe_new_tournament_chat_mentioned;
     }
     return false;
 }
