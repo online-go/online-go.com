@@ -778,12 +778,8 @@ function GitHubUsername({ uid }: { uid: string }): JSX.Element {
     }, [uid]);
 
     return (
-        <span>
-            <img
-                width={16}
-                height={16}
-                src={`https://avatars.githubusercontent.com/u/${uid}?v=4`}
-            />
+        <span className="GitHubUsername">
+            <img src={`https://avatars.githubusercontent.com/u/${uid}?v=4`} />
             <span>{username}</span>
         </span>
     );
