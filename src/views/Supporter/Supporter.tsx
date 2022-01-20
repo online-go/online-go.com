@@ -1056,6 +1056,7 @@ function ServiceLine({ service }: { service: Service }): JSX.Element {
             <span>Soft Expiration: {service.soft_expiration}</span>
             <span>Hard Expiration: {service.hard_expiration}</span>
             <span>In Grace Period : {service.in_grace_period.toString()}</span>
+            <span>Notes: {service.notes}</span>
             <button className={active ? "success" : "reject"} onClick={toggleActive}>
                 {active ? _("Active") : _("Inactive")}
             </button>
