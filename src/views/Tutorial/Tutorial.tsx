@@ -24,7 +24,7 @@ import { InstructionalGoban } from "./InstructionalGoban";
 import { openNewGameModal } from "NewGameModal";
 
 type TutorialProperties = RouteComponentProps<{
-    step: any; // string treated as a number
+    step: string;
 }>;
 
 const NUM_PAGES = 12;
@@ -36,7 +36,7 @@ export class Tutorial extends React.PureComponent<TutorialProperties> {
     }
 
     render() {
-        const page_number = parseInt(this.props.match.params.step || 0);
+        const page_number = parseInt(this.props.match.params.step) || 0;
 
         switch (page_number) {
             case 0:
