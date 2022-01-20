@@ -707,6 +707,9 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
                         {settings.social_auth_accounts.map((account) => (
                             <div key={account.provider}>
                                 <div className="social-link">
+                                    {account.provider === "github" && (
+                                        <span className="github fa fa-github" />
+                                    )}
                                     {account.provider === "google-oauth2" && (
                                         <span className="google google-oauth2-icon" />
                                     )}
@@ -720,7 +723,10 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
                                         <i className="apple apple-id-icon fa fa-apple" />
                                     )}
 
-                                    {account.uid}
+                                    {account.provider === "github" && (
+                                        <GitHubUsername uid={account.uid} />
+                                    )}
+                                    {account.provider !== "github" && account.uid}
 
                                     <form method="POST" action={`/disconnect/${account.provider}/`}>
                                         <input
@@ -757,6 +763,29 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
                 </dd>
             </dl>
         </div>
+    );
+}
+
+function GitHubUsername({ uid }: { uid: string }): JSX.Element {
+    const [username, setUsername] = React.useState("");
+
+    React.useEffect(() => {
+        get(`https://api.github.com/user/${uid}`)
+            .then((res) => {
+                setUsername(res.login);
+            })
+            .catch(ignore);
+    }, [uid]);
+
+    return (
+        <span>
+            <img
+                width={16}
+                height={16}
+                src={`https://avatars.githubusercontent.com/u/${uid}?v=4`}
+            />
+            <span>{username}</span>
+        </span>
     );
 }
 
