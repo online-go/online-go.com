@@ -117,3 +117,9 @@ export interface AutomatchPreferencesBase {
         value: "enabled" | "disabled";
     };
 }
+
+// Many times an id is a number, but it doesn't matter if it is a string as
+// far as the code is concerned.  Example:
+//
+//
+export type IdType = number | string;

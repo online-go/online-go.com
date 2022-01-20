@@ -31,7 +31,7 @@ interface PaginatedTableColumnProperties<EntryT> {
     orderBy?: Array<string>;
 }
 
-interface Filter {
+export interface Filter {
     [key: string]: string | number | boolean;
 }
 

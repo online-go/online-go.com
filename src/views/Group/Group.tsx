@@ -40,7 +40,7 @@ import swal from "sweetalert2";
 import { PlayerCacheEntry } from "player_cache";
 
 type GroupProperties = RouteComponentProps<{
-    group_id: any; // string treated as a number
+    group_id: string;
 }>;
 
 // API: group/%id%/
