@@ -156,18 +156,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
 
     rengoTeamList = () => (
         <div className="rengo-teams-container">
-            <div className="rengo-team-list">
-                <span className="team-title">Black Team</span>
-                {this.props.config.rengo_teams.black.map((player) => (
-                    <Player disableCacheUpdate icon rank user={player} />
-                ))}
-            </div>
-            <div className="rengo-team-list">
-                <span className="team-title">White Team</span>
-                {this.props.config.rengo_teams.white.map((player) => (
-                    <Player disableCacheUpdate icon rank user={player} />
-                ))}
-            </div>
+            {/* this space intentionally left blank: it doesn't work out to try to show rengo teams in this small modal */}
         </div>
     );
 
@@ -216,6 +205,15 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                             <dd>
                                 <Player icon rank user={this.props.creatorId} />
                             </dd>
+                        )}
+                        {(config.rengo || null) && (
+                            <>
+                                <dt>{_("Participants")}</dt>
+                                <dd>
+                                    {config.rengo_teams.black.length +
+                                        config.rengo_teams.white.length}
+                                </dd>
+                            </>
                         )}
                         {!this.props.config.rengo && (
                             <React.Fragment>

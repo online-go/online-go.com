@@ -621,6 +621,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         this.upstate([
             ["challenge.game.rengo", ev],
             ["challenge.game.ranked", false],
+            ["challenge.game.handicap", 0],
         ]);
     update_demo_private = (ev) => this.upstate("demo.private", ev);
     update_ranked = (ev) => this.setRanked((ev.target as HTMLInputElement).checked);
@@ -1133,6 +1134,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                         className="challenge-dropdown form-control"
                                     >
                                         <option
+                                            disabled={challenge.game.rengo}
                                             value="-1"
                                             /*{disabled={!this.state.conf.handicap_enabled}}*/
                                         >
