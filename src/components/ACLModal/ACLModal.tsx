@@ -29,7 +29,7 @@ interface Events {}
 type ACLModalProperties =
     | { game_id: number }
     | { review_id: number }
-    | { puzzle_collection_id?: number };
+    | { puzzle_collection_id?: number | string };
 
 export class ACLModal extends Modal<Events, ACLModalProperties, any> {
     player_autocomplete_ref = React.createRef<PlayerAutocompleteRef>();

@@ -35,7 +35,7 @@ interface PuzzleEntry {
 }
 
 interface SortablePuzzleListProperties {
-    collection: number;
+    collection: number | string;
 }
 interface SortablePuzzleListState {
     entries: Array<PuzzleEntry>;

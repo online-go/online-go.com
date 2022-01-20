@@ -30,7 +30,7 @@ export function PuzzleCollection({
         params: { collection_id },
     },
 }: RouteComponentProps<{
-    collection_id: any; // string treated as a number
+    collection_id: string;
 }>): JSX.Element {
     const [collection, setCollection] = React.useState(null);
     const [name, setName] = React.useState(null);
