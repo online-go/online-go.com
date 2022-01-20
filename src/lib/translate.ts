@@ -364,7 +364,7 @@ try {
 export function interpolate(str: string, params: Array<any> | { [key: string]: any }): string {
     if (Array.isArray(params)) {
         let idx = 0;
-        return str.replace(/%[sd]/g, (_, __) => {
+        return str.replace(/%[sd]/g, (__, ___) => {
             if (idx >= params.length) {
                 //throw new Error(`Missing array index ${idx} for string: ${str}`);
                 console.warn(`Missing array index ${idx} for string: ${str}`);
@@ -381,7 +381,7 @@ export function interpolate(str: string, params: Array<any> | { [key: string]: a
             return params[key];
         });
     }
-    return str.replace(/%[sd]/g, (_, __) => params);
+    return str.replace(/%[sd]/g, (__, ___) => params);
 }
 
 /**

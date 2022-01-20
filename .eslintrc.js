@@ -53,7 +53,13 @@ module.exports = {
                 "ignoreProperties": true
             }
         ],
-        "@typescript-eslint/no-unused-vars": ["error", { "varsIgnorePattern": "^_", "argsIgnorePattern": "^_" }],
+        "@typescript-eslint/no-unused-vars": [
+            "error",
+            {
+                "varsIgnorePattern": "^_[a-zA-Z_]",
+                "argsIgnorePattern": "^_[a-zA-Z_]"
+            }
+        ],
         "@typescript-eslint/no-var-requires": "error",
         "@typescript-eslint/prefer-namespace-keyword": "error",
         "@typescript-eslint/semi": "error",
