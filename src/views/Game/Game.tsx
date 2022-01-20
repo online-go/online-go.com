@@ -20,7 +20,7 @@ import device from "device";
 import * as preferences from "preferences";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
-import { Link } from "react-router-dom";
+import { Link, RouteComponentProps } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
 import { _, ngettext, pgettext, interpolate, current_language } from "translate";
 import { post, get, api1, del } from "requests";
@@ -74,15 +74,11 @@ import swal from "sweetalert2";
 
 const win = $(window);
 
-interface GameProperties {
-    match: {
-        params: {
-            game_id?: string;
-            review_id?: string;
-            move_number?: string;
-        };
-    };
-}
+type GameProperties = RouteComponentProps<{
+    game_id?: string;
+    review_id?: string;
+    move_number?: string;
+}>;
 
 interface GameState {
     view_mode: ViewMode;

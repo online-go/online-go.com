@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
-import { Link } from "react-router-dom";
+import { Link, RouteComponentProps } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext, interpolate } from "translate";
 import { post, get, put, del } from "requests";
@@ -38,13 +38,7 @@ import { PuzzleNavigation } from "./PuzzleNavigation";
 import { PuzzleEditor } from "./PuzzleEditing";
 import swal from "sweetalert2";
 
-interface PuzzleProperties {
-    match: {
-        params: {
-            puzzle_id: string;
-        };
-    };
-}
+type PuzzleProperties = RouteComponentProps<{ puzzle_id: string }>;
 
 interface PuzzleState {
     puzzle?: any;

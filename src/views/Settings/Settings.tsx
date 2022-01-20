@@ -23,7 +23,7 @@ import * as moment from "moment";
 import Select from "react-select";
 import ITC from "ITC";
 import { ValidPreference } from "preferences";
-import { Link } from "react-router-dom";
+import { Link, RouteComponentProps } from "react-router-dom";
 import { _, pgettext, interpolate } from "translate";
 import { post, get, put, del, abort_requests_in_flight, getCookie } from "requests";
 import { errorAlerter, errorLogger, ignore, Timeout, dup } from "misc";
@@ -116,13 +116,7 @@ interface SettingGroupProps {
     updateSelfReportedAccountLinkages: (link: any) => void;
 }
 
-interface SettingsProperties {
-    match: {
-        params: {
-            category: string;
-        };
-    };
-}
+type SettingsProperties = RouteComponentProps<{ category: string }>;
 
 export function Settings({
     match: {
