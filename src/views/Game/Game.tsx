@@ -1639,7 +1639,10 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         }
     }
     fork() {
-        if (this.goban.isAnalysisDisabled() && this.goban.engine.phase !== "finished") {
+        if (
+            this.goban?.engine.rengo ||
+            (this.goban.isAnalysisDisabled() && this.goban.engine.phase !== "finished")
+        ) {
             //swal(_("Game forking has been disabled for this game since analysis mode has been disabled"));
         } else {
             challengeFromBoardPosition(this.goban);
@@ -3985,7 +3988,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                 >
                     <i className="fa fa-tachometer"></i> {_("Estimate score")}
                 </a>
-                <a onClick={this.fork}>
+                <a onClick={this.fork} className={goban?.engine.rengo ? "disabled" : ""}>
                     <i className="fa fa-code-fork"></i> {_("Fork game")}
                 </a>
                 <a onClick={this.alertModerator}>

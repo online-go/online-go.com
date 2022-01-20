@@ -687,8 +687,12 @@ function load_from_local_storage_and_sync() {
         console.error(e);
     }
 
-    _process_write_ahead_log(user.id);
-    remote_sync();
+    if (termination_socket.connected) {
+        // we do a sync when we connect to the server, so we don't need to
+        // worry about syncing again here.
+        _process_write_ahead_log(user.id);
+        remote_sync();
+    }
 }
 
 load_from_local_storage_and_sync();
