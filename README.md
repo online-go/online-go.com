@@ -9,6 +9,11 @@ This repository contains the source code for web client used by [Online-Go.com](
 # Contributing
 Feel like making some changes? Excellent! See the [Contributing guide](./CONTRIBUTING.md).
 
+As a small token of appreciation for to those that help us out with code, if
+you link your github account to your OGS user here:
+https://online-go.com/settings/account you'll receive top tier supporter status
+for three months after your most recent commit that gets merged.
+
 # Bugs, Suggestions, and Discussions
 
 Online-Go.com has a very active community of Go players, however only a
