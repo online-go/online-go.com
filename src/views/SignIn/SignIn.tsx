@@ -246,6 +246,10 @@ export function SocialLoginButtons(): JSX.Element {
                 <i className="apple apple-id-icon fa fa-apple" />
                 {_("Sign in with Apple")}
             </a>
+            <a href="/login/github/" className="s btn md-icon" target="_self">
+                <i className="github github-icon fa fa-github" />
+                {_("Sign in with GitHub")}
+            </a>
         </div>
     );
 }
