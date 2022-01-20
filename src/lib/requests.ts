@@ -16,6 +16,7 @@
  */
 
 import { deepCompare } from "misc";
+import { IdType } from "./types";
 
 export function api1ify(path) {
     if (path.indexOf("/api/v") === 0) {
@@ -68,7 +69,7 @@ type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 interface RequestFunction {
     (url: string): Promise<any>;
     (url: string, id_or_data: number | any): Promise<any>;
-    (url: string, id: number, data: any): Promise<any>;
+    (url: string, id: IdType, data: any): Promise<any>;
 }
 
 export function request(method: Method): RequestFunction {

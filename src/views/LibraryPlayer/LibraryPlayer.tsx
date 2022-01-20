@@ -26,10 +26,11 @@ import { Player } from "Player";
 import { Card } from "material";
 import * as Dropzone from "react-dropzone";
 import * as moment from "moment";
+import { IdType } from "src/lib/types";
 
 type LibraryPlayerProperties = RouteComponentProps<{
-    player_id: any; // string treated as a number
-    collection_id: any; // string treated as a number
+    player_id: string;
+    collection_id: string;
 }>;
 
 interface Collection {
@@ -44,8 +45,8 @@ interface Collection {
 }
 
 interface LibraryPlayerState {
-    player_id: number;
-    collection_id: number;
+    player_id: IdType;
+    collection_id: IdType;
     collections?: { [id: number]: Collection };
     games_checked: {};
     new_collection_name: string;
@@ -100,7 +101,7 @@ export class LibraryPlayer extends React.PureComponent<
     componentWillUnmount() {
         abort_requests_in_flight("library/");
     }
-    refresh(player_id: number) {
+    refresh(player_id: IdType) {
         const promise = get("library/%%", player_id);
 
         promise

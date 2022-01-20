@@ -28,13 +28,14 @@ import { close_all_popovers, popover } from "popover";
 import { browserHistory } from "ogsHistory";
 import swal from "sweetalert2";
 import { RouteComponentProps } from "react-router-dom";
+import { IdType } from "src/lib/types";
 
 type LadderProperties = RouteComponentProps<{
-    ladder_id: any; // string treated as a number
+    ladder_id: string;
 }>;
 
 interface LadderState {
-    ladder_id: number;
+    ladder_id: IdType;
     ladder: {
         group: any; // doesn't appear this member is used
         name: string;
