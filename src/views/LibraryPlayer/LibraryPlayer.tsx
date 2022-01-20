@@ -18,7 +18,7 @@
 import * as React from "react";
 import * as data from "data";
 import { _, interpolate } from "translate";
-import { Link } from "react-router-dom";
+import { Link, RouteComponentProps } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
 import { abort_requests_in_flight, post, get } from "requests";
 import { errorAlerter, ignore, getOutcomeTranslation } from "misc";
@@ -27,11 +27,10 @@ import { Card } from "material";
 import * as Dropzone from "react-dropzone";
 import * as moment from "moment";
 
-interface LibraryPlayerProperties {
-    match: {
-        params: any;
-    };
-}
+type LibraryPlayerProperties = RouteComponentProps<{
+    player_id: any; // string treated as a number
+    collection_id: any; // string treated as a number
+}>;
 
 interface Collection {
     id: number;

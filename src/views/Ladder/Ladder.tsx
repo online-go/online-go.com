@@ -27,12 +27,11 @@ import { PlayerAutocomplete } from "PlayerAutocomplete";
 import { close_all_popovers, popover } from "popover";
 import { browserHistory } from "ogsHistory";
 import swal from "sweetalert2";
+import { RouteComponentProps } from "react-router-dom";
 
-interface LadderProperties {
-    match: {
-        params: any;
-    };
-}
+type LadderProperties = RouteComponentProps<{
+    ladder_id: any; // string treated as a number
+}>;
 
 interface LadderState {
     ladder_id: number;

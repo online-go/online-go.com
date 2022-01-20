@@ -18,7 +18,7 @@
 /* A page for looking up and playing against josekis stored in the OGS OJE*/
 
 import * as React from "react";
-import { Link } from "react-router-dom";
+import { Link, RouteComponentProps } from "react-router-dom";
 import ReactResizeDetector from "react-resize-detector";
 import * as queryString from "query-string";
 
@@ -145,12 +145,7 @@ const ColorMap = {
 
 type MoveType = "bad" | "good" | "computer" | "complete";
 
-interface JosekiProps {
-    match: {
-        params: any;
-    };
-    location: any;
-}
+type JosekiProps = RouteComponentProps<{ pos: string }>;
 
 interface MoveTypeWithComment {
     type: MoveType;

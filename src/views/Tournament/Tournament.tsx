@@ -18,7 +18,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { LoadingPage } from "Loading";
-import { Link } from "react-router-dom";
+import { Link, RouteComponentProps } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext, interpolate } from "translate";
 import { abort_requests_in_flight, del, put, post, get } from "requests";
@@ -51,11 +51,10 @@ let logspam_debounce: any;
 
 const ranks = amateurRanks();
 
-interface TournamentProperties {
-    match: {
-        params: any;
-    };
-}
+type TournamentProperties = RouteComponentProps<{
+    tournament_id: string;
+    group_id: string;
+}>;
 
 interface TournamentState {
     new_tournament_group_id: number;
