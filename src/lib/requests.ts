@@ -76,7 +76,7 @@ export function request(method: Method): RequestFunction {
     return (url, ...rest) => {
         initialize();
 
-        let id: number | string | undefined;
+        let id: IdType | undefined;
         let data: any;
         switch (typeof rest[0]) {
             case "number":

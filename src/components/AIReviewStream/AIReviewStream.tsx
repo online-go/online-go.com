@@ -19,13 +19,14 @@ import * as React from "react";
 import * as data from "data";
 import { ai_socket } from "sockets";
 import { MoveTree } from "goban";
+import { IdType } from "src/lib/types";
 
 const analysis_requests_made: { [id: string]: boolean } = {};
 
 interface AIReviewStreamProperties {
     uuid?: string;
-    game_id?: number | string;
-    ai_review_id?: number | string;
+    game_id?: IdType;
+    ai_review_id?: IdType;
     callback: (data: any) => any;
 }
 

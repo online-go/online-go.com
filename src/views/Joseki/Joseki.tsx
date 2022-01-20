@@ -39,6 +39,7 @@ import { JosekiSourceModal } from "JosekiSourceModal";
 import { JosekiVariationFilter } from "JosekiVariationFilter";
 import { JosekiTagSelector } from "JosekiTagSelector";
 import { Throbber } from "Throbber";
+import { IdType } from "src/lib/types";
 
 const server_url = data.get("joseki-url", "/oje/");
 
@@ -180,7 +181,7 @@ interface JosekiState {
     joseki_source?: {
         url: string;
         description: string;
-        id?: string | number;
+        id?: IdType;
     };
     tags: any[];
 

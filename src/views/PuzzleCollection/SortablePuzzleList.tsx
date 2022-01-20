@@ -23,6 +23,7 @@ import { longRankString } from "rank_utils";
 import { MiniGoban } from "MiniGoban";
 import { SortableContainer, SortableElement } from "react-sortable-hoc";
 import arrayMove from "array-move";
+import { IdType } from "src/lib/types";
 
 interface PuzzleEntry {
     id: number;
@@ -35,7 +36,7 @@ interface PuzzleEntry {
 }
 
 interface SortablePuzzleListProperties {
-    collection: number | string;
+    collection: IdType;
 }
 interface SortablePuzzleListState {
     entries: Array<PuzzleEntry>;
