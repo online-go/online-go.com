@@ -106,7 +106,6 @@ class Index extends React.PureComponent<{}, any> {
     }
 
     render() {
-        const progress = 9;
         const user = data.get("user");
         return (
             <div id="LearningHub-Index">
@@ -228,7 +227,6 @@ class SectionNav extends React.Component<{}, any> {
     }
 
     render() {
-        const pathname = window.location.pathname;
         const m = window.location.pathname.match(/\/learn-to-play-go(\/([^\/]+))?(\/([0-9]+))?/);
         const section_name = (m && m[2]) || "";
         const page = (m && m[4]) || 0;

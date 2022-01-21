@@ -91,13 +91,13 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
     componentDidMount() {
         this.initialize();
     }
-    componentDidUpdate(prevProps: AIReviewChartProperties, prevState: any) {
+    componentDidUpdate() {
         this.onResize();
     }
     componentWillUnmount() {
         this.deinitialize();
     }
-    shouldComponentUpdate(nextProps: AIReviewChartProperties, nextState: any) {
+    shouldComponentUpdate(nextProps: AIReviewChartProperties) {
         return (
             !deepCompare(nextProps.entries, this.props.entries) ||
             !deepCompare(nextProps.variation_entries, this.props.variation_entries) ||
@@ -342,7 +342,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             this.props.variation_entries.length > 0 &&
             entries.length > this.props.move_number + 1
         ) {
-            variation_entries = this.props.variation_entries.map((x, i) => {
+            variation_entries = this.props.variation_entries.map((x) => {
                 return {
                     win_rate: x.win_rate,
                     score: x.score,
@@ -390,7 +390,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             .x1((d) => this.x(d.move_number))
             .y1((d) => this.y(use_score_safe ? d.score * 1.0 : d.win_rate * 100.0))
             .x0((d) => this.x(d.move_number))
-            .y0((d) => this.y(use_score_safe ? 0 : 50));
+            .y0(() => this.y(use_score_safe ? 0 : 50));
 
         this.win_rate_line = d3
             .line<AIReviewEntry>()
@@ -520,8 +520,8 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             .duration(200)
             .attr("cx", (d) => this.x(d.move_number))
             .attr("cy", (d) => this.y(use_score_safe ? d.score : d.win_rate * 100))
-            .attr("r", (d) => 3)
-            .attr("fill", (d) => "#FF0000");
+            .attr("r", () => 3)
+            .attr("fill", () => "#FF0000");
 
         this.move_crosshair?.attr(
             "transform",

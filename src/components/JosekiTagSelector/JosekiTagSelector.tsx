@@ -17,7 +17,7 @@
 
 import * as React from "react";
 
-import Select, { components } from "react-select";
+import Select from "react-select";
 
 interface JosekiTagSelectorProps {
     oje_headers: HeadersInit;
@@ -51,7 +51,7 @@ export class JosekiTagSelector extends React.PureComponent<
             .then((res) => res.json())
             .then((body) => {
                 // console.log("Server response to tag GET:", body);
-                const available_tags = body.tags.map((tag, i) => ({
+                const available_tags = body.tags.map((tag) => ({
                     label: tag.description,
                     value: tag.id,
                 }));
@@ -106,7 +106,3 @@ export class JosekiTagSelector extends React.PureComponent<
         );
     }
 }
-
-const MultiValue = (props) => {
-    return <components.MultiValue {...props} key={props.data} />;
-};

@@ -114,7 +114,7 @@ export class IncidentReportTracker extends React.PureComponent<{}, IncidentRepor
                     .catch(errorAlerter);
             };
 
-            report.set_note = (ev) => {
+            report.set_note = () => {
                 swal({
                     input: "text",
                     inputValue: report.moderator_note,
@@ -228,7 +228,7 @@ export class IncidentReportTracker extends React.PureComponent<{}, IncidentRepor
                             onClick={this.toggleList}
                         ></div>
                         <div className="IncidentReportList-results">
-                            {this.state.reports.map((report, idx) => (
+                            {this.state.reports.map((report) => (
                                 <div className="incident" key={report.id}>
                                     <div className="report-header">
                                         <div className="report-id">

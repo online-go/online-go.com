@@ -150,7 +150,7 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
 }
 
 export function openGameAcceptModal(challenge): Promise<any> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         openModal(<GameAcceptModal challenge={challenge} onAccept={resolve} fastDismiss />);
     });
 }

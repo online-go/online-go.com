@@ -219,7 +219,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
             });
     };
 
-    fetchDataForTable = (table_state, instance) => {
+    fetchDataForTable = (table_state) => {
         // this shinanigans is so that we save the table state passed in the argument to this callback
         // into our component state, enabling us to reload the data again when we need to (after reverting an audit)
         this.setState(
@@ -403,8 +403,8 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                             accessor: "placement",
                             maxWidth: 60,
                             // Click the placement to see the position on the board
-                            getProps: ((state, rowInfo, column) => ({
-                                onClick: (e, handleOriginal) => {
+                            getProps: ((_state, rowInfo, _column) => ({
+                                onClick: () => {
                                     this.props.loadPositionToBoard(
                                         rowInfo.original.node_id.toString(),
                                     );

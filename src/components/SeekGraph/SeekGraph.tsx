@@ -25,7 +25,6 @@ import { TypedEventEmitter } from "TypedEventEmitter";
 import * as data from "data";
 import { openGameAcceptModal } from "GameAcceptModal";
 import { shortDurationString, shortShortTimeControl, timeControlSystemText } from "TimeControl";
-import { computeAverageMoveTime } from "goban";
 import { getRelativeEventPosition, errorAlerter } from "misc";
 import { rankString, bounded_rank } from "rank_utils";
 import { kb_bind, kb_unbind } from "KBShortcut";
@@ -237,12 +236,6 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 }
 
                 this.challenges[e.challenge_id] = e;
-
-                try {
-                    const move_time = computeAverageMoveTime(e.time_control_parameters);
-                } catch (err) {
-                    console.log(err.stack);
-                }
             }
         }
         this.redraw();
@@ -271,7 +264,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         if (this.list_hits.length) {
             this.moveChallengeList(ev);
         } else {
-            this.closeChallengeList(ev);
+            this.closeChallengeList();
         }
     };
     onPointerDown = (ev) => {
@@ -299,7 +292,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             this.closeChallengeList();
         }
     };
-    onPointerOut = (ev) => {
+    onPointerOut = () => {
         if (!this.list_locked) {
             this.closeChallengeList();
         }
@@ -367,8 +360,6 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         const w = this.canvas.width();
         const h = this.canvas.height();
         const padding = this.padding;
-        const blitz_line = Math.round(SeekGraph.blitz_line_ratio * (w - padding) + padding);
-        const live_line = Math.round(SeekGraph.live_line_ratio * (w - padding) + padding);
 
         ctx.clearRect(0, 0, w, h);
         this.drawAxes();
@@ -716,7 +707,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             if (C.live_game) {
                 const anchor = $("<span>")
                     .addClass("fakelink")
-                    .click((ev) => {
+                    .click(() => {
                         console.log("Should be closing challenge list");
                         this.list_locked = false;
                         this.closeChallengeList();
@@ -729,9 +720,9 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                     $("<i>")
                         .addClass("fa fa-check-circle")
                         .attr("title", _("Accept game"))
-                        .click((ev) => {
+                        .click(() => {
                             openGameAcceptModal(C)
-                                .then((ev) => {
+                                .then(() => {
                                     this.list_locked = false;
                                     this.closeChallengeList();
                                     browserHistory.push("/game/" + C.game_id);
@@ -751,7 +742,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                     $("<i>")
                         .addClass("fa fa-check-circle")
                         .attr("title", _("Join rengo game"))
-                        .click((ev) => {
+                        .click(() => {
                             nominateForRengoChallenge(C);
                             this.list_locked = false;
                             this.closeChallengeList();
@@ -762,11 +753,11 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                     $("<i>")
                         .addClass("fa fa-trash-o")
                         .attr("title", _("Remove challenge"))
-                        .click((ev) => {
+                        .click(() => {
                             //console.log("Remove");
                             del("challenges/%%", C.challenge_id)
-                                .then((ev) => e.html(_("Challenge removed")))
-                                .catch((response) => swal(_("Error removing challenge")));
+                                .then(() => e.html(_("Challenge removed")))
+                                .catch(() => swal(_("Error removing challenge")));
                         }),
                 );
             } else {
@@ -880,7 +871,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         $(document.body).append(list);
         this.moveChallengeList(ev);
     }
-    closeChallengeList(ev?) {
+    closeChallengeList() {
         if (this.modal) {
             removeModal(this.modal);
         }

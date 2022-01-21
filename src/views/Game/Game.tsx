@@ -366,7 +366,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             );
         }
     }
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
         if (
             this.props.match.params.game_id !== prevProps.match.params.game_id ||
             this.props.match.params.review_id !== prevProps.match.params.review_id
@@ -482,7 +482,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                 this.ref_goban_container.offsetHeight,
             ),
             visual_undo_request_indicator: preferences.get("visual-undo-request-indicator"),
-            onScoreEstimationUpdated: (winning_color: "black" | "white", points: number) => {
+            onScoreEstimationUpdated: () => {
                 this.sync_state();
                 this.goban.redraw(true);
             },
@@ -770,8 +770,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                 }
 
                 if (stashed_move_string && stashed_review_id === this.goban.review_id) {
-                    const cur_move_string = this.goban.engine.cur_move.getMoveStringToThisPoint();
-
                     const prev_last_review_message = this.goban.getLastReviewMessage();
                     const moves = GoMath.decodeMoves(
                         stashed_move_string,
@@ -1177,10 +1175,8 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             let audio_to_play: ValidSound;
             const seconds_left: number = audio_clock_event.countdown_seconds;
             let numeric_announcement = false;
-            let force_play = false;
 
             if (audio_clock_event.in_overtime && !overtime_announced) {
-                force_play = true;
                 overtime_announced = true;
                 if (sfx.hasSoundSample("start_counting")) {
                     audio_to_play = "start_counting";
@@ -1197,7 +1193,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                 time_control.system === "byoyomi" &&
                 last_period_announced !== audio_clock_event.clock.periods_left
             ) {
-                force_play = true;
                 last_period_announced = audio_clock_event.clock.periods_left;
                 audio_to_play = "period";
                 if (audio_clock_event.clock.periods_left === 5) {
@@ -1632,7 +1627,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         openGameLinkModal(this.goban);
     }
     gameAnalyze() {
-        const user = data.get("user");
         if (this.goban.isAnalysisDisabled() && this.goban.engine.phase !== "finished") {
             //swal(_("Analysis mode has been disabled for this game"));
         } else {
@@ -1733,7 +1727,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
     }
     shareAnalysis() {
         const diff = this.goban.engine.getMoveDiff();
-        let str;
         let name = this.state.variation_name;
         const goban = this.goban;
         let autonamed = false;
@@ -2546,7 +2539,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         this.setState({
             volume: volume,
         });
-        const idx = Math.round(Math.random() * 10000) % 5; /* 5 === number of stone sounds */
 
         if (this.volume_sound_debounce) {
             clearTimeout(this.volume_sound_debounce);
@@ -2567,7 +2559,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             .then(() => {
                 console.info(`Clearing AI reviews for ${this.game_id}`);
                 del(`games/${this.game_id}/ai_reviews`, {})
-                    .then((res) => console.info("AI Reviews cleared"))
+                    .then(() => console.info("AI Reviews cleared"))
                     .catch(errorAlerter);
             })
             .catch(ignore);
@@ -2577,7 +2569,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             engine: "katago",
             type: analysis_type,
         })
-            .then((res) => swal(_("Analysis started")))
+            .then(() => swal(_("Analysis started")))
             .catch(errorAlerter);
     }
 
@@ -4157,7 +4149,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         );
     }
 
-    renderExtraPlayerActions = (player_id: number, unused: any) => {
+    renderExtraPlayerActions = (player_id: number) => {
         const user = data.get("user");
         if (
             this.review_id &&

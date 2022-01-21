@@ -74,7 +74,6 @@ export class ObserveGamesComponent extends React.PureComponent<
     private next_refresh: any;
     private auto_refresh: number;
     private channel?: string;
-    private show_announcements: boolean;
 
     constructor(props) {
         super(props);
@@ -93,7 +92,6 @@ export class ObserveGamesComponent extends React.PureComponent<
             filters: this.namespacedPreferenceGet("observed-games-filter") as GameListWhere,
         };
         this.channel = props.channel;
-        this.show_announcements = props.show_announcements;
     }
 
     namespacedPreferenceGet(key: preferences.ValidPreference): any {
@@ -121,7 +119,7 @@ export class ObserveGamesComponent extends React.PureComponent<
         }
     };
 
-    componentDidUpdate(prevProps: ObserveGamesComponentProperties, prevState: any) {
+    componentDidUpdate(prevProps: ObserveGamesComponentProperties) {
         if (this.props.channel !== prevProps.channel) {
             console.log("Should be reconnecting");
             this.destroy();
@@ -403,7 +401,7 @@ export class ObserveGamesComponent extends React.PureComponent<
     private filterOption(filter_field: string, name: string): JSX.Element {
         const self = this;
 
-        function toggle(ev) {
+        function toggle() {
             const new_filters = dup(self.state.filters);
 
             if (!new_filters[filter_field]) {

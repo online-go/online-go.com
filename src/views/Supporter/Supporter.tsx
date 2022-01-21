@@ -219,7 +219,6 @@ export function Supporter(props: SupporterProperties): JSX.Element {
     const currency =
         overrides.currency || guessCurrency(config, overrides.country || config.country_code);
     const interval = annualBilling ? "year" : "month";
-    const max_service_level = Math.max(0, ...config.services.map((s) => s.level));
 
     React.useEffect(() => {
         Promise.all([
@@ -410,7 +409,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                     {config.subscriptions.length ? (
                         <>
                             <div className="Subscriptions">
-                                {config.subscriptions.map((s, idx) => (
+                                {config.subscriptions.map((s) => (
                                     <Subscription key={s.id} subscription={s} />
                                 ))}
                             </div>
@@ -469,7 +468,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
 
                     {config.services.length && user.is_superuser ? (
                         <div className="Services">
-                            {config.services.map((s, idx) => (
+                            {config.services.map((s) => (
                                 <ServiceLine key={s.id} service={s} />
                             ))}
                         </div>
@@ -989,7 +988,7 @@ interface ManualServiceCreatorProperties {
     config: Config;
 }
 
-function ManualServiceCreator({ account_id, config }: ManualServiceCreatorProperties): JSX.Element {
+function ManualServiceCreator({ account_id }: ManualServiceCreatorProperties): JSX.Element {
     const user = data.get("user");
     const [level, setLevel]: [string, React.Dispatch<string>] = React.useState("");
     const [months, setMonths]: [string, React.Dispatch<string>] = React.useState("");

@@ -15,11 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-interface IResizeImageOptions {
-    maxSize: number;
-    file: File;
-}
-
 export function image_resizer(file: File, max_width: number, max_height?: number): Promise<File> {
     if (!max_height) {
         max_height = max_width;

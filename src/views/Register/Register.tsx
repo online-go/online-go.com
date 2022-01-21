@@ -108,7 +108,7 @@ export class Register extends React.PureComponent<{}, any> {
         }
     };
 
-    validateUsername = (ev?) => {
+    validateUsername = () => {
         if (/@/.test(this.refs.username.value)) {
             $(this.refs.username).addClass("validation-error");
             this.setState({

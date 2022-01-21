@@ -58,13 +58,6 @@ function _update_theme(theme) {
     body.addClass(theme);
 }
 
-function previewTheme(theme) {
-    _update_theme(theme);
-}
-function exitThemePreview() {
-    _update_theme(data.get("theme"));
-}
-
 function setTheme(theme) {
     data.set("theme", theme, data.Replication.REMOTE_OVERWRITES_LOCAL); // causes _update_theme to be called via the data.watch() in constructor
 }
@@ -263,7 +256,6 @@ export class NavBar extends React.PureComponent<{}, any> {
 
         const show_debug = data.get("user").is_superuser;
         const debug = data.get("debug", false);
-        const no_results = false;
 
         let omnisearch_searching = false;
         try {
@@ -769,7 +761,6 @@ export class NavBar extends React.PureComponent<{}, any> {
     }
 }
 
-declare let ogs_version;
 const omnisearch_sitemap = {};
 
 omnisearch_sitemap[_("Home")] = [_("Home"), "/overview"];

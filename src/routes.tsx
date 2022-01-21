@@ -87,7 +87,7 @@ function Main(props): JSX.Element {
         </div>
     );
 }
-const PageNotFound = (props, state) => (
+const PageNotFound = () => (
     <div style={{ display: "flex", flex: "1", alignItems: "center", justifyContent: "center" }}>
         {_("Page not found")}
     </div>

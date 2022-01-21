@@ -23,12 +23,6 @@ import * as preferences from "preferences";
 import { Player } from "Player";
 import cached from "cached";
 
-interface FriendListProperties {
-    // id?: any,
-    // user?: any,
-    // callback?: ()=>any,
-}
-
 export class FriendList extends React.PureComponent<{}, any> {
     constructor(props) {
         super(props);

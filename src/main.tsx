@@ -277,13 +277,13 @@ sockets.comm_socket.on("connect", () => {
 /*** Setup remote score estimation */
 set_remote_scorer(remote_score_estimator);
 function remote_score_estimator(req: ScoreEstimateRequest): Promise<ScoreEstimateResponse> {
-    return new Promise<ScoreEstimateResponse>((resolve, reject) => {
+    return new Promise<ScoreEstimateResponse>((resolve) => {
         req.jwt = data.get("config.user_jwt");
         resolve(post(`${ai_host}/api/score`, req));
     });
 }
 init_score_estimator()
-    .then((tf) => {
+    .then(() => {
         // console.log('SE Initialized');
     })
     .catch((err) => console.error(err));

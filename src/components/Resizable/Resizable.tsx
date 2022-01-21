@@ -21,12 +21,9 @@ interface ResizableProperties {
     id?: string;
     className?: string;
     onResize?: (w, h) => void;
-    // id?: any,
-    // user?: any,
-    // callback?: ()=>any,
 }
 
-export class Resizable extends React.Component<any, {}> {
+export class Resizable extends React.Component<ResizableProperties, {}> {
     div: HTMLDivElement = null;
 
     last_width = 0;

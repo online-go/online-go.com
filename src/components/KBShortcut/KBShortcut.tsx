@@ -110,13 +110,6 @@ const input_enabled_keys = {
     121: "f10",
 };
 
-const modifiers = {
-    shift: "shift",
-    alt: "alt",
-    meta: "meta",
-    ctrl: "ctrl",
-};
-
 // It looks like this should be something like
 //    `let bound_shortcuts: {[x: string]: Binding} = {};
 // but I won't touch this for now -BPJ

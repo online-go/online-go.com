@@ -26,8 +26,6 @@ interface JosekiAdminProps {
     server_url: string;
 }
 
-// This state is accurate, but updatePermissions needs to be slightly modified
-// to be able to use it.
 interface JosekiAdminState {
     userid: string;
     can_comment: boolean;
@@ -38,7 +36,7 @@ interface JosekiAdminState {
 
 export class JosekiPermissionsPanel extends React.PureComponent<
     JosekiAdminProps,
-    any /*JosekiAdminState*/
+    JosekiAdminState
 > {
     constructor(props) {
         super(props);
@@ -92,13 +90,11 @@ export class JosekiPermissionsPanel extends React.PureComponent<
         this.updatePermission("can_admin", e.target.checked);
     };
 
-    updatePermission = (permission, value) => {
+    updatePermission = (permission: keyof JosekiAdminState, value) => {
         this.setState({
-            // TypeScript has trouble with this
-            // TODO: modify, and then use JosekiAdminState as template arg for the component.
             [permission]: value,
             throb: true,
-        });
+        } as JosekiAdminState);
 
         const new_permissions = {
             can_comment: this.state.can_comment,

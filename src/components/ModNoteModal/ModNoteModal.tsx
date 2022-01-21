@@ -57,10 +57,6 @@ export class ModNoteModal extends Modal<Events, ModNoteModalProperties, any> {
     };
 
     render() {
-        const current_draft: [string] = this.state.current_draft
-            .split("\n")
-            .map((line, idx) => <div key={idx}>{line}</div>);
-
         return (
             <div className="Modal ModNoteModal" ref="modal">
                 <div className="header">

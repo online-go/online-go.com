@@ -181,7 +181,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             this.y_axis_rank_labels.style("display", "none");
         }
     }
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
         if (
             this.props.playerId !== prevProps.playerId ||
             this.props.speed !== prevProps.speed ||
@@ -1072,7 +1072,4 @@ function speed_translation(speed: speed_t) {
         case "correspondence":
             return _("Correspondence");
     }
-}
-function is_same_month(d1: Date, d2: Date): boolean {
-    return d1.getUTCFullYear() === d2.getUTCFullYear() && d1.getUTCMonth() === d2.getUTCMonth();
 }

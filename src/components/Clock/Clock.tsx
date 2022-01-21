@@ -22,8 +22,6 @@ import { _, pgettext, interpolate, ngettext } from "translate";
 
 type clock_color = "black" | "white" | "stone-removal";
 
-const ct = 0;
-
 export function Clock({
     goban,
     color,
