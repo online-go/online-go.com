@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { Link } from "react-router-dom";
+import { Link, RouteComponentProps } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
 import { _ } from "translate";
 import { post, del, put, get } from "requests";
@@ -39,11 +39,9 @@ import { localize_time_strings } from "localize-time";
 import swal from "sweetalert2";
 import { PlayerCacheEntry } from "player_cache";
 
-interface GroupProperties {
-    match: {
-        params: any;
-    };
-}
+type GroupProperties = RouteComponentProps<{
+    group_id: string;
+}>;
 
 // API: group/%id%/
 interface GroupInfo {

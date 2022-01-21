@@ -23,14 +23,9 @@ import { useState, useEffect, useCallback } from "react";
 //import {errorAlerter} from "misc";
 //import {Chat} from "Chat";
 import { ChatChannelList, ChatLog, ChatUsersList } from "Chat";
+import { RouteComponentProps } from "react-router";
 
-interface ChatViewProperties {
-    match: {
-        params: {
-            channel: string;
-        };
-    };
-}
+type ChatViewProperties = RouteComponentProps<{ channel: string }>;
 
 export function ChatView(props: ChatViewProperties): JSX.Element {
     const channel = props.match.params.channel;

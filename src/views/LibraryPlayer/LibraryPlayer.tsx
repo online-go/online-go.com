@@ -18,7 +18,7 @@
 import * as React from "react";
 import * as data from "data";
 import { _, interpolate } from "translate";
-import { Link } from "react-router-dom";
+import { Link, RouteComponentProps } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
 import { abort_requests_in_flight, post, get } from "requests";
 import { errorAlerter, ignore, getOutcomeTranslation } from "misc";
@@ -26,12 +26,12 @@ import { Player } from "Player";
 import { Card } from "material";
 import * as Dropzone from "react-dropzone";
 import * as moment from "moment";
+import { IdType } from "src/lib/types";
 
-interface LibraryPlayerProperties {
-    match: {
-        params: any;
-    };
-}
+type LibraryPlayerProperties = RouteComponentProps<{
+    player_id: string;
+    collection_id: string;
+}>;
 
 interface Collection {
     id: number;
@@ -45,8 +45,8 @@ interface Collection {
 }
 
 interface LibraryPlayerState {
-    player_id: number;
-    collection_id: number;
+    player_id: IdType;
+    collection_id: IdType;
     collections?: { [id: number]: Collection };
     games_checked: {};
     new_collection_name: string;
@@ -101,7 +101,7 @@ export class LibraryPlayer extends React.PureComponent<
     componentWillUnmount() {
         abort_requests_in_flight("library/");
     }
-    refresh(player_id: number) {
+    refresh(player_id: IdType) {
         const promise = get("library/%%", player_id);
 
         promise

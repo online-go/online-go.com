@@ -20,12 +20,13 @@ import { _ } from "translate";
 import { get, abort_requests_in_flight } from "requests";
 import * as player_cache from "player_cache";
 import * as Autosuggest from "react-autosuggest";
+import { IdType } from "src/lib/types";
 
 interface PlayerAutocompleteProperties {
     onComplete: (user: player_cache.PlayerCacheEntry | null) => void;
     playerId?: number;
     placeholder?: string;
-    ladderId?: number;
+    ladderId?: IdType;
 }
 
 export interface PlayerAutocompleteRef {
