@@ -656,6 +656,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         });
 
         this.goban.on("move-made", this.autoadvance);
+        this.goban.on("player-update", () => this.sync_state());
         this.goban.on("title", (title) => this.setState({ title: title }));
         this.goban.on("update", () => this.sync_state());
         this.goban.on("reset", () => this.sync_state());
@@ -1948,7 +1949,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
 
         if (this.goban) {
             /* Is player? */
-
             const players = engine.rengo
                 ? engine.rengo_teams.black.concat(this.goban.engine.rengo_teams.white)
                 : [engine.players.black, engine.players.white];
