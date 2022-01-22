@@ -291,13 +291,11 @@ init_score_estimator()
 /*** Generic error handling from the server ***/
 sockets.termination_socket.on("ERROR", errorAlerter);
 
-/*** Google analytics ***/
-declare let gtag;
-
-browserHistory.listen((location) => {
+browserHistory.listen((/* location */) => {
     try {
+        // old google analytics history hook
+        /*
         const cleaned_path = location.pathname.replace(/\/[0-9]+(\/.*)?/, "/ID");
-
         let user_type = "error";
         const user = data.get("user");
 
@@ -310,7 +308,6 @@ browserHistory.listen((location) => {
         }
 
         if (gtag) {
-            /* ga history hook  */
             window["gtag"]("config", "UA-37743954-2", {
                 page_path: cleaned_path,
                 custom_map: {
@@ -318,9 +315,9 @@ browserHistory.listen((location) => {
                 },
             });
         }
+        */
 
         window.document.title = "OGS";
-
         close_all_popovers();
     } catch (e) {
         console.log(e);
