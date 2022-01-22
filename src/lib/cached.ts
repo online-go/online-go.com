@@ -34,6 +34,8 @@ function anon() {
     return user.anonymous;
 }
 
+let disable_refresh_callback_on_user_change = false;
+
 export const cached = {
     config: "cached.config",
     friends: "cached.friends",
@@ -48,11 +50,17 @@ export const cached = {
         config: (cb?: () => void) => {
             get("ui/config")
                 .then((config) => {
-                    data.set(cached.config, config);
-                    data.set("config", config);
-                    if (cb) {
-                        cb();
+                    disable_refresh_callback_on_user_change = true;
+                    try {
+                        data.set(cached.config, config);
+                        data.set("config", config);
+                        if (cb) {
+                            cb();
+                        }
+                    } catch (e) {
+                        // ignore
                     }
+                    disable_refresh_callback_on_user_change = false;
                 })
                 .catch((err) => {
                     console.error("Error retrieving friends list: ", err);
@@ -201,7 +209,9 @@ data.watch("user", (user) => {
         if (refresh_debounce) {
             clearTimeout(refresh_debounce);
         }
-        refresh_debounce = setTimeout(refresh_all, 10);
+        if (!disable_refresh_callback_on_user_change) {
+            refresh_debounce = setTimeout(refresh_all, 10);
+        }
     }
 });
 
