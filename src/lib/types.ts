@@ -117,3 +117,12 @@ export interface AutomatchPreferencesBase {
         value: "enabled" | "disabled";
     };
 }
+
+// Many times an id is a number, but it doesn't matter if it is a string as
+// far as the code is concerned.  Example:
+//
+//     const players = get(`ladders/${props.ladderId}/players/`);
+//
+// The format string does not care whether ladderId was a number or a number formatted as a string,
+// so IdType is a good type for ladderId.
+export type IdType = number | string;

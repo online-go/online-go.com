@@ -178,7 +178,7 @@ export const time_options = {
             period_time: gen(1, 10),
         },
         absolute: {
-            total_time: gen(30, 300),
+            total_time: gen(45, 300),
         },
     },
     live: {

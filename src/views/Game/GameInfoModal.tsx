@@ -233,7 +233,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                                                 }
                                                 onChange={this.updateBlackRank}
                                             >
-                                                {ranks.map((rank, idx) => (
+                                                {ranks.map((rank) => (
                                                     <option key={rank.value} value={rank.value}>
                                                         {rank.label}
                                                     </option>
@@ -265,7 +265,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                                                 }
                                                 onChange={this.updateWhiteRank}
                                             >
-                                                {ranks.map((rank, idx) => (
+                                                {ranks.map((rank) => (
                                                     <option key={rank.value} value={rank.value}>
                                                         {rank.label}
                                                     </option>

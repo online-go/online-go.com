@@ -16,18 +16,16 @@
  */
 
 import * as React from "react";
-import { Link } from "react-router-dom";
+import { Link, RouteComponentProps } from "react-router-dom";
 import { Markdown } from "Markdown";
 import { browserHistory } from "ogsHistory";
 import { _ } from "translate";
 import { InstructionalGoban } from "./InstructionalGoban";
 import { openNewGameModal } from "NewGameModal";
 
-interface TutorialProperties {
-    match: {
-        params: any;
-    };
-}
+type TutorialProperties = RouteComponentProps<{
+    step: string;
+}>;
 
 const NUM_PAGES = 12;
 declare let ogs_current_language;
@@ -38,7 +36,7 @@ export class Tutorial extends React.PureComponent<TutorialProperties> {
     }
 
     render() {
-        const page_number = parseInt(this.props.match.params.step || 0);
+        const page_number = parseInt(this.props.match.params.step) || 0;
 
         switch (page_number) {
             case 0:

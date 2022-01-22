@@ -219,7 +219,6 @@ export function Supporter(props: SupporterProperties): JSX.Element {
     const currency =
         overrides.currency || guessCurrency(config, overrides.country || config.country_code);
     const interval = annualBilling ? "year" : "month";
-    const max_service_level = Math.max(0, ...config.services.map((s) => s.level));
 
     React.useEffect(() => {
         Promise.all([
@@ -410,7 +409,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                     {config.subscriptions.length ? (
                         <>
                             <div className="Subscriptions">
-                                {config.subscriptions.map((s, idx) => (
+                                {config.subscriptions.map((s) => (
                                     <Subscription key={s.id} subscription={s} />
                                 ))}
                             </div>
@@ -469,7 +468,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
 
                     {config.services.length && user.is_superuser ? (
                         <div className="Services">
-                            {config.services.map((s, idx) => (
+                            {config.services.map((s) => (
                                 <ServiceLine key={s.id} service={s} />
                             ))}
                         </div>
@@ -671,7 +670,6 @@ export function PriceBox({
                                 <i className="payment-method card" />
                                 <i className="payment-method apple" />
                                 <i className="payment-method google" />
-                                {/* <i className="payment-method alipay" /> */}
                                 <i className="payment-method bank" />
                                 <i className="payment-method sepa" />
                             </div>
@@ -990,7 +988,7 @@ interface ManualServiceCreatorProperties {
     config: Config;
 }
 
-function ManualServiceCreator({ account_id, config }: ManualServiceCreatorProperties): JSX.Element {
+function ManualServiceCreator({ account_id }: ManualServiceCreatorProperties): JSX.Element {
     const user = data.get("user");
     const [level, setLevel]: [string, React.Dispatch<string>] = React.useState("");
     const [months, setMonths]: [string, React.Dispatch<string>] = React.useState("");
@@ -1057,6 +1055,7 @@ function ServiceLine({ service }: { service: Service }): JSX.Element {
             <span>Soft Expiration: {service.soft_expiration}</span>
             <span>Hard Expiration: {service.hard_expiration}</span>
             <span>In Grace Period : {service.in_grace_period.toString()}</span>
+            <span>Notes: {service.notes}</span>
             <button className={active ? "success" : "reject"} onClick={toggleActive}>
                 {active ? _("Active") : _("Inactive")}
             </button>

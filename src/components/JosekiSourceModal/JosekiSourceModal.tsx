@@ -48,7 +48,7 @@ export class JosekiSourceModal extends Modal<Events, JosekiSourceModalProperties
         this.setState({ url: e.target.value });
     };
 
-    saveNewJoseki = (e) => {
+    saveNewJoseki = () => {
         this.props.add_joseki_source(this.state.description, this.state.url);
         this.close();
     };

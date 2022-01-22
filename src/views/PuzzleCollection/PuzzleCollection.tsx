@@ -23,14 +23,15 @@ import { get, del, put, abort_requests_in_flight } from "requests";
 import { SortablePuzzleList } from "./SortablePuzzleList";
 import { openACLModal } from "ACLModal";
 import swal from "sweetalert2";
+import { RouteComponentProps } from "react-router-dom";
 
 export function PuzzleCollection({
     match: {
         params: { collection_id },
     },
-}: {
-    match: { params: { collection_id: number } };
-}): JSX.Element {
+}: RouteComponentProps<{
+    collection_id: string;
+}>): JSX.Element {
     const [collection, setCollection] = React.useState(null);
     const [name, setName] = React.useState(null);
     const [puzzle_is_private, setPrivate] = React.useState(false);

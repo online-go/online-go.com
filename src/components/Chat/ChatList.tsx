@@ -213,7 +213,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
         this.forceUpdate();
     }
 
-    onUnreadCountChange = (obj) => {
+    onUnreadCountChange = () => {
         this.forceUpdate();
     };
 

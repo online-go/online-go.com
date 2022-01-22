@@ -17,7 +17,6 @@
 
 import * as React from "react";
 import * as moment from "moment";
-import * as data from "data";
 import { _ } from "translate";
 import { openModal, Modal } from "Modal";
 import { Player } from "Player";
@@ -58,8 +57,6 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
 
     render() {
         const config = this.props.config;
-        const user = data.get("user");
-        const game_id = config.game_id;
 
         return (
             <div className="Modal GameLogModal" ref="modal">

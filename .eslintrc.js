@@ -30,7 +30,6 @@ module.exports = {
         "@typescript-eslint/no-explicit-any": "off", // 535 warnings
         "@typescript-eslint/no-namespace": "off", // 1 error
         "@typescript-eslint/no-this-alias": "off", // 4 errors
-        "@typescript-eslint/no-unused-vars": "off", // 203 errors
         "@typescript-eslint/triple-slash-reference": "off", // 1 error
 
         "no-empty-pattern": "off", // 1 error
@@ -52,6 +51,13 @@ module.exports = {
             {
                 "ignoreParameters": true,
                 "ignoreProperties": true
+            }
+        ],
+        "@typescript-eslint/no-unused-vars": [
+            "error",
+            {
+                "varsIgnorePattern": "^_[a-zA-Z_]",
+                "argsIgnorePattern": "^_[a-zA-Z_]"
             }
         ],
         "@typescript-eslint/no-var-requires": "error",

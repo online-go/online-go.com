@@ -24,17 +24,14 @@ import { Player } from "Player";
 import { ignore, errorAlerter, dup } from "misc";
 import { rankString, allRanks } from "rank_utils";
 import { createDemoBoard } from "ChallengeModal";
+import { RouteComponentProps } from "react-router-dom";
 
 window["dup"] = dup;
 
 import swal from "sweetalert2";
 const ranks = allRanks();
 
-interface TournamentRecordProperties {
-    match: {
-        params: any;
-    };
-}
+type TournamentRecordProperties = RouteComponentProps<{ tournament_record_id: string }>;
 
 interface Round {
     updated: boolean;

@@ -49,7 +49,7 @@ export class PuzzleNavigation {
         this.checkAndEnterAnalysis();
         this._goban.showPrevious();
     };
-    nav_next = (event?: React.MouseEvent<any>) => {
+    nav_next = () => {
         this.checkAndEnterAnalysis();
         this._goban.showNext();
     };

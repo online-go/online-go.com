@@ -568,6 +568,16 @@ export const GoResources = () => {
                             </span>,
                             <span>
                                 <Flag country={en} />{" "}
+                                <a rel="noopener" href="https://twitch.tv/gomagic_live">
+                                    Go Magic Twitch
+                                </a>{" "}
+                                /{" "}
+                                <a rel="noopener" href="https://www.youtube.com/c/GoMagic">
+                                    YouTube Magic Live
+                                </a>
+                            </span>,
+                            <span>
+                                <Flag country={en} />{" "}
                                 <a rel="noopener" href="https://www.youtube.com/user/nicksibicky/">
                                     Nick Sibicky
                                 </a>

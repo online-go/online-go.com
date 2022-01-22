@@ -90,7 +90,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
         }
     }
 
-    onFocus(event) {
+    onFocus() {
         this.hideQCOptions();
     }
 
@@ -212,7 +212,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
                             className="chat-log autoscrolling"
                             onScroll={this.updateScrollPosition}
                         >
-                            {this.props.chatlog.map((line, idx) => {
+                            {this.props.chatlog.map((line) => {
                                 const ll = last_line;
                                 last_line = line;
                                 //jreturn <GameChatLine key={line.chat_id} line={line} lastline={ll} gameview={this.props.gameview} />
@@ -269,7 +269,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
                         </button>
                     )}
                     <TabCompleteInput
-                        ref={(elt) => 0}
+                        ref={() => 0}
                         className={`chat-input  ${this.state.chat_log}`}
                         disabled={user.anonymous || !data.get("user").email_validated}
                         placeholder={
@@ -610,12 +610,6 @@ export class GameChatLine extends React.Component<GameChatLineProperties> {
         }
 
         if ("from" in line) {
-            const mvs = goban.engine.decodeMoves(line.moves);
-            let ct = 0;
-            for (let i = 0; i < mvs.length; ++i) {
-                ct += mvs[i].edited ? 0 : 1;
-            }
-
             if (goban.isAnalysisDisabled()) {
                 goban.setMode("analyze");
             }

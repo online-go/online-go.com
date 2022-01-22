@@ -99,7 +99,7 @@ export class PuzzleTransform {
             }
         }
 
-        txt = txt.replace(/\b([a-zA-Z][0-9]{1,2})\b/g, (match, contents, offset, s) => {
+        txt = txt.replace(/\b([a-zA-Z][0-9]{1,2})\b/g, (_match, contents, _offset, _s) => {
             const dec = GoMath.decodeMoves(contents, puzzle.width, puzzle.height);
             this.transformCoordinate(puzzle, dec[0], puzzle.width, puzzle.height);
             const ret = GoMath.prettyCoords(dec[0].x, dec[0].y, puzzle.height);

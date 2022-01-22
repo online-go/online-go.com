@@ -33,7 +33,7 @@
         "strictFunctionTypes": false,
         "strictNullChecks": false,
         "strictPropertyInitialization": false,
-        "noUnusedLocals": false,
+        "noUnusedLocals": true,
 
         "allowSyntheticDefaultImports": true,
 

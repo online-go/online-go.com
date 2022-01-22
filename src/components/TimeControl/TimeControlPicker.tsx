@@ -70,7 +70,6 @@ export class TimeControlPicker extends React.PureComponent<
         /* {  */
         const tc = Object.assign({}, this.state, update);
 
-        const speed = tc.speed;
         const options = time_options[tc.speed];
 
         function goodChoice(arr) {

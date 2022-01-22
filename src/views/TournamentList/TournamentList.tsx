@@ -23,18 +23,19 @@ import * as preferences from "preferences";
 import { errorAlerter } from "misc";
 import { shortShortTimeControl } from "TimeControl";
 import { computeAverageMoveTime } from "goban";
-import { PaginatedTable } from "PaginatedTable";
+import { PaginatedTable, Filter } from "PaginatedTable";
 import * as moment from "moment";
 import { TOURNAMENT_TYPE_NAMES, shortRankRestrictionText } from "Tournament";
 import tooltip from "tooltip";
 import { Toggle } from "Toggle";
+import { IdType } from "src/lib/types";
 
 interface TournamentListProperties {
     phase: "open" | "active" | "finished";
     speed?: "live" | "correspondence";
     hide_stale?: boolean; // Hides tournaments that were supposed to have started already
     hide_exclusive?: boolean; // Hides tournaments that are invite-only or members-only
-    group?: number;
+    group?: IdType;
 }
 
 interface TournamentListMainViewState {
@@ -245,9 +246,9 @@ export class TournamentList extends React.PureComponent<TournamentListProperties
         speed?: "live" | "correspondence",
         hide_stale?: boolean,
         hide_exclusive?: boolean,
-        group?: number,
+        group?: IdType,
     ) {
-        const filter: { [key: string]: any } = {};
+        const filter: Filter = {};
         switch (phase) {
             case "open":
                 filter["started__isnull"] = true;

@@ -48,7 +48,7 @@ function isInRange(n: number, min: number, max: number) {
 // Define the bahavior of plurals for the current language
 // See http://cldr.unicode.org/index/cldr-spec/plural-rules
 export let pluralidx: (count: number) => number;
-function setPluralIdx(lang: string) {
+function setPluralIdx() {
     switch (current_language) {
         case "vi": // Vietnamese
         case "zh-tw": // Traditional Chinese
@@ -56,7 +56,7 @@ function setPluralIdx(lang: string) {
         case "ja": // Japanese
         case "ko": // Korean
             // No differentiation between singular and plural
-            pluralidx = (count: number) => 0;
+            pluralidx = () => 0;
             break;
         case "cs": // Czech
             pluralidx = (count: number) => {
@@ -140,7 +140,7 @@ function setPluralIdx(lang: string) {
             pluralidx = (count: number) => (count === 1 ? 0 : 1);
     }
 }
-setPluralIdx(current_language);
+setPluralIdx();
 
 const debug_wrap = current_language === "debug" ? (s: string) => `[${s}]` : (s: string) => s;
 
@@ -364,7 +364,7 @@ try {
 export function interpolate(str: string, params: Array<any> | { [key: string]: any }): string {
     if (Array.isArray(params)) {
         let idx = 0;
-        return str.replace(/%[sd]/g, (_, __, position) => {
+        return str.replace(/%[sd]/g, () => {
             if (idx >= params.length) {
                 //throw new Error(`Missing array index ${idx} for string: ${str}`);
                 console.warn(`Missing array index ${idx} for string: ${str}`);
@@ -373,7 +373,7 @@ export function interpolate(str: string, params: Array<any> | { [key: string]: a
         });
     }
     if (typeof params === "object") {
-        return str.replace(/{{([^}]+)}}/g, (_, key, position) => {
+        return str.replace(/{{([^}]+)}}/g, (_, key) => {
             if (!(key in params)) {
                 //throw new Error(`Missing interpolation key: ${key} for string: ${str}`);
                 console.warn(`Missing interpolation key: ${key} for string: ${str}`);
@@ -381,7 +381,7 @@ export function interpolate(str: string, params: Array<any> | { [key: string]: a
             return params[key];
         });
     }
-    return str.replace(/%[sd]/g, (_, __, position) => params);
+    return str.replace(/%[sd]/g, () => params);
 }
 
 /**
@@ -524,7 +524,7 @@ export function setCurrentLanguage(language_code: string) {
         "%sm": pgettext("Short time (minutes)", "%sm"),
         "%ss": pgettext("Short time (seconds)", "%ss"),
     });
-    setPluralIdx(language_code);
+    setPluralIdx();
 }
 setCurrentLanguage(current_language);
 

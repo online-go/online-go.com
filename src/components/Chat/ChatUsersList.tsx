@@ -22,21 +22,10 @@ import { _, interpolate } from "translate";
 import { comm_socket } from "sockets";
 import { useEffect, useState, useCallback } from "react";
 import { Timeout } from "misc";
-import { PlayerCacheEntry } from "player_cache";
 import { chat_manager, users_by_rank, ChatChannelProxy } from "chat_manager";
-
-interface ChatUser extends PlayerCacheEntry {
-    professional: boolean;
-}
 
 interface ChatUsersListProperties {
     channel: string;
-}
-
-interface ChatUsersListState {
-    online_count: number;
-    user_list: { [player_id: string]: ChatUser };
-    user_sort_order: "alpha" | "rank";
 }
 
 let deferred_users_update: Timeout = null;

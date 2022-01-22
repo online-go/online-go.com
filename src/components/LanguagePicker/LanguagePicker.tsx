@@ -47,7 +47,7 @@ function language_sorter(a, b) {
     return 0;
 }
 
-export const LanguagePicker = (props: LanguagePickerProperties) => (
+export const LanguagePicker = () => (
     <span className="LanguagePicker fakelink" onClick={openLanguageModal}>
         <i className="fa fa-language" />
         {languages[current_language]}

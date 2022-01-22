@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as data from "data";
-import { Link } from "react-router-dom";
+import { Link, RouteComponentProps } from "react-router-dom";
 import { CardLink } from "material";
 import { _, pgettext } from "translate";
 import { sections, allsections } from "./sections";
@@ -28,14 +28,10 @@ import { browserHistory } from "ogsHistory";
 import { MiniGoban } from "MiniGoban";
 import swal from "sweetalert2";
 
-interface LearningHubProperties {
-    match: {
-        params: {
-            section: string;
-            page: number;
-        };
-    };
-}
+type LearningHubProperties = RouteComponentProps<{
+    section: string;
+    page: string;
+}>;
 
 export class LearningHub extends React.PureComponent<LearningHubProperties> {
     constructor(props) {
@@ -106,7 +102,6 @@ class Index extends React.PureComponent<{}, any> {
     }
 
     render() {
-        const progress = 9;
         const user = data.get("user");
         return (
             <div id="LearningHub-Index">
@@ -228,7 +223,6 @@ class SectionNav extends React.Component<{}, any> {
     }
 
     render() {
-        const pathname = window.location.pathname;
         const m = window.location.pathname.match(/\/learn-to-play-go(\/([^\/]+))?(\/([0-9]+))?/);
         const section_name = (m && m[2]) || "";
         const page = (m && m[4]) || 0;

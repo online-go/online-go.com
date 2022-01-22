@@ -88,7 +88,7 @@
 .social-buttons {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: left;
 
   a.md-icon {
     display: flex;
@@ -96,6 +96,7 @@
     padding: 0.5rem;
     background-color: #ffffff;
     width: 100%;
+    max-width: 15rem;
     height: 2.4rem;
     cursor: pointer;
 
@@ -106,7 +107,7 @@
 }
 
 
-.email-icon, .google-oauth2-icon, .twitter-icon, .facebook-icon, .apple-id-icon {
+.email-icon, .google-oauth2-icon, .twitter-icon, .facebook-icon, .apple-id-icon, .github-icon {
     display: inline-block;
     width: 20px;
     height: 20px;
@@ -126,6 +127,10 @@
     margin-right: 0.5rem;
 }
 .apple-id-icon.fa-apple {
+    color: #888;
+    margin-right: 0.5rem;
+}
+.github.fa-github {
     color: #888;
     margin-right: 0.5rem;
 }

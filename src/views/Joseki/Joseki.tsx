@@ -18,7 +18,7 @@
 /* A page for looking up and playing against josekis stored in the OGS OJE*/
 
 import * as React from "react";
-import { Link } from "react-router-dom";
+import { Link, RouteComponentProps } from "react-router-dom";
 import ReactResizeDetector from "react-resize-detector";
 import * as queryString from "query-string";
 
@@ -39,6 +39,7 @@ import { JosekiSourceModal } from "JosekiSourceModal";
 import { JosekiVariationFilter } from "JosekiVariationFilter";
 import { JosekiTagSelector } from "JosekiTagSelector";
 import { Throbber } from "Throbber";
+import { IdType } from "src/lib/types";
 
 const server_url = data.get("joseki-url", "/oje/");
 
@@ -81,10 +82,6 @@ const position_url = (node_id: string, variation_filter?: any, mode?: string) =>
 };
 
 const joseki_sources_url = server_url + "josekisources";
-const tags_url = server_url + "tags";
-
-const tag_count_url = (node_id: number, tag_id: number): string =>
-    server_url + "position/tagcount?id=" + node_id + "&tfilterid=" + tag_id;
 
 const tagscount_url = (node_id: string): string => server_url + "position/tagcounts?id=" + node_id;
 
@@ -145,12 +142,7 @@ const ColorMap = {
 
 type MoveType = "bad" | "good" | "computer" | "complete";
 
-interface JosekiProps {
-    match: {
-        params: any;
-    };
-    location: any;
-}
+type JosekiProps = RouteComponentProps<{ pos: string }>;
 
 interface MoveTypeWithComment {
     type: MoveType;
@@ -185,7 +177,7 @@ interface JosekiState {
     joseki_source?: {
         url: string;
         description: string;
-        id?: string | number;
+        id?: IdType;
     };
     tags: any[];
 
@@ -1456,8 +1448,6 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
             this.state.mode === PageMode.Explore ||
             (this.state.mode === PageMode.Edit && this.state.move_string === "") // you can't edit the empty board
         ) {
-            // hacklily lock down comments on the old server, because (1) it is old and (2) the comment PUT route changed.
-            const allow_comments = server_url.includes("oje") ? this.state.user_can_comment : false;
             return (
                 <ExplorePane
                     description={this.state.position_description}
@@ -1650,7 +1640,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
         }
     }
 
-    componentDidUpdate = (prevProps, prevState) => {
+    componentDidUpdate = (prevProps) => {
         if (prevProps.position_id !== this.props.position_id) {
             this.setState({
                 extra_info_selected: "none",
@@ -2228,7 +2218,7 @@ class EditPane extends React.Component<EditProps, EditState> {
         this.setState({ new_description });
     };
 
-    saveNewInfo = (e) => {
+    saveNewInfo = () => {
         this.props.save_new_info(
             this.state.move_type,
             this.state.variation_label,
@@ -2272,7 +2262,7 @@ class EditPane extends React.Component<EditProps, EditState> {
         */
     };
 
-    promptForJosekiSource = (e) => {
+    promptForJosekiSource = () => {
         openModal(<JosekiSourceModal add_joseki_source={this.addJosekiSource} fastDismiss />);
     };
 

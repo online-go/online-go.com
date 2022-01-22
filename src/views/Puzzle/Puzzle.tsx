@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
-import { Link } from "react-router-dom";
+import { Link, RouteComponentProps } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext, interpolate } from "translate";
 import { post, get, put, del } from "requests";
@@ -38,13 +38,7 @@ import { PuzzleNavigation } from "./PuzzleNavigation";
 import { PuzzleEditor } from "./PuzzleEditing";
 import swal from "sweetalert2";
 
-interface PuzzleProperties {
-    match: {
-        params: {
-            puzzle_id: string;
-        };
-    };
-}
+type PuzzleProperties = RouteComponentProps<{ puzzle_id: string }>;
 
 interface PuzzleState {
     puzzle?: any;
@@ -209,7 +203,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     componentDidUpdate() {
         this.onResize();
     }
-    onResize = (no_debounce?: boolean) => {
+    onResize = () => {
         if (!this.refs.goban_container) {
             return;
         }
@@ -286,7 +280,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         this.editor.fetchPuzzle(puzzleId, (state, editing) => {
             this.reset(editing);
             this.setState(state);
-            this.onResize(true);
+            this.onResize();
             window.document.title = state.collection.name + ": " + state.name;
             data.set(`puzzle.collection.${state.collection.id}.last-visited`, state.id);
             this.solve_time_start = Date.now();
@@ -466,14 +460,14 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         if (parseInt(this.props.match.params.puzzle_id)) {
             /* save */
             put("puzzles/%%", +this.props.match.params.puzzle_id, { puzzle: puzzle })
-                .then((res) => {
+                .then(() => {
                     window.location.reload();
                 })
                 .catch(errorAlerter);
         } else {
             /* create */
             post("puzzles/", { puzzle: puzzle })
-                .then((res) => {
+                .then(() => {
                     browserHistory.push(`/puzzle-collection/${puzzle.puzzle_collection}`);
                 })
                 .catch(errorAlerter);
@@ -712,7 +706,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         goban.draw_bottom_labels =
             label_position === "all" || label_position.indexOf("bottom") >= 0;
         this.setState({ label_positioning: label_position });
-        this.onResize(true);
+        this.onResize();
         goban.redraw(true);
     };
 
@@ -730,9 +724,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
         const view_mode = this.state.view_mode;
         const squashed = this.state.squashed;
-        const puzzle = this.state;
         const goban = this.goban;
-        const difficulty = longRankString(puzzle.rank);
 
         let show_correct = this.state.show_correct;
         if (this.goban.engine.move_tree.findBranchesWithCorrectAnswer().length === 0) {
@@ -1023,17 +1015,6 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
         const view_mode = this.state.view_mode;
         const squashed = this.state.squashed;
-        const puzzle = this.state;
-        const goban = this.goban;
-        const difficulty = longRankString(puzzle.rank);
-        const show_warning = false;
-
-        let next_id = 0;
-        for (let i = 0; i < this.state.puzzle_collection_summary.length - 1; ++i) {
-            if (this.state.puzzle_collection_summary[i].id === puzzle.id) {
-                next_id = this.state.puzzle_collection_summary[i + 1].id;
-            }
-        }
 
         return (
             <div className={`Puzzle ${view_mode} ${squashed ? "squashed" : ""}`}>

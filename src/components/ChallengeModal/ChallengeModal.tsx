@@ -56,28 +56,6 @@ interface ChallengeModalProperties {
     tournamentRecordRoundId?: number;
 }
 
-function deepAssign(obj1: any, obj2: any) {
-    if (typeof obj1 !== "object" || typeof obj2 !== "object") {
-        return obj1;
-    }
-    if (Array.isArray(obj2)) {
-        return obj2;
-    }
-    for (const k in obj2) {
-        if (typeof obj2[k] === "object" && !Array.isArray(obj2[k])) {
-            if (typeof obj1[k] === "object" && !Array.isArray(obj1[k])) {
-                obj1[k] = deepAssign(obj1[k], obj2[k]);
-            } else {
-                obj1[k] = deepAssign({}, obj2[k]);
-            }
-        } else {
-            obj1[k] = obj1[k];
-        }
-    }
-
-    return obj1;
-}
-
 export const username_to_id = {};
 
 /* Constants  */

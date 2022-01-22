@@ -133,7 +133,7 @@ export class GroupAutocomplete extends React.PureComponent<
     };
 
     render() {
-        const { suggestions, value } = this.state;
+        const { value } = this.state;
 
         const inputProps = {
             placeholder: this.props.placeholder || _("Group name"),

@@ -47,11 +47,6 @@ import { ChatDetails } from "Chat";
 import swal from "sweetalert2";
 import { GroupList } from "src/lib/types";
 
-interface ChatLogState {
-    chat_log: Array<ChatMessage>;
-    show_say_hi_placeholder: boolean;
-}
-
 interface ChatLogProperties {
     channel: string;
     autoFocus?: boolean;
@@ -190,9 +185,6 @@ function ChannelTopic({
         false as boolean,
     );
     const [name, set_name]: [string, (tf: string) => void] = useState(channel);
-    const [group_id, set_group_id]: [number | null, (tf: number) => void] = useState(null);
-    const [tournament_id, set_tournament_id]: [number | null, (tf: number) => void] =
-        useState(null);
     const [banner, set_banner]: [string, (s: string) => void] = useState("");
     const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] =
         useState(null);
@@ -206,8 +198,6 @@ function ChannelTopic({
         groups.filter((g) => `group-${g.id}` === channel).length > 0 ||
         channel.indexOf("tournament-") === 0;
     useEffect(() => {
-        set_group_id(null);
-        set_tournament_id(null);
         set_name("");
         set_topic("");
         set_title_hover("");
@@ -217,11 +207,7 @@ function ChannelTopic({
             .then((info: ChannelInformation) => {
                 set_name(info.name);
                 if (info.group_id) {
-                    set_group_id(info.group_id);
                     set_banner(info.banner);
-                }
-                if (info.tournament_id) {
-                    set_tournament_id(info.tournament_id);
                 }
             })
             .catch(errorLogger);
@@ -232,7 +218,7 @@ function ChannelTopic({
         setProxy(proxy);
         set_topic(proxy.channel?.topic?.topic || "");
         set_title_hover(getTitleHover(proxy.channel?.topic));
-        proxy.on("topic", (topic) => {
+        proxy.on("topic", () => {
             set_topic(proxy.channel?.topic?.topic || "");
             set_title_hover(getTitleHover(proxy.channel?.topic));
         });
@@ -380,12 +366,10 @@ function ChannelTopic({
 let scrolled_to_bottom = true;
 function ChatLines({
     channel,
-    autoFocus,
     updateTitle,
     onShowChannels,
     onShowUsers,
 }: InternalChatLogProperties): JSX.Element {
-    const user = data.get("user");
     const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;
     const chat_log_div = useRef(null);
     const [, refresh]: [number, (n: number) => void] = useState(0);
@@ -414,7 +398,7 @@ function ChatLines({
             syncStateSoon();
         }
 
-        function onChatMessage(obj) {
+        function onChatMessage() {
             if (proxy) {
                 proxy.channel.markAsRead();
             }
@@ -460,23 +444,20 @@ function ChatLines({
         scrolled_to_bottom = true;
     }, [channel]);
 
-    const onScroll = useCallback(
-        (event: React.UIEvent<HTMLDivElement>): void => {
-            const div = chat_log_div.current;
-            if (!div) {
-                return;
-            }
+    const onScroll = useCallback((): void => {
+        const div = chat_log_div.current;
+        if (!div) {
+            return;
+        }
 
-            const tf = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
-            if (tf !== scrolled_to_bottom) {
-                scrolled_to_bottom = tf;
-                div.className =
-                    (rtl_mode ? "rtl chat-lines " : "chat-lines ") + (tf ? "autoscrolling" : "");
-            }
-            scrolled_to_bottom = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
-        },
-        [channel],
-    );
+        const tf = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
+        if (tf !== scrolled_to_bottom) {
+            scrolled_to_bottom = tf;
+            div.className =
+                (rtl_mode ? "rtl chat-lines " : "chat-lines ") + (tf ? "autoscrolling" : "");
+        }
+        scrolled_to_bottom = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
+    }, [channel]);
 
     window.requestAnimationFrame(() => {
         const div = chat_log_div.current;
@@ -533,7 +514,7 @@ function ChatInput({ channel, autoFocus }: InternalChatLogProperties): JSX.Eleme
             .then((info) => {
                 set_channel_name(info.name);
             })
-            .catch((err) => 0);
+            .catch(() => 0);
     }, [channel]);
 
     const onKeyPress = useCallback(

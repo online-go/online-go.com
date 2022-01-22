@@ -111,7 +111,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             });
         }
     }
-    componentDidUpdate(prevProps: AIReviewProperties, prevState: any) {
+    componentDidUpdate(prevProps: AIReviewProperties) {
         if (this.getGameId() !== this.getGameId(prevProps)) {
             this.getAIReviewList();
         }
@@ -811,8 +811,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         hoffset = hoffset === 1 ? 0 : hoffset;
         const bplayer = hoffset > 0 || handicap > 1 ? 1 : 0;
         const move_player_list = this.getPlayerColorsMoveList();
-        //forked games might have white stones on the board.
-        const other_game_type = this.props.game.goban.engine.initial_state.white !== "";
 
         if (this.ai_review?.type === "fast") {
             const scores = this.ai_review?.scores;

@@ -250,7 +250,6 @@ const fetch_player = new Batcher<FetchEntry>((fetch_queue) => {
                 for (let idx = 0; idx < queue.length; ++idx) {
                     const player = players[idx];
                     const resolve = queue[idx].resolve;
-                    const reject = queue[idx].reject;
                     const required_fields = queue[idx].required_fields;
 
                     if ("icon-url" in player) {

@@ -68,7 +68,7 @@ export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<
     componentDidMount() {
         this._open();
     }
-    UNSAFE_componentWillReceiveProps(newProps: any) {
+    UNSAFE_componentWillReceiveProps() {
         this._open();
     }
 

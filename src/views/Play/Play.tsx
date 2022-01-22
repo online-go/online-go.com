@@ -41,7 +41,6 @@ import { Size } from "src/lib/types";
 
 import { RengoManagementPane } from "RengoManagementPane";
 import { RengoTeamManagementPane } from "RengoTeamManagementPane";
-import { timeHours } from "d3";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 type Challenge = socket_api.seekgraph_global.Challenge;
@@ -259,15 +258,15 @@ export class Play extends React.Component<{}, PlayState> {
         };
     }
 
-    onAutomatchEntry = (entry) => {
+    onAutomatchEntry = () => {
         this.forceUpdate();
     };
 
-    onAutomatchStart = (entry) => {
+    onAutomatchStart = () => {
         this.forceUpdate();
     };
 
-    onAutomatchCancel = (entry) => {
+    onAutomatchCancel = () => {
         this.forceUpdate();
     };
 
@@ -298,7 +297,7 @@ export class Play extends React.Component<{}, PlayState> {
         };
         preferences.uuid = uuid();
         automatch_manager.findMatch(preferences);
-        this.onAutomatchEntry(preferences);
+        this.onAutomatchEntry();
 
         if (speed === "correspondence") {
             this.setState({ showLoadingSpinnerForCorrespondence: true });
