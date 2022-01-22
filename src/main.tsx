@@ -18,7 +18,6 @@
 /// <reference path="../typings_manual/index.d.ts" />
 import "whatwg-fetch"; /* polyfills window.fetch */
 import * as Sentry from "@sentry/browser";
-import * as SentryTracing from "@sentry/tracing";
 import { configure_goban } from "configure-goban";
 import {
     GoMath,
@@ -57,7 +56,6 @@ try {
         dsn: "https://f8e3b8de571e412b98ff8f98e12c7f58@o589780.ingest.sentry.io/5750726",
         autoSessionTracking: false,
         release: ogs_version || "dev",
-        tracesSampleRate: 0.001,
         whitelistUrls: [
             "online-go.com",
             "online-baduk.com",
@@ -77,7 +75,6 @@ try {
             new Sentry.Integrations.Breadcrumbs({
                 console: false,
             }),
-            new SentryTracing.Integrations.BrowserTracing(),
         ],
     });
 
