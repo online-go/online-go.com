@@ -44,6 +44,51 @@
       <meta property="og:description" content="{{OG_DESCRIPTION}}" />
 
       <style>
+          @font-face {
+              font-family: 'Nunito';
+              font-style: normal;
+              font-weight: 400;
+              src:
+                  url(https://cdn.online-go.com/fonts/Nunito-Regular.woff2) format('woff2'),
+                  url(https://cdn.online-go.com/fonts/Nunito-Regular.woff) format('woff'),
+                  url(https://cdn.online-go.com/fonts/Nunito-Regular.ttf) format('truetype');
+          }
+          @font-face {
+              font-family: 'Nunito';
+              font-style: normal;
+              font-weight: 700;
+              src:
+                  url(https://cdn.online-go.com/fonts/Nunito-Bold.woff2) format('woff2'),
+                  url(https://cdn.online-go.com/fonts/Nunito-Bold.woff) format('woff'),
+                  url(https://cdn.online-go.com/fonts/Nunito-Bold.ttf) format('truetype');
+          }
+          @font-face {
+              font-family: 'Nunito';
+              font-style: italic;
+              font-weight: 400;
+              src:
+                  url(https://cdn.online-go.com/fonts/Nunito-Italic.woff2) format('woff2'),
+                  url(https://cdn.online-go.com/fonts/Nunito-Italic.woff) format('woff'),
+                  url(https://cdn.online-go.com/fonts/Nunito-Italic.ttf) format('truetype');
+          }
+          @font-face {
+              font-family: 'Source Code Pro';
+              font-style: normal;
+              font-weight: 400;
+              src:
+                  url(https://cdn.online-go.com/fonts/SourceCodePro-Regular.woff2) format('woff2'),
+                  url(https://cdn.online-go.com/fonts/SourceCodePro-Regular.woff) format('woff'),
+                  url(https://cdn.online-go.com/fonts/SourceCodePro-Regular.ttf) format('truetype');
+          }
+          @font-face {
+              font-family: 'FontAwesome';
+              src:
+                  url(https://cdn.online-go.com/fonts/fontawesome-webfont.woff2) format('woff2'),
+                  url(https://cdn.online-go.com/fonts/fontawesome-webfont.woff) format('woff'),
+                  url(https://cdn.online-go.com/fonts/fontawesome-webfont.ttf) format('truetype');
+              font-weight: normal;
+              font-style: normal;
+          }
           html {
               touch-action: manipulation;
           }
@@ -99,7 +144,6 @@
           body.accessible {
               background-color: #1A1A1A;
           }
-
       </style>
       {{EXTRA_CONFIG}}
   </head>
@@ -159,9 +203,8 @@
       <div id="main-content"></div>
       <div id="toast-container"></div>
 
+
       <noscript id="deferred-styles">
-          <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Nunito:400,400i,700%7CSource+Code+Pro&amp;subset=latin-ext">
-          <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
           <link rel="stylesheet" type="text/css" href="{{CDN_SERVICE}}/{{RELEASE}}/ogs.{{VERSION_DOTCSS}}">
       </noscript>
 
@@ -339,14 +382,6 @@
             window['ga-disable-UA-37743954-2'] = true;
             console.log("Dev system detected, disabling google analytics");
         }
-      </script>
-
-      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-37743954-2"></script>
-      <script type="text/javascript">
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){ dataLayer.push(arguments); }
-        gtag('js', new Date());
-        gtag('config', 'UA-37743954-2');
       </script>
 
       <script type="text/javascript">
