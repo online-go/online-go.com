@@ -73,7 +73,6 @@
   },
   "dependencies": {
     "@sentry/browser": "^6.16.1",
-    "@sentry/tracing": "^6.16.1",
     "@types/d3": "^5.7.2",
     "@types/howler": "^2.2.2",
     "@types/jquery": "^2.0.34",

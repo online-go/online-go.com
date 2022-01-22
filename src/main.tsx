@@ -18,7 +18,6 @@
 /// <reference path="../typings_manual/index.d.ts" />
 import "whatwg-fetch"; /* polyfills window.fetch */
 import * as Sentry from "@sentry/browser";
-import * as SentryTracing from "@sentry/tracing";
 import { configure_goban } from "configure-goban";
 import {
     GoMath,
@@ -55,9 +54,8 @@ if (
 try {
     Sentry.init({
         dsn: "https://f8e3b8de571e412b98ff8f98e12c7f58@o589780.ingest.sentry.io/5750726",
-        //dsn: "https://dca0827fe9e34251b0e495ae55198ba7@sentry.online-go.com/5",
+        autoSessionTracking: false,
         release: ogs_version || "dev",
-        tracesSampleRate: 0.001,
         whitelistUrls: [
             "online-go.com",
             "online-baduk.com",
@@ -77,7 +75,6 @@ try {
             new Sentry.Integrations.Breadcrumbs({
                 console: false,
             }),
-            new SentryTracing.Integrations.BrowserTracing(),
         ],
     });
 
@@ -291,13 +288,11 @@ init_score_estimator()
 /*** Generic error handling from the server ***/
 sockets.termination_socket.on("ERROR", errorAlerter);
 
-/*** Google analytics ***/
-declare let gtag;
-
-browserHistory.listen((location) => {
+browserHistory.listen((/* location */) => {
     try {
+        // old google analytics history hook
+        /*
         const cleaned_path = location.pathname.replace(/\/[0-9]+(\/.*)?/, "/ID");
-
         let user_type = "error";
         const user = data.get("user");
 
@@ -310,7 +305,6 @@ browserHistory.listen((location) => {
         }
 
         if (gtag) {
-            /* ga history hook  */
             window["gtag"]("config", "UA-37743954-2", {
                 page_path: cleaned_path,
                 custom_map: {
@@ -318,9 +312,9 @@ browserHistory.listen((location) => {
                 },
             });
         }
+        */
 
         window.document.title = "OGS";
-
         close_all_popovers();
     } catch (e) {
         console.log(e);
