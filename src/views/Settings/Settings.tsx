@@ -1058,12 +1058,6 @@ function GamePreferences(): JSX.Element {
         React.useState(preferences.get("ai-review-enabled"));
     const [variations_in_chat, _setVariationsInChat]: [boolean, (x: boolean) => void] =
         React.useState(preferences.get("variations-in-chat-enabled"));
-    const [_live_submit_mode, _setLiveSubmitMode]: [string, (x: string) => void] = React.useState(
-        getSubmitMode("live"),
-    );
-    const [_corr_submit_mode, _setCorrSubmitMode]: [string, (x: string) => void] = React.useState(
-        getSubmitMode("correspondence"),
-    );
     const [board_labeling, _setBoardLabeling]: [string, (x: string) => void] = React.useState(
         preferences.get("board-labeling"),
     );
@@ -1089,6 +1083,7 @@ function GamePreferences(): JSX.Element {
         boolean,
         (x: boolean) => void,
     ] = React.useState(preferences.get("visual-undo-request-indicator"));
+    const [_ignored, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
     function setDockDelay(ev) {
         const new_delay = parseFloat(ev.target.value);
@@ -1141,11 +1136,8 @@ function GamePreferences(): JSX.Element {
                 preferences.set(`one-click-submit-${speed}` as ValidPreference, false);
                 break;
         }
-        if (speed === "live") {
-            _setLiveSubmitMode(getSubmitMode(speed));
-        }
-        if (speed === "correspondence") {
-            _setCorrSubmitMode(getSubmitMode(speed));
+        if (speed === "live" || speed === "correspondence") {
+            forceUpdate();
         }
     }
     function setLiveSubmitMode(value) {
@@ -1330,8 +1322,6 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
         React.useState(Object.keys(preferences.get("profanity-filter")));
     const [game_list_threshold, _setGameListThreshold]: [number, (x: number) => void] =
         React.useState(preferences.get("game-list-threshold"));
-    const [_desktop_notifications, _setDesktopNotifications]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("desktop-notifications"));
     const [show_offline_friends, _setShowOfflineFriends]: [boolean, (x: boolean) => void] =
         React.useState(preferences.get("show-offline-friends"));
     const [unicode_filter_usernames, _setUnicodeFilterUsernames]: [boolean, (x: boolean) => void] =
@@ -1360,6 +1350,7 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
     ] = React.useState(preferences.get("notify-on-incident-report"));
     const [hide_incident_reports, setHideIncidentReports]: [boolean, (x: boolean) => void] =
         React.useState(preferences.get("hide-incident-reports"));
+    const [_ignored, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
     const user = data.get("user");
     const desktop_notifications_enableable: boolean = typeof Notification !== "undefined";
@@ -1421,7 +1412,7 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
 
         try {
             preferences.set("desktop-notifications", enabled);
-            _setDesktopNotifications(enabled);
+            forceUpdate();
 
             if (enabled) {
                 if ((Notification as any).permission === "denied") {
