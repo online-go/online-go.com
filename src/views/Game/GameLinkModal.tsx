@@ -200,9 +200,11 @@ function AnimatedGifCreator({ goban }: { goban: Goban }): JSX.Element {
             </div>
 
             <button onClick={() => setPreviewUrl(url)}>{_("Preview")}</button>
-            <div>
-                <img src={preview_url} />
-            </div>
+            {preview_url && (
+                <div key={preview_url}>
+                    <img src={preview_url} />
+                </div>
+            )}
         </div>
     );
 }
