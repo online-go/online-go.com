@@ -55,7 +55,7 @@ if (
 try {
     Sentry.init({
         dsn: "https://f8e3b8de571e412b98ff8f98e12c7f58@o589780.ingest.sentry.io/5750726",
-        //dsn: "https://dca0827fe9e34251b0e495ae55198ba7@sentry.online-go.com/5",
+        autoSessionTracking: false,
         release: ogs_version || "dev",
         tracesSampleRate: 0.001,
         whitelistUrls: [
