@@ -19,6 +19,37 @@
     width: 100%;
     max-width: 40rem;
 
+    .AnimatedGifCreator {
+        border-top: 1px solid #000;
+        themed border-color shade3
+        label {
+            display: inline-block;
+            width: 8rem;
+            text-align: right;
+        }
+        img {
+            margin: auto;
+        }
+        text-align: center;
+        span {
+            display: inline-block;
+            width: 9rem;
+            text-align: left;
+        }
+
+        .range-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            > label {
+                padding-right: 0.5rem;
+            }
+            > span {
+                padding-left: 0.5rem;
+                }
+        }
+    }
 }
 
 .GameLink-kv {
@@ -29,11 +60,11 @@
 
     span {
         flex-grow: 0;
-        width: 6rem;
+        width: 9rem;
         text-align: right;
         font-weight: bold;
         padding-right: 0.5rem;
-        font-size: 1.2rem;
+        font-size: 1.0rem;
     }
     i {
         font-size: 1.0rem;
@@ -43,6 +74,8 @@
         flex-grow: 1;
         width: 100%;
         border: none;
-        font-size: 1.2rem;
+        font-size: 1.0rem;
     }
+
+
 }
