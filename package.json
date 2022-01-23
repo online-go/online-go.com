@@ -13,6 +13,7 @@
     "yarn": "yarn",
     "lint": "eslint src/ --ext=.ts,.tsx",
     "lint:fix": "eslint --fix src/ --ext=.ts,.tsx",
+    "test": "jest",
     "gulp": "gulp",
     "minify-index": "gulp minify-index --silent",
     "analyze": "webpack --mode production --profile --optimization-minimize --devtool=source-map"
