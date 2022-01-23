@@ -87,7 +87,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
     const [loading, setLoading]: [boolean, (x: boolean) => void] = React.useState(false as boolean);
     const [load_again_refresh, setLoadAgainRefresh]: [number, (x: number) => void] =
         React.useState(0);
-    const [shouldRefresh, setShouldRefresh] = React.useState(true);
+    const mounted = React.useRef(false);
 
     const load_again = React.useRef(false as boolean);
     const last_loaded = React.useRef([] as any[]);
@@ -102,8 +102,10 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
     React.useEffect(refresh, [order_by, page, page_size, filter, load_again_refresh]);
 
     React.useEffect(() => {
-        setShouldRefresh(true);
-        return () => setShouldRefresh(false);
+        mounted.current = true;
+        return () => {
+            mounted.current = false;
+        };
     }, []);
 
     function refresh(force: boolean = false) {
@@ -125,7 +127,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
 
         promise
             .then((res: PagedResults) => {
-                if (!shouldRefresh) {
+                if (!mounted.current) {
                     return;
                 }
                 let new_rows;
