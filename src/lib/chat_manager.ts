@@ -281,6 +281,23 @@ const rtl_channels = {
 
 let last_proxy_id = 0;
 
+export function inGameModChannel(channel_or_game_id: string | number): boolean {
+    const user = data.get("user");
+    if (!user.is_moderator) {
+        return false;
+    }
+
+    if (typeof channel_or_game_id === "string") {
+        if (!channel_or_game_id.startsWith("game-")) {
+            return false;
+        }
+    }
+    const channel =
+        typeof channel_or_game_id === "string" ? channel_or_game_id : `game-${channel_or_game_id}`;
+
+    return !data.get(`mod.anonymous-override.${channel}`);
+}
+
 class ChatChannel extends TypedEventEmitter<Events> {
     channel: string;
     name: string;
@@ -328,12 +345,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
     }
 
     handleAnonymousOverride = () => {
-        const user = data.get("user");
-        if (
-            user.is_moderator &&
-            this.channel.startsWith("game-") &&
-            !data.get(`mod.anonymous-override.${this.channel}`)
-        ) {
+        if (inGameModChannel(this.channel)) {
             comm_socket.off("connect", this._rejoin);
             comm_socket.emit("chat/part", { channel: this.channel });
             for (const user_id in this.user_list) {
