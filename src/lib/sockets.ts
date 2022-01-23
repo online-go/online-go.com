@@ -54,9 +54,9 @@ if (
     ai_host = `http://localhost:13284`;
     console.log("AI Host set to: ", ai_host);
 } else if (
+    process.env.NODE_ENV === "development" || // note that jest in the CI has "test" for this.  The CI doesn't work with beta.
     window.location.hostname.indexOf("beta") >= 0 ||
-    window.location.hostname.indexOf("dev") >= 0 ||
-    window.location.hostname.indexOf("localhost") >= 0
+    window.location.hostname.indexOf("dev") >= 0
 ) {
     ai_host = "https://beta-ai.online-go.com";
 } else if (window.location.hostname.indexOf("online-go.com") >= 0) {
