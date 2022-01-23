@@ -311,8 +311,14 @@ class ChatChannel extends TypedEventEmitter<Events> {
             () => (this.joining = false),
             10000,
         ); /* don't notify for name matches within 10s of joining a channel */
-        comm_socket.on("connect", this._rejoin);
-        this._rejoin();
+
+        const user = data.get("user");
+        if (user.is_moderator && channel.startsWith("game-")) {
+            data.watch(`mod.anonymous-override.${channel}`, this.handleAnonymousOverride, true);
+        } else {
+            comm_socket.on("connect", this._rejoin);
+            this._rejoin();
+        }
         const last_seen = data.get("chat-manager.last-seen", {});
         if (channel in last_seen) {
             this.last_seen_timestamp = last_seen[channel];
@@ -320,6 +326,24 @@ class ChatChannel extends TypedEventEmitter<Events> {
             this.last_seen_timestamp = 0;
         }
     }
+
+    handleAnonymousOverride = () => {
+        const user = data.get("user");
+        if (
+            user.is_moderator &&
+            this.channel.startsWith("game-") &&
+            !data.get(`mod.anonymous-override.${this.channel}`)
+        ) {
+            comm_socket.off("connect", this._rejoin);
+            comm_socket.emit("chat/part", { channel: this.channel });
+            for (const user_id in this.user_list) {
+                this.handlePart(this.user_list[user_id]);
+            }
+        } else {
+            comm_socket.on("connect", this._rejoin);
+            comm_socket.emit("chat/join", { channel: this.channel });
+        }
+    };
 
     markAsRead() {
         const unread_delta = -this.unread_ct;
@@ -353,6 +377,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         }
         comm_socket.off("connect", this._rejoin);
         this.removeAllListeners();
+        data.unwatch(`mod.anonymous-override.${this.channel}`, this.handleAnonymousOverride);
     }
     createProxy(): ChatChannelProxy {
         const proxy = new ChatChannelProxy(this);
