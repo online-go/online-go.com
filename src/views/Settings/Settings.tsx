@@ -169,6 +169,7 @@ export function Settings({
         { key: "sound", label: _("Sound Preferences") },
         { key: "game", label: _("Game Preferences") },
         { key: "chat", label: _("Chat Preferences") },
+        { key: "moderator", label: _("Moderator Preferences") },
         { key: "vacation", label: _("Vacation") },
         { key: "email", label: _("Email Notifications") },
         { key: "announcement", label: _("Announcements Preferences") },
@@ -208,6 +209,9 @@ export function Settings({
         case "general":
             SelectedPage = GeneralPreferences;
             break;
+        case "moderator":
+            SelectedPage = ModeratorPreferences;
+            break;
         case "link":
             SelectedPage = LinkPreferences;
             break;
@@ -227,6 +231,8 @@ export function Settings({
         },
     };
 
+    const user = data.get("user");
+
     return (
         <div className="Settings container">
             <h2 className="page-title">
@@ -236,15 +242,17 @@ export function Settings({
 
             <div id="SettingsContainer">
                 <SettingsGroupSelector>
-                    {groups.map((x) => (
-                        <SettingsGroup
-                            key={x.key}
-                            selected={selected === x.key}
-                            onClick={() => select(x.key)}
-                        >
-                            {x.label}
-                        </SettingsGroup>
-                    ))}
+                    {groups
+                        .filter((x) => x.key !== "moderator" || user.is_moderator)
+                        .map((x) => (
+                            <SettingsGroup
+                                key={x.key}
+                                selected={selected === x.key}
+                                onClick={() => select(x.key)}
+                            >
+                                {x.label}
+                            </SettingsGroup>
+                        ))}
                 </SettingsGroupSelector>
 
                 <Select
@@ -1354,12 +1362,6 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
         React.useState(preferences.get("rating-graph-always-use"));
     const [rating_graph_plot_by_games, _setUseGames]: [boolean, (x: boolean) => void] =
         React.useState(preferences.get("rating-graph-plot-by-games"));
-    const [incident_report_notifications, setIncidentReportNotifications]: [
-        boolean,
-        (x: boolean) => void,
-    ] = React.useState(preferences.get("notify-on-incident-report"));
-    const [hide_incident_reports, setHideIncidentReports]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("hide-incident-reports"));
 
     const user = data.get("user");
     const desktop_notifications_enableable: boolean = typeof Notification !== "undefined";
@@ -1498,16 +1500,6 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
         preferences.set("hide-ranks", checked), _setHideRanks(preferences.get("hide-ranks"));
     }
 
-    function updateIncidentReportNotifications(checked) {
-        preferences.set("notify-on-incident-report", checked);
-        setIncidentReportNotifications(checked);
-    }
-
-    function updateHideIncidentReports(checked) {
-        preferences.set("hide-incident-reports", checked);
-        setHideIncidentReports(checked);
-    }
-
     const language_options = Object.entries(languages).map((lang_entry) => ({
         value: lang_entry[0],
         label: lang_entry[1],
@@ -1617,25 +1609,55 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
                 />
                 <span>{_("games")}</span>
             </PreferenceLine>
+        </div>
+    );
+}
 
-            {(user.is_moderator || null) && (
-                <>
-                    <PreferenceLine
-                        title={_("Notify me when an incident is submitted for moderation")}
-                    >
-                        <Toggle
-                            checked={incident_report_notifications}
-                            onChange={updateIncidentReportNotifications}
-                        />
-                    </PreferenceLine>
-                    <PreferenceLine title="Hide incident reports">
-                        <Toggle
-                            checked={hide_incident_reports}
-                            onChange={updateHideIncidentReports}
-                        />
-                    </PreferenceLine>
-                </>
-            )}
+function ModeratorPreferences(_props: SettingGroupProps): JSX.Element {
+    const [incident_report_notifications, setIncidentReportNotifications]: [
+        boolean,
+        (x: boolean) => void,
+    ] = React.useState(preferences.get("notify-on-incident-report"));
+    const [hide_incident_reports, setHideIncidentReports]: [boolean, (x: boolean) => void] =
+        React.useState(preferences.get("hide-incident-reports"));
+    const [join_games_anonymously, setJoinGamesAnonymously]: [boolean, (x: boolean) => void] =
+        React.useState(preferences.get("moderator.join-games-anonymously"));
+
+    const user = data.get("user");
+
+    if (!user.is_moderator) {
+        return null;
+    }
+
+    function updateIncidentReportNotifications(checked: boolean) {
+        preferences.set("notify-on-incident-report", checked);
+        setIncidentReportNotifications(checked);
+    }
+
+    function updateHideIncidentReports(checked: boolean) {
+        preferences.set("hide-incident-reports", checked);
+        setHideIncidentReports(checked);
+    }
+
+    function updateJoinGamesAnonymously(checked: boolean) {
+        preferences.set("moderator.join-games-anonymously", checked);
+        setJoinGamesAnonymously(checked);
+    }
+
+    return (
+        <div>
+            <PreferenceLine title={_("Notify me when an incident is submitted for moderation")}>
+                <Toggle
+                    checked={incident_report_notifications}
+                    onChange={updateIncidentReportNotifications}
+                />
+            </PreferenceLine>
+            <PreferenceLine title="Hide incident reports">
+                <Toggle checked={hide_incident_reports} onChange={updateHideIncidentReports} />
+            </PreferenceLine>
+            <PreferenceLine title="Join games anonymously">
+                <Toggle checked={join_games_anonymously} onChange={updateJoinGamesAnonymously} />
+            </PreferenceLine>
         </div>
     );
 }

@@ -17,6 +17,7 @@
 
 import cached from "cached";
 import * as data from "data";
+import * as preferences from "preferences";
 import * as player_cache from "player_cache";
 import { comm_socket } from "sockets";
 import { get } from "requests";
@@ -295,7 +296,10 @@ export function inGameModChannel(channel_or_game_id: string | number): boolean {
     const channel =
         typeof channel_or_game_id === "string" ? channel_or_game_id : `game-${channel_or_game_id}`;
 
-    return !data.get(`mod.anonymous-override.${channel}`);
+    return !data.get(
+        `moderator.join-game-publicly.${channel}`,
+        !preferences.get("moderator.join-games-anonymously"),
+    );
 }
 
 class ChatChannel extends TypedEventEmitter<Events> {
@@ -331,7 +335,11 @@ class ChatChannel extends TypedEventEmitter<Events> {
 
         const user = data.get("user");
         if (user.is_moderator && channel.startsWith("game-")) {
-            data.watch(`mod.anonymous-override.${channel}`, this.handleAnonymousOverride, true);
+            data.watch(
+                `moderator.join-game-publicly.${channel}`,
+                this.handleAnonymousOverride,
+                true,
+            );
         } else {
             comm_socket.on("connect", this._rejoin);
             this._rejoin();
@@ -389,7 +397,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         }
         comm_socket.off("connect", this._rejoin);
         this.removeAllListeners();
-        data.unwatch(`mod.anonymous-override.${this.channel}`, this.handleAnonymousOverride);
+        data.unwatch(`moderator.join-game-publicly.${this.channel}`, this.handleAnonymousOverride);
     }
     createProxy(): ChatChannelProxy {
         const proxy = new ChatChannelProxy(this);

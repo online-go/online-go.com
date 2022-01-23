@@ -77,7 +77,12 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
         this.updateScrollPosition = this.updateScrollPosition.bind(this);
 
         const channel = `game-${props.gameview.game_id}`;
-        data.watch(`mod.anonymous-override.${channel}`, this.onAnonymousOverrideChange, true, true);
+        data.watch(
+            `moderator.join-game-publicly.${channel}`,
+            this.onAnonymousOverrideChange,
+            true,
+            true,
+        );
     }
 
     onAnonymousOverrideChange = () => {
@@ -90,7 +95,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
     };
     componentWillUnmount() {
         const channel = `game-${this.props.gameview.game_id}`;
-        data.unwatch(`mod.anonymous-override.${channel}`, this.onAnonymousOverrideChange);
+        data.unwatch(`moderator.join-game-publicly.${channel}`, this.onAnonymousOverrideChange);
     }
 
     onKeyPress(event: React.KeyboardEvent<HTMLElement>) {

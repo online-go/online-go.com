@@ -528,9 +528,9 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                         user.id === this.goban.engine.config.black_player_id)
                 ) {
                     const channel = `game-${this.game_id}`;
-                    if (!data.get(`mod.anonymous-override.${channel}`)) {
+                    if (!data.get(`moderator.join-game-publicly.${channel}`)) {
                         console.log("Having to set anonymous override for", channel);
-                        data.set(`mod.anonymous-override.${channel}`, true);
+                        data.set(`moderator.join-game-publicly.${channel}`, true);
                     } else {
                         console.log("Already set anonymous override for", channel);
                     }
@@ -1644,8 +1644,8 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
     toggleAnonymousModerator = () => {
         const channel = `game-${this.game_id}`;
         data.set(
-            `mod.anonymous-override.${channel}`,
-            !data.get(`mod.anonymous-override.${channel}`),
+            `moderator.join-game-publicly.${channel}`,
+            !data.get(`moderator.join-game-publicly.${channel}`),
         );
     };
     showLinkModal() {
