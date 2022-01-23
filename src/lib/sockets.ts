@@ -55,7 +55,8 @@ if (
     console.log("AI Host set to: ", ai_host);
 } else if (
     window.location.hostname.indexOf("beta") >= 0 ||
-    window.location.hostname.indexOf("dev") >= 0
+    window.location.hostname.indexOf("dev") >= 0 ||
+    window.location.hostname.indexOf("localhost") >= 0
 ) {
     ai_host = "https://beta-ai.online-go.com";
 } else if (window.location.hostname.indexOf("online-go.com") >= 0) {
