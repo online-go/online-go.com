@@ -4115,7 +4115,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                         <i className="fa fa-list-alt"></i> {"Log"}
                     </a>
                 )}
-                {mod && (
+                {(mod || annul) && (
                     <a onClick={this.toggleAnonymousModerator}>
                         <i className="fa fa-user-secret"></i> {"Toggle chat visibility"}
                     </a>
