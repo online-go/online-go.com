@@ -13,6 +13,7 @@
     "yarn": "yarn",
     "lint": "eslint src/ --ext=.ts,.tsx",
     "lint:fix": "eslint --fix src/ --ext=.ts,.tsx",
+    "test": "jest",
     "gulp": "gulp",
     "minify-index": "gulp minify-index --silent",
     "analyze": "webpack --mode production --profile --optimization-minimize --devtool=source-map"
@@ -39,7 +40,7 @@
     "express": "^4.17.1",
     "express-http-proxy": "^1.6.0",
     "fork-ts-checker-webpack-plugin": "^6.3.4",
-    "goban": "=0.5.72",
+    "goban": "=0.5.73",
     "gulp": "^4.0.2",
     "gulp-clean-css": "^4.3.0",
     "gulp-eslint7": "^0.3.2",
