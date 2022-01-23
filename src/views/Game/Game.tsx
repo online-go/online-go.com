@@ -1645,7 +1645,10 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         const channel = `game-${this.game_id}`;
         data.set(
             `moderator.join-game-publicly.${channel}`,
-            !data.get(`moderator.join-game-publicly.${channel}`),
+            !data.get(
+                `moderator.join-game-publicly.${channel}`,
+                !preferences.get("moderator.join-games-anonymously"),
+            ),
         );
     };
     showLinkModal() {
