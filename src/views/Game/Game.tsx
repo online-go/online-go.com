@@ -42,6 +42,7 @@ import {
     GoEngineRules,
     AnalysisTool,
     GoEnginePlayerEntry,
+    JGOFPlayerSummary,
 } from "goban";
 import { isLiveGame } from "TimeControl";
 import { termination_socket, get_network_latency, get_clock_drift } from "sockets";
@@ -652,7 +653,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         });
 
         this.goban.on("move-made", this.autoadvance);
-        this.goban.on("player-update", () => this.sync_state());
+        this.goban.on("player-update", this.processPlayerUpdate);
         this.goban.on("title", (title) => this.setState({ title: title }));
         this.goban.on("update", () => this.sync_state());
         this.goban.on("reset", () => this.sync_state());
@@ -1420,6 +1421,22 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
 
         this.setState({ autoplaying: true });
     }
+
+    processPlayerUpdate = (player_update: JGOFPlayerSummary) => {
+        console.log("Game processing player update", player_update);
+        if (player_update.dropped_players) {
+            if (player_update.dropped_players.black) {
+                console.log("dropping black");
+                // we don't care who was dropped, we just have to clear the auto-resign-overlay!
+                this.setState({ black_auto_resign_expiration: null });
+            }
+            if (player_update.dropped_players.white) {
+                this.setState({ white_auto_resign_expiration: null });
+            }
+        }
+
+        this.sync_state();
+    };
 
     checkAndEnterAnalysis(move?: MoveTree) {
         if (
