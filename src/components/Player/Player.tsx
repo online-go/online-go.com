@@ -59,9 +59,9 @@ interface PlayerState {
 
 export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
     refs: {
-        elt;
     };
 
+    elt: React.RefObject<HTMLSpanElement>;
     online_subscription_user_id = null;
     unmounted: boolean = false;
 
@@ -74,6 +74,8 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
             user: viewed_user,
             has_notes: viewed_user && !!data.get(`player-notes.${user.id}.${viewed_user.id}`),
         };
+        this.elt = React.createRef();
+
     }
 
     componentDidMount() {
@@ -380,7 +382,7 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
             (this.state.user.id || this.state.user.player_id) < 0
         ) {
             return (
-                <span ref="elt" {...main_attrs} onMouseDown={this.display_details}>
+                <span ref={this.elt} {...main_attrs} onMouseDown={this.display_details}>
                     {(props.icon || null) && (
                         <PlayerIcon user={player} size={props.iconSize || 16} />
                     )}
@@ -399,7 +401,7 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
                 <span>
                     <a
                         href={uri}
-                        ref="elt"
+                        ref={this.elt}
                         {...main_attrs}
                         onMouseDown={this.display_details}
                         router={routes}
@@ -461,7 +463,7 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
         } else {
             let chat_id = null;
             try {
-                let cur = $(this.refs.elt);
+                let cur = $(this.elt.current);
 
                 while (cur && cur[0].nodeName !== "BODY") {
                     chat_id = cur.attr("data-chat-id");
@@ -483,7 +485,7 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
                         chatId={chat_id}
                     />
                 ),
-                below: this.refs.elt,
+                below: this.elt.current,
                 minWidth: 240,
                 minHeight: 250,
             });
