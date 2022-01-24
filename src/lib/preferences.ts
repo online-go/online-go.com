@@ -110,6 +110,8 @@ const defaults = {
     "mute-stream-announcements": false,
     "mute-event-announcements": false,
 
+    "moderator.join-games-anonymously": true,
+
     "table-color-default-on": false,
 };
 
