@@ -17,6 +17,7 @@
 
 import cached from "cached";
 import * as data from "data";
+import * as preferences from "preferences";
 import * as player_cache from "player_cache";
 import { comm_socket } from "sockets";
 import { get } from "requests";
@@ -281,6 +282,26 @@ const rtl_channels = {
 
 let last_proxy_id = 0;
 
+export function inGameModChannel(channel_or_game_id: string | number): boolean {
+    const user = data.get("user");
+    if (!user.is_moderator) {
+        return false;
+    }
+
+    if (typeof channel_or_game_id === "string") {
+        if (!channel_or_game_id.startsWith("game-")) {
+            return false;
+        }
+    }
+    const channel =
+        typeof channel_or_game_id === "string" ? channel_or_game_id : `game-${channel_or_game_id}`;
+
+    return !data.get(
+        `moderator.join-game-publicly.${channel}`,
+        !preferences.get("moderator.join-games-anonymously"),
+    );
+}
+
 class ChatChannel extends TypedEventEmitter<Events> {
     channel: string;
     name: string;
@@ -311,8 +332,18 @@ class ChatChannel extends TypedEventEmitter<Events> {
             () => (this.joining = false),
             10000,
         ); /* don't notify for name matches within 10s of joining a channel */
-        comm_socket.on("connect", this._rejoin);
-        this._rejoin();
+
+        const user = data.get("user");
+        if (user.is_moderator && channel.startsWith("game-")) {
+            data.watch(
+                `moderator.join-game-publicly.${channel}`,
+                this.handleAnonymousOverride,
+                true,
+            );
+        } else {
+            comm_socket.on("connect", this._rejoin);
+            this._rejoin();
+        }
         const last_seen = data.get("chat-manager.last-seen", {});
         if (channel in last_seen) {
             this.last_seen_timestamp = last_seen[channel];
@@ -320,6 +351,19 @@ class ChatChannel extends TypedEventEmitter<Events> {
             this.last_seen_timestamp = 0;
         }
     }
+
+    handleAnonymousOverride = () => {
+        if (inGameModChannel(this.channel)) {
+            comm_socket.off("connect", this._rejoin);
+            comm_socket.emit("chat/part", { channel: this.channel });
+            for (const user_id in this.user_list) {
+                this.handlePart(this.user_list[user_id]);
+            }
+        } else {
+            comm_socket.on("connect", this._rejoin);
+            comm_socket.emit("chat/join", { channel: this.channel });
+        }
+    };
 
     markAsRead() {
         const unread_delta = -this.unread_ct;
@@ -353,6 +397,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         }
         comm_socket.off("connect", this._rejoin);
         this.removeAllListeners();
+        data.unwatch(`moderator.join-game-publicly.${this.channel}`, this.handleAnonymousOverride);
     }
     createProxy(): ChatChannelProxy {
         const proxy = new ChatChannelProxy(this);

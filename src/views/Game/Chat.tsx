@@ -28,6 +28,7 @@ import { Game } from "./Game";
 import { ChatUserList, ChatUserCount } from "ChatUserList";
 import { TabCompleteInput } from "TabCompleteInput";
 import { chat_markup } from "components/Chat";
+import { inGameModChannel } from "chat_manager";
 
 let active_game_view: Game = null;
 
@@ -50,7 +51,7 @@ interface GameChatLineProperties {
 }
 
 interface GameChatState {
-    chat_log: "main" | "malkovich" | "moderator";
+    chat_log: "main" | "malkovich" | "moderator" | "hidden";
     show_player_list: boolean;
     qc_visible: boolean;
     qc_editing: boolean;
@@ -58,15 +59,15 @@ interface GameChatState {
 
 /* Chat  */
 export class GameChat extends React.PureComponent<GameChatProperties, GameChatState> {
-    ref_chat_log;
+    ref_chat_log: HTMLElement;
     qc_editableMsgs = null;
-
     scrolled_to_bottom: boolean = true;
 
-    constructor(props) {
+    constructor(props: GameChatProperties) {
         super(props);
+        const in_game_mod_channel = inGameModChannel(props.gameview.game_id);
         this.state = {
-            chat_log: "main",
+            chat_log: in_game_mod_channel ? "hidden" : "main",
             show_player_list: false,
             qc_visible: false,
             qc_editing: false,
@@ -74,15 +75,36 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
         this.onKeyPress = this.onKeyPress.bind(this);
         this.onFocus = this.onFocus.bind(this);
         this.updateScrollPosition = this.updateScrollPosition.bind(this);
+
+        const channel = `game-${props.gameview.game_id}`;
+        data.watch(
+            `moderator.join-game-publicly.${channel}`,
+            this.onAnonymousOverrideChange,
+            true,
+            true,
+        );
     }
 
-    onKeyPress(event) {
-        if (event.charCode === 13) {
-            if (event.target.className === "qc-option") {
+    onAnonymousOverrideChange = () => {
+        const in_game_mod_channel = inGameModChannel(this.props.gameview.game_id);
+        if (in_game_mod_channel) {
+            this.setState({ chat_log: "hidden" });
+        } else {
+            this.setState({ chat_log: "main" });
+        }
+    };
+    componentWillUnmount() {
+        const channel = `game-${this.props.gameview.game_id}`;
+        data.unwatch(`moderator.join-game-publicly.${channel}`, this.onAnonymousOverrideChange);
+    }
+
+    onKeyPress(event: React.KeyboardEvent<HTMLElement>) {
+        if (event.key === "Enter") {
+            const input = event.target as HTMLInputElement;
+            if (input.className === "qc-option") {
                 this.saveEdit();
                 event.preventDefault();
             } else {
-                const input = event.target as HTMLInputElement;
                 this.props.gameview.goban.sendChat(input.value, this.state.chat_log);
                 input.value = "";
                 return false;
@@ -136,7 +158,12 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
         this.props.onChatLogChanged(new_chat_log);
     };
     toggleModeratorChatLog = () => {
-        const new_chat_log = this.state.chat_log === "main" ? "moderator" : "main";
+        const new_chat_log =
+            this.state.chat_log === "main"
+                ? "moderator"
+                : this.state.chat_log === "hidden"
+                ? "main"
+                : "hidden";
         this.setState({
             chat_log: new_chat_log,
             qc_visible: false,
@@ -215,7 +242,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
                             {this.props.chatlog.map((line) => {
                                 const ll = last_line;
                                 last_line = line;
-                                //jreturn <GameChatLine key={line.chat_id} line={line} lastline={ll} gameview={this.props.gameview} />
+                                // return <GameChatLine key={line.chat_id} line={line} lastline={ll} gameview={this.props.gameview} />
                                 return (
                                     <GameChatLine
                                         key={line.chat_id}
@@ -241,13 +268,17 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
                             className={`chat-input-chat-log-toggle sm ${this.state.chat_log}`}
                             onClick={this.toggleChatLog}
                         >
-                            {this.state.chat_log === "malkovich" ? _("Malkovich") : _("Chat")}{" "}
+                            {this.state.chat_log === "malkovich"
+                                ? _("Malkovich")
+                                : this.state.chat_log === "hidden"
+                                ? _("Hidden")
+                                : _("Chat")}{" "}
                             <i
                                 className={
                                     "fa " +
-                                    (this.state.chat_log === "malkovich"
-                                        ? "fa-caret-up"
-                                        : "fa-caret-down")
+                                    (this.state.chat_log === "main"
+                                        ? "fa-caret-down"
+                                        : "fa-caret-up")
                                 }
                             />
                         </button>
@@ -257,13 +288,17 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
                             className={`chat-input-chat-log-toggle sm ${this.state.chat_log}`}
                             onClick={this.toggleModeratorChatLog}
                         >
-                            {this.state.chat_log === "moderator" ? _("Moderator") : _("Chat")}{" "}
+                            {this.state.chat_log === "moderator"
+                                ? _("Moderator")
+                                : this.state.chat_log === "hidden"
+                                ? _("Hidden")
+                                : _("Chat")}{" "}
                             <i
                                 className={
                                     "fa " +
-                                    (this.state.chat_log === "moderator"
-                                        ? "fa-caret-up"
-                                        : "fa-caret-down")
+                                    (this.state.chat_log === "main"
+                                        ? "fa-caret-down"
+                                        : "fa-caret-up")
                                 }
                             />
                         </button>
@@ -284,6 +319,10 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
                                       "Malkovich logs are only visible after the game has ended",
                                       "Visible after the game",
                                   )
+                                : this.state.chat_log === "moderator"
+                                ? "Message players as a moderator"
+                                : this.state.chat_log === "hidden"
+                                ? "Visible only to moderators"
                                 : pgettext(
                                       "This is the placeholder text for the chat input field in games, chat channels, and private messages",
                                       interpolate("Message {{who}}", { who: "..." }),

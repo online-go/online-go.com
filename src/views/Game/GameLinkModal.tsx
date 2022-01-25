@@ -113,7 +113,7 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
                         />
                     </div>
 
-                    {goban.game_id && <AnimatedGifCreator goban={goban} />}
+                    {goban.game_id && <AnimatedPngCreator goban={goban} />}
                 </div>
                 <div className="buttons">
                     <button onClick={this.close}>{_("Close")}</button>
@@ -123,7 +123,9 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
     }
 }
 
-function AnimatedGifCreator({ goban }: { goban: Goban }): JSX.Element {
+function AnimatedPngCreator({ goban }: { goban: Goban }): JSX.Element {
+    const MAX_MOVES = 30;
+
     const engine = goban.engine;
     const [from_move, setFromMove] = React.useState(Math.max(engine?.getMoveNumber() - 10, 1));
     const [to_move, setToMove] = React.useState(Math.max(engine?.getMoveNumber(), 1));
@@ -132,15 +134,15 @@ function AnimatedGifCreator({ goban }: { goban: Goban }): JSX.Element {
 
     const url =
         `${window.location.protocol}//${window.location.hostname}` +
-        `/api/v1/games/${goban.game_id}/gif?from=${from_move}&to=${to_move}&frame_delay=${frame_delay}`;
+        `/api/v1/games/${goban.game_id}/apng?from=${from_move}&to=${to_move}&frame_delay=${frame_delay}`;
 
     return (
-        <div className="AnimatedGifCreator">
+        <div className="AnimatedPngCreator">
             <div className="GameLink-kv">
                 <a href={url} target="_blank">
                     <i className="fa fa-link" />
                 </a>
-                <span style={{ textAlign: "right" }}>{_("Animated GIF")}: </span>
+                <span style={{ textAlign: "right" }}>{_("Animated")}: </span>
                 <input
                     type="text"
                     value={url}
@@ -151,7 +153,7 @@ function AnimatedGifCreator({ goban }: { goban: Goban }): JSX.Element {
 
             <div className="range-row">
                 <label htmlFor="from">
-                    {pgettext("The starting move number of an animated gif", "From move")}
+                    {pgettext("The starting move number of an animated png", "From move")}
                 </label>
                 <input
                     id="from"
@@ -160,14 +162,20 @@ function AnimatedGifCreator({ goban }: { goban: Goban }): JSX.Element {
                     min={1}
                     max={engine.getMoveNumber()}
                     value={from_move}
-                    onChange={(ev) => setFromMove(parseInt(ev.target.value))}
+                    onChange={(ev) => {
+                        const new_from_move = parseInt(ev.target.value);
+                        setFromMove(new_from_move);
+                        setToMove(
+                            Math.max(new_from_move, Math.min(to_move, new_from_move + MAX_MOVES)),
+                        );
+                    }}
                 />
                 <span>{from_move}</span>
             </div>
 
             <div className="range-row">
                 <label htmlFor="to">
-                    {pgettext("The ending move number of an animated gif", "To move")}
+                    {pgettext("The ending move number of an animated png", "To move")}
                 </label>
                 <input
                     id="to"
@@ -176,13 +184,19 @@ function AnimatedGifCreator({ goban }: { goban: Goban }): JSX.Element {
                     min={1}
                     max={engine.getMoveNumber()}
                     value={to_move}
-                    onChange={(ev) => setToMove(parseInt(ev.target.value))}
+                    onChange={(ev) => {
+                        const new_to_move = parseInt(ev.target.value);
+                        setToMove(new_to_move);
+                        setFromMove(
+                            Math.min(new_to_move, Math.max(from_move, new_to_move - MAX_MOVES)),
+                        );
+                    }}
                 />
                 <span>{to_move}</span>
             </div>
             <div className="range-row">
                 <label htmlFor="frame_delay">
-                    {pgettext("The delay between frames in an animated gif", "Frame delay")}
+                    {pgettext("The delay between frames in an animated png", "Frame delay")}
                 </label>
                 <input
                     id="frame_delay"

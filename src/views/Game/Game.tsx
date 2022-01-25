@@ -519,6 +519,28 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             this.goban.setMode("analyze");
         }
 
+        this.goban.on("gamedata", () => {
+            const user = data.get("user");
+            try {
+                if (
+                    user.is_moderator &&
+                    (user.id in (this.goban.engine.player_pool || {}) ||
+                        user.id === this.goban.engine.config.white_player_id ||
+                        user.id === this.goban.engine.config.black_player_id)
+                ) {
+                    const channel = `game-${this.game_id}`;
+                    if (!data.get(`moderator.join-game-publicly.${channel}`)) {
+                        console.log("Having to set anonymous override for", channel);
+                        data.set(`moderator.join-game-publicly.${channel}`, true);
+                    } else {
+                        console.log("Already set anonymous override for", channel);
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        });
+
         // We need an initial score for the first display rendering (which is not set in the constructor).
         // Best to get this from the engine, so we know we have the right structure...
         this.setState({ score: this.goban.engine.computeScore(true) });
@@ -1635,6 +1657,16 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             this.goban.config,
             this.state[`historical_black`] || this.goban.engine.players.black,
             this.state[`historical_white`] || this.goban.engine.players.white,
+        );
+    };
+    toggleAnonymousModerator = () => {
+        const channel = `game-${this.game_id}`;
+        data.set(
+            `moderator.join-game-publicly.${channel}`,
+            !data.get(
+                `moderator.join-game-publicly.${channel}`,
+                !preferences.get("moderator.join-games-anonymously"),
+            ),
         );
     };
     showLinkModal() {
@@ -4098,6 +4130,11 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                 {(mod || annul) && (
                     <a onClick={this.showLogModal}>
                         <i className="fa fa-list-alt"></i> {"Log"}
+                    </a>
+                )}
+                {(mod || annul) && (
+                    <a onClick={this.toggleAnonymousModerator}>
+                        <i className="fa fa-user-secret"></i> {"Cloak of Invisibility"}
                     </a>
                 )}
 
