@@ -36,12 +36,13 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
         const goban = this.props.goban;
         let png_url: string;
         let sgf_url: string;
+
         if (goban.game_id) {
-            sgf_url = `${window.location.protocol}//${window.location.hostname}/api/v1/games/${goban.game_id}/sgf`;
-            png_url = `${window.location.protocol}//${window.location.hostname}/api/v1/games/${goban.game_id}/png`;
+            sgf_url = `${window.location.protocol}//${window.location.hostname}/api/v1/games/${goban.game_id}/sgf/${goban.game_id}.sgf`;
+            png_url = `${window.location.protocol}//${window.location.hostname}/api/v1/games/${goban.game_id}/png/${goban.game_id}.png`;
         } else {
-            sgf_url = `${window.location.protocol}//${window.location.hostname}/api/v1/reviews/${goban.review_id}/sgf`;
-            png_url = `${window.location.protocol}//${window.location.hostname}/api/v1/reviews/${goban.review_id}/png`;
+            sgf_url = `${window.location.protocol}//${window.location.hostname}/api/v1/reviews/${goban.review_id}/sgf/${goban.review_id}.sgf`;
+            png_url = `${window.location.protocol}//${window.location.hostname}/api/v1/reviews/${goban.review_id}/png/${goban.review_id}.png`;
         }
 
         return (
