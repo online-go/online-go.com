@@ -114,7 +114,7 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
                         />
                     </div>
 
-                    {goban.game_id && <AnimatedPngCreator goban={goban} />}
+                    {(goban.game_id || null) && <AnimatedPngCreator goban={goban} />}
                 </div>
                 <div className="buttons">
                     <button onClick={this.close}>{_("Close")}</button>
