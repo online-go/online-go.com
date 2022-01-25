@@ -33,12 +33,19 @@ import {
 } from "rank_utils";
 import { errorLogger, errorAlerter, rulesText, dup, ignore } from "misc";
 import { PlayerIcon } from "PlayerIcon";
-import { timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker } from "TimeControl";
+import {
+    timeControlText,
+    shortShortTimeControl,
+    isLiveGame,
+    TimeControlPicker,
+    makeTimeControlParameters,
+} from "TimeControl";
 import { sfx } from "sfx";
 import * as preferences from "preferences";
 import { notification_manager } from "Notifications";
 import { one_bot, bot_count, bots_list } from "bots";
 import { openForkModal } from "./ForkModal";
+
 import swal from "sweetalert2";
 
 type ChallengeModes = "open" | "computer" | "player" | "demo";
@@ -127,6 +134,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 initial_state: null,
                 private: false,
                 rengo: false,
+                rengo_casual_mode: false,
             },
         });
 
@@ -175,7 +183,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             },
             //time_control: recallTimeControlSettings(speed),
             challenge: challenge,
-            rengo: false,
 
             demo: data.get("demo.settings", {
                 name: "",
@@ -394,7 +401,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     createChallenge = () => {
         const next = this.next();
 
-        //console.log("next ", next);
         if (!this.validateBoardSize()) {
             swal(_("Invalid board size, please correct and try again")).catch(swal.noop);
             return;
@@ -476,7 +482,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         }
         */
 
-        //console.log(challenge);
         if (
             challenge.game.initial_state &&
             Object.keys(challenge.game.initial_state).length === 0
@@ -485,6 +490,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         }
 
         challenge.game.rengo = next.challenge.game.rengo;
+        challenge.game.rengo_casual_mode = next.challenge.game.rengo_casual_mode;
 
         this.saveSettings();
         this.close();
@@ -601,6 +607,19 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             ["challenge.game.ranked", false],
             ["challenge.game.handicap", 0],
         ]);
+    update_rengo_casual = (ev) => {
+        this.upstate("challenge.game.rengo_casual_mode", ev);
+        // brute force ensure that they are using simple time in casual mode
+
+        this.setState({
+            initial_time_control: makeTimeControlParameters({
+                system: "simple",
+                speed: "live",
+                per_move: 60,
+                pause_on_weekends: false,
+            }),
+        });
+    };
     update_demo_private = (ev) => this.upstate("demo.private", ev);
     update_ranked = (ev) => this.setRanked((ev.target as HTMLInputElement).checked);
     update_aga_ranked = (ev) => {
@@ -768,6 +787,37 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                             </div>
                         </div>
                     </div>
+                )}
+                {(mode === "open" || null) && (
+                    <>
+                        <div
+                            className={
+                                "form-group" + (this.state.challenge.game.rengo ? "" : " hide")
+                            }
+                        >
+                            <label className="control-label" htmlFor="rengo-casual-mode">
+                                {_("Casual")}
+                            </label>
+                            <div className="controls">
+                                <div className="checkbox">
+                                    <input
+                                        type="checkbox"
+                                        id="rengo-casual-mode"
+                                        checked={this.state.challenge.game.rengo_casual_ode}
+                                        onChange={this.update_rengo_casual}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            className={
+                                "casual-time-warning" +
+                                (this.state.challenge.game.rengo_casual_mode ? "" : " hide")
+                            }
+                        >
+                            *{_("use Simple time")}
+                        </div>
+                    </>
                 )}
             </div>
         );
