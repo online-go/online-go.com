@@ -36,12 +36,13 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
         const goban = this.props.goban;
         let png_url: string;
         let sgf_url: string;
+
         if (goban.game_id) {
-            sgf_url = `${window.location.protocol}//${window.location.hostname}/api/v1/games/${goban.game_id}/sgf`;
-            png_url = `${window.location.protocol}//${window.location.hostname}/api/v1/games/${goban.game_id}/png`;
+            sgf_url = `${window.location.protocol}//${window.location.hostname}/api/v1/games/${goban.game_id}/sgf/${goban.game_id}.sgf`;
+            png_url = `${window.location.protocol}//${window.location.hostname}/api/v1/games/${goban.game_id}/png/${goban.game_id}.png`;
         } else {
-            sgf_url = `${window.location.protocol}//${window.location.hostname}/api/v1/reviews/${goban.review_id}/sgf`;
-            png_url = `${window.location.protocol}//${window.location.hostname}/api/v1/reviews/${goban.review_id}/png`;
+            sgf_url = `${window.location.protocol}//${window.location.hostname}/api/v1/reviews/${goban.review_id}/sgf/${goban.review_id}.sgf`;
+            png_url = `${window.location.protocol}//${window.location.hostname}/api/v1/reviews/${goban.review_id}/png/${goban.review_id}.png`;
         }
 
         return (
@@ -113,7 +114,7 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
                         />
                     </div>
 
-                    {goban.game_id && <AnimatedPngCreator goban={goban} />}
+                    {(goban.game_id || null) && <AnimatedPngCreator goban={goban} />}
                 </div>
                 <div className="buttons">
                     <button onClick={this.close}>{_("Close")}</button>
@@ -124,17 +125,17 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
 }
 
 function AnimatedPngCreator({ goban }: { goban: Goban }): JSX.Element {
-    const MAX_MOVES = 30;
-
     const engine = goban.engine;
-    const [from_move, setFromMove] = React.useState(Math.max(engine?.getMoveNumber() - 10, 1));
-    const [to_move, setToMove] = React.useState(Math.max(engine?.getMoveNumber(), 1));
+    const MAX_MOVES = 30;
+    const NUM_MOVES = engine?.last_official_move.move_number || 1;
+    const [from_move, setFromMove] = React.useState(Math.max(NUM_MOVES - 10, 1));
+    const [to_move, setToMove] = React.useState(Math.max(NUM_MOVES, 1));
     const [frame_delay, setFrameDelay] = React.useState(1500);
     const [preview_url, setPreviewUrl] = React.useState("");
 
     const url =
         `${window.location.protocol}//${window.location.hostname}` +
-        `/api/v1/games/${goban.game_id}/apng?from=${from_move}&to=${to_move}&frame_delay=${frame_delay}`;
+        `/api/v1/games/${goban.game_id}/apng/${goban.game_id}-${from_move}-${to_move}-${frame_delay}.png?from=${from_move}&to=${to_move}&frame_delay=${frame_delay}`;
 
     return (
         <div className="AnimatedPngCreator">
@@ -160,7 +161,7 @@ function AnimatedPngCreator({ goban }: { goban: Goban }): JSX.Element {
                     name="from"
                     type="range"
                     min={1}
-                    max={engine.getMoveNumber()}
+                    max={NUM_MOVES}
                     value={from_move}
                     onChange={(ev) => {
                         const new_from_move = parseInt(ev.target.value);
@@ -182,7 +183,7 @@ function AnimatedPngCreator({ goban }: { goban: Goban }): JSX.Element {
                     name="to"
                     type="range"
                     min={1}
-                    max={engine.getMoveNumber()}
+                    max={NUM_MOVES}
                     value={to_move}
                     onChange={(ev) => {
                         const new_to_move = parseInt(ev.target.value);
