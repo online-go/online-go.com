@@ -160,7 +160,6 @@ export class LadderComponent extends React.PureComponent<
                     hidePageControls={this.props.hidePageControls}
                     columns={[
                         { header: _("Rank"), className: "rank-column", render: (lp) => lp.rank },
-                        null,
                         {
                             header: _("Player"),
                             className: "player-column",
@@ -172,9 +171,6 @@ export class LadderComponent extends React.PureComponent<
                                 </div>
                             ),
                         },
-
-                        null,
-                        null,
                     ]}
                 />
             </div>
