@@ -39,7 +39,7 @@ interface LadderListState {
 }
 
 export class LadderList extends React.PureComponent<{}, LadderListState> {
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
         this.state = {
             ladders: [],
