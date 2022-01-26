@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
-import { _, interpolate } from "translate";
+import { _ } from "translate";
 import { get } from "requests";
 import { errorAlerter } from "misc";
 import { Player } from "Player";
@@ -29,8 +29,6 @@ interface LadderComponentProperties {
     pageSize?: number;
     pageSizeOptions?: Array<number>;
     hidePageControls?: boolean;
-    dontStartOnPlayersPage?: boolean /* default we will load whatever page the player is found on (based on ladder ranking), set to true to start on page 1 */;
-    showTitle?: boolean;
 }
 
 interface Ladder {
@@ -89,13 +87,6 @@ export class LadderComponent extends React.PureComponent<
         if (!this.state.ladder) {
             return null;
         }
-        let startingPage = 1;
-        if (!this.props.dontStartOnPlayersPage && this.state.ladder.player_rank > 0) {
-            startingPage = Math.max(
-                1,
-                Math.ceil(this.state.ladder.player_rank / this.state.page_size),
-            );
-        }
 
         return (
             <div className="LadderComponent">
@@ -107,28 +98,11 @@ export class LadderComponent extends React.PureComponent<
                     action={this.updatePlayers}
                 />
 
-                {(this.props.showTitle || null) && (
-                    <h4>
-                        {interpolate(_("{{ladder_name}} ladder"), {
-                            ladder_name: this.state.ladder.name,
-                        })}{" "}
-                    </h4>
-                )}
-
-                {(this.props.showTitle || null) && (
-                    <h4>
-                        {interpolate(_("{{ladder_size}} players"), {
-                            ladder_size: this.state.ladder.size,
-                        })}
-                    </h4>
-                )}
-
                 <PaginatedTable
                     className="ladder"
                     name="ladder"
                     ref={this.ladder_table_ref}
                     source={`ladders/${this.props.ladderId}/players?no_challenge_information=1`}
-                    startingPage={startingPage}
                     pageSize={this.state.page_size}
                     pageSizeOptions={this.props.pageSizeOptions}
                     hidePageControls={this.props.hidePageControls}
