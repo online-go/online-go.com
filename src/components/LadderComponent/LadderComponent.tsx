@@ -18,12 +18,11 @@
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 import { _, interpolate } from "translate";
-import { post, get } from "requests";
+import { get } from "requests";
 import { errorAlerter } from "misc";
 import { Player } from "Player";
 import { PaginatedTable, PaginatedTableRef } from "PaginatedTable";
 import { UIPush } from "UIPush";
-import swal from "sweetalert2";
 
 interface LadderComponentProperties {
     ladderId: number;
@@ -85,31 +84,6 @@ export class LadderComponent extends React.PureComponent<
     updatePlayers = () => {
         this.ladder_table_ref.current?.refresh();
     };
-
-    challenge(ladder_player) {
-        console.log(ladder_player);
-        swal({
-            text: interpolate(
-                _(
-                    "Are you ready to start your game with {{player_name}}?",
-                ) /* translators: ladder challenge */,
-                { player_name: ladder_player.player.username },
-            ),
-            showCancelButton: true,
-            confirmButtonText: _("Yes!"),
-            cancelButtonText: _("No"),
-        })
-            .then(() => {
-                post("ladders/%%/players/challenge", this.props.ladderId, {
-                    player_id: ladder_player.player.id,
-                })
-                    .then(() => {
-                        this.updatePlayers();
-                    })
-                    .catch(errorAlerter);
-            })
-            .catch(() => 0);
-    }
 
     render() {
         if (!this.state.ladder) {
