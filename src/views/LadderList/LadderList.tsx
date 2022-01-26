@@ -39,7 +39,7 @@ interface LadderListState {
 }
 
 export class LadderList extends React.PureComponent<{}, LadderListState> {
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
         this.state = {
             ladders: [],
@@ -112,7 +112,6 @@ export class LadderList extends React.PureComponent<{}, LadderListState> {
                                 pageSize={10}
                                 ladderId={ladder.id}
                                 hidePageControls={true}
-                                dontStartOnPlayersPage={true}
                             />
                         </Card>
                     ))}
