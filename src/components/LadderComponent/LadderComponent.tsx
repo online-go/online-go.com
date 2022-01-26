@@ -52,7 +52,7 @@ export class LadderComponent extends React.PureComponent<
 > {
     ladder_table_ref = React.createRef<PaginatedTableRef>();
 
-    constructor(props) {
+    constructor(props: LadderComponentProperties) {
         super(props);
         this.state = {
             ladder_id: props.ladderId,
