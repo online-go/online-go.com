@@ -803,7 +803,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                     <input
                                         type="checkbox"
                                         id="rengo-casual-mode"
-                                        checked={this.state.challenge.game.rengo_casual_ode}
+                                        checked={this.state.challenge.game.rengo_casual_mode}
                                         onChange={this.update_rengo_casual}
                                     />
                                 </div>
