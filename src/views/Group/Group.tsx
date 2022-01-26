@@ -1096,22 +1096,6 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                 </Link>
                             </div>
                         </Card>
-
-                        {/*
-                    {group.ladder_ids.map((ladder_id, idx) => (
-                        <Card key={idx}>
-                            <Link
-                            <LadderComponent
-                                pageSize={10}
-                                ladderId={ladder_id}
-                                showTitle={true}
-                                showLinkToFullView={true}
-                                hidePageControls={true}
-                                dontStartOnPlayersPage={true}
-                                />
-                        </Card>
-                    ))}
-                    */}
                     </div>
                 </div>
             </div>
