@@ -601,12 +601,13 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             ["challenge.game.private", ev],
             ["challenge.game.ranked", false],
         ]);
-    update_rengo = (ev) =>
+    update_rengo = (ev) => {
         this.upstate([
             ["challenge.game.rengo", ev],
             ["challenge.game.ranked", false],
             ["challenge.game.handicap", 0],
         ]);
+    };
     update_rengo_casual = (ev) => {
         this.upstate("challenge.game.rengo_casual_mode", ev);
         // brute force ensure that they are using simple time in casual mode
@@ -812,7 +813,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         <div
                             className={
                                 "casual-time-warning" +
-                                (this.state.challenge.game.rengo_casual_mode ? "" : " hide")
+                                (this.state.challenge.game.rengo &&
+                                this.state.challenge.game.rengo_casual_mode
+                                    ? ""
+                                    : " hide")
                             }
                         >
                             *{_("use Simple time")}

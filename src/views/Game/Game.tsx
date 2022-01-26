@@ -1445,7 +1445,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
     }
 
     processPlayerUpdate = (player_update: JGOFPlayerSummary) => {
-        console.log("Game processing player update", player_update);
         if (player_update.dropped_players) {
             if (player_update.dropped_players.black) {
                 console.log("dropping black");
@@ -1457,7 +1456,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             }
         }
 
-        this.sync_state();
+        this.sync_state(); // now do the real work of updating the teams/players.
     };
 
     checkAndEnterAnalysis(move?: MoveTree) {
@@ -2367,6 +2366,17 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
     }
 
     cancelOrResign() {
+        let ratbag = false;
+
+        if (this.goban.engine.rengo && this.goban.engine.rengo_casual_mode) {
+            const team = this.goban.engine.rengo_teams.black.find(
+                (p) => p.id === data.get("user").id,
+            )
+                ? "black"
+                : "white";
+            ratbag = this.goban.engine.rengo_teams[team].length > 1;
+        }
+        console.log("ratbag: ", ratbag);
         if (this.state.resign_mode === "cancel") {
             swal({
                 text: _("Are you sure you wish to cancel this game?"),
@@ -2379,7 +2389,9 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                 .catch(() => 0);
         } else {
             swal({
-                text: _("Are you sure you wish to resign this game?"),
+                text: ratbag
+                    ? _("Are you sure you want to abandon your team?")
+                    : _("Are you sure you wish to resign this game?"),
                 confirmButtonText: _("Yes"),
                 cancelButtonText: _("No"),
                 showCancelButton: true,
