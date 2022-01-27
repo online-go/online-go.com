@@ -23,9 +23,6 @@ import { PaginatedTable } from "PaginatedTable";
 
 interface LadderComponentProperties {
     ladderId: number;
-    pageSize?: number;
-    pageSizeOptions?: Array<number>;
-    hidePageControls?: boolean;
 }
 
 export class LadderComponent extends React.PureComponent<LadderComponentProperties> {
@@ -42,9 +39,8 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
                     className="ladder"
                     name="ladder"
                     source={`ladders/${this.props.ladderId}/players?no_challenge_information=1`}
-                    pageSize={this.props.pageSize}
-                    pageSizeOptions={this.props.pageSizeOptions}
-                    hidePageControls={this.props.hidePageControls}
+                    pageSize={10}
+                    hidePageControls={true}
                     uiPushProps={{
                         event: "players-updated",
                         channel: `ladder-${this.props.ladderId}`,
