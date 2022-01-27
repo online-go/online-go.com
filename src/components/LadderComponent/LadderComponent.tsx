@@ -18,10 +18,8 @@
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 import { _ } from "translate";
-import { get } from "requests";
-import { errorAlerter } from "misc";
 import { Player } from "Player";
-import { PaginatedTable, PaginatedTableRef } from "PaginatedTable";
+import { PaginatedTable } from "PaginatedTable";
 
 interface LadderComponentProperties {
     ladderId: number;
@@ -30,63 +28,12 @@ interface LadderComponentProperties {
     hidePageControls?: boolean;
 }
 
-interface Ladder {
-    player_rank: number;
-    name: string;
-    size: number;
-}
-
-interface LadderComponentState {
-    ladder_id: number;
-    page_size: number;
-    ladder?: Ladder;
-}
-
-export class LadderComponent extends React.PureComponent<
-    LadderComponentProperties,
-    LadderComponentState
-> {
-    ladder_table_ref = React.createRef<PaginatedTableRef>();
-
-    constructor(props: LadderComponentProperties) {
-        super(props);
-        this.state = {
-            ladder_id: props.ladderId,
-            page_size: props.pageSize || 20,
-            ladder: null,
-        };
-    }
-
-    componentDidMount() {
-        this.reload();
-    }
-    componentDidUpdate(old_props) {
-        if (this.props.ladderId !== old_props.ladderId) {
-            this.reload();
-        }
-    }
-
+export class LadderComponent extends React.PureComponent<LadderComponentProperties> {
     onResize = () => {
         this.forceUpdate();
     };
 
-    reload = () => {
-        get("ladders/%%", this.props.ladderId)
-            .then((ladder) => this.setState({ ladder: ladder }))
-            .catch(errorAlerter);
-
-        this.updatePlayers();
-    };
-
-    updatePlayers = () => {
-        this.ladder_table_ref.current?.refresh();
-    };
-
     render() {
-        if (!this.state.ladder) {
-            return null;
-        }
-
         return (
             <div className="LadderComponent">
                 <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
@@ -95,7 +42,7 @@ export class LadderComponent extends React.PureComponent<
                     className="ladder"
                     name="ladder"
                     source={`ladders/${this.props.ladderId}/players?no_challenge_information=1`}
-                    pageSize={this.state.page_size}
+                    pageSize={this.props.pageSize}
                     pageSizeOptions={this.props.pageSizeOptions}
                     hidePageControls={this.props.hidePageControls}
                     uiPushProps={{
