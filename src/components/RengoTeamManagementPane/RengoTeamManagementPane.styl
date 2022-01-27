@@ -35,8 +35,12 @@
     }
 
     .rengo-challenge-chat {
-        // a hack to counter the border box of EmbeddedChatCard
-        transform: translateY(-6px);
+        // force EmebddedChatCard to size
+        display: flex;
+        align-items: stretch;
+        // and allow for it's border-box
+        padding-top: 8px;
+        padding-bottom: 8px;
 
         // stop this from stretching the seek graph, and scroll at that point
         .EmbeddedChatCard {
