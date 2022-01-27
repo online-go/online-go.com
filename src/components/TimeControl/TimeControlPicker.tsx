@@ -18,25 +18,22 @@
 import * as React from "react";
 import * as data from "data";
 import { _ } from "translate";
-import { TimeControl } from "./TimeControl";
+
 import { time_options, makeTimeControlParameters } from "./util";
 import { computeAverageMoveTime } from "goban";
-//import {errorAlerter} from 'misc';
+import { TimeControl, TimeControlTypes } from "./TimeControl";
+
+type TimeControlSystem = TimeControlTypes.TimeControlSystem;
 
 interface TimeControlPickerProperties {
     value?: TimeControl;
     onChange?: (tc: TimeControl) => void;
+    force_system?: TimeControlSystem;
 }
 
-// TODO: add TimeControl as the state for this component.
-// However, it will require some extra TLC. There are many checks like this:
-//     if (this.state.system === "fischer") { doSomething(this.state.initial_time; }
-// that TypeScript would have a better time with if we were a little more
-// precise in what properties we're looking for:
-//     if ("initial_time" in this.state) { doSomething(this.state.initial_time; }
 export class TimeControlPicker extends React.PureComponent<
     TimeControlPickerProperties,
-    any /*TimeControl*/
+    TimeControl
 > {
     time_control: TimeControl;
 
@@ -44,28 +41,33 @@ export class TimeControlPicker extends React.PureComponent<
         super(props);
 
         const speed = data.get("time_control.speed", "correspondence") || "correspondence";
-        const system = data.get("time_control.system", "fischer") || "fischer";
+        const system =
+            this.props.force_system ||
+            ((data.get("time_control.system", "fischer") || "fischer") as TimeControlSystem);
 
         this.state = Object.assign(
             recallTimeControlSettings(speed, system),
             this.props.value || {},
         );
-        if (this.state.time_control) {
-            (this.state as any).system = this.state.time_control;
-        }
+
         this.state = Object.assign(this.state, makeTimeControlParameters(this.state));
         this.time_control = makeTimeControlParameters(this.state);
     }
+
     UNSAFE_componentWillReceiveProps(next_props: TimeControlPickerProperties) {
-        let update: any = {};
-        if (this.props.value !== next_props.value) {
-            update = Object.assign(update, makeTimeControlParameters(next_props.value));
-        }
-        if (Object.keys(update).length) {
+        let update: TimeControl;
+        if (
+            (this.props.value !== next_props.value ||
+                this.props.force_system !== next_props.value.system) &&
+            (!this.props.force_system || this.props.force_system === next_props.value.system)
+        ) {
+            update = { ...makeTimeControlParameters(next_props.value) };
+
             this.time_control = makeTimeControlParameters(update);
             this.setState(update);
         }
     }
+
     syncTimeControl(update: any) {
         /* {  */
         const tc = Object.assign({}, this.state, update);
@@ -148,12 +150,19 @@ export class TimeControlPicker extends React.PureComponent<
         );
     };
     setTimeControlSystem = (time_control_system) => {
-        this.syncTimeControl(
-            Object.assign({}, recallTimeControlSettings(this.state.speed, time_control_system), {
-                speed: this.state.speed,
-            }),
-        );
+        if (!this.props.force_system) {
+            this.syncTimeControl(
+                Object.assign(
+                    {},
+                    recallTimeControlSettings(this.state.speed, time_control_system),
+                    {
+                        speed: this.state.speed,
+                    },
+                ),
+            );
+        }
     };
+
     update_speed_bracket = (ev) => this.setSpeedBracket((ev.target as HTMLSelectElement).value);
     update_time_control_system = (ev) =>
         this.setTimeControlSystem((ev.target as HTMLSelectElement).value);
@@ -219,6 +228,7 @@ export class TimeControlPicker extends React.PureComponent<
                     <div className="controls">
                         <div className="checkbox">
                             <select
+                                disabled={!!this.props.force_system}
                                 value={this.state.system}
                                 onChange={this.update_time_control_system}
                                 id="challenge-time-control"
@@ -254,7 +264,7 @@ export class TimeControlPicker extends React.PureComponent<
                                 <select
                                     id="challenge-initial-time"
                                     className="form-control time-spinner"
-                                    value={this.state.initial_time}
+                                    value={(this.state as TimeControlTypes.Fischer).initial_time}
                                     onChange={this.update_initial_time}
                                 >
                                     {time_options[speed]["fischer"]["initial_time"].map(
@@ -283,7 +293,7 @@ export class TimeControlPicker extends React.PureComponent<
                                 <select
                                     id="challenge-inc-time"
                                     className="form-control"
-                                    value={this.state.time_increment}
+                                    value={(this.state as TimeControlTypes.Fischer).time_increment}
                                     onChange={this.update_time_increment}
                                 >
                                     {time_options[speed]["fischer"]["time_increment"].map(
@@ -308,7 +318,7 @@ export class TimeControlPicker extends React.PureComponent<
                                 <select
                                     id="challenge-max-time"
                                     className="form-control"
-                                    value={this.state.max_time}
+                                    value={(this.state as TimeControlTypes.Fischer).max_time}
                                     onChange={this.update_max_time}
                                 >
                                     {time_options[speed]["fischer"]["max_time"].map((it, idx) => (
@@ -339,7 +349,7 @@ export class TimeControlPicker extends React.PureComponent<
                                 <select
                                     id="challenge-per-move-time"
                                     className="form-control"
-                                    value={this.state.per_move}
+                                    value={(this.state as TimeControlTypes.Simple).per_move}
                                     onChange={this.update_per_move}
                                 >
                                     {time_options[speed]["simple"]["per_move"].map((it, idx) => (
@@ -367,7 +377,7 @@ export class TimeControlPicker extends React.PureComponent<
                                 <select
                                     id="challenge-main-time"
                                     className="form-control"
-                                    value={this.state.main_time}
+                                    value={(this.state as TimeControlTypes.Canadian).main_time}
                                     onChange={this.update_main_time}
                                 >
                                     {time_options[speed]["canadian"]["main_time"].map((it, idx) => (
@@ -394,7 +404,7 @@ export class TimeControlPicker extends React.PureComponent<
                                 <select
                                     id="challenge-main-time"
                                     className="form-control"
-                                    value={this.state.main_time}
+                                    value={(this.state as TimeControlTypes.ByoYomi).main_time}
                                     onChange={this.update_main_time}
                                 >
                                     {time_options[speed]["byoyomi"]["main_time"].map((it, idx) => (
@@ -424,7 +434,7 @@ export class TimeControlPicker extends React.PureComponent<
                                 <select
                                     id="challenge-per-period-time"
                                     className="form-control"
-                                    value={this.state.period_time}
+                                    value={(this.state as TimeControlTypes.ByoYomi).period_time}
                                     onChange={this.update_period_time}
                                 >
                                     {time_options[speed]["byoyomi"]["period_time"].map(
@@ -456,7 +466,7 @@ export class TimeControlPicker extends React.PureComponent<
                                     min="1"
                                     max="300"
                                     className="challenge-dropdown form-control"
-                                    value={this.state.periods}
+                                    value={(this.state as TimeControlTypes.ByoYomi).periods}
                                     onChange={this.update_periods}
                                 />
                             </div>
@@ -481,7 +491,7 @@ export class TimeControlPicker extends React.PureComponent<
                                 <select
                                     id="challenge-per-canadian-period-time"
                                     className="form-control"
-                                    value={this.state.period_time}
+                                    value={(this.state as TimeControlTypes.Canadian).period_time}
                                     onChange={this.update_period_time}
                                 >
                                     {time_options[speed]["canadian"]["period_time"].map(
@@ -516,7 +526,9 @@ export class TimeControlPicker extends React.PureComponent<
                                     min="1"
                                     max="50"
                                     className="challenge-dropdown form-control"
-                                    value={this.state.stones_per_period}
+                                    value={
+                                        (this.state as TimeControlTypes.Canadian).stones_per_period
+                                    }
                                     onChange={this.update_stones_per_period}
                                 />
                             </div>
@@ -541,7 +553,7 @@ export class TimeControlPicker extends React.PureComponent<
                                 <select
                                     id="challenge-total-time"
                                     className="form-control"
-                                    value={this.state.total_time}
+                                    value={(this.state as TimeControlTypes.Absolute).total_time}
                                     onChange={this.update_total_time}
                                 >
                                     {time_options[speed]["absolute"]["total_time"].map(
@@ -678,7 +690,7 @@ const default_time_options = {
         },
     },
 };
-function recallTimeControlSettings(speed, time_control_system) {
+function recallTimeControlSettings(speed, time_control_system: TimeControlSystem) {
     if (speed !== "blitz" && speed !== "live" && speed !== "correspondence") {
         throw new Error(`Invalid speed: ${speed}`);
     }

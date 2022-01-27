@@ -1151,6 +1151,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     <TimeControlPicker
                         value={this.state.initial_time_control}
                         ref="time_control_picker"
+                        force_system={challenge.game.rengo_casual_mode ? "simple" : undefined}
                     />
                 </div>
 
