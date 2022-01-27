@@ -58,6 +58,7 @@ interface PaginatedTableProperties<RawEntryT, GroomedEntryT = RawEntryT> {
     startingPage?: number;
     fillBlankRows?: boolean;
     hidePageControls?: boolean;
+    /** If provided, the table will listen for this push event and refresh its data accordingly */
     uiPushProps?: { event: string; channel: string };
 }
 
