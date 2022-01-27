@@ -17,7 +17,7 @@
 
 .RengoTeamManagementPane {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
 
     .Player {
         margin-right: 1em;
@@ -32,6 +32,22 @@
 
     .rengo-admin-container.pending {
         cursor: wait !important;
+    }
+
+    .rengo-challenge-chat {
+        // force EmebddedChatCard to size
+        display: flex;
+        align-items: stretch;
+        // and allow for it's border-box
+        padding-top: 8px;
+        padding-bottom: 8px;
+
+        // stop this from stretching the seek graph, and scroll at that point
+        .EmbeddedChatCard {
+            .ChatLog {
+                max-height: 15rem;
+            }
+        }
     }
 
     .no-rengo-players-to-admin {
