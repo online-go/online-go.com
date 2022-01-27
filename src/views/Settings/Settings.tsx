@@ -262,7 +262,7 @@ export function Settings({
                     value={groups.filter((opt) => opt.key === selected)[0]}
                     getOptionValue={(data) => data.key}
                     onChange={(data: any) => select(data.key)}
-                    options={groups}
+                    options={groups.filter((x) => x.key !== "moderator" || user.is_moderator)}
                     isClearable={false}
                     isSearchable={false}
                     blurInputOnSelect={true}

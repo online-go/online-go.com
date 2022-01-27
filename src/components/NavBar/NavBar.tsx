@@ -87,9 +87,9 @@ export function logout() {
 export class NavBar extends React.PureComponent<{}, any> {
     refs: {
         input: any;
-        notification_list: NotificationList;
     };
     omnisearch_input_ref = React.createRef<HTMLInputElement>();
+    notification_list = React.createRef<NotificationList>();
 
     constructor(props) {
         super(props);
@@ -150,7 +150,7 @@ export class NavBar extends React.PureComponent<{}, any> {
     }
     toggleRightNav() {
         if (this.state.right_nav_active === false) {
-            this.refs.notification_list.markAllAsRead();
+            this.notification_list.current.markAllAsRead();
         }
         this.setState({ right_nav_active: !this.state.right_nav_active });
     }
@@ -358,7 +358,7 @@ export class NavBar extends React.PureComponent<{}, any> {
                             <Player user={user} disable-cache-update />
                         </div>
 
-                        <NotificationList ref="notification_list" />
+                        <NotificationList ref={this.notification_list} />
 
                         <LineText>{_("Theme")}</LineText>
 
