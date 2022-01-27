@@ -22,7 +22,6 @@ import { get } from "requests";
 import { errorAlerter } from "misc";
 import { Player } from "Player";
 import { PaginatedTable, PaginatedTableRef } from "PaginatedTable";
-import { UIPush } from "UIPush";
 
 interface LadderComponentProperties {
     ladderId: number;
@@ -92,20 +91,17 @@ export class LadderComponent extends React.PureComponent<
             <div className="LadderComponent">
                 <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
 
-                <UIPush
-                    event="players-updated"
-                    channel={`ladder-${this.props.ladderId}`}
-                    action={this.updatePlayers}
-                />
-
                 <PaginatedTable
                     className="ladder"
                     name="ladder"
-                    ref={this.ladder_table_ref}
                     source={`ladders/${this.props.ladderId}/players?no_challenge_information=1`}
                     pageSize={this.state.page_size}
                     pageSizeOptions={this.props.pageSizeOptions}
                     hidePageControls={this.props.hidePageControls}
+                    uiPushProps={{
+                        event: "players-updated",
+                        channel: `ladder-${this.props.ladderId}`,
+                    }}
                     columns={[
                         { header: _("Rank"), className: "rank-column", render: (lp) => lp.rank },
                         {
