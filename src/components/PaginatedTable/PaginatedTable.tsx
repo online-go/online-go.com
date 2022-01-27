@@ -19,6 +19,7 @@ import * as React from "react";
 import { _ } from "translate";
 import { post, get } from "requests";
 import * as data from "data";
+import { UIPush } from "../UIPush";
 
 interface PaginatedTableColumnProperties<EntryT> {
     cellProps?: any;
@@ -57,6 +58,8 @@ interface PaginatedTableProperties<RawEntryT, GroomedEntryT = RawEntryT> {
     startingPage?: number;
     fillBlankRows?: boolean;
     hidePageControls?: boolean;
+    /** If provided, the table will listen for this push event and refresh its data accordingly */
+    uiPushProps?: { event: string; channel: string };
 }
 
 export interface PaginatedTableRef {
@@ -69,7 +72,7 @@ export const PaginatedTable = React.forwardRef<PaginatedTableRef, PaginatedTable
 
 function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
     props: PaginatedTableProperties<RawEntryT, GroomedEntryT>,
-    ref,
+    ref: React.ForwardedRef<PaginatedTableRef>,
 ): JSX.Element {
     const table_name = props.name || "default";
     const [rows, setRows]: [any[], (x: any[]) => void] = React.useState([]);
@@ -303,6 +306,15 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
 
     return (
         <div className={`PaginatedTable ${extra_classes} ${loading ? "loading" : ""}`}>
+            {props.uiPushProps && (
+                <UIPush
+                    event={props.uiPushProps.event}
+                    channel={props.uiPushProps.channel}
+                    action={() => {
+                        refresh(true);
+                    }}
+                />
+            )}
             <div className="loading-overlay">{_("Loading")}</div>
             <table className={extra_classes}>
                 <thead>

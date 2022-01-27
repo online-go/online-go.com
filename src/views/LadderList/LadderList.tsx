@@ -108,11 +108,7 @@ export class LadderList extends React.PureComponent<{}, LadderListState> {
                                 })}
                             </h4>
 
-                            <LadderComponent
-                                pageSize={10}
-                                ladderId={ladder.id}
-                                hidePageControls={true}
-                            />
+                            <LadderComponent ladderId={ladder.id} />
                         </Card>
                     ))}
                 </div>
