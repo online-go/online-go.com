@@ -19,15 +19,20 @@
     width: 40rem;
     max-width: 100%;
 
+    // take up as much vertical space as we are allowed
     display: flex;
     flex-direction: column;
     align-items: stretch;
 
     flex-grow: 1;
 
-    // assuming one of these is provided as the child, we want it to consume the space
-    // (if some other child is added, it would need the same treatment)
-    .RengoTeamManagementPane {
+    .rengo-challenge-status {
+        // nothing special yet
+    }
+
+    // this is the child: the team management pane component (the second div we instantiate)
+    > div:nth-of-type(2) {
+        // this is where we want to consume vertical space
         flex-grow: 1;
     }
 
