@@ -810,17 +810,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                 </div>
                             </div>
                         </div>
-                        <div
-                            className={
-                                "casual-time-warning" +
-                                (this.state.challenge.game.rengo &&
-                                this.state.challenge.game.rengo_casual_mode
-                                    ? ""
-                                    : " hide")
-                            }
-                        >
-                            *{_("use Simple time")}
-                        </div>
                     </>
                 )}
             </div>
