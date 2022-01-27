@@ -18,94 +18,33 @@
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 import { _ } from "translate";
-import { get } from "requests";
-import { errorAlerter } from "misc";
 import { Player } from "Player";
-import { PaginatedTable, PaginatedTableRef } from "PaginatedTable";
-import { UIPush } from "UIPush";
+import { PaginatedTable } from "PaginatedTable";
 
 interface LadderComponentProperties {
     ladderId: number;
-    pageSize?: number;
-    pageSizeOptions?: Array<number>;
-    hidePageControls?: boolean;
 }
 
-interface Ladder {
-    player_rank: number;
-    name: string;
-    size: number;
-}
-
-interface LadderComponentState {
-    ladder_id: number;
-    page_size: number;
-    ladder?: Ladder;
-}
-
-export class LadderComponent extends React.PureComponent<
-    LadderComponentProperties,
-    LadderComponentState
-> {
-    ladder_table_ref = React.createRef<PaginatedTableRef>();
-
-    constructor(props: LadderComponentProperties) {
-        super(props);
-        this.state = {
-            ladder_id: props.ladderId,
-            page_size: props.pageSize || 20,
-            ladder: null,
-        };
-    }
-
-    componentDidMount() {
-        this.reload();
-    }
-    componentDidUpdate(old_props) {
-        if (this.props.ladderId !== old_props.ladderId) {
-            this.reload();
-        }
-    }
-
+export class LadderComponent extends React.PureComponent<LadderComponentProperties> {
     onResize = () => {
         this.forceUpdate();
     };
 
-    reload = () => {
-        get("ladders/%%", this.props.ladderId)
-            .then((ladder) => this.setState({ ladder: ladder }))
-            .catch(errorAlerter);
-
-        this.updatePlayers();
-    };
-
-    updatePlayers = () => {
-        this.ladder_table_ref.current?.refresh();
-    };
-
     render() {
-        if (!this.state.ladder) {
-            return null;
-        }
-
         return (
             <div className="LadderComponent">
                 <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
 
-                <UIPush
-                    event="players-updated"
-                    channel={`ladder-${this.props.ladderId}`}
-                    action={this.updatePlayers}
-                />
-
                 <PaginatedTable
                     className="ladder"
                     name="ladder"
-                    ref={this.ladder_table_ref}
                     source={`ladders/${this.props.ladderId}/players?no_challenge_information=1`}
-                    pageSize={this.state.page_size}
-                    pageSizeOptions={this.props.pageSizeOptions}
-                    hidePageControls={this.props.hidePageControls}
+                    pageSize={10}
+                    hidePageControls={true}
+                    uiPushProps={{
+                        event: "players-updated",
+                        channel: `ladder-${this.props.ladderId}`,
+                    }}
                     columns={[
                         { header: _("Rank"), className: "rank-column", render: (lp) => lp.rank },
                         {

@@ -94,7 +94,7 @@
     .rengo-management-list-item {
         colspan: 0;
         margin: auto;
-        width: 40%;
+        width: 60%;
         padding: 1.0rem;
         display: flex;
         flex-direction: column;
@@ -109,8 +109,12 @@
 
         // long specifier to make sure this specific column is not overriden
         #challenge-list .challenge-row .cell.rengo-list-buttons {
-            display: flex;  // to enable the buttons to wrap to the next line on narrow screens
+            display: flex;  // t enable the buttons to wrap to the next line on narrow screens
             justify-content: flex-end;
+        }
+
+        .RengoTeamManagementPane {
+            flex-direction: column; //put the chat below the team management function in narrow screens
         }
     }
 

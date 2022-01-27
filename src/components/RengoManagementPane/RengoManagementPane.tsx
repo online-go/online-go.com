@@ -76,9 +76,8 @@ export class RengoManagementPane extends React.PureComponent<
                 </div>
 
                 {
-                    React.Children.only(
-                        this.props.children,
-                    ) /* intended to be RengoTeamManagementPane */
+                    // this is the team management pane
+                    React.Children.only(this.props.children)
                 }
 
                 <div className="rengo-challenge-buttons">
