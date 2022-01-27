@@ -25,6 +25,15 @@
 
     flex-grow: 1;
 
+    .rengo-challenge-status {
+        padding-bottom: 4px;  // force some vertical space between the Chat Card boundary box
+    }
+
+    // assuming one of these is provided as the child, we want it to consume the space
+    .RengoTeamManagementPane {
+        flex-grow: 1;
+    }
+
     .rengo-challenge-buttons {
         margin-top: 0.5rem;  // stop buttons bumping into components above, if squashed up against them.
 
@@ -34,7 +43,6 @@
         justify-content: space-between;
 
         //put the buttons at the bottom of the containing element
-        flex-grow: 1;
         align-items: flex-end;
     }
 }

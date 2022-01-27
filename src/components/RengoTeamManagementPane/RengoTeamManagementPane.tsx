@@ -19,6 +19,7 @@ import * as React from "react";
 import { _ } from "translate";
 
 import { Player } from "Player";
+import { EmbeddedChatCard } from "Chat";
 
 type Challenge = socket_api.seekgraph_global.Challenge;
 
@@ -180,6 +181,9 @@ export class RengoTeamManagementPane extends React.PureComponent<
                             <Player user={n} rank={true} key={i} />
                         </div>
                     ))}
+                </div>
+                <div className="rengo-challenge-chat">
+                    <EmbeddedChatCard channel={`rengo-challenge-${the_challenge.challenge_id}`} />
                 </div>
             </div>
         );
