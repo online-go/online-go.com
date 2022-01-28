@@ -2366,7 +2366,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
     }
 
     cancelOrResign() {
-        let ratbag = false;
+        let dropping_from_casual_rengo = false;
 
         if (this.goban.engine.rengo && this.goban.engine.rengo_casual_mode) {
             const team = this.goban.engine.rengo_teams.black.find(
@@ -2374,9 +2374,9 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             )
                 ? "black"
                 : "white";
-            ratbag = this.goban.engine.rengo_teams[team].length > 1;
+            dropping_from_casual_rengo = this.goban.engine.rengo_teams[team].length > 1;
         }
-        console.log("ratbag: ", ratbag);
+
         if (this.state.resign_mode === "cancel") {
             swal({
                 text: _("Are you sure you wish to cancel this game?"),
@@ -2389,7 +2389,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                 .catch(() => 0);
         } else {
             swal({
-                text: ratbag
+                text: dropping_from_casual_rengo
                     ? _("Are you sure you want to abandon your team?")
                     : _("Are you sure you wish to resign this game?"),
                 confirmButtonText: _("Yes"),
