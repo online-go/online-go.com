@@ -19,9 +19,8 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { _ } from "translate";
 import { post, put } from "requests";
-import { PaginatedTable, PaginatedTableRef } from "PaginatedTable";
+import { PaginatedTable } from "PaginatedTable";
 import { Card } from "material";
-import { UIPush } from "UIPush";
 import { SearchInput } from "misc-ui";
 import { Player } from "Player";
 import * as moment from "moment";
@@ -183,9 +182,6 @@ interface ModeratorState {
 }
 
 export class Moderator extends React.PureComponent<{}, ModeratorState> {
-    modlog_ref = React.createRef<PaginatedTableRef>();
-    userlog_ref = React.createRef<PaginatedTableRef>();
-
     constructor(props) {
         super(props);
         this.state = {
@@ -197,19 +193,9 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
         window.document.title = _("Moderator Center");
     }
 
-    refreshModlog = () => {
-        this.modlog_ref.current?.refresh();
-    };
-    refreshUserlog = () => {
-        this.userlog_ref.current?.refresh();
-    };
-
     render() {
         return (
             <div className="Moderator">
-                <UIPush event="modlog-updated" channel="moderators" action={this.refreshModlog} />
-                <UIPush event="new-user" channel="moderators" action={this.refreshUserlog} />
-
                 <Card>
                     <div className="hsearch">
                         <h2>{_("New Users")}</h2>
@@ -233,7 +219,7 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                         className="userlog"
                         name="userlog"
                         source={`moderation/recent_users`}
-                        ref={this.userlog_ref}
+                        uiPushProps={{ event: "new-user", channel: "moderators" }}
                         orderBy={["-timestamp"]}
                         filter={{
                             ...(this.state.newuserany_filter !== "" && {
@@ -364,7 +350,6 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                         className=""
                         name="modlog"
                         source={`moderation/`}
-                        ref={this.modlog_ref}
                         orderBy={["-timestamp"]}
                         filter={{
                             ...(this.state.playerusernameistartswith_filter !== "" && {
@@ -372,6 +357,7 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                                     this.state.playerusernameistartswith_filter,
                             }),
                         }}
+                        uiPushProps={{ event: "modlog-updated", channel: "moderators" }}
                         columns={[
                             {
                                 header: _("Time"),
