@@ -62,11 +62,9 @@ export class TimeControlPicker extends React.PureComponent<
             this.props?.force_system !== this.state.system
         ) {
             if (next_props.force_system) {
-                const next_system = (data.get("time_control.system", "fischer") ||
-                    "fischer") as TimeControlSystem;
                 update = Object.assign(
                     this.state,
-                    recallTimeControlSettings(this.state.speed, next_system),
+                    recallTimeControlSettings(this.state.speed, next_props.force_system),
                 );
             } else if (next_props.value) {
                 update = { ...makeTimeControlParameters(next_props.value) };
