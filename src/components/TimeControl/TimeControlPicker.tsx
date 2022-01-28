@@ -56,15 +56,27 @@ export class TimeControlPicker extends React.PureComponent<
 
     UNSAFE_componentWillReceiveProps(next_props: TimeControlPickerProperties) {
         let update: TimeControl;
+        console.log("Timepicker props", next_props);
         if (
-            (this.props.value !== next_props.value ||
-                this.props.force_system !== next_props.value.system) &&
-            (!this.props.force_system || this.props.force_system === next_props.value.system)
+            this.props.value !== next_props.value ||
+            this.props?.force_system !== this.state.system
         ) {
-            update = { ...makeTimeControlParameters(next_props.value) };
+            if (next_props.force_system) {
+                const next_system = (data.get("time_control.system", "fischer") ||
+                    "fischer") as TimeControlSystem;
+                update = Object.assign(
+                    this.state,
+                    recallTimeControlSettings(this.state.speed, next_system),
+                );
+            } else if (next_props.value) {
+                update = { ...makeTimeControlParameters(next_props.value) };
+            }
 
-            this.time_control = makeTimeControlParameters(update);
-            this.setState(update);
+            if (update) {
+                console.log("Updating time control:", update);
+                this.time_control = makeTimeControlParameters(update);
+                this.setState(update);
+            }
         }
     }
 
