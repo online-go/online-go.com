@@ -33,13 +33,7 @@ import {
 } from "rank_utils";
 import { errorLogger, errorAlerter, rulesText, dup, ignore } from "misc";
 import { PlayerIcon } from "PlayerIcon";
-import {
-    timeControlText,
-    shortShortTimeControl,
-    isLiveGame,
-    TimeControlPicker,
-    makeTimeControlParameters,
-} from "TimeControl";
+import { timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker } from "TimeControl";
 import { sfx } from "sfx";
 import * as preferences from "preferences";
 import { notification_manager } from "Notifications";
@@ -610,16 +604,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     };
     update_rengo_casual = (ev) => {
         this.upstate("challenge.game.rengo_casual_mode", ev);
-        // brute force ensure that they are using simple time in casual mode
-
-        this.setState({
-            initial_time_control: makeTimeControlParameters({
-                system: "simple",
-                speed: "live",
-                per_move: 60,
-                pause_on_weekends: false,
-            }),
-        });
     };
     update_demo_private = (ev) => this.upstate("demo.private", ev);
     update_ranked = (ev) => this.setRanked((ev.target as HTMLInputElement).checked);
@@ -1140,7 +1124,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     <TimeControlPicker
                         value={this.state.initial_time_control}
                         ref="time_control_picker"
-                        force_system={challenge.game.rengo_casual_mode ? "simple" : undefined}
+                        force_system={
+                            challenge.game.rengo && challenge.game.rengo_casual_mode
+                                ? "simple"
+                                : undefined
+                        }
                     />
                 </div>
 
