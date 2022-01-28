@@ -105,9 +105,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
         new_news_body;
     };
 
-    members_ref = React.createRef<PaginatedTableRef>();
     news_ref = React.createRef<PaginatedTableRef>();
-    tournament_ref = React.createRef<PaginatedTableRef>();
 
     constructor(props) {
         super(props);
@@ -224,9 +222,6 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
 
     refreshGroup = () => {
         this.resolve(this.state.group_id);
-    };
-    refreshPlayerList = () => {
-        this.members_ref.current?.refresh();
     };
 
     toggleEdit = () => {
@@ -475,11 +470,6 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
 
         return (
             <div className="Group container">
-                <UIPush
-                    event="players-updated"
-                    channel={`group-${group.id}`}
-                    action={this.refreshPlayerList}
-                />
                 <UIPush
                     event="reload-group"
                     channel={`group-${group.id}`}
@@ -946,7 +936,6 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                     <PaginatedTable
                                         className="TournamentRecord-table"
                                         name="tournament-record-table"
-                                        ref={this.tournament_ref}
                                         source={`tournament_records/?group=${group.id}`}
                                         orderBy={["-created"]}
                                         columns={[
@@ -1028,7 +1017,10 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                             <PaginatedTable
                                 className="members"
                                 name="members"
-                                ref={this.members_ref}
+                                uiPushProps={{
+                                    event: "players-updated",
+                                    channel: `group-${group.id}`,
+                                }}
                                 source={`groups/${group.id}/members`}
                                 groom={(u_arr) => u_arr.map((u) => player_cache.update(u.user))}
                                 columns={[

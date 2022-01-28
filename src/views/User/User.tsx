@@ -42,7 +42,7 @@ import {
 } from "rank_utils";
 import { durationString, daysOnlyDurationString } from "TimeControl";
 import { openModerateUserModal } from "ModerateUser";
-import { PaginatedTable, PaginatedTableRef } from "PaginatedTable";
+import { PaginatedTable } from "PaginatedTable";
 import { errorAlerter, shouldOpenNewTab } from "misc";
 import * as player_cache from "player_cache";
 import { getPrivateChat } from "PrivateChat";
@@ -53,7 +53,6 @@ import { Flag } from "Flag";
 import { Markdown } from "Markdown";
 import { RatingsChart } from "RatingsChart";
 import { RatingsChartByGame } from "RatingsChartByGame";
-import { UIPush } from "UIPush";
 import { associations } from "associations";
 import { browserHistory } from "ogsHistory";
 import { chat_markup } from "Chat";
@@ -200,7 +199,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         vacation_left;
         bot_ai;
     };
-    moderator_log_table_ref = React.createRef<PaginatedTableRef>();
     user_id: number;
     vacation_left: string;
     original_username: string;
@@ -1269,11 +1267,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                     ]}
                                 />
                                 <b>Mod log</b>
-                                <UIPush
-                                    event={`modlog-${this.user_id}-updated`}
-                                    channel="moderators"
-                                    action={() => this.moderator_log_table_ref.current?.refresh()}
-                                />
                                 <div id="leave-moderator-note" ref={this.moderator_log_anchor}>
                                     <textarea
                                         ref={(x) => (this.moderator_note = x)}
@@ -1286,7 +1279,10 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                     className="moderator-log"
                                     name="moderator-log"
                                     source={`moderation?player_id=${this.user_id}`}
-                                    ref={this.moderator_log_table_ref}
+                                    uiPushProps={{
+                                        event: `modlog-${this.user_id}-updated`,
+                                        channel: "moderators",
+                                    }}
                                     columns={[
                                         {
                                             header: "",
