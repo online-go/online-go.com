@@ -106,7 +106,6 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
     };
 
     news_ref = React.createRef<PaginatedTableRef>();
-    tournament_ref = React.createRef<PaginatedTableRef>();
 
     constructor(props) {
         super(props);
@@ -937,7 +936,6 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                                     <PaginatedTable
                                         className="TournamentRecord-table"
                                         name="tournament-record-table"
-                                        ref={this.tournament_ref}
                                         source={`tournament_records/?group=${group.id}`}
                                         orderBy={["-created"]}
                                         columns={[
