@@ -30,6 +30,7 @@ import * as preferences from "preferences";
 import { updateDup, ignore } from "misc";
 import { ModTools } from "./ModTools";
 import { GameHistoryTable } from "./GameHistoryTable";
+import { ReviewsAndDemosTable } from "./ReviewsAndDemosTable";
 import {
     longRankString,
     rankString,
@@ -41,11 +42,9 @@ import {
 } from "rank_utils";
 import { durationString, daysOnlyDurationString } from "TimeControl";
 import { openModerateUserModal } from "ModerateUser";
-import { PaginatedTable } from "PaginatedTable";
 import { errorAlerter } from "misc";
 import * as player_cache from "player_cache";
 import { getPrivateChat } from "PrivateChat";
-import { PlayerAutocomplete } from "PlayerAutocomplete";
 import * as Dropzone from "react-dropzone";
 import { image_resizer } from "image_resizer";
 import { Flag } from "Flag";
@@ -53,7 +52,6 @@ import { Markdown } from "Markdown";
 import { RatingsChart } from "RatingsChart";
 import { RatingsChartByGame } from "RatingsChartByGame";
 import { associations } from "associations";
-import { openUrlIfALinkWasNotClicked } from "./common";
 import { Toggle } from "Toggle";
 import { AchievementList } from "Achievements";
 import swal from "sweetalert2";
@@ -606,45 +604,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         this.setState({ rating_chart_type_toggle_left: width + 30 }); // eyeball enough extra left pad
     };
 
-    review_history_groomer = (results) => {
-        const ret = [];
-
-        for (let i = 0; i < results.length; ++i) {
-            const r = results[i];
-            const item: any = {
-                id: r.id,
-            };
-
-            item.width = r.width;
-            item.height = r.height;
-            item.date = r.created ? new Date(r.created) : null;
-            item.black = r.players.black;
-            item.black_won = !r.black_lost && r.white_lost;
-            item.black_class = item.black_won
-                ? item.black.id === this.user_id
-                    ? "library-won"
-                    : "library-lost"
-                : "";
-            item.white = r.players.white;
-            item.white_won = !r.white_lost && r.black_lost;
-            item.white_class = item.white_won
-                ? item.white.id === this.user_id
-                    ? "library-won"
-                    : "library-lost"
-                : "";
-            item.name = r.name;
-            item.href = "/review/" + item.id;
-            item.historical = r.game.historical_ratings || { black: item.black, white: item.white };
-
-            if (!item.name || item.name.trim() === "") {
-                item.name = item.href;
-            }
-
-            ret.push(item);
-        }
-        return ret;
-    };
-
     render() {
         const user = this.state.user;
         if (!user) {
@@ -1059,83 +1018,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                         </div>
 
                         <div className="row">
-                            {/* Reviews and Demos */}
-                            <div className="col-sm-12">
-                                <h2>{_("Reviews and Demos")}</h2>
-                                <Card>
-                                    <div>
-                                        {/* loading-container="game_history.settings().$loading" */}
-                                        <div className="search">
-                                            <i className="fa fa-search"></i>
-                                            <PlayerAutocomplete
-                                                onComplete={(player) => {
-                                                    // happily, and importantly, if there isn't a player, then we get null
-                                                    this.setState({
-                                                        reviews_alt_player_filter: player?.id,
-                                                    });
-                                                }}
-                                            />
-                                        </div>
-
-                                        <PaginatedTable
-                                            className="review-history-table"
-                                            name="review-history"
-                                            method="GET"
-                                            source={`reviews/`}
-                                            filter={{
-                                                owner_id: this.user_id,
-                                                ...(this.state.reviews_alt_player_filter !==
-                                                    null && {
-                                                    alt_player:
-                                                        this.state.reviews_alt_player_filter,
-                                                }),
-                                            }}
-                                            orderBy={["-created"]}
-                                            groom={this.review_history_groomer}
-                                            onRowClick={(ref, ev) =>
-                                                openUrlIfALinkWasNotClicked(ev, ref.href)
-                                            }
-                                            columns={[
-                                                {
-                                                    header: _("Date"),
-                                                    className: () => "date",
-                                                    render: (X) =>
-                                                        moment(X.date).format("YYYY-MM-DD"),
-                                                },
-                                                {
-                                                    header: _("Name"),
-                                                    className: () => "game_name",
-                                                    render: (X) => (
-                                                        <Link to={X.href}>{X.name}</Link>
-                                                    ),
-                                                },
-                                                {
-                                                    header: _("Black"),
-                                                    className: (X) =>
-                                                        "player " + (X ? X.black_class : ""),
-                                                    render: (X) => (
-                                                        <Player
-                                                            user={X.historical.black}
-                                                            disableCacheUpdate
-                                                        />
-                                                    ),
-                                                },
-                                                {
-                                                    header: _("White"),
-                                                    className: (X) =>
-                                                        "player " + (X ? X.white_class : ""),
-                                                    render: (X) => (
-                                                        <Player
-                                                            user={X.historical.white}
-                                                            disableCacheUpdate
-                                                        />
-                                                    ),
-                                                },
-                                            ]}
-                                        />
-                                    </div>
-                                </Card>
-                            </div>
+                            <ReviewsAndDemosTable user_id={this.user_id} />
                         </div>
                     </div>
 
