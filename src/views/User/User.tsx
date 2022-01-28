@@ -18,8 +18,6 @@
 import * as React from "react";
 import { _, pgettext, interpolate, cc_to_country_name, sorted_locale_countries } from "translate";
 import { Link } from "react-router-dom";
-import { openModal } from "Modal";
-import { NotesModal } from "NotesModal";
 import { post, get, put, del, patch } from "requests";
 import { parse } from "query-string";
 import * as data from "data";
@@ -30,6 +28,7 @@ import { GameList } from "GameList";
 import { Player } from "Player";
 import * as preferences from "preferences";
 import { updateDup, getGameResultText, ignore } from "misc";
+import { ModTools } from "./ModTools";
 import {
     longRankString,
     rankString,
@@ -55,7 +54,6 @@ import { RatingsChart } from "RatingsChart";
 import { RatingsChartByGame } from "RatingsChartByGame";
 import { associations } from "associations";
 import { browserHistory } from "ogsHistory";
-import { chat_markup } from "Chat";
 import { Toggle } from "Toggle";
 import { AchievementList } from "Achievements";
 import swal from "sweetalert2";
@@ -203,8 +201,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
     vacation_left: string;
     original_username: string;
     vacation_update_interval: any;
-    moderator_note: any = null;
-    moderator_log_anchor: any = React.createRef();
     show_mod_log: boolean;
 
     constructor(props) {
@@ -261,12 +257,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             }
         }, 1000);
         this.resolve(this.props);
-    }
-
-    componentDidUpdate() {
-        if (this.show_mod_log && this.moderator_log_anchor.current !== null) {
-            this.moderator_log_anchor.current.scrollIntoView();
-        }
     }
 
     componentWillUnmount() {
@@ -647,23 +637,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         modal.on("close", () => {
             this.resolve(this.props);
         });
-    };
-
-    addModeratorNote = () => {
-        const txt = this.moderator_note.value.trim();
-
-        if (txt.length < 2) {
-            this.moderator_note.focus();
-            return;
-        }
-
-        put(`players/${this.user_id}/moderate`, {
-            moderation_note: txt,
-        })
-            .then(() => {})
-            .catch(errorAlerter);
-
-        this.moderator_note.value = "";
     };
 
     maskedRank = (rank: string): string => (preferences.get("hide-ranks") ? "" : rank);
@@ -1209,141 +1182,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
 
                 <div className="row">
                     <div className="col-sm-8">
-                        {((window["user"] && window["user"].is_moderator) || null) && (
-                            <Card>
-                                {" "}
-                                {/* Moderator stuff  */}
-                                <b>Users with the same IP or Browser ID</b>
-                                <PaginatedTable
-                                    className="aliases"
-                                    name="aliases"
-                                    source={`players/${this.user_id}/aliases/`}
-                                    columns={[
-                                        {
-                                            header: "Registered",
-                                            className: "date",
-                                            render: (X) =>
-                                                moment(X.registration_date).format("YYYY-MM-DD"),
-                                        },
-                                        {
-                                            header: "Last Login",
-                                            className: "date",
-                                            render: (X) =>
-                                                moment(X.last_login).format("YYYY-MM-DD"),
-                                        },
-                                        {
-                                            header: "Browser ID",
-                                            sortable: true,
-                                            className: "browser_id",
-                                            render: (X) => X.last_browser_id,
-                                        },
-                                        {
-                                            header: "User",
-                                            className: "",
-                                            render: (X) => (
-                                                <span>
-                                                    <Player user={X} />
-                                                    {(X.has_notes || null) && (
-                                                        <i
-                                                            className="fa fa-file-text-o clickable"
-                                                            onClick={() =>
-                                                                openNotes(X.moderator_notes)
-                                                            }
-                                                        />
-                                                    )}
-                                                </span>
-                                            ),
-                                        },
-                                        {
-                                            header: "Banned",
-                                            className: "banned",
-                                            render: (X) => (X.is_banned ? _("Yes") : _("No")),
-                                        },
-                                        {
-                                            header: "Shadowbanned",
-                                            className: "banned",
-                                            render: (X) => (X.is_shadowbanned ? _("Yes") : _("No")),
-                                        },
-                                    ]}
-                                />
-                                <b>Mod log</b>
-                                <div id="leave-moderator-note" ref={this.moderator_log_anchor}>
-                                    <textarea
-                                        ref={(x) => (this.moderator_note = x)}
-                                        placeholder="Leave note"
-                                        id="moderator-note"
-                                    />
-                                    <button onClick={this.addModeratorNote}>Add note</button>
-                                </div>
-                                <PaginatedTable
-                                    className="moderator-log"
-                                    name="moderator-log"
-                                    source={`moderation?player_id=${this.user_id}`}
-                                    uiPushProps={{
-                                        event: `modlog-${this.user_id}-updated`,
-                                        channel: "moderators",
-                                    }}
-                                    columns={[
-                                        {
-                                            header: "",
-                                            className: "date",
-                                            render: (X) =>
-                                                moment(X.timestamp).format("YYYY-MM-DD HH:mm:ss"),
-                                        },
-                                        {
-                                            header: "",
-                                            className: "",
-                                            render: (X) => <Player user={X.moderator} />,
-                                        },
-                                        {
-                                            header: "",
-                                            className: "",
-                                            render: (X) => (
-                                                <div>
-                                                    <div className="action">
-                                                        {X.game ? (
-                                                            <Link to={`/game/${X.game.id}`}>
-                                                                {X.game.id}
-                                                            </Link>
-                                                        ) : null}
-                                                        {X.action}
-                                                    </div>
-                                                    {X.incident_report && (
-                                                        <div>
-                                                            {X.incident_report.cleared_by_user ? (
-                                                                <div>
-                                                                    <b>Cleared by user</b>
-                                                                </div>
-                                                            ) : null}
-                                                            <div>{X.incident_report.url}</div>
-                                                            <div>
-                                                                {X.incident_report.system_note}
-                                                            </div>
-                                                            <div>
-                                                                {X.incident_report.reporter_note}
-                                                            </div>
-                                                            {X.incident_report.moderator ? (
-                                                                <Player
-                                                                    user={
-                                                                        X.incident_report.moderator
-                                                                    }
-                                                                />
-                                                            ) : null}
-                                                            <i>
-                                                                {" "}
-                                                                {X.incident_report.moderator_note}
-                                                            </i>
-                                                        </div>
-                                                    )}
-                                                    <pre>
-                                                        {chat_markup(X.note, undefined, 1024 * 128)}
-                                                    </pre>
-                                                </div>
-                                            ),
-                                        },
-                                    ]}
-                                />
-                            </Card>
+                        {(window["user"]?.is_moderator || null) && (
+                            <ModTools user_id={this.user_id} show_mod_log={this.show_mod_log} />
                         )}
 
                         {(user.about || editing || null) && (
@@ -2251,10 +2091,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             </div>
         );
     }
-}
-
-function openNotes(notes) {
-    openModal(<NotesModal notes={notes} fastDismiss />);
 }
 
 function SelfReportedAccountLinkages({ links }: { links: any }): JSX.Element {
