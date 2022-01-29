@@ -733,7 +733,7 @@ export class Play extends React.Component<{}, PlayState> {
                         </div>
                     </div>
                     <RengoManagementPane
-                        user_id={data.get("user").id}
+                        user={data.get("user")}
                         challenge_id={rengo_challenge_to_show.challenge_id}
                         rengo_challenge_list={this.state.rengo_list}
                         startRengoChallenge={this.startOwnRengoChallenge}
@@ -1206,7 +1206,7 @@ export class Play extends React.Component<{}, PlayState> {
                             </div>
                         </div>
                         <RengoManagementPane
-                            user_id={user.id}
+                            user={user}
                             challenge_id={C.challenge_id}
                             rengo_challenge_list={this.state.rengo_list}
                             startRengoChallenge={this.startOwnRengoChallenge}
