@@ -349,9 +349,8 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                       },
                                       {
                                           header: _("Result"),
-                                          className: () => " annulled",
-                                          /* a nice background color for this... */ render: () =>
-                                              _("fun was had"),
+                                          className: (X) => (X && X.annulled ? " annulled" : ""),
+                                          render: (X) => X.result,
                                       },
                                   ]
                                 : []),

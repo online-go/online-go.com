@@ -138,7 +138,6 @@ interface UserState {
     show_graph_type_toggle: boolean;
     rating_chart_type_toggle_left?: number;
     hovered_game_id?: number;
-    show_rengo_game_history: boolean;
     friend_request_sent?: boolean;
     friend_request_received?: boolean;
     is_friend?: boolean;
@@ -149,8 +148,6 @@ interface UserState {
     ladders?: any[];
     tournaments?: any[];
     groups?: any[];
-    games_alt_player_filter: number;
-    reviews_alt_player_filter: number;
 }
 
 export class User extends React.PureComponent<UserProperties, UserState> {
@@ -188,9 +185,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             rating_graph_plot_by_games: preferences.get("rating-graph-plot-by-games"),
             show_graph_type_toggle: !preferences.get("rating-graph-always-use"),
             hovered_game_id: null,
-            games_alt_player_filter: null,
-            reviews_alt_player_filter: null,
-            show_rengo_game_history: false,
         };
 
         try {
