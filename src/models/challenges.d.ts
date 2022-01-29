@@ -23,10 +23,6 @@ declare namespace socket_api {
          * This is a work in progress. Trust these values at your own risk.
          * */
 
-        export interface RengoGameFlags {
-            casual: boolean;
-        }
-
         export interface Challenge {
             challenge_id: number;
             user_id: number;
