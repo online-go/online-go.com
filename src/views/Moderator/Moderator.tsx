@@ -278,11 +278,11 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                                         }
                                     >
                                         <a
-+                                            href={
-+                                                "https://online-go.com/api/v1/moderation/recent_users?id=" +
-+                                                X.id
-+                                            }
-+                                            target={"_blank"}
+                                            href={
+                                                "https://online-go.com/api/v1/moderation/recent_users?id=" +
+                                                X.id
+                                            }
+                                            target={"_blank"}
                                          >
                                             {X.last_ip}
                                         </a>
