@@ -277,10 +277,13 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                                             (X.should_ban ? "should-ban" : "")
                                         }
                                     >
-                                        <a 
-                                            href={ "https://online-go.com/api/v1/moderation/recent_users?id=" + X.id }
-                                            target={ "_blank" }
-                                        >
+                                        <a
++                                            href={
++                                                "https://online-go.com/api/v1/moderation/recent_users?id=" +
++                                                X.id
++                                            }
++                                            target={"_blank"}
+                                         >
                                             {X.last_ip}
                                         </a>
                                     </span>
