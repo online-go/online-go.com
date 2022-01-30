@@ -21,8 +21,7 @@ declare namespace socket_api {
          * One element from `seekgraph/global`
          *
          * This is a work in progress. Trust these values at your own risk.
-         * */
-
+         */
         export interface Challenge {
             challenge_id: number;
             user_id: number;

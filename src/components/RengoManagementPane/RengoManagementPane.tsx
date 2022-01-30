@@ -20,7 +20,7 @@ import * as React from "react";
 import { _, pgettext } from "translate";
 
 interface RengoManagementPaneProperties {
-    user: any;
+    user: rest_api.UserConfig;
     challenge_id: number;
     rengo_challenge_list: any[];
 
@@ -37,7 +37,7 @@ export class RengoManagementPane extends React.PureComponent<
     RengoManagementPaneProperties,
     RengoManagementPaneState
 > {
-    constructor(props) {
+    constructor(props: RengoManagementPaneProperties) {
         super(props);
 
         this.state = {};
