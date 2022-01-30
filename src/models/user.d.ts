@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 declare namespace rest_api {
     interface RatingsConfig {
         rating: number;
@@ -30,25 +29,11 @@ declare namespace rest_api {
         id: number;
         username: string;
         registration_date: string; // Date
-        ratings: {
-            version: number;
-
-            "9x9": RatingsConfig;
-            live: RatingsConfig;
-            "13x13": RatingsConfig;
-            "19x19": RatingsConfig;
-            blitz: RatingsConfig;
-            overall: RatingsConfig;
-            "live-9x9": RatingsConfig;
-            "blitz-9x9": RatingsConfig;
-            "live-13x13": RatingsConfig;
-            "live-19x19": RatingsConfig;
-            "blitz-13x13": RatingsConfig;
-            "blitz-19x19": RatingsConfig;
-            correspondence: RatingsConfig;
-            "correspondence-9x9": RatingsConfig;
-            "correspondence-13x13": RatingsConfig;
-            "correspondence-19x19": RatingsConfig;
+        ratings: { version: number } & {
+            [game_type in
+                | import("../lib/types").Size
+                | import("../lib/types").Speed
+                | `${import("../lib/types").Speed}-${import("../lib/types").Size}`]: RatingsConfig;
         };
         country: string; // country code
         professional: boolean;

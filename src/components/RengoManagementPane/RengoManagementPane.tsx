@@ -37,7 +37,7 @@ export class RengoManagementPane extends React.PureComponent<
     RengoManagementPaneProperties,
     RengoManagementPaneState
 > {
-    constructor(props) {
+    constructor(props: RengoManagementPaneProperties) {
         super(props);
 
         this.state = {};
