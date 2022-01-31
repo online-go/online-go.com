@@ -188,7 +188,7 @@ export const cached = {
                 });
         },
     },
-};
+} as const;
 
 let current_user_id = 0;
 let refresh_debounce = setTimeout(refresh_all, 10);

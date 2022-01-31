@@ -257,8 +257,8 @@ export class GroupList extends React.PureComponent<{}, any> {
     }
 
     componentDidMount() {
-        data.watch(cached.groups, this.updateGroups);
-        data.watch(cached.group_invitations, this.updateGroupInvitations);
+        data.watch(cached.groups as any, this.updateGroups);
+        data.watch(cached.group_invitations as any, this.updateGroupInvitations);
     }
 
     updateGroups = (groups) => {
@@ -269,8 +269,8 @@ export class GroupList extends React.PureComponent<{}, any> {
     };
 
     componentWillUnmount() {
-        data.unwatch(cached.groups, this.updateGroups);
-        data.unwatch(cached.group_invitations, this.updateGroupInvitations);
+        data.unwatch(cached.groups as any, this.updateGroups);
+        data.unwatch(cached.group_invitations as any, this.updateGroupInvitations);
     }
     acceptInvite(invite) {
         post("me/groups/invitations", { request_id: invite.id })

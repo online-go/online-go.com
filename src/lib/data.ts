@@ -104,6 +104,51 @@ interface Events {
     [name: string]: any;
 }
 
+export interface DataSchema {
+    user: any;
+    bid: string;
+    theme: string;
+    debug: boolean;
+
+    // TODO: make a types for each of these that list the keys explicitly
+    cached: any;
+    [cached_key: `cached.${string}`]: any;
+    config: any;
+    [config_key: `config.${string}`]: any;
+    [chat_key: `chat.${string}`]: any;
+    [sound_key: `sound.${string}`]: any;
+    [preferences_key: `preferences.${string}`]: any;
+    [custom_key: `custom.${string}`]: any;
+    [chat_manager_key: `chat-manager.${string}`]: any;
+    [chat_indicator_key: `chat-indicator.${string}`]: any;
+    [time_control_key: `time_control.${string}`]: any;
+    [pm_key: `pm.${string}`]: any;
+    [player_notes_key: `player-notes.${string}`]: any;
+    [learning_hub_key: `learning-hub.${string}`]: any;
+    [moderator_key: `moderator.${string}`]: any;
+    [automatch_key: `automatch.${string}`]: any;
+    [puzzle_key: `puzzle.${string}`]: any;
+    [device_key: `device${string}`]: any;
+    [settings_key: `settings.${string}`]: any;
+    [paginated_table_key: `paginated-table.${string}`]: any;
+    [observed_games_key: `observed-games.${string}`]: any;
+    [announcements_key: `announcements.${string}`]: any; // probably should figure out why these are different
+    [announcement_key: `announcement.${string}`]: any;
+    [challenge_key: `challenge.${string}`]: any;
+    [dismissed_key: `dismissed.${string}`]: any;
+    [demo: `demo.${string}`]: any;
+
+    "last-visited-since-goals-shown": string;
+    "hours-visited-since-goals-shown": number;
+    "table-color-default-on": boolean;
+    "joseki-url": string;
+    "ad-override": boolean;
+    "email-banner-dismissed": boolean;
+    "cached.groups": GroupList;
+    "cached.active_tournaments": ActiveTournamentList;
+    "active-tournament": Announcement;
+}
+
 export enum Replication {
     NONE = 0x0, // No replication of this change
     LOCAL_OVERWRITES_REMOTE = 0x1, // Locally set data will overwrite remotely set data, but if not set will default to remotely set data
@@ -111,11 +156,14 @@ export enum Replication {
     REMOTE_ONLY = 0x4, // Remotely set data, but do not update our local value
 }
 
-const defaults = {};
-const store = {};
+const defaults: Partial<DataSchema> = {};
+const store: Partial<DataSchema> = {};
 const event_emitter = new TypedEventEmitter<Events>();
 
-export function setWithoutEmit(key: string, value: any | undefined): any {
+export function setWithoutEmit<KeyT extends Extract<keyof DataSchema, string>>(
+    key: KeyT,
+    value: DataSchema[KeyT] | undefined,
+): DataSchema[KeyT] {
     if (value === undefined) {
         remove(key);
         return value;
@@ -127,7 +175,11 @@ export function setWithoutEmit(key: string, value: any | undefined): any {
     return value;
 }
 
-export function set(key: string, value: any | undefined, replication?: Replication): any {
+export function set<KeyT extends Extract<keyof DataSchema, string>>(
+    key: KeyT,
+    value: DataSchema[KeyT] | undefined,
+    replication?: Replication,
+): DataSchema[KeyT] {
     if (replication !== Replication.REMOTE_ONLY) {
         setWithoutEmit(key, value);
     }
@@ -138,11 +190,14 @@ export function set(key: string, value: any | undefined, replication?: Replicati
     return value;
 }
 
-function emitForKey(key: string): void {
+function emitForKey<KeyT extends Extract<keyof DataSchema, string>>(key: KeyT): void {
     event_emitter.emit(key, get(key));
 }
 
-export function setDefault(key: string, value: any): any {
+export function setDefault<KeyT extends Extract<keyof DataSchema, string>>(
+    key: KeyT,
+    value: DataSchema[KeyT],
+): DataSchema[KeyT] {
     defaults[key] = value;
     if (!(key in store) && !(key in remote_store)) {
         event_emitter.emit(key, value);
@@ -150,7 +205,10 @@ export function setDefault(key: string, value: any): any {
     return value;
 }
 
-export function remove(key: string, replication?: Replication): void {
+export function remove<KeyT extends Extract<keyof DataSchema, string>>(
+    key: KeyT,
+    replication?: Replication,
+): void {
     if (replication && store["config.user"] && !store["config.user"].anonymous) {
         remote_remove(key, replication);
     }
@@ -163,7 +221,7 @@ export function remove(key: string, replication?: Replication): void {
 }
 
 export function removePrefix(key_prefix: string): any {
-    const hits = {};
+    const hits: Partial<DataSchema> = {};
 
     Object.keys(store).map((key) => {
         if (key.indexOf(key_prefix) === 0) {
@@ -174,7 +232,7 @@ export function removePrefix(key_prefix: string): any {
     for (const key in hits) {
         safeLocalStorageRemove(`ogs.${key}`);
         delete store[key];
-        emitForKey(key);
+        emitForKey(key as keyof DataSchema);
     }
 }
 
@@ -192,54 +250,28 @@ export function removeAll(): void {
     }
 }
 
-// Needed for type widening
-// See: https://stackoverflow.com/questions/67057855/wrong-automatic-return-type-deduction-in-typescript
-type ValueType<T> = T extends string
-    ? string
-    : T extends number
-    ? number
-    : T extends boolean
-    ? boolean
-    : T extends undefined
-    ? undefined
-    : [T] extends [any]
-    ? T
-    : object;
-
-export function get<T>(key: string, default_value: T): ValueType<T>;
-export function get(key: string): any;
-export function get<T>(key: string, default_value?: T): T | undefined {
+export function get<KeyT extends Extract<keyof DataSchema, string>>(
+    key: KeyT,
+    default_value?: DataSchema[KeyT],
+): DataSchema[KeyT] | undefined {
     if (key in store) {
-        return store[key];
+        return store[key] as DataSchema[KeyT];
     }
     if (remote_get(key)) {
-        return remote_get(key) as unknown as T;
+        return remote_get(key) as DataSchema[KeyT];
     }
     if (key in defaults) {
-        return defaults[key];
+        return defaults[key] as DataSchema[KeyT];
     }
     return default_value;
 }
 
-export function watch(
-    key: "cached.groups",
-    cb: (data: GroupList) => void,
+export function watch<KeyT extends Extract<keyof DataSchema, string>>(
+    key: KeyT,
+    cb: (data: DataSchema[KeyT]) => void,
     call_on_undefined?: boolean,
     dont_call_immediately?: boolean,
-): void;
-export function watch(
-    key: "cached.active_tournaments",
-    cb: (data: ActiveTournamentList) => void,
-    call_on_undefined?: boolean,
-    dont_call_immediately?: boolean,
-): void;
-export function watch(
-    key: string,
-    cb: (data: any) => void,
-    call_on_undefined?: boolean,
-    dont_call_immediately?: boolean,
-): void;
-export function watch(key, cb, call_on_undefined?: boolean, dont_call_immediately?: boolean): void {
+): void {
     event_emitter.on(key, cb);
 
     const val = get(key);
@@ -252,13 +284,10 @@ export function watch(key, cb, call_on_undefined?: boolean, dont_call_immediatel
     }
 }
 
-export function unwatch(key: "cached.groups", cb: (data: GroupList) => void): void;
-export function unwatch(
-    key: "cached.active_tournaments",
-    cb: (data: ActiveTournamentList) => void,
-): void;
-export function unwatch(key: string, cb: (data: any) => void): void;
-export function unwatch(key, cb): void {
+export function unwatch<KeyT extends Extract<keyof DataSchema, string>>(
+    key: KeyT,
+    cb: (data: DataSchema[KeyT]) => void,
+): void {
     event_emitter.off(key, cb);
 }
 
@@ -381,6 +410,7 @@ try {
 
 import ITC from "ITC";
 import { termination_socket } from "sockets";
+import { Announcement } from "src/components/Announcements";
 
 type RemoteStorableValue =
     | number
@@ -601,10 +631,10 @@ termination_socket.on("remote_storage/update", (row: RemoteKV) => {
         return;
     }
 
-    const current_data_value = get(row.key);
+    const current_data_value = get(row.key as keyof DataSchema);
 
     if (row.replication === Replication.REMOTE_OVERWRITES_LOCAL) {
-        setWithoutEmit(row.key, row.value);
+        setWithoutEmit(row.key as keyof DataSchema, row.value);
     }
 
     remote_store[row.key] = row;
@@ -615,10 +645,10 @@ termination_socket.on("remote_storage/update", (row: RemoteKV) => {
         last_modified = row.modified;
     }
 
-    if (get(row.key) !== current_data_value) {
+    if (get(row.key as keyof DataSchema) !== current_data_value) {
         // if our having updated locally changes what get
         // evaluates to, emit an update for that data key
-        emitForKey(row.key);
+        emitForKey(row.key as keyof DataSchema);
     }
 });
 

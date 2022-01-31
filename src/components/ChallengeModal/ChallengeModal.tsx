@@ -312,7 +312,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             this.refs.time_control_picker.saveSettings();
         }
         const speed = data.get("challenge.speed", "live");
-        data.set("challenge.challenge." + speed, next.challenge);
+        data.set(`challenge.challenge.${speed}`, next.challenge);
         data.set("challenge.bot", next.conf.bot_id);
         data.set("challenge.restrict_rank", next.conf.restrict_rank);
         data.set("demo.settings", next.demo);
