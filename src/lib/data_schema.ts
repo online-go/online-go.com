@@ -50,6 +50,10 @@ export interface ConfigSchema {
     user_jwt: string;
     stripe_pk: string;
     chat_auth: string;
+    superchat_auth: string;
+    notification_auth: string;
+    incident_auth: string;
+    aga_rankings_enabled: boolean;
 }
 
 /**
@@ -79,6 +83,7 @@ export interface DataSchema
     config: Partial<ConfigSchema>;
 
     // TODO: make a types for each of these that list the keys explicitly
+    // See commits e12715b and 43c5993 for examples of how to do this.
     [chat_key: `chat.${string}`]: any;
     [sound_key: `sound.${string}`]: any;
     [preferences_key: `preferences.${string}`]: any;
