@@ -23,15 +23,32 @@
 import { GroupList, ActiveTournamentList } from "./types";
 import { Announcement } from "src/components/Announcements";
 
-export interface DataSchema {
+interface CachedSchema {
+    groups: GroupList;
+    active_tournaments: ActiveTournamentList;
+
+    // TODO: examine these endpoints and write interfaces for these.
+    config: any /* /login */;
+    ladders: any /* /me/ladders */;
+    challenge_list: any /* /me/challenges */;
+    blocks: any /* /me/blocks */;
+    friends: any /* ui/friends */;
+    group_invitations: any /* me/groups/invitations */;
+}
+
+type Prefixed<T, P extends string> = {
+    [K in keyof T as K extends string ? `${P}.${K}` : never]: T[K];
+};
+
+export interface DataSchema extends Prefixed<CachedSchema, "cached"> {
     user: any;
     bid: string;
     theme: string;
     debug: boolean;
 
+    cached: CachedSchema;
+
     // TODO: make a types for each of these that list the keys explicitly
-    cached: any;
-    [cached_key: `cached.${string}`]: any;
     config: any;
     [config_key: `config.${string}`]: any;
     [chat_key: `chat.${string}`]: any;
@@ -63,7 +80,5 @@ export interface DataSchema {
     "joseki-url": string;
     "ad-override": boolean;
     "email-banner-dismissed": boolean;
-    "cached.groups": GroupList;
-    "cached.active_tournaments": ActiveTournamentList;
     "active-tournament": Announcement;
 }
