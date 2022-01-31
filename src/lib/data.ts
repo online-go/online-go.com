@@ -98,55 +98,10 @@
  */
 
 import { TypedEventEmitter } from "TypedEventEmitter";
-import { GroupList, ActiveTournamentList } from "./types";
+import { DataSchema } from "data_schema";
 
 interface Events {
     [name: string]: any;
-}
-
-export interface DataSchema {
-    user: any;
-    bid: string;
-    theme: string;
-    debug: boolean;
-
-    // TODO: make a types for each of these that list the keys explicitly
-    cached: any;
-    [cached_key: `cached.${string}`]: any;
-    config: any;
-    [config_key: `config.${string}`]: any;
-    [chat_key: `chat.${string}`]: any;
-    [sound_key: `sound.${string}`]: any;
-    [preferences_key: `preferences.${string}`]: any;
-    [custom_key: `custom.${string}`]: any;
-    [chat_manager_key: `chat-manager.${string}`]: any;
-    [chat_indicator_key: `chat-indicator.${string}`]: any;
-    [time_control_key: `time_control.${string}`]: any;
-    [pm_key: `pm.${string}`]: any;
-    [player_notes_key: `player-notes.${string}`]: any;
-    [learning_hub_key: `learning-hub.${string}`]: any;
-    [moderator_key: `moderator.${string}`]: any;
-    [automatch_key: `automatch.${string}`]: any;
-    [puzzle_key: `puzzle.${string}`]: any;
-    [device_key: `device${string}`]: any;
-    [settings_key: `settings.${string}`]: any;
-    [paginated_table_key: `paginated-table.${string}`]: any;
-    [observed_games_key: `observed-games.${string}`]: any;
-    [announcements_key: `announcements.${string}`]: any; // probably should figure out why these are different
-    [announcement_key: `announcement.${string}`]: any;
-    [challenge_key: `challenge.${string}`]: any;
-    [dismissed_key: `dismissed.${string}`]: any;
-    [demo: `demo.${string}`]: any;
-
-    "last-visited-since-goals-shown": string;
-    "hours-visited-since-goals-shown": number;
-    "table-color-default-on": boolean;
-    "joseki-url": string;
-    "ad-override": boolean;
-    "email-banner-dismissed": boolean;
-    "cached.groups": GroupList;
-    "cached.active_tournaments": ActiveTournamentList;
-    "active-tournament": Announcement;
 }
 
 export enum Replication {
@@ -410,7 +365,6 @@ try {
 
 import ITC from "ITC";
 import { termination_socket } from "sockets";
-import { Announcement } from "src/components/Announcements";
 
 type RemoteStorableValue =
     | number
