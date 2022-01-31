@@ -28,7 +28,7 @@ interface CachedSchema {
     active_tournaments: ActiveTournamentList;
 
     // TODO: examine these endpoints and write interfaces for these.
-    config: any /* /login */;
+    config: ConfigSchema /* /login */;
     ladders: any /* /me/ladders */;
     challenge_list: any /* /me/challenges */;
     blocks: any /* /me/blocks */;
@@ -36,21 +36,49 @@ interface CachedSchema {
     group_invitations: any /* me/groups/invitations */;
 }
 
+export interface ConfigSchema {
+    user: any;
+    cdn: string;
+    cdn_release: string;
+    cdn_host: string;
+    release: string;
+    version: string;
+    paypal_server: string;
+    paypal_this_server: string;
+    paypal_email: string;
+    billing_mor_locations: string[];
+    user_jwt: string;
+    stripe_pk: string;
+    chat_auth: string;
+}
+
+/**
+ * Prefixes every member of a type.
+ *
+ * Example:
+ *
+ * type fooType = Prefixed<{ bar: string; qux: number }, "foo">;
+ *
+ * is equivalent to
+ *
+ * type fooType = { "foo.bar": string; "foo.qux": number };
+ */
 type Prefixed<T, P extends string> = {
     [K in keyof T as K extends string ? `${P}.${K}` : never]: T[K];
 };
 
-export interface DataSchema extends Prefixed<CachedSchema, "cached"> {
+export interface DataSchema
+    extends Prefixed<CachedSchema, "cached">,
+        Prefixed<ConfigSchema, "config"> {
     user: any;
     bid: string;
     theme: string;
     debug: boolean;
 
-    cached: CachedSchema;
+    cached: Partial<CachedSchema>;
+    config: Partial<ConfigSchema>;
 
     // TODO: make a types for each of these that list the keys explicitly
-    config: any;
-    [config_key: `config.${string}`]: any;
     [chat_key: `chat.${string}`]: any;
     [sound_key: `sound.${string}`]: any;
     [preferences_key: `preferences.${string}`]: any;
