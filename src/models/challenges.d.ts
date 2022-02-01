@@ -21,7 +21,7 @@ declare namespace socket_api {
          * One element from `seekgraph/global`
          *
          * This is a work in progress. Trust these values at your own risk.
-         * */
+         */
         export interface Challenge {
             challenge_id: number;
             user_id: number;
@@ -44,13 +44,18 @@ declare namespace socket_api {
             time_control_parameters: import("../components/TimeControl").TimeControl;
             time_per_move: number;
             rengo: boolean;
+            rengo_casual_mode: boolean;
             rengo_nominees: number[]; // array of player ids
             rengo_black_team: number[]; // array of player ids
             rengo_white_team: number[]; // array of player ids
             rengo_participants: number[]; // array of player ids
 
             // All this stuff seems to get added *after* we get a challenge from the api
-            // but I don't have a good idea where to put it for now...
+            // but I don't have a good idea where to put it for now... (benjito)
+
+            // ... let's find where the payload goes in and out API and type that object with this "Challenge"
+            //  then make the internal state of ChallengeModal (etc) have these things, an extended type. GaJ:
+
             system_message_id?: any; // Don't know what this is, but it's accessed in SeekGraph
             ranked_text?: string;
             handicap_text?: string | number;

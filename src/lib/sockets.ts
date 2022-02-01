@@ -54,7 +54,7 @@ if (
     ai_host = `http://localhost:13284`;
     console.log("AI Host set to: ", ai_host);
 } else if (
-    // note that jest in the CI has "test" for this.  The CI doesn't work with beta.
+    // The CI doesn't work with beta.  Note that jest in the CI has NODE_ENV==="test".
     // the .org exception is for anoek's development environment
     (process.env.NODE_ENV === "development" && window.location.hostname.indexOf(".org") < 0) ||
     window.location.hostname.indexOf("beta") >= 0 ||
