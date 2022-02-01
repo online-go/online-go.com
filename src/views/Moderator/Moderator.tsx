@@ -283,7 +283,7 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                                                 X.id
                                             }
                                             target={"_blank"}
-                                         >
+                                        >
                                             {X.last_ip}
                                         </a>
                                     </span>
