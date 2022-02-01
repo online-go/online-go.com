@@ -60,6 +60,7 @@ import { VerifyEmail } from "VerifyEmail";
 import { GobanTest } from "GobanTest";
 import { global_channels } from "chat_manager";
 import { ForceUsernameChange } from "ForceUsernameChange";
+import { BlockedVPN } from "BlockedVPN";
 
 import * as docs from "docs";
 
@@ -267,6 +268,7 @@ export const routes = (
                 <Route path="/docs/go-rules-comparison-matrix" component={docs.RulesMatrix} />
                 <Route path="/docs/team" component={docs.Team} />
                 <Route path="/docs/other-go-resources" component={docs.GoResources} />
+                <Route path="/blocked-vpn" component={BlockedVPN} />
                 {/* These are short hand slugs we've created for the bigger AGA tournaments */}
                 <Route
                     path="/2019usgc"
