@@ -347,4 +347,4 @@ window["preferences"] = preferences;
 window["player_cache"] = player_cache;
 window["GoMath"] = GoMath;
 
-console.log("Finished rendering from main, rengo 1.2.2");
+console.log("Finished rendering from main, rengo casual mode 1.0");

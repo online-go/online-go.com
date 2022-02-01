@@ -42,6 +42,7 @@ import {
     GoEngineRules,
     AnalysisTool,
     GoEnginePlayerEntry,
+    JGOFPlayerSummary,
 } from "goban";
 import { isLiveGame } from "TimeControl";
 import { termination_socket, get_network_latency, get_clock_drift } from "sockets";
@@ -674,6 +675,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         });
 
         this.goban.on("move-made", this.autoadvance);
+        this.goban.on("player-update", this.processPlayerUpdate);
         this.goban.on("title", (title) => this.setState({ title: title }));
         this.goban.on("update", () => this.sync_state());
         this.goban.on("reset", () => this.sync_state());
@@ -1442,6 +1444,21 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         this.setState({ autoplaying: true });
     }
 
+    processPlayerUpdate = (player_update: JGOFPlayerSummary) => {
+        if (player_update.dropped_players) {
+            if (player_update.dropped_players.black) {
+                console.log("dropping black");
+                // we don't care who was dropped, we just have to clear the auto-resign-overlay!
+                this.setState({ black_auto_resign_expiration: null });
+            }
+            if (player_update.dropped_players.white) {
+                this.setState({ white_auto_resign_expiration: null });
+            }
+        }
+
+        this.sync_state(); // now do the real work of updating the teams/players.
+    };
+
     checkAndEnterAnalysis(move?: MoveTree) {
         if (
             this.goban.mode === "play" &&
@@ -1969,7 +1986,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
 
         if (this.goban) {
             /* Is player? */
-
             const players = engine.rengo
                 ? engine.rengo_teams.black.concat(this.goban.engine.rengo_teams.white)
                 : [engine.players.black, engine.players.white];
@@ -2350,6 +2366,17 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
     }
 
     cancelOrResign() {
+        let dropping_from_casual_rengo = false;
+
+        if (this.goban.engine.rengo && this.goban.engine.rengo_casual_mode) {
+            const team = this.goban.engine.rengo_teams.black.find(
+                (p) => p.id === data.get("user").id,
+            )
+                ? "black"
+                : "white";
+            dropping_from_casual_rengo = this.goban.engine.rengo_teams[team].length > 1;
+        }
+
         if (this.state.resign_mode === "cancel") {
             swal({
                 text: _("Are you sure you wish to cancel this game?"),
@@ -2362,7 +2389,9 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                 .catch(() => 0);
         } else {
             swal({
-                text: _("Are you sure you wish to resign this game?"),
+                text: dropping_from_casual_rengo
+                    ? _("Are you sure you want to abandon your team?")
+                    : _("Are you sure you wish to resign this game?"),
                 confirmButtonText: _("Yes"),
                 cancelButtonText: _("No"),
                 showCancelButton: true,

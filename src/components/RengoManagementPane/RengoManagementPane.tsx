@@ -20,7 +20,7 @@ import * as React from "react";
 import { _, pgettext } from "translate";
 
 interface RengoManagementPaneProperties {
-    user_id: number;
+    user: rest_api.UserConfig;
     challenge_id: number;
     rengo_challenge_list: any[];
 
@@ -37,7 +37,7 @@ export class RengoManagementPane extends React.PureComponent<
     RengoManagementPaneProperties,
     RengoManagementPaneState
 > {
-    constructor(props) {
+    constructor(props: RengoManagementPaneProperties) {
         super(props);
 
         this.state = {};
@@ -57,12 +57,12 @@ export class RengoManagementPane extends React.PureComponent<
         );
 
         const our_rengo_challenges = this.props.rengo_challenge_list.filter(
-            (c) => c.user_id === this.props.user_id,
+            (c) => c.user_id === this.props.user.id,
         );
         const own_challenge = our_rengo_challenges.find(
             (c) => c.challenge_id === this.props.challenge_id,
         );
-        const participating = the_challenge.rengo_participants.includes(this.props.user_id);
+        const participating = the_challenge.rengo_participants.includes(this.props.user.id);
         const challenge_ready_to_start = this.rengoReadyToStart(the_challenge);
 
         return (
@@ -81,7 +81,7 @@ export class RengoManagementPane extends React.PureComponent<
                 }
 
                 <div className="rengo-challenge-buttons">
-                    {(own_challenge || null) && (
+                    {(own_challenge || this.props.user.is_moderator || null) && (
                         <React.Fragment>
                             {!this.props.dontShowCancelButton ? (
                                 <button
@@ -104,28 +104,24 @@ export class RengoManagementPane extends React.PureComponent<
                         </React.Fragment>
                     )}
                     {(!own_challenge || null) && (
-                        <div className="automatch-settings">
-                            <button
-                                onClick={this.props.withdrawFromRengoChallenge.bind(
-                                    this,
-                                    the_challenge,
-                                )}
-                                className="btn danger xs"
-                                disabled={!participating}
-                            >
-                                {_("Withdraw")}
-                            </button>
-                        </div>
+                        <button
+                            onClick={this.props.withdrawFromRengoChallenge.bind(
+                                this,
+                                the_challenge,
+                            )}
+                            className="btn danger sm"
+                            disabled={!participating}
+                        >
+                            {_("Withdraw")}
+                        </button>
                     )}
                     {(!participating || null) && (
-                        <div className="automatch-settings">
-                            <button
-                                onClick={this.props.joinRengoChallenge.bind(this, the_challenge)}
-                                className="btn success xs"
-                            >
-                                {_("Join")}
-                            </button>
-                        </div>
+                        <button
+                            onClick={this.props.joinRengoChallenge.bind(this, the_challenge)}
+                            className="btn success sm"
+                        >
+                            {_("Join")}
+                        </button>
                     )}
                 </div>
             </div>

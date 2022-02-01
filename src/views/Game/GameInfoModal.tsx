@@ -185,7 +185,11 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         return (
             <div className="Modal GameInfoModal" ref="modal">
                 <div className="header">
-                    {(config.rengo || null) && <div className="rengo-header">{_("Rengo!")}</div>}
+                    {(config.rengo || null) && (
+                        <div className="rengo-header">
+                            {config.rengo_casual_mode ? _("Casual Rengo!") : _("Strict Rengo!")}
+                        </div>
+                    )}
 
                     <h2>{config.game_name}</h2>
                     {this.props.config.rengo ? this.rengoTeamList() : this.twoPlayerTeamList()}
