@@ -685,6 +685,8 @@ export class Play extends React.Component<{}, PlayState> {
 
         const rengo_challenge_to_show = own_live_rengo_challenge || joined_live_rengo_challenge;
 
+        const user = data.get("user");
+
         //  Construction of the pane we need to show...
         if (automatch_manager.active_live_automatcher) {
             return (
@@ -733,7 +735,7 @@ export class Play extends React.Component<{}, PlayState> {
                         </div>
                     </div>
                     <RengoManagementPane
-                        user={data.get("user")}
+                        user={user}
                         challenge_id={rengo_challenge_to_show.challenge_id}
                         rengo_challenge_list={this.state.rengo_list}
                         startRengoChallenge={this.startOwnRengoChallenge}
@@ -744,6 +746,7 @@ export class Play extends React.Component<{}, PlayState> {
                         <RengoTeamManagementPane
                             challenge_id={rengo_challenge_to_show.challenge_id}
                             challenge_list={this.state.rengo_list}
+                            moderator={user.is_moderator}
                             assignToTeam={this.assignToTeam}
                         />
                     </RengoManagementPane>
@@ -1219,6 +1222,7 @@ export class Play extends React.Component<{}, PlayState> {
                             <RengoTeamManagementPane
                                 challenge_id={C.challenge_id}
                                 challenge_list={this.state.rengo_list}
+                                moderator={user.is_moderator}
                                 assignToTeam={this.assignToTeam}
                             />
                         </RengoManagementPane>
