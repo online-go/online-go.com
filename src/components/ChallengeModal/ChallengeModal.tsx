@@ -128,7 +128,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 initial_state: null,
                 private: false,
                 rengo: false,
-                rengo_casual_mode: false,
+                rengo_casual_mode: true,
             },
         });
 
