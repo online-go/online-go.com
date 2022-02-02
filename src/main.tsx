@@ -149,6 +149,7 @@ import { toast } from "toast";
 import cached from "cached";
 import * as moment from "moment";
 import swal from "sweetalert2";
+import { ConfigSchema } from "data_schema";
 
 import "debug";
 
@@ -163,10 +164,10 @@ data.watch(cached.config, (config) => {
      * that are depending on other parts of the config will fire without
      * having up to date information (in particular user / auth stuff) */
     for (const key in config) {
-        data.setWithoutEmit(`config.${key}`, config[key]);
+        data.setWithoutEmit(`config.${key as keyof ConfigSchema}`, config[key]);
     }
     for (const key in config) {
-        data.set(`config.${key}`, config[key]);
+        data.set(`config.${key as keyof ConfigSchema}`, config[key]);
     }
 });
 

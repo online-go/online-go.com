@@ -36,6 +36,7 @@ import {
     watchChatSubscriptionChanged,
     unwatchChatSubscriptionChanged,
 } from "Chat";
+import { DataSchema } from "data_schema";
 
 interface ChatListProperties {
     show_unjoined?: boolean;
@@ -47,7 +48,7 @@ interface ChatListProperties {
     join_joined?: boolean;
     highlight_active_channel?: boolean;
     closing_toggle?: () => void;
-    collapse_state_store_name?: string;
+    collapse_state_store_name?: keyof DataSchema;
     fakelink?: boolean;
     partFunc?: (channel: string, dont_autoset_active: boolean, dont_clear_joined: boolean) => void;
 }
@@ -64,7 +65,7 @@ interface ChatListState {
     join_subscriptions: boolean;
     join_joined: boolean;
     collapsed_channel_groups: { [channel_group: string]: boolean };
-    collapse_state_store_name: string;
+    collapse_state_store_name: keyof DataSchema;
     highlight_active_channel: boolean;
     active_channel: string;
     fakelink: boolean;

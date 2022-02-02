@@ -325,7 +325,7 @@ class PrivateChat {
 
         if (send_itc) {
             //ITC.send("private-chat-open", {"user_id": this.user_id, "username": this.player.username});
-            data.set("pm.read-" + this.user_id, this.last_uid);
+            data.set(`pm.read-${this.user_id}`, this.last_uid);
         }
     }
     updateModeratorBanner() {
@@ -457,7 +457,7 @@ class PrivateChat {
                 user_id: this.user_id,
                 username: this.player.username,
             });
-            data.set("pm.close-" + this.user_id, this.last_uid);
+            data.set(`pm.close-${this.user_id}`, this.last_uid);
         }
         if (comm_socket && !dont_send_pm_close) {
             comm_socket.send("chat/pm/close", this.user_id);
@@ -614,7 +614,7 @@ class PrivateChat {
 
         this.last_uid = line.message.i + " " + line.message.t;
 
-        if (this.last_uid === data.get("pm.read-" + this.user_id, "-")) {
+        if (this.last_uid === data.get(`pm.read-${this.user_id}`, "-")) {
             this.removeHilight();
         }
     }
