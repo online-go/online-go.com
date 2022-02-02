@@ -18,8 +18,6 @@
 import * as React from "react";
 import { _, pgettext, interpolate, cc_to_country_name, sorted_locale_countries } from "translate";
 import { Link } from "react-router-dom";
-import { openModal } from "Modal";
-import { NotesModal } from "NotesModal";
 import { post, get, put, del, patch } from "requests";
 import { parse } from "query-string";
 import * as data from "data";
@@ -29,24 +27,24 @@ import { PlayerIcon } from "PlayerIcon";
 import { GameList } from "GameList";
 import { Player } from "Player";
 import * as preferences from "preferences";
-import { updateDup, getGameResultText, ignore } from "misc";
+import { updateDup, ignore } from "misc";
+import { ModTools } from "./ModTools";
+import { GameHistoryTable } from "./GameHistoryTable";
+import { ReviewsAndDemosTable } from "./ReviewsAndDemosTable";
 import {
     longRankString,
     rankString,
     getUserRating,
     humble_rating,
-    effective_outcome,
     rating_to_rank,
     boundedRankString,
     rank_deviation,
 } from "rank_utils";
 import { durationString, daysOnlyDurationString } from "TimeControl";
 import { openModerateUserModal } from "ModerateUser";
-import { PaginatedTable } from "PaginatedTable";
-import { errorAlerter, shouldOpenNewTab } from "misc";
+import { errorAlerter } from "misc";
 import * as player_cache from "player_cache";
 import { getPrivateChat } from "PrivateChat";
-import { PlayerAutocomplete } from "PlayerAutocomplete";
 import * as Dropzone from "react-dropzone";
 import { image_resizer } from "image_resizer";
 import { Flag } from "Flag";
@@ -54,8 +52,6 @@ import { Markdown } from "Markdown";
 import { RatingsChart } from "RatingsChart";
 import { RatingsChartByGame } from "RatingsChartByGame";
 import { associations } from "associations";
-import { browserHistory } from "ogsHistory";
-import { chat_markup } from "Chat";
 import { Toggle } from "Toggle";
 import { AchievementList } from "Achievements";
 import swal from "sweetalert2";
@@ -70,43 +66,6 @@ interface UserProperties {
 
 const inlineBlock = { display: "inline-flex", alignItems: "center" };
 const marginBottom0 = { marginBottom: "0" };
-
-function getGameResultRichText(game) {
-    let resultText = getGameResultText(game.outcome, game.white_lost, game.black_lost);
-
-    if (game.ranked) {
-        resultText += ", ";
-        resultText += _("ranked");
-    }
-    if (game.annulled) {
-        return (
-            <span>
-                <span style={{ textDecoration: "line-through" }}>{resultText}</span>
-                <span>, {_("annulled")}</span>
-            </span>
-        );
-    }
-
-    return <>{resultText}</>;
-}
-
-function openUrlIfALinkWasNotClicked(ev, url: string) {
-    if (ev.target.nodeName === "A" || ev.target.parentNode.nodeName === "A") {
-        /* if a link was clicked, let the browser handle that. */
-        return;
-    }
-
-    /* Only navigate on left and middle clicks */
-    if (ev.button !== 0 && ev.button !== 1) {
-        return;
-    }
-
-    if (shouldOpenNewTab(ev)) {
-        window.open(url, "_blank");
-    } else {
-        browserHistory.push(url);
-    }
-}
 
 // API: players/%%/full
 interface UserInfo {
@@ -179,7 +138,6 @@ interface UserState {
     show_graph_type_toggle: boolean;
     rating_chart_type_toggle_left?: number;
     hovered_game_id?: number;
-    show_rengo_game_history: boolean;
     friend_request_sent?: boolean;
     friend_request_received?: boolean;
     is_friend?: boolean;
@@ -190,8 +148,6 @@ interface UserState {
     ladders?: any[];
     tournaments?: any[];
     groups?: any[];
-    games_alt_player_filter: number;
-    reviews_alt_player_filter: number;
 }
 
 export class User extends React.PureComponent<UserProperties, UserState> {
@@ -203,8 +159,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
     vacation_left: string;
     original_username: string;
     vacation_update_interval: any;
-    moderator_note: any = null;
-    moderator_log_anchor: any = React.createRef();
     show_mod_log: boolean;
 
     constructor(props) {
@@ -231,9 +185,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             rating_graph_plot_by_games: preferences.get("rating-graph-plot-by-games"),
             show_graph_type_toggle: !preferences.get("rating-graph-always-use"),
             hovered_game_id: null,
-            games_alt_player_filter: null,
-            reviews_alt_player_filter: null,
-            show_rengo_game_history: false,
         };
 
         try {
@@ -261,12 +212,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             }
         }, 1000);
         this.resolve(this.props);
-    }
-
-    componentDidUpdate() {
-        if (this.show_mod_log && this.moderator_log_anchor.current !== null) {
-            this.moderator_log_anchor.current.scrollIntoView();
-        }
     }
 
     componentWillUnmount() {
@@ -649,70 +594,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         });
     };
 
-    addModeratorNote = () => {
-        const txt = this.moderator_note.value.trim();
-
-        if (txt.length < 2) {
-            this.moderator_note.focus();
-            return;
-        }
-
-        put(`players/${this.user_id}/moderate`, {
-            moderation_note: txt,
-        })
-            .then(() => {})
-            .catch(errorAlerter);
-
-        this.moderator_note.value = "";
-    };
-
-    maskedRank = (rank: string): string => (preferences.get("hide-ranks") ? "" : rank);
-
     updateTogglePosition = (_height: number, width: number) => {
         this.setState({ rating_chart_type_toggle_left: width + 30 }); // eyeball enough extra left pad
-    };
-
-    onToggleRengoHistorySelect = () => {
-        this.setState({ show_rengo_game_history: !this.state.show_rengo_game_history });
-    };
-
-    review_history_groomer = (results) => {
-        const ret = [];
-
-        for (let i = 0; i < results.length; ++i) {
-            const r = results[i];
-            const item: any = {
-                id: r.id,
-            };
-
-            item.width = r.width;
-            item.height = r.height;
-            item.date = r.created ? new Date(r.created) : null;
-            item.black = r.players.black;
-            item.black_won = !r.black_lost && r.white_lost;
-            item.black_class = item.black_won
-                ? item.black.id === this.user_id
-                    ? "library-won"
-                    : "library-lost"
-                : "";
-            item.white = r.players.white;
-            item.white_won = !r.white_lost && r.black_lost;
-            item.white_class = item.white_won
-                ? item.white.id === this.user_id
-                    ? "library-won"
-                    : "library-lost"
-                : "";
-            item.name = r.name;
-            item.href = "/review/" + item.id;
-            item.historical = r.game.historical_ratings || { black: item.black, white: item.white };
-
-            if (!item.name || item.name.trim() === "") {
-                item.name = item.href;
-            }
-
-            ret.push(item);
-        }
-        return ret;
     };
 
     render() {
@@ -733,133 +616,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             }
         };
         setTimeout(doDomWork, 0);
-
-        const game_history_groomer = (results) => {
-            const ret = [];
-            for (let i = 0; i < results.length; ++i) {
-                const r = results[i];
-                const item: any = {
-                    id: r.id,
-                };
-
-                item.width = r.width;
-                item.height = r.height;
-                item.date = r.ended ? new Date(r.ended) : null;
-                item.ranked = r.ranked;
-                item.handicap = r.handicap;
-                item.annulled = r.annulled || false;
-                item.black = r.players.black;
-                item.black_won = !r.black_lost && r.white_lost && !r.annulled;
-                item.black_class = item.black_won
-                    ? item.black.id === this.user_id
-                        ? "library-won"
-                        : "library-lost"
-                    : "";
-                item.white = r.players.white;
-                item.white_won = !r.white_lost && r.black_lost && !r.annulled;
-                item.white_class = item.white_won
-                    ? item.white.id === this.user_id
-                        ? "library-won"
-                        : "library-lost"
-                    : "";
-                item.historical = r.historical_ratings;
-
-                const outcome = effective_outcome(
-                    item.historical.black.ratings.overall.rating,
-                    item.historical.white.ratings.overall.rating,
-                    item.handicap,
-                );
-                if (item.white.id === this.user_id) {
-                    /* played white */ item.played_black = false;
-                    item.opponent = r.historical_ratings.black;
-                    item.player = r.historical_ratings.white;
-                    item.player_won = item.white_won;
-                    if (item.ranked && !preferences.get("hide-ranks")) {
-                        if (item.white_won) {
-                            /* player won */ item.result_class = outcome.white_effective_stronger
-                                ? "library-won-result-vs-weaker"
-                                : "library-won-result-vs-stronger";
-                        } else if (item.black_won) {
-                            /* player lost */ item.result_class = outcome.white_effective_stronger
-                                ? "library-lost-result-vs-weaker"
-                                : "library-lost-result-vs-stronger";
-                        }
-                    } else {
-                        item.result_class = item.white_won
-                            ? "library-won-result-unranked"
-                            : "library-lost-result-unranked"; /* tie catched above */
-                    }
-                } else if (item.black.id === this.user_id) {
-                    /* played black */ item.played_black = true;
-                    item.opponent = r.historical_ratings.white;
-                    item.player = r.historical_ratings.black;
-                    item.player_won = item.black_won;
-                    if (item.ranked && !preferences.get("hide-ranks")) {
-                        if (item.black_won) {
-                            /* player won */ item.result_class = outcome.black_effective_stronger
-                                ? "library-won-result-vs-weaker"
-                                : "library-won-result-vs-stronger";
-                        } else if (item.white_won) {
-                            /* player lost */ item.result_class = outcome.black_effective_stronger
-                                ? "library-lost-result-vs-weaker"
-                                : "library-lost-result-vs-stronger";
-                        }
-                    } else {
-                        item.result_class = item.black_won
-                            ? "library-won-result-unranked"
-                            : "library-lost-result-unranked"; /* tie catched above */
-                    }
-                }
-
-                if (
-                    (r.white_lost && r.black_lost) ||
-                    (!r.white_lost && !r.black_lost) ||
-                    r.annulled
-                ) {
-                    item.result_class = "library-tie-result";
-                }
-
-                if ("time_control_parameters" in r) {
-                    const tcp = JSON.parse(r.time_control_parameters);
-                    if (tcp && "speed" in tcp) {
-                        item.speed = tcp.speed[0].toUpperCase() + tcp.speed.slice(1); // capitalize string
-                    }
-                }
-                if (!item.speed) {
-                    // fallback
-                    if (r.time_per_move >= 3600 || r.time_per_move === 0) {
-                        item.speed = "Correspondence";
-                    } else if (r.time_per_move < 10 && r.time_per_move > 0) {
-                        item.speed = "Blitz";
-                    } else if (r.time_per_move < 3600 && r.time_per_move >= 10) {
-                        item.speed = "Live";
-                    } else {
-                        console.log("time_per_move < 0");
-                    }
-                }
-                if (item.speed === "Correspondence") {
-                    item.speed_icon_class = "speed-icon ogs-turtle";
-                } else if (item.speed === "Blitz") {
-                    item.speed_icon_class = "speed-icon fa fa-bolt";
-                } else if (item.speed === "Live") {
-                    item.speed_icon_class = "speed-icon fa fa-clock-o";
-                } else {
-                    console.log("unsupported speed setting: " + item.speed);
-                }
-
-                item.name = r.name;
-
-                if (item.name && item.name.trim() === "") {
-                    item.name = item.href;
-                }
-
-                item.href = "/game/" + item.id;
-                item.result = getGameResultRichText(r);
-
-                ret.push(item);
-            }
-            return ret;
-        };
 
         let cleaned_website = "";
         if (user && user.website) {
@@ -1209,141 +965,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
 
                 <div className="row">
                     <div className="col-sm-8">
-                        {((window["user"] && window["user"].is_moderator) || null) && (
-                            <Card>
-                                {" "}
-                                {/* Moderator stuff  */}
-                                <b>Users with the same IP or Browser ID</b>
-                                <PaginatedTable
-                                    className="aliases"
-                                    name="aliases"
-                                    source={`players/${this.user_id}/aliases/`}
-                                    columns={[
-                                        {
-                                            header: "Registered",
-                                            className: "date",
-                                            render: (X) =>
-                                                moment(X.registration_date).format("YYYY-MM-DD"),
-                                        },
-                                        {
-                                            header: "Last Login",
-                                            className: "date",
-                                            render: (X) =>
-                                                moment(X.last_login).format("YYYY-MM-DD"),
-                                        },
-                                        {
-                                            header: "Browser ID",
-                                            sortable: true,
-                                            className: "browser_id",
-                                            render: (X) => X.last_browser_id,
-                                        },
-                                        {
-                                            header: "User",
-                                            className: "",
-                                            render: (X) => (
-                                                <span>
-                                                    <Player user={X} />
-                                                    {(X.has_notes || null) && (
-                                                        <i
-                                                            className="fa fa-file-text-o clickable"
-                                                            onClick={() =>
-                                                                openNotes(X.moderator_notes)
-                                                            }
-                                                        />
-                                                    )}
-                                                </span>
-                                            ),
-                                        },
-                                        {
-                                            header: "Banned",
-                                            className: "banned",
-                                            render: (X) => (X.is_banned ? _("Yes") : _("No")),
-                                        },
-                                        {
-                                            header: "Shadowbanned",
-                                            className: "banned",
-                                            render: (X) => (X.is_shadowbanned ? _("Yes") : _("No")),
-                                        },
-                                    ]}
-                                />
-                                <b>Mod log</b>
-                                <div id="leave-moderator-note" ref={this.moderator_log_anchor}>
-                                    <textarea
-                                        ref={(x) => (this.moderator_note = x)}
-                                        placeholder="Leave note"
-                                        id="moderator-note"
-                                    />
-                                    <button onClick={this.addModeratorNote}>Add note</button>
-                                </div>
-                                <PaginatedTable
-                                    className="moderator-log"
-                                    name="moderator-log"
-                                    source={`moderation?player_id=${this.user_id}`}
-                                    uiPushProps={{
-                                        event: `modlog-${this.user_id}-updated`,
-                                        channel: "moderators",
-                                    }}
-                                    columns={[
-                                        {
-                                            header: "",
-                                            className: "date",
-                                            render: (X) =>
-                                                moment(X.timestamp).format("YYYY-MM-DD HH:mm:ss"),
-                                        },
-                                        {
-                                            header: "",
-                                            className: "",
-                                            render: (X) => <Player user={X.moderator} />,
-                                        },
-                                        {
-                                            header: "",
-                                            className: "",
-                                            render: (X) => (
-                                                <div>
-                                                    <div className="action">
-                                                        {X.game ? (
-                                                            <Link to={`/game/${X.game.id}`}>
-                                                                {X.game.id}
-                                                            </Link>
-                                                        ) : null}
-                                                        {X.action}
-                                                    </div>
-                                                    {X.incident_report && (
-                                                        <div>
-                                                            {X.incident_report.cleared_by_user ? (
-                                                                <div>
-                                                                    <b>Cleared by user</b>
-                                                                </div>
-                                                            ) : null}
-                                                            <div>{X.incident_report.url}</div>
-                                                            <div>
-                                                                {X.incident_report.system_note}
-                                                            </div>
-                                                            <div>
-                                                                {X.incident_report.reporter_note}
-                                                            </div>
-                                                            {X.incident_report.moderator ? (
-                                                                <Player
-                                                                    user={
-                                                                        X.incident_report.moderator
-                                                                    }
-                                                                />
-                                                            ) : null}
-                                                            <i>
-                                                                {" "}
-                                                                {X.incident_report.moderator_note}
-                                                            </i>
-                                                        </div>
-                                                    )}
-                                                    <pre>
-                                                        {chat_markup(X.note, undefined, 1024 * 128)}
-                                                    </pre>
-                                                </div>
-                                            ),
-                                        },
-                                    ]}
-                                />
-                            </Card>
+                        {(window["user"]?.is_moderator || null) && (
+                            <ModTools user_id={this.user_id} show_mod_log={this.show_mod_log} />
                         )}
 
                         {(user.about || editing || null) && (
@@ -1385,361 +1008,11 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                         />
 
                         <div className="row">
-                            {/* Game History  */}
-                            <div className="col-sm-12">
-                                <h2>{_("Game History")}</h2>
-                                <Card>
-                                    <div>
-                                        {/* loading-container="game_history.settings().$loading" */}
-                                        <div className="game-options">
-                                            <div className="search">
-                                                <i className="fa fa-search"></i>
-                                                <PlayerAutocomplete
-                                                    onComplete={(player) => {
-                                                        // happily, and importantly, if there isn't a player, then we get null
-                                                        this.setState({
-                                                            games_alt_player_filter: player?.id,
-                                                        });
-                                                    }}
-                                                />
-                                            </div>
-                                            <div className="rengo-selector">
-                                                <span>{_("Rengo")}</span>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={this.state.show_rengo_game_history}
-                                                    onChange={this.onToggleRengoHistorySelect}
-                                                />
-                                            </div>
-                                        </div>
-                                        <PaginatedTable
-                                            className="game-history-table"
-                                            name="game-history"
-                                            method="GET"
-                                            source={`players/${this.user_id}/games/`}
-                                            filter={{
-                                                source: "play",
-                                                ended__isnull: false,
-                                                ...(this.state.games_alt_player_filter !== null && {
-                                                    alt_player: this.state.games_alt_player_filter,
-                                                }),
-                                                rengo: this.state.show_rengo_game_history,
-                                            }}
-                                            orderBy={["-ended"]}
-                                            groom={game_history_groomer}
-                                            onRowClick={(ref, ev) =>
-                                                openUrlIfALinkWasNotClicked(ev, ref.href)
-                                            }
-                                            columns={[
-                                                // normal table layout ...
-                                                ...(!this.state.show_rengo_game_history
-                                                    ? [
-                                                          {
-                                                              header: _("User"),
-                                                              className: (X) =>
-                                                                  "user_info" +
-                                                                  (X && X.annulled
-                                                                      ? " annulled"
-                                                                      : ""),
-                                                              render: (X) => (
-                                                                  <React.Fragment>
-                                                                      {X.played_black ? (
-                                                                          <span>⚫</span>
-                                                                      ) : (
-                                                                          <span>⚪</span>
-                                                                      )}
-                                                                      {this.maskedRank(
-                                                                          `[${rankString(
-                                                                              X.player,
-                                                                          )}]`,
-                                                                      )}
-                                                                  </React.Fragment>
-                                                              ),
-                                                          },
-                                                          {
-                                                              header: _(""),
-                                                              className: (X) =>
-                                                                  "winner_marker" +
-                                                                  (X && X.annulled
-                                                                      ? " annulled"
-                                                                      : ""),
-                                                              render: (X) =>
-                                                                  X.player_won ? (
-                                                                      <i className="fa fa-trophy game-history-winner" />
-                                                                  ) : (
-                                                                      ""
-                                                                  ),
-                                                          },
-                                                          {
-                                                              header: _("Date"),
-                                                              className: (X) =>
-                                                                  "date" +
-                                                                  (X && X.annulled
-                                                                      ? " annulled"
-                                                                      : ""),
-                                                              render: (X) =>
-                                                                  moment(X.date).format(
-                                                                      "YYYY-MM-DD",
-                                                                  ),
-                                                          },
-                                                          {
-                                                              header: _("Opponent"),
-                                                              className: (X) =>
-                                                                  "player" +
-                                                                  (X && X.annulled
-                                                                      ? " annulled"
-                                                                      : ""),
-                                                              render: (X) => (
-                                                                  <Player
-                                                                      user={X.opponent}
-                                                                      disableCacheUpdate
-                                                                  />
-                                                              ),
-                                                          },
-                                                          {
-                                                              header: _(""),
-                                                              className: (X) =>
-                                                                  "speed" +
-                                                                  (X && X.annulled
-                                                                      ? " annulled"
-                                                                      : ""),
-                                                              render: (X) => (
-                                                                  <i
-                                                                      className={X.speed_icon_class}
-                                                                      title={X.speed}
-                                                                  />
-                                                              ),
-                                                          },
-                                                          {
-                                                              header: _("Size"),
-                                                              className: (X) =>
-                                                                  "board_size" +
-                                                                  (X && X.annulled
-                                                                      ? " annulled"
-                                                                      : ""),
-                                                              render: (X) =>
-                                                                  `${X.width}x${X.height}`,
-                                                          },
-                                                          {
-                                                              header: _("Name"),
-                                                              className: (X) =>
-                                                                  "game_name" +
-                                                                  (X && X.annulled
-                                                                      ? " annulled"
-                                                                      : ""),
-                                                              render: (X) => (
-                                                                  <Link to={X.href}>
-                                                                      {X.name ||
-                                                                          interpolate(
-                                                                              "{{black_username}} vs. {{white_username}}",
-                                                                              {
-                                                                                  black_username:
-                                                                                      X.black
-                                                                                          .username,
-                                                                                  white_username:
-                                                                                      X.white
-                                                                                          .username,
-                                                                              },
-                                                                          )}
-                                                                  </Link>
-                                                              ),
-                                                          },
-                                                          {
-                                                              header: _("Result"),
-                                                              className: (X) =>
-                                                                  X
-                                                                      ? X.result_class +
-                                                                        (X.annulled
-                                                                            ? " annulled"
-                                                                            : "")
-                                                                      : "",
-                                                              render: (X) => X.result,
-                                                          },
-                                                      ]
-                                                    : []),
-                                                // .. and brute force hiding things that are too hard for a quick implemetation for rengo :o  ...
-                                                ...(this.state.show_rengo_game_history
-                                                    ? [
-                                                          {
-                                                              header: _("-"),
-                                                              className: (X) =>
-                                                                  "user_info" +
-                                                                  (X && X.annulled
-                                                                      ? " annulled"
-                                                                      : ""),
-                                                              render: () => "",
-                                                          },
-                                                          {
-                                                              header: _(""),
-                                                              className: (X) =>
-                                                                  "winner_marker" +
-                                                                  (X && X.annulled
-                                                                      ? " annulled"
-                                                                      : ""),
-                                                              render: () => "",
-                                                          },
-                                                          {
-                                                              header: _("Date"),
-                                                              className: (X) =>
-                                                                  "date" +
-                                                                  (X && X.annulled
-                                                                      ? " annulled"
-                                                                      : ""),
-                                                              render: (X) =>
-                                                                  moment(X.date).format(
-                                                                      "YYYY-MM-DD",
-                                                                  ),
-                                                          },
-                                                          {
-                                                              header: _("-"),
-                                                              className: (X) =>
-                                                                  "player" +
-                                                                  (X && X.annulled
-                                                                      ? " annulled"
-                                                                      : ""),
-                                                              render: () => "",
-                                                          },
-                                                          {
-                                                              header: _(""),
-                                                              className: (X) =>
-                                                                  "speed" +
-                                                                  (X && X.annulled
-                                                                      ? " annulled"
-                                                                      : ""),
-                                                              render: (X) => (
-                                                                  <i
-                                                                      className={X.speed_icon_class}
-                                                                      title={X.speed}
-                                                                  />
-                                                              ),
-                                                          },
-                                                          {
-                                                              header: _("Size"),
-                                                              className: (X) =>
-                                                                  "board_size" +
-                                                                  (X && X.annulled
-                                                                      ? " annulled"
-                                                                      : ""),
-                                                              render: (X) =>
-                                                                  `${X.width}x${X.height}`,
-                                                          },
-                                                          {
-                                                              header: _("Name"),
-                                                              className: (X) =>
-                                                                  "game_name" +
-                                                                  (X && X.annulled
-                                                                      ? " annulled"
-                                                                      : ""),
-                                                              render: (X) => (
-                                                                  <Link to={X.href}>
-                                                                      {X.name ||
-                                                                          interpolate(
-                                                                              "{{black_username}} vs. {{white_username}}",
-                                                                              {
-                                                                                  black_username:
-                                                                                      X.black
-                                                                                          .username,
-                                                                                  white_username:
-                                                                                      X.white
-                                                                                          .username,
-                                                                              },
-                                                                          )}
-                                                                  </Link>
-                                                              ),
-                                                          },
-                                                          {
-                                                              header: _("Result"),
-                                                              className: () => " annulled",
-                                                              /* a nice background color for this... */ render: () =>
-                                                                  _("fun was had"),
-                                                          },
-                                                      ]
-                                                    : []),
-                                            ]}
-                                        />
-                                    </div>
-                                </Card>
-                            </div>
+                            <GameHistoryTable user_id={this.user_id} />
                         </div>
 
                         <div className="row">
-                            {/* Reviews and Demos */}
-                            <div className="col-sm-12">
-                                <h2>{_("Reviews and Demos")}</h2>
-                                <Card>
-                                    <div>
-                                        {/* loading-container="game_history.settings().$loading" */}
-                                        <div className="search">
-                                            <i className="fa fa-search"></i>
-                                            <PlayerAutocomplete
-                                                onComplete={(player) => {
-                                                    // happily, and importantly, if there isn't a player, then we get null
-                                                    this.setState({
-                                                        reviews_alt_player_filter: player?.id,
-                                                    });
-                                                }}
-                                            />
-                                        </div>
-
-                                        <PaginatedTable
-                                            className="review-history-table"
-                                            name="review-history"
-                                            method="GET"
-                                            source={`reviews/`}
-                                            filter={{
-                                                owner_id: this.user_id,
-                                                ...(this.state.reviews_alt_player_filter !==
-                                                    null && {
-                                                    alt_player:
-                                                        this.state.reviews_alt_player_filter,
-                                                }),
-                                            }}
-                                            orderBy={["-created"]}
-                                            groom={this.review_history_groomer}
-                                            onRowClick={(ref, ev) =>
-                                                openUrlIfALinkWasNotClicked(ev, ref.href)
-                                            }
-                                            columns={[
-                                                {
-                                                    header: _("Date"),
-                                                    className: () => "date",
-                                                    render: (X) =>
-                                                        moment(X.date).format("YYYY-MM-DD"),
-                                                },
-                                                {
-                                                    header: _("Name"),
-                                                    className: () => "game_name",
-                                                    render: (X) => (
-                                                        <Link to={X.href}>{X.name}</Link>
-                                                    ),
-                                                },
-                                                {
-                                                    header: _("Black"),
-                                                    className: (X) =>
-                                                        "player " + (X ? X.black_class : ""),
-                                                    render: (X) => (
-                                                        <Player
-                                                            user={X.historical.black}
-                                                            disableCacheUpdate
-                                                        />
-                                                    ),
-                                                },
-                                                {
-                                                    header: _("White"),
-                                                    className: (X) =>
-                                                        "player " + (X ? X.white_class : ""),
-                                                    render: (X) => (
-                                                        <Player
-                                                            user={X.historical.white}
-                                                            disableCacheUpdate
-                                                        />
-                                                    ),
-                                                },
-                                            ]}
-                                        />
-                                    </div>
-                                </Card>
-                            </div>
+                            <ReviewsAndDemosTable user_id={this.user_id} />
                         </div>
                     </div>
 
@@ -2251,10 +1524,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             </div>
         );
     }
-}
-
-function openNotes(notes) {
-    openModal(<NotesModal notes={notes} fastDismiss />);
 }
 
 function SelfReportedAccountLinkages({ links }: { links: any }): JSX.Element {
