@@ -38,14 +38,14 @@ export function BlockedVPN(): JSX.Element {
         <div className="BlockedVPN">
             Hello!
             <p>
-                Unfortunately there has been a problem with a particularly abusive user using the
-                same VPN as you.
+                Thank you for registering an account with online-go.com. Unfortunately, there has
+                been a problem with your VPN in recent days.
             </p>
             <p>
-                We have isolated the VPN to a small handful of datacenters that they use, and are
-                working towards isolating the VPN company from that so that we may begin the process
-                of obtaining logs to track down the user, however that process can be expedited if
-                you help us by letting us know what VPN service you are using.
+                Due to abuse linked with your VPN, the VPN has been temporarily disabled, and the
+                user registration will not be completed. We are currently working to obtain logs
+                from the VPN company to isolate the abuse and re-enable use of this VPN. You can
+                help speed up this process by letting us know what VPN service you are using:
             </p>
             <p className="collect">
                 <input
@@ -55,13 +55,10 @@ export function BlockedVPN(): JSX.Element {
                 />
                 <button onClick={submit}>Submit</button>
             </p>
+            <p>Thank you in advance for your cooperation in helping us resolve this issue.</p>
             <p>
-                Thank you in advance for your cooperation in helping us take action against this
-                vile individual.
-            </p>
-            <p>
-                If you have futher trouble accessing the site after you've disabled your VPN, you
-                can contact us at <a href="mailto:contact@online-go.com">contact@online-go.com</a>
+                If you still cannot access online-go.com after disabling your VPN, please contact us
+                at <a href="mailto:contact@online-go.com">contact@online-go.com</a>
             </p>
         </div>
     );
