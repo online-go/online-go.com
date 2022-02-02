@@ -26,6 +26,7 @@ type Challenge = socket_api.seekgraph_global.Challenge;
 interface RengoTeamManagementPaneProps {
     challenge_list: Challenge[];
     challenge_id: number;
+    moderator: boolean;
     assignToTeam: (player_id: number, team: string, challenge: Challenge, done: () => void) => void;
 }
 
@@ -92,7 +93,7 @@ export class RengoTeamManagementPane extends React.PureComponent<
                     )}
                     {black_team.map((n, i) => (
                         <div className="rengo-assignment-row" key={i}>
-                            {(the_challenge.user_challenge || null) && (
+                            {(the_challenge.user_challenge || this.props.moderator || null) && (
                                 <React.Fragment>
                                     <i
                                         className="fa fa-lg fa-times-circle-o unassign"
@@ -124,7 +125,7 @@ export class RengoTeamManagementPane extends React.PureComponent<
                     )}
                     {white_team.map((n, i) => (
                         <div className="rengo-assignment-row" key={i}>
-                            {(the_challenge.user_challenge || null) && (
+                            {(the_challenge.user_challenge || this.props.moderator || null) && (
                                 <React.Fragment>
                                     <i
                                         className="fa fa-lg fa-times-circle-o unassign"
@@ -156,7 +157,7 @@ export class RengoTeamManagementPane extends React.PureComponent<
                     )}
                     {nominees.map((n, i) => (
                         <div className="rengo-assignment-row" key={i}>
-                            {(the_challenge.user_challenge || null) && (
+                            {(the_challenge.user_challenge || this.props.moderator || null) && (
                                 <React.Fragment>
                                     <i
                                         className="fa fa-lg fa-arrow-up black"
