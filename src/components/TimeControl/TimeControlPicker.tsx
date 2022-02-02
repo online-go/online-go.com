@@ -79,8 +79,7 @@ export class TimeControlPicker extends React.PureComponent<
 
             if (update) {
                 //console.log("Updating time control:", update);
-                this.time_control = makeTimeControlParameters(update);
-                this.setState(update);
+                this.syncTimeControl(update);
             }
         }
     }
@@ -103,6 +102,8 @@ export class TimeControlPicker extends React.PureComponent<
             }
             return -1;
         }
+
+        // TBD: why does this section compare with state (the current value) insteaf of tc (the new value)?
 
         if (this.state.system === "fischer") {
             if (findIndex(options["fischer"]["initial_time"], tc.initial_time) === -1) {
@@ -151,8 +152,14 @@ export class TimeControlPicker extends React.PureComponent<
             tc.max_time = tc.initial_time;
         }
 
+        if (tc.system === "simple") {
+            tc.pause_on_weekends = false; // simple time bugs out with pause on weekend.
+            console.log("set", tc);
+        }
+
         tc.time_per_move = computeAverageMoveTime(makeTimeControlParameters(tc));
         this.time_control = makeTimeControlParameters(tc);
+        console.log("setting state", tc);
         this.setState(tc);
         if (this.props.onChange) {
             this.props.onChange(this.time_control);
@@ -603,6 +610,7 @@ export class TimeControlPicker extends React.PureComponent<
                                     onChange={this.update_pause_on_weekends}
                                     id="challenge-pause-on-weekends"
                                     type="checkbox"
+                                    disabled={this.state.system === "simple"}
                                 />
                             </div>
                         </div>
