@@ -27,6 +27,7 @@ interface RengoTeamManagementPaneProps {
     challenge_list: Challenge[];
     challenge_id: number;
     moderator: boolean;
+    show_chat: boolean;
     assignToTeam: (player_id: number, team: string, challenge: Challenge, done: () => void) => void;
 }
 
@@ -183,9 +184,13 @@ export class RengoTeamManagementPane extends React.PureComponent<
                         </div>
                     ))}
                 </div>
-                <div className="rengo-challenge-chat">
-                    <EmbeddedChatCard channel={`rengo-challenge-${the_challenge.challenge_id}`} />
-                </div>
+                {this.props.show_chat && (
+                    <div className="rengo-challenge-chat">
+                        <EmbeddedChatCard
+                            channel={`rengo-challenge-${the_challenge.challenge_id}`}
+                        />
+                    </div>
+                )}
             </div>
         );
     };

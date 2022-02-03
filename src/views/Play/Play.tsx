@@ -747,6 +747,7 @@ export class Play extends React.Component<{}, PlayState> {
                             challenge_id={rengo_challenge_to_show.challenge_id}
                             challenge_list={this.state.rengo_list}
                             moderator={user.is_moderator}
+                            show_chat={true}
                             assignToTeam={this.assignToTeam}
                         />
                     </RengoManagementPane>
@@ -1223,6 +1224,11 @@ export class Play extends React.Component<{}, PlayState> {
                                 challenge_id={C.challenge_id}
                                 challenge_list={this.state.rengo_list}
                                 moderator={user.is_moderator}
+                                show_chat={
+                                    !isLiveGame(
+                                        C.time_control_parameters,
+                                    ) /* live chat is in automatch container */
+                                }
                                 assignToTeam={this.assignToTeam}
                             />
                         </RengoManagementPane>
