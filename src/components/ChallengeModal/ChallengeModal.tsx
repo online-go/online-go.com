@@ -33,7 +33,14 @@ import {
 } from "rank_utils";
 import { errorLogger, errorAlerter, rulesText, dup, ignore } from "misc";
 import { PlayerIcon } from "PlayerIcon";
-import { timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker } from "TimeControl";
+import {
+    timeControlText,
+    shortShortTimeControl,
+    isLiveGame,
+    TimeControlPicker,
+    TimeControlTypes,
+} from "TimeControl";
+import { ChallengeDetails, IdType } from "types";
 import { sfx } from "sfx";
 import * as preferences from "preferences";
 import { notification_manager } from "Notifications";
@@ -55,6 +62,33 @@ interface ChallengeModalProperties {
     playersList?: Array<{ name: string; rank: number }>;
     tournamentRecordId?: number;
     tournamentRecordRoundId?: number;
+    created?: (c: ChallengeDetails) => void;
+}
+
+interface ChallengeState {
+    live?: boolean; // computed during creation of challenge
+    initialized: boolean;
+    min_ranking: number;
+    max_ranking: number;
+    challenger_color: string; // "automatic"
+    game: {
+        name: string; //"",
+        rules: string; // "japanese",
+        ranked: boolean;
+        width: IdType;
+        height: IdType;
+        handicap: number; // 0,
+        komi_auto: string; //"automatic",
+        komi: number; // 5.5,
+        disable_analysis: boolean;
+        initial_state: any; // TBD
+        private: boolean;
+        rengo: boolean;
+        rengo_casual_mode: boolean;
+        pause_on_weekends: boolean;
+        time_control: TimeControlTypes.TimeControlSystem;
+        time_control_parameters: TimeControlPicker;
+    };
 }
 
 export const username_to_id = {};
@@ -110,7 +144,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
         const speed = data.get("challenge.speed", "live");
 
-        const challenge = data.get(`challenge.challenge.${speed}`, {
+        const challenge: ChallengeState = data.get(`challenge.challenge.${speed}`, {
             initialized: false,
             min_ranking: 5,
             max_ranking: 36,
@@ -418,7 +452,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             next.challenge.game.komi = null;
         }
 
-        const challenge: any = Object.assign({}, next.challenge);
+        const challenge: ChallengeState = Object.assign({}, next.challenge);
         challenge.game = Object.assign({}, next.challenge.game);
 
         let player_id = 0;
@@ -452,19 +486,22 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             challenge.max_ranking = 1000;
         }
 
-        challenge.game.width = parseInt(challenge.game.width);
-        challenge.game.height = parseInt(challenge.game.height);
+        challenge.game.width = parseInt(challenge.game.width as string);
+        challenge.game.height = parseInt(challenge.game.height as string);
 
         challenge.game.time_control = this.refs.time_control_picker.time_control.system;
-        challenge.game.time_control_parameters = this.refs.time_control_picker.time_control;
+        challenge.game.time_control_parameters = this.refs.time_control_picker
+            .time_control as TimeControlPicker;
         challenge.game.time_control_parameters.time_control =
             this.refs.time_control_picker.time_control.system; /* on our backend we still expect this to be named `time_control` for
                                                                   old legacy reasons.. hopefully we can reconcile that someday */
         challenge.game.pause_on_weekends =
             this.refs.time_control_picker.time_control.pause_on_weekends;
 
+        challenge.live = isLiveGame(challenge.game.time_control_parameters); // save for after the post, below, when TimeControlPicker is gone
+
         let open_now = false;
-        if (isLiveGame(challenge.game.time_control_parameters)) {
+        if (challenge.live) {
             open_now = true;
         }
         if (this.props.mode === "computer") {
@@ -492,9 +529,20 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         post(player_id ? "players/%%/challenge" : "challenges", player_id, challenge)
             .then((res) => {
                 // console.log("Challenge response: ", res);
+
                 const challenge_id = res.challenge;
                 const game_id = typeof res.game === "object" ? res.game.id : res.game;
                 let keepalive_interval;
+
+                const details: ChallengeDetails = {
+                    challenge_id: challenge_id,
+                    live: challenge.live,
+                    rengo: challenge.game.rengo,
+                };
+
+                if (this.props.created) {
+                    this.props.created(details);
+                }
 
                 notification_manager.event_emitter.on("notification", checkForReject);
 
@@ -1406,6 +1454,7 @@ export function challenge(
     initial_state?: any,
     computer?: boolean,
     config?: any,
+    created?: (c: ChallengeDetails) => void,
 ) {
     // TODO: Support challenge by player, w/ initial state, or computer
 
@@ -1428,6 +1477,7 @@ export function challenge(
             initialState={initial_state}
             config={config}
             mode={mode}
+            created={created}
         />,
     );
 }

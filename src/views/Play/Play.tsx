@@ -35,6 +35,7 @@ import { openAutomatchSettings, getAutomatchSettings } from "AutomatchSettings";
 import { automatch_manager, AutomatchPreferences } from "automatch_manager";
 import { bot_count } from "bots";
 import { SupporterGoals } from "SupporterGoals";
+import { ChallengeDetails } from "types";
 
 import swal from "sweetalert2";
 import { Size } from "src/lib/types";
@@ -220,19 +221,9 @@ export class Play extends React.Component<{}, PlayState> {
             .catch(errorAlerter);
     };
 
-    closeChallengeManagementPane = (challenge: Challenge) => {
-        if (this.state.show_in_rengo_management_pane.includes(challenge.challenge_id)) {
-            this.setState({
-                show_in_rengo_management_pane: this.state.show_in_rengo_management_pane.filter(
-                    (c) => c !== challenge.challenge_id,
-                ),
-            });
-        }
-    };
-
     cancelOpenChallenge = (challenge: Challenge) => {
         // stop trying to show the cancelled challenge
-        this.closeChallengeManagementPane(challenge);
+        this.closeChallengeManagementPane(challenge.challenge_id);
 
         // then tell the server
         del("challenges/%%", challenge.challenge_id)
@@ -324,7 +315,13 @@ export class Play extends React.Component<{}, PlayState> {
     };
 
     newCustomGame = () => {
-        challenge(null);
+        challenge(null, null, null, null, this.challengeCreated);
+    };
+
+    challengeCreated = (c: ChallengeDetails) => {
+        if (c.rengo && !c.live) {
+            this.toggleRengoChallengePane(c.challenge_id);
+        }
     };
 
     toggleSize(size) {
@@ -1048,7 +1045,7 @@ export class Play extends React.Component<{}, PlayState> {
             allowEscapeKey: false,
         }).catch(swal.noop);
 
-        this.closeChallengeManagementPane(C);
+        this.closeChallengeManagementPane(C.challenge_id);
 
         del("challenges/%%/join", C.challenge_id, {})
             .then(() => {
@@ -1086,7 +1083,7 @@ export class Play extends React.Component<{}, PlayState> {
     }
 
     nominateAndShow = (C) => {
-        this.toggleRengoChallengePane(C);
+        this.toggleRengoChallengePane(C.challenge_id);
         nominateForRengoChallenge(C);
     };
 
@@ -1182,15 +1179,25 @@ export class Play extends React.Component<{}, PlayState> {
         </>
     );
 
-    toggleRengoChallengePane = (C: Challenge) => {
-        if (this.state.show_in_rengo_management_pane.includes(C.challenge_id)) {
-            this.closeChallengeManagementPane(C);
+    toggleRengoChallengePane = (challenge_id: number) => {
+        if (this.state.show_in_rengo_management_pane.includes(challenge_id)) {
+            this.closeChallengeManagementPane(challenge_id);
         } else {
             this.setState({
                 show_in_rengo_management_pane: [
-                    C.challenge_id,
+                    challenge_id,
                     ...this.state.show_in_rengo_management_pane,
                 ],
+            });
+        }
+    };
+
+    closeChallengeManagementPane = (challenge_id: number) => {
+        if (this.state.show_in_rengo_management_pane.includes(challenge_id)) {
+            this.setState({
+                show_in_rengo_management_pane: this.state.show_in_rengo_management_pane.filter(
+                    (c) => c !== challenge_id,
+                ),
             });
         }
     };
@@ -1206,7 +1213,10 @@ export class Play extends React.Component<{}, PlayState> {
                             <div>
                                 <i
                                     className="fa fa-lg fa-times-circle-o"
-                                    onClick={this.closeChallengeManagementPane.bind(self, C)}
+                                    onClick={this.closeChallengeManagementPane.bind(
+                                        self,
+                                        C.challenge_id,
+                                    )}
                                 />
                             </div>
                         </div>
@@ -1278,7 +1288,7 @@ export class Play extends React.Component<{}, PlayState> {
                     )}
 
                     <button
-                        onClick={this.toggleRengoChallengePane.bind(this, C)}
+                        onClick={this.toggleRengoChallengePane.bind(this, C.challenge_id)}
                         className="btn primary xs"
                     >
                         {C.user_challenge ? _("Manage") : _("View")}
