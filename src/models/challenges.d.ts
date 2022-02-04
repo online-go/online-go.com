@@ -45,6 +45,7 @@ declare namespace socket_api {
             time_per_move: number;
             rengo: boolean;
             rengo_casual_mode: boolean;
+            rengo_auto_start: boolean;
             rengo_nominees: number[]; // array of player ids
             rengo_black_team: number[]; // array of player ids
             rengo_white_team: number[]; // array of player ids
@@ -79,6 +80,7 @@ declare namespace rest_api {
         min_ranking: number;
         max_ranking: number;
         challenger_color: ColorSelectionOptions;
+        rengo_auto_start: number;
         game: {
             name: string;
             rules: import("../lib/types").RuleSet;

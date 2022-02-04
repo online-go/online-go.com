@@ -119,6 +119,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             min_ranking: 5,
             max_ranking: 36,
             challenger_color: "automatic",
+            rengo_auto_start: 0,
             game: {
                 name: "",
                 rules: "japanese",
@@ -464,6 +465,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         challenge.game.pause_on_weekends =
             this.refs.time_control_picker.time_control.pause_on_weekends;
 
+        // Autostart only in casual mode
+        challenge.rengo_auto_start = challenge.game.rengo_casual_mode && challenge.rengo_auto_start;
+
         const live = isLiveGame(challenge.game.time_control_parameters); // save for after the post, below, when TimeControlPicker is gone
 
         let open_now = false;
@@ -619,6 +623,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     update_rengo_casual = (ev) => {
         this.upstate("challenge.game.rengo_casual_mode", ev);
     };
+    update_rengo_auto_start = (ev) => {
+        this.upstate("challenge.rengo_auto_start", ev);
+    };
+
     update_demo_private = (ev) => this.upstate("demo.private", ev);
     update_ranked = (ev) => this.setRanked((ev.target as HTMLInputElement).checked);
     update_aga_ranked = (ev) => {
@@ -818,6 +826,37 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                         id="rengo-casual-mode"
                                         checked={this.state.challenge.game.rengo_casual_mode}
                                         onChange={this.update_rengo_casual}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                )}
+                {(mode === "open" || null) && (
+                    <>
+                        <div
+                            className={
+                                "form-group" +
+                                (this.state.challenge.game.rengo &&
+                                this.state.challenge.game.rengo_casual_mode
+                                    ? ""
+                                    : " hide")
+                            }
+                        >
+                            <label className="control-label" htmlFor="rengo-auto-start">
+                                {_("Auto-start")}
+                            </label>
+                            <div className="controls">
+                                <div className="checkbox">
+                                    <input
+                                        type="number"
+                                        value={this.state.challenge.rengo_auto_start}
+                                        onChange={this.update_rengo_auto_start}
+                                        id="rengo-auto-start"
+                                        className="form-control"
+                                        style={{ width: "3em" }}
+                                        min="0"
+                                        max=""
                                     />
                                 </div>
                             </div>

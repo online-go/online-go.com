@@ -1069,6 +1069,7 @@ export class Play extends React.Component<{}, PlayState> {
                     <td className="head size">{_("Size")}</td>
                     <td className="head time-control-header">{_("Time")}</td>
                     <td className="head">{_("Casual")}</td>
+                    <td className="head">{_("Auto-Start")}</td>
                     <td className="head">{_("Signed up")}</td>
                     <td className="head">{_("Handicap")}</td>
                     <td className="head" style={{ textAlign: "left" }}>
@@ -1091,7 +1092,7 @@ export class Play extends React.Component<{}, PlayState> {
         if (!this.anyChallengesToShow(this.state.rengo_list)) {
             return (
                 <tr key="none-available">
-                    <td colSpan={8}>
+                    <td colSpan={9}>
                         <div className="ineligible">
                             {
                                 this.state.show_all_challenges
@@ -1129,7 +1130,7 @@ export class Play extends React.Component<{}, PlayState> {
                 />
 
                 <tr className="challenge-row">
-                    <td className="cell" colSpan={9}>
+                    <td className="cell" colSpan={10}>
                         <hr />
                     </td>
                 </tr>
@@ -1206,7 +1207,7 @@ export class Play extends React.Component<{}, PlayState> {
         const { C, user } = { ...props };
         return (
             <tr className={"challenge-row rengo-management-row"}>
-                <td className="cell" colSpan={8}>
+                <td className="cell" colSpan={9}>
                     <Card className="rengo-management-list-item">
                         <div className="rengo-management-header">
                             <span>{C.name}</span>
@@ -1252,6 +1253,7 @@ export class Play extends React.Component<{}, PlayState> {
         const { C, user } = { ...props };
 
         const rengo_casual_mode_text = C.rengo_casual_mode ? _("Yes") : _("No");
+        const rengo_auto_start_text = C.rengo_auto_start || _("No");
 
         return (
             <tr className={"challenge-row"}>
@@ -1333,6 +1335,7 @@ export class Play extends React.Component<{}, PlayState> {
                 </td>
                 <td>{shortShortTimeControl(C.time_control_parameters)}</td>
                 <td className="cell">{rengo_casual_mode_text}</td>
+                <td className="cell">{rengo_auto_start_text}</td>
                 <td className="cell">{C.rengo_participants.length}</td>
                 <td className="cell">{C.handicap_text}</td>
                 <td className="cell">{C.name}</td>

@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { interpolate } from "goban";
 import * as React from "react";
 
 import { _, pgettext } from "translate";
@@ -65,21 +66,36 @@ export class RengoManagementPane extends React.PureComponent<
         const participating = the_challenge.rengo_participants.includes(this.props.user.id);
         const challenge_ready_to_start = this.rengoReadyToStart(the_challenge);
 
+        const auto_start_remaining =
+            the_challenge.rengo_auto_start -
+            the_challenge.rengo_black_team.length -
+            the_challenge.rengo_white_team.length;
+
         return (
             <div className="RengoManagementPane">
-                <div className="rengo-challenge-status">
-                    {own_challenge && challenge_ready_to_start
-                        ? _("Waiting for your decision to start...")
-                        : challenge_ready_to_start
-                        ? _("Waiting for organiser to start...")
-                        : _("Waiting for Rengo players...")}
-                </div>
-
+                {!the_challenge.rengo_auto_start && (
+                    <div className="rengo-challenge-status">
+                        {own_challenge && challenge_ready_to_start
+                            ? _("Waiting for your decision to start...")
+                            : challenge_ready_to_start
+                            ? _("Waiting for organiser to start...")
+                            : _("Waiting for Rengo players...")}
+                    </div>
+                )}
+                {!!the_challenge.rengo_auto_start && (
+                    <div className="auto-start-status">
+                        {interpolate(
+                            _("Game auto-starts when {{auto_start_remaining}} more join..."),
+                            {
+                                auto_start_remaining,
+                            },
+                        )}
+                    </div>
+                )}
                 {
                     // this is the team management pane
                     React.Children.only(this.props.children)
                 }
-
                 <div className="rengo-challenge-buttons">
                     {(own_challenge || this.props.user.is_moderator || null) && (
                         <React.Fragment>
