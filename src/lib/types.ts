@@ -86,7 +86,6 @@ export type Speed = "blitz" | "live" | "correspondence";
 export type Size = "9x9" | "13x13" | "19x19";
 export type AutomatchCondition = "required" | "preferred" | "no-preference";
 export type RuleSet = "japanese" | "chinese" | "aga" | "korean" | "nz" | "ing";
-export type KomiOption = "custom" | "automatic";
 
 // AutomatchSettings and automatch_manager handle size, speed and uuid
 // differently, but everything else is the same.  Hence a shared base.

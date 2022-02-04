@@ -68,21 +68,26 @@ declare namespace socket_api {
 }
 
 declare namespace rest_api {
+    type ColorOptions = "black" | "white";
+    type ColorSelectionOptions = ColorOptions | "automatic" | "random";
+
+    type KomiOption = "custom" | "automatic";
+
     // Payload of challenge POST
     interface ChallengeDetails {
         initialized: boolean;
         min_ranking: number;
         max_ranking: number;
-        challenger_color: string; // “automatic”
+        challenger_color: ColorSelectionOptions;
         game: {
             name: string;
             rules: import("../lib/types").RuleSet;
             ranked: boolean;
             width: number;
             height: number;
-            handicap: number; // 0,
-            komi_auto: import("../lib/types").KomiOption;
-            komi: number; // 5.5,
+            handicap: number;
+            komi_auto: KomiOption;
+            komi: number;
             disable_analysis: boolean;
             initial_state: any; // TBD
             private: boolean;
