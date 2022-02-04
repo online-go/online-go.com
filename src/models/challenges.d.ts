@@ -45,7 +45,7 @@ declare namespace socket_api {
             time_per_move: number;
             rengo: boolean;
             rengo_casual_mode: boolean;
-            rengo_auto_start: boolean;
+            rengo_auto_start: number;
             rengo_nominees: number[]; // array of player ids
             rengo_black_team: number[]; // array of player ids
             rengo_white_team: number[]; // array of player ids

@@ -1252,8 +1252,8 @@ export class Play extends React.Component<{}, PlayState> {
     rengoListItem = (props: { C: Challenge; user: any }) => {
         const { C, user } = { ...props };
 
-        const rengo_casual_mode_text = C.rengo_casual_mode ? _("Yes") : _("No");
-        const rengo_auto_start_text = C.rengo_auto_start || _("No");
+        const rengo_casual_mode_text: string = C.rengo_casual_mode ? _("Yes") : _("No");
+        const rengo_auto_start_text: number | string = C.rengo_auto_start || _("No");
 
         return (
             <tr className={"challenge-row"}>

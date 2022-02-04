@@ -15,10 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { interpolate } from "goban";
 import * as React from "react";
 
-import { _, pgettext } from "translate";
+import { _, pgettext, interpolate } from "translate";
 
 interface RengoManagementPaneProperties {
     user: rest_api.UserConfig;
