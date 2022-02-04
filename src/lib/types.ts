@@ -86,6 +86,7 @@ export type Speed = "blitz" | "live" | "correspondence";
 export type Size = "9x9" | "13x13" | "19x19";
 export type AutomatchCondition = "required" | "preferred" | "no-preference";
 export type RuleSet = "japanese" | "chinese" | "aga" | "korean" | "nz" | "ing";
+export type KomiOption = "custom" | "automatic";
 
 // AutomatchSettings and automatch_manager handle size, speed and uuid
 // differently, but everything else is the same.  Hence a shared base.
@@ -119,7 +120,7 @@ export interface AutomatchPreferencesBase {
 }
 
 // Payload of the ChallengeModal `created()` callback
-export interface ChallengeDetails {
+export interface CreatedChallengeInfo {
     challenge_id: number;
     rengo: boolean;
     live: boolean;

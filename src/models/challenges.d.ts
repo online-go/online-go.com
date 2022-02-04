@@ -22,7 +22,7 @@ declare namespace socket_api {
          *
          * This is a work in progress. Trust these values at your own risk.
          */
-        export interface Challenge {
+        interface Challenge {
             challenge_id: number;
             user_id: number;
             username: string;
@@ -64,5 +64,33 @@ declare namespace socket_api {
             user_challenge?: boolean;
             eligible?: boolean;
         }
+    }
+}
+
+declare namespace rest_api {
+    // Payload of challenge POST
+    interface ChallengeDetails {
+        initialized: boolean;
+        min_ranking: number;
+        max_ranking: number;
+        challenger_color: string; // “automatic”
+        game: {
+            name: string;
+            rules: import("../lib/types").RuleSet;
+            ranked: boolean;
+            width: number;
+            height: number;
+            handicap: number; // 0,
+            komi_auto: import("../lib/types").KomiOption;
+            komi: number; // 5.5,
+            disable_analysis: boolean;
+            initial_state: any; // TBD
+            private: boolean;
+            rengo: boolean;
+            rengo_casual_mode: boolean;
+            pause_on_weekends: boolean;
+            time_control: import("../components/TimeControl").TimeControlTypes.TimeControlSystem;
+            time_control_parameters: import("../components/TimeControl").TimeControl;
+        };
     }
 }

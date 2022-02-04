@@ -31,16 +31,10 @@ import {
     rankList,
     bounded_rank,
 } from "rank_utils";
+import { CreatedChallengeInfo } from "types";
 import { errorLogger, errorAlerter, rulesText, dup, ignore } from "misc";
 import { PlayerIcon } from "PlayerIcon";
-import {
-    timeControlText,
-    shortShortTimeControl,
-    isLiveGame,
-    TimeControlPicker,
-    TimeControlTypes,
-} from "TimeControl";
-import { ChallengeDetails, IdType } from "types";
+import { timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker } from "TimeControl";
 import { sfx } from "sfx";
 import * as preferences from "preferences";
 import { notification_manager } from "Notifications";
@@ -48,6 +42,8 @@ import { one_bot, bot_count, bots_list } from "bots";
 import { openForkModal } from "./ForkModal";
 
 import swal from "sweetalert2";
+
+type ChallengeDetails = rest_api.ChallengeDetails;
 
 type ChallengeModes = "open" | "computer" | "player" | "demo";
 
@@ -62,33 +58,7 @@ interface ChallengeModalProperties {
     playersList?: Array<{ name: string; rank: number }>;
     tournamentRecordId?: number;
     tournamentRecordRoundId?: number;
-    created?: (c: ChallengeDetails) => void;
-}
-
-interface ChallengeState {
-    live?: boolean; // computed during creation of challenge
-    initialized: boolean;
-    min_ranking: number;
-    max_ranking: number;
-    challenger_color: string; // "automatic"
-    game: {
-        name: string; //"",
-        rules: string; // "japanese",
-        ranked: boolean;
-        width: IdType;
-        height: IdType;
-        handicap: number; // 0,
-        komi_auto: string; //"automatic",
-        komi: number; // 5.5,
-        disable_analysis: boolean;
-        initial_state: any; // TBD
-        private: boolean;
-        rengo: boolean;
-        rengo_casual_mode: boolean;
-        pause_on_weekends: boolean;
-        time_control: TimeControlTypes.TimeControlSystem;
-        time_control_parameters: TimeControlPicker;
-    };
+    created?: (c: CreatedChallengeInfo) => void;
 }
 
 export const username_to_id = {};
@@ -144,7 +114,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
         const speed = data.get("challenge.speed", "live");
 
-        const challenge: ChallengeState = data.get(`challenge.challenge.${speed}`, {
+        const challenge: ChallengeDetails = data.get(`challenge.challenge.${speed}`, {
             initialized: false,
             min_ranking: 5,
             max_ranking: 36,
@@ -452,7 +422,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             next.challenge.game.komi = null;
         }
 
-        const challenge: ChallengeState = Object.assign({}, next.challenge);
+        const challenge: ChallengeDetails = Object.assign({}, next.challenge);
         challenge.game = Object.assign({}, next.challenge.game);
 
         let player_id = 0;
@@ -486,22 +456,18 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             challenge.max_ranking = 1000;
         }
 
-        challenge.game.width = parseInt(challenge.game.width as string);
-        challenge.game.height = parseInt(challenge.game.height as string);
-
         challenge.game.time_control = this.refs.time_control_picker.time_control.system;
-        challenge.game.time_control_parameters = this.refs.time_control_picker
-            .time_control as TimeControlPicker;
-        challenge.game.time_control_parameters.time_control =
+        challenge.game.time_control_parameters = this.refs.time_control_picker.time_control;
+        (challenge.game.time_control_parameters as any).time_control =
             this.refs.time_control_picker.time_control.system; /* on our backend we still expect this to be named `time_control` for
                                                                   old legacy reasons.. hopefully we can reconcile that someday */
         challenge.game.pause_on_weekends =
             this.refs.time_control_picker.time_control.pause_on_weekends;
 
-        challenge.live = isLiveGame(challenge.game.time_control_parameters); // save for after the post, below, when TimeControlPicker is gone
+        const live = isLiveGame(challenge.game.time_control_parameters); // save for after the post, below, when TimeControlPicker is gone
 
         let open_now = false;
-        if (challenge.live) {
+        if (live) {
             open_now = true;
         }
         if (this.props.mode === "computer") {
@@ -534,9 +500,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 const game_id = typeof res.game === "object" ? res.game.id : res.game;
                 let keepalive_interval;
 
-                const details: ChallengeDetails = {
+                const details: CreatedChallengeInfo = {
                     challenge_id: challenge_id,
-                    live: challenge.live,
+                    live: live,
                     rengo: challenge.game.rengo,
                 };
 
@@ -662,8 +628,22 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     update_board_size = (ev) => {
         this.syncBoardSize((ev.target as HTMLSelectElement).value);
     };
-    update_board_width = (ev) => this.upstate("challenge.game.width", ev);
-    update_board_height = (ev) => this.upstate("challenge.game.height", ev);
+
+    update_board_width = (ev) => {
+        this.setState({
+            challenge: Object.assign({}, this.state.challenge, {
+                board_width: parseInt(ev.target.value),
+            }),
+        });
+    };
+    update_board_height = (ev) => {
+        this.setState({
+            challenge: Object.assign({}, this.state.challenge, {
+                board_height: parseInt(ev.target.value),
+            }),
+        });
+    };
+
     update_rules = (ev) => this.upstate("challenge.game.rules", ev);
     update_handicap = (ev) => this.upstate("challenge.game.handicap", ev);
     update_komi_auto = (ev) => this.upstate("challenge.game.komi_auto", ev);
@@ -1454,7 +1434,7 @@ export function challenge(
     initial_state?: any,
     computer?: boolean,
     config?: any,
-    created?: (c: ChallengeDetails) => void,
+    created?: (c: CreatedChallengeInfo) => void,
 ) {
     // TODO: Support challenge by player, w/ initial state, or computer
 

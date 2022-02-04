@@ -35,7 +35,7 @@ import { openAutomatchSettings, getAutomatchSettings } from "AutomatchSettings";
 import { automatch_manager, AutomatchPreferences } from "automatch_manager";
 import { bot_count } from "bots";
 import { SupporterGoals } from "SupporterGoals";
-import { ChallengeDetails } from "types";
+import { CreatedChallengeInfo } from "types";
 
 import swal from "sweetalert2";
 import { Size } from "src/lib/types";
@@ -318,7 +318,7 @@ export class Play extends React.Component<{}, PlayState> {
         challenge(null, null, null, null, this.challengeCreated);
     };
 
-    challengeCreated = (c: ChallengeDetails) => {
+    challengeCreated = (c: CreatedChallengeInfo) => {
         if (c.rengo && !c.live) {
             this.toggleRengoChallengePane(c.challenge_id);
         }
