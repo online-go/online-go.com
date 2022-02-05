@@ -36,6 +36,10 @@ import { Speed } from "src/lib/types";
 interface GameHistoryProps {
     user_id: number;
 }
+
+type ResultClass =
+    | `library-${"won" | "lost" | "tie"}-result${"-vs-stronger" | "-vs-weaker" | "-unranked" | ""}`;
+
 /** Groomed game */
 interface GG {
     id: number;
@@ -44,7 +48,7 @@ interface GG {
     player: PlayerCacheEntry;
     player_won: boolean;
     date: Date;
-    opponent: PlayerCacheEntry;
+    opponent?: PlayerCacheEntry;
     speed_icon_class: `speed-icon ${string}`;
     speed: Capitalize<Speed>;
     width: number;
@@ -53,13 +57,9 @@ interface GG {
     name: string;
     black: PlayerCacheEntry;
     white: PlayerCacheEntry;
-    result_class:
-        | `library-${"won" | "lost" | "tie"}-result${
-              | "-vs-stronger"
-              | "-vs-weaker"
-              | "-unranked"
-              | ""}`;
+    result_class: ResultClass;
     result: JSX.Element;
+    rengo_vs_string?: `${number} vs ${number}`;
 }
 
 export function GameHistoryTable(props: GameHistoryProps) {
@@ -70,6 +70,10 @@ export function GameHistoryTable(props: GameHistoryProps) {
         const ret = [];
         for (let i = 0; i < results.length; ++i) {
             const r = results[i];
+
+            const black_won = !r.black_lost && r.white_lost && !r.annulled;
+            const white_won = !r.white_lost && r.black_lost && !r.annulled;
+
             const item: Partial<GG> = {
                 id: r.id,
             };
@@ -77,67 +81,24 @@ export function GameHistoryTable(props: GameHistoryProps) {
             item.width = r.width;
             item.height = r.height;
             item.date = r.ended ? new Date(r.ended) : null;
-            const ranked = r.ranked;
-            const handicap = r.handicap;
             item.annulled = r.annulled || false;
 
             item.black = r.players.black;
-            const black_won = !r.black_lost && r.white_lost && !r.annulled;
             item.white = r.players.white;
-            const white_won = !r.white_lost && r.black_lost && !r.annulled;
 
-            const historical = r.historical_ratings;
-
-            const outcome = effective_outcome(
-                historical.black.ratings.overall.rating,
-                historical.white.ratings.overall.rating,
-                handicap,
-            );
             if (item.white.id === props.user_id) {
                 /* played white */ item.played_black = false;
                 item.opponent = r.historical_ratings.black;
                 item.player = r.historical_ratings.white;
                 item.player_won = white_won;
-                if (ranked && !preferences.get("hide-ranks")) {
-                    if (white_won) {
-                        /* player won */ item.result_class = outcome.white_effective_stronger
-                            ? "library-won-result-vs-weaker"
-                            : "library-won-result-vs-stronger";
-                    } else if (black_won) {
-                        /* player lost */ item.result_class = outcome.white_effective_stronger
-                            ? "library-lost-result-vs-weaker"
-                            : "library-lost-result-vs-stronger";
-                    }
-                } else {
-                    item.result_class = white_won
-                        ? "library-won-result-unranked"
-                        : "library-lost-result-unranked"; /* tie catched above */
-                }
             } else if (item.black.id === props.user_id) {
                 /* played black */ item.played_black = true;
                 item.opponent = r.historical_ratings.white;
                 item.player = r.historical_ratings.black;
                 item.player_won = black_won;
-                if (ranked && !preferences.get("hide-ranks")) {
-                    if (black_won) {
-                        /* player won */ item.result_class = outcome.black_effective_stronger
-                            ? "library-won-result-vs-weaker"
-                            : "library-won-result-vs-stronger";
-                    } else if (white_won) {
-                        /* player lost */ item.result_class = outcome.black_effective_stronger
-                            ? "library-lost-result-vs-weaker"
-                            : "library-lost-result-vs-stronger";
-                    }
-                } else {
-                    item.result_class = black_won
-                        ? "library-won-result-unranked"
-                        : "library-lost-result-unranked"; /* tie catched above */
-                }
             }
 
-            if ((r.white_lost && r.black_lost) || (!r.white_lost && !r.black_lost) || r.annulled) {
-                item.result_class = "library-tie-result";
-            }
+            item.result_class = getResultClass(r, props.user_id);
 
             if ("time_control_parameters" in r) {
                 const tcp = JSON.parse(r.time_control_parameters) as TimeControl;
@@ -404,4 +365,41 @@ function getGameResultRichText(game: rest_api.Game) {
 
 function capitalize<T extends string>(s: T): Capitalize<T> {
     return (s.toUpperCase() + s.slice(1)) as Capitalize<T>;
+}
+
+function getResultClass(game: rest_api.Game, user_id: number): ResultClass {
+    const annulled = game.annulled;
+    const black_won = !game.black_lost && game.white_lost && !annulled;
+    const white_won = !game.white_lost && game.black_lost && !annulled;
+    const ranked = game.ranked;
+    const played_black = game.players.black.id === user_id;
+    const player_won = (played_black && black_won) || (!played_black && white_won);
+
+    if (!(black_won || white_won)) {
+        return "library-tie-result";
+    }
+
+    if (ranked && !preferences.get("hide-ranks")) {
+        const { black_effective_stronger, white_effective_stronger } = effective_outcome(
+            game.historical_ratings.black.ratings.overall.rating,
+            game.historical_ratings.white.ratings.overall.rating,
+            game.handicap,
+        );
+        const player_effective_stronger =
+            (black_effective_stronger && played_black) ||
+            (!white_effective_stronger && !played_black);
+
+        if (player_won) {
+            return player_effective_stronger
+                ? "library-won-result-vs-weaker"
+                : "library-won-result-vs-stronger";
+        } else {
+            return player_effective_stronger
+                ? "library-lost-result-vs-weaker"
+                : "library-lost-result-vs-stronger";
+        }
+    }
+
+    // tie caught above
+    return player_won ? "library-won-result-unranked" : "library-lost-result-unranked";
 }
