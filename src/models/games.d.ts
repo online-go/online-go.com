@@ -14,37 +14,14 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-interface Ratings {
-    version: number;
-    overall: {
-        rating: number;
-        deviation: number;
-        volatility: number;
-    };
-}
-
-interface Player {
-    id: number;
-    username: string;
-    /** country code */
-    country: string;
-    /** image url */
-    icon: string;
-    ratings: Ratings;
-    ranking: number;
-    professional: boolean;
-    ui_class: string;
-}
-
 declare namespace rest_api {
     interface Game {
         related: {
             detail: string; // route to full game info
         };
         players: {
-            black: Player;
-            white: Player;
+            black: import("../lib/player_cache").PlayerCacheEntry;
+            white: import("../lib/player_cache").PlayerCacheEntry;
         };
         id: number;
         name: string;
@@ -82,8 +59,8 @@ declare namespace rest_api {
         ended: string; // ISODate
         sgf_filename: string | null;
         historical_ratings: {
-            black: Player;
-            white: Player;
+            black: import("../lib/player_cache").PlayerCacheEntry;
+            white: import("../lib/player_cache").PlayerCacheEntry;
         };
         rengo: boolean;
     }
