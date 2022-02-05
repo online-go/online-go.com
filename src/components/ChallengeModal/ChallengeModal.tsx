@@ -466,7 +466,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             this.refs.time_control_picker.time_control.pause_on_weekends;
 
         // Autostart only in casual mode
-        challenge.rengo_auto_start = challenge.game.rengo_casual_mode && challenge.rengo_auto_start;
+        challenge.rengo_auto_start =
+            (challenge.game.rengo_casual_mode && challenge.rengo_auto_start) || 0; // guard against it being set but empty
 
         const live = isLiveGame(challenge.game.time_control_parameters); // save for after the post, below, when TimeControlPicker is gone
 
@@ -624,7 +625,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         this.upstate("challenge.game.rengo_casual_mode", ev);
     };
     update_rengo_auto_start = (ev) => {
-        this.upstate("challenge.rengo_auto_start", ev);
+        // '0' means "none", but people may like to see it empty.
+        if (ev.target.value === "" || !isNaN(parseInt(ev.target.value))) {
+            this.upstate("challenge.rengo_auto_start", ev);
+        }
     };
 
     update_demo_private = (ev) => this.upstate("demo.private", ev);
