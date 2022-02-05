@@ -64,7 +64,6 @@ interface GG {
 
 export function GameHistoryTable(props: GameHistoryProps) {
     const [player_filter, setPlayerFilter] = React.useState<number>(null);
-    const [show_rengo, setShowRengo] = React.useState<boolean>(false);
 
     function game_history_groomer(results: rest_api.Game[]): GG[] {
         const ret = [];
@@ -140,14 +139,6 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                 }}
                             />
                         </div>
-                        <div className="rengo-selector">
-                            <span>{_("Rengo")}</span>
-                            <input
-                                type="checkbox"
-                                checked={show_rengo}
-                                onChange={() => setShowRengo(!show_rengo)}
-                            />
-                        </div>
                     </div>
                     <PaginatedTable
                         className="game-history-table"
@@ -160,174 +151,94 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             ...(player_filter !== null && {
                                 alt_player: player_filter,
                             }),
-                            rengo: show_rengo,
                         }}
                         orderBy={["-ended"]}
                         groom={game_history_groomer}
                         onRowClick={(ref, ev) => openUrlIfALinkWasNotClicked(ev, ref.href)}
                         columns={[
-                            // normal table layout ...
-                            ...(!show_rengo
-                                ? [
-                                      {
-                                          header: _("User"),
-                                          className: (X: GG) =>
-                                              "user_info" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X: GG) => (
-                                              <React.Fragment>
-                                                  <span>
-                                                      {X.played_black == null
-                                                          ? "❓" // Some rengo games don't tell us which team the user is on. Needs backend fix.
-                                                          : X.played_black
-                                                          ? "⚫"
-                                                          : "⚪"}
-                                                  </span>
-                                                  {X.played_black != null &&
-                                                      maskedRank(`[${rankString(X.player)}]`)}
-                                              </React.Fragment>
-                                          ),
-                                      },
-                                      {
-                                          header: _(""),
-                                          className: (X: GG) =>
-                                              "winner_marker" +
-                                              (X && X.annulled ? " annulled" : ""),
-                                          render: (X: GG) =>
-                                              X.player_won ? (
-                                                  <i className="fa fa-trophy game-history-winner" />
-                                              ) : (
-                                                  ""
-                                              ),
-                                      },
-                                      {
-                                          header: _("Date"),
-                                          className: (X: GG) =>
-                                              "date" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X: GG) => moment(X.date).format("YYYY-MM-DD"),
-                                      },
-                                      {
-                                          header: _("Opponent"),
-                                          className: (X: GG) =>
-                                              "player" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X: GG) => (
-                                              <>
-                                                  {X.rengo_vs_string || (
-                                                      <Player
-                                                          user={X.opponent}
-                                                          disableCacheUpdate
-                                                      />
-                                                  )}
-                                              </>
-                                          ),
-                                      },
-                                      {
-                                          header: _(""),
-                                          className: (X: GG) =>
-                                              "speed" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X: GG) => (
-                                              <i className={X.speed_icon_class} title={X.speed} />
-                                          ),
-                                      },
-                                      {
-                                          header: _("Size"),
-                                          className: (X: GG) =>
-                                              "board_size" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X: GG) => `${X.width}x${X.height}`,
-                                      },
-                                      {
-                                          header: _("Name"),
-                                          className: (X: GG) =>
-                                              "game_name" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X: GG) => (
-                                              <Link to={X.href}>
-                                                  {X.name ||
-                                                      interpolate(
-                                                          "{{black_username}} vs. {{white_username}}",
-                                                          {
-                                                              black_username: X.black.username,
-                                                              white_username: X.white.username,
-                                                          },
-                                                      )}
-                                              </Link>
-                                          ),
-                                      },
-                                      {
-                                          header: _("Result"),
-                                          className: (X: GG) =>
-                                              X
-                                                  ? X.result_class + (X.annulled ? " annulled" : "")
-                                                  : "",
-                                          render: (X: GG) => X.result,
-                                      },
-                                  ]
-                                : []),
-                            // .. and brute force hiding things that are too hard for a quick implemetation for rengo :o  ...
-                            ...(show_rengo
-                                ? [
-                                      {
-                                          header: _("-"),
-                                          className: (X: GG) =>
-                                              "user_info" + (X && X.annulled ? " annulled" : ""),
-                                          render: () => "",
-                                      },
-                                      {
-                                          header: _(""),
-                                          className: (X: GG) =>
-                                              "winner_marker" +
-                                              (X && X.annulled ? " annulled" : ""),
-                                          render: () => "",
-                                      },
-                                      {
-                                          header: _("Date"),
-                                          className: (X: GG) =>
-                                              "date" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X: GG) => moment(X.date).format("YYYY-MM-DD"),
-                                      },
-                                      {
-                                          header: _("-"),
-                                          className: (X: GG) =>
-                                              "player" + (X && X.annulled ? " annulled" : ""),
-                                          render: () => "",
-                                      },
-                                      {
-                                          header: _(""),
-                                          className: (X: GG) =>
-                                              "speed" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X: GG) => (
-                                              <i className={X.speed_icon_class} title={X.speed} />
-                                          ),
-                                      },
-                                      {
-                                          header: _("Size"),
-                                          className: (X: GG) =>
-                                              "board_size" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X: GG) => `${X.width}x${X.height}`,
-                                      },
-                                      {
-                                          header: _("Name"),
-                                          className: (X: GG) =>
-                                              "game_name" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X: GG) => (
-                                              <Link to={X.href}>
-                                                  {X.name ||
-                                                      interpolate(
-                                                          "{{black_username}} vs. {{white_username}}",
-                                                          {
-                                                              black_username: X.black.username,
-                                                              white_username: X.white.username,
-                                                          },
-                                                      )}
-                                              </Link>
-                                          ),
-                                      },
-                                      {
-                                          header: _("Result"),
-                                          className: (X: GG) =>
-                                              X && X.annulled ? " annulled" : "",
-                                          render: (X: GG) => X.result,
-                                      },
-                                  ]
-                                : []),
+                            {
+                                header: _("User"),
+                                className: (X: GG) =>
+                                    "user_info" + (X && X.annulled ? " annulled" : ""),
+                                render: (X: GG) => (
+                                    <React.Fragment>
+                                        <span>
+                                            {X.played_black == null
+                                                ? "❓" // Some rengo games don't tell us which team the user is on. Needs backend fix.
+                                                : X.played_black
+                                                ? "⚫"
+                                                : "⚪"}
+                                        </span>
+                                        {X.played_black != null &&
+                                            maskedRank(`[${rankString(X.player)}]`)}
+                                    </React.Fragment>
+                                ),
+                            },
+                            {
+                                header: _(""),
+                                className: (X: GG) =>
+                                    "winner_marker" + (X && X.annulled ? " annulled" : ""),
+                                render: (X: GG) =>
+                                    X.player_won ? (
+                                        <i className="fa fa-trophy game-history-winner" />
+                                    ) : (
+                                        ""
+                                    ),
+                            },
+                            {
+                                header: _("Date"),
+                                className: (X: GG) => "date" + (X && X.annulled ? " annulled" : ""),
+                                render: (X: GG) => moment(X.date).format("YYYY-MM-DD"),
+                            },
+                            {
+                                header: _("Opponent"),
+                                className: (X: GG) =>
+                                    "player" + (X && X.annulled ? " annulled" : ""),
+                                render: (X: GG) => (
+                                    <>
+                                        {X.rengo_vs_string || (
+                                            <Player user={X.opponent} disableCacheUpdate />
+                                        )}
+                                    </>
+                                ),
+                            },
+                            {
+                                header: _(""),
+                                className: (X: GG) =>
+                                    "speed" + (X && X.annulled ? " annulled" : ""),
+                                render: (X: GG) => (
+                                    <i className={X.speed_icon_class} title={X.speed} />
+                                ),
+                            },
+                            {
+                                header: _("Size"),
+                                className: (X: GG) =>
+                                    "board_size" + (X && X.annulled ? " annulled" : ""),
+                                render: (X: GG) => `${X.width}x${X.height}`,
+                            },
+                            {
+                                header: _("Name"),
+                                className: (X: GG) =>
+                                    "game_name" + (X && X.annulled ? " annulled" : ""),
+                                render: (X: GG) => (
+                                    <Link to={X.href}>
+                                        {X.name ||
+                                            interpolate(
+                                                "{{black_username}} vs. {{white_username}}",
+                                                {
+                                                    black_username: X.black.username,
+                                                    white_username: X.white.username,
+                                                },
+                                            )}
+                                    </Link>
+                                ),
+                            },
+                            {
+                                header: _("Result"),
+                                className: (X: GG) =>
+                                    X ? X.result_class + (X.annulled ? " annulled" : "") : "",
+                                render: (X: GG) => X.result,
+                            },
                         ]}
                     />
                 </div>
