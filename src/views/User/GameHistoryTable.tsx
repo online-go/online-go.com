@@ -29,16 +29,37 @@ import { Player } from "Player";
 import { Link } from "react-router-dom";
 import { interpolate } from "translate";
 import * as preferences from "preferences";
+import { PlayerCacheEntry } from "src/lib/player_cache";
+import { TimeControl } from "src/components/TimeControl";
 
 interface GameHistoryProps {
     user_id: number;
+}
+/** Groomed game */
+interface GG {
+    annulled: boolean;
+    played_black: boolean;
+    player: PlayerCacheEntry;
+    player_won: boolean;
+    date: Date;
+    opponent: PlayerCacheEntry;
+    speed_icon_class: `speed-icon ${string}`;
+    speed: "Correspondence" | "Blitz" | "Live";
+    width: number;
+    height: number;
+    href: `/game/${number}`;
+    name: string;
+    black: PlayerCacheEntry;
+    white: PlayerCacheEntry;
+    result_class: `library-${"won" | "lost"}-result-vs-${"stronger" | "weaker"}`;
+    result: JSX.Element;
 }
 
 export function GameHistoryTable(props: GameHistoryProps) {
     const [player_filter, setPlayerFilter] = React.useState<number>(null);
     const [show_rengo, setShowRengo] = React.useState<boolean>(false);
 
-    function game_history_groomer(results) {
+    function game_history_groomer(results: rest_api.Game[]): GG[] {
         const ret = [];
         for (let i = 0; i < results.length; ++i) {
             const r = results[i];
@@ -120,7 +141,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
             }
 
             if ("time_control_parameters" in r) {
-                const tcp = JSON.parse(r.time_control_parameters);
+                const tcp = JSON.parse(r.time_control_parameters) as TimeControl;
                 if (tcp && "speed" in tcp) {
                     item.speed = tcp.speed[0].toUpperCase() + tcp.speed.slice(1); // capitalize string
                 }
@@ -208,9 +229,9 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                 ? [
                                       {
                                           header: _("User"),
-                                          className: (X) =>
+                                          className: (X: GG) =>
                                               "user_info" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X) => (
+                                          render: (X: GG) => (
                                               <React.Fragment>
                                                   {X.played_black ? (
                                                       <span>⚫</span>
@@ -223,10 +244,10 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                       },
                                       {
                                           header: _(""),
-                                          className: (X) =>
+                                          className: (X: GG) =>
                                               "winner_marker" +
                                               (X && X.annulled ? " annulled" : ""),
-                                          render: (X) =>
+                                          render: (X: GG) =>
                                               X.player_won ? (
                                                   <i className="fa fa-trophy game-history-winner" />
                                               ) : (
@@ -235,37 +256,37 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                       },
                                       {
                                           header: _("Date"),
-                                          className: (X) =>
+                                          className: (X: GG) =>
                                               "date" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X) => moment(X.date).format("YYYY-MM-DD"),
+                                          render: (X: GG) => moment(X.date).format("YYYY-MM-DD"),
                                       },
                                       {
                                           header: _("Opponent"),
-                                          className: (X) =>
+                                          className: (X: GG) =>
                                               "player" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X) => (
+                                          render: (X: GG) => (
                                               <Player user={X.opponent} disableCacheUpdate />
                                           ),
                                       },
                                       {
                                           header: _(""),
-                                          className: (X) =>
+                                          className: (X: GG) =>
                                               "speed" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X) => (
+                                          render: (X: GG) => (
                                               <i className={X.speed_icon_class} title={X.speed} />
                                           ),
                                       },
                                       {
                                           header: _("Size"),
-                                          className: (X) =>
+                                          className: (X: GG) =>
                                               "board_size" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X) => `${X.width}x${X.height}`,
+                                          render: (X: GG) => `${X.width}x${X.height}`,
                                       },
                                       {
                                           header: _("Name"),
-                                          className: (X) =>
+                                          className: (X: GG) =>
                                               "game_name" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X) => (
+                                          render: (X: GG) => (
                                               <Link to={X.href}>
                                                   {X.name ||
                                                       interpolate(
@@ -280,11 +301,11 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                       },
                                       {
                                           header: _("Result"),
-                                          className: (X) =>
+                                          className: (X: GG) =>
                                               X
                                                   ? X.result_class + (X.annulled ? " annulled" : "")
                                                   : "",
-                                          render: (X) => X.result,
+                                          render: (X: GG) => X.result,
                                       },
                                   ]
                                 : []),
@@ -293,48 +314,48 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                 ? [
                                       {
                                           header: _("-"),
-                                          className: (X) =>
+                                          className: (X: GG) =>
                                               "user_info" + (X && X.annulled ? " annulled" : ""),
                                           render: () => "",
                                       },
                                       {
                                           header: _(""),
-                                          className: (X) =>
+                                          className: (X: GG) =>
                                               "winner_marker" +
                                               (X && X.annulled ? " annulled" : ""),
                                           render: () => "",
                                       },
                                       {
                                           header: _("Date"),
-                                          className: (X) =>
+                                          className: (X: GG) =>
                                               "date" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X) => moment(X.date).format("YYYY-MM-DD"),
+                                          render: (X: GG) => moment(X.date).format("YYYY-MM-DD"),
                                       },
                                       {
                                           header: _("-"),
-                                          className: (X) =>
+                                          className: (X: GG) =>
                                               "player" + (X && X.annulled ? " annulled" : ""),
                                           render: () => "",
                                       },
                                       {
                                           header: _(""),
-                                          className: (X) =>
+                                          className: (X: GG) =>
                                               "speed" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X) => (
+                                          render: (X: GG) => (
                                               <i className={X.speed_icon_class} title={X.speed} />
                                           ),
                                       },
                                       {
                                           header: _("Size"),
-                                          className: (X) =>
+                                          className: (X: GG) =>
                                               "board_size" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X) => `${X.width}x${X.height}`,
+                                          render: (X: GG) => `${X.width}x${X.height}`,
                                       },
                                       {
                                           header: _("Name"),
-                                          className: (X) =>
+                                          className: (X: GG) =>
                                               "game_name" + (X && X.annulled ? " annulled" : ""),
-                                          render: (X) => (
+                                          render: (X: GG) => (
                                               <Link to={X.href}>
                                                   {X.name ||
                                                       interpolate(
@@ -349,8 +370,9 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                       },
                                       {
                                           header: _("Result"),
-                                          className: (X) => (X && X.annulled ? " annulled" : ""),
-                                          render: (X) => X.result,
+                                          className: (X: GG) =>
+                                              X && X.annulled ? " annulled" : "",
+                                          render: (X: GG) => X.result,
                                       },
                                   ]
                                 : []),
