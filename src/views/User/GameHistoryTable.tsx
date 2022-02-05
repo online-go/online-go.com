@@ -98,6 +98,12 @@ export function GameHistoryTable(props: GameHistoryProps) {
                 item.player_won = black_won;
             }
 
+            if (r.rengo) {
+                // TODO: replace with a real "2v2" type string, pending api support
+                // currently the API does not give a list of players or even the number of players in the game
+                item.rengo_vs_string = "N/A (Rengo)" as any;
+            }
+
             item.result_class = getResultClass(r, props.user_id);
 
             const speed = getSpeed(r);
@@ -169,12 +175,15 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                               "user_info" + (X && X.annulled ? " annulled" : ""),
                                           render: (X: GG) => (
                                               <React.Fragment>
-                                                  {X.played_black ? (
-                                                      <span>⚫</span>
-                                                  ) : (
-                                                      <span>⚪</span>
-                                                  )}
-                                                  {maskedRank(`[${rankString(X.player)}]`)}
+                                                  <span>
+                                                      {X.played_black == null
+                                                          ? "❓" // Some rengo games don't tell us which team the user is on. Needs backend fix.
+                                                          : X.played_black
+                                                          ? "⚫"
+                                                          : "⚪"}
+                                                  </span>
+                                                  {X.played_black != null &&
+                                                      maskedRank(`[${rankString(X.player)}]`)}
                                               </React.Fragment>
                                           ),
                                       },
@@ -201,7 +210,14 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                           className: (X: GG) =>
                                               "player" + (X && X.annulled ? " annulled" : ""),
                                           render: (X: GG) => (
-                                              <Player user={X.opponent} disableCacheUpdate />
+                                              <>
+                                                  {X.rengo_vs_string || (
+                                                      <Player
+                                                          user={X.opponent}
+                                                          disableCacheUpdate
+                                                      />
+                                                  )}
+                                              </>
                                           ),
                                       },
                                       {
