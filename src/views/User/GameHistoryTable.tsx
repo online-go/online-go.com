@@ -100,33 +100,9 @@ export function GameHistoryTable(props: GameHistoryProps) {
 
             item.result_class = getResultClass(r, props.user_id);
 
-            if ("time_control_parameters" in r) {
-                const tcp = JSON.parse(r.time_control_parameters) as TimeControl;
-                if (tcp && "speed" in tcp) {
-                    item.speed = capitalize(tcp.speed);
-                }
-            }
-            if (!item.speed) {
-                // fallback
-                if (r.time_per_move >= 3600 || r.time_per_move === 0) {
-                    item.speed = "Correspondence";
-                } else if (r.time_per_move < 10 && r.time_per_move > 0) {
-                    item.speed = "Blitz";
-                } else if (r.time_per_move < 3600 && r.time_per_move >= 10) {
-                    item.speed = "Live";
-                } else {
-                    console.log("time_per_move < 0");
-                }
-            }
-            if (item.speed === "Correspondence") {
-                item.speed_icon_class = "speed-icon ogs-turtle";
-            } else if (item.speed === "Blitz") {
-                item.speed_icon_class = "speed-icon fa fa-bolt";
-            } else if (item.speed === "Live") {
-                item.speed_icon_class = "speed-icon fa fa-clock-o";
-            } else {
-                console.log("unsupported speed setting: " + item.speed);
-            }
+            const speed = getSpeed(r);
+            item.speed = capitalize(speed);
+            item.speed_icon_class = getSpeedClass(speed);
 
             item.name = r.name;
 
@@ -402,4 +378,40 @@ function getResultClass(game: rest_api.Game, user_id: number): ResultClass {
 
     // tie caught above
     return player_won ? "library-won-result-unranked" : "library-lost-result-unranked";
+}
+
+function getSpeed(game: rest_api.Game): Speed {
+    if ("time_control_parameters" in game) {
+        const tcp = JSON.parse(game.time_control_parameters) as TimeControl;
+        if (tcp?.speed) {
+            return tcp.speed;
+        }
+    }
+
+    // fallback
+    const time_per_move = game.time_per_move;
+    if (time_per_move >= 3600 || time_per_move === 0) {
+        return "correspondence";
+    }
+    if (time_per_move >= 10) {
+        return "live";
+    }
+    if (time_per_move > 0) {
+        return "blitz";
+    }
+
+    console.log("time per move less than 0: " + time_per_move);
+    return "correspondence";
+}
+
+function getSpeedClass(speed: Speed) {
+    switch (speed) {
+        case "correspondence":
+            return "speed-icon ogs-turtle";
+        case "live":
+            return "speed-icon fa fa-clock-o";
+        case "blitz":
+            return "speed-icon fa fa-bolt";
+    }
+    console.log("unsupported speed setting: " + speed);
 }
