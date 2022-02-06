@@ -36,7 +36,7 @@ import {
 data.setDefault("chat.joined", { "global-english": true });
 
 try {
-    const joined_defaults: any = {};
+    const joined_defaults: { [channel: string]: true } = {};
     let found = false;
     for (const chan of global_channels) {
         try {

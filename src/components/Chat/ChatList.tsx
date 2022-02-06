@@ -74,7 +74,7 @@ interface ChatListState {
 
 export class ChatList extends React.PureComponent<ChatListProperties, ChatListState> {
     channels: { [channel: string]: ChatChannelProxy } = {};
-    joined_chats = {};
+    joined_chats: { [channel: string]: true | 1 } = {};
     closing_toggle: () => void = () => null;
 
     constructor(props) {
@@ -143,7 +143,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
         });
     };
 
-    onJoinedChanged = (joined: { [channel: string]: number }) => {
+    onJoinedChanged = (joined: { [channel: string]: true | 1 }) => {
         if (joined === undefined) {
             joined = {};
         }

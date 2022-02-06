@@ -56,6 +56,14 @@ export interface ConfigSchema {
     aga_rankings_enabled: boolean;
 }
 
+interface ChatSchema {
+    active_channel: string;
+    joined: { [channel: string]: true | 1 };
+    parted: { [channel: string]: 1 };
+    "show-games": boolean;
+    "split-sizes": number[];
+}
+
 /**
  * Prefixes every member of a type.
  *
@@ -74,7 +82,8 @@ type Prefixed<T, P extends string> = {
 /** The keys and corresponding types for the functions in data.ts */
 export interface DataSchema
     extends Prefixed<CachedSchema, "cached">,
-        Prefixed<ConfigSchema, "config"> {
+        Prefixed<ConfigSchema, "config">,
+        Prefixed<ChatSchema, "chat"> {
     user: any;
     bid: string;
     theme: string;
@@ -84,7 +93,6 @@ export interface DataSchema
 
     // TODO: make a types for each of these that list the keys explicitly
     // See commits e12715b and 43c5993 for examples of how to do this.
-    [chat_key: `chat.${string}`]: any;
     [sound_key: `sound.${string}`]: any;
     [preferences_key: `preferences.${string}`]: any;
     [custom_key: `custom.${string}`]: any;
