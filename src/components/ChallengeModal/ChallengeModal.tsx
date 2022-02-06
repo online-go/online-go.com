@@ -1144,7 +1144,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                         className="challenge-dropdown form-control"
                                     >
                                         <option
-                                            disabled={challenge.game.rengo}
                                             value="-1"
                                             /*{disabled={!this.state.conf.handicap_enabled}}*/
                                         >
