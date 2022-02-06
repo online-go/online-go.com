@@ -71,6 +71,7 @@ type Prefixed<T, P extends string> = {
     [K in keyof T as K extends string ? `${P}.${K}` : never]: T[K];
 };
 
+/** The keys and corresponding types for the functions in data.ts */
 export interface DataSchema
     extends Prefixed<CachedSchema, "cached">,
         Prefixed<ConfigSchema, "config"> {
@@ -79,7 +80,6 @@ export interface DataSchema
     theme: string;
     debug: boolean;
 
-    cached: Partial<CachedSchema>;
     config: Partial<ConfigSchema>;
 
     // TODO: make a types for each of these that list the keys explicitly
