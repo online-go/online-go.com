@@ -22,6 +22,7 @@
 
 import { GroupList, ActiveTournamentList } from "./types";
 import { Announcement } from "src/components/Announcements";
+import { ValidSound, ValidSoundGroup } from "./sfx";
 
 interface CachedSchema {
     groups: GroupList;
@@ -64,6 +65,23 @@ interface ChatSchema {
     "split-sizes": number[];
 }
 
+type SoundSchema = {
+    "enabled.disconnected": boolean;
+    "enabled.reconnected": boolean;
+    "enabled.player_disconnected": boolean;
+    "enabled.player_reconnected": boolean;
+    "enabled.your_opponent_has_disconnected": boolean;
+    "enabled.your_opponent_has_reconnected": boolean;
+} & {
+    [voice_enabled_key in `voice-enabled.${ValidSound}`]: boolean;
+} & {
+    [enabled_key in `enabled.${ValidSound}`]: boolean;
+} & {
+    [pack_key in `pack.${ValidSoundGroup}`]: string;
+} & {
+    [volume_key in `volume.${ValidSoundGroup}`]: number;
+};
+
 /**
  * Prefixes every member of a type.
  *
@@ -83,7 +101,8 @@ type Prefixed<T, P extends string> = {
 export interface DataSchema
     extends Prefixed<CachedSchema, "cached">,
         Prefixed<ConfigSchema, "config">,
-        Prefixed<ChatSchema, "chat"> {
+        Prefixed<ChatSchema, "chat">,
+        Prefixed<SoundSchema, "sound"> {
     user: any;
     bid: string;
     theme: string;
@@ -93,7 +112,6 @@ export interface DataSchema
 
     // TODO: make a types for each of these that list the keys explicitly
     // See commits e12715b and 43c5993 for examples of how to do this.
-    [sound_key: `sound.${string}`]: any;
     [preferences_key: `preferences.${string}`]: any;
     [custom_key: `custom.${string}`]: any;
     [chat_manager_key: `chat-manager.${string}`]: any;
