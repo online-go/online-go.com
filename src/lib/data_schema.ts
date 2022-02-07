@@ -95,6 +95,11 @@ type PreferencesSchema = typeof defaultPreferences & {
     [theme_preference: `goban-theme-${string}`]: string;
 };
 
+interface ChatIndicatorSchema {
+    "chat-subscriptions": { [channel: string]: { [option: string]: boolean } };
+    "collapse-chat-group": boolean;
+}
+
 /**
  * Prefixes every member of a type.
  *
@@ -117,7 +122,8 @@ export interface DataSchema
         Prefixed<ChatSchema, "chat">,
         Prefixed<SoundSchema, "sound">,
         Prefixed<PreferencesSchema, "preferences">,
-        Prefixed<CustomGobanThemeSchema, "custom"> {
+        Prefixed<CustomGobanThemeSchema, "custom">,
+        Prefixed<ChatIndicatorSchema, "chat-indicator"> {
     user: any;
     bid: string;
     theme: string;
@@ -127,7 +133,6 @@ export interface DataSchema
 
     // TODO: make a types for each of these that list the keys explicitly
     // See commits e12715b and 43c5993 for examples of how to do this.
-    [chat_indicator_key: `chat-indicator.${string}`]: any;
     [time_control_key: `time_control.${string}`]: any;
     [pm_key: `pm.${string}`]: any;
     [player_notes_key: `player-notes.${string}`]: any;

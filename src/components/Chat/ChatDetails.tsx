@@ -103,7 +103,7 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, Chat
     };
 
     toggleNewMessageNotification = () => {
-        const n_list: { [channel: string]: { [option: string]: Boolean } } = data.get(
+        const n_list: { [channel: string]: { [option: string]: boolean } } = data.get(
             "chat-indicator.chat-subscriptions",
             {},
         );
@@ -119,7 +119,7 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, Chat
     };
 
     toggleMentionNotification = () => {
-        const n_list: { [channel: string]: { [option: string]: Boolean } } = data.get(
+        const n_list: { [channel: string]: { [option: string]: boolean } } = data.get(
             "chat-indicator.chat-subscriptions",
             {},
         );
