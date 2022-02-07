@@ -59,7 +59,7 @@ interface GG {
     white: PlayerCacheEntry;
     result_class: ResultClass;
     result: JSX.Element;
-    rengo_vs_string?: `${number} vs ${number}`;
+    rengo_vs_text?: `${number} vs. ${number}`;
 }
 
 export function GameHistoryTable(props: GameHistoryProps) {
@@ -85,22 +85,20 @@ export function GameHistoryTable(props: GameHistoryProps) {
             item.black = r.players.black;
             item.white = r.players.white;
 
-            if (item.white.id === props.user_id) {
-                /* played white */ item.played_black = false;
+            item.played_black = playedBlack(r, props.user_id);
+
+            if (item.played_black === false) {
                 item.opponent = r.historical_ratings.black;
                 item.player = r.historical_ratings.white;
                 item.player_won = white_won;
-            } else if (item.black.id === props.user_id) {
-                /* played black */ item.played_black = true;
+            } else if (item.played_black === true) {
                 item.opponent = r.historical_ratings.white;
                 item.player = r.historical_ratings.black;
                 item.player_won = black_won;
             }
 
             if (r.rengo) {
-                // TODO: replace with a real "2v2" type string, pending api support
-                // currently the API does not give a list of players or even the number of players in the game
-                item.rengo_vs_string = "N/A (Rengo)" as any;
+                item.rengo_vs_text = `${r.rengo_black_team.length} vs. ${r.rengo_white_team.length}`;
             }
 
             item.result_class = getResultClass(r, props.user_id);
@@ -196,7 +194,9 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                     "player" + (X && X.annulled ? " annulled" : ""),
                                 render: (X: GG) => (
                                     <>
-                                        {X.rengo_vs_string || (
+                                        {X.rengo_vs_text ? (
+                                            <strong>{X.rengo_vs_text}</strong>
+                                        ) : (
                                             <Player user={X.opponent} disableCacheUpdate />
                                         )}
                                     </>
@@ -275,7 +275,7 @@ function getResultClass(game: rest_api.Game, user_id: number): ResultClass {
     const black_won = !game.black_lost && game.white_lost && !annulled;
     const white_won = !game.white_lost && game.black_lost && !annulled;
     const ranked = game.ranked;
-    const played_black = game.players.black.id === user_id;
+    const played_black = playedBlack(game, user_id);
     const player_won = (played_black && black_won) || (!played_black && white_won);
 
     if (!(black_won || white_won)) {
@@ -341,4 +341,25 @@ function getSpeedClass(speed: Speed) {
             return "speed-icon fa fa-bolt";
     }
     console.log("unsupported speed setting: " + speed);
+}
+
+function playedBlack(game: rest_api.Game, user_id: number) {
+    if (game.rengo) {
+        if (game.rengo_black_team.indexOf(user_id) !== -1) {
+            return true;
+        }
+        if (game.rengo_white_team.indexOf(user_id) !== -1) {
+            return false;
+        }
+    }
+
+    if (user_id === game.players.black.id) {
+        return true;
+    }
+    if (user_id === game.players.white.id) {
+        return false;
+    }
+
+    console.error(`Unable to determine which color player ${user_id} is in game ${game.id}`);
+    return undefined;
 }

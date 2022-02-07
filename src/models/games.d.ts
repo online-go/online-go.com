@@ -15,6 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 declare namespace rest_api {
+    /**
+     * One element of `results` from `player/%player_id%/games`
+     *
+     * This is a work in progress. Trust these values at your own risk.
+     * */
     interface Game {
         related: {
             detail: string; // route to full game info
@@ -38,7 +43,7 @@ declare namespace rest_api {
         komi: string; // floating point number
         time_control: import("../components/TimeControl").TimeControlTypes.TimeControlSystem;
 
-        // these don't appear to be populated with userful data
+        // these don't appear to be populated with useful data
         black_player_rank: number;
         black_player_rating: string; // floating point number
         white_player_rank: number;
@@ -58,10 +63,13 @@ declare namespace rest_api {
         started: string; // ISODate
         ended: string; // ISODate
         sgf_filename: string | null;
+        // Guaranteed to include the player of interest (even in rengo games)
         historical_ratings: {
             black: import("../lib/player_cache").PlayerCacheEntry;
             white: import("../lib/player_cache").PlayerCacheEntry;
         };
         rengo: boolean;
+        rengo_black_team?: number[];
+        rengo_white_team?: number[];
     }
 }
