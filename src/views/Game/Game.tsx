@@ -4191,7 +4191,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                 <KBShortcut shortcut="home" action={this.nav_first} />
                 <KBShortcut shortcut="end" action={this.nav_last} />
                 <KBShortcut shortcut="escape" action={this.handleEscapeKey} />
-
                 <KBShortcut shortcut="f1" action={this.set_analyze_tool.stone_null} />
                 <KBShortcut shortcut="f2" action={this.set_analyze_tool.stone_black} />
                 {/* <KBShortcut shortcut='f3' action='console.log("Should be entering scoring mode");'></KBShortcut> */}
@@ -4207,6 +4206,13 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                     <KBShortcut shortcut="f10" action={this.set_analyze_tool.clear_and_sync} />
                 )}
                 <KBShortcut shortcut="del" action={this.set_analyze_tool.delete_branch} />
+                <KBShortcut shortcut="shift-z" action={this.toggleZenMode} />
+                <KBShortcut shortcut="shift-c" action={this.toggleCoordinates} />
+                <KBShortcut shortcut="shift-i" action={this.toggleAIReview} />
+                <KBShortcut shortcut="shift-a" action={this.gameAnalyze} />
+                <KBShortcut shortcut="shift-r" action={this.startReview} />
+                <KBShortcut shortcut="shift-e" action={this.estimateScore} />
+                <KBShortcut shortcut="shift-p" action={this.goban_setModeDeferredPlay} />
             </div>
         );
     }

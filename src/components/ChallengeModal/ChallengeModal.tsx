@@ -31,6 +31,7 @@ import {
     rankList,
     bounded_rank,
 } from "rank_utils";
+import { CreatedChallengeInfo } from "types";
 import { errorLogger, errorAlerter, rulesText, dup, ignore } from "misc";
 import { PlayerIcon } from "PlayerIcon";
 import { timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker } from "TimeControl";
@@ -41,6 +42,8 @@ import { one_bot, bot_count, bots_list } from "bots";
 import { openForkModal } from "./ForkModal";
 
 import swal from "sweetalert2";
+
+type ChallengeDetails = rest_api.ChallengeDetails;
 
 type ChallengeModes = "open" | "computer" | "player" | "demo";
 
@@ -55,6 +58,7 @@ interface ChallengeModalProperties {
     playersList?: Array<{ name: string; rank: number }>;
     tournamentRecordId?: number;
     tournamentRecordRoundId?: number;
+    created?: (c: CreatedChallengeInfo) => void;
 }
 
 export const username_to_id = {};
@@ -110,11 +114,12 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
         const speed = data.get("challenge.speed", "live");
 
-        const challenge = data.get(`challenge.challenge.${speed}`, {
+        const challenge: ChallengeDetails = data.get(`challenge.challenge.${speed}`, {
             initialized: false,
             min_ranking: 5,
             max_ranking: 36,
             challenger_color: "automatic",
+            rengo_auto_start: 0,
             game: {
                 name: "",
                 rules: "japanese",
@@ -418,7 +423,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             next.challenge.game.komi = null;
         }
 
-        const challenge: any = Object.assign({}, next.challenge);
+        const challenge: ChallengeDetails = Object.assign({}, next.challenge);
         challenge.game = Object.assign({}, next.challenge.game);
 
         let player_id = 0;
@@ -452,19 +457,22 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             challenge.max_ranking = 1000;
         }
 
-        challenge.game.width = parseInt(challenge.game.width);
-        challenge.game.height = parseInt(challenge.game.height);
-
         challenge.game.time_control = this.refs.time_control_picker.time_control.system;
         challenge.game.time_control_parameters = this.refs.time_control_picker.time_control;
-        challenge.game.time_control_parameters.time_control =
+        (challenge.game.time_control_parameters as any).time_control =
             this.refs.time_control_picker.time_control.system; /* on our backend we still expect this to be named `time_control` for
                                                                   old legacy reasons.. hopefully we can reconcile that someday */
         challenge.game.pause_on_weekends =
             this.refs.time_control_picker.time_control.pause_on_weekends;
 
+        // Autostart only in casual mode
+        challenge.rengo_auto_start =
+            (challenge.game.rengo_casual_mode && challenge.rengo_auto_start) || 0; // guard against it being set but empty
+
+        const live = isLiveGame(challenge.game.time_control_parameters); // save for after the post, below, when TimeControlPicker is gone
+
         let open_now = false;
-        if (isLiveGame(challenge.game.time_control_parameters)) {
+        if (live) {
             open_now = true;
         }
         if (this.props.mode === "computer") {
@@ -492,9 +500,20 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         post(player_id ? "players/%%/challenge" : "challenges", player_id, challenge)
             .then((res) => {
                 // console.log("Challenge response: ", res);
+
                 const challenge_id = res.challenge;
                 const game_id = typeof res.game === "object" ? res.game.id : res.game;
                 let keepalive_interval;
+
+                const details: CreatedChallengeInfo = {
+                    challenge_id: challenge_id,
+                    live: live,
+                    rengo: challenge.game.rengo,
+                };
+
+                if (this.props.created) {
+                    this.props.created(details);
+                }
 
                 notification_manager.event_emitter.on("notification", checkForReject);
 
@@ -605,6 +624,13 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     update_rengo_casual = (ev) => {
         this.upstate("challenge.game.rengo_casual_mode", ev);
     };
+    update_rengo_auto_start = (ev) => {
+        // '0' means "none", but people may like to see it empty.
+        if (ev.target.value === "" || !isNaN(parseInt(ev.target.value))) {
+            this.upstate("challenge.rengo_auto_start", ev);
+        }
+    };
+
     update_demo_private = (ev) => this.upstate("demo.private", ev);
     update_ranked = (ev) => this.setRanked((ev.target as HTMLInputElement).checked);
     update_aga_ranked = (ev) => {
@@ -614,8 +640,22 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     update_board_size = (ev) => {
         this.syncBoardSize((ev.target as HTMLSelectElement).value);
     };
-    update_board_width = (ev) => this.upstate("challenge.game.width", ev);
-    update_board_height = (ev) => this.upstate("challenge.game.height", ev);
+
+    update_board_width = (ev) => {
+        this.setState({
+            challenge: Object.assign({}, this.state.challenge, {
+                board_width: parseInt(ev.target.value),
+            }),
+        });
+    };
+    update_board_height = (ev) => {
+        this.setState({
+            challenge: Object.assign({}, this.state.challenge, {
+                board_height: parseInt(ev.target.value),
+            }),
+        });
+    };
+
     update_rules = (ev) => this.upstate("challenge.game.rules", ev);
     update_handicap = (ev) => this.upstate("challenge.game.handicap", ev);
     update_komi_auto = (ev) => this.upstate("challenge.game.komi_auto", ev);
@@ -790,6 +830,37 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                         id="rengo-casual-mode"
                                         checked={this.state.challenge.game.rengo_casual_mode}
                                         onChange={this.update_rengo_casual}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                )}
+                {(mode === "open" || null) && (
+                    <>
+                        <div
+                            className={
+                                "form-group" +
+                                (this.state.challenge.game.rengo &&
+                                this.state.challenge.game.rengo_casual_mode
+                                    ? ""
+                                    : " hide")
+                            }
+                        >
+                            <label className="control-label" htmlFor="rengo-auto-start">
+                                {_("Auto-start")}
+                            </label>
+                            <div className="controls">
+                                <div className="checkbox">
+                                    <input
+                                        type="number"
+                                        value={this.state.challenge.rengo_auto_start}
+                                        onChange={this.update_rengo_auto_start}
+                                        id="rengo-auto-start"
+                                        className="form-control"
+                                        style={{ width: "3em" }}
+                                        min="0"
+                                        max=""
                                     />
                                 </div>
                             </div>
@@ -1144,7 +1215,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                         className="challenge-dropdown form-control"
                                     >
                                         <option
-                                            disabled={challenge.game.rengo}
                                             value="-1"
                                             /*{disabled={!this.state.conf.handicap_enabled}}*/
                                         >
@@ -1406,6 +1476,7 @@ export function challenge(
     initial_state?: any,
     computer?: boolean,
     config?: any,
+    created?: (c: CreatedChallengeInfo) => void,
 ) {
     // TODO: Support challenge by player, w/ initial state, or computer
 
@@ -1428,6 +1499,7 @@ export function challenge(
             initialState={initial_state}
             config={config}
             mode={mode}
+            created={created}
         />,
     );
 }
