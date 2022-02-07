@@ -23,6 +23,7 @@
 import { GroupList, ActiveTournamentList } from "./types";
 import { Announcement } from "src/components/Announcements";
 import { ValidSound, ValidSoundGroup } from "./sfx";
+import { defaults as defaultPreferences } from "./preferences";
 
 interface CachedSchema {
     groups: GroupList;
@@ -82,6 +83,10 @@ type SoundSchema = {
     [volume_key in `volume.${ValidSoundGroup}`]: number;
 };
 
+type PreferencesSchema = typeof defaultPreferences & {
+    [theme_preference: `goban-theme-${string}`]: string;
+};
+
 /**
  * Prefixes every member of a type.
  *
@@ -102,7 +107,8 @@ export interface DataSchema
     extends Prefixed<CachedSchema, "cached">,
         Prefixed<ConfigSchema, "config">,
         Prefixed<ChatSchema, "chat">,
-        Prefixed<SoundSchema, "sound"> {
+        Prefixed<SoundSchema, "sound">,
+        Prefixed<PreferencesSchema, "preferences"> {
     user: any;
     bid: string;
     theme: string;
@@ -112,7 +118,6 @@ export interface DataSchema
 
     // TODO: make a types for each of these that list the keys explicitly
     // See commits e12715b and 43c5993 for examples of how to do this.
-    [preferences_key: `preferences.${string}`]: any;
     [custom_key: `custom.${string}`]: any;
     [chat_manager_key: `chat-manager.${string}`]: any;
     [chat_indicator_key: `chat-indicator.${string}`]: any;
