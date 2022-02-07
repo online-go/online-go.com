@@ -127,7 +127,6 @@ export interface DataSchema
 
     // TODO: make a types for each of these that list the keys explicitly
     // See commits e12715b and 43c5993 for examples of how to do this.
-    [chat_manager_key: `chat-manager.${string}`]: any;
     [chat_indicator_key: `chat-indicator.${string}`]: any;
     [time_control_key: `time_control.${string}`]: any;
     [pm_key: `pm.${string}`]: any;
@@ -153,4 +152,5 @@ export interface DataSchema
     "ad-override": boolean;
     "email-banner-dismissed": boolean;
     "active-tournament": Announcement;
+    "chat-manager.last-seen": { [channel: string]: number };
 }
