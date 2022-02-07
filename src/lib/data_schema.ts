@@ -20,10 +20,11 @@
  * all the possible keys as well as the associated value types.
  */
 
-import { GroupList, ActiveTournamentList } from "./types";
+import { GroupList, ActiveTournamentList, Speed } from "./types";
 import { Announcement } from "src/components/Announcements";
 import { ValidSound, ValidSoundGroup } from "./sfx";
 import { defaults as defaultPreferences } from "./preferences";
+import { TimeControl, TimeControlTypes } from "src/components/TimeControl";
 
 interface CachedSchema {
     groups: GroupList;
@@ -95,6 +96,13 @@ type PreferencesSchema = typeof defaultPreferences & {
     [theme_preference: `goban-theme-${string}`]: string;
 };
 
+type TimeControlSchema = {
+    speed: Speed;
+    system: TimeControlTypes.TimeControlSystem;
+} & {
+    [speed_system_key in `${Speed}.${TimeControlTypes.TimeControlSystem}`]: TimeControl;
+};
+
 interface ChatIndicatorSchema {
     "chat-subscriptions": { [channel: string]: { [option: string]: boolean } };
     "collapse-chat-group": boolean;
@@ -123,7 +131,8 @@ export interface DataSchema
         Prefixed<SoundSchema, "sound">,
         Prefixed<PreferencesSchema, "preferences">,
         Prefixed<CustomGobanThemeSchema, "custom">,
-        Prefixed<ChatIndicatorSchema, "chat-indicator"> {
+        Prefixed<ChatIndicatorSchema, "chat-indicator">,
+        Prefixed<TimeControlSchema, "time_control"> {
     user: any;
     bid: string;
     theme: string;
@@ -133,7 +142,6 @@ export interface DataSchema
 
     // TODO: make a types for each of these that list the keys explicitly
     // See commits e12715b and 43c5993 for examples of how to do this.
-    [time_control_key: `time_control.${string}`]: any;
     [pm_key: `pm.${string}`]: any;
     [player_notes_key: `player-notes.${string}`]: any;
     [learning_hub_key: `learning-hub.${string}`]: any;
