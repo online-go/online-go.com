@@ -66,6 +66,14 @@ interface ChatSchema {
     "split-sizes": number[];
 }
 
+export interface CustomGobanThemeSchema {
+    black: string;
+    white: string;
+    board: string;
+    line: string;
+    url: string;
+}
+
 type SoundSchema = {
     "enabled.disconnected": boolean;
     "enabled.reconnected": boolean;
@@ -108,7 +116,8 @@ export interface DataSchema
         Prefixed<ConfigSchema, "config">,
         Prefixed<ChatSchema, "chat">,
         Prefixed<SoundSchema, "sound">,
-        Prefixed<PreferencesSchema, "preferences"> {
+        Prefixed<PreferencesSchema, "preferences">,
+        Prefixed<CustomGobanThemeSchema, "custom"> {
     user: any;
     bid: string;
     theme: string;
@@ -118,7 +127,6 @@ export interface DataSchema
 
     // TODO: make a types for each of these that list the keys explicitly
     // See commits e12715b and 43c5993 for examples of how to do this.
-    [custom_key: `custom.${string}`]: any;
     [chat_manager_key: `chat-manager.${string}`]: any;
     [chat_indicator_key: `chat-indicator.${string}`]: any;
     [time_control_key: `time_control.${string}`]: any;
