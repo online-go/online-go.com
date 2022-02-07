@@ -108,6 +108,11 @@ interface ChatIndicatorSchema {
     "collapse-chat-group": boolean;
 }
 
+interface PMSchema {
+    [read_key: `read-${number}`]: string;
+    [close_key: `close-${number}`]: string;
+}
+
 /**
  * Prefixes every member of a type.
  *
@@ -132,7 +137,8 @@ export interface DataSchema
         Prefixed<PreferencesSchema, "preferences">,
         Prefixed<CustomGobanThemeSchema, "custom">,
         Prefixed<ChatIndicatorSchema, "chat-indicator">,
-        Prefixed<TimeControlSchema, "time_control"> {
+        Prefixed<TimeControlSchema, "time_control">,
+        Prefixed<PMSchema, "pm"> {
     user: any;
     bid: string;
     theme: string;
@@ -142,8 +148,6 @@ export interface DataSchema
 
     // TODO: make a types for each of these that list the keys explicitly
     // See commits e12715b and 43c5993 for examples of how to do this.
-    [pm_key: `pm.${string}`]: any;
-    [player_notes_key: `player-notes.${string}`]: any;
     [learning_hub_key: `learning-hub.${string}`]: any;
     [moderator_key: `moderator.${string}`]: any;
     [automatch_key: `automatch.${string}`]: any;
