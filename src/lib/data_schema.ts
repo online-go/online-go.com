@@ -170,4 +170,6 @@ export interface DataSchema
     "email-banner-dismissed": boolean;
     "active-tournament": Announcement;
     "chat-manager.last-seen": { [channel: string]: number };
+
+    [player_notes_key: `player-notes.${number}.${number}`]: string;
 }
