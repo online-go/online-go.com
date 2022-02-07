@@ -118,6 +118,13 @@ export interface AutomatchPreferencesBase {
     };
 }
 
+// Payload of the ChallengeModal `created()` callback
+export interface CreatedChallengeInfo {
+    challenge_id: number;
+    rengo: boolean;
+    live: boolean;
+}
+
 // Many times an id is a number, but it doesn't matter if it is a string as
 // far as the code is concerned.  Example:
 //
