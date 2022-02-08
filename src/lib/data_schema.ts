@@ -157,7 +157,6 @@ export interface DataSchema
 
     // TODO: make a types for each of these that list the keys explicitly
     // See commits e12715b and 43c5993 for examples of how to do this.
-    [settings_key: `settings.${string}`]: any;
     [paginated_table_key: `paginated-table.${string}`]: any;
     [observed_games_key: `observed-games.${string}`]: any;
     [announcements_key: `announcements.${string}`]: any; // probably should figure out why these are different
@@ -176,6 +175,7 @@ export interface DataSchema
 
     "chat-manager.last-seen": { [channel: string]: number };
     "device.uuid": string;
+    "settings.page-selected": string;
 
     [player_notes_key: `player-notes.${number}.${number}`]: string;
     [learning_hub_key: `learning-hub.${string}`]: { [page_number: number]: true };
