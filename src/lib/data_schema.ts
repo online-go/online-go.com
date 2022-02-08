@@ -157,7 +157,6 @@ export interface DataSchema
 
     // TODO: make a types for each of these that list the keys explicitly
     // See commits e12715b and 43c5993 for examples of how to do this.
-    [paginated_table_key: `paginated-table.${string}`]: any;
     [observed_games_key: `observed-games.${string}`]: any;
     [announcements_key: `announcements.${string}`]: any; // probably should figure out why these are different
     [announcement_key: `announcement.${string}`]: any;
@@ -181,4 +180,5 @@ export interface DataSchema
     [learning_hub_key: `learning-hub.${string}`]: { [page_number: number]: true };
     [moderator_join_game_publicly_key: `moderator.join-game-publicly.${string}`]: boolean;
     [puzzle_last_visited_key: `puzzle.collection.${number}.last-visited`]: number;
+    [paginated_table_page_size_key: `paginated-table.${string}.page_size`]: number;
 }
