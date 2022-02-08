@@ -148,7 +148,6 @@ export interface DataSchema
 
     // TODO: make a types for each of these that list the keys explicitly
     // See commits e12715b and 43c5993 for examples of how to do this.
-    [moderator_key: `moderator.${string}`]: any;
     [automatch_key: `automatch.${string}`]: any;
     [puzzle_key: `puzzle.${string}`]: any;
     [device_key: `device${string}`]: any;
@@ -172,4 +171,5 @@ export interface DataSchema
 
     [player_notes_key: `player-notes.${number}.${number}`]: string;
     [learning_hub_key: `learning-hub.${string}`]: { [page_number: number]: true };
+    [moderator_join_game_publicly_key: `moderator.join-game-publicly.${string}`]: boolean;
 }
