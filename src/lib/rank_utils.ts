@@ -308,6 +308,9 @@ export interface EffectiveOutcome {
     white_effective_stronger: boolean;
 }
 
+/**
+ * @returns a ratings object containing ratings adjusted for the handicap.
+ */
 export function effective_outcome(
     black_rating: number,
     white_rating: number,
