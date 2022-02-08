@@ -20,7 +20,7 @@
  * all the possible keys as well as the associated value types.
  */
 
-import { GroupList, ActiveTournamentList, Speed, Size } from "./types";
+import { GroupList, ActiveTournamentList, Speed, Size, RuleSet } from "./types";
 import { Announcement } from "src/components/Announcements";
 import { ValidSound, ValidSoundGroup } from "./sfx";
 import { defaults as defaultPreferences, ValidPreference } from "./preferences";
@@ -138,6 +138,18 @@ type ChallengeSchema = {
     [speed in `challenge.${Speed}`]: rest_api.ChallengeDetails;
 };
 
+interface DemoSettings {
+    name: string;
+    rules: RuleSet;
+    width: number;
+    height: number;
+    black_name: string;
+    black_ranking: number;
+    white_name: string;
+    white_ranking: number;
+    private: boolean;
+}
+
 /**
  * Prefixes every member of a type.
  *
@@ -175,10 +187,6 @@ export interface DataSchema
 
     config: Partial<ConfigSchema>;
 
-    // TODO: make a types for each of these that list the keys explicitly
-    // See commits e12715b and 43c5993 for examples of how to do this.
-    [demo: `demo.${string}`]: any;
-
     "last-visited-since-goals-shown": string;
     "hours-visited-since-goals-shown": number;
     "table-color-default-on": boolean;
@@ -191,6 +199,7 @@ export interface DataSchema
     "device.uuid": string;
     "settings.page-selected": string;
     "announcement.last-type": string;
+    "demo.settings": DemoSettings;
 
     [player_notes_key: `player-notes.${number}.${number}`]: string;
     [learning_hub_key: `learning-hub.${string}`]: { [page_number: number]: true };
