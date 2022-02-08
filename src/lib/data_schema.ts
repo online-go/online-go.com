@@ -130,6 +130,14 @@ interface AnnouncementsSchema {
     hard_cleared: { [id: number]: number };
 }
 
+type ChallengeSchema = {
+    bot: number;
+    speed: Speed;
+    restrict_rank: boolean;
+} & {
+    [speed in `challenge.${Speed}`]: rest_api.ChallengeDetails;
+};
+
 /**
  * Prefixes every member of a type.
  *
@@ -158,7 +166,8 @@ export interface DataSchema
         Prefixed<PMSchema, "pm">,
         Prefixed<AutomatchSchema, "automatch">,
         Prefixed<ObservedGamesSchema, "observed-games">,
-        Prefixed<AnnouncementsSchema, "announcements"> {
+        Prefixed<AnnouncementsSchema, "announcements">,
+        Prefixed<ChallengeSchema, "challenge"> {
     user: rest_api.UserConfig;
     bid: string;
     theme: string;
@@ -168,7 +177,6 @@ export interface DataSchema
 
     // TODO: make a types for each of these that list the keys explicitly
     // See commits e12715b and 43c5993 for examples of how to do this.
-    [challenge_key: `challenge.${string}`]: any;
     [dismissed_key: `dismissed.${string}`]: any;
     [demo: `demo.${string}`]: any;
 

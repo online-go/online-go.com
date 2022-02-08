@@ -95,9 +95,9 @@ declare namespace rest_api {
             private: boolean;
             rengo: boolean;
             rengo_casual_mode: boolean;
-            pause_on_weekends: boolean;
-            time_control: import("../components/TimeControl").TimeControlTypes.TimeControlSystem;
-            time_control_parameters: import("../components/TimeControl").TimeControl;
+            pause_on_weekends?: boolean;
+            time_control?: import("../components/TimeControl").TimeControlTypes.TimeControlSystem;
+            time_control_parameters?: import("../components/TimeControl").TimeControl;
         };
     }
 }
