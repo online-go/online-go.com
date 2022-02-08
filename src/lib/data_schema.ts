@@ -125,6 +125,11 @@ type ObservedGamesSchema = {
     [namespace_preference_key in `${string}.${ValidPreference}`]: string;
 };
 
+interface AnnouncementsSchema {
+    cleared: { [id: number]: number };
+    hard_cleared: { [id: number]: number };
+}
+
 /**
  * Prefixes every member of a type.
  *
@@ -152,7 +157,8 @@ export interface DataSchema
         Prefixed<TimeControlSchema, "time_control">,
         Prefixed<PMSchema, "pm">,
         Prefixed<AutomatchSchema, "automatch">,
-        Prefixed<ObservedGamesSchema, "observed-games"> {
+        Prefixed<ObservedGamesSchema, "observed-games">,
+        Prefixed<AnnouncementsSchema, "announcements"> {
     user: rest_api.UserConfig;
     bid: string;
     theme: string;
@@ -162,8 +168,6 @@ export interface DataSchema
 
     // TODO: make a types for each of these that list the keys explicitly
     // See commits e12715b and 43c5993 for examples of how to do this.
-    [announcements_key: `announcements.${string}`]: any; // probably should figure out why these are different
-    [announcement_key: `announcement.${string}`]: any;
     [challenge_key: `challenge.${string}`]: any;
     [dismissed_key: `dismissed.${string}`]: any;
     [demo: `demo.${string}`]: any;
@@ -179,6 +183,7 @@ export interface DataSchema
     "chat-manager.last-seen": { [channel: string]: number };
     "device.uuid": string;
     "settings.page-selected": string;
+    "announcement.last-type": string;
 
     [player_notes_key: `player-notes.${number}.${number}`]: string;
     [learning_hub_key: `learning-hub.${string}`]: { [page_number: number]: true };
