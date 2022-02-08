@@ -165,7 +165,14 @@ type Prefixed<T, P extends string> = {
     [K in keyof T as K extends string ? `${P}.${K}` : never]: T[K];
 };
 
-/** The keys and corresponding types for the functions in data.ts */
+/**
+ * The keys and corresponding types for the functions in data.ts
+ *
+ * ADDING NEW KEYS: There are a couple ways to add new keys.  One way is to add
+ * keys directly to this interface.  The other is to add or modify a subschema
+ * and prefix it using the Prefixed type.  If typing is not desired (for instance,
+ * during prototyping), one can use a key that starts with an underscore.
+ */
 export interface DataSchema
     extends Prefixed<CachedSchema, "cached">,
         Prefixed<ConfigSchema, "config">,
@@ -207,4 +214,9 @@ export interface DataSchema
     [puzzle_last_visited_key: `puzzle.collection.${number}.last-visited`]: number;
     [paginated_table_page_size_key: `paginated-table.${string}.page_size`]: number;
     [dismissed_key: `dismissed.${string}`]: boolean;
+
+    // Using underscore prefixed keys suppresses type errors. This may be
+    // be desired when prototyping a new feature and the structure of the data
+    // is not known.
+    [untyped_key: `_${string}`]: any;
 }
