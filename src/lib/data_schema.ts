@@ -177,7 +177,6 @@ export interface DataSchema
 
     // TODO: make a types for each of these that list the keys explicitly
     // See commits e12715b and 43c5993 for examples of how to do this.
-    [dismissed_key: `dismissed.${string}`]: any;
     [demo: `demo.${string}`]: any;
 
     "last-visited-since-goals-shown": string;
@@ -198,4 +197,5 @@ export interface DataSchema
     [moderator_join_game_publicly_key: `moderator.join-game-publicly.${string}`]: boolean;
     [puzzle_last_visited_key: `puzzle.collection.${number}.last-visited`]: number;
     [paginated_table_page_size_key: `paginated-table.${string}.page_size`]: number;
+    [dismissed_key: `dismissed.${string}`]: boolean;
 }
