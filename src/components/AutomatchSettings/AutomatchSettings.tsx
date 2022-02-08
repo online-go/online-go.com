@@ -26,7 +26,7 @@ interface Events {}
 
 interface AutomatchSettingsProperties {}
 
-type AutomatchPreferences = AutomatchPreferencesBase & { size_options: Size[] };
+export type AutomatchPreferences = AutomatchPreferencesBase & { size_options: Size[] };
 
 interface AutomatchSettingsState {
     tab: Speed;
@@ -129,7 +129,7 @@ export class AutomatchSettings extends Modal<
         };
     }
 
-    setTab = (tab) => {
+    setTab = (tab: Speed) => {
         data.set("automatch.last-tab", tab);
         this.setState({ tab: tab });
     };

@@ -29,7 +29,10 @@ declare namespace rest_api {
         id: number;
         username: string;
         registration_date: string; // Date
-        ratings: { version: number } & {
+        ratings: {
+            version: number;
+            overall: RatingsConfig;
+        } & {
             [game_type in
                 | import("../lib/types").Size
                 | import("../lib/types").Speed
@@ -49,7 +52,7 @@ declare namespace rest_api {
         ui_class: string;
         icon: string; // URL
         email: string;
-        email_validated: boolean;
+        email_validated: boolean | string; // VerifyEmail sets this to a Date string
         is_announcer: boolean;
     }
 }

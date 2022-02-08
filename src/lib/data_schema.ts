@@ -20,8 +20,12 @@
  * all the possible keys as well as the associated value types.
  */
 
-import { GroupList, ActiveTournamentList } from "./types";
+import { GroupList, ActiveTournamentList, Speed, Size, RuleSet } from "./types";
 import { Announcement } from "src/components/Announcements";
+import { ValidSound, ValidSoundGroup } from "./sfx";
+import { defaults as defaultPreferences, ValidPreference } from "./preferences";
+import { TimeControl, TimeControlTypes } from "src/components/TimeControl";
+import { AutomatchPreferences } from "src/components/AutomatchSettings";
 
 interface CachedSchema {
     groups: GroupList;
@@ -56,6 +60,96 @@ export interface ConfigSchema {
     aga_rankings_enabled: boolean;
 }
 
+interface ChatSchema {
+    active_channel: string;
+    joined: { [channel: string]: true | 1 };
+    parted: { [channel: string]: 1 };
+    "show-games": boolean;
+    "split-sizes": number[];
+}
+
+export interface CustomGobanThemeSchema {
+    black: string;
+    white: string;
+    board: string;
+    line: string;
+    url: string;
+}
+
+type SoundSchema = {
+    "enabled.disconnected": boolean;
+    "enabled.reconnected": boolean;
+    "enabled.player_disconnected": boolean;
+    "enabled.player_reconnected": boolean;
+    "enabled.your_opponent_has_disconnected": boolean;
+    "enabled.your_opponent_has_reconnected": boolean;
+} & {
+    [voice_enabled_key in `voice-enabled.${ValidSound}`]: boolean;
+} & {
+    [enabled_key in `enabled.${ValidSound}`]: boolean;
+} & {
+    [pack_key in `pack.${ValidSoundGroup}`]: string;
+} & {
+    [volume_key in `volume.${ValidSoundGroup}`]: number;
+};
+
+type PreferencesSchema = typeof defaultPreferences & {
+    [theme_preference: `goban-theme-${string}`]: string;
+};
+
+type TimeControlSchema = {
+    speed: Speed;
+    system: TimeControlTypes.TimeControlSystem;
+} & {
+    [speed_system_key in `${Speed}.${TimeControlTypes.TimeControlSystem}`]: TimeControl;
+};
+
+interface ChatIndicatorSchema {
+    "chat-subscriptions": { [channel: string]: { [option: string]: boolean } };
+    "collapse-chat-group": boolean;
+}
+
+interface PMSchema {
+    [read_key: `read-${number}`]: string;
+    [close_key: `close-${number}`]: string;
+}
+
+type AutomatchSchema = {
+    "last-tab": Speed;
+    size_options: Size[];
+} & {
+    [speed_key in Speed]: AutomatchPreferences;
+};
+
+type ObservedGamesSchema = {
+    [namespace_preference_key in `${string}.${ValidPreference}`]: string;
+};
+
+interface AnnouncementsSchema {
+    cleared: { [id: number]: number };
+    hard_cleared: { [id: number]: number };
+}
+
+type ChallengeSchema = {
+    bot: number;
+    speed: Speed;
+    restrict_rank: boolean;
+} & {
+    [speed in `challenge.${Speed}`]: rest_api.ChallengeDetails;
+};
+
+interface DemoSettings {
+    name: string;
+    rules: RuleSet;
+    width: number;
+    height: number;
+    black_name: string;
+    black_ranking: number;
+    white_name: string;
+    white_ranking: number;
+    private: boolean;
+}
+
 /**
  * Prefixes every member of a type.
  *
@@ -71,41 +165,34 @@ type Prefixed<T, P extends string> = {
     [K in keyof T as K extends string ? `${P}.${K}` : never]: T[K];
 };
 
+/**
+ * The keys and corresponding types for the functions in data.ts
+ *
+ * ADDING NEW KEYS: There are a couple ways to add new keys.  One way is to add
+ * keys directly to this interface.  The other is to add or modify a subschema
+ * and prefix it using the Prefixed type.  If typing is not desired (for instance,
+ * during prototyping), one can use a key that starts with an underscore.
+ */
 export interface DataSchema
     extends Prefixed<CachedSchema, "cached">,
-        Prefixed<ConfigSchema, "config"> {
-    user: any;
+        Prefixed<ConfigSchema, "config">,
+        Prefixed<ChatSchema, "chat">,
+        Prefixed<SoundSchema, "sound">,
+        Prefixed<PreferencesSchema, "preferences">,
+        Prefixed<CustomGobanThemeSchema, "custom">,
+        Prefixed<ChatIndicatorSchema, "chat-indicator">,
+        Prefixed<TimeControlSchema, "time_control">,
+        Prefixed<PMSchema, "pm">,
+        Prefixed<AutomatchSchema, "automatch">,
+        Prefixed<ObservedGamesSchema, "observed-games">,
+        Prefixed<AnnouncementsSchema, "announcements">,
+        Prefixed<ChallengeSchema, "challenge"> {
+    user: rest_api.UserConfig;
     bid: string;
     theme: string;
     debug: boolean;
 
-    cached: Partial<CachedSchema>;
     config: Partial<ConfigSchema>;
-
-    // TODO: make a types for each of these that list the keys explicitly
-    // See commits e12715b and 43c5993 for examples of how to do this.
-    [chat_key: `chat.${string}`]: any;
-    [sound_key: `sound.${string}`]: any;
-    [preferences_key: `preferences.${string}`]: any;
-    [custom_key: `custom.${string}`]: any;
-    [chat_manager_key: `chat-manager.${string}`]: any;
-    [chat_indicator_key: `chat-indicator.${string}`]: any;
-    [time_control_key: `time_control.${string}`]: any;
-    [pm_key: `pm.${string}`]: any;
-    [player_notes_key: `player-notes.${string}`]: any;
-    [learning_hub_key: `learning-hub.${string}`]: any;
-    [moderator_key: `moderator.${string}`]: any;
-    [automatch_key: `automatch.${string}`]: any;
-    [puzzle_key: `puzzle.${string}`]: any;
-    [device_key: `device${string}`]: any;
-    [settings_key: `settings.${string}`]: any;
-    [paginated_table_key: `paginated-table.${string}`]: any;
-    [observed_games_key: `observed-games.${string}`]: any;
-    [announcements_key: `announcements.${string}`]: any; // probably should figure out why these are different
-    [announcement_key: `announcement.${string}`]: any;
-    [challenge_key: `challenge.${string}`]: any;
-    [dismissed_key: `dismissed.${string}`]: any;
-    [demo: `demo.${string}`]: any;
 
     "last-visited-since-goals-shown": string;
     "hours-visited-since-goals-shown": number;
@@ -114,4 +201,22 @@ export interface DataSchema
     "ad-override": boolean;
     "email-banner-dismissed": boolean;
     "active-tournament": Announcement;
+
+    "chat-manager.last-seen": { [channel: string]: number };
+    "device.uuid": string;
+    "settings.page-selected": string;
+    "announcement.last-type": string;
+    "demo.settings": DemoSettings;
+
+    [player_notes_key: `player-notes.${number}.${number}`]: string;
+    [learning_hub_key: `learning-hub.${string}`]: { [page_number: number]: true };
+    [moderator_join_game_publicly_key: `moderator.join-game-publicly.${string}`]: boolean;
+    [puzzle_last_visited_key: `puzzle.collection.${number}.last-visited`]: number;
+    [paginated_table_page_size_key: `paginated-table.${string}.page_size`]: number;
+    [dismissed_key: `dismissed.${string}`]: boolean;
+
+    // Using underscore prefixed keys suppresses type errors. This may be
+    // be desired when prototyping a new feature and the structure of the data
+    // is not known.
+    [untyped_key: `_${string}`]: any;
 }

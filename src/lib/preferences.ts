@@ -19,7 +19,7 @@ import * as data from "data";
 import { GoThemes } from "goban";
 import { current_language } from "translate";
 
-const defaults = {
+export const defaults = {
     "ai-review-enabled": true,
     "ai-review-use-score": false,
     "ai-summary-table-show": false,
@@ -118,10 +118,10 @@ const defaults = {
 defaults["profanity-filter"][current_language] = true;
 
 for (const k in defaults) {
-    data.setDefault(`preferences.${k}`, defaults[k]);
+    data.setDefault(`preferences.${k as ValidPreference}`, defaults[k]);
 }
 
-export type ValidPreference = keyof typeof defaults;
+export type ValidPreference = keyof typeof defaults | `goban-theme-${string}`;
 
 export function get(key: ValidPreference): any {
     if (!(key in defaults)) {
@@ -136,18 +136,18 @@ export function get(key: ValidPreference): any {
     }
     return data.get(`preferences.${key}`);
 }
-export function set(key: string, value: any, replication?: data.Replication): any {
+export function set(key: ValidPreference, value: any, replication?: data.Replication): any {
     return data.set(`preferences.${key}`, value, replication);
 }
 export function watch(
-    key: string,
+    key: ValidPreference,
     cb: (d: any) => void,
     call_on_undefined?: boolean,
     dont_call_immediately?: boolean,
 ): void {
     data.watch(`preferences.${key}`, cb, call_on_undefined, dont_call_immediately);
 }
-export function unwatch(key: string, cb: (d: any) => void): void {
+export function unwatch(key: ValidPreference, cb: (d: any) => void): void {
     data.unwatch(`preferences.${key}`, cb);
 }
 

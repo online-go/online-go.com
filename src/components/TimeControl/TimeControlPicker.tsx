@@ -22,6 +22,7 @@ import { _ } from "translate";
 import { time_options, makeTimeControlParameters } from "./util";
 import { computeAverageMoveTime } from "goban";
 import { TimeControl, TimeControlTypes } from "./TimeControl";
+import { Speed } from "src/lib/types";
 
 type TimeControlSystem = TimeControlTypes.TimeControlSystem;
 
@@ -707,16 +708,16 @@ const default_time_options = {
         },
     },
 };
-function recallTimeControlSettings(speed, time_control_system: TimeControlSystem) {
+function recallTimeControlSettings(speed: Speed, time_control_system: TimeControlSystem) {
     if (speed !== "blitz" && speed !== "live" && speed !== "correspondence") {
         throw new Error(`Invalid speed: ${speed}`);
     }
 
     return makeTimeControlParameters(
         Object.assign(
-            { pause_on_weekends: default_time_options[speed].pause_on_wekends },
+            {},
             default_time_options[speed][time_control_system],
-            data.get(`time_control.${speed}.${time_control_system}`, {}),
+            data.get(`time_control.${speed}.${time_control_system}`),
             { speed: speed },
             { system: time_control_system },
         ),

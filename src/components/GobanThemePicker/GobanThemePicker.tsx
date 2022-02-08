@@ -22,6 +22,7 @@ import { getSelectedThemes } from "preferences";
 import * as preferences from "preferences";
 import { PersistentElement } from "PersistentElement";
 import * as data from "data";
+import { CustomGobanThemeSchema } from "data_schema";
 
 interface GobanThemePickerProperties {
     size?: number;
@@ -93,11 +94,11 @@ export class GobanThemePicker extends React.PureComponent<
 
     componentWillUnmount() {}
 
-    getCustom(key: string): string {
+    getCustom(key: keyof CustomGobanThemeSchema): string {
         return data.get(`custom.${key}`);
     }
     setCustom(
-        key: string,
+        key: keyof CustomGobanThemeSchema,
         event:
             | React.MouseEvent<HTMLButtonElement, MouseEvent>
             | React.ChangeEvent<HTMLInputElement>,

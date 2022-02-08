@@ -203,7 +203,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
     };
 
     saveEdit = () => {
-        const user = data.get("user");
+        const user = data.get("user") as any;
         this.qc_editableMsgs.map((li, index) => {
             user.qc_phrases[index] = li.innerText.trim();
         });
