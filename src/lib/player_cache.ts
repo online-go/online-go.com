@@ -78,7 +78,7 @@ export interface PlayerCacheEntry {
             rating: number;
             deviation: number;
             volatility: number;
-            games_played: number;
+            games_played?: number;
         };
     };
     ui_class?: string;

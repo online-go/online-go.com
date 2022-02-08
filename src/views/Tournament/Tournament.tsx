@@ -163,7 +163,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             tournament: {
                 id: tournament_id,
                 name: "",
-                director: tournament_id === 0 ? data.get("user") : {},
+                // TODO: replace {} with something that makes type sense. -bpj
+                director: tournament_id === 0 ? data.get("user") : ({} as any),
                 time_start: moment(new Date()).add(1, "hour").startOf("hour").format(),
 
                 board_size: "19",

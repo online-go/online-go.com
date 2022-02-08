@@ -196,7 +196,7 @@ function guessCurrency(config: Config, country: string): string {
 export function Supporter(props: SupporterProperties): JSX.Element {
     const user = data.get("user");
     const inline = props?.inline;
-    const account_id = parseInt(props?.match?.params?.account_id || user?.id || "0");
+    const account_id = parseInt((props?.match?.params?.account_id || user?.id || "0") as string);
     const [loading, setLoading] = React.useState(true);
     const [config, setConfig]: [Config, (h: Config) => void] = React.useState({
         loading: true,

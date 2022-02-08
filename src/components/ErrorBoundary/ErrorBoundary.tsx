@@ -49,7 +49,7 @@ export class ErrorBoundary extends React.Component<{}, any> {
             Sentry.withScope((scope) => {
                 try {
                     scope.setUser({
-                        id: data.get("user").id,
+                        id: data.get("user").id as any,
                         username: data.get("user").username,
                     });
                 } catch (e) {

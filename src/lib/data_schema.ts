@@ -139,7 +139,7 @@ export interface DataSchema
         Prefixed<ChatIndicatorSchema, "chat-indicator">,
         Prefixed<TimeControlSchema, "time_control">,
         Prefixed<PMSchema, "pm"> {
-    user: any;
+    user: rest_api.UserConfig;
     bid: string;
     theme: string;
     debug: boolean;
