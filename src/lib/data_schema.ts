@@ -20,11 +20,12 @@
  * all the possible keys as well as the associated value types.
  */
 
-import { GroupList, ActiveTournamentList, Speed } from "./types";
+import { GroupList, ActiveTournamentList, Speed, Size } from "./types";
 import { Announcement } from "src/components/Announcements";
 import { ValidSound, ValidSoundGroup } from "./sfx";
 import { defaults as defaultPreferences } from "./preferences";
 import { TimeControl, TimeControlTypes } from "src/components/TimeControl";
+import { AutomatchPreferences } from "src/components/AutomatchSettings";
 
 interface CachedSchema {
     groups: GroupList;
@@ -113,6 +114,13 @@ interface PMSchema {
     [close_key: `close-${number}`]: string;
 }
 
+type AutomatchSchema = {
+    "last-tab": Speed;
+    size_options: Size[];
+} & {
+    [speed_key in Speed]: AutomatchPreferences;
+};
+
 /**
  * Prefixes every member of a type.
  *
@@ -138,7 +146,8 @@ export interface DataSchema
         Prefixed<CustomGobanThemeSchema, "custom">,
         Prefixed<ChatIndicatorSchema, "chat-indicator">,
         Prefixed<TimeControlSchema, "time_control">,
-        Prefixed<PMSchema, "pm"> {
+        Prefixed<PMSchema, "pm">,
+        Prefixed<AutomatchSchema, "automatch"> {
     user: rest_api.UserConfig;
     bid: string;
     theme: string;
@@ -148,7 +157,6 @@ export interface DataSchema
 
     // TODO: make a types for each of these that list the keys explicitly
     // See commits e12715b and 43c5993 for examples of how to do this.
-    [automatch_key: `automatch.${string}`]: any;
     [puzzle_key: `puzzle.${string}`]: any;
     [device_key: `device${string}`]: any;
     [settings_key: `settings.${string}`]: any;
