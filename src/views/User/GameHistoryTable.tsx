@@ -290,7 +290,7 @@ function getResultClass(game: rest_api.Game, user_id: number): ResultClass {
         );
         const player_effective_stronger =
             (black_effective_stronger && played_black) ||
-            (!white_effective_stronger && !played_black);
+            (white_effective_stronger && !played_black);
 
         if (player_won) {
             return player_effective_stronger
