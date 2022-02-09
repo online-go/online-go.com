@@ -642,17 +642,15 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     };
 
     update_board_width = (ev) => {
+        this.state.challenge.game.width = parseInt(ev.target.value);
         this.setState({
-            challenge: Object.assign({}, this.state.challenge, {
-                board_width: parseInt(ev.target.value),
-            }),
+            challenge: Object.assign({}, this.state.challenge),
         });
     };
     update_board_height = (ev) => {
+        this.state.challenge.game.height = parseInt(ev.target.value);
         this.setState({
-            challenge: Object.assign({}, this.state.challenge, {
-                board_height: parseInt(ev.target.value),
-            }),
+            challenge: Object.assign({}, this.state.challenge),
         });
     };
 
