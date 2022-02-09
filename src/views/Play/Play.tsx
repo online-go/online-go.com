@@ -1253,7 +1253,7 @@ export class Play extends React.Component<{}, PlayState> {
         const { C, user } = { ...props };
 
         const rengo_casual_mode_text: string = C.rengo_casual_mode ? _("Yes") : _("No");
-        const rengo_auto_start_text: number | string = C.rengo_auto_start || _("No");
+        const rengo_auto_start_text: number | string = C.rengo_auto_start || "-";
 
         return (
             <tr className={"challenge-row"}>
