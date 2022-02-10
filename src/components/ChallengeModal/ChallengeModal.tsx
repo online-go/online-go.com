@@ -259,17 +259,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
         this.setState({ conf: conf, challenge: challenge });
     }
-    setAGARanked(tf) {
-        const next = this.nextState();
-
-        next.challenge.aga_ranked = tf;
-        if (tf && this.state.challenge && data.get("user")) {
-            next.challenge.game.ranked = true;
-            this.state.setRanked(true);
-        } else {
-            this.setState({ challenge: next.challenge });
-        }
-    }
 
     setRanked(tf) {
         const next = this.nextState();
@@ -633,9 +622,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
     update_demo_private = (ev) => this.upstate("demo.private", ev);
     update_ranked = (ev) => this.setRanked((ev.target as HTMLInputElement).checked);
-    update_aga_ranked = (ev) => {
-        this.setAGARanked((ev.target as HTMLInputElement).checked);
-    };
     update_demo_rules = (ev) => this.upstate("demo.rules", ev);
     update_board_size = (ev) => {
         this.syncBoardSize((ev.target as HTMLSelectElement).value);
@@ -905,25 +891,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                 </div>
                             </div>
                         </div>
-
-                        {data.get("config.aga_rankings_enabled", null) && (
-                            <div className="form-group">
-                                <label className="control-label" htmlFor="challenge-aga-ranked">
-                                    {_("AGA Ranked")}
-                                </label>
-                                <div className="controls">
-                                    <div className="checkbox">
-                                        <input
-                                            type="checkbox"
-                                            id="challenge-aga-ranked"
-                                            disabled={this.state.challenge.game.private}
-                                            checked={this.state.challenge.aga_ranked}
-                                            onChange={this.update_aga_ranked}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
                     </div>
                 )}
                 {(mode === "demo" || null) && (

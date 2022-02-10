@@ -57,7 +57,6 @@ export interface ConfigSchema {
     superchat_auth: string;
     notification_auth: string;
     incident_auth: string;
-    aga_rankings_enabled: boolean;
 }
 
 interface ChatSchema {
