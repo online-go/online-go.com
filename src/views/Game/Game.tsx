@@ -826,7 +826,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
 
         if (this.game_id) {
             get("games/%%", this.game_id)
-                .then((game) => {
+                .then((game: rest_api.GameDetails) => {
                     if (game.players.white.id) {
                         player_cache.update(game.players.white, true);
                         this.white_username = game.players.white.username;
