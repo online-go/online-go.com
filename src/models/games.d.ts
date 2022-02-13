@@ -20,8 +20,8 @@ declare namespace rest_api {
             [key: string]: string;
         };
         players: {
-            black: import("../lib/player_cache").PlayerCacheEntry;
-            white: import("../lib/player_cache").PlayerCacheEntry;
+            black: games.Player;
+            white: games.Player;
         };
         id: number;
         name: string;
@@ -57,19 +57,17 @@ declare namespace rest_api {
         annulled: boolean;
         started: string; // ISODate
         ended: string; // ISODate
-        // Guaranteed to include the player of interest (even in rengo games)
+        // For Game History, guaranteed to include the player of interest.
         historical_ratings: {
-            black: import("goban").GoEnginePlayerEntry;
-            white: import("goban").GoEnginePlayerEntry;
+            black: games.Player;
+            white: games.Player;
         };
         rengo: boolean;
     }
 
     /**
      * One element of `results` from `player/%player_id%/games`
-     *
-     * This is a work in progress. Trust these values at your own risk.
-     * */
+     */
     interface Game extends GameBase {
         related: {
             detail: string; // route to full game info
@@ -85,6 +83,24 @@ declare namespace rest_api {
             professional: boolean;
             rank: number;
             username: string;
+        }
+
+        interface Player {
+            id: number;
+            ratings: {
+                version: number;
+                overall: {
+                    rating: number;
+                    deviation: number;
+                    volatility: number;
+                };
+            };
+            username: string;
+            country: string; // country code
+            ranking: number;
+            professional: boolean;
+            icon: string; // URL
+            ui_class: string;
         }
 
         interface GameData {
