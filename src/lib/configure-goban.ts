@@ -65,7 +65,10 @@ export function configure_goban() {
         isAnalysisDisabled: (goban: Goban, perGameSettingAppliesToNonPlayers = false): boolean => {
             // The player's preference setting to always disable analysis overrides the per-game setting for
             // their own games.
-            if (preferences.get("always-disable-analysis") && goban.isParticipatingPlayer()) {
+            if (
+                preferences.get("always-disable-analysis") &&
+                goban.engine.isParticipant(data.get("user").id)
+            ) {
                 return true;
             }
 
