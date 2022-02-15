@@ -171,7 +171,6 @@ function load_checkout_libraries(): void {
             script.async = true;
             //script.charset = "utf-8";
             script.onload = () => {
-                console.log("Paddle loaded");
                 resolve();
             };
             script.onerror = () => {
@@ -227,7 +226,6 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                     paddle_js_promise
                         .then(() => {
                             if (config.sandbox) {
-                                console.log("Entering paddle.com sandbox mode");
                                 Paddle.Environment.set("sandbox");
                             }
                             Paddle.Setup({
@@ -256,9 +254,11 @@ export function Supporter(props: SupporterProperties): JSX.Element {
             get(`players/${account_id}/supporter_overrides`)
                 .then((overrides: SupporterOverrides) => {
                     setOverrides(overrides);
+                    /*
                     if (Object.keys(overrides).length > 0) {
                         console.log("Supplementary supporter config: ", overrides);
                     }
+                    */
                 })
                 .catch((err) => {
                     console.error(err);
@@ -410,12 +410,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                         <>
                             <div className="Subscriptions">
                                 {config.subscriptions.map((s) => (
-                                    <Subscription
-                                        key={s.id}
-                                        subscription={s}
-                                        prices={prices}
-                                        currency={currency}
-                                    />
+                                    <Subscription key={s.id} subscription={s} prices={prices} />
                                 ))}
                             </div>
                         </>
@@ -582,7 +577,6 @@ export function PriceBox({
 
     function paddle_subscribe() {
         setDisabled(true);
-        console.log("Paddle Checkout");
         if (!Paddle) {
             swal("Error", "Paddle is not loaded. Please try again later.", "error").catch(
                 swal.noop,
@@ -605,8 +599,6 @@ export function PriceBox({
         if (!paddle_config.email) {
             delete paddle_config.email;
         }
-
-        console.log("Paddle config", JSON.parse(JSON.stringify(paddle_config)));
 
         Paddle.Checkout.open(paddle_config);
     }
@@ -769,15 +761,11 @@ export function PriceBox({
 function Subscription({
     subscription,
     prices,
-    currency,
 }: {
     subscription: Subscription;
     prices: Price[];
-    currency: string;
 }): JSX.Element {
     const user = data.get("user");
-
-    console.log("prices", prices, "currency", currency);
 
     let text: string;
     const period_duration_months = subscription.period_duration_months;
@@ -794,18 +782,13 @@ function Subscription({
             break;
     }
 
-    console.log("Subscription", subscription);
-
     const grandfathered_plan = !prices.find(
         (price) =>
-            price.price[subscription.plan.currency]?.month === subscription.plan?.amount ||
-            price.price[subscription.plan.currency]?.year === subscription.plan?.amount,
+            price.price[subscription.plan?.currency || ""]?.month === subscription.plan?.amount ||
+            price.price[subscription.plan?.currency || ""]?.year === subscription.plan?.amount,
     );
 
-    console.log("grandfathered_plan", grandfathered_plan);
-
     function cancel() {
-        console.log("cancel");
         swal({
             text: grandfathered_plan
                 ? pgettext(
@@ -871,7 +854,6 @@ function Subscription({
     }
 
     function updatePaymentMethod() {
-        console.log("update");
         let promise;
 
         switch (subscription.payment_processor) {
