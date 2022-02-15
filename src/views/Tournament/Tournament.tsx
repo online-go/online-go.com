@@ -60,6 +60,7 @@ interface TournamentState {
     new_tournament_group_id: number;
     tournament_id: number;
     loading: boolean;
+    info_loaded: boolean;
     tournament: {
         id: number;
         name: string;
@@ -160,6 +161,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
             new_tournament_group_id: parseInt(this.props.match.params.group_id) || 0,
             tournament_id: tournament_id,
             loading: true,
+            info_loaded: false,
             tournament: {
                 id: tournament_id,
                 name: "",
@@ -262,8 +264,13 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
     resolve(tournament_id: number) {
         this.abort_requests();
 
+        const tournament_info_promise = get("tournaments/%%", tournament_id).then((tournament) => {
+            this.setState({ tournament, info_loaded: true });
+            return tournament;
+        });
+
         Promise.all([
-            get("tournaments/%%", tournament_id),
+            tournament_info_promise,
             get("tournaments/%%/rounds", tournament_id),
             this.refreshPlayerList(tournament_id),
         ])
@@ -1435,6 +1442,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
         try {
             const editing = this.state.editing;
             const loading = this.state.loading;
+            const info_loaded = this.state.info_loaded;
             const user = data.get("user");
             const tournament = this.state.tournament;
             const players = this.state.players;
@@ -1591,7 +1599,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                 tournament.tournament_type === "opengotha" ||
                 null;
 
-            if (this.state.loading && !this.state.editing) {
+            if (!this.state.info_loaded && !this.state.editing) {
                 return <LoadingPage />;
             }
 
@@ -1663,7 +1671,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                 />
                             )}
 
-                            {!editing && !loading && (
+                            {!editing && info_loaded && (
                                 <div>
                                     {(((data.get("user").is_tournament_moderator ||
                                         data.get("user").id === tournament.director.id) &&
@@ -1710,10 +1718,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                 </div>
                             )}
 
-                            {!loading && (!tournament.started || null) && (
+                            {info_loaded && (!tournament.started || null) && (
                                 <h4>{tournament_time_start_text}</h4>
                             )}
-                            {!editing && !loading && <h4>{date_text}</h4>}
+                            {!editing && info_loaded && <h4>{date_text}</h4>}
                             {editing && (
                                 <div className="form-group" style={{ marginTop: "1rem" }}>
                                     <label className="control-label" htmlFor="start-time">
@@ -1736,7 +1744,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                     </div>
                                 </div>
                             )}
-                            {!editing && !loading && (
+                            {!editing && info_loaded && (
                                 <p>
                                     <b>{_("Clock:")}</b> {time_control_text}
                                 </p>
@@ -2357,13 +2365,17 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                         </div>
                     )}
 
+                    {info_loaded && (
+                        <EmbeddedChatCard
+                            channel={`tournament-${this.state.tournament_id}`}
+                            updateTitle={false}
+                        />
+                    )}
+
+                    {info_loaded && loading && <LoadingPage />}
+
                     {!loading && !tournament.started && (
                         <div className={"bottom-details not-started"}>
-                            <EmbeddedChatCard
-                                channel={`tournament-${this.state.tournament_id}`}
-                                updateTitle={false}
-                            />
-
                             {(!tournament.start_waiting || null) && (
                                 <div className="signup-area" style={{ textAlign: "center" }}>
                                     {(tournament.time_start || null) && (
@@ -2458,11 +2470,6 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
 
                     {!loading && tournament.started && tournament.tournament_type === "opengotha" && (
                         <div className="bottom-details">
-                            <EmbeddedChatCard
-                                channel={`tournament-${this.state.tournament_id}`}
-                                updateTitle={false}
-                            />
-
                             <div className="results">
                                 <div>
                                     <div className="roster-rounds-line">
@@ -2533,11 +2540,6 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
 
                     {!loading && tournament.started && tournament.tournament_type !== "opengotha" && (
                         <div className="bottom-details">
-                            <EmbeddedChatCard
-                                channel={`tournament-${this.state.tournament_id}`}
-                                updateTitle={false}
-                            />
-
                             <div className="results">
                                 {this.state.use_elimination_trees ? (
                                     <PersistentElement
