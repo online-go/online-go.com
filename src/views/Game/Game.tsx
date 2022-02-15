@@ -2963,7 +2963,11 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                         )}
                         <div>
                             {this.goban.engine.players.black.id ===
-                            this.goban.pause_control.paused.pausing_player_id
+                                this.goban.pause_control.paused.pausing_player_id ||
+                            (this.goban.engine.rengo &&
+                                this.goban.engine.rengo_teams.black
+                                    .map((p) => p.id)
+                                    .includes(this.goban.pause_control.paused.pausing_player_id))
                                 ? interpolate(_("{{pauses_left}} pauses left for Black"), {
                                       pauses_left: this.goban.pause_control.paused.pauses_left,
                                   })
