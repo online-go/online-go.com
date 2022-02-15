@@ -2279,7 +2279,9 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             return false;
         }
         this.setState({ estimating_score: true });
-        this.goban.setScoringMode(true, !is_player || this.goban.engine.phase === "finished");
+        const use_ai_estimate =
+            this.goban.engine.phase === "finished" || !this.goban.engine.isParticipant(user.id);
+        this.goban.setScoringMode(true, use_ai_estimate);
         this.sync_state();
         return true;
     }
