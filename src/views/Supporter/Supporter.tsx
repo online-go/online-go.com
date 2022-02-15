@@ -798,8 +798,8 @@ function Subscription({
 
     const grandfathered_plan = !prices.find(
         (price) =>
-            price.price[subscription.plan.currency].month === subscription.plan.amount ||
-            price.price[subscription.plan.currency].year === subscription.plan.amount,
+            price.price[subscription.plan.currency]?.month === subscription.plan?.amount ||
+            price.price[subscription.plan.currency]?.year === subscription.plan?.amount,
     );
 
     console.log("grandfathered_plan", grandfathered_plan);
