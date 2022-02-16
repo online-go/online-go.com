@@ -151,10 +151,6 @@ interface UserState {
 }
 
 export class User extends React.PureComponent<UserProperties, UserState> {
-    refs: {
-        vacation_left;
-        bot_ai;
-    };
     user_id: number;
     vacation_left: string;
     original_username: string;
