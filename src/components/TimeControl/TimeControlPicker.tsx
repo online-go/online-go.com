@@ -484,7 +484,7 @@ export class TimeControlPicker extends React.PureComponent<
                                     min="1"
                                     max="300"
                                     className="challenge-dropdown form-control"
-                    value={(this.state as TimeControlTypes.ByoYomi).periods || 1}
+                                    value={(this.state as TimeControlTypes.ByoYomi).periods || 1}
                                     onChange={this.update_periods}
                                 />
                             </div>
@@ -545,7 +545,8 @@ export class TimeControlPicker extends React.PureComponent<
                                     max="50"
                                     className="challenge-dropdown form-control"
                                     value={
-                                        (this.state as TimeControlTypes.Canadian).stones_per_period || 1
+                                        (this.state as TimeControlTypes.Canadian)
+                                            .stones_per_period || 1
                                     }
                                     onChange={this.update_stones_per_period}
                                 />
