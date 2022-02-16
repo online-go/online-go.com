@@ -404,27 +404,36 @@ export function errorLogger(...args) {
     console.error(err);
 }
 export function string_splitter(str: string, max_length: number = 200): Array<string> {
-    const re = new RegExp(`.{1,${max_length}}`, "g");
+    const words = str.split(/(\W+)/g);
 
-    const arr = str.split(/\s+/).map((s) => s.match(re));
-    const ret: Array<string> = [];
+    const lines = [];
     let cur = "";
-    for (const pieces of arr) {
-        if (!pieces) {
-            continue;
-        }
-        for (const s of pieces) {
-            if (cur.length + s.length + (cur.length === 0 ? 0 : 1) < max_length) {
-                cur += (cur.length ? " " : "") + s;
-            } else {
-                ret.push(cur);
-                cur = s;
+    for (let word of words) {
+        while (word.length > max_length) {
+            if (cur !== "") {
+                lines.push(cur);
+                cur = "";
             }
+
+            lines.push(word.substring(0, max_length - 1) + "-");
+            word = word.substring(max_length - 1);
+        }
+
+        if (cur === "" || (cur + word).length < max_length) {
+            cur += word;
+        } else {
+            lines.push(cur);
+            cur = word;
         }
     }
-    ret.push(cur);
-    return ret;
+
+    if (cur !== "") {
+        lines.push(cur);
+    }
+
+    return lines;
 }
+
 export function ignore() {
     /* do nothing */
 }

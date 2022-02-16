@@ -608,7 +608,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
 
         const _send_obj = {
             channel: this.channel,
-            uuid: n2s(user.id) + "." + n2s(Date.now()),
+            uuid: chatSoftUid(user.id),
             message: text,
         };
 
@@ -908,6 +908,23 @@ export function resolveChannelInformation(channel: string): Promise<ChannelInfor
     }
 
     return (channel_information_resolvers[channel] = resolver);
+}
+
+/*
+ * Returns a "unique" based on the user logged in, timestamp, and an increment
+ * to handle rapid generation of numbers. Technically the same user on two different
+ * systems could in theory generate the same uid, but we don't particularly care.
+ * (We should probably just switch to nanoid or something, but this is good
+ * enough and I can't recall if the user id portion is used anywhere.)
+ */
+let last_uid_date = Date.now();
+export function chatSoftUid(user_id: number): string {
+    let now = Date.now();
+    if (now <= last_uid_date) {
+        now = last_uid_date + 1;
+    }
+    last_uid_date = now;
+    return n2s(user_id) + "." + n2s(now);
 }
 
 for (const chan of global_channels) {
