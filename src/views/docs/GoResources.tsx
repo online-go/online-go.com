@@ -873,6 +873,12 @@ export const GoResources = () => {
                                     Go4Go
                                 </a>
                             </span>,
+                            <span>
+                                <Flag country={"ro"} />{" "}
+                                <a rel="noopener" href="https://desprego.ro/">
+                                    Despre GO
+                                </a>
+                            </span>,
 
                             <span>
                                 <Flag country={en} />{" "}
@@ -890,12 +896,6 @@ export const GoResources = () => {
                                 <Flag country={en} />{" "}
                                 <a rel="noopener" href="http://senseis.xmp.net/">
                                     Sensei's Library
-                                </a>
-                            </span>,
-                            <span>
-                                <Flag country={en} />{" "}
-                                <a rel="noopener" href="http://www.shawnsgogroup.com/">
-                                    Shawn Ray's Go Group
                                 </a>
                             </span>,
                             <span>
