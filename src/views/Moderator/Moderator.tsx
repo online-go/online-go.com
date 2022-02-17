@@ -194,6 +194,10 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
     }
 
     render() {
+        if (!data.get("user").is_moderator) {
+            return null;
+        }
+
         return (
             <div className="Moderator">
                 <Card>

@@ -61,6 +61,7 @@ import { GobanTest } from "GobanTest";
 import { global_channels } from "chat_manager";
 import { ForceUsernameChange } from "ForceUsernameChange";
 import { BlockedVPN } from "BlockedVPN";
+import { Firewall } from "Firewall";
 
 import * as docs from "docs";
 
@@ -236,6 +237,7 @@ export const routes = (
                 <Route path="/leaderboard" component={LeaderBoard} />
                 <Route path="/developer" component={Developer} />
                 <Route path="/admin/merchant_log" component={MerchantLog} />
+                <Route path="/admin/firewall" component={Firewall} />
                 <Route path="/admin" component={Admin} />
                 <Route path="/announcement-center" component={AnnouncementCenter} />
                 {/*
