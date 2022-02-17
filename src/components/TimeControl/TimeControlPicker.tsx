@@ -194,7 +194,7 @@ export class TimeControlPicker extends React.PureComponent<
     update_period_time = (ev) => this.syncTimeControl({ period_time: parseInt(ev.target.value) });
     update_periods = (ev) =>
         this.syncTimeControl({
-            periods: Math.max(1, Math.min(300, parseInt(ev.target.value) || 1)),
+            periods: parseInt(ev.target.value),
         });
     //update_period_time          = (ev)=>this.syncTimeControl({period_time: ev.target.value});
     update_stones_per_period = (ev) =>
@@ -484,7 +484,7 @@ export class TimeControlPicker extends React.PureComponent<
                                     min="1"
                                     max="300"
                                     className="challenge-dropdown form-control"
-                                    value={(this.state as TimeControlTypes.ByoYomi).periods}
+                                    value={(this.state as TimeControlTypes.ByoYomi).periods || 1}
                                     onChange={this.update_periods}
                                 />
                             </div>
@@ -545,7 +545,8 @@ export class TimeControlPicker extends React.PureComponent<
                                     max="50"
                                     className="challenge-dropdown form-control"
                                     value={
-                                        (this.state as TimeControlTypes.Canadian).stones_per_period
+                                        (this.state as TimeControlTypes.Canadian)
+                                            .stones_per_period || 1
                                     }
                                     onChange={this.update_stones_per_period}
                                 />
