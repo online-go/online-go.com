@@ -40,8 +40,7 @@ interface GameHistoryProps {
 type ResultClass =
     | `library-${"won" | "lost" | "tie"}-result${"-vs-stronger" | "-vs-weaker" | "-unranked" | ""}`;
 
-/** Groomed game */
-interface GG {
+interface GroomedGame {
     id: number;
     annulled: boolean;
     played_black: boolean;
@@ -65,7 +64,7 @@ interface GG {
 export function GameHistoryTable(props: GameHistoryProps) {
     const [player_filter, setPlayerFilter] = React.useState<number>(null);
 
-    function game_history_groomer(results: rest_api.Game[]): GG[] {
+    function game_history_groomer(results: rest_api.Game[]): GroomedGame[] {
         const ret = [];
         for (let i = 0; i < results.length; ++i) {
             const r = results[i];
@@ -73,7 +72,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
             const black_won = !r.black_lost && r.white_lost && !r.annulled;
             const white_won = !r.white_lost && r.black_lost && !r.annulled;
 
-            const item: Partial<GG> = {
+            const item: Partial<GroomedGame> = {
                 id: r.id,
             };
 
@@ -156,9 +155,9 @@ export function GameHistoryTable(props: GameHistoryProps) {
                         columns={[
                             {
                                 header: _("User"),
-                                className: (X: GG) =>
+                                className: (X) =>
                                     "user_info" + (X && X.annulled ? " annulled" : ""),
-                                render: (X: GG) => (
+                                render: (X) => (
                                     <React.Fragment>
                                         <span>
                                             {X.played_black == null
@@ -174,9 +173,9 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             },
                             {
                                 header: _(""),
-                                className: (X: GG) =>
+                                className: (X) =>
                                     "winner_marker" + (X && X.annulled ? " annulled" : ""),
-                                render: (X: GG) =>
+                                render: (X) =>
                                     X.player_won ? (
                                         <i className="fa fa-trophy game-history-winner" />
                                     ) : (
@@ -185,14 +184,13 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             },
                             {
                                 header: _("Date"),
-                                className: (X: GG) => "date" + (X && X.annulled ? " annulled" : ""),
-                                render: (X: GG) => moment(X.date).format("YYYY-MM-DD"),
+                                className: (X) => "date" + (X && X.annulled ? " annulled" : ""),
+                                render: (X) => moment(X.date).format("YYYY-MM-DD"),
                             },
                             {
                                 header: _("Opponent"),
-                                className: (X: GG) =>
-                                    "player" + (X && X.annulled ? " annulled" : ""),
-                                render: (X: GG) => (
+                                className: (X) => "player" + (X && X.annulled ? " annulled" : ""),
+                                render: (X) => (
                                     <>
                                         {X.rengo_vs_text ? (
                                             <strong>{X.rengo_vs_text}</strong>
@@ -204,23 +202,20 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             },
                             {
                                 header: _(""),
-                                className: (X: GG) =>
-                                    "speed" + (X && X.annulled ? " annulled" : ""),
-                                render: (X: GG) => (
-                                    <i className={X.speed_icon_class} title={X.speed} />
-                                ),
+                                className: (X) => "speed" + (X && X.annulled ? " annulled" : ""),
+                                render: (X) => <i className={X.speed_icon_class} title={X.speed} />,
                             },
                             {
                                 header: _("Size"),
-                                className: (X: GG) =>
+                                className: (X) =>
                                     "board_size" + (X && X.annulled ? " annulled" : ""),
-                                render: (X: GG) => `${X.width}x${X.height}`,
+                                render: (X) => `${X.width}x${X.height}`,
                             },
                             {
                                 header: _("Name"),
-                                className: (X: GG) =>
+                                className: (X) =>
                                     "game_name" + (X && X.annulled ? " annulled" : ""),
-                                render: (X: GG) => (
+                                render: (X) => (
                                     <Link to={X.href}>
                                         {X.name ||
                                             interpolate(
@@ -235,9 +230,9 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             },
                             {
                                 header: _("Result"),
-                                className: (X: GG) =>
+                                className: (X) =>
                                     X ? X.result_class + (X.annulled ? " annulled" : "") : "",
-                                render: (X: GG) => X.result,
+                                render: (X) => X.result,
                             },
                         ]}
                     />
