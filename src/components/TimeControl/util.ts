@@ -246,7 +246,7 @@ export function makeTimeControlParameters(tc: any): TimeControl {
                 speed: speed,
                 main_time: parseInt(tc.main_time),
                 period_time: parseInt(tc.period_time),
-                periods: parseInt(tc.periods),
+                periods: parseInt(tc.periods) || 1,
                 pause_on_weekends: tc.pause_on_weekends,
             };
         case "simple":
@@ -262,7 +262,7 @@ export function makeTimeControlParameters(tc: any): TimeControl {
                 speed: speed,
                 main_time: parseInt(tc.main_time),
                 period_time: parseInt(tc.period_time),
-                stones_per_period: parseInt(tc.stones_per_period),
+                stones_per_period: parseInt(tc.stones_per_period) || 1,
                 pause_on_weekends: tc.pause_on_weekends,
             };
         case "absolute":
