@@ -991,17 +991,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                 {_("Active Games")} ({this.state.active_games.length})
                             </h2>
                         )}
-                        <GameList
-                            list={
-                                // GameList is expecting rengo info on the game (like in ObserveGamesComponent) but here that information is on game.json, so we have to promote it ...
-                                this.state.active_games.map((game) => ({
-                                    rengo: game.json.rengo,
-                                    rengo_teams: game.json.rengo_teams,
-                                    ...game,
-                                }))
-                            }
-                            player={user}
-                        />
+                        <GameList list={this.state.active_games} player={user} />
 
                         <div className="row">
                             <GameHistoryTable user_id={this.user_id} />
