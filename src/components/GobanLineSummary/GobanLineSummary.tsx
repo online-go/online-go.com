@@ -23,6 +23,7 @@ import * as data from "data";
 import { rankString } from "rank_utils";
 import { Player } from "Player";
 import { Clock } from "Clock";
+import { GobanInfoStateBase } from "src/lib/types";
 
 interface GobanLineSummaryProps {
     id: number;
@@ -34,29 +35,11 @@ interface GobanLineSummaryProps {
     height?: number;
 }
 
-// This state is very similar to MiniGobanState.
-// TODO (ben): Possibly pull shared members into a common type.
-interface GobanLineSummaryState {
+interface GobanLineSummaryState extends GobanInfoStateBase {
     black_score: string;
     white_score: string;
 
     move_number?: number;
-    game_name?: string;
-
-    black_name?: string;
-    white_name?: string;
-    paused?: string;
-    // It looks like these (black|white)_pause_text are never used.
-    // TODO (ben): Verify and remove.
-    black_pause_text?: string;
-    white_pause_text?: string;
-
-    current_users_move?: boolean;
-    black_to_move_cls?: string;
-    white_to_move_cls?: string;
-
-    in_stone_removal_phase?: boolean;
-    finished?: boolean;
 }
 
 export class GobanLineSummary extends React.Component<
@@ -101,19 +84,6 @@ export class GobanLineSummary extends React.Component<
             this.sync_state();
         });
 
-        // It appears "pause-text" is not part of the Goban event emitter.
-        // TODO: Verify and remove.
-        interface PauseText {
-            white_pause_text: string;
-            black_pause_text: string;
-        }
-        this.goban.on("pause-text" as any, (new_text: PauseText) =>
-            this.setState({
-                white_pause_text: new_text.white_pause_text,
-                black_pause_text: new_text.black_pause_text,
-            }),
-        );
-
         if (this.props.gobanref) {
             this.props.gobanref(this.goban);
         }
@@ -146,7 +116,6 @@ export class GobanLineSummary extends React.Component<
                 typeof black === "object" ? black.username + " [" + rankString(black) + "]" : black,
             white_name:
                 typeof white === "object" ? white.username + " [" + rankString(white) + "]" : white,
-            paused: this.state.black_pause_text ? "paused" : "",
 
             current_users_move: player_to_move === data.get("config.user").id,
             black_to_move_cls: this.goban && black.id === player_to_move ? "to-move" : "",
