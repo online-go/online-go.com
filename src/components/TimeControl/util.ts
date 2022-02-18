@@ -225,6 +225,11 @@ export const time_options = {
     },
 };
 
+function parseIntWithDefaultValue(value: string, defaultValue: number): number {
+    const parsedInt = parseInt(value, 10);
+    return isNaN(parsedInt) ? defaultValue : parsedInt;
+}
+
 export function makeTimeControlParameters(tc: any): TimeControl {
     const tpm = computeAverageMoveTime(tc);
     const speed: TimeControlTypes.TimeControlSpeed =
@@ -246,7 +251,7 @@ export function makeTimeControlParameters(tc: any): TimeControl {
                 speed: speed,
                 main_time: parseInt(tc.main_time),
                 period_time: parseInt(tc.period_time),
-                periods: parseInt(tc.periods) || 1,
+                periods: parseIntWithDefaultValue(tc.periods, 1),
                 pause_on_weekends: tc.pause_on_weekends,
             };
         case "simple":
@@ -262,7 +267,7 @@ export function makeTimeControlParameters(tc: any): TimeControl {
                 speed: speed,
                 main_time: parseInt(tc.main_time),
                 period_time: parseInt(tc.period_time),
-                stones_per_period: parseInt(tc.stones_per_period) || 1,
+                stones_per_period: parseIntWithDefaultValue(tc.stones_per_period, 1),
                 pause_on_weekends: tc.pause_on_weekends,
             };
         case "absolute":
