@@ -28,7 +28,7 @@ interface PaginatedTableColumnProperties<EntryT> {
     headerProps?: any;
     sortable?: boolean;
     striped?: boolean;
-    className?: ((row) => string) | string;
+    className?: ((row: EntryT) => string) | string;
     orderBy?: Array<string>;
 }
 
@@ -68,7 +68,11 @@ export interface PaginatedTableRef {
 
 export const PaginatedTable = React.forwardRef<PaginatedTableRef, PaginatedTableProperties<any>>(
     _PaginatedTable,
-);
+) as <RawEntryT = any, GroomedEntryT = RawEntryT>(
+    props: PaginatedTableProperties<RawEntryT, GroomedEntryT> & {
+        ref?: React.ForwardedRef<PaginatedTableRef>;
+    },
+) => ReturnType<typeof _PaginatedTable>;
 
 function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
     props: PaginatedTableProperties<RawEntryT, GroomedEntryT>,
