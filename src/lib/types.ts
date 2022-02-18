@@ -133,3 +133,17 @@ export interface CreatedChallengeInfo {
 // The format string does not care whether ladderId was a number or a number formatted as a string,
 // so IdType is a good type for ladderId.
 export type IdType = number | string;
+
+/** Shared base type between GobanLineSummaryState and MiniGobanState */
+export interface GobanInfoStateBase {
+    game_name?: string;
+
+    black_name?: string;
+    white_name?: string;
+
+    current_users_move?: boolean;
+    black_to_move_cls?: string;
+    white_to_move_cls?: string;
+    in_stone_removal_phase?: boolean;
+    finished?: boolean;
+}

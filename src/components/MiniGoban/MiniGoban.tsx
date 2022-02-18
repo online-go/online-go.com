@@ -28,6 +28,7 @@ import { Clock } from "Clock";
 import { fetch } from "player_cache";
 import { getGameResultText } from "misc";
 import { PlayerCacheEntry } from "player_cache";
+import { GobanInfoStateBase } from "src/lib/types";
 
 interface MiniGobanProps {
     id: number;
@@ -49,28 +50,15 @@ interface MiniGobanProps {
     title?: boolean;
 }
 
-// This state is very similar to GobanLineSummaryState.
-// TODO (ben): Possibly pull shared members into a common type.
-interface MiniGobanState {
+interface MiniGobanState extends GobanInfoStateBase {
     white_points: string;
     black_points: string;
 
-    black_name?: string;
-    white_name?: string;
-
-    game_name?: string;
     game_date?: string;
     game_result?: string;
 
     black_rank?: string;
     white_rank?: string;
-
-    current_users_move?: boolean;
-    in_stone_removal_phase?: boolean;
-    finished?: boolean;
-
-    black_to_move_cls?: string;
-    white_to_move_cls?: string;
 }
 
 export class MiniGoban extends React.Component<MiniGobanProps, MiniGobanState> {

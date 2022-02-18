@@ -23,6 +23,7 @@ import * as data from "data";
 import { rankString } from "rank_utils";
 import { Player } from "Player";
 import { Clock } from "Clock";
+import { GobanInfoStateBase } from "src/lib/types";
 
 interface GobanLineSummaryProps {
     id: number;
@@ -34,24 +35,11 @@ interface GobanLineSummaryProps {
     height?: number;
 }
 
-// This state is very similar to MiniGobanState.
-// TODO (ben): Possibly pull shared members into a common type.
-interface GobanLineSummaryState {
+interface GobanLineSummaryState extends GobanInfoStateBase {
     black_score: string;
     white_score: string;
 
     move_number?: number;
-    game_name?: string;
-
-    black_name?: string;
-    white_name?: string;
-
-    current_users_move?: boolean;
-    black_to_move_cls?: string;
-    white_to_move_cls?: string;
-
-    in_stone_removal_phase?: boolean;
-    finished?: boolean;
 }
 
 export class GobanLineSummary extends React.Component<
