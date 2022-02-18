@@ -52,12 +52,6 @@ interface MiniGobanProps {
 // This state is very similar to GobanLineSummaryState.
 // TODO (ben): Possibly pull shared members into a common type.
 interface MiniGobanState {
-    // Paused text does not appear to be used.
-    // TODO (ben): Verify and remove.
-    black_pause_text?: string;
-    white_pause_text?: string;
-    paused?: string;
-
     white_points: string;
     black_points: string;
 
@@ -132,15 +126,6 @@ export class MiniGoban extends React.Component<MiniGobanProps, MiniGobanState> {
                 this.props.onUpdate();
             }
         });
-
-        // Goban does not appear to emit this event.
-        // TODO: Verify and remove.
-        this.goban.on("pause-text", (new_text) =>
-            this.setState({
-                white_pause_text: new_text.white_pause_text,
-                black_pause_text: new_text.black_pause_text,
-            }),
-        );
     }
 
     destroy() {
@@ -263,8 +248,6 @@ export class MiniGoban extends React.Component<MiniGobanProps, MiniGobanState> {
                             (this.goban.engine.rengo_teams.white.length - 1)
                           : this.goban.engine.players.white.username,
                   }),
-
-            paused: this.state.black_pause_text ? "paused" : "",
 
             current_users_move: player_to_move === data.get("config.user").id,
             black_to_move_cls:
