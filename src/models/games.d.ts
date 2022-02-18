@@ -141,7 +141,7 @@ declare namespace rest_api {
                 white: string;
             };
             komi: number;
-            moves: [number, number, number][];
+            moves: import("goban").AdHocPackedMove[];
             opponent_plays_first_after_resume: boolean;
             original_disable_analysis: boolean;
             outcome: string;
@@ -197,5 +197,38 @@ declare namespace rest_api {
         auth: string;
         game_chat_auth: string;
         gamedata: games.GameData;
+    }
+
+    namespace players.full {
+        namespace game {
+            // compatible with PlayerCacheEntry
+            interface Player {
+                id: 126739;
+                pro: false;
+                ranking: number;
+                ratings: {
+                    overall: {
+                        rating: number;
+                        deviation: number;
+                        volatility: number;
+                    };
+                    version: number;
+                };
+                username: string;
+            }
+        }
+
+        /**
+         * The active_games list in the /players/%%/full
+         */
+        interface Game {
+            black: game.Player;
+            white: game.Player;
+            width: number;
+            height: number;
+            json: games.GameData;
+            id: number;
+            name: string;
+        }
     }
 }

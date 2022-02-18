@@ -21,9 +21,30 @@ import * as preferences from "preferences";
 import { MiniGoban } from "MiniGoban";
 import { GobanLineSummary } from "GobanLineSummary";
 import { Player } from "Player";
+import { AdHocClock, AdHocPackedMove, Goban } from "goban";
+
+interface GameType {
+    id: number;
+    name: string;
+    black: {
+        id: number;
+        username: string;
+    };
+    white: {
+        id: number;
+        username: string;
+    };
+    goban?: Goban;
+    json?: {
+        clock: AdHocClock;
+        moves: AdHocPackedMove[];
+    };
+    width: number;
+    height: number;
+}
 
 interface GameListProps {
-    list: Array<any>;
+    list: Array<GameType>;
     player?: any;
     emptyMessage?: string;
     disableSort?: boolean;

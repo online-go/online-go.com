@@ -141,7 +141,7 @@ interface UserState {
     friend_request_sent?: boolean;
     friend_request_received?: boolean;
     is_friend?: boolean;
-    active_games?: any[];
+    active_games?: rest_api.players.full.Game[];
     achievements?: any[];
     titles?: any[];
     trophies?: any[];
