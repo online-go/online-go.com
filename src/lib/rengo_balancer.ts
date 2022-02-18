@@ -25,15 +25,19 @@ type Participant = {
 };
 
 // Convert player IDs to Participants with ratings.
-async function toParticipants(playerIDs: number[]): Promise<Participant[]> {
-    const participants = [];
+function toParticipants(playerIDs: number[]): Promise<Participant[]> {
     const required_fields = ["rating"];
+    const promises = [];
     for (const id of playerIDs) {
-        // TODO is there a way to fetch multiple players at once?
-        const entry = await player_cache.fetch(id, required_fields);
-        participants.push({ user_id: id, rating: entry.rating });
+        const promise = player_cache.fetch(id, required_fields).then((entry) => {
+            return {
+                user_id: id,
+                rating: entry.rating,
+            };
+        });
+        promises.push(promise);
     }
-    return participants;
+    return Promise.all(promises);
 }
 
 function sortParticipants(participants: Participant[]) {
@@ -144,7 +148,6 @@ function autoBalance(participants: Participant[], maxIterations: number = 100): 
 type Challenge = socket_api.seekgraph_global.Challenge;
 
 export async function balanceTeams(challenge: Challenge) {
-    // Assumes all players have been unassigned.
     const participants = await toParticipants(challenge.rengo_participants);
     const { black, white } = autoBalance(participants);
     put("challenges/%%/team", challenge.challenge_id, {
