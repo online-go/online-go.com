@@ -194,11 +194,10 @@ export class TimeControlPicker extends React.PureComponent<
     update_period_time = (ev) => this.syncTimeControl({ period_time: parseInt(ev.target.value) });
     update_periods = (ev) =>
         this.syncTimeControl({
-            periods: parseInt(ev.target.value),
+            periods: ev.target.value,
         });
     //update_period_time          = (ev)=>this.syncTimeControl({period_time: ev.target.value});
-    update_stones_per_period = (ev) =>
-        this.syncTimeControl({ stones_per_period: parseInt(ev.target.value) });
+    update_stones_per_period = (ev) => this.syncTimeControl({ stones_per_period: ev.target.value });
     update_total_time = (ev) => this.syncTimeControl({ total_time: parseInt(ev.target.value) });
     update_pause_on_weekends = (ev) =>
         this.syncTimeControl({ pause_on_weekends: ev.target.checked });
@@ -481,11 +480,19 @@ export class TimeControlPicker extends React.PureComponent<
                                 <input
                                     type="number"
                                     id="challenge-periods"
-                                    min="1"
-                                    max="300"
+                                    min={default_time_options[this.state.speed].byoyomi.periods_min}
+                                    max={default_time_options[this.state.speed].byoyomi.periods_max}
                                     className="challenge-dropdown form-control"
-                                    value={(this.state as TimeControlTypes.ByoYomi).periods || 1}
+                                    value={(this.state as TimeControlTypes.ByoYomi).periods}
                                     onChange={this.update_periods}
+                                    onBlur={(sender) =>
+                                        numericInputOnBlur(
+                                            sender,
+                                            this.state.speed,
+                                            this.state.system,
+                                            "periods",
+                                        )
+                                    }
                                 />
                             </div>
                         </div>
@@ -541,14 +548,25 @@ export class TimeControlPicker extends React.PureComponent<
                                 <input
                                     type="number"
                                     id="challenge-canadian-stones"
-                                    min="1"
-                                    max="50"
+                                    min={
+                                        default_time_options[this.state.speed].canadian.periods_min
+                                    }
+                                    max={
+                                        default_time_options[this.state.speed].canadian.periods_max
+                                    }
                                     className="challenge-dropdown form-control"
                                     value={
-                                        (this.state as TimeControlTypes.Canadian)
-                                            .stones_per_period || 1
+                                        (this.state as TimeControlTypes.Canadian).stones_per_period
                                     }
                                     onChange={this.update_stones_per_period}
+                                    onBlur={(sender) =>
+                                        numericInputOnBlur(
+                                            sender,
+                                            this.state.speed,
+                                            this.state.system,
+                                            "stones_per_period",
+                                        )
+                                    }
                                 />
                             </div>
                         </div>
@@ -629,12 +647,16 @@ const default_time_options = {
             main_time: 30,
             period_time: 5,
             periods: 5,
+            periods_min: 1,
+            periods_max: 30,
             pause_on_weekends: false,
         },
         canadian: {
             main_time: 30,
             period_time: 30,
             stones_per_period: 5,
+            stones_per_period_min: 1,
+            stones_per_period_max: 50,
             pause_on_weekends: false,
         },
         simple: {
@@ -659,12 +681,16 @@ const default_time_options = {
             main_time: 10 * 60,
             period_time: 30,
             periods: 5,
+            periods_min: 1,
+            periods_max: 30,
             pause_on_weekends: false,
         },
         canadian: {
             main_time: 10 * 60,
             period_time: 180,
             stones_per_period: 10,
+            stones_per_period_min: 1,
+            stones_per_period_max: 50,
             pause_on_weekends: false,
         },
         simple: {
@@ -688,12 +714,16 @@ const default_time_options = {
             main_time: 7 * 86400,
             period_time: 1 * 86400,
             periods: 5,
+            periods_min: 1,
+            periods_max: 30,
             pause_on_weekends: true,
         },
         canadian: {
             main_time: 7 * 86400,
             period_time: 7 * 86400,
             stones_per_period: 10,
+            stones_per_period_min: 1,
+            stones_per_period_max: 50,
             pause_on_weekends: true,
         },
         simple: {
@@ -723,4 +753,22 @@ function recallTimeControlSettings(speed: Speed, time_control_system: TimeContro
             { system: time_control_system },
         ),
     );
+}
+
+function numericInputOnBlur(
+    sender: FocusEvent,
+    speed: Speed,
+    time_control_system: TimeControlSystem,
+    propertyName: string,
+) {
+    const target = sender.target as HTMLInputElement;
+    if (
+        target.valueAsNumber <
+            default_time_options[speed][time_control_system][`${propertyName}_min`] ||
+        target.valueAsNumber >
+            default_time_options[speed][time_control_system][`${propertyName}_min`] ||
+        isNaN(target.valueAsNumber)
+    ) {
+        target.value = default_time_options[speed][time_control_system][`${propertyName}`];
+    }
 }
