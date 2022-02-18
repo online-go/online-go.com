@@ -18,6 +18,7 @@
 import * as data from "data";
 import * as player_cache from "player_cache";
 import * as React from "react";
+import ReactResizeDetector from "react-resize-detector";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext, interpolate } from "translate";
 import { post, del } from "requests";
@@ -40,6 +41,7 @@ import * as preferences from "preferences";
 import { notification_manager } from "Notifications";
 import { one_bot, bot_count, bots_list } from "bots";
 import { openForkModal } from "./ForkModal";
+import { goban_view_mode } from "Game";
 
 import swal from "sweetalert2";
 
@@ -199,6 +201,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             selected_demo_player_white: this.props.playersList
                 ? this.props.playersList.length - 1
                 : 0,
+
+            preferred_settings: data.get("preferred-game-settings", []),
+            view_mode: goban_view_mode(),
+            hide_preferred_settings_on_portrait: true,
         };
 
         if (this.props.playersList && this.props.playersList.length > 0) {
@@ -244,7 +250,22 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 this.close();
             }, 1);
         }
+
+        this.on("open", () => {
+            data.watch("preferred-game-settings", this.preferredSettingsUpdated);
+        });
+        this.on("close", () => {
+            data.unwatch("preferred-game-settings", this.preferredSettingsUpdated);
+        });
     }
+
+    onResize = () => {
+        this.setState({ view_mode: goban_view_mode() });
+    };
+
+    preferredSettingsUpdated = (preferred_settings: ChallengeDetails[]) => {
+        this.setState({ preferred_settings: preferred_settings });
+    };
 
     syncBoardSize(value) {
         const conf = dup(this.state.conf);
@@ -290,6 +311,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 next.conf.selected_board_size !== "9x9"
             ) {
                 next.conf.selected_board_size = "19x19";
+                next.challenge.game.width = 19;
+                next.challenge.game.height = 19;
             }
         } else {
             next.challenge.aga_ranked = false;
@@ -312,6 +335,51 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         data.set("challenge.restrict_rank", next.conf.restrict_rank);
         data.set("demo.settings", next.demo);
     }
+
+    addToPreferredSettings = () => {
+        const preferred_settings = data.get("preferred-game-settings", []);
+        const challenge = JSON.parse(JSON.stringify(this.getChallenge()));
+        preferred_settings.push(challenge);
+        data.set(
+            "preferred-game-settings",
+            [...preferred_settings],
+            data.Replication.REMOTE_OVERWRITES_LOCAL,
+        );
+        if (this.state.view_mode === "portrait") {
+            this.setState({ hide_preferred_settings_on_portrait: false });
+        }
+    };
+
+    deletePreferredSetting = (index) => {
+        const preferred_settings = data.get("preferred-game-settings", []);
+        preferred_settings.splice(index, 1);
+        data.set(
+            "preferred-game-settings",
+            [...preferred_settings],
+            data.Replication.REMOTE_OVERWRITES_LOCAL,
+        );
+    };
+
+    usePreferredSetting = (index) => {
+        const preferred_settings = data.get("preferred-game-settings", []);
+        const setting: ChallengeDetails = JSON.parse(JSON.stringify(preferred_settings[index]));
+        if (this.props.mode !== "open") {
+            setting.rengo_auto_start = 0;
+            setting.game.rengo = false;
+            setting.game.rengo_casual_mode = true;
+        }
+        this.setState({
+            challenge: setting,
+            initial_time_control: JSON.parse(JSON.stringify(setting.game.time_control_parameters)),
+            conf: Object.assign(this.state.conf, {
+                selected_board_size:
+                    standard_board_sizes[`${setting.game.width}x${setting.game.height}`] ||
+                    "custom",
+                restrict_rank: setting.min_ranking === -1000 ? false : true,
+            }),
+        });
+    };
+
     createDemo = () => {
         if (!this.validateBoardSize()) {
             return;
@@ -386,6 +454,51 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         return true;
     }
 
+    getChallenge(): ChallengeDetails {
+        const next = this.next();
+        const conf = next.conf;
+
+        const challenge: ChallengeDetails = Object.assign({}, next.challenge);
+        challenge.game = Object.assign({}, next.challenge.game);
+
+        if (
+            !challenge.game.name ||
+            challenge.game.name.trim() === "" ||
+            this.props.mode === "computer"
+        ) {
+            challenge.game.name = _("Friendly Match");
+        }
+
+        if (!conf.restrict_rank) {
+            challenge.min_ranking = -1000;
+            challenge.max_ranking = 1000;
+        }
+
+        challenge.game.time_control = this.refs.time_control_picker.time_control.system;
+        challenge.game.time_control_parameters = this.refs.time_control_picker.time_control;
+        (challenge.game.time_control_parameters as any).time_control =
+            this.refs.time_control_picker.time_control.system; /* on our backend we still expect this to be named `time_control` for
+                                                                  old legacy reasons.. hopefully we can reconcile that someday */
+        challenge.game.pause_on_weekends =
+            this.refs.time_control_picker.time_control.pause_on_weekends;
+
+        // Autostart only in casual mode
+        challenge.rengo_auto_start =
+            (challenge.game.rengo_casual_mode && challenge.rengo_auto_start) || 0; // guard against it being set but empty
+
+        if (
+            challenge.game.initial_state &&
+            Object.keys(challenge.game.initial_state).length === 0
+        ) {
+            challenge.game.initial_state = null;
+        }
+
+        challenge.game.rengo = next.challenge.game.rengo;
+        challenge.game.rengo_casual_mode = next.challenge.game.rengo_casual_mode;
+
+        return challenge;
+    }
+
     createChallenge = () => {
         const next = this.next();
 
@@ -412,23 +525,12 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             next.challenge.game.komi = null;
         }
 
-        const challenge: ChallengeDetails = Object.assign({}, next.challenge);
-        challenge.game = Object.assign({}, next.challenge.game);
-
         let player_id = 0;
         if (this.props.mode === "player") {
             player_id = this.props.playerId;
             if (!player_id || player_id === data.get("user").id) {
                 return;
             }
-        }
-
-        if (
-            !challenge.game.name ||
-            challenge.game.name.trim() === "" ||
-            this.props.mode === "computer"
-        ) {
-            challenge.game.name = _("Friendly Match");
         }
 
         if (this.props.mode === "computer") {
@@ -441,22 +543,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             console.log("Bot set to ", player_id);
         }
 
-        if (!conf.restrict_rank) {
-            challenge.min_ranking = -1000;
-            challenge.max_ranking = 1000;
-        }
-
-        challenge.game.time_control = this.refs.time_control_picker.time_control.system;
-        challenge.game.time_control_parameters = this.refs.time_control_picker.time_control;
-        (challenge.game.time_control_parameters as any).time_control =
-            this.refs.time_control_picker.time_control.system; /* on our backend we still expect this to be named `time_control` for
-                                                                  old legacy reasons.. hopefully we can reconcile that someday */
-        challenge.game.pause_on_weekends =
-            this.refs.time_control_picker.time_control.pause_on_weekends;
-
-        // Autostart only in casual mode
-        challenge.rengo_auto_start =
-            (challenge.game.rengo_casual_mode && challenge.rengo_auto_start) || 0; // guard against it being set but empty
+        const challenge = this.getChallenge();
 
         const live = isLiveGame(challenge.game.time_control_parameters); // save for after the post, below, when TimeControlPicker is gone
 
@@ -472,16 +559,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             open_now = true;
         }
         */
-
-        if (
-            challenge.game.initial_state &&
-            Object.keys(challenge.game.initial_state).length === 0
-        ) {
-            challenge.game.initial_state = null;
-        }
-
-        challenge.game.rengo = next.challenge.game.rengo;
-        challenge.game.rengo_casual_mode = next.challenge.game.rengo_casual_mode;
 
         this.saveSettings();
         this.close();
@@ -1368,6 +1445,66 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         );
     };
 
+    togglePreferredSettings = () => {
+        if (this.state.view_mode === "portrait") {
+            this.setState({
+                hide_preferred_settings_on_portrait:
+                    !this.state.hide_preferred_settings_on_portrait,
+            });
+        }
+    };
+
+    preferredGameSettings = () => {
+        return (
+            <div style={{ padding: "0.5em" }}>
+                <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
+                <hr />
+                <div>
+                    <span onClick={this.togglePreferredSettings}>
+                        <strong>
+                            {interpolate(_("Preferred settings ({{preferred_settings_count}})"), {
+                                preferred_settings_count: this.state.preferred_settings.length,
+                            })}
+                        </strong>
+                        {(this.state.view_mode === "portrait" || null) && (
+                            <i className="fa fa-caret-down" style={{ marginLeft: "0.5em" }} />
+                        )}
+                    </span>
+                    <button onClick={this.addToPreferredSettings} className="pull-right sm success">
+                        {_("Add current setting")}
+                    </button>
+                </div>
+                {(this.state.view_mode !== "portrait" ||
+                    !this.state.hide_preferred_settings_on_portrait ||
+                    null) && (
+                    <div style={{ padding: "0.5em", marginTop: "0.1em" }}>
+                        {this.state.preferred_settings.map((setting: ChallengeDetails, index) => {
+                            return (
+                                <div key={index} style={{ marginBottom: "0.5em" }}>
+                                    <button
+                                        onClick={this.usePreferredSetting.bind(this, index)}
+                                        className="xs primary"
+                                    >
+                                        {_("Use")}
+                                    </button>
+                                    <button
+                                        onClick={this.deletePreferredSetting.bind(this, index)}
+                                        className="xs reject"
+                                    >
+                                        {_("Delete")}
+                                    </button>
+                                    <span style={{ marginLeft: "0.5em" }}>
+                                        {challenge_text_description(setting)}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     render() {
         const mode = this.props.mode;
         const player_id = this.props.playerId;
@@ -1431,6 +1568,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         </button>
                     )}
                 </div>
+                {(mode !== "demo" || null) && this.preferredGameSettings()}
             </div>
         );
     }
@@ -1594,28 +1732,40 @@ export function createCorrespondence() {
 export function challenge_text_description(challenge) {
     const c = challenge;
     const g = "game" in challenge ? challenge.game : challenge;
-    let details_html =
-        (g.ranked ? _("Ranked") : _("Unranked")) +
-        ", " +
-        g.width +
-        "x" +
-        g.height +
-        ", " +
-        interpolate(_("%s rules"), [rulesText(g.rules)]);
+    let details_html = g.ranked ? _("Ranked") : _("Unranked");
 
-    if (typeof g.time_control === "object") {
-        if (g.time_control.time_control !== "none") {
+    if (g.rengo) {
+        details_html += " " + (g.rengo_casual_mode ? _("casual rengo") : _("strict rengo"));
+        if (c.rengo_auto_start > 0) {
+            details_html +=
+                ", " +
+                interpolate(_("auto-starting at {{auto_start}} players"), {
+                    auto_start: c.rengo_auto_start,
+                });
+        }
+    }
+
+    details_html +=
+        ", " + g.width + "x" + g.height + ", " + interpolate(_("%s rules"), [rulesText(g.rules)]);
+
+    const time_control =
+        typeof g.time_control !== "object" && "time_control_parameters" in g
+            ? g.time_control_parameters
+            : g.time_control;
+
+    if (typeof time_control === "object") {
+        if (time_control.time_control !== "none") {
             details_html +=
                 ", " +
                 interpolate(_("%s clock: %s"), [
-                    timeControlText(g.time_control),
-                    shortShortTimeControl(g.time_control),
+                    timeControlText(time_control),
+                    shortShortTimeControl(time_control),
                 ]);
         } else {
             details_html += ", " + _("no time limits");
         }
 
-        if (g.time_control.pause_on_weekends) {
+        if (time_control.pause_on_weekends) {
             details_html += ", " + _("pause on weekends");
         }
     }

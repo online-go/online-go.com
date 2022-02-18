@@ -207,6 +207,8 @@ export interface DataSchema
     "announcement.last-type": string;
     "demo.settings": DemoSettings;
 
+    "preferred-game-settings": rest_api.ChallengeDetails[];
+
     [player_notes_key: `player-notes.${number}.${number}`]: string;
     [learning_hub_key: `learning-hub.${string}`]: { [page_number: number]: true };
     [moderator_join_game_publicly_key: `moderator.join-game-publicly.${string}`]: boolean;
