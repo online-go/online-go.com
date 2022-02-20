@@ -99,22 +99,23 @@ function improveBalance(participants: Participant[]): boolean {
 }
 
 // Split even and odd groups.
-// Ratings are not included in result.
-function split(participants: Participant[]): [number[], number[]] {
+function split(participants: Participant[]): [Participant[], Participant[]] {
     const even = [];
     const odd = [];
     for (let i = 0; i < participants.length; i += 2) {
-        even.push(participants[i].user_id);
+        even.push(participants[i]);
     }
     for (let i = 1; i < participants.length; i += 2) {
-        odd.push(participants[i].user_id);
+        odd.push(participants[i]);
     }
     return [even, odd];
 }
 
 type BalancedResult = {
-    black: number[]; // Player ids only
-    white: number[];
+    black: Participant[];
+    white: Participant[];
+    blackAverageRating?: number;
+    whiteAverageRating?: number;
 };
 
 // Returns a balanced grouping of players.
@@ -137,21 +138,26 @@ function autoBalance(participants: Participant[], maxIterations: number = 100): 
         return {
             black: even,
             white: odd,
+            blackAverageRating: evenRating,
+            whiteAverageRating: oddRating,
         };
     }
     return {
         black: odd,
         white: even,
+        blackAverageRating: oddRating,
+        whiteAverageRating: evenRating,
     };
 }
 
 type Challenge = socket_api.seekgraph_global.Challenge;
 
 export async function balanceTeams(challenge: Challenge) {
+    const user_id = (p) => p.user_id;
     const participants = await toParticipants(challenge.rengo_participants);
     const { black, white } = autoBalance(participants);
     put("challenges/%%/team", challenge.challenge_id, {
-        assign_black: black,
-        assign_white: white,
+        assign_black: black.map(user_id),
+        assign_white: white.map(user_id),
     }).catch(errorAlerter);
 }
