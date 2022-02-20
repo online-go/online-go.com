@@ -41,7 +41,7 @@ interface CachedSchema {
 }
 
 export interface ConfigSchema {
-    user: any;
+    user: rest_api.UserConfig;
     cdn: string;
     cdn_release: string;
     cdn_host: string;

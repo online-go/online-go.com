@@ -36,12 +36,22 @@ import { ActiveAnnouncements } from "Announcements";
 import { FabX } from "material";
 import { ActiveTournamentList } from "src/lib/types";
 
-declare let ogs_missing_translation_count;
+declare let ogs_missing_translation_count: number;
 
-export class Overview extends React.Component<{}, any> {
+type UserType = rest_api.UserConfig;
+type ActiveGameType = rest_api.players.full.Game;
+
+interface OverviewState {
+    boards_to_move_on: number;
+    user: UserType;
+    resolved: boolean;
+    overview: { active_games: Array<ActiveGameType> };
+    show_translation_dialog: boolean;
+}
+export class Overview extends React.Component<{}, OverviewState> {
     private static defaultTitle = "OGS";
 
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
 
         let show_translation_dialog = false;
@@ -73,7 +83,7 @@ export class Overview extends React.Component<{}, any> {
         window.document.title = `${count}${Overview.defaultTitle}`;
     }
 
-    setBoardsToMoveOn = (boardsToMoveOn) => {
+    setBoardsToMoveOn = (boardsToMoveOn: number) => {
         this.setState({ boards_to_move_on: boardsToMoveOn });
     };
 
@@ -88,14 +98,14 @@ export class Overview extends React.Component<{}, any> {
         this.setTitle();
     }
 
-    updateUser = (user) => {
+    updateUser = (user: UserType) => {
         this.setState({ user: user });
     };
 
-    refresh() {
+    refresh(): Promise<void> {
         abort_requests_in_flight("ui/overview");
         return get("ui/overview")
-            .then((overview) => {
+            .then((overview: OverviewState["overview"]) => {
                 this.setState({ overview: overview, resolved: true });
             })
             .catch((err) => {
@@ -141,14 +151,7 @@ export class Overview extends React.Component<{}, any> {
                                     {_("Active Games")} ({this.state.overview.active_games.length})
                                 </h2>
                                 <GameList
-                                    list={
-                                        // GameList is expecting rengo info on the game (like in ObserveGamesComponent) but here that information is on game.json, so we have to promote it ...
-                                        this.state.overview.active_games.map((game) => ({
-                                            rengo: game.json.rengo,
-                                            rengo_teams: game.json.rengo_teams,
-                                            ...game,
-                                        }))
-                                    }
+                                    list={this.state.overview.active_games}
                                     player={user}
                                     emptyMessage={_(
                                         'You\'re not currently playing any games. Start a new game with the "Create a new game" or "Look for open games" buttons above.',
