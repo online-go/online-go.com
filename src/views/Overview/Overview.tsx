@@ -34,6 +34,7 @@ import { ProfileCard } from "ProfileCard";
 import { notification_manager } from "Notifications";
 import { ActiveAnnouncements } from "Announcements";
 import { FabX } from "material";
+import { ActiveTournamentList } from "src/lib/types";
 
 declare let ogs_missing_translation_count;
 
@@ -303,33 +304,27 @@ export class GroupList extends React.PureComponent<{}, any> {
         );
     }
 }
-export class TournamentList extends React.PureComponent<{}, any> {
-    constructor(props) {
+
+interface TournamentListState {
+    my_tournaments: ActiveTournamentList;
+}
+
+export class TournamentList extends React.PureComponent<{}, TournamentListState> {
+    constructor(props: {}) {
         super(props);
         this.state = {
             my_tournaments: [],
-            open_tournaments: [],
-            resolved: false,
         };
     }
 
     componentDidMount() {
         data.watch(cached.active_tournaments, this.update);
-        /*
-        get("tournaments", {started__isnull: true, group__isnull: true, ordering: "name"}).then((res) => {
-            this.setState({"open_tournaments": res.results, resolved: true});
-        }).catch((err) => {
-            this.setState({resolved: true});
-            console.info("Caught", err);
-        });
-        */
     }
-    update = (tournaments) => {
+    update = (tournaments: ActiveTournamentList) => {
         this.setState({ my_tournaments: tournaments });
     };
 
     componentWillUnmount() {
-        abort_requests_in_flight("me/tournaments");
         data.unwatch(cached.active_tournaments, this.update);
     }
     render() {
@@ -340,7 +335,6 @@ export class TournamentList extends React.PureComponent<{}, any> {
                         <img src={tournament.icon} /> {tournament.name}
                     </Link>
                 ))}
-                {(this.state.my_tournaments.length === 0 || null) && null}
             </div>
         );
     }
