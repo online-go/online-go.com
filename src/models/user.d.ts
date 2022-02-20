@@ -121,7 +121,11 @@ declare namespace rest_api {
             wins: number;
             losses: number;
             draws: number;
-            history: any[];
+            history: Array<{
+                game: number;
+                state: "W" | "L";
+                date: string; // ISO date
+            }>;
         };
         block: {
             block_chat: boolean;
