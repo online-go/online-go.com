@@ -345,25 +345,27 @@ export class TournamentList extends React.PureComponent<{}, TournamentListState>
         );
     }
 }
-export class LadderList extends React.PureComponent<{}, any> {
-    constructor(props) {
+
+type LadderType = rest_api.me.Ladder;
+interface LadderListState {
+    ladders: LadderType[];
+}
+
+export class LadderList extends React.PureComponent<{}, LadderListState> {
+    constructor(props: {}) {
         super(props);
-        this.state = {
-            ladders: [],
-            resolved: false,
-        };
+        this.state = { ladders: [] };
     }
 
     componentDidMount() {
         data.watch(cached.ladders, this.update);
     }
 
-    update = (ladders) => {
+    update = (ladders: LadderType[]) => {
         this.setState({ ladders: ladders });
     };
 
     componentWillUnmount() {
-        abort_requests_in_flight("me/ladders");
         data.unwatch(cached.ladders, this.update);
     }
     render() {
