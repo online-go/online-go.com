@@ -250,13 +250,16 @@ export class Overview extends React.Component<{}, OverviewState> {
     };
 }
 
-export class GroupList extends React.PureComponent<{}, any> {
-    constructor(props) {
+interface GroupState {
+    groups: Array<any>;
+    invitations: Array<any>;
+}
+export class GroupList extends React.PureComponent<{}, GroupState> {
+    constructor(props: {}) {
         super(props);
         this.state = {
             groups: [],
             invitations: [],
-            resolved: false,
         };
     }
 
@@ -276,12 +279,12 @@ export class GroupList extends React.PureComponent<{}, any> {
         data.unwatch(cached.groups, this.updateGroups);
         data.unwatch(cached.group_invitations, this.updateGroupInvitations);
     }
-    acceptInvite(invite) {
+    acceptInvite(invite: { id: number }) {
         post("me/groups/invitations", { request_id: invite.id })
             .then(() => 0)
             .catch(() => 0);
     }
-    rejectInvite(invite) {
+    rejectInvite(invite: { id: number }) {
         post("me/groups/invitations", { request_id: invite.id, delete: true })
             .then(() => 0)
             .catch(() => 0);
