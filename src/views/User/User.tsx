@@ -32,7 +32,6 @@ import { ModTools } from "./ModTools";
 import { GameHistoryTable } from "./GameHistoryTable";
 import { ReviewsAndDemosTable } from "./ReviewsAndDemosTable";
 import {
-    longRankString,
     rankString,
     getUserRating,
     humble_rating,
@@ -116,7 +115,6 @@ interface UserState {
     };
     vacation_left?: number;
     vacation_left_text: string;
-    ranks: [];
     syncRating: null;
     host_ip_settings?: {
         id: number;
@@ -166,7 +164,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             ip: null,
             vacation_left: null,
             vacation_left_text: "",
-            ranks: [],
             syncRating: null,
             host_ip_settings: null,
             new_icon: null,
@@ -295,16 +292,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             //state.vs.recent5[i].pretty_date = moment(new Date(state.vs.recent5[i].date)).calendar();
         }
 
-        state.ranks = [];
-        if (state.user.professional) {
-            for (let i = 37; i < Math.max(state.user.ranking, 45) + 1; ++i) {
-                state.ranks.push({ value: i, text: longRankString({ ranking: i, pro: 1 }) });
-            }
-        } else {
-            for (let i = 0; i < Math.max(state.user.ranking, 35) + 1; ++i) {
-                state.ranks.push({ value: i, text: longRankString(i) });
-            }
-        }
         state.syncRating = (rank, type) => {
             if (type === "overall") {
                 state.user.rating = rank * 100 + 50 - 900;
