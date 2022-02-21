@@ -34,7 +34,7 @@ import { ProfileCard } from "ProfileCard";
 import { notification_manager } from "Notifications";
 import { ActiveAnnouncements } from "Announcements";
 import { FabX } from "material";
-import { ActiveTournamentList } from "src/lib/types";
+import { ActiveTournamentList, Group } from "src/lib/types";
 
 declare let ogs_missing_translation_count: number;
 
@@ -42,8 +42,8 @@ type UserType = rest_api.UserConfig;
 type ActiveGameType = rest_api.players.full.Game;
 
 interface OverviewState {
-    boards_to_move_on: number;
-    user: UserType;
+    boards_to_move_on?: number;
+    user?: UserType;
     resolved: boolean;
     overview: { active_games: Array<ActiveGameType> };
     show_translation_dialog: boolean;
@@ -79,11 +79,11 @@ export class Overview extends React.Component<{}, OverviewState> {
     }
 
     setTitle() {
-        const count = this.state.boards_to_move_on > 0 ? `(${this.state.boards_to_move_on}) ` : "";
+        const count = this.state.boards_to_move_on ? `(${this.state.boards_to_move_on}) ` : "";
         window.document.title = `${count}${Overview.defaultTitle}`;
     }
 
-    setBoardsToMoveOn = (boardsToMoveOn: number) => {
+    setBoardsToMoveOn = (boardsToMoveOn?: number) => {
         this.setState({ boards_to_move_on: boardsToMoveOn });
     };
 
@@ -250,9 +250,10 @@ export class Overview extends React.Component<{}, OverviewState> {
     };
 }
 
+type InvitationType = rest_api.me.Invitation;
 interface GroupState {
-    groups: Array<any>;
-    invitations: Array<any>;
+    groups: Group[];
+    invitations: InvitationType[];
 }
 export class GroupList extends React.PureComponent<{}, GroupState> {
     constructor(props: {}) {
@@ -268,10 +269,10 @@ export class GroupList extends React.PureComponent<{}, GroupState> {
         data.watch(cached.group_invitations, this.updateGroupInvitations);
     }
 
-    updateGroups = (groups) => {
+    updateGroups = (groups: Group[]) => {
         this.setState({ groups: groups });
     };
-    updateGroupInvitations = (invitations) => {
+    updateGroupInvitations = (invitations: InvitationType[]) => {
         this.setState({ invitations: invitations });
     };
 

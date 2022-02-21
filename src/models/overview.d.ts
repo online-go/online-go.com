@@ -33,5 +33,22 @@ declare namespace rest_api {
             player_rank: number;
             player_is_member_of_group: boolean;
         }
+
+        interface Invitation {
+            id: number;
+            group: {
+                id: number;
+                name: string;
+                summary: string;
+                require_invitation: boolean;
+                is_public: boolean;
+                hide_details: boolean;
+                member_count: number;
+                icon: string; // URL
+            };
+            message: "This is an invitation to join our group!";
+            is_invitation: boolean;
+            user: number;
+        }
     }
 }
