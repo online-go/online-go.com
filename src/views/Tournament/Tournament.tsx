@@ -2571,9 +2571,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                             <div>
                                                 {selected_round.groups.map((group, idx) => {
                                                     // (if we had ramda library, we'd use that non-mutating sort instead of this funky spread-copy...)
-                                                    const sorted_players = [...group.players].sort(
-                                                        sortDropoutsToBottom,
-                                                    );
+
+                                                    const sorted_players = [...group.players]
+                                                        .filter((p) => p.player)
+                                                        .sort(sortDropoutsToBottom);
 
                                                     return (
                                                         <div key={idx} className="round-group">
