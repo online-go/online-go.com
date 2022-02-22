@@ -209,7 +209,7 @@ export const time_options = {
             max_time: gen(86400, 86400 * 28),
         },
         simple: {
-            per_move: gen(3600 * 8, 86400 * 28),
+            per_move: gen(3600 * 12, 86400 * 28),
         },
         canadian: {
             main_time: [zero].concat(gen(86400, 86400 * 28)),
