@@ -33,7 +33,7 @@ interface CachedSchema {
 
     // TODO: examine these endpoints and write interfaces for these.
     config: ConfigSchema /* /login */;
-    ladders: any /* /me/ladders */;
+    ladders: rest_api.me.Ladder[];
     challenge_list: any /* /me/challenges */;
     blocks: any /* /me/blocks */;
     friends: any /* ui/friends */;

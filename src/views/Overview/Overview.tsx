@@ -34,13 +34,24 @@ import { ProfileCard } from "ProfileCard";
 import { notification_manager } from "Notifications";
 import { ActiveAnnouncements } from "Announcements";
 import { FabX } from "material";
+import { ActiveTournamentList, Group } from "src/lib/types";
 
-declare let ogs_missing_translation_count;
+declare let ogs_missing_translation_count: number;
 
-export class Overview extends React.Component<{}, any> {
+type UserType = rest_api.UserConfig;
+type ActiveGameType = rest_api.players.full.Game;
+
+interface OverviewState {
+    boards_to_move_on?: number;
+    user?: UserType;
+    resolved: boolean;
+    overview: { active_games: Array<ActiveGameType> };
+    show_translation_dialog: boolean;
+}
+export class Overview extends React.Component<{}, OverviewState> {
     private static defaultTitle = "OGS";
 
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
 
         let show_translation_dialog = false;
@@ -68,11 +79,11 @@ export class Overview extends React.Component<{}, any> {
     }
 
     setTitle() {
-        const count = this.state.boards_to_move_on > 0 ? `(${this.state.boards_to_move_on}) ` : "";
+        const count = this.state.boards_to_move_on ? `(${this.state.boards_to_move_on}) ` : "";
         window.document.title = `${count}${Overview.defaultTitle}`;
     }
 
-    setBoardsToMoveOn = (boardsToMoveOn) => {
+    setBoardsToMoveOn = (boardsToMoveOn?: number) => {
         this.setState({ boards_to_move_on: boardsToMoveOn });
     };
 
@@ -87,14 +98,14 @@ export class Overview extends React.Component<{}, any> {
         this.setTitle();
     }
 
-    updateUser = (user) => {
+    updateUser = (user: UserType) => {
         this.setState({ user: user });
     };
 
-    refresh() {
+    refresh(): Promise<void> {
         abort_requests_in_flight("ui/overview");
         return get("ui/overview")
-            .then((overview) => {
+            .then((overview: OverviewState["overview"]) => {
                 this.setState({ overview: overview, resolved: true });
             })
             .catch((err) => {
@@ -140,14 +151,7 @@ export class Overview extends React.Component<{}, any> {
                                     {_("Active Games")} ({this.state.overview.active_games.length})
                                 </h2>
                                 <GameList
-                                    list={
-                                        // GameList is expecting rengo info on the game (like in ObserveGamesComponent) but here that information is on game.json, so we have to promote it ...
-                                        this.state.overview.active_games.map((game) => ({
-                                            rengo: game.json.rengo,
-                                            rengo_teams: game.json.rengo_teams,
-                                            ...game,
-                                        }))
-                                    }
+                                    list={this.state.overview.active_games}
                                     player={user}
                                     emptyMessage={_(
                                         'You\'re not currently playing any games. Start a new game with the "Create a new game" or "Look for open games" buttons above.',
@@ -246,13 +250,17 @@ export class Overview extends React.Component<{}, any> {
     };
 }
 
-export class GroupList extends React.PureComponent<{}, any> {
-    constructor(props) {
+type InvitationType = rest_api.me.Invitation;
+interface GroupState {
+    groups: Group[];
+    invitations: InvitationType[];
+}
+export class GroupList extends React.PureComponent<{}, GroupState> {
+    constructor(props: {}) {
         super(props);
         this.state = {
             groups: [],
             invitations: [],
-            resolved: false,
         };
     }
 
@@ -261,10 +269,10 @@ export class GroupList extends React.PureComponent<{}, any> {
         data.watch(cached.group_invitations, this.updateGroupInvitations);
     }
 
-    updateGroups = (groups) => {
+    updateGroups = (groups: Group[]) => {
         this.setState({ groups: groups });
     };
-    updateGroupInvitations = (invitations) => {
+    updateGroupInvitations = (invitations: InvitationType[]) => {
         this.setState({ invitations: invitations });
     };
 
@@ -272,12 +280,12 @@ export class GroupList extends React.PureComponent<{}, any> {
         data.unwatch(cached.groups, this.updateGroups);
         data.unwatch(cached.group_invitations, this.updateGroupInvitations);
     }
-    acceptInvite(invite) {
+    acceptInvite(invite: { id: number }) {
         post("me/groups/invitations", { request_id: invite.id })
             .then(() => 0)
             .catch(() => 0);
     }
-    rejectInvite(invite) {
+    rejectInvite(invite: { id: number }) {
         post("me/groups/invitations", { request_id: invite.id, delete: true })
             .then(() => 0)
             .catch(() => 0);
@@ -303,33 +311,27 @@ export class GroupList extends React.PureComponent<{}, any> {
         );
     }
 }
-export class TournamentList extends React.PureComponent<{}, any> {
-    constructor(props) {
+
+interface TournamentListState {
+    my_tournaments: ActiveTournamentList;
+}
+
+export class TournamentList extends React.PureComponent<{}, TournamentListState> {
+    constructor(props: {}) {
         super(props);
         this.state = {
             my_tournaments: [],
-            open_tournaments: [],
-            resolved: false,
         };
     }
 
     componentDidMount() {
         data.watch(cached.active_tournaments, this.update);
-        /*
-        get("tournaments", {started__isnull: true, group__isnull: true, ordering: "name"}).then((res) => {
-            this.setState({"open_tournaments": res.results, resolved: true});
-        }).catch((err) => {
-            this.setState({resolved: true});
-            console.info("Caught", err);
-        });
-        */
     }
-    update = (tournaments) => {
+    update = (tournaments: ActiveTournamentList) => {
         this.setState({ my_tournaments: tournaments });
     };
 
     componentWillUnmount() {
-        abort_requests_in_flight("me/tournaments");
         data.unwatch(cached.active_tournaments, this.update);
     }
     render() {
@@ -340,30 +342,31 @@ export class TournamentList extends React.PureComponent<{}, any> {
                         <img src={tournament.icon} /> {tournament.name}
                     </Link>
                 ))}
-                {(this.state.my_tournaments.length === 0 || null) && null}
             </div>
         );
     }
 }
-export class LadderList extends React.PureComponent<{}, any> {
-    constructor(props) {
+
+type LadderType = rest_api.me.Ladder;
+interface LadderListState {
+    ladders: LadderType[];
+}
+
+export class LadderList extends React.PureComponent<{}, LadderListState> {
+    constructor(props: {}) {
         super(props);
-        this.state = {
-            ladders: [],
-            resolved: false,
-        };
+        this.state = { ladders: [] };
     }
 
     componentDidMount() {
         data.watch(cached.ladders, this.update);
     }
 
-    update = (ladders) => {
+    update = (ladders: LadderType[]) => {
         this.setState({ ladders: ladders });
     };
 
     componentWillUnmount() {
-        abort_requests_in_flight("me/ladders");
         data.unwatch(cached.ladders, this.update);
     }
     render() {
