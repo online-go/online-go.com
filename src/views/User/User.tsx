@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { _, pgettext, interpolate, cc_to_country_name, sorted_locale_countries } from "translate";
+import { _, pgettext, cc_to_country_name, sorted_locale_countries } from "translate";
 import { Link } from "react-router-dom";
 import { post, get, put, del, patch } from "requests";
 import { parse } from "query-string";
@@ -55,6 +55,7 @@ import { Toggle } from "Toggle";
 import { AchievementList } from "Achievements";
 import swal from "sweetalert2";
 import * as History from "history";
+import { VersusCard } from "./VersusCard";
 
 interface UserProperties {
     match: {
@@ -97,16 +98,7 @@ interface UserInfo {
 
 interface UserState {
     user: UserInfo;
-    vs: {
-        total?: number;
-        wins?: number;
-        losses?: number;
-        draws?: number;
-        winPercent?: number;
-        lossPercent?: number;
-        drawPercent?: number;
-        recent5?: any[];
-    };
+    vs: rest_api.PlayerDetails["vs"];
     ratings: {};
     ip?: {
         country: string;
@@ -159,7 +151,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         super(props);
         this.state = {
             user: null,
-            vs: {},
+            vs: {} as any,
             ratings: {},
             ip: null,
             vacation_left: null,
@@ -1077,59 +1069,12 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                             </div>
                         )}
 
-                        {(this.state.vs.total || null) && (
+                        {this.state.vs.wins + this.state.vs.losses + this.state.vs.draws > 0 && (
                             <div>
-                                <Card>
-                                    <h5 style={{ textAlign: "center" }}>
-                                        {interpolate(
-                                            "You have won {{vs.wins}} out of {{vs.total}} games against {{username}}",
-                                            {
-                                                "vs.wins": this.state.vs.wins,
-                                                "vs.total": this.state.vs.total,
-                                                username: user.username,
-                                            },
-                                        )}
-                                    </h5>
-                                    <div className="progress">
-                                        {this.state.vs.winPercent > 0 && (
-                                            <div
-                                                className="progress-bar games-won"
-                                                style={{ width: this.state.vs.winPercent + "%" }}
-                                            >
-                                                {this.state.vs.wins}
-                                            </div>
-                                        )}
-                                        {this.state.vs.lossPercent > 0 && (
-                                            <div
-                                                className="progress-bar games-lost"
-                                                style={{ width: this.state.vs.lossPercent + "%" }}
-                                            >
-                                                {this.state.vs.losses}
-                                            </div>
-                                        )}
-                                        {this.state.vs.drawPercent > 0 && (
-                                            <div
-                                                className="progress-bar primary"
-                                                style={{ width: this.state.vs.drawPercent + "%" }}
-                                            >
-                                                {this.state.vs.draws}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {this.state.vs.recent5.map((game, idx) => (
-                                        <div style={{ textAlign: "center" }} key={idx}>
-                                            <span className="date">{game.pretty_date}</span>{" "}
-                                            <a href={`/game/${game.game}`}>#{game.game}</a>
-                                            {game.state === "W" && (
-                                                <i className="fa fa-check-circle-o won"></i>
-                                            )}
-                                            {game.state === "L" && (
-                                                <i className="fa fa-times loss"></i>
-                                            )}
-                                        </div>
-                                    ))}
-                                </Card>
+                                <VersusCard
+                                    {...this.state.vs}
+                                    username={this.state.user.username}
+                                />
                             </div>
                         )}
 
