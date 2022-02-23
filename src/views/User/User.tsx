@@ -248,19 +248,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             console.log(e.stack);
         }
 
-        const vs = state.vs;
-        state.vs.total = vs.wins + vs.losses + vs.draws;
-        state.vs.winPercent = (vs.wins / vs.total) * 100.0;
-        state.vs.lossPercent = (vs.losses / vs.total) * 100.0;
-        state.vs.drawPercent = (vs.draws / vs.total) * 100.0;
-        state.vs.recent5 = vs.history ? vs.history.slice(0, 5) : [];
-        for (let i = 0; i < state.vs.recent5.length; ++i) {
-            state.vs.recent5[i].pretty_date = moment(new Date(state.vs.recent5[i].date)).format(
-                "ll",
-            );
-            //state.vs.recent5[i].pretty_date = moment(new Date(state.vs.recent5[i].date)).calendar();
-        }
-
         state.syncRating = (rank, type) => {
             if (type === "overall") {
                 state.user.rating = rank * 100 + 50 - 900;
