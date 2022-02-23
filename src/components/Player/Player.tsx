@@ -49,6 +49,7 @@ interface PlayerProperties {
     noextracontrols?: boolean /* Disable extra controls */;
     shownotesindicator?: boolean /* add the notes icon if the player has notes */;
     disableCacheUpdate?: boolean;
+    forceShowRank?: boolean;
 }
 
 interface PlayerState {
@@ -344,7 +345,7 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
                 rank_text = rating.bounded_rank_label;
             }
 
-            if (!preferences.get("hide-ranks")) {
+            if (!preferences.get("hide-ranks") || props.forceShowRank) {
                 rank = <span className="Player-rank">[{rank_text}]</span>;
             }
         }
