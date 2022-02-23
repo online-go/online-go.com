@@ -249,17 +249,6 @@ export function AvatarCard({
                     </div>
                 )}
 
-                {false /* suppress this message until backend fix is implemented */ &&
-                    user.timeout_provisional && (
-                        <div>
-                            <h4 style={inlineBlock}>
-                                <i className="fa fa-exclamation-triangle"></i>{" "}
-                                {_("Has recently timed out of a game")}{" "}
-                                <i className="fa fa-exclamation-triangle"></i>
-                            </h4>
-                        </div>
-                    )}
-
                 {!user.is_superuser && user.is_moderator && (
                     <div>
                         <h3 style={inlineBlock}>
