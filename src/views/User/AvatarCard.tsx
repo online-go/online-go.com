@@ -169,28 +169,6 @@ export function AvatarCard({
             .catch(errorAlerter);
     };
 
-    const [vacation_left_text, setVacationLeftText] = React.useState("");
-    React.useEffect(() => {
-        const interval_start = Date.now();
-        const vacation_update_interval = setInterval(() => {
-            if (user) {
-                if (user.on_vacation) {
-                    const time_diff = Math.round((Date.now() - interval_start) / 1000);
-                    const vacation_time_left = user.vacation_left - time_diff;
-                    setVacationLeftText(
-                        vacation_time_left > 0
-                            ? durationString(vacation_time_left)
-                            : "0 " + _("Seconds").toLowerCase(),
-                    );
-                }
-            }
-        }, 1000);
-
-        return () => {
-            clearInterval(vacation_update_interval);
-        };
-    }, []);
-
     return (
         <div className="avatar-container">
             {editing ? (
@@ -230,69 +208,7 @@ export function AvatarCard({
                 </div>
             )}
 
-            <div className="avatar-subtext">
-                {global_user.is_moderator && user.is_watched && (
-                    <div>
-                        <h3 style={inlineBlock}>
-                            <i className="fa fa-exclamation-triangle"></i> Watched{" "}
-                            <i className="fa fa-exclamation-triangle"></i>
-                        </h3>
-                    </div>
-                )}
-
-                {user.ui_class_extra && user.ui_class_extra.indexOf("aga") >= 0 && (
-                    <div>
-                        <h4 style={inlineBlock}>
-                            <img src="https://cdn.online-go.com/assets/agaico1.png" />{" "}
-                            {_("AGA Staff")}{" "}
-                        </h4>
-                    </div>
-                )}
-
-                {!user.is_superuser && user.is_moderator && (
-                    <div>
-                        <h3 style={inlineBlock}>
-                            <i className="fa fa-gavel"></i> {_("Moderator")}
-                        </h3>
-                    </div>
-                )}
-
-                {!user.is_moderator && user.supporter && (
-                    <div>
-                        <h3 style={inlineBlock}>
-                            <i className="fa fa-star"></i> {_("Site Supporter")}{" "}
-                            <i className="fa fa-star"></i>
-                        </h3>
-                    </div>
-                )}
-
-                {user.is_superuser && (
-                    <div>
-                        <h3 style={inlineBlock}>
-                            <i className="fa fa-smile-o fa-spin"></i> {_("OGS Developer")}{" "}
-                            <i className="fa fa-smile-o fa-spin"></i>
-                        </h3>
-                    </div>
-                )}
-
-                {!user.is_superuser && user.is_tournament_moderator && (
-                    <div>
-                        <h3 style={inlineBlock}>
-                            <i className="fa fa-trophy"></i> {_("Tournament Moderator")}{" "}
-                            <i className="fa fa-trophy"></i>
-                        </h3>
-                    </div>
-                )}
-
-                {user.on_vacation && (
-                    <div>
-                        <h3 style={inlineBlock}>
-                            <i className="fa fa-smile-o fa-spin"></i> {_("On Vacation")} -{" "}
-                            {vacation_left_text} <i className="fa fa-smile-o fa-spin"></i>
-                        </h3>
-                    </div>
-                )}
-            </div>
+            <AvatarSubtext user={user} global_user={global_user} />
 
             {(editing || null) && (
                 <div>
@@ -396,6 +312,95 @@ export function AvatarCard({
                     </button>
                 )}
             </div>
+        </div>
+    );
+}
+
+function AvatarSubtext({ user, global_user }: { user: AvatarCardUserType; global_user: any }) {
+    const [vacation_left_text, setVacationLeftText] = React.useState("");
+    React.useEffect(() => {
+        const interval_start = Date.now();
+        const vacation_update_interval = setInterval(() => {
+            if (user) {
+                if (user.on_vacation) {
+                    const time_diff = Math.round((Date.now() - interval_start) / 1000);
+                    const vacation_time_left = user.vacation_left - time_diff;
+                    setVacationLeftText(
+                        vacation_time_left > 0
+                            ? durationString(vacation_time_left)
+                            : "0 " + _("Seconds").toLowerCase(),
+                    );
+                }
+            }
+        }, 1000);
+
+        return () => {
+            clearInterval(vacation_update_interval);
+        };
+    }, []);
+
+    return (
+        <div className="avatar-subtext">
+            {global_user.is_moderator && user.is_watched && (
+                <div>
+                    <h3 style={inlineBlock}>
+                        <i className="fa fa-exclamation-triangle"></i> Watched{" "}
+                        <i className="fa fa-exclamation-triangle"></i>
+                    </h3>
+                </div>
+            )}
+
+            {user.ui_class_extra && user.ui_class_extra.indexOf("aga") >= 0 && (
+                <div>
+                    <h4 style={inlineBlock}>
+                        <img src="https://cdn.online-go.com/assets/agaico1.png" /> {_("AGA Staff")}{" "}
+                    </h4>
+                </div>
+            )}
+
+            {!user.is_superuser && user.is_moderator && (
+                <div>
+                    <h3 style={inlineBlock}>
+                        <i className="fa fa-gavel"></i> {_("Moderator")}
+                    </h3>
+                </div>
+            )}
+
+            {!user.is_moderator && user.supporter && (
+                <div>
+                    <h3 style={inlineBlock}>
+                        <i className="fa fa-star"></i> {_("Site Supporter")}{" "}
+                        <i className="fa fa-star"></i>
+                    </h3>
+                </div>
+            )}
+
+            {user.is_superuser && (
+                <div>
+                    <h3 style={inlineBlock}>
+                        <i className="fa fa-smile-o fa-spin"></i> {_("OGS Developer")}{" "}
+                        <i className="fa fa-smile-o fa-spin"></i>
+                    </h3>
+                </div>
+            )}
+
+            {!user.is_superuser && user.is_tournament_moderator && (
+                <div>
+                    <h3 style={inlineBlock}>
+                        <i className="fa fa-trophy"></i> {_("Tournament Moderator")}{" "}
+                        <i className="fa fa-trophy"></i>
+                    </h3>
+                </div>
+            )}
+
+            {user.on_vacation && (
+                <div>
+                    <h3 style={inlineBlock}>
+                        <i className="fa fa-smile-o fa-spin"></i> {_("On Vacation")} -{" "}
+                        {vacation_left_text} <i className="fa fa-smile-o fa-spin"></i>
+                    </h3>
+                </div>
+            )}
         </div>
     );
 }
