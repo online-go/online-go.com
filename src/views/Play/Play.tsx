@@ -739,7 +739,6 @@ export class Play extends React.Component<{}, PlayState> {
                         cancelChallenge={this.cancelOpenChallenge}
                         withdrawFromRengoChallenge={this.unNominateForRengoChallenge}
                         joinRengoChallenge={nominateForRengoChallenge}
-                        unassignPlayers={unassignPlayers}
                     >
                         <RengoTeamManagementPane
                             challenge_id={rengo_challenge_to_show.challenge_id}
@@ -1230,7 +1229,6 @@ export class Play extends React.Component<{}, PlayState> {
                             cancelChallenge={this.cancelOpenChallenge}
                             withdrawFromRengoChallenge={this.unNominateForRengoChallenge}
                             joinRengoChallenge={nominateForRengoChallenge}
-                            unassignPlayers={unassignPlayers}
                             dontShowCancelButton={true}
                         >
                             <RengoTeamManagementPane
@@ -1419,10 +1417,4 @@ function time_per_move_challenge_sort(A: Challenge, B: Challenge) {
     } else {
         return challenge_sort(A, B);
     }
-}
-
-function unassignPlayers(challenge: Challenge) {
-    put("challenges/%%/team", challenge.challenge_id, {
-        unassign: challenge.rengo_participants,
-    }).catch(errorAlerter);
 }

@@ -161,3 +161,9 @@ export async function balanceTeams(challenge: Challenge) {
         assign_white: white.map(user_id),
     }).catch(errorAlerter);
 }
+
+export function unassignPlayers(challenge: Challenge) {
+    put("challenges/%%/team", challenge.challenge_id, {
+        unassign: challenge.rengo_participants,
+    }).catch(errorAlerter);
+}
