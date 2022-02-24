@@ -337,7 +337,7 @@ function AvatarSubtext({ user, global_user }: { user: AvatarCardUserType; global
         return () => {
             clearInterval(vacation_update_interval);
         };
-    }, []);
+    }, [user.id]);
 
     return (
         <div className="avatar-subtext">
