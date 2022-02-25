@@ -314,8 +314,15 @@ export function AvatarCard({
     );
 }
 
+function getVacationLeftText(vacation_left: number): string {
+    return vacation_left > 0 ? durationString(vacation_left) : "0 " + _("Seconds").toLowerCase();
+}
+
 function AvatarSubtext({ user, global_user }: { user: AvatarCardUserType; global_user: any }) {
-    const [vacation_left_text, setVacationLeftText] = React.useState("");
+    const [vacation_left_text, setVacationLeftText] = React.useState(
+        getVacationLeftText(user.vacation_left),
+    );
+
     React.useEffect(() => {
         const interval_start = Date.now();
         const vacation_update_interval = setInterval(() => {
@@ -323,11 +330,7 @@ function AvatarSubtext({ user, global_user }: { user: AvatarCardUserType; global
                 if (user.on_vacation) {
                     const time_diff = Math.round((Date.now() - interval_start) / 1000);
                     const vacation_time_left = user.vacation_left - time_diff;
-                    setVacationLeftText(
-                        vacation_time_left > 0
-                            ? durationString(vacation_time_left)
-                            : "0 " + _("Seconds").toLowerCase(),
-                    );
+                    setVacationLeftText(getVacationLeftText(vacation_time_left));
                 }
             }
         }, 1000);
