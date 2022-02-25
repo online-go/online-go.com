@@ -91,7 +91,7 @@ export function AvatarCard({
     const toggleEdit = () => {
         if (editing) {
             let promise: Promise<void>;
-            if (!data.get("user").is_moderator && user.username !== new_username) {
+            if (!data.get("user")?.is_moderator && user.username !== new_username) {
                 promise = swal({
                     text: _(
                         "You can only change your name once every 30 days. Are you sure you wish to change your username at this time?",
@@ -136,10 +136,8 @@ export function AvatarCard({
         }
     }
 
-    // TODO: upgrade react-dropzone to a version with types, then use their file type.
-    type DropzoneFile = File & { preview: string };
-    const [new_icon, setNewIcon] = React.useState<DropzoneFile>(null);
-    const updateIcon = (files: DropzoneFile[]) => {
+    const [new_icon, setNewIcon] = React.useState<Dropzone.ImageFile | null>(null);
+    const updateIcon = (files: Dropzone.ImageFile[]) => {
         console.log(files);
         setNewIcon(files[0]);
         image_resizer(files[0], 512, 512)
@@ -306,7 +304,7 @@ export function AvatarCard({
                     </button>
                 )}
 
-                {window["user"].is_moderator && (
+                {global_user.is_moderator && (
                     <button className="danger xs pull-right" onClick={openModerateUser}>
                         {_("Moderator Controls")}
                     </button>
