@@ -567,13 +567,13 @@ export const GoResources = () => {
                                 </a>
                             </span>,
                             <span>
-                                <Flag country={en} />{" "}
+                                <Flag country={en} /> <Flag country={ru} />{" "}
                                 <a rel="noopener" href="https://twitch.tv/gomagic_live">
                                     Go Magic Twitch
                                 </a>{" "}
                                 /{" "}
                                 <a rel="noopener" href="https://www.youtube.com/c/GoMagic">
-                                    YouTube Magic Live
+                                    YouTube
                                 </a>
                             </span>,
                             <span>
