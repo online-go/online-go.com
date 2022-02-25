@@ -130,7 +130,7 @@ export function AvatarCard({
     let cleaned_website = "";
     if (user && user.website) {
         if (user.website.indexOf("http") !== 0) {
-            cleaned_website = "http://" + user.website;
+            cleaned_website = "https://" + user.website;
         } else {
             cleaned_website = user.website;
         }
