@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { balanceTeams, unassignPlayers } from "rengo_balancer";
 import { _ } from "translate";
 
 import { Player } from "Player";
@@ -80,6 +81,8 @@ export class RengoTeamManagementPane extends React.PureComponent<
             // This should be at most transitory, since the creator is added as a player on creation!
             return <div className="no-rengo-players-to-admin">{_("(none yet - standby!)")}</div>;
         }
+
+        const has_assigned_players = black_team.length + white_team.length > 0;
 
         return (
             <div className="RengoTeamManagementPane">
@@ -183,7 +186,28 @@ export class RengoTeamManagementPane extends React.PureComponent<
                             <Player user={n} rank={true} key={i} />
                         </div>
                     ))}
+
+                    <div className="rengo-balancer-buttons">
+                        {has_assigned_players ? (
+                            <button
+                                className="sm"
+                                onClick={unassignPlayers.bind(self, the_challenge)}
+                                disabled={!has_assigned_players}
+                            >
+                                {_("Unassign players")}
+                            </button>
+                        ) : (
+                            <button
+                                className="sm"
+                                onClick={balanceTeams.bind(self, the_challenge)}
+                                disabled={has_assigned_players}
+                            >
+                                {_("Balance teams")}
+                            </button>
+                        )}
+                    </div>
                 </div>
+
                 {this.props.show_chat && (
                     <div className="rengo-challenge-chat">
                         <EmbeddedChatCard
