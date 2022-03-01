@@ -53,7 +53,7 @@ interface AvatarCardUserType extends AvatarCardEditableFields {
     is_bot: boolean;
     is_tournament_moderator: boolean;
     bot_ai: string;
-    bot_owner: player_cache.PlayerCacheEntry;
+    bot_owner: player_cache.PlayerCacheEntry | null;
     vacation_left: number;
     professional: boolean;
 }
@@ -257,7 +257,12 @@ export function AvatarCard({
             )}
             {user.is_bot && (
                 <div>
-                    {_("Administrator")}: <Player user={user.bot_owner} />
+                    {_("Administrator")}:{" "}
+                    {user.bot_owner ? (
+                        <Player user={user.bot_owner} />
+                    ) : (
+                        <span style={{ color: "gray" }}>[null]</span>
+                    )}
                 </div>
             )}
 
