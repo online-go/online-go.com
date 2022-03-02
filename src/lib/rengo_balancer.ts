@@ -22,17 +22,19 @@ import { put } from "requests";
 type Participant = {
     user_id: number;
     rating: number;
+    username?: string;
 };
 
 // Convert player IDs to Participants with ratings.
 function toParticipants(playerIDs: number[]): Promise<Participant[]> {
-    const required_fields = ["rating"];
+    const required_fields = ["username", "rating"];
     const promises = [];
     for (const id of playerIDs) {
         const promise = player_cache.fetch(id, required_fields).then((entry) => {
             return {
                 user_id: id,
                 rating: entry.rating,
+                username: entry.username,
             };
         });
         promises.push(promise);
@@ -155,9 +157,26 @@ type Challenge = socket_api.seekgraph_global.Challenge;
 export async function balanceTeams(challenge: Challenge) {
     const user_id = (p) => p.user_id;
     const participants = await toParticipants(challenge.rengo_participants);
-    const { black, white } = autoBalance(participants);
+    const result = autoBalance(participants);
+
+    console.log("Balancing teams...");
+    console.log("Black team:", result.black);
+    console.log("Average rating:", result.blackAverageRating);
+    console.log("White team:", result.white);
+    console.log("Average rating:", result.whiteAverageRating);
+    console.log(
+        "Rating difference:",
+        Math.abs(result.blackAverageRating - result.whiteAverageRating),
+    );
+
     put("challenges/%%/team", challenge.challenge_id, {
-        assign_black: black.map(user_id),
-        assign_white: white.map(user_id),
+        assign_black: result.black.map(user_id),
+        assign_white: result.white.map(user_id),
+    }).catch(errorAlerter);
+}
+
+export function unassignPlayers(challenge: Challenge) {
+    put("challenges/%%/team", challenge.challenge_id, {
+        unassign: challenge.rengo_participants,
     }).catch(errorAlerter);
 }

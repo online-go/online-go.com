@@ -17,7 +17,7 @@
 
 import * as React from "react";
 
-import { balanceTeams } from "rengo_balancer";
+import { balanceTeams, unassignPlayers } from "rengo_balancer";
 import { _, pgettext, interpolate } from "translate";
 
 interface RengoManagementPaneProperties {
@@ -29,7 +29,6 @@ interface RengoManagementPaneProperties {
     cancelChallenge: (challenge: any) => void;
     withdrawFromRengoChallenge: (challenge: any) => void;
     joinRengoChallenge: (challenge: any) => void;
-    unassignPlayers: (challenge: any) => void;
     dontShowCancelButton?: boolean;
 }
 
@@ -118,7 +117,7 @@ export class RengoManagementPane extends React.PureComponent<
                             {has_assigned_players ? (
                                 <button
                                     className="sm"
-                                    onClick={this.props.unassignPlayers.bind(self, the_challenge)}
+                                    onClick={unassignPlayers.bind(self, the_challenge)}
                                     disabled={!has_assigned_players}
                                 >
                                     {_("Unassign players")}
