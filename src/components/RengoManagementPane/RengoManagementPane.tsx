@@ -17,7 +17,6 @@
 
 import * as React from "react";
 
-import { balanceTeams, unassignPlayers } from "rengo_balancer";
 import { _, pgettext, interpolate } from "translate";
 
 interface RengoManagementPaneProperties {
@@ -71,10 +70,6 @@ export class RengoManagementPane extends React.PureComponent<
             the_challenge.rengo_black_team.length -
             the_challenge.rengo_white_team.length;
 
-        const count_assigned_players =
-            the_challenge.rengo_black_team.length + the_challenge.rengo_white_team.length;
-        const has_assigned_players = count_assigned_players > 0;
-
         return (
             <div className="RengoManagementPane">
                 {!the_challenge.rengo_auto_start && (
@@ -114,23 +109,6 @@ export class RengoManagementPane extends React.PureComponent<
                                 <span />
                             )}
 
-                            {has_assigned_players ? (
-                                <button
-                                    className="sm"
-                                    onClick={unassignPlayers.bind(self, the_challenge)}
-                                    disabled={!has_assigned_players}
-                                >
-                                    {_("Unassign players")}
-                                </button>
-                            ) : (
-                                <button
-                                    className="sm"
-                                    onClick={balanceTeams.bind(self, the_challenge)}
-                                    disabled={has_assigned_players}
-                                >
-                                    {_("Balance teams")}
-                                </button>
-                            )}
                             <button
                                 className="success sm"
                                 onClick={this.props.startRengoChallenge.bind(self, the_challenge)}
