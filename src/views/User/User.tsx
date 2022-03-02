@@ -16,16 +16,14 @@
  */
 
 import * as React from "react";
-import { _, pgettext, cc_to_country_name, sorted_locale_countries } from "translate";
+import { _, pgettext, cc_to_country_name } from "translate";
 import { Link } from "react-router-dom";
-import { post, get, put, del, patch } from "requests";
+import { post, get, put, patch } from "requests";
 import { parse } from "query-string";
 import * as data from "data";
 import * as moment from "moment";
 import { Card } from "material";
-import { PlayerIcon } from "PlayerIcon";
 import { GameList } from "GameList";
-import { Player } from "Player";
 import * as preferences from "preferences";
 import { updateDup, ignore } from "misc";
 import { ModTools } from "./ModTools";
@@ -39,13 +37,11 @@ import {
     boundedRankString,
     rank_deviation,
 } from "rank_utils";
-import { durationString, daysOnlyDurationString } from "TimeControl";
+import { daysOnlyDurationString } from "TimeControl";
 import { openModerateUserModal } from "ModerateUser";
 import { errorAlerter } from "misc";
 import * as player_cache from "player_cache";
 import { getPrivateChat } from "PrivateChat";
-import * as Dropzone from "react-dropzone";
-import { image_resizer } from "image_resizer";
 import { Flag } from "Flag";
 import { Markdown } from "Markdown";
 import { RatingsChart } from "RatingsChart";
@@ -56,6 +52,7 @@ import { AchievementList } from "Achievements";
 import swal from "sweetalert2";
 import * as History from "history";
 import { VersusCard } from "./VersusCard";
+import { AvatarCard, AvatarCardEditableFields } from "./AvatarCard";
 
 interface UserProperties {
     match: {
@@ -64,11 +61,10 @@ interface UserProperties {
     location: History.Location;
 }
 
-const inlineBlock = { display: "inline-flex", alignItems: "center" };
 const marginBottom0 = { marginBottom: "0" };
 
 // API: players/%%/full
-interface UserInfo {
+export interface UserInfo {
     id: number;
     on_vacation: boolean;
     vacation_left: number;
@@ -181,26 +177,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
 
     componentDidMount() {
         window.document.title = _("Player");
-        const interval_start = Date.now();
-        this.vacation_update_interval = setInterval(() => {
-            if (this.state.user) {
-                if (this.state.user.on_vacation) {
-                    const time_diff = Math.round((Date.now() - interval_start) / 1000);
-                    const vacation_time_left = this.state.user.vacation_left - time_diff;
-                    this.setState({
-                        vacation_left_text:
-                            vacation_time_left > 0
-                                ? durationString(vacation_time_left)
-                                : "0 " + _("Seconds").toLowerCase(),
-                    });
-                }
-            }
-        }, 1000);
         this.resolve(this.props);
-    }
-
-    componentWillUnmount() {
-        clearInterval(this.vacation_update_interval);
     }
 
     isSpecialUser() {
@@ -269,19 +246,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                     : user.website;
         } catch (e) {
             console.log(e.stack);
-        }
-
-        const vs = state.vs;
-        state.vs.total = vs.wins + vs.losses + vs.draws;
-        state.vs.winPercent = (vs.wins / vs.total) * 100.0;
-        state.vs.lossPercent = (vs.losses / vs.total) * 100.0;
-        state.vs.drawPercent = (vs.draws / vs.total) * 100.0;
-        state.vs.recent5 = vs.history ? vs.history.slice(0, 5) : [];
-        for (let i = 0; i < state.vs.recent5.length; ++i) {
-            state.vs.recent5[i].pretty_date = moment(new Date(state.vs.recent5[i].date)).format(
-                "ll",
-            );
-            //state.vs.recent5[i].pretty_date = moment(new Date(state.vs.recent5[i].date)).calendar();
         }
 
         state.syncRating = (rank, type) => {
@@ -455,112 +419,25 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             .catch(errorAlerter);
     }
 
-    updateIcon = (files) => {
-        console.log(files);
-        this.setState({ new_icon: files[0] });
-        image_resizer(files[0], 512, 512)
-            .then((file: Blob) => {
-                put("players/%%/icon", this.user_id, file)
-                    .then((res) => {
-                        console.log("Upload successful", res);
-                        player_cache.update({
-                            id: this.user_id,
-                            icon: res.icon,
-                        });
-                    })
-                    .catch(errorAlerter);
-            })
-            .catch(errorAlerter);
-    };
-    clearIcon = () => {
-        this.setState({ new_icon: null });
-        del("players/%%/icon", this.user_id)
-            .then((res) => {
-                console.log("Cleared icon", res);
-                player_cache.update({
-                    id: this.user_id,
-                    icon: res.icon,
-                });
-            })
-            .catch(errorAlerter);
-    };
-    toggleEdit = () => {
-        if (this.state.editing) {
-            this.saveEditChanges();
-        } else {
-            this.setState({ editing: true });
-        }
-    };
     toggleRatings = () => {
         this.setState((state) => ({ temporary_show_ratings: !state.temporary_show_ratings }));
-    };
-    saveCountry = (ev) => {
-        this.setState({ user: Object.assign({}, this.state.user, { country: ev.target.value }) });
     };
     saveAbout = (ev) => {
         this.setState({ user: Object.assign({}, this.state.user, { about: ev.target.value }) });
     };
-    saveUsername = (ev) => {
-        this.setState({ user: Object.assign({}, this.state.user, { username: ev.target.value }) });
-    };
-    saveWebsite = (ev) => {
-        this.setState({ user: Object.assign({}, this.state.user, { website: ev.target.value }) });
-    };
-    saveRealFirstName = (ev) => {
+    saveEditChanges(profile_card_changes: AvatarCardEditableFields) {
         this.setState({
-            user: Object.assign({}, this.state.user, {
-                first_name: ev.target.value,
-                name: ev.target.value + " " + (this.state.user.last_name || ""),
+            editing: false,
+            user: Object.assign({}, this.state.user, profile_card_changes, {
+                name: `${profile_card_changes.first_name} ${profile_card_changes.last_name}`,
             }),
         });
-    };
-    saveRealLastName = (ev) => {
-        this.setState({
-            user: Object.assign({}, this.state.user, {
-                last_name: ev.target.value,
-                name: (this.state.user.first_name || "") + " " + ev.target.value,
-            }),
-        });
-    };
-    saveRealNameIsPrivate = (ev) => {
-        this.setState({
-            user: Object.assign({}, this.state.user, { real_name_is_private: ev.target.checked }),
-        });
-    };
-    saveEditChanges() {
-        const username = this.state.user.username.trim();
-        let promise: Promise<void>;
-        if (!data.get("user").is_moderator && this.original_username !== username) {
-            promise = swal({
-                text: _(
-                    "You can only change your name once every 30 days. Are you sure you wish to change your username at this time?",
-                ),
-                showCancelButton: true,
-            });
-        } else {
-            promise = Promise.resolve();
-        }
-        promise
-            .then(() => {
-                this.setState({
-                    editing: false,
-                    user: Object.assign({}, this.state.user, { username: username }),
-                });
-                put("players/%%", this.user_id, {
-                    username: username,
-                    first_name: this.state.user.first_name,
-                    last_name: this.state.user.last_name,
-                    about: this.state.user.about,
-                    website: this.state.user.website,
-                    country: this.state.user.country,
-                    real_name_is_private: this.state.user.real_name_is_private,
-                })
-                    .then((res) => {
-                        console.log(res);
-                    })
-                    .catch(errorAlerter);
-            })
-            .catch(ignore);
+        put("players/%%", this.user_id, {
+            ...profile_card_changes,
+            about: this.state.user.about,
+        })
+            .then(console.log)
+            .catch(errorAlerter);
     }
     openModerateUser = () => {
         const modal = openModerateUserModal(this.state.user);
@@ -592,15 +469,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         };
         setTimeout(doDomWork, 0);
 
-        let cleaned_website = "";
-        if (user && user.website) {
-            if (user.website.indexOf("http") !== 0) {
-                cleaned_website = "http://" + user.website;
-            } else {
-                cleaned_website = user.website;
-            }
-        }
-
         const global_user = data.get("config.user");
         const cdn_release = data.get("config.cdn_release");
         const account_links = user.self_reported_account_linkages;
@@ -608,255 +476,15 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         return (
             <div className="User container">
                 <div>
-                    {/* Profile card  */}
                     <div className="profile-card">
                         <div className="avatar-and-ratings-row">
-                            <div className="avatar-container">
-                                {/* Avatar container */}
-                                {editing ? (
-                                    <input
-                                        className="username-input"
-                                        value={user.username}
-                                        onChange={this.saveUsername}
-                                        placeholder={_("User Name")}
-                                    />
-                                ) : (
-                                    <span className="username">
-                                        <Player user={user} />
-                                    </span>
-                                )}
-
-                                {preferences.get("hide-ranks") &&
-                                    this.state.temporary_show_ratings && (
-                                        <span className="Player-rank">
-                                            {"[" + getUserRating(user).bounded_rank_label + "]"}
-                                        </span>
-                                    )}
-
-                                {editing ? (
-                                    <div className="dropzone-container">
-                                        <Dropzone
-                                            className="Dropzone"
-                                            onDrop={this.updateIcon}
-                                            multiple={false}
-                                        >
-                                            {this.state.new_icon ? (
-                                                <img
-                                                    src={this.state.new_icon.preview}
-                                                    style={{ height: "128px", width: "128px" }}
-                                                />
-                                            ) : (
-                                                <PlayerIcon id={user.id} size={128} />
-                                            )}
-                                        </Dropzone>
-                                    </div>
-                                ) : (
-                                    <PlayerIcon id={user.id} size={128} />
-                                )}
-                                {editing && (
-                                    <div className="clear-icon-container">
-                                        <button className="xs" onClick={this.clearIcon}>
-                                            {_("Clear icon")}
-                                        </button>
-                                    </div>
-                                )}
-
-                                <div className="avatar-subtext">
-                                    {global_user.is_moderator && user.is_watched && (
-                                        <div>
-                                            <h3 style={inlineBlock}>
-                                                <i className="fa fa-exclamation-triangle"></i>{" "}
-                                                Watched{" "}
-                                                <i className="fa fa-exclamation-triangle"></i>
-                                            </h3>
-                                        </div>
-                                    )}
-
-                                    {user.ui_class_extra &&
-                                        user.ui_class_extra.indexOf("aga") >= 0 && (
-                                            <div>
-                                                <h4 style={inlineBlock}>
-                                                    <img src="https://cdn.online-go.com/assets/agaico1.png" />{" "}
-                                                    {_("AGA Staff")}{" "}
-                                                </h4>
-                                            </div>
-                                        )}
-
-                                    {false /* suppress this message until backend fix is implemented */ &&
-                                        user.timeout_provisional && (
-                                            <div>
-                                                <h4 style={inlineBlock}>
-                                                    <i className="fa fa-exclamation-triangle"></i>{" "}
-                                                    {_("Has recently timed out of a game")}{" "}
-                                                    <i className="fa fa-exclamation-triangle"></i>
-                                                </h4>
-                                            </div>
-                                        )}
-
-                                    {!user.is_superuser && user.is_moderator && (
-                                        <div>
-                                            <h3 style={inlineBlock}>
-                                                <i className="fa fa-gavel"></i> {_("Moderator")}
-                                            </h3>
-                                        </div>
-                                    )}
-
-                                    {!user.is_moderator && user.supporter && (
-                                        <div>
-                                            <h3 style={inlineBlock}>
-                                                <i className="fa fa-star"></i> {_("Site Supporter")}{" "}
-                                                <i className="fa fa-star"></i>
-                                            </h3>
-                                        </div>
-                                    )}
-
-                                    {user.is_superuser && (
-                                        <div>
-                                            <h3 style={inlineBlock}>
-                                                <i className="fa fa-smile-o fa-spin"></i>{" "}
-                                                {_("OGS Developer")}{" "}
-                                                <i className="fa fa-smile-o fa-spin"></i>
-                                            </h3>
-                                        </div>
-                                    )}
-
-                                    {!user.is_superuser && user.is_tournament_moderator && (
-                                        <div>
-                                            <h3 style={inlineBlock}>
-                                                <i className="fa fa-trophy"></i>{" "}
-                                                {_("Tournament Moderator")}{" "}
-                                                <i className="fa fa-trophy"></i>
-                                            </h3>
-                                        </div>
-                                    )}
-
-                                    {user.on_vacation && (
-                                        <div>
-                                            <h3 style={inlineBlock}>
-                                                <i className="fa fa-smile-o fa-spin"></i>{" "}
-                                                {_("On Vacation")} - {this.state.vacation_left_text}{" "}
-                                                <i className="fa fa-smile-o fa-spin"></i>
-                                            </h3>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {(editing || null) && (
-                                    <div>
-                                        <input
-                                            className="name-input"
-                                            placeholder={_("First") /* translators: First name */}
-                                            value={user.first_name || ""}
-                                            onChange={this.saveRealFirstName}
-                                        />
-                                        &nbsp;
-                                        <input
-                                            className="name-input"
-                                            placeholder={_("Last") /* translators: Last name */}
-                                            value={user.last_name || ""}
-                                            onChange={this.saveRealLastName}
-                                        />
-                                    </div>
-                                )}
-                                {!editing && user.name && (
-                                    <div className={user.real_name_is_private ? "italic" : ""}>
-                                        {user.name}
-                                        {user.real_name_is_private ? " " + _("(hidden)") : ""}
-                                    </div>
-                                )}
-
-                                {(editing || null) && (
-                                    <div>
-                                        <input
-                                            type="checkbox"
-                                            id="real-name-is-private"
-                                            checked={user.real_name_is_private}
-                                            onChange={this.saveRealNameIsPrivate}
-                                        />{" "}
-                                        <label htmlFor="real-name-is-private">
-                                            {_("Hide real name")}
-                                        </label>
-                                    </div>
-                                )}
-
-                                {user.is_bot && (
-                                    <div>
-                                        <i className="fa fa-star"></i>{" "}
-                                        <b>{_("Artificial Intelligence")}</b>{" "}
-                                        <i className="fa fa-star"></i>
-                                    </div>
-                                )}
-                                {user.is_bot && (
-                                    <div id="bot-ai-name">
-                                        {pgettext("Bot AI engine", "Engine")}: {user.bot_ai}
-                                    </div>
-                                )}
-                                {user.is_bot && (
-                                    <div>
-                                        {_("Administrator")}: <Player user={user.bot_owner} />
-                                    </div>
-                                )}
-
-                                {editing ? (
-                                    <div className="country-line">
-                                        <Flag country={user.country} big />
-                                        <select value={user.country} onChange={this.saveCountry}>
-                                            {sorted_locale_countries.map((C) => (
-                                                <option key={C.cc} value={C.cc}>
-                                                    {C.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                ) : (
-                                    <div className="country-line">
-                                        <Flag country={user.country} big />
-                                        <span>{cc_to_country_name(user.country)}</span>
-                                    </div>
-                                )}
-
-                                {!editing && user.website && (
-                                    <div className="website-url">
-                                        <a target="_blank" rel="noopener" href={cleaned_website}>
-                                            {user.website}
-                                        </a>
-                                    </div>
-                                )}
-                                {(editing || null) && (
-                                    <div className="website-url">
-                                        <input
-                                            type="url"
-                                            value={user.website}
-                                            onChange={this.saveWebsite}
-                                        />
-                                    </div>
-                                )}
-
-                                <div className="avatar-buttons">
-                                    {(global_user.id === user.id ||
-                                        global_user.is_moderator ||
-                                        null) && (
-                                        <button
-                                            onClick={this.toggleEdit}
-                                            className="xs edit-button"
-                                        >
-                                            <i
-                                                className={editing ? "fa fa-save" : "fa fa-pencil"}
-                                            />{" "}
-                                            {" " + (editing ? _("Save") : _("Edit"))}
-                                        </button>
-                                    )}
-
-                                    {window["user"].is_moderator && (
-                                        <button
-                                            className="danger xs pull-right"
-                                            onClick={this.openModerateUser}
-                                        >
-                                            {_("Moderator Controls")}
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
+                            <AvatarCard
+                                user={user}
+                                force_show_ratings={this.state.temporary_show_ratings}
+                                openModerateUser={this.openModerateUser}
+                                onEdit={() => this.setState({ editing: true })}
+                                onSave={this.saveEditChanges.bind(this)}
+                            />
 
                             {(!preferences.get("hide-ranks") ||
                                 this.state.temporary_show_ratings) &&

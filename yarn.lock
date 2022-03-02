@@ -1351,6 +1351,13 @@
   dependencies:
     "@types/react" "*"
 
+"@types/react-dropzone@^3.13.4":
+  version "3.13.4"
+  resolved "https://registry.yarnpkg.com/@types/react-dropzone/-/react-dropzone-3.13.4.tgz#3bd4ec7ed70c7c448b1fdfad9736eb8e17afd169"
+  integrity sha512-9RhD5xVJdi8ruoNN2gWcrfSbizdYi5d64v9aMkqW+U/nkZyy4EixhWe10J3KL5s3sIeqqs7S+E9nQLUWVkcObg==
+  dependencies:
+    "@types/react" "*"
+
 "@types/react-router-dom@^5.3.2":
   version "5.3.2"
   resolved "https://registry.yarnpkg.com/@types/react-router-dom/-/react-router-dom-5.3.2.tgz#ebd8e145cf056db5c66eb1dac63c72f52e8542ee"
