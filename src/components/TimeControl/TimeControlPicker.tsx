@@ -549,10 +549,12 @@ export class TimeControlPicker extends React.PureComponent<
                                     type="number"
                                     id="challenge-canadian-stones"
                                     min={
-                                        default_time_options[this.state.speed].canadian.periods_min
+                                        default_time_options[this.state.speed].canadian
+                                            .stones_per_period_min
                                     }
                                     max={
-                                        default_time_options[this.state.speed].canadian.periods_max
+                                        default_time_options[this.state.speed].canadian
+                                            .stones_per_period_max
                                     }
                                     className="challenge-dropdown form-control"
                                     value={
@@ -756,19 +758,18 @@ function recallTimeControlSettings(speed: Speed, time_control_system: TimeContro
 }
 
 function numericInputOnBlur(
-    sender: FocusEvent,
+    sender: React.FocusEvent<HTMLInputElement, Element>,
     speed: Speed,
     time_control_system: TimeControlSystem,
     propertyName: string,
 ) {
-    const target = sender.target as HTMLInputElement;
     if (
-        target.valueAsNumber <
+        sender.target.valueAsNumber <
             default_time_options[speed][time_control_system][`${propertyName}_min`] ||
-        target.valueAsNumber >
-            default_time_options[speed][time_control_system][`${propertyName}_min`] ||
-        isNaN(target.valueAsNumber)
+        sender.target.valueAsNumber >
+            default_time_options[speed][time_control_system][`${propertyName}_max`] ||
+        isNaN(sender.target.valueAsNumber)
     ) {
-        target.value = default_time_options[speed][time_control_system][`${propertyName}`];
+        sender.target.value = default_time_options[speed][time_control_system][`${propertyName}`];
     }
 }
