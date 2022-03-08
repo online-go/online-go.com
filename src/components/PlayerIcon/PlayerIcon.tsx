@@ -22,7 +22,7 @@ import { errorLogger } from "misc";
 interface PlayerIconProps {
     id?: number;
     user?: any;
-    size?: number | string;
+    size: number | string;
     className?: string;
 }
 

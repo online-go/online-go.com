@@ -475,47 +475,6 @@ export function n2s(n?: number) {
 
     return ret;
 }
-export function alertModerator(obj) {
-    let text = "";
-
-    if (obj.reported_conversation) {
-        text =
-            interpolate(
-                _(
-                    "Your full conversation with {{user}} will be sent to the moderation team for review.",
-                ),
-                {
-                    user: obj.reported_conversation.username,
-                },
-            ) +
-            "\n\n" +
-            _("Please provide a clear description of the problem");
-    } else {
-        text =
-            (obj.user ? _("Report user:") + " " : "") +
-            _("Please provide a clear description of the problem");
-    }
-
-    swal({
-        text: text,
-        input: "textarea",
-        showCancelButton: true,
-        allowOutsideClick: false, // folk are accidentally losing their typing.
-    })
-        .then((description) => {
-            if (description.length < 5) {
-                alertModerator(obj);
-                return;
-            }
-            obj.note = description;
-            post("moderation/incident", obj)
-                .then(() => {
-                    swal({ text: _("Thanks for the report!") }).catch(swal.noop);
-                })
-                .catch(errorAlerter);
-        })
-        .catch(ignore);
-}
 
 /* Returns true on middle clicks and command-clicks */
 export function shouldOpenNewTab(event) {

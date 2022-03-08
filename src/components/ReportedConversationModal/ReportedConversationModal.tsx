@@ -19,10 +19,11 @@ import * as React from "react";
 import { Player } from "Player";
 import { _ } from "translate";
 import { Modal, openModal } from "Modal";
+import { ReportedConversation } from "Report";
 
 interface ReportedConversationModalProps {
     player_id: number;
-    conversation: string;
+    conversation: string | ReportedConversation;
 }
 
 interface Events {}
@@ -33,7 +34,10 @@ export class ReportedConversationModal extends Modal<Events, ReportedConversatio
     }
 
     render() {
-        const conversation: string[] = this.props.conversation.split("\n");
+        const conversation: string[] =
+            typeof this.props.conversation === "object"
+                ? this.props.conversation.content
+                : this.props.conversation.split("\n");
 
         return (
             <div className="Modal ReportedConversationModal" ref="modal">
@@ -57,7 +61,11 @@ export class ReportedConversationModal extends Modal<Events, ReportedConversatio
     }
 }
 
-export function openReportedConversationModal(player_id: number, conversation: string) {
+export function openReportedConversationModal(
+    player_id: number,
+    conversation: string | ReportedConversation,
+) {
+    console.log("openReportedConversationModal", player_id, conversation);
     return openModal(
         <ReportedConversationModal player_id={player_id} conversation={conversation} />,
     );

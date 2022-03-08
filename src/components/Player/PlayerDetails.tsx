@@ -20,7 +20,7 @@ import { toast } from "toast";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext } from "translate";
 import { post } from "requests";
-import { shouldOpenNewTab, errorAlerter, alertModerator, ignore } from "misc";
+import { shouldOpenNewTab, errorAlerter, ignore } from "misc";
 import { getUserRating, humble_rating } from "rank_utils";
 import * as player_cache from "player_cache";
 import { icon_size_url } from "PlayerIcon";
@@ -39,6 +39,7 @@ import cached from "cached";
 import { openPlayerNotesModal } from "PlayerNotesModal";
 import swal from "sweetalert2";
 import { PlayerCacheEntry } from "player_cache";
+import { openReport } from "Report";
 
 interface PlayerDetailsProperties {
     playerId: number;
@@ -165,7 +166,7 @@ export class PlayerDetails extends React.PureComponent<
         this.close_all_modals_and_popovers();
     };
     report = () => {
-        alertModerator({ user: this.props.playerId });
+        openReport({ reported_user_id: this.props.playerId });
         this.close_all_modals_and_popovers();
     };
     block = (ev: React.MouseEvent<HTMLButtonElement>) => {

@@ -28,7 +28,7 @@ import { emitNotification } from "Notifications";
 import { PlayerCacheEntry } from "player_cache";
 import * as player_cache from "player_cache";
 import online_status from "online_status";
-import { alertModerator } from "misc";
+import { openReport } from "Report";
 
 let last_id = 0;
 
@@ -537,22 +537,17 @@ class PrivateChat {
         }
     }
 
-    getConversation = () => {
-        let conversation = "";
-        this.lines.forEach((line) => {
-            conversation += line[0].textContent + "\n";
-        });
-
-        return conversation;
-    };
+    getConversation(): Array<string> {
+        return this.lines.map((line) => line.textContent);
+    }
 
     createModNote = () => {
-        createModeratorNote(this.user_id, this.getConversation());
+        createModeratorNote(this.user_id, this.getConversation().join("\n"));
     };
 
     report = () => {
-        alertModerator({
-            user: this.user_id,
+        openReport({
+            reported_user_id: this.user_id,
             reported_conversation: {
                 username: this.player.username,
                 content: this.getConversation(),

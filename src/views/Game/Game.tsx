@@ -26,7 +26,7 @@ import { _, ngettext, pgettext, interpolate, current_language } from "translate"
 import { post, get, api1, del } from "requests";
 import { KBShortcut } from "KBShortcut";
 import { UIPush } from "UIPush";
-import { alertModerator, errorAlerter, ignore, getOutcomeTranslation } from "misc";
+import { errorAlerter, ignore, getOutcomeTranslation } from "misc";
 import { challengeFromBoardPosition, challengeRematch } from "ChallengeModal";
 import {
     Goban,
@@ -70,6 +70,7 @@ import { toast } from "toast";
 import { Clock } from "Clock";
 import { JGOFClock } from "goban";
 import { GameTimings } from "./GameTimings";
+import { openReport } from "Report";
 
 import swal from "sweetalert2";
 
@@ -2298,7 +2299,11 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         return ret;
     }
     alertModerator() {
-        alertModerator(this.game_id ? { game: this.game_id } : { review: this.review_id });
+        openReport(
+            this.game_id
+                ? { reported_game_id: this.game_id }
+                : { reported_review_id: this.review_id },
+        );
     }
     decide(winner): void {
         let moderation_note = null;

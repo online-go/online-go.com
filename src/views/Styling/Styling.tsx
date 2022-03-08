@@ -408,7 +408,7 @@ export class Styling extends React.PureComponent<{}, any> {
                     <div className="col-xs-4">
                         <Card>
                             <Player user={{ id: 1, username: "anoek" }} />
-                            <PlayerIcon id={1} />
+                            <PlayerIcon id={1} size={128} />
                         </Card>
                         <Card>
                             <div style={{ fontSize: "1.5em" }}>

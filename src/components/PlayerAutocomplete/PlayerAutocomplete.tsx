@@ -27,6 +27,7 @@ interface PlayerAutocompleteProperties {
     playerId?: number;
     placeholder?: string;
     ladderId?: IdType;
+    className?: string;
 }
 
 export interface PlayerAutocompleteRef {
@@ -184,7 +185,7 @@ function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Elem
     );
 
     return (
-        <span className="PlayerAutocomplete">
+        <span className={"PlayerAutocomplete " + (props.className || "")}>
             <Autosuggest
                 suggestions={suggestions}
                 onSuggestionsFetchRequested={onSuggestionsFetchRequested}
