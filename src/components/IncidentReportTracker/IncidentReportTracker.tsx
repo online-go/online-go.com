@@ -29,6 +29,7 @@ import { emitNotification } from "Notifications";
 import { browserHistory } from "ogsHistory";
 import { openReportedConversationModal } from "ReportedConversationModal";
 import { ReportedConversation, report_categories } from "Report";
+import { AutoTranslate } from "AutoTranslate";
 import swal from "sweetalert2";
 
 export interface Report {
@@ -48,6 +49,12 @@ export interface Report {
     cleared_by_user: boolean;
     was_helpful: boolean;
     reporter_note: string;
+    reporter_note_translation: {
+        source_language: string;
+        target_language: string;
+        source_text: string;
+        target_text: string;
+    };
     moderator_note: string;
     system_note: string;
 
@@ -254,7 +261,40 @@ export function IncidentReportTracker(): JSX.Element {
                                     )}
                                 </div>
                                 {(report.reporter_note || null) && (
-                                    <h4 className="notes">{report.reporter_note}</h4>
+                                    <h4 className="notes">
+                                        {report.reporter_note_translation ? (
+                                            <>
+                                                {report.reporter_note_translation.source_text}
+                                                {(report.reporter_note_translation
+                                                    .target_language !==
+                                                    report.reporter_note_translation
+                                                        .source_language ||
+                                                    null) && (
+                                                    <>
+                                                        <div className="source-to-target-languages">
+                                                            {
+                                                                report.reporter_note_translation
+                                                                    .source_language
+                                                            }{" "}
+                                                            =&gt;{" "}
+                                                            {
+                                                                report.reporter_note_translation
+                                                                    .target_language
+                                                            }
+                                                        </div>
+                                                        <div className="translated">
+                                                            {
+                                                                report.reporter_note_translation
+                                                                    .target_text
+                                                            }
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <AutoTranslate source={report.reporter_note} />
+                                        )}
+                                    </h4>
                                 )}
 
                                 {(report.system_note || null) && (
