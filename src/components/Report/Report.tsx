@@ -226,12 +226,12 @@ export function Report(props: ReportProperties): JSX.Element {
                 <h3>
                     <PlayerIcon id={user_id} size={64} />
                     {_("Player")}: {username}
-                    {game_id && (
+                    {(game_id || null) && (
                         <div>
                             {_("Game")}: {game_id}
                         </div>
                     )}
-                    {review_id && (
+                    {(review_id || null) && (
                         <div>
                             {_("Review")}: {review_id}
                         </div>
