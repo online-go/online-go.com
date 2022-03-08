@@ -70,7 +70,6 @@ import { toast } from "toast";
 import { Clock } from "Clock";
 import { JGOFClock } from "goban";
 import { GameTimings } from "./GameTimings";
-import { openReport } from "Report";
 
 import swal from "sweetalert2";
 
@@ -292,7 +291,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         this.startReview = this.startReview.bind(this);
         this.fork = this.fork.bind(this);
         this.estimateScore = this.estimateScore.bind(this);
-        this.alertModerator = this.alertModerator.bind(this);
         this.showLinkModal = this.showLinkModal.bind(this);
         this.pauseGame = this.pauseGame.bind(this);
         this.decide_black = this.decide.bind(this, "black");
@@ -2298,13 +2296,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         this.sync_state();
         return ret;
     }
-    alertModerator() {
-        openReport(
-            this.game_id
-                ? { reported_game_id: this.game_id }
-                : { reported_review_id: this.review_id },
-        );
-    }
     decide(winner): void {
         let moderation_note = null;
         do {
@@ -4051,9 +4042,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                 </a>
                 <a onClick={this.fork} className={goban?.engine.rengo ? "disabled" : ""}>
                     <i className="fa fa-code-fork"></i> {_("Fork game")}
-                </a>
-                <a onClick={this.alertModerator}>
-                    <i className="fa fa-exclamation-triangle"></i> {_("Call moderator")}
                 </a>
                 {((review && game_id) || null) && (
                     <Link to={`/game/${game_id}`}>

@@ -542,7 +542,7 @@ class PrivateChat {
     }
 
     getConversation(): Array<string> {
-        return this.lines.map((line) => line.textContent);
+        return this.lines.map((line) => line.text());
     }
 
     createModNote = () => {
@@ -552,6 +552,9 @@ class PrivateChat {
     report = () => {
         openReport({
             reported_user_id: this.user_id,
+            reported_game_id: 0,
+            reported_review_id: 0,
+            report_type: "harassment",
             reported_conversation: {
                 username: this.player.username,
                 content: this.getConversation(),

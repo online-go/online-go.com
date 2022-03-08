@@ -52,6 +52,7 @@ interface ReportProperties {
     reported_user_id?: number;
     reported_game_id?: number;
     reported_review_id?: number;
+    report_type?: ReportType;
     reported_conversation?: ReportedConversation;
     onClose?: () => void;
 }
@@ -122,19 +123,21 @@ export const report_categories: Array<ReportDescription> = [
     },
 ];
 
-export function Report({
-    report_id,
-    reported_user_id,
-    onClose,
-    reported_conversation,
-    reported_game_id,
-    reported_review_id,
-}: ReportProperties): JSX.Element {
+export function Report(props: ReportProperties): JSX.Element {
+    const {
+        report_id,
+        reported_user_id,
+        onClose,
+        reported_conversation,
+        reported_game_id,
+        reported_review_id,
+    } = props;
+
     const [user_id, _set_user_id] = React.useState(reported_user_id);
     const [username, set_username] = React.useState<string>(
         player_cache.lookup(reported_user_id)?.username || "",
     );
-    const [report_type, set_report_type] = React.useState("");
+    const [report_type, set_report_type] = React.useState(props.report_type || "");
     const [game_id, _set_game_id] = React.useState(reported_game_id);
     const [review_id, _set_review_id] = React.useState(reported_review_id);
     const [note, set_note] = React.useState("");
@@ -309,8 +312,19 @@ export function Report({
 
 export function openReport(report: ReportProperties): void {
     const container = document.createElement("DIV");
+    const game_id = parseInt(document.location.pathname.match(/game\/([0-9]+)/)?.[1] || "0");
+    const review_id = parseInt(
+        document.location.pathname.match(/(review|demo\/view)\/([0-9]+)/)?.[2] || "0",
+    );
     container.className = "Report-container-container";
     document.body.append(container);
+
+    if (game_id && !("reported_game_id" in report)) {
+        report["reported_game_id"] = game_id;
+    }
+    if (review_id && !("reported_review_id" in report)) {
+        report["reported_review_id"] = review_id;
+    }
 
     function onClose() {
         ReactDOM.unmountComponentAtNode(container);
@@ -319,6 +333,8 @@ export function openReport(report: ReportProperties): void {
             report.onClose();
         }
     }
+
+    console.log("Preparing report: ", report);
 
     ReactDOM.render(
         <div
