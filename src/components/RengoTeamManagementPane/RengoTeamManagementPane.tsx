@@ -25,6 +25,7 @@ import { EmbeddedChatCard } from "Chat";
 type Challenge = socket_api.seekgraph_global.Challenge;
 
 interface RengoTeamManagementPaneProps {
+    user: rest_api.UserConfig;
     challenge_list: Challenge[];
     challenge_id: number;
     moderator: boolean;
@@ -82,6 +83,12 @@ export class RengoTeamManagementPane extends React.PureComponent<
             return <div className="no-rengo-players-to-admin">{_("(none yet - standby!)")}</div>;
         }
 
+        const our_rengo_challenges = this.props.challenge_list.filter(
+            (c) => c.user_id === this.props.user.id,
+        );
+        const own_challenge = our_rengo_challenges.find(
+            (c) => c.challenge_id === this.props.challenge_id,
+        );
         const has_assigned_players = black_team.length + white_team.length > 0;
 
         return (
@@ -187,25 +194,27 @@ export class RengoTeamManagementPane extends React.PureComponent<
                         </div>
                     ))}
 
-                    <div className="rengo-balancer-buttons">
-                        {has_assigned_players ? (
-                            <button
-                                className="sm"
-                                onClick={unassignPlayers.bind(self, the_challenge)}
-                                disabled={!has_assigned_players}
-                            >
-                                {_("Unassign players")}
-                            </button>
-                        ) : (
-                            <button
-                                className="sm"
-                                onClick={balanceTeams.bind(self, the_challenge)}
-                                disabled={has_assigned_players}
-                            >
-                                {_("Balance teams")}
-                            </button>
-                        )}
-                    </div>
+                    {(own_challenge || null) && (
+                        <div className="rengo-balancer-buttons">
+                            {has_assigned_players ? (
+                                <button
+                                    className="sm"
+                                    onClick={unassignPlayers.bind(self, the_challenge)}
+                                    disabled={!has_assigned_players}
+                                >
+                                    {_("Unassign players")}
+                                </button>
+                            ) : (
+                                <button
+                                    className="sm"
+                                    onClick={balanceTeams.bind(self, the_challenge)}
+                                    disabled={has_assigned_players}
+                                >
+                                    {_("Balance teams")}
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {this.props.show_chat && (

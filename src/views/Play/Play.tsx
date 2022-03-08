@@ -741,6 +741,7 @@ export class Play extends React.Component<{}, PlayState> {
                         joinRengoChallenge={nominateForRengoChallenge}
                     >
                         <RengoTeamManagementPane
+                            user={user}
                             challenge_id={rengo_challenge_to_show.challenge_id}
                             challenge_list={this.state.rengo_list}
                             moderator={user.is_moderator}
@@ -1232,6 +1233,7 @@ export class Play extends React.Component<{}, PlayState> {
                             dontShowCancelButton={true}
                         >
                             <RengoTeamManagementPane
+                                user={user}
                                 challenge_id={C.challenge_id}
                                 challenge_list={this.state.rengo_list}
                                 moderator={user.is_moderator}
