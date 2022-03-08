@@ -39,6 +39,8 @@ export namespace TimeControlTypes {
         main_time: number;
         period_time: number;
         periods: number;
+        periods_min: number;
+        periods_max: number;
         pause_on_weekends: boolean;
     }
     export interface Canadian {
@@ -47,6 +49,8 @@ export namespace TimeControlTypes {
         main_time: number;
         period_time: number;
         stones_per_period: number;
+        stones_per_period_min: number;
+        stones_per_period_max: number;
         pause_on_weekends: boolean;
     }
     export interface Simple {

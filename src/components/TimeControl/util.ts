@@ -225,6 +225,25 @@ export const time_options = {
     },
 };
 
+export function parseIntWithDefaultValue(
+    value: string,
+    defaultValue: number,
+    min?: number,
+    max?: number,
+): number {
+    const parsedInt = parseInt(value, 10);
+
+    if (isNaN(parsedInt)) {
+        return defaultValue;
+    }
+
+    if ((min && parsedInt < min) || (max && parsedInt > max)) {
+        return defaultValue;
+    }
+
+    return parsedInt;
+}
+
 export function makeTimeControlParameters(tc: any): TimeControl {
     const tpm = computeAverageMoveTime(tc);
     const speed: TimeControlTypes.TimeControlSpeed =
@@ -246,7 +265,14 @@ export function makeTimeControlParameters(tc: any): TimeControl {
                 speed: speed,
                 main_time: parseInt(tc.main_time),
                 period_time: parseInt(tc.period_time),
-                periods: parseInt(tc.periods),
+                periods: parseIntWithDefaultValue(
+                    tc.periods,
+                    tc.periods_min,
+                    tc.periods_min,
+                    tc.periods_max,
+                ),
+                periods_min: tc.periods_min,
+                periods_max: tc.periods_max,
                 pause_on_weekends: tc.pause_on_weekends,
             };
         case "simple":
@@ -262,7 +288,14 @@ export function makeTimeControlParameters(tc: any): TimeControl {
                 speed: speed,
                 main_time: parseInt(tc.main_time),
                 period_time: parseInt(tc.period_time),
-                stones_per_period: parseInt(tc.stones_per_period),
+                stones_per_period: parseIntWithDefaultValue(
+                    tc.stones_per_period,
+                    tc.stones_per_period_min,
+                    tc.stones_per_period_min,
+                    tc.stones_per_period_max,
+                ),
+                stones_per_period_min: tc.stones_per_period_min,
+                stones_per_period_max: tc.stones_per_period_max,
                 pause_on_weekends: tc.pause_on_weekends,
             };
         case "absolute":
