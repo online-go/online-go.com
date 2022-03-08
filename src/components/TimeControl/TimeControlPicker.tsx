@@ -650,7 +650,7 @@ const default_time_options = {
             period_time: 5,
             periods: 5,
             periods_min: 1,
-            periods_max: 30,
+            periods_max: 300,
             pause_on_weekends: false,
         },
         canadian: {
@@ -684,7 +684,7 @@ const default_time_options = {
             period_time: 30,
             periods: 5,
             periods_min: 1,
-            periods_max: 30,
+            periods_max: 300,
             pause_on_weekends: false,
         },
         canadian: {
@@ -717,7 +717,7 @@ const default_time_options = {
             period_time: 1 * 86400,
             periods: 5,
             periods_min: 1,
-            periods_max: 30,
+            periods_max: 300,
             pause_on_weekends: true,
         },
         canadian: {
@@ -763,13 +763,13 @@ function numericInputOnBlur(
     time_control_system: TimeControlSystem,
     propertyName: string,
 ) {
-    if (
-        sender.target.valueAsNumber <
-            default_time_options[speed][time_control_system][`${propertyName}_min`] ||
-        sender.target.valueAsNumber >
-            default_time_options[speed][time_control_system][`${propertyName}_max`] ||
-        isNaN(sender.target.valueAsNumber)
-    ) {
+    const num = sender.target.valueAsNumber;
+    const min = default_time_options[speed][time_control_system][`${propertyName}_min`];
+    const max = default_time_options[speed][time_control_system][`${propertyName}_max`];
+
+    if (isNaN(num)) {
         sender.target.value = default_time_options[speed][time_control_system][`${propertyName}`];
+    } else if (num < min || num > max) {
+        sender.target.value = Math.min(Math.max(num, min), max).toString();
     }
 }

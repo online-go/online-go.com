@@ -228,8 +228,8 @@ export const time_options = {
 export function parseIntWithDefaultValue(
     value: string,
     defaultValue: number,
-    min?: number,
-    max?: number,
+    min: number,
+    max: number,
 ): number {
     const parsedInt = parseInt(value, 10);
 
@@ -237,11 +237,7 @@ export function parseIntWithDefaultValue(
         return defaultValue;
     }
 
-    if ((min && parsedInt < min) || (max && parsedInt > max)) {
-        return defaultValue;
-    }
-
-    return parsedInt;
+    return Math.max(min, Math.min(max, parsedInt));
 }
 
 export function makeTimeControlParameters(tc: any): TimeControl {
