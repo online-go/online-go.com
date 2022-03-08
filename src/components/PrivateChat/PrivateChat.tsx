@@ -331,8 +331,10 @@ class PrivateChat {
     updateModeratorBanner() {
         if (this.player.ui_class.match(/moderator/)) {
             // surely would be better to use player.is_moderator, but not available!
-            this.banner.removeClass("banner-inactive");
-            this.banner.empty();
+            if (this.banner) {
+                this.banner.removeClass("banner-inactive");
+                this.banner.empty();
+            }
             const line = $("<div>").addClass("banner-text");
             if (this.superchat_enabled) {
                 line.addClass("megaphone-banner");
@@ -340,7 +342,9 @@ class PrivateChat {
             } else {
                 line.text(_("(You are talking with an OGS Moderator)"));
             }
-            this.banner.append(line);
+            if (this.banner) {
+                this.banner.append(line);
+            }
         }
     }
 
