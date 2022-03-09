@@ -161,7 +161,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         }
 
         challenge.game.initial_state = null;
-        if (!challenge.game.komi) {
+        if (typeof challenge.game.komi !== "number" && !challenge.game.komi) {
             challenge.game.komi = 5.5;
         }
 
