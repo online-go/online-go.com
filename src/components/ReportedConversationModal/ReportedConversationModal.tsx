@@ -36,7 +36,9 @@ export class ReportedConversationModal extends Modal<Events, ReportedConversatio
     render() {
         const conversation: string[] =
             typeof this.props.conversation === "object"
-                ? this.props.conversation.content
+                ? typeof this.props.conversation.content === "string"
+                    ? (this.props.conversation.content as string).split("\n")
+                    : this.props.conversation.content
                 : this.props.conversation.split("\n");
 
         return (
