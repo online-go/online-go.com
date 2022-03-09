@@ -23,6 +23,9 @@ import * as preferences from "preferences";
 import { PersistentElement } from "PersistentElement";
 import * as data from "data";
 import { CustomGobanThemeSchema } from "data_schema";
+import { CommunityThemeModal } from "CommunityThemeModal";
+import { openModal } from "Modal";
+import { JSONTheme } from "goban"; // requires upside goban module fork https://github.com/upsided/goban/tree/drawing-improvements-branch
 
 interface GobanThemePickerProperties {
     size?: number;
@@ -44,7 +47,7 @@ export class GobanThemePicker extends React.PureComponent<
     GobanThemePickerState
 > {
     canvases: { [k: string]: JQuery[] } = {};
-    selectTheme: { [k: string]: { [k: string]: () => void } } = {};
+    selectTheme: { [k: string]: { [k: string]: (e) => void } } = {};
 
     constructor(props: GobanThemePickerProperties) {
         super(props);
@@ -78,11 +81,32 @@ export class GobanThemePicker extends React.PureComponent<
                     theme.getReactStyles(),
                 ) as unknown as { [style_name: string]: string };
 
-                this.selectTheme[k][theme.theme_name] = () => {
-                    preferences.set(`goban-theme-${k}`, theme.theme_name);
-                    const up = {};
-                    up[k] = theme.theme_name;
-                    this.setState(up);
+                this.selectTheme[k][theme.theme_name] = (e) => {
+                    const t = theme as JSONTheme;
+                    if (t.isJSONTheme) {
+                        if (e.altKey) {
+                            // alt key edits the json
+                            openModal(
+                                <CommunityThemeModal
+                                    theme_context={k}
+                                    caller={this}
+                                    change_theme={this.changeCommunityTheme}
+                                    initial_json={JSONTheme.json}
+                                    fastDismiss
+                                />,
+                            );
+                        } else {
+                            preferences.set(`goban-theme-${k}`, theme.theme_name);
+                            const up = {};
+                            up[k] = theme.theme_name;
+                            this.setState(up);
+                        }
+                    } else {
+                        preferences.set(`goban-theme-${k}`, theme.theme_name);
+                        const up = {};
+                        up[k] = theme.theme_name;
+                        this.setState(up);
+                    }
                 };
             }
         }
@@ -123,6 +147,26 @@ export class GobanThemePicker extends React.PureComponent<
             key = "board";
         }
         preferences.set(`goban-theme-${key}`, this.state[key]);
+    }
+
+    changeCommunityTheme(description: any, validJSONSource: any, context: any, me: any) {
+        JSONTheme.setJSON(validJSONSource);
+
+        console.log(JSONTheme);
+        // retrigger theme rebuild:
+        preferences.set(`goban-theme-${context}`, "JSONTheme");
+
+        // hack to wait for images to load, trigger a redraw for now FIXME
+        function triggerRedraw() {
+            console.log("Trigger Redraw: ", preferences);
+            preferences.set(`goban-theme-${context}`, "JSONTheme");
+        }
+
+        setTimeout(triggerRedraw, 2000);
+
+        const up = {};
+        up[context] = "JSONTheme";
+        me.setState(up);
     }
 
     render() {
