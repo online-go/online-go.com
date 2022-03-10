@@ -17,34 +17,54 @@
 
 import * as React from "react";
 import { post } from "requests";
+import { current_language } from "translate";
 
 interface AutoTranslateProps {
     source: string;
     className?: string;
 }
 
+interface Translation {
+    source_language: string;
+    source_text: string;
+    target_language: string;
+    target_text: string;
+}
+
 export function AutoTranslate({ source, className }: AutoTranslateProps): JSX.Element {
-    const [translated, setTranslated] = React.useState("");
+    const [translation, setTranslation] = React.useState<Translation>(null);
 
     React.useEffect(() => {
-        auto_translate(source).then(setTranslated).catch(console.error);
+        auto_translate(source)
+            .then((translation: Translation) => {
+                setTranslation(translation);
+            })
+            .catch(console.error);
     }, [source]);
 
     return (
-        <div className={className}>
+        <div className={`AutoTranslate ${className || ""}`}>
             {source}
-            {((translated !== "" && translated !== source) || null) && (
+            {((translation &&
+                translation.target_language !== translation.source_language &&
+                translation.target_text !== translation.source_text) ||
+                null) && (
                 <>
-                    <hr />
-                    <div className="translated">{translated}</div>
+                    <div className="language-map">
+                        {translation.source_language} =&gt; {translation.target_language}
+                    </div>
+                    <div className="translation">{translation.target_text}</div>
                 </>
             )}
         </div>
     );
 }
 
-async function auto_translate(text: string): Promise<string> {
-    const res = await post("/termination-api/translate", { source: text, language: "en" });
+async function auto_translate(text: string): Promise<Translation> {
+    const res = await post("/termination-api/translate", {
+        source: text,
+        language: current_language,
+    });
     console.log("translation complete: ", res);
-    return res.text;
+    return res;
 }

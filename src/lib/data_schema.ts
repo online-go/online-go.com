@@ -193,6 +193,8 @@ export interface DataSchema
 
     config: Partial<ConfigSchema>;
 
+    "appeals.jwt": string;
+    "appeals.ban-reason": string;
     "last-visited-since-goals-shown": string;
     "hours-visited-since-goals-shown": number;
     "table-color-default-on": boolean;
