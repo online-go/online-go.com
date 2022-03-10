@@ -65,6 +65,5 @@ async function auto_translate(text: string): Promise<Translation> {
         source: text,
         language: current_language,
     });
-    console.log("translation complete: ", res);
     return res;
 }

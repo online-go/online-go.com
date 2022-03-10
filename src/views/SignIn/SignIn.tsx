@@ -93,6 +93,7 @@ export class SignIn extends React.PureComponent<{}, any> {
                 ebi: get_ebi(),
             })
                 .then((config) => {
+                    data.remove("appeals.banned_user_id");
                     data.remove("appeals.jwt");
                     data.remove("appeals.ban-reason");
 
@@ -110,6 +111,7 @@ export class SignIn extends React.PureComponent<{}, any> {
                 })
                 .catch((response) => {
                     if (response.responseJSON && response.responseJSON.error_code === "banned") {
+                        data.set("appeals.banned_user_id", response.responseJSON.banned_user_id);
                         data.set("appeals.jwt", response.responseJSON.jwt);
                         data.set("appeals.ban-reason", response.responseJSON.ban_reason);
                         window.location.pathname = "/appeal";

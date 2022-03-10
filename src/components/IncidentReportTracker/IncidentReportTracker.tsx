@@ -230,6 +230,10 @@ export function IncidentReportTracker(): JSX.Element {
     }
 
     function getReportType(report: Report): string {
+        if (report.report_type === "appeal") {
+            return "Ban Appeal";
+        }
+
         const report_category = report_categories.filter((r) => r.type === report.report_type)[0];
         const report_type_title = report_category?.title || "Other";
         return report_type_title;
@@ -258,6 +262,9 @@ export function IncidentReportTracker(): JSX.Element {
                                         <button className="primary xs" onClick={report.claim}>
                                             {_("Claim")}
                                         </button>
+                                    )}
+                                    {user.is_moderator && report.moderator && (
+                                        <Player user={report.moderator} icon />
                                     )}
                                 </div>
                                 {(report.reporter_note || null) && (
@@ -335,6 +342,14 @@ export function IncidentReportTracker(): JSX.Element {
                                         </span>
                                     )}
                                 </div>
+
+                                {(report.report_type === "appeal" || null) && (
+                                    <h3>
+                                        <Link to={`/appeal/${report.reported_user.id}`}>
+                                            View Appeal
+                                        </Link>
+                                    </h3>
+                                )}
 
                                 {(report.reported_conversation || null) && (
                                     <div

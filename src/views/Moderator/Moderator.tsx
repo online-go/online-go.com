@@ -629,7 +629,9 @@ export function ban(player_id) {
             user_id: player_id,
         });
     } else {
-        return moderate(player_id, "Reason for banning?", { is_banned: 1 });
+        return moderate(player_id, "Reason for banning? This will be visible to the player now.", {
+            is_banned: 1,
+        });
     }
 }
 export function shadowban(player_id) {

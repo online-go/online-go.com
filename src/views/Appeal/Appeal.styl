@@ -35,6 +35,19 @@
     .Message {
         .header {
             margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        &.moderator {
+        }
+
+        &.player {
+            themed background-color malkovich-bg
+        }
+
+        &.hidden {
+            themed background-color hidden-bg
         }
     }
 
@@ -42,6 +55,11 @@
         textarea {
             width: 100%;
             height: 10rem;
+        }
+
+        .submit-and-hidden {
+            display: flex;
+            justify-content: space-between;
         }
     }
 }

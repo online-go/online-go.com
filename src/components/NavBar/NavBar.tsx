@@ -589,6 +589,14 @@ export class NavBar extends React.PureComponent<{}, any> {
                             )}
                             {user && user.is_moderator && (
                                 <li>
+                                    <Link className="admin-link" to="/appeals-center">
+                                        <i className="fa fa-gavel"></i>
+                                        {_("Appeals Center")}
+                                    </Link>
+                                </li>
+                            )}
+                            {user && user.is_moderator && (
+                                <li>
                                     <Link className="admin-link" to="/admin/firewall">
                                         <i className="fa fa-fire-extinguisher"></i>
                                         Firewall

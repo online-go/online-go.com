@@ -194,6 +194,7 @@ export interface DataSchema
     config: Partial<ConfigSchema>;
 
     "appeals.jwt": string;
+    "appeals.banned_user_id": number;
     "appeals.ban-reason": string;
     "last-visited-since-goals-shown": string;
     "hours-visited-since-goals-shown": number;
