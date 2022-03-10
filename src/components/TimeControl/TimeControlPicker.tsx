@@ -87,7 +87,6 @@ export class TimeControlPicker extends React.PureComponent<
     }
 
     syncTimeControl(update: any) {
-        /* {  */
         const tc = Object.assign({}, this.state, update);
 
         const options = time_options[tc.speed];
