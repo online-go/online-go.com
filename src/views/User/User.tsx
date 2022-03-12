@@ -482,6 +482,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                             <AvatarCard
                                 user={user}
                                 force_show_ratings={this.state.temporary_show_ratings}
+                                editing={this.state.editing}
                                 openModerateUser={this.openModerateUser}
                                 onEdit={() => this.setState({ editing: true })}
                                 onSave={this.saveEditChanges.bind(this)}
