@@ -56,6 +56,7 @@ interface AvatarCardUserType extends AvatarCardEditableFields {
     bot_owner: player_cache.PlayerCacheEntry | null;
     vacation_left: number;
     professional: boolean;
+    icon?: string;
 }
 
 interface AvatarCardProps {
@@ -145,6 +146,7 @@ export function AvatarCard({
                 put("players/%%/icon", user.id, file)
                     .then((res) => {
                         console.log("Upload successful", res);
+                        user.icon = res.icon;
                         player_cache.update({
                             id: user.id,
                             icon: res.icon,
@@ -159,6 +161,7 @@ export function AvatarCard({
         del("players/%%/icon", user.id)
             .then((res) => {
                 console.log("Cleared icon", res);
+                user.icon = res.icon;
                 player_cache.update({
                     id: user.id,
                     icon: res.icon,

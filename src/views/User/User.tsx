@@ -90,6 +90,7 @@ export interface UserInfo {
     bot_owner: player_cache.PlayerCacheEntry;
     professional: boolean;
     ip_shadowbanned?: boolean;
+    icon?: string;
 }
 
 interface UserState {
