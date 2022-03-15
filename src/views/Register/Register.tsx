@@ -58,6 +58,14 @@ export class Register extends React.PureComponent<{}, any> {
                     }
                 })
                 .catch((err) => {
+                    if (err.responseJSON && err.responseJSON.error_code === "banned") {
+                        data.set("appeals.banned_user_id", err.responseJSON.banned_user_id);
+                        data.set("appeals.jwt", err.responseJSON.jwt);
+                        data.set("appeals.ban-reason", err.responseJSON.ban_reason);
+                        window.location.pathname = "/appeal";
+                        return;
+                    }
+
                     if (err.responseJSON) {
                         console.log(err.responseJSON);
                         if (err.responseJSON.firewall_action === "COLLECT_VPN_INFORMATION") {

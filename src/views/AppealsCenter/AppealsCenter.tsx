@@ -26,6 +26,7 @@ import * as data from "data";
 
 export function AppealsCenter(): JSX.Element {
     const user = data.get("user");
+    const [hide_resolved, set_hide_resolved] = React.useState(true);
 
     React.useEffect(() => {}, []);
 
@@ -35,11 +36,23 @@ export function AppealsCenter(): JSX.Element {
 
     return (
         <div id="AppealsCenter">
-            <h1>Appeals Center</h1>
+            <h1>
+                Appeals Center
+                <span>
+                    <label htmlFor="hide_resolved">Hide Resolved</label>
+                    <input
+                        type="checkbox"
+                        id="hide_resolved"
+                        checked={hide_resolved}
+                        onChange={(e) => set_hide_resolved(e.target.checked)}
+                    />
+                </span>
+            </h1>
             <PaginatedTable
                 className="appeals"
                 name="appeals"
                 source={`appeals`}
+                filter={{ hide_resolved }}
                 orderBy={["-updated"]}
                 columns={[
                     {
@@ -56,6 +69,11 @@ export function AppealsCenter(): JSX.Element {
                         header: _("State"),
                         className: () => "state",
                         render: (X) => X.state,
+                    },
+                    {
+                        header: _("Ban Expiration"),
+                        className: () => "ban_Expiration",
+                        render: (X) => X.ban_expiration && moment(X.ban_expiration).fromNow(),
                     },
                     {
                         header: _(""),

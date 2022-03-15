@@ -15,17 +15,4 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#AppealsCenter {
-    width: 100vw;
-    max-width: 60rem;
-    margin: 0 auto;
-    h1 {
-        display: flex;
-        justify-content: space-between;
-
-        label {
-            font-size: 1.2rem;
-        }
-    }
-}
+export * from "./BanModal";

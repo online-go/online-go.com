@@ -1333,23 +1333,30 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
 
     /*** Common stuff ***/
     nav_up() {
+        const start = Date.now();
         this.checkAndEnterAnalysis();
         this.goban.prevSibling();
         this.goban.syncReviewMove();
+        console.log("up", Date.now() - start);
     }
     nav_down() {
+        const start = Date.now();
         this.checkAndEnterAnalysis();
         this.goban.nextSibling();
         this.goban.syncReviewMove();
+        console.log("down", Date.now() - start);
     }
     nav_first() {
+        const start = Date.now();
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
         this.goban.showFirst();
         this.goban.syncReviewMove();
+        console.log("nav_first", Date.now() - start);
     }
     nav_prev_10() {
+        const start = Date.now();
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
@@ -1357,15 +1364,19 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             this.goban.showPrevious();
         }
         this.goban.syncReviewMove();
+        console.log("nav_prev_10", Date.now() - start);
     }
     nav_prev() {
+        const start = Date.now();
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
         this.goban.showPrevious();
         this.goban.syncReviewMove();
+        console.log("nav_prev", Date.now() - start);
     }
     nav_next(event?: React.MouseEvent<any>, dont_stop_autoplay?: boolean) {
+        const start = Date.now();
         const last_estimate_move = this.stopEstimatingScore();
         if (!dont_stop_autoplay) {
             this.stopAutoplay();
@@ -1373,8 +1384,10 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         this.checkAndEnterAnalysis(last_estimate_move);
         this.goban.showNext();
         this.goban.syncReviewMove();
+        console.log("nav_next", Date.now() - start);
     }
     nav_next_10() {
+        const start = Date.now();
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
@@ -1382,13 +1395,16 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             this.goban.showNext();
         }
         this.goban.syncReviewMove();
+        console.log("nav_next_10", Date.now() - start);
     }
     nav_last() {
+        const start = Date.now();
         const last_estimate_move = this.stopEstimatingScore();
         this.stopAutoplay();
         this.checkAndEnterAnalysis(last_estimate_move);
         this.goban.jumpToLastOfficialMove();
         this.goban.syncReviewMove();
+        console.log("nav_last", Date.now() - start);
     }
     nav_play_pause() {
         if (this.state.autoplaying) {
