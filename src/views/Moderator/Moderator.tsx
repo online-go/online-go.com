@@ -22,6 +22,8 @@ import { post, put } from "requests";
 import { PaginatedTable } from "PaginatedTable";
 import { Card } from "material";
 import { SearchInput } from "misc-ui";
+import { BanModal } from "BanModal";
+import { openModal } from "Modal";
 import { Player } from "Player";
 import * as moment from "moment";
 import { chat_markup } from "Chat";
@@ -629,8 +631,14 @@ export function ban(player_id) {
             user_id: player_id,
         });
     } else {
-        return moderate(player_id, "Reason for banning?", { is_banned: 1 });
+        /*
+        return moderate(player_id, "Reason for banning? This will be visible to the player now.", {
+            is_banned: 1,
+        });
+        */
+        openModal(<BanModal player_id={player_id} />);
     }
+    return undefined;
 }
 export function shadowban(player_id) {
     if (player_id < 0) {

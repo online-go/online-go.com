@@ -176,7 +176,11 @@ export class PlayerDetails extends React.PureComponent<
         });
     };
     ban = () => {
-        ban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);
+        const promise = ban(this.props.playerId);
+        if (promise) {
+            promise.then(this.close_all_modals_and_popovers).catch(errorAlerter);
+        }
+        this.close_all_modals_and_popovers();
     };
     shadowban = () => {
         shadowban(this.props.playerId).then(this.close_all_modals_and_popovers).catch(errorAlerter);

@@ -71,7 +71,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
 
                 const fields = [
                     "is_bot",
-                    "is_banned",
+                    //"is_banned",
                     "is_shadowbanned",
                     "bot_owner",
                     "bot_ai",
@@ -105,7 +105,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     setSupporter = (ev) => this.setState({ supporter: ev.target.checked });
     setAnnouncer = (ev) => this.setState({ is_announcer: ev.target.checked });
     setProfessional = (ev) => this.setState({ professional: ev.target.checked });
-    setBanned = (ev) => this.setState({ is_banned: ev.target.checked });
+    //setBanned = (ev) => this.setState({ is_banned: ev.target.checked });
     setShadowbanned = (ev) => this.setState({ is_shadowbanned: ev.target.checked });
     setBot = (ev) => this.setState({ is_bot: ev.target.checked });
     setBotOwner = (ev) => this.setState({ bot_owner: parseInt(ev.target.value) });
@@ -264,6 +264,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                                             autoComplete="off"
                                         />
                                     </dd>
+                                    {/*
                                     <dt>
                                         <label htmlFor="banned">Banned</label>
                                     </dt>
@@ -275,6 +276,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                                             onChange={this.setBanned}
                                         />
                                     </dd>
+                                    */}
 
                                     <dt>
                                         <label htmlFor="shadowbanned">Shadowbanned</label>

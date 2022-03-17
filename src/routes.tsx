@@ -62,6 +62,8 @@ import { global_channels } from "chat_manager";
 import { ForceUsernameChange } from "ForceUsernameChange";
 import { BlockedVPN } from "BlockedVPN";
 import { Firewall } from "Firewall";
+import { Appeal } from "Appeal";
+import { AppealsCenter } from "AppealsCenter";
 
 import * as docs from "docs";
 
@@ -125,6 +127,9 @@ export const routes = (
             <Switch>
                 <Route path="/sign-in" component={SignIn} />
                 <Route path="/register" component={Register} />
+                <Route path="/appeal/:player_id" component={Appeal} />
+                <Route path="/appeal" component={Appeal} />
+                <Route path="/appeals-center" component={AppealsCenter} />
                 <Route path="/overview" component={Overview} />
                 <Route path="/play" component={Play} />
                 <Route path="/chat/:channel" component={ChatView} />
