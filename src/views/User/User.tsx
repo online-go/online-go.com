@@ -90,6 +90,7 @@ export interface UserInfo {
     bot_owner: player_cache.PlayerCacheEntry;
     professional: boolean;
     ip_shadowbanned?: boolean;
+    icon?: string;
 }
 
 interface UserState {
@@ -102,7 +103,6 @@ interface UserState {
         location: string[];
     };
     vacation_left?: number;
-    vacation_left_text: string;
     syncRating: null;
     host_ip_settings?: {
         id: number;
@@ -111,7 +111,6 @@ interface UserState {
         ban_affects_all: boolean;
         chatban_affects_all: boolean;
     };
-    new_icon: { preview: string };
     bot_apikey: null;
     bot_ai?: string;
     editing: boolean;
@@ -151,10 +150,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             ratings: {},
             ip: null,
             vacation_left: null,
-            vacation_left_text: "",
             syncRating: null,
             host_ip_settings: null,
-            new_icon: null,
             bot_apikey: null,
             bot_ai: null,
             editing: /edit/.test(window.location.hash),
@@ -481,6 +478,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                             <AvatarCard
                                 user={user}
                                 force_show_ratings={this.state.temporary_show_ratings}
+                                editing={this.state.editing}
                                 openModerateUser={this.openModerateUser}
                                 onEdit={() => this.setState({ editing: true })}
                                 onSave={this.saveEditChanges.bind(this)}
