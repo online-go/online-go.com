@@ -56,11 +56,13 @@ interface AvatarCardUserType extends AvatarCardEditableFields {
     bot_owner: player_cache.PlayerCacheEntry | null;
     vacation_left: number;
     professional: boolean;
+    icon?: string;
 }
 
 interface AvatarCardProps {
     user: AvatarCardUserType;
     force_show_ratings: boolean;
+    editing: boolean;
 
     /** called when the edit button is clicked */
     onEdit: () => void;
@@ -72,13 +74,12 @@ interface AvatarCardProps {
 
 export function AvatarCard({
     user,
+    force_show_ratings,
+    editing,
     onEdit,
     onSave,
-    force_show_ratings,
     openModerateUser,
 }: AvatarCardProps) {
-    const [editing, setEditing] = React.useState(false);
-
     const [new_username, setNewUsername] = React.useState(user.username);
     const [new_first_name, setNewFirstName] = React.useState(user.first_name);
     const [new_last_name, setNewLastName] = React.useState(user.last_name);
@@ -103,7 +104,6 @@ export function AvatarCard({
             }
             promise
                 .then(() => {
-                    setEditing(false);
                     onSave({
                         username: new_username,
                         first_name: new_first_name,
@@ -115,7 +115,6 @@ export function AvatarCard({
                 })
                 .catch(ignore);
         } else {
-            setEditing(true);
             setNewUsername(user.username);
             setNewFirstName(user.first_name);
             setNewLastName(user.last_name);
@@ -145,6 +144,7 @@ export function AvatarCard({
                 put("players/%%/icon", user.id, file)
                     .then((res) => {
                         console.log("Upload successful", res);
+                        user.icon = res.icon;
                         player_cache.update({
                             id: user.id,
                             icon: res.icon,
@@ -159,6 +159,7 @@ export function AvatarCard({
         del("players/%%/icon", user.id)
             .then((res) => {
                 console.log("Cleared icon", res);
+                user.icon = res.icon;
                 player_cache.update({
                     id: user.id,
                     icon: res.icon,
