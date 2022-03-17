@@ -638,6 +638,7 @@ export function ban(player_id) {
         */
         openModal(<BanModal player_id={player_id} />);
     }
+    return undefined;
 }
 export function shadowban(player_id) {
     if (player_id < 0) {

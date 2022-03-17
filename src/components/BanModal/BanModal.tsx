@@ -51,7 +51,7 @@ export class BanModal extends Modal<Events, BanModalProperties, any> {
                 moderation_note: this.state.details.moderator_notes,
                 is_banned: true,
                 ban_reason: this.state.details.public_reason,
-                ban_expiration: this.state.details.ban_expiration.toISOString(),
+                ban_expiration: this.state.details.ban_expiration?.toISOString(),
             };
 
             console.log("Banning player", player_id, obj);
