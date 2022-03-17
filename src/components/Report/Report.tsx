@@ -224,8 +224,12 @@ export function Report(props: ReportProperties): JSX.Element {
             <h2>{_("Request Moderator Assistance")}</h2>
             <div className="reported-details">
                 <h3>
-                    <PlayerIcon id={user_id} size={64} />
-                    {_("Player")}: {username}
+                    {(user_id || null) && (
+                        <>
+                            <PlayerIcon id={user_id} size={64} />
+                            {_("Player")}: {username}
+                        </>
+                    )}
                     {(game_id || null) && (
                         <div>
                             {_("Game")}: {game_id}
