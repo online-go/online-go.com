@@ -27,6 +27,7 @@ import { Link } from "react-router-dom";
 import { chat_markup } from "Chat";
 import { errorAlerter } from "misc";
 import { put } from "requests";
+import { IPDetails } from "Moderator";
 
 interface ModToolsProps {
     user_id: number;
@@ -60,7 +61,7 @@ export function ModTools(props: ModToolsProps): JSX.Element {
     });
 
     return (
-        <Card>
+        <Card className="ModTools">
             {" "}
             <b>Users with the same IP or Browser ID</b>
             <PaginatedTable
@@ -86,7 +87,7 @@ export function ModTools(props: ModToolsProps): JSX.Element {
                     },
                     {
                         header: "User",
-                        className: "",
+                        className: "user",
                         render: (X) => (
                             <span>
                                 <Player user={X} />
@@ -108,6 +109,16 @@ export function ModTools(props: ModToolsProps): JSX.Element {
                         header: "Shadowbanned",
                         className: "banned",
                         render: (X) => (X.is_shadowbanned ? _("Yes") : _("No")),
+                    },
+                    {
+                        header: "Timezone",
+                        className: "timezone",
+                        render: (X) => X.last_timezone_offset / -60,
+                    },
+                    {
+                        header: "Inet",
+                        className: "inet",
+                        render: (X) => <IPDetails ip={X.last_ip} details={X.ip_details} />,
                     },
                 ]}
             />

@@ -564,12 +564,12 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                     </button>
                 )}
 
+                {(data.get("user")?.is_moderator || null) && (
+                    <ModTools user_id={this.user_id} show_mod_log={this.show_mod_log} />
+                )}
+
                 <div className="row">
                     <div className="col-sm-8">
-                        {(window["user"]?.is_moderator || null) && (
-                            <ModTools user_id={this.user_id} show_mod_log={this.show_mod_log} />
-                        )}
-
                         {(user.about || editing || null) && (
                             <Card>
                                 <div className="about-container">

@@ -290,7 +290,7 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                                             }
                                             target={"_blank"}
                                         >
-                                            {X.last_ip}
+                                            <IPDetails ip={X.last_ip} details={X.ip_details} />
                                         </a>
                                     </span>
                                 ),
@@ -310,7 +310,7 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
                                 header: _("Timezone"),
                                 render: (X) => (
                                     <span className={X.should_ban ? "should-ban" : ""}>
-                                        {X.last_timezone_offset / 60}
+                                        {X.last_timezone_offset / -60}
                                     </span>
                                 ),
                             },
@@ -669,4 +669,31 @@ export function remove_shadowban(player_id) {
     } else {
         return moderate(player_id, "Reason for removing the shadow ban?", { is_shadowbanned: 0 });
     }
+}
+
+export interface IPDetailsProperties {
+    ip: string;
+    details: {
+        traits: {
+            is_hosting_provider: boolean;
+            is_anonymous: boolean;
+        };
+    };
+}
+
+export function IPDetails({ ip, details }: IPDetailsProperties): JSX.Element {
+    if (!details) {
+        return <span title={JSON.stringify(details, null, 4)}>{ip}</span>;
+    }
+
+    const normal = !details.traits.is_anonymous && !details.traits.is_hosting_provider;
+
+    return (
+        <span title={JSON.stringify(details, null, 4)}>
+            {ip} &nbsp;
+            {(details.traits.is_hosting_provider || null) && <span>Hosting Provider IP</span>}
+            {(details.traits.is_anonymous || null) && <span>Anonymous IP</span>}
+            {(normal || null) && <span>Normal IP</span>}
+        </span>
+    );
 }
