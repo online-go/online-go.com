@@ -312,7 +312,9 @@ export function Report(props: ReportProperties): JSX.Element {
 
 export function openReport(report: ReportProperties): void {
     const container = document.createElement("DIV");
-    const game_id = parseInt(document.location.pathname.match(/game\/([0-9]+)/)?.[1] || "0");
+    const game_id = parseInt(
+        document.location.pathname.match(/game\/(view\/)?([0-9]+)/)?.[2] || "0",
+    );
     const review_id = parseInt(
         document.location.pathname.match(/(review|demo\/view)\/([0-9]+)/)?.[2] || "0",
     );
