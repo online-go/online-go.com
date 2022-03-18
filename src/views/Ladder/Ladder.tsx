@@ -158,14 +158,15 @@ export class Ladder extends React.PureComponent<LadderProperties, LadderState> {
                     />
 
                     <div className="Ladder-header">
-                        {console.log(this.state.ladder)}
-                        {this.state.ladder && this.state.ladder?.group !== null && (<button
-                            className="xs noshadow"
-                            onAuxClick={this.goToGroup}
-                            onClick={this.goToGroup}
-                        >
-                            <i className="fa fa-users" /> {group_text}
-                        </button>)}
+                        {this.state.ladder && this.state.ladder?.group !== null && (
+                            <button
+                                className="xs noshadow"
+                                onAuxClick={this.goToGroup}
+                                onClick={this.goToGroup}
+                            >
+                                <i className="fa fa-users" /> {group_text}
+                            </button>
+                        )}
                         <h2>{this.state.ladder && this.state.ladder.name}</h2>
 
                         <PlayerAutocomplete
