@@ -71,8 +71,13 @@ export function AppealsCenter(): JSX.Element {
                         render: (X) => X.state,
                     },
                     {
+                        header: _("Messages"),
+                        className: () => "message_count",
+                        render: (X) => X.message_count,
+                    },
+                    {
                         header: _("Ban Expiration"),
-                        className: () => "ban_Expiration",
+                        className: () => "ban_expiration",
                         render: (X) => X.ban_expiration && moment(X.ban_expiration).fromNow(),
                     },
                     {
