@@ -26,7 +26,7 @@ import * as data from "data";
 
 export function AppealsCenter(): JSX.Element {
     const user = data.get("user");
-    const [hide_resolved, set_hide_resolved] = React.useState(true);
+    const [show_all, set_show_all] = React.useState(false);
 
     React.useEffect(() => {}, []);
 
@@ -39,12 +39,12 @@ export function AppealsCenter(): JSX.Element {
             <h1>
                 Appeals Center
                 <span>
-                    <label htmlFor="hide_resolved">Hide Resolved</label>
+                    <label htmlFor="show_all">Show all</label>
                     <input
                         type="checkbox"
-                        id="hide_resolved"
-                        checked={hide_resolved}
-                        onChange={(e) => set_hide_resolved(e.target.checked)}
+                        id="show_all"
+                        checked={show_all}
+                        onChange={(e) => set_show_all(e.target.checked)}
                     />
                 </span>
             </h1>
@@ -52,7 +52,7 @@ export function AppealsCenter(): JSX.Element {
                 className="appeals"
                 name="appeals"
                 source={`appeals`}
-                filter={{ hide_resolved }}
+                filter={show_all ? {} : { state: "awaiting_moderator_response" }}
                 orderBy={["-updated"]}
                 columns={[
                     {
