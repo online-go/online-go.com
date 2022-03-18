@@ -23,6 +23,7 @@ import * as data from "data";
 import { List, AutoSizer } from "react-virtualized";
 import { Player } from "Player";
 import { UIPush } from "UIPush";
+import { shouldOpenNewTab } from "misc";
 import { PlayerAutocomplete } from "PlayerAutocomplete";
 import { close_all_popovers, popover } from "popover";
 import { browserHistory } from "ogsHistory";
@@ -132,8 +133,20 @@ export class Ladder extends React.PureComponent<LadderProperties, LadderState> {
         }
     };
 
+    goToGroup = (ev) => {
+        close_all_popovers();
+
+        const url: string = "/group/" + this.state.ladder?.group.id;
+        if (shouldOpenNewTab(ev)) {
+            window.open(url, "_blank");
+        } else {
+            browserHistory.push(url);
+        }
+    };
+
     render() {
         const user = data.get("user");
+        const group_text = pgettext("Go to the main page for this group.", "Group Page");
 
         return (
             <div className="Ladder-container">
@@ -145,6 +158,13 @@ export class Ladder extends React.PureComponent<LadderProperties, LadderState> {
                     />
 
                     <div className="Ladder-header">
+                        <button
+                            className="xs noshadow"
+                            onAuxClick={this.goToGroup}
+                            onClick={this.goToGroup}
+                        >
+                            <i className="fa fa-users" /> {group_text}
+                        </button>
                         <h2>{this.state.ladder && this.state.ladder.name}</h2>
 
                         <PlayerAutocomplete
