@@ -18,10 +18,12 @@
 import * as React from "react";
 import { post } from "requests";
 import { current_language } from "translate";
+import { Markdown } from "Markdown";
 
 interface AutoTranslateProps {
     source: string;
     className?: string;
+    markdown?: boolean;
 }
 
 interface Translation {
@@ -31,7 +33,7 @@ interface Translation {
     target_text: string;
 }
 
-export function AutoTranslate({ source, className }: AutoTranslateProps): JSX.Element {
+export function AutoTranslate({ source, className, markdown }: AutoTranslateProps): JSX.Element {
     const [translation, setTranslation] = React.useState<Translation>(null);
 
     React.useEffect(() => {
@@ -44,7 +46,7 @@ export function AutoTranslate({ source, className }: AutoTranslateProps): JSX.El
 
     return (
         <div className={`AutoTranslate ${className || ""}`}>
-            {source}
+            {markdown ? <Markdown source={source} /> : source}
             {((translation &&
                 translation.target_language !== translation.source_language &&
                 translation.target_text !== translation.source_text) ||
@@ -53,7 +55,13 @@ export function AutoTranslate({ source, className }: AutoTranslateProps): JSX.El
                     <div className="language-map">
                         {translation.source_language} =&gt; {translation.target_language}
                     </div>
-                    <div className="translation">{translation.target_text}</div>
+                    <div className="translation">
+                        {markdown ? (
+                            <Markdown source={translation.target_text} />
+                        ) : (
+                            translation.target_text
+                        )}
+                    </div>
                 </>
             )}
         </div>
