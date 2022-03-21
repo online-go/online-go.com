@@ -41,7 +41,6 @@ import { daysOnlyDurationString } from "TimeControl";
 import { openModerateUserModal } from "ModerateUser";
 import { errorAlerter } from "misc";
 import * as player_cache from "player_cache";
-import { getPrivateChat } from "PrivateChat";
 import { Flag } from "Flag";
 import { Markdown } from "Markdown";
 import { RatingsChart } from "RatingsChart";
@@ -136,11 +135,8 @@ interface UserState {
 }
 
 export class User extends React.PureComponent<UserProperties, UserState> {
-    user_id: number;
-    vacation_left: string;
-    original_username: string;
-    vacation_update_interval: any;
-    show_mod_log: boolean;
+    user_id: number; // BPJ: This is used, but could also be grabbed directly from props
+    show_mod_log: boolean; // BPJ: This is used, but could also be grabbed directly from props
 
     constructor(props) {
         super(props);
@@ -213,7 +209,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             .then((state) => {
                 this.setState({ resolved: true });
                 try {
-                    this.original_username = state.user.username;
                     player_cache.update(state.user);
                     this.update(state);
                     window.document.title = state.user.username;
@@ -312,40 +307,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         }
     }
 
-    addFriend(id) {
-        post("me/friends", { player_id: id })
-            .then(() => this.setState({ friend_request_sent: true }))
-            .catch(errorAlerter);
-    }
-    removeFriend(id) {
-        swal({
-            text: _("Are you sure you wish to remove this friend?"),
-            showCancelButton: true,
-        })
-            .then(() => {
-                post("me/friends", { delete: true, player_id: id })
-                    .then(() =>
-                        this.setState({
-                            friend_request_sent: false,
-                            friend_request_received: false,
-                            is_friend: false,
-                        }),
-                    )
-                    .catch(errorAlerter);
-            })
-            .catch(ignore);
-    }
-    acceptFriend(id) {
-        post("me/friends/invitations", { from_user: id })
-            .then(() =>
-                this.setState({
-                    friend_request_sent: false,
-                    friend_request_received: false,
-                    is_friend: true,
-                }),
-            )
-            .catch(errorAlerter);
-    }
     generateAPIKey() {
         if (
             !confirm(
@@ -370,52 +331,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             })
             .catch(errorAlerter);
     }
-    pm() {
-        getPrivateChat(this.user_id).open();
-    }
-    saveSuperUserStuff() {
-        let moderation_note = null;
-        do {
-            moderation_note = prompt("Moderator note:");
-            if (moderation_note == null) {
-                return;
-            }
-            moderation_note = moderation_note.trim();
-        } while (moderation_note === "");
-
-        put("players/%%/moderate", this.user_id, {
-            player_id: this.user_id,
-            is_bot: $("#user-su-is-bot").is(":checked") ? 1 : 0,
-            bot_owner: $("#user-su-bot-owner").val(),
-            username: $("#user-su-username").val(),
-            password: $("#user-su-password").val(),
-            email: $("#user-su-email").val(),
-
-            moderation_note: moderation_note,
-            numProvisional: parseInt($("#user-su-num-provisional").val()),
-            ranking: parseInt($("#user-su-ranking-overall").val()),
-            rating: $("#user-su-rating-overall").val(),
-            ranking_blitz: parseInt($("#user-su-ranking-blitz").val()),
-            rating_blitz: $("#user-su-rating-blitz").val(),
-            ranking_live: parseInt($("#user-su-ranking-live").val()),
-            rating_live: $("#user-su-rating-live").val(),
-            ranking_correspondence: parseInt($("#user-su-ranking-correspondence").val()),
-            rating_correspondence: $("#user-su-rating-correspondence").val(),
-            is_active: $("#user-su-active").is(":checked") ? 1 : 0,
-            supporter: $("#user-su-site-supporter").is(":checked") ? 1 : 0,
-            is_banned: $("#user-su-banned").is(":checked") ? 1 : 0,
-            is_shadowbanned: $("#user-su-shadowbanned").is(":checked") ? 1 : 0,
-            is_watched: $("#user-su-watched").is(":checked") ? 1 : 0,
-            can_create_tournaments: $("#user-su-can-create-tournaments").is(":checked") ? 1 : 0,
-            locked_username: $("#user-su-locked-username").is(":checked") ? 1 : 0,
-            locked_ranking: $("#user-su-locked-ranking").is(":checked") ? 1 : 0,
-            clear_icon: $("#user-su-clear-icon").is(":checked") ? 1 : 0,
-        })
-            //.then(()=>$("#user-su-controls").modal('toggle'))
-            .then(() => alert("Should be toggling modal")) // TODO
-            .catch(errorAlerter);
-    }
-
     toggleRatings = () => {
         this.setState((state) => ({ temporary_show_ratings: !state.temporary_show_ratings }));
     };
