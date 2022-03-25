@@ -1525,21 +1525,41 @@ function ReviewStrengthIcon({ review }: { review: JGOFAIReview }): JSX.Element {
         strength = "ai-review-fast";
         content = "";
     } else {
-        if (review.strength >= 10000) {
-            strength = "ai-review-strength-4";
-            content = "IV";
-        } else if (review.strength >= 1600) {
-            strength = "ai-review-strength-3";
-            content = "III";
-        } else if (review.strength >= 800) {
-            strength = "ai-review-strength-2";
-            content = "II";
-        } else if (review.strength >= 300) {
-            strength = "ai-review-strength-1";
-            content = "I";
+        console.log(review);
+        if (review.network_size === "20x256") {
+            if (review.strength >= 10000) {
+                strength = "ai-review-strength-4";
+                content = "IV";
+            } else if (review.strength >= 1600) {
+                strength = "ai-review-strength-3";
+                content = "III";
+            } else if (review.strength >= 800) {
+                strength = "ai-review-strength-2";
+                content = "II";
+            } else if (review.strength >= 300) {
+                strength = "ai-review-strength-1";
+                content = "I";
+            } else {
+                strength = "ai-review-strength-0";
+                content = "";
+            }
         } else {
-            strength = "ai-review-strength-0";
-            content = "";
+            if (review.strength >= 6000) {
+                strength = "ai-review-strength-4";
+                content = "IV";
+            } else if (review.strength >= 1500) {
+                strength = "ai-review-strength-3";
+                content = "III";
+            } else if (review.strength >= 500) {
+                strength = "ai-review-strength-2";
+                content = "II";
+            } else if (review.strength >= 200) {
+                strength = "ai-review-strength-1";
+                content = "I";
+            } else {
+                strength = "ai-review-strength-0";
+                content = "";
+            }
         }
     }
 
