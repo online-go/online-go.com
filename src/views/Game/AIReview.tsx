@@ -1525,7 +1525,6 @@ function ReviewStrengthIcon({ review }: { review: JGOFAIReview }): JSX.Element {
         strength = "ai-review-fast";
         content = "";
     } else {
-        console.log(review);
         if (review.network_size === "20x256") {
             if (review.strength >= 10000) {
                 strength = "ai-review-strength-4";
