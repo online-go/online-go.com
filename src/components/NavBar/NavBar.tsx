@@ -545,12 +545,14 @@ export class NavBar extends React.PureComponent<{}, any> {
                             </li>
 
                             {user && <li className="divider"></li>}
-                            <li>
-                                <Link to="/supporter">
-                                    <i className="fa fa-star"></i>
-                                    {_("Support OGS")}
-                                </Link>
-                            </li>
+                            {user && (
+                                <li>
+                                    <Link to="/supporter">
+                                        <i className="fa fa-star"></i>
+                                        {_("Support OGS")}
+                                    </Link>
+                                </li>
+                            )}
                             {user && (
                                 <li>
                                     <Link to={`/user/view/${user.id}`}>
