@@ -20,6 +20,10 @@ tags:
   description: "Information related to the groups"
 - name: "Ladders"
   description: "Information related to site ladders"
+- name: "Leaderboards"
+  description: "Information related to site leaderboards"
+- name: "Library"
+  description: "Information related to site leaderboards"
 - name: "Me"
   description: "Information related to the authenticated user"
 - name: "Players"
@@ -59,7 +63,7 @@ paths:
     get:
       tags:
       - "Demos and Reviews"
-      summary: "get a list of demo boards"
+      summary: "Get a list of demo boards"
       produces:
         - application/json
       responses:
@@ -72,7 +76,7 @@ paths:
     get:
       tags:
       - "Demos and Reviews"
-      summary: "get a list of review boards"
+      summary: "Get a list of review boards"
       produces:
         - application/json
       responses:
@@ -85,7 +89,7 @@ paths:
     get:
       tags:
       - "Demos and Reviews"
-      summary: "get information about a review or demo board"
+      summary: "Get information about a review or demo board"
       produces:
         - application/json
       parameters:
@@ -101,11 +105,34 @@ paths:
         "404":
           description: "Not Found"
           
+  /reviews/{id}/png:
+    get:
+      tags:
+      - "Demos and Reviews"
+      summary: "Get png file current state of the game"
+      produces:
+        - image/png
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The game ID.
+          
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "500":
+          description: "Server Error"
+          
   /reviews/{id}/sgf:
     get:
       tags:
       - "Demos and Reviews"
-      summary: "get sgf file of a review or demo board"
+      summary: "Get sgf file of a review or demo board"
       produces:
         - sgf
       parameters:
@@ -135,7 +162,7 @@ paths:
     get:
       tags:
       - "Games"
-      summary: "get information about a game of given id"
+      summary: "Get information about a game of given id"
       produces:
         - application/json
       parameters:
@@ -155,7 +182,7 @@ paths:
     get:
       tags:
       - "Games"
-      summary: "get png file current state of the game"
+      summary: "Get png file current state of the game"
       produces:
         - image/png
       parameters:
@@ -165,12 +192,7 @@ paths:
           type: integer
           minimum: 1
           description: The game ID.
-        - in: query
-          name: without-comments
-          required: false
-          type: integer
-          minimum: 0
-          description: Whether to download the chat comments with the review (doesn't affect review comments on nodes).
+          
       responses:
         "200":
           description: "OK"
@@ -184,7 +206,7 @@ paths:
     get:
       tags:
       - "Games"
-      summary: "get list of reviews of a game"
+      summary: "Get list of reviews of a game"
       produces:
         - application/json
       parameters:
@@ -204,7 +226,7 @@ paths:
     get:
       tags:
       - "Games"
-      summary: "get sgf file of a game"
+      summary: "Get sgf file of a game"
       produces:
         - sgf
       parameters:
@@ -228,6 +250,197 @@ paths:
         "500":
           description: "Server Error"
 
+#------groups------   
+
+  /groups:
+    get:
+      tags:
+       - "Groups"
+      summary: "Get a list of the site groups"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+          
+  /groups/{id}:
+    get:
+      tags:
+      - "Groups"
+      summary: "Get information on a group by id"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The group ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+          
+  # /groups/{id}/banner:
+  #   get:
+  #     tags:
+  #     - "Groups"
+  #     summary: "Get the banner of a group of given id"
+  #     produces:
+  #       - image/png # possible to parse headers and request from new location?
+  #     parameters:
+  #       - in: path
+  #         name: id   # Note the name is the same as in the path
+  #         required: true
+  #         type: integer
+  #         minimum: 1
+  #         description: The group ID.
+  #     responses:
+  #       "200":
+  #         description: "OK"
+  #       "404":
+  #         description: "Not Found"
+          
+  /groups/{id}/ladders:
+    get:
+      tags:
+      - "Groups"
+      summary: "Get ladders from a group by id. Use the ladder endpoint for ladder information"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The group ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+          
+  /groups/{id}/members:
+    get:
+      tags:
+      - "Groups"
+      summary: "Get members from a group by id"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The group ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+          
+  /groups/{id}/news:
+    get:
+      tags:
+      - "Groups"
+      summary: "Get news from a group by id"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The group ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+
+# https://online-go.com/api/v1/groups/446/banner → seems to work while /icon doesn’t for some reason.
+
+
+#------ladders------   
+
+  /ladders:
+    get:
+      tags:
+       - "Ladders"
+      summary: "Get a list of the site ladders"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+          
+  /ladders/{id}:
+    get:
+      tags:
+      - "Ladders"
+      summary: "Get information on ladders by id"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The ladder ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+
+#------leaderboards------          
+          
+  /leaderboards:
+    get:
+      tags:
+       - "Leaderboards"
+      summary: "Information on the site leaderboards"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+          
+#------library------          
+          
+  /library/{id}:
+    get:
+      tags:
+       - "Library"
+      summary: "Information on the sgfs in player with given ids library"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The player ID.
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+
+
 #------me------
   /me:
     get:
@@ -246,7 +459,7 @@ paths:
     get:
       tags:
        - "Me"
-      summary: "user details from profile page"
+      summary: "User details from profile page"
       produces:
         - application/json
       responses:
@@ -259,7 +472,7 @@ paths:
     get:
       tags:
        - "Me"
-      summary: "list of blocked users"
+      summary: "List of blocked users by the user"
       produces:
         - application/json
       responses:
@@ -272,7 +485,7 @@ paths:
     get:
       tags:
        - "Me"
-      summary: "list of open challenges"
+      summary: "List of open challenges"
       produces:
         - application/json
       responses:
@@ -285,7 +498,7 @@ paths:
     get:
       tags:
        - "Me"
-      summary: "list of added friends"
+      summary: "List of added friends"
       produces:
         - application/json
       responses:
@@ -298,7 +511,7 @@ paths:
     get:
       tags:
        - "Me"
-      summary: "list of user's games"
+      summary: "List of user's games"
       produces:
         - application/json
       responses:
@@ -311,7 +524,7 @@ paths:
     get:
       tags:
        - "Me"
-      summary: "list of user's joined groups"
+      summary: "List of user's joined groups"
       produces:
         - application/json
       responses:
@@ -324,7 +537,7 @@ paths:
     get:
       tags:
        - "Me"
-      summary: "list of user's joined ladders"
+      summary: "List of user's joined ladders"
       produces:
         - application/json
       responses:
@@ -337,7 +550,20 @@ paths:
     get:
       tags:
        - "Me"
-      summary: "settings, notifications, account linkages"
+      summary: "Settings, notifications, account linkages"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+          
+  /ui/overview:
+    get:
+      tags:
+       - "Me"
+      summary: "Active games list and challenges"
       produces:
         - application/json
       responses:
@@ -351,7 +577,7 @@ paths:
     get:
       tags:
       - "Players"
-      summary: "get players information by id"
+      summary: "Get players information by id"
       produces:
         - application/json
       parameters:
@@ -360,38 +586,38 @@ paths:
           required: true
           type: integer
           minimum: 1
-          description: The tournament ID.
+          description: The player ID.
       responses:
         "200":
           description: "OK"
         "404":
           description: "Not Found"
           
-  /players/{id}/challenge:
-    post:
-      tags:
-      - "Players"
-      summary: "challenge player of a given id"
-      produces:
-        - application/json
-      parameters:
-        - in: path
-          name: id   # Note the name is the same as in the path
-          required: true
-          type: integer
-          minimum: 1
-          description: The tournament ID.
-      responses:
-        "200":
-          description: "OK"
-        "401":
-          description: "Unauthorized"
+  # /players/{id}/challenge:
+  #   post:
+  #     tags:
+  #     - "Players"
+  #     summary: "challenge player of a given id"
+  #     produces:
+  #       - application/json
+  #     parameters:
+  #       - in: path
+  #         name: id   # Note the name is the same as in the path
+  #         required: true
+  #         type: integer
+  #         minimum: 1
+  #         description: The player ID.
+  #     responses:
+  #       "200":
+  #         description: "OK"
+  #       "401":
+  #         description: "Unauthorized"
           
   /players/{id}/full:
     get:
       tags:
       - "Players"
-      summary: "get player information including ladders, trophies, groups and active games"
+      summary: "Get player information including ladders, trophies, groups and active games"
       produces:
         - application/json
       parameters:
@@ -400,7 +626,7 @@ paths:
           required: true
           type: integer
           minimum: 1
-          description: The tournament ID.
+          description: The player ID.
       responses:
         "200":
           description: "OK"
@@ -411,7 +637,7 @@ paths:
     get:
       tags:
       - "Players"
-      summary: "get the game history from player of given id"
+      summary: "Get the game history from player of given id"
       produces:
         - application/json
       parameters:
@@ -420,7 +646,7 @@ paths:
           required: true
           type: integer
           minimum: 1
-          description: The tournament ID.
+          description: The player ID.
       responses:
         "200":
           description: "OK"
@@ -431,7 +657,7 @@ paths:
     get:
       tags:
       - "Players"
-      summary: "get the groups joined from player of given id"
+      summary: "Get the groups joined from player of given id"
       produces:
         - application/json
       parameters:
@@ -440,38 +666,38 @@ paths:
           required: true
           type: integer
           minimum: 1
-          description: The tournament ID.
+          description: The player ID.
       responses:
         "200":
           description: "OK"
         "404":
           description: "Not Found"
           
-  /players/{id}/icon:
-    get:
-      tags:
-      - "Players"
-      summary: "get the icon of a player of given id"
-      produces:
-        - application/json
-      parameters:
-        - in: path
-          name: id   # Note the name is the same as in the path
-          required: true
-          type: integer
-          minimum: 1
-          description: The tournament ID.
-      responses:
-        "200":
-          description: "OK"
-        "404":
-          description: "Not Found"
+  # /players/{id}/icon:
+  #   get:
+  #     tags:
+  #     - "Players"
+  #     summary: "Get the icon of a player of given id"
+  #     produces:
+  #       - image/png # possible to parse headers and request from new location?
+  #     parameters:
+  #       - in: path
+  #         name: id   # Note the name is the same as in the path
+  #         required: true
+  #         type: integer
+  #         minimum: 1
+  #         description: The player ID.
+  #     responses:
+  #       "200":
+  #         description: "OK"
+  #       "404":
+  #         description: "Not Found"
 
   /players/{id}/ladders:
     get:
       tags:
       - "Players"
-      summary: "get the ladders joined from player of given id"
+      summary: "Get the ladders joined from player of given id"
       produces:
         - application/json
       parameters:
@@ -480,7 +706,7 @@ paths:
           required: true
           type: integer
           minimum: 1
-          description: The tournament ID.
+          description: The player ID.
       responses:
         "200":
           description: "OK"
@@ -491,7 +717,7 @@ paths:
     get:
       tags:
       - "Players"
-      summary: "get the tournaments joined from player of given id"
+      summary: "Get the tournaments joined from player of given id"
       produces:
         - application/json
       parameters:
@@ -500,14 +726,91 @@ paths:
           required: true
           type: integer
           minimum: 1
-          description: The tournament ID.
+          description: The player ID.
       responses:
         "200":
           description: "OK"
         "404":
           description: "Not Found"
           
+#------puzzles------
+
+  /puzzles:
+    get:
+      tags:
+      - "Puzzles"
+      summary: "Get the list of puzzles on the site"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+          
+  /puzzles/full:
+    get:
+      tags:
+      - "Puzzles"
+      summary: "Get the list of puzzles on the site with more information"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+          
+  /puzzles/{id}:
+    get:
+      tags:
+      - "Puzzles"
+      summary: "Get the information on a specific puzzle by id"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The puzzle ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+
+  /puzzles/collections:
+    get:
+      tags:
+      - "Puzzles"
+      summary: "Get the list of puzzle collections"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+
+# https://online-go.com/api/v1/puzzles/collections → puzzle collections
+# https://online-go.com/api/v1/puzzles/collections?id=3137 → specific puzzle collections
+          
 #------tournaments------
+
+  /tournaments:
+    get:
+      tags:
+      - "Tournaments"
+      summary: "Get a list of site tournaments"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
 
   /tournaments/{id}:
     get:
@@ -529,11 +832,31 @@ paths:
         "404":
           description: "Not Found"
           
+  # /tournaments/{id}/opengotha:
+  #   get:
+  #     tags:
+  #     - "Tournaments"
+  #     summary: "get tournament information in xml format"
+  #     produces:
+  #       - text/xml #not sure how to get this one working
+  #     parameters:
+  #       - in: path
+  #         name: id   # Note the name is the same as in the path
+  #         required: true
+  #         type: integer
+  #         minimum: 1
+  #         description: The tournament ID.
+  #     responses:
+  #       "200":
+  #         description: "OK"
+  #       "404":
+  #         description: "Not Found"
+          
   /tournaments/{id}/players:
     get:
       tags:
       - "Tournaments"
-      summary: "get tournament players information by using tournament id"
+      summary: "Get tournament players information by using tournament id"
       produces:
         - application/json
       parameters:
@@ -553,7 +876,7 @@ paths:
     get:
       tags:
       - "Tournaments"
-      summary: "get tournament rounds information by using tournament id"
+      summary: "Get tournament rounds information by using tournament id"
       produces:
         - application/json
       parameters:
@@ -563,6 +886,79 @@ paths:
           type: integer
           minimum: 1
           description: The tournament ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+          
+  /tournament_records:
+    get:
+      tags:
+      - "Tournaments"
+      summary: "Get the list of tournament records"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+          
+  /tournament_records/{id}:
+    get:
+      tags:
+      - "Tournaments"
+      summary: "Get tournament record information by using tournament record id"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The tournament record ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+          
+  /tournament_records/{id}/players:
+    get:
+      tags:
+      - "Tournaments"
+      summary: "Get players from tournament record with given id"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The tournament record ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+
+  /tournament_records/{id}/rounds:
+    get:
+      tags:
+      - "Tournaments"
+      summary: "Get rounds from tournament record with given id"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The tournament record ID.
       responses:
         "200":
           description: "OK"
