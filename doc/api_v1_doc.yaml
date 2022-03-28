@@ -32,6 +32,31 @@ tags:
   description: "Information related to tournaments"
 
 paths:
+
+#------announcements------
+  /announcements:
+    get:
+      tags:
+       - "Announcements"
+      summary: "Get current site announcements"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+  /announcements/history:
+    get:
+      tags:
+       - "Announcements"
+      summary: "Get the site announcements history"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+
+
+#------me------
   /me:
     get:
       tags:
@@ -148,6 +173,68 @@ paths:
           description: "OK"
         "401":
           description: "Unauthorized"
+
+#------players------
+  /players/{id}:
+    get:
+      tags:
+      - "Players"
+      summary: "get players information by id"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The tournament ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+          
+  /players/{id}/full:
+    get:
+      tags:
+      - "Players"
+      summary: "get player information including ladders, trophies, groups and active games"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The tournament ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+
+  /players/{id}/games:
+    get:
+      tags:
+      - "Players"
+      summary: "get the game history from player of given id"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The tournament ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+#------tournaments------
 
   /tournaments/{id}:
     get:
