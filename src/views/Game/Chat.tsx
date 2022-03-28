@@ -29,6 +29,7 @@ import { ChatUserList, ChatUserCount } from "ChatUserList";
 import { TabCompleteInput } from "TabCompleteInput";
 import { chat_markup } from "components/Chat";
 import { inGameModChannel } from "chat_manager";
+import { MoveTree } from "goban";
 
 let active_game_view: Game = null;
 
@@ -36,17 +37,29 @@ export function setActiveGameView(game: Game) {
     active_game_view = game;
 }
 
+type ChatMode = "main" | "malkovich" | "moderator" | "hidden";
 interface GameChatProperties {
-    chatlog: Array<any>;
+    chatlog: ChatLine[];
     gameview: Game;
     userIsPlayer: boolean;
-    onChatLogChanged: (c) => void;
+    onChatLogChanged: (c: ChatMode) => void;
     channel: string;
 }
 
+interface ChatLine {
+    chat_id: number;
+    body: string;
+    date: number;
+    move_number: number;
+    from: number;
+    moves: string;
+    channel: string;
+    player_id: number;
+}
+
 interface GameChatLineProperties {
-    line: any;
-    lastline: any;
+    line: ChatLine;
+    lastline: ChatLine;
     gameview: Game;
 }
 
@@ -60,7 +73,7 @@ interface GameChatState {
 /* Chat  */
 export class GameChat extends React.PureComponent<GameChatProperties, GameChatState> {
     ref_chat_log: HTMLElement;
-    qc_editableMsgs = null;
+    qc_editableMsgs: HTMLLIElement[] = null;
     scrolled_to_bottom: boolean = true;
 
     constructor(props: GameChatProperties) {
@@ -219,7 +232,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
     };
 
     render() {
-        let last_line = null;
+        let last_line: ChatLine = null;
         const user = data.get("user");
         const channel = this.props.gameview.game_id
             ? `game-${this.props.gameview.game_id}`
@@ -355,7 +368,9 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
         );
     }
 
-    renderQC = (user) => {
+    // TODO:Don't save qc_phrases on the user - there really is no need since
+    // it is pulled/saved in local storage anyway.
+    renderQC = (user: rest_api.UserConfig & { qc_phrases?: string[] }) => {
         let quick_chat: JSX.Element = null;
 
         if (this.state.qc_visible) {
@@ -456,37 +471,48 @@ function parsePosition(position: string) {
     }
     return { i: i, j: j };
 }
-function highlight_position(event) {
+function highlight_position(event: React.MouseEvent<HTMLSpanElement>) {
     if (!active_game_view) {
         return;
     }
 
-    const pos = parsePosition(event.target.innerText);
+    const pos = parsePosition((event.target as HTMLSpanElement).innerText);
     if (pos.i >= 0) {
         active_game_view.goban.getMarks(pos.i, pos.j).chat_triangle = true;
         active_game_view.goban.drawSquare(pos.i, pos.j);
     }
 }
-function unhighlight_position(event) {
+function unhighlight_position(event: React.MouseEvent<HTMLSpanElement>) {
     if (!active_game_view) {
         return;
     }
 
-    const pos = parsePosition(event.target.innerText);
+    const pos = parsePosition((event.target as HTMLSpanElement).innerText);
     if (pos.i >= 0) {
         active_game_view.goban.getMarks(pos.i, pos.j).chat_triangle = false;
         active_game_view.goban.drawSquare(pos.i, pos.j);
     }
 }
 
+interface AnalysisComment {
+    type: "analysis";
+    name?: string;
+    branch_move?: number; // deprecated
+    from?: number;
+    moves?: string;
+    marks?: { [mark: string]: string };
+    pen_marks?: unknown[];
+}
+interface ReviewComment {
+    type: "review";
+    review_id: number;
+}
 export class GameChatLine extends React.Component<GameChatLineProperties> {
-    //scrolled_to_bottom:any = {"malkovich": true, "main": true};
-
-    constructor(props) {
+    constructor(props: GameChatLineProperties) {
         super(props);
     }
 
-    markup(body): JSX.Element | Array<JSX.Element> {
+    markup(body: string | AnalysisComment | ReviewComment): JSX.Element | Array<JSX.Element> {
         if (typeof body === "string") {
             return chat_markup(body, [
                 {
@@ -526,9 +552,9 @@ export class GameChatLine extends React.Component<GameChatLineProperties> {
 
                         const gameview = this.props.gameview;
                         const goban = gameview.goban;
-                        let orig_move = null;
+                        let orig_move: MoveTree = null;
                         let stashed_pen_marks = goban.pen_marks;
-                        let orig_marks = null;
+                        let orig_marks: unknown[] = null;
 
                         const v = parseInt(
                             "" + (body.name ? body.name.replace(/^[^0-9]*/, "") : 0),
@@ -545,7 +571,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties> {
                                 this.props.gameview.in_pushed_analysis = false;
                                 this.props.gameview.leave_pushed_analysis = null;
                                 goban.engine.jumpTo(orig_move);
-                                orig_move.marks = orig_marks;
+                                (orig_move as any).marks = orig_marks;
                                 goban.pen_marks = stashed_pen_marks;
                                 if (goban.pen_marks.length === 0) {
                                     goban.disablePen();
@@ -565,12 +591,12 @@ export class GameChatLine extends React.Component<GameChatLineProperties> {
 
                             orig_move = goban.engine.cur_move;
                             if (orig_move) {
-                                orig_marks = orig_move.marks;
+                                orig_marks = (orig_move as any).marks;
                                 orig_move.clearMarks();
                             } else {
                                 orig_marks = null;
                             }
-                            goban.engine.followPath(parseInt(turn), moves);
+                            goban.engine.followPath(parseInt(turn as any), moves);
 
                             if (body.marks) {
                                 goban.setMarks(body.marks);
@@ -624,7 +650,7 @@ export class GameChatLine extends React.Component<GameChatLineProperties> {
         }
     }
 
-    shouldComponentUpdate(next_props, _next_state) {
+    shouldComponentUpdate(next_props: GameChatLineProperties, _next_state: {}) {
         return this.props.line.chat_id !== next_props.line.chat_id;
     }
 
