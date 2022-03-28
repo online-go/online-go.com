@@ -12,8 +12,8 @@ schemes:
 tags:
 - name: "Announcements"
   description: "Information related to site announcements and banners"
-- name: "Demo"
-  description: "Information related to demo boards"
+- name: "Demos and Reviews"
+  description: "Information related to demo boards and reviews"
 - name: "Games"
   description: "Information related to specific games"
 - name: "Groups"
@@ -26,8 +26,6 @@ tags:
   description: "Information related to users"
 - name: "Puzzles"
   description: "Information related to the puzzles"
-- name: "Reviews"
-  description: "Information related to reviews of games"
 - name: "Tournaments"
   description: "Information related to tournaments"
 
@@ -55,6 +53,180 @@ paths:
         "200":
           description: "OK"
 
+#------demos and reviews------
+
+  /demos:
+    get:
+      tags:
+      - "Demos and Reviews"
+      summary: "get a list of demo boards"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+          
+  /reviews:
+    get:
+      tags:
+      - "Demos and Reviews"
+      summary: "get a list of review boards"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+          
+  /reviews/{id}:
+    get:
+      tags:
+      - "Demos and Reviews"
+      summary: "get information about a review or demo board"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The review ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+          
+  /reviews/{id}/sgf:
+    get:
+      tags:
+      - "Demos and Reviews"
+      summary: "get sgf file of a review or demo board"
+      produces:
+        - sgf
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The review ID.
+        - in: query
+          name: without-comments
+          required: false
+          type: integer
+          minimum: 0
+          description: Whether to download the chat comments with the review (doesn't affect review comments on nodes).
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "500":
+          description: "Server Error"
+
+#------games------
+
+  /games/{id}:
+    get:
+      tags:
+      - "Games"
+      summary: "get information about a game of given id"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The game ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+
+  /games/{id}/png:
+    get:
+      tags:
+      - "Games"
+      summary: "get png file current state of the game"
+      produces:
+        - image/png
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The game ID.
+        - in: query
+          name: without-comments
+          required: false
+          type: integer
+          minimum: 0
+          description: Whether to download the chat comments with the review (doesn't affect review comments on nodes).
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "500":
+          description: "Server Error"
+
+
+  /games/{id}/reviews:
+    get:
+      tags:
+      - "Games"
+      summary: "get list of reviews of a game"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The game ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+          
+  /games/{id}/sgf:
+    get:
+      tags:
+      - "Games"
+      summary: "get sgf file of a game"
+      produces:
+        - sgf
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The game ID.
+        - in: query
+          name: without-comments
+          required: false
+          type: integer
+          minimum: 0
+          description: Whether to download the chat comments with the review (doesn't affect review comments on nodes).
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+        "500":
+          description: "Server Error"
 
 #------me------
   /me:
@@ -195,6 +367,26 @@ paths:
         "404":
           description: "Not Found"
           
+  /players/{id}/challenge:
+    post:
+      tags:
+      - "Players"
+      summary: "challenge player of a given id"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The tournament ID.
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+          
   /players/{id}/full:
     get:
       tags:
@@ -234,6 +426,87 @@ paths:
           description: "OK"
         "404":
           description: "Not Found"
+          
+  /players/{id}/groups:
+    get:
+      tags:
+      - "Players"
+      summary: "get the groups joined from player of given id"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The tournament ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+          
+  /players/{id}/icon:
+    get:
+      tags:
+      - "Players"
+      summary: "get the icon of a player of given id"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The tournament ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+
+  /players/{id}/ladders:
+    get:
+      tags:
+      - "Players"
+      summary: "get the ladders joined from player of given id"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The tournament ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+          
+  /players/{id}/tournaments:
+    get:
+      tags:
+      - "Players"
+      summary: "get the tournaments joined from player of given id"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The tournament ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+          
 #------tournaments------
 
   /tournaments/{id}:
