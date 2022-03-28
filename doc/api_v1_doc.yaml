@@ -1,0 +1,210 @@
+swagger: "2.0"
+info:
+  description: "This is a guide to the rest api for the online go server"
+  version: "1.0.0"
+  title: "Online Go Server Api"
+  contact:
+    email: "contact@online-go.com"
+host: "online-go.com"
+basePath: "/api/v1"
+schemes:
+- "https"
+tags:
+- name: "Announcements"
+  description: "Information related to site announcements and banners"
+- name: "Demo"
+  description: "Information related to demo boards"
+- name: "Games"
+  description: "Information related to specific games"
+- name: "Groups"
+  description: "Information related to the groups"
+- name: "Ladders"
+  description: "Information related to site ladders"
+- name: "Me"
+  description: "Information related to the authenticated user"
+- name: "Players"
+  description: "Information related to users"
+- name: "Puzzles"
+  description: "Information related to the puzzles"
+- name: "Reviews"
+  description: "Information related to reviews of games"
+- name: "Tournaments"
+  description: "Information related to tournaments"
+
+paths:
+  /me:
+    get:
+      tags:
+       - "Me"
+      summary: "User ratings table, username, id"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+
+  /me/account_settings:
+    get:
+      tags:
+       - "Me"
+      summary: "user details from profile page"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+
+  /me/blocks:
+    get:
+      tags:
+       - "Me"
+      summary: "list of blocked users"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+
+  /me/challenges:
+    get:
+      tags:
+       - "Me"
+      summary: "list of open challenges"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+
+  /me/friends:
+    get:
+      tags:
+       - "Me"
+      summary: "list of added friends"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+
+  /me/games:
+    get:
+      tags:
+       - "Me"
+      summary: "list of user's games"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+          
+  /me/groups:
+    get:
+      tags:
+       - "Me"
+      summary: "list of user's joined groups"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+          
+  /me/ladders:
+    get:
+      tags:
+       - "Me"
+      summary: "list of user's joined ladders"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+
+  /me/settings:
+    get:
+      tags:
+       - "Me"
+      summary: "settings, notifications, account linkages"
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: "OK"
+        "401":
+          description: "Unauthorized"
+
+  /tournaments/{id}:
+    get:
+      tags:
+      - "Tournaments"
+      summary: "get tournament information by id"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The tournament ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+          
+  /tournaments/{id}/players:
+    get:
+      tags:
+      - "Tournaments"
+      summary: "get tournament players information by using tournament id"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The tournament ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
+
+  /tournaments/{id}/rounds:
+    get:
+      tags:
+      - "Tournaments"
+      summary: "get tournament rounds information by using tournament id"
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id   # Note the name is the same as in the path
+          required: true
+          type: integer
+          minimum: 1
+          description: The tournament ID.
+      responses:
+        "200":
+          description: "OK"
+        "404":
+          description: "Not Found"
