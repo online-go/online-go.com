@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { comm_socket } from "sockets";
+import { socket } from "sockets";
 import * as data from "data";
 import * as preferences from "preferences";
 import { _, interpolate, pgettext } from "translate";
@@ -314,7 +314,7 @@ class NotificationManager {
     };
 
     deleteNotification(notification, dont_rebuild?: boolean) {
-        comm_socket.send("notification/delete", {
+        socket.send("notification/delete", {
             player_id: this.user.id,
             auth: this.auth,
             notification_id: notification.id,
@@ -337,7 +337,7 @@ class NotificationManager {
                     continue;
             }
             delete this.notifications[id];
-            comm_socket.send("notification/delete", {
+            socket.send("notification/delete", {
                 player_id: this.user.id,
                 auth: this.auth,
                 notification_id: notification.id,
@@ -346,13 +346,13 @@ class NotificationManager {
         this.rebuildNotificationList();
     }
     connect() {
-        comm_socket.on("connect", () => {
-            comm_socket.send("notification/connect", { player_id: this.user.id, auth: this.auth });
+        socket.on("connect", () => {
+            socket.send("notification/connect", { player_id: this.user.id, auth: this.auth });
         });
-        comm_socket.on("disconnect", () => {
+        socket.on("disconnect", () => {
             //console.log("Notifier disconnected from " + server);
         });
-        comm_socket.on("active_game", (game) => {
+        socket.on("active_game", (game) => {
             delete this.boards_to_move_on[game.id];
             if (game.phase === "finished") {
                 delete this.active_boards[game.id];
@@ -397,7 +397,7 @@ class NotificationManager {
             this.event_emitter.emit("total-count", Object.keys(this.active_boards).length);
         });
 
-        comm_socket.on("notification", (notification) => {
+        socket.on("notification", (notification) => {
             if (notification.type === "delete") {
                 if (!(notification.id in this.notifications)) {
                     return;
@@ -501,7 +501,7 @@ class NotificationManager {
             this.event_emitter.emit("notification", notification);
         });
 
-        return comm_socket;
+        return socket;
     }
     onNavigate = () => {
         const current_game_id = getCurrentGameId();

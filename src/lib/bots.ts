@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { termination_socket } from "sockets";
+import { socket } from "sockets";
 import { getUserRating } from "rank_utils";
 
 let active_bots = {};
@@ -37,7 +37,7 @@ export function bot_count() {
     return Object.keys(active_bots).length;
 }
 
-termination_socket.on("active-bots", (bots) => {
+socket.on("active-bots", (bots) => {
     active_bots = bots;
     _bots_list = [];
     for (const id in bots) {

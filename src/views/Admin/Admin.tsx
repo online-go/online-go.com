@@ -18,7 +18,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { post, get } from "requests";
-import { termination_socket } from "sockets";
+import { socket } from "sockets";
 import { ignore, getPrintableError } from "misc";
 import swal from "sweetalert2";
 
@@ -58,10 +58,10 @@ export class Admin extends React.PureComponent<{}, AdminState> {
     componentDidMount() {
         window.document.title = "Admin";
 
-        if (termination_socket.connected) {
+        if (socket.connected) {
             this.pollStats();
         }
-        termination_socket.on("connect", this.pollStats);
+        socket.on("connect", this.pollStats);
 
         get("admin/aiReviewStatus")
             .then((res) => {
@@ -74,12 +74,12 @@ export class Admin extends React.PureComponent<{}, AdminState> {
     }
 
     componentWillUnmount() {
-        termination_socket.off("connect", this.pollStats);
+        socket.off("connect", this.pollStats);
     }
 
     pollStats = () => {
         console.log("Should be polling stats");
-        termination_socket.send("stats/cassandra", {}, (obj) => {
+        socket.send("stats/cassandra", {}, (obj) => {
             this.appendResult("Cassandra State");
             this.appendResult(obj);
         });

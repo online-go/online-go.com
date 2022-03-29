@@ -364,7 +364,7 @@ try {
  */
 
 import ITC from "ITC";
-import { termination_socket } from "sockets";
+import { socket } from "sockets";
 
 type RemoteStorableValue =
     | number
@@ -504,23 +504,19 @@ function _process_write_ahead_log(user_id: number): void {
         };
 
         if ("value" in kv) {
-            termination_socket.send(
+            socket.send(
                 "remote_storage/set",
                 { key: kv.key, value: kv.value, replication: kv.replication },
                 cb,
             );
         } else {
-            termination_socket.send(
-                "remote_storage/remove",
-                { key: kv.key, replication: kv.replication },
-                cb,
-            );
+            socket.send("remote_storage/remove", { key: kv.key, replication: kv.replication }, cb);
         }
     }
 }
 // When we get disconnected from the server, reset our write ahead processing state
 // so we retry everything that's in our wal when we reconnect
-termination_socket.on("disconnect", () => {
+socket.on("disconnect", () => {
     wal_currently_processing = {};
 });
 
@@ -541,7 +537,7 @@ function remote_sync() {
     currently_synchronizing = true;
     need_another_synchronization_call = false;
 
-    termination_socket.send("remote_storage/sync", last_modified, (ret) => {
+    socket.send("remote_storage/sync", last_modified, (ret) => {
         if (ret.error) {
             console.error(ret.error);
         } else {
@@ -555,7 +551,7 @@ function remote_sync() {
 }
 // When we get disconnected from the server, reset the our remote_sync state in the
 // event that we were mid-sync
-termination_socket.on("disconnect", () => {
+socket.on("disconnect", () => {
     currently_synchronizing = false;
     need_another_synchronization_call = false;
 });
@@ -576,7 +572,7 @@ ITC.register("remote_storage/sync_needed", () => {
 
 // After we've sent a synchronization request, we'll get these update messages
 // for each key that's been updated since the timestamp we sent
-termination_socket.on("remote_storage/update", (row: RemoteKV) => {
+socket.on("remote_storage/update", (row: RemoteKV) => {
     const user = store["config.user"];
     if (!user || user.anonymous) {
         console.error(
@@ -607,7 +603,7 @@ termination_socket.on("remote_storage/update", (row: RemoteKV) => {
 });
 
 // Whenever we connect to the server, process anything pending in our WAL and synchronize
-termination_socket.on("connect", () => {
+socket.on("connect", () => {
     const user = store["config.user"];
     if (!user || user.anonymous) {
         return;
@@ -671,7 +667,7 @@ function load_from_local_storage_and_sync() {
         console.error(e);
     }
 
-    if (termination_socket.connected) {
+    if (socket.connected) {
         // we do a sync when we connect to the server, so we don't need to
         // worry about syncing again here.
         _process_write_ahead_log(user.id);

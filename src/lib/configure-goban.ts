@@ -17,7 +17,7 @@
 
 import * as preferences from "preferences";
 import * as data from "data";
-import { get_clock_drift, get_network_latency, termination_socket } from "sockets";
+import { get_clock_drift, get_network_latency, socket } from "sockets";
 import { current_language } from "translate";
 import { Goban, GoEngine, GoThemes } from "goban";
 import { sfx } from "sfx";
@@ -36,7 +36,7 @@ export function configure_goban() {
     Goban.setHooks({
         defaultConfig: () => {
             return {
-                server_socket: termination_socket,
+                server_socket: socket,
                 player_id: data.get("user").anonymous ? 0 : data.get("user").id,
             };
         },

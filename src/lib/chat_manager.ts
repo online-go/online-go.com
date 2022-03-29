@@ -19,7 +19,7 @@ import cached from "cached";
 import * as data from "data";
 import * as preferences from "preferences";
 import * as player_cache from "player_cache";
-import { comm_socket } from "sockets";
+import { socket } from "sockets";
 import { get } from "requests";
 import { TypedEventEmitter } from "TypedEventEmitter";
 import { emitNotification } from "Notifications";
@@ -341,7 +341,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
                 true,
             );
         } else {
-            comm_socket.on("connect", this._rejoin);
+            socket.on("connect", this._rejoin);
             this._rejoin();
         }
         const last_seen = data.get("chat-manager.last-seen", {});
@@ -354,14 +354,14 @@ class ChatChannel extends TypedEventEmitter<Events> {
 
     handleAnonymousOverride = () => {
         if (inGameModChannel(this.channel)) {
-            comm_socket.off("connect", this._rejoin);
-            comm_socket.emit("chat/part", { channel: this.channel });
+            socket.off("connect", this._rejoin);
+            socket.emit("chat/part", { channel: this.channel });
             for (const user_id in this.user_list) {
                 this.handlePart(this.user_list[user_id]);
             }
         } else {
-            comm_socket.on("connect", this._rejoin);
-            comm_socket.emit("chat/join", { channel: this.channel });
+            socket.on("connect", this._rejoin);
+            socket.emit("chat/join", { channel: this.channel });
         }
     };
 
@@ -387,15 +387,15 @@ class ChatChannel extends TypedEventEmitter<Events> {
     }
 
     _rejoin = () => {
-        if (comm_socket.connected) {
-            comm_socket.emit("chat/join", { channel: this.channel });
+        if (socket.connected) {
+            socket.emit("chat/join", { channel: this.channel });
         }
     };
     _destroy() {
-        if (comm_socket.connected) {
-            comm_socket.emit("chat/part", { channel: this.channel });
+        if (socket.connected) {
+            socket.emit("chat/part", { channel: this.channel });
         }
-        comm_socket.off("connect", this._rejoin);
+        socket.off("connect", this._rejoin);
         this.removeAllListeners();
         data.unwatch(`moderator.join-game-publicly.${this.channel}`, this.handleAnonymousOverride);
     }
@@ -612,7 +612,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
             message: text,
         };
 
-        comm_socket.send("chat/send", _send_obj);
+        socket.send("chat/send", _send_obj);
         const obj: ChatMessage = {
             channel: _send_obj.channel,
             username: user.username,
@@ -640,7 +640,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
             topic: topic,
             timestamp: Date.now(),
         };
-        comm_socket.send("chat/topic", msg);
+        socket.send("chat/topic", msg);
         this.topic = msg;
     }
 
@@ -752,11 +752,11 @@ class ChatManager {
     channels: { [channel: string]: ChatChannel } = {};
 
     constructor() {
-        comm_socket.on("chat-message", this.onMessage);
-        comm_socket.on("chat-topic", this.onTopic);
-        comm_socket.on("chat-message-removed", this.onMessageRemoved);
-        comm_socket.on("chat-join", this.onJoin);
-        comm_socket.on("chat-part", this.onPart);
+        socket.on("chat-message", this.onMessage);
+        socket.on("chat-topic", this.onTopic);
+        socket.on("chat-message-removed", this.onMessageRemoved);
+        socket.on("chat-join", this.onJoin);
+        socket.on("chat-part", this.onPart);
     }
 
     onTopic = (obj: TopicMessage) => {

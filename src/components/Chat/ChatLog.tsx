@@ -21,7 +21,7 @@ import * as moment from "moment";
 import Linkify from "react-linkify";
 import Split from "react-split";
 import { Card } from "material";
-import { comm_socket } from "sockets";
+import { socket } from "sockets";
 import { _, pgettext, interpolate } from "translate";
 import { localize_time_strings } from "localize-time";
 import { useEffect, useState, useRef, useCallback } from "react";
@@ -520,7 +520,7 @@ function ChatInput({ channel, autoFocus }: InternalChatLogProperties): JSX.Eleme
         (event: React.KeyboardEvent<HTMLInputElement>): boolean => {
             if (event.charCode === 13) {
                 const input = event.target as HTMLInputElement;
-                if (!comm_socket.connected) {
+                if (!socket.connected) {
                     void swal(_("Connection to server lost"));
                     return false;
                 }

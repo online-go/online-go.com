@@ -19,7 +19,7 @@ import * as React from "react";
 import * as preferences from "preferences";
 import { Player } from "Player";
 import { _, interpolate } from "translate";
-import { comm_socket } from "sockets";
+import { socket } from "sockets";
 import { useEffect, useState, useCallback } from "react";
 import { Timeout } from "misc";
 import { chat_manager, users_by_rank, ChatChannelProxy } from "chat_manager";
@@ -47,9 +47,9 @@ export function ChatUsersList({ channel }: ChatUsersListProperties): JSX.Element
         syncStateSoon();
 
         const online_count_interval = setInterval(() => {
-            comm_socket.send("getOnlineCount", { interval: 1800 }, (ct) => set_online_count(ct));
+            socket.send("getOnlineCount", { interval: 1800 }, (ct) => set_online_count(ct));
         }, 30000);
-        comm_socket.send("getOnlineCount", { interval: 1800 }, (ct) => set_online_count(ct));
+        socket.send("getOnlineCount", { interval: 1800 }, (ct) => set_online_count(ct));
 
         return () => {
             clearInterval(online_count_interval);
