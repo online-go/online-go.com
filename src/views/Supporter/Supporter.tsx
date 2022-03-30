@@ -512,7 +512,7 @@ export function PriceBox({
     const [mor_locations, setMorLocations] = React.useState<string[]>(
         data.get("config.billing_mor_locations") || [],
     );
-    const [disabled, setDisabled]: [boolean, React.Dispatch<React.SetStateAction<boolean>>] =
+    let [disabled, setDisabled]: [boolean, React.Dispatch<React.SetStateAction<boolean>>] =
         React.useState(user.id !== account_id);
     const amount = overrides.plan?.[price.slug]?.[interval] || price.price[currency][interval];
     const paypal_amount = zero_decimal_to_paypal_amount_string(currency, amount);
@@ -619,6 +619,11 @@ export function PriceBox({
     const current_plan_slug = getCurentPlanSlug(config);
 
     const show_sign_up_before_box = null;
+
+    if (user.id !== account_id || user.id < 0) {
+        disabled = true;
+        setDisabled = setDisabled; // make eslint happy about this not being a const
+    }
 
     return (
         <div className="PriceBox">
