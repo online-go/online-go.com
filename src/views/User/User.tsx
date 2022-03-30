@@ -16,16 +16,15 @@
  */
 
 import * as React from "react";
-import { _, pgettext, cc_to_country_name } from "translate";
+import { _, pgettext } from "translate";
 import { Link } from "react-router-dom";
-import { post, get, put, patch } from "requests";
+import { post, get, put } from "requests";
 import { parse } from "query-string";
 import * as data from "data";
 import * as moment from "moment";
 import { Card } from "material";
 import { GameList } from "GameList";
 import * as preferences from "preferences";
-import { updateDup, ignore } from "misc";
 import { ModTools } from "./ModTools";
 import { GameHistoryTable } from "./GameHistoryTable";
 import { ReviewsAndDemosTable } from "./ReviewsAndDemosTable";
@@ -60,8 +59,6 @@ interface UserProperties {
     location: History.Location;
 }
 
-const marginBottom0 = { marginBottom: "0" };
-
 // API: players/%%/full
 export interface UserInfo {
     id: number;
@@ -70,7 +67,6 @@ export interface UserInfo {
     supporter: boolean;
     is_moderator: boolean;
     is_superuser: boolean;
-    last_ip: string;
     last_name: string;
     first_name: string;
     username: string;
@@ -88,7 +84,6 @@ export interface UserInfo {
     bot_ai: string;
     bot_owner: player_cache.PlayerCacheEntry;
     professional: boolean;
-    ip_shadowbanned?: boolean;
     icon?: string;
 }
 
@@ -96,20 +91,8 @@ interface UserState {
     user: UserInfo;
     vs: rest_api.PlayerDetails["vs"];
     ratings: {};
-    ip?: {
-        country: string;
-        subdivisions: string[];
-        location: string[];
-    };
     vacation_left?: number;
     syncRating: null;
-    host_ip_settings?: {
-        id: number;
-        address: string;
-        clients_limit: string;
-        ban_affects_all: boolean;
-        chatban_affects_all: boolean;
-    };
     bot_apikey: null;
     bot_ai?: string;
     editing: boolean;
@@ -144,10 +127,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             user: null,
             vs: {} as any,
             ratings: {},
-            ip: null,
             vacation_left: null,
             syncRating: null,
-            host_ip_settings: null,
             bot_apikey: null,
             bot_ai: null,
             editing: /edit/.test(window.location.hash),
@@ -248,63 +229,9 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             }
         };
 
-        if (data.get("config.user").is_moderator) {
-            /* aliases  */ state.ip = null;
-            state.host_ip_settings = null;
-        }
         state.temporary_show_ratings = false;
 
         this.setState(state);
-        this.updateHostIpSettings();
-    }
-
-    updateHostIpSettings() {
-        if (!this.state.user) {
-            return;
-        }
-
-        const last_ip = this.state.user.last_ip;
-        get("host_ip_settings/", { address: last_ip })
-            .then((lst) => {
-                this.setState({
-                    host_ip_settings: lst.count
-                        ? lst.results[0]
-                        : {
-                              id: 0,
-                              address: last_ip,
-                              clients_limit: 5,
-                              ban_affects_all: true,
-                              chatban_affects_all: true,
-                          },
-                });
-            })
-            .catch(ignore);
-    }
-
-    saveHostIpSettings() {
-        console.log("Saving host ip settings: ", this.state.host_ip_settings);
-        const obj = {
-            address: this.state.host_ip_settings.address,
-            clients_limit: this.state.host_ip_settings.clients_limit,
-            ban_affects_all: this.state.host_ip_settings.ban_affects_all ? 1 : 0,
-            chatban_affects_all: this.state.host_ip_settings.chatban_affects_all ? 1 : 0,
-        };
-        console.log("->", obj);
-
-        $("#host-ip-saved").addClass("hidden");
-
-        if (this.state.host_ip_settings.id) {
-            patch("host_ip_settings/%%", this.state.host_ip_settings.id, obj)
-                .then(() => $("#host-ip-saved").removeClass("hidden"))
-                .catch(errorAlerter);
-        } else {
-            post("host_ip_settings/", obj)
-                .then(() => {
-                    $("#host-ip-saved").removeClass("hidden");
-                    this.updateHostIpSettings();
-                })
-                .catch(errorAlerter);
-        }
     }
 
     generateAPIKey() {
@@ -660,160 +587,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                     </div>
                                 </div>
                             </div>
-                        )}
-
-                        {this.state.ip && (
-                            <Card>
-                                <div>
-                                    <b>IP</b>
-                                    <span> {this.state.ip}</span>
-                                </div>
-                                <div>
-                                    <b>Country</b>
-                                    <span>
-                                        {" "}
-                                        {this.state.ip.country} /{" "}
-                                        {cc_to_country_name(this.state.ip.country)}
-                                    </span>
-                                </div>
-                                <div>
-                                    <b>Region</b>
-                                    {this.state.ip.subdivisions.map((sd, idx) => (
-                                        <span key={idx}> {sd} </span>
-                                    ))}
-                                </div>
-                                <div>
-                                    <b>Map</b>
-                                    <span>
-                                        {" "}
-                                        <a
-                                            href={`https://maps.google.com/maps?ll=${this.state.ip.location[0]},${this.state.ip.location[1]}`}
-                                            target="_blank"
-                                        >
-                                            map
-                                        </a>
-                                    </span>
-                                </div>
-                                <div>
-                                    <b>IP Shadowbanned</b>{" "}
-                                    <span>
-                                        {parseInt(user.ip_shadowbanned as any) === 1
-                                            ? _("Yes")
-                                            : _("No")}
-                                    </span>
-                                </div>
-                                {this.state.host_ip_settings && (
-                                    <div>
-                                        <form className="form-horizontal" role="form">
-                                            <div className="form-group" style={marginBottom0}>
-                                                <label
-                                                    className="col-xs-7"
-                                                    htmlFor="clients-limit "
-                                                >
-                                                    User limit
-                                                </label>
-                                                <div className="col-xs-5">
-                                                    <input
-                                                        type="number"
-                                                        id="clients-limit"
-                                                        style={{ width: "5rem" }}
-                                                        value={
-                                                            this.state.host_ip_settings
-                                                                .clients_limit
-                                                        }
-                                                        onChange={(event) =>
-                                                            this.setState({
-                                                                host_ip_settings: updateDup(
-                                                                    this.state.host_ip_settings,
-                                                                    "clients_limit",
-                                                                    parseInt(
-                                                                        (
-                                                                            event.target as HTMLInputElement
-                                                                        ).value,
-                                                                    ),
-                                                                ),
-                                                            })
-                                                        }
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="form-group" style={marginBottom0}>
-                                                <label
-                                                    className="col-xs-7"
-                                                    htmlFor="ban-affects-all"
-                                                >
-                                                    Ban affects all
-                                                </label>
-                                                <div className="col-xs-5">
-                                                    <input
-                                                        type="checkbox"
-                                                        id="ban-affects-all"
-                                                        value={
-                                                            this.state.host_ip_settings
-                                                                .ban_affects_all as any
-                                                        }
-                                                        onChange={(event) =>
-                                                            this.setState({
-                                                                host_ip_settings: updateDup(
-                                                                    this.state.host_ip_settings,
-                                                                    "ban_affects_all",
-                                                                    (
-                                                                        event.target as HTMLInputElement
-                                                                    ).checked,
-                                                                ),
-                                                            })
-                                                        }
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="form-group" style={marginBottom0}>
-                                                <label
-                                                    className="col-xs-7"
-                                                    htmlFor="chatban-affects-all"
-                                                >
-                                                    Chatban affects all
-                                                </label>
-                                                <div className="col-xs-5">
-                                                    <input
-                                                        type="checkbox"
-                                                        id="chatban-affects-all"
-                                                        value={
-                                                            this.state.host_ip_settings
-                                                                .chatban_affects_all as any
-                                                        }
-                                                        onChange={(event) =>
-                                                            this.setState({
-                                                                host_ip_settings: updateDup(
-                                                                    this.state.host_ip_settings,
-                                                                    "chatban_affects_all",
-                                                                    (
-                                                                        event.target as HTMLInputElement
-                                                                    ).checked,
-                                                                ),
-                                                            })
-                                                        }
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="form-group" style={marginBottom0}>
-                                                <label className="col-xs-7" htmlFor=""></label>
-                                                <div className="col-xs-5">
-                                                    <button
-                                                        className="btn btn-default btn-xs"
-                                                        onClick={() => this.saveHostIpSettings()}
-                                                    >
-                                                        save
-                                                    </button>
-                                                    <i
-                                                        id="host-ip-saved"
-                                                        className="fa fa-check-circle-o won hidden"
-                                                    ></i>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-                                )}
-                            </Card>
                         )}
 
                         <h2>{_("Activity")}</h2>
