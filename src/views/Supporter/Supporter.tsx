@@ -221,7 +221,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
 
     React.useEffect(() => {
         Promise.all([
-            get(`/billing/summary/${account_id}`)
+            get(`/billing/summary/${Math.max(0, account_id)}`)
                 .then((config: Config) => {
                     paddle_js_promise
                         .then(() => {
@@ -251,7 +251,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                     console.error(err);
                     setError("Failed to get billing configuration");
                 }),
-            get(`players/${account_id}/supporter_overrides`)
+            get(`players/${Math.max(0, account_id)}/supporter_overrides`)
                 .then((overrides: SupporterOverrides) => {
                     setOverrides(overrides);
                     /*
