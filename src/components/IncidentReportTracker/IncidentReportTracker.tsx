@@ -101,8 +101,6 @@ export function IncidentReportTracker(): JSX.Element {
         };
 
         function handleReport(report: Report) {
-            console.log("incident report", report);
-
             if (report.state === "resolved") {
                 delete active_incident_reports[report.id];
             } else {
