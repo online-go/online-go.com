@@ -23,7 +23,7 @@ import { browserHistory } from "ogsHistory";
 import { _, pgettext, interpolate } from "translate";
 import { post, del } from "requests";
 import { Modal, openModal } from "Modal";
-import { termination_socket } from "sockets";
+import { socket } from "sockets";
 import {
     rankString,
     getUserRating,
@@ -618,13 +618,13 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
                 function active_check() {
                     keepalive_interval = setInterval(() => {
-                        termination_socket.send("challenge/keepalive", {
+                        socket.send("challenge/keepalive", {
                             challenge_id: challenge_id,
                             game_id: game_id,
                         });
                     }, 1000);
-                    termination_socket.send("game/connect", { game_id: game_id });
-                    termination_socket.on(`game/${game_id}/gamedata`, onGamedata);
+                    socket.send("game/connect", { game_id: game_id });
+                    socket.on(`game/${game_id}/gamedata`, onGamedata);
                 }
 
                 function onGamedata() {
@@ -646,9 +646,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
                 function off() {
                     clearTimeout(keepalive_interval);
-                    termination_socket.send("game/disconnect", { game_id: game_id });
-                    termination_socket.off(`game/${game_id}/gamedata`, onGamedata);
-                    termination_socket.off(`game/${game_id}/rejected`, onRejected);
+                    socket.send("game/disconnect", { game_id: game_id });
+                    socket.off(`game/${game_id}/gamedata`, onGamedata);
+                    socket.off(`game/${game_id}/rejected`, onRejected);
                     notification_manager.event_emitter.off("notification", checkForReject);
                 }
 

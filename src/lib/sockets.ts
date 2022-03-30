@@ -40,10 +40,9 @@ const ai_config = {
     upgrade: false,
 };
 
-export const termination_socket = window["websocket_host"]
+export const socket = window["websocket_host"]
     ? io(window["websocket_host"], io_config)
     : io(io_config);
-export const comm_socket = termination_socket;
 
 export let ai_host = "";
 if (
@@ -69,15 +68,15 @@ if (
 
 export const ai_socket = ai_host ? io(ai_host, ai_config) : io(ai_config);
 
-termination_socket.send = termination_socket.emit;
+socket.send = socket.emit;
 ai_socket.send = ai_socket.emit;
 
-termination_socket.on("connect", () => {
+socket.on("connect", () => {
     debug.log("Connection to server established.");
-    termination_socket.emit("hostinfo");
+    socket.emit("hostinfo");
 });
-termination_socket.on("HUP", () => window.location.reload());
-termination_socket.on("hostinfo", (hostinfo) => {
+socket.on("HUP", () => window.location.reload());
+socket.on("hostinfo", (hostinfo) => {
     debug.log("Termination server", hostinfo);
 });
 
@@ -86,8 +85,8 @@ let last_latency = 0.0;
 let last_ai_latency = 0.0;
 
 function ping() {
-    if (termination_socket.connected) {
-        termination_socket.send("net/ping", {
+    if (socket.connected) {
+        socket.send("net/ping", {
             client: Date.now(),
             drift: last_clock_drift,
             latency: last_latency,
@@ -102,7 +101,7 @@ function handle_pong(data) {
     last_clock_drift = drift;
 }
 function send_client_info() {
-    termination_socket.send("client/info", {
+    socket.send("client/info", {
         language: current_language,
         langauge_version: ogs_language_version,
         version: ogs_version,
@@ -114,9 +113,9 @@ export function get_network_latency(): number {
 export function get_clock_drift(): number {
     return last_clock_drift;
 }
-termination_socket.on("net/pong", handle_pong);
-termination_socket.on("connect", ping);
-termination_socket.on("connect", send_client_info);
+socket.on("net/pong", handle_pong);
+socket.on("connect", ping);
+socket.on("connect", send_client_info);
 setInterval(ping, 10000);
 
 function ai_ping() {
@@ -138,8 +137,7 @@ ai_socket.on("net/pong", ai_handle_pong);
 setInterval(ai_ping, 20000);
 
 export default {
-    termination_socket: termination_socket,
-    comm_socket: comm_socket,
+    socket: socket,
     ai_socket: ai_socket,
     get_clock_drift: get_clock_drift,
     get_network_latency: get_network_latency,

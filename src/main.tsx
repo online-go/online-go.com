@@ -235,7 +235,7 @@ let auth_connect_fn = () => {
 data.watch("config.user", (user) => {
     if (!user.anonymous) {
         auth_connect_fn = (): void => {
-            sockets.comm_socket.send("authenticate", {
+            sockets.socket.send("authenticate", {
                 auth: data.get("config.chat_auth"),
                 player_id: user.id,
                 username: user.username,
@@ -246,7 +246,7 @@ data.watch("config.user", (user) => {
                 language_version: ogs_language_version,
                 client_version: ogs_version,
             });
-            sockets.comm_socket.send("chat/connect", {
+            sockets.socket.send("chat/connect", {
                 auth: data.get("config.chat_auth"),
                 player_id: user.id,
                 ranking: user.ranking,
@@ -256,7 +256,7 @@ data.watch("config.user", (user) => {
         };
     } else if (user.id < 0) {
         auth_connect_fn = (): void => {
-            sockets.comm_socket.send("chat/connect", {
+            sockets.socket.send("chat/connect", {
                 player_id: user.id,
                 ranking: user.ranking,
                 username: user.username,
@@ -264,11 +264,11 @@ data.watch("config.user", (user) => {
             });
         };
     }
-    if (sockets.comm_socket.connected) {
+    if (sockets.socket.connected) {
         auth_connect_fn();
     }
 });
-sockets.comm_socket.on("connect", () => {
+sockets.socket.on("connect", () => {
     auth_connect_fn();
 });
 
@@ -287,7 +287,7 @@ init_score_estimator()
     .catch((err) => console.error(err));
 
 /*** Generic error handling from the server ***/
-sockets.termination_socket.on("ERROR", errorAlerter);
+sockets.socket.on("ERROR", errorAlerter);
 
 browserHistory.listen((/* location */) => {
     try {

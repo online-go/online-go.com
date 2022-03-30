@@ -20,7 +20,7 @@ import * as moment from "moment";
 import { _ } from "translate";
 import { openModal, Modal } from "Modal";
 import { Player } from "Player";
-import { termination_socket } from "sockets";
+import { socket } from "sockets";
 import { GoMath } from "goban";
 
 interface Events {}
@@ -47,7 +47,7 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
 
         const config = this.props.config;
         const game_id = config.game_id;
-        termination_socket.send(`game/log`, { game_id }, (log) => this.setLog(log));
+        socket.send(`game/log`, { game_id }, (log) => this.setLog(log));
     }
 
     setLog(log: Array<LogEntry>) {

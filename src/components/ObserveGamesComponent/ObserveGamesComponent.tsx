@@ -22,7 +22,7 @@ import { _, pgettext, interpolate } from "translate";
 import { dup } from "misc";
 import { GameList } from "GameList";
 import { ActiveAnnouncements } from "Announcements";
-import { comm_socket } from "sockets";
+import { socket } from "sockets";
 
 interface ObserveGamesComponentProperties {
     announcements: boolean;
@@ -113,9 +113,9 @@ export class ObserveGamesComponent extends React.PureComponent<
 
     syncSubscribe = () => {
         if (Object.keys(this.namespacedPreferenceGet("observed-games-filter")).length === 0) {
-            comm_socket.send("gamelist/count/subscribe", this.channel);
+            socket.send("gamelist/count/subscribe", this.channel);
         } else {
-            comm_socket.send("gamelist/count/unsubscribe", this.channel);
+            socket.send("gamelist/count/unsubscribe", this.channel);
         }
     };
 
@@ -134,12 +134,12 @@ export class ObserveGamesComponent extends React.PureComponent<
         }
         //console.log("Channel: ", this.channel);
         if (this.channel) {
-            comm_socket.on(`gamelist-count-${this.channel}`, this.updateCounts);
+            socket.on(`gamelist-count-${this.channel}`, this.updateCounts);
         } else {
-            comm_socket.on("gamelist-count", this.updateCounts);
+            socket.on("gamelist-count", this.updateCounts);
         }
-        comm_socket.on("connect", this.syncSubscribe);
-        if (comm_socket.connected) {
+        socket.on("connect", this.syncSubscribe);
+        if (socket.connected) {
             this.syncSubscribe();
         }
         this.refresh();
@@ -147,13 +147,13 @@ export class ObserveGamesComponent extends React.PureComponent<
     }
     destroy() {
         if (this.channel) {
-            comm_socket.off(`gamelist-count-${this.channel}`, this.updateCounts);
+            socket.off(`gamelist-count-${this.channel}`, this.updateCounts);
         } else {
-            comm_socket.off("gamelist-count", this.updateCounts);
+            socket.off("gamelist-count", this.updateCounts);
         }
-        comm_socket.off("connect", this.syncSubscribe);
-        if (comm_socket.connected) {
-            comm_socket.send("gamelist/count/unsubscribe", this.channel);
+        socket.off("connect", this.syncSubscribe);
+        if (socket.connected) {
+            socket.send("gamelist/count/unsubscribe", this.channel);
         }
         if (this.auto_refresh) {
             clearInterval(this.auto_refresh);
@@ -210,7 +210,7 @@ export class ObserveGamesComponent extends React.PureComponent<
             }
         }
 
-        comm_socket.send(
+        socket.send(
             "gamelist/query",
             {
                 list: this.state.viewing,

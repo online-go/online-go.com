@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { comm_socket } from "sockets";
+import { socket } from "sockets";
 import { TypedEventEmitter } from "TypedEventEmitter";
 import { Batcher } from "batcher";
 
@@ -27,17 +27,17 @@ const listeners: { [id: number]: Array<any> } = {};
 const state = {};
 const event_emitter = new TypedEventEmitter<Events>();
 
-comm_socket.on("connect", () => {
+socket.on("connect", () => {
     const list = [];
     for (const id in state) {
         list.push(id);
     }
     if (list.length) {
-        comm_socket.send("user/monitor", list);
+        socket.send("user/monitor", list);
     }
 });
 
-comm_socket.on("user/state", (states) => {
+socket.on("user/state", (states) => {
     let i;
     for (const id in states) {
         state[id] = states[id];
@@ -48,7 +48,7 @@ comm_socket.on("user/state", (states) => {
     event_emitter.emit("users-online-updated");
 });
 
-comm_socket.on("disconnect", () => {
+socket.on("disconnect", () => {
     for (const id in state) {
         state[id] = false;
         for (let i = 0; i < listeners[id].length; ++i) {
@@ -59,7 +59,7 @@ comm_socket.on("disconnect", () => {
 });
 
 const subscribe_queue = new Batcher<number>((ids) => {
-    comm_socket.send("user/monitor", ids);
+    socket.send("user/monitor", ids);
 });
 
 function subscribe(player_id, cb) {

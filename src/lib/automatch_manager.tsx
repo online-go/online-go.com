@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { pgettext, interpolate } from "translate";
-import { termination_socket } from "sockets";
+import { socket } from "sockets";
 import { TypedEventEmitter } from "TypedEventEmitter";
 import { browserHistory } from "ogsHistory";
 import { Toast, toast } from "toast";
@@ -80,16 +80,16 @@ class AutomatchManager extends TypedEventEmitter<Events> {
 
     constructor() {
         super();
-        termination_socket.on("connect", () => {
+        socket.on("connect", () => {
             this.clearState();
-            termination_socket.send("automatch/list");
+            socket.send("automatch/list");
         });
-        termination_socket.on("disconnect", () => {
+        socket.on("disconnect", () => {
             this.clearState();
         });
-        termination_socket.on("automatch/start", this.onAutomatchStart);
-        termination_socket.on("automatch/entry", this.onAutomatchEntry);
-        termination_socket.on("automatch/cancel", this.onAutomatchCancel);
+        socket.on("automatch/start", this.onAutomatchStart);
+        socket.on("automatch/entry", this.onAutomatchEntry);
+        socket.on("automatch/cancel", this.onAutomatchCancel);
     }
 
     private onAutomatchEntry = (entry: AutomatchPreferences) => {
@@ -153,7 +153,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
     }
 
     public findMatch(preferences: AutomatchPreferences) {
-        termination_socket.emit("automatch/find_match", preferences);
+        socket.emit("automatch/find_match", preferences);
 
         /* live game? track it, and pop up our searching toast */
         if (
@@ -171,7 +171,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
     }
     public cancel(uuid?: string) {
         this.remove(uuid);
-        termination_socket.emit("automatch/cancel", uuid);
+        socket.emit("automatch/cancel", uuid);
     }
 }
 

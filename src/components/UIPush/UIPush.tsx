@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { comm_socket } from "sockets";
+import { socket } from "sockets";
 
 interface UIPushProperties {
     event: string;
@@ -43,17 +43,17 @@ class UIPushManager {
         this.handlers = {};
         this.subscriptions = {};
 
-        comm_socket.on("ui-push", (msg) => {
+        socket.on("ui-push", (msg) => {
             if (msg.event in this.handlers) {
                 for (const handler of this.handlers[msg.event]) {
                     handler.cb(msg.data, msg.event);
                 }
             }
         });
-        comm_socket.on("connect", () => {
+        socket.on("connect", () => {
             /* handle resubscriptions */
             for (const channel in this.subscriptions) {
-                comm_socket.send("ui-pushes/subscribe", { channel: channel });
+                socket.send("ui-pushes/subscribe", { channel: channel });
             }
         });
     }
@@ -84,8 +84,8 @@ class UIPushManager {
             this.subscriptions[channel]++;
         } else {
             this.subscriptions[channel] = 1;
-            if ((comm_socket as any).connected) {
-                comm_socket.send("ui-pushes/subscribe", { channel: channel });
+            if ((socket as any).connected) {
+                socket.send("ui-pushes/subscribe", { channel: channel });
             }
         }
     }
@@ -94,8 +94,8 @@ class UIPushManager {
             this.subscriptions[channel]--;
         } else {
             delete this.subscriptions[channel];
-            if ((comm_socket as any).connected) {
-                comm_socket.send("ui-pushes/unsubscribe", { channel: channel });
+            if ((socket as any).connected) {
+                socket.send("ui-pushes/unsubscribe", { channel: channel });
             }
         }
     }

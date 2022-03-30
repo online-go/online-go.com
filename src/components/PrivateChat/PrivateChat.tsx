@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { comm_socket } from "sockets";
+import { socket } from "sockets";
 import { challenge } from "ChallengeModal";
 import { createModeratorNote } from "ModNoteModal";
 import { _, pgettext, interpolate } from "translate";
@@ -69,7 +69,7 @@ class PrivateChat {
 
     constructor(user_id, username) {
         this.user_id = user_id;
-        comm_socket.send("chat/pm/load", user_id);
+        socket.send("chat/pm/load", user_id);
 
         this.player_dom = $("<span class='user Player nolink'>...</span>");
         if (username) {
@@ -130,7 +130,7 @@ class PrivateChat {
                         superchat.addClass("enabled");
                         this.dom.addClass("superchat");
 
-                        comm_socket.send("chat/pm/superchat", {
+                        socket.send("chat/pm/superchat", {
                             player_id: this.user_id,
                             username: this.player.username,
                             auth: data.get("config.superchat_auth"),
@@ -139,7 +139,7 @@ class PrivateChat {
                     } else {
                         superchat.removeClass("enabled");
                         this.dom.removeClass("superchat");
-                        comm_socket.send("chat/pm/superchat", {
+                        socket.send("chat/pm/superchat", {
                             player_id: this.user_id,
                             username: this.player.username,
                             auth: data.get("config.superchat_auth"),
@@ -463,8 +463,8 @@ class PrivateChat {
             });
             data.set(`pm.close-${this.user_id}`, this.last_uid);
         }
-        if (comm_socket && !dont_send_pm_close) {
-            comm_socket.send("chat/pm/close", this.user_id);
+        if (socket && !dont_send_pm_close) {
+            socket.send("chat/pm/close", this.user_id);
         }
     }
     addChat(from, txt, user_id, timestamp) {
@@ -627,7 +627,7 @@ class PrivateChat {
             msg = arr[1];
 
             this.addChat(data.get("user").username, line, this.user_id, Date.now() / 1000);
-            comm_socket.send(
+            socket.send(
                 "chat/pm",
                 {
                     player_id: this.user_id,
@@ -724,7 +724,7 @@ export function getPrivateChat(user_id, username?) {
 
     return (instances[user_id] = new PrivateChat(user_id, username));
 }
-comm_socket.on("private-message", (line) => {
+socket.on("private-message", (line) => {
     let pc;
     if (line.from.id === data.get("user").id) {
         pc = getPrivateChat(line.to.id);
@@ -744,7 +744,7 @@ comm_socket.on("private-message", (line) => {
         pc.handleChat(line);
     }
 });
-comm_socket.on("private-superchat", (config) => {
+socket.on("private-superchat", (config) => {
     let pc;
     if (config.moderator_id !== data.get("user").id) {
         pc = getPrivateChat(config.moderator_id, config.moderator_username);

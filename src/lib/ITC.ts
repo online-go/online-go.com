@@ -16,11 +16,11 @@
  */
 
 /* Inter tab communications library */
-import { comm_socket } from "sockets";
+import { socket } from "sockets";
 
 const registrations = {};
 
-comm_socket.on("itc", (obj) => {
+socket.on("itc", (obj) => {
     if (obj.event in registrations) {
         for (let i = 0; i < registrations[obj.event].length; ++i) {
             registrations[obj.event][i](obj.data);
@@ -36,6 +36,6 @@ export default {
         registrations[event].push(cb);
     },
     send: (event, data) => {
-        comm_socket.send("itc", { event: event, data: data });
+        socket.send("itc", { event: event, data: data });
     },
 };
