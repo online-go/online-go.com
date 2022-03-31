@@ -193,7 +193,7 @@ export class DrawCoordsButton extends React.Component<DCBProperties, {}> {
         for (let j = 0; j < coordarray.length; j++) {
             const move = GoMath.decodeMoves(coordarray[j], config.width, config.height)[0];
             console.log(move);
-            this.props.game.goban.setMark(move.x, move.y, "triangle", true);
+            this.props.game.goban.setMark(move.x, move.y, "triangle", false);
         }
         console.log(this.props.game);
         console.log(coordarray);
