@@ -95,6 +95,13 @@ declare namespace rest_api {
             registration_date: "2018-04-09T13:04:44.987830Z";
             vacation_left: number;
             on_vacation: boolean;
+            self_reported_account_linkages?: {
+                org1: string;
+                org1_id: string;
+                org1_rank: string;
+                last_updated: number;
+            };
+            is_watched: boolean;
         };
         active_games: players.full.Game[];
         ladders: Array<{
@@ -105,6 +112,7 @@ declare namespace rest_api {
         tournaments: Array<{
             id: number;
             name: string;
+            icon: string; // URL
         }>;
         titles: any[];
         trophies: Array<{

@@ -59,62 +59,20 @@ interface UserProperties {
     location: History.Location;
 }
 
-// API: players/%%/full
-export interface UserInfo {
-    id: number;
-    on_vacation: boolean;
-    vacation_left: number;
-    supporter: boolean;
-    is_moderator: boolean;
-    is_superuser: boolean;
-    last_name: string;
-    first_name: string;
-    username: string;
-    about: string;
-    website: string;
-    country: string;
-    real_name_is_private: boolean;
-    is_bot: boolean;
-    self_reported_account_linkages: any;
-    is_watched: boolean;
-    ui_class_extra: any;
-    timeout_provisional: boolean; // deprecated
-    is_tournament_moderator: boolean;
-    name: string;
-    bot_ai: string;
-    bot_owner: player_cache.PlayerCacheEntry;
-    professional: boolean;
-    icon?: string;
-}
-
-interface UserState {
-    user: UserInfo;
-    vs: rest_api.PlayerDetails["vs"];
-    ratings: {};
-    vacation_left?: number;
-    syncRating: null;
-    bot_apikey: null;
-    bot_ai?: string;
+interface UserState extends Partial<rest_api.PlayerDetails> {
     editing: boolean;
-    selected_speed: "overall";
-    selected_size: 0;
+    selected_speed: "overall" | "blitz" | "live" | "correspondence";
+    selected_size: 0 | 9 | 13 | 19;
     resolved: boolean;
     temporary_show_ratings: boolean;
     show_ratings_in_rating_grid: boolean;
     rating_graph_plot_by_games: boolean;
     show_graph_type_toggle: boolean;
     rating_chart_type_toggle_left?: number;
-    hovered_game_id?: number;
-    friend_request_sent?: boolean;
-    friend_request_received?: boolean;
-    is_friend?: boolean;
-    active_games?: rest_api.players.full.Game[];
-    achievements?: any[];
-    titles?: any[];
-    trophies?: any[];
-    ladders?: any[];
-    tournaments?: any[];
-    groups?: any[];
+    // These properties also exist on the UserState.user.  These are pulled out to the top level in
+    // order to trigger a re-render when changed individually.
+    bot_apikey?: string;
+    bot_ai?: string;
 }
 
 export class User extends React.PureComponent<UserProperties, UserState> {
@@ -124,13 +82,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
     constructor(props) {
         super(props);
         this.state = {
-            user: null,
-            vs: {} as any,
-            ratings: {},
-            vacation_left: null,
-            syncRating: null,
-            bot_apikey: null,
-            bot_ai: null,
             editing: /edit/.test(window.location.hash),
             selected_speed: "overall",
             selected_size: 0,
@@ -139,7 +90,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             show_ratings_in_rating_grid: preferences.get("show-ratings-in-rating-grid"),
             rating_graph_plot_by_games: preferences.get("rating-graph-plot-by-games"),
             show_graph_type_toggle: !preferences.get("rating-graph-always-use"),
-            hovered_game_id: null,
         };
 
         try {
@@ -187,12 +137,16 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         this.setState({ user: null, editing: /edit/.test(window.location.hash) });
         this.user_id = parseInt(props.match.params.user_id || data.get("user").id);
         get("players/%%/full", this.user_id)
-            .then((state) => {
+            .then((response: rest_api.PlayerDetails) => {
                 this.setState({ resolved: true });
                 try {
-                    player_cache.update(state.user);
-                    this.update(state);
-                    window.document.title = state.user.username;
+                    player_cache.update(response.user);
+                    this.setState({
+                        bot_apikey: response.user.bot_apikey,
+                        bot_ai: response.user.bot_ai,
+                        ...response,
+                    });
+                    window.document.title = response.user.username;
                 } catch (err) {
                     console.error(err.stack);
                 }
@@ -201,37 +155,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                 console.error(err);
                 this.setState({ user: null, resolved: true });
             });
-    }
-
-    update(state) {
-        state.bot_apikey = state.user.bot_apikey;
-
-        state.user.ratings = state.user.ratings;
-        state.user.rating = parseFloat(state.user.rating);
-        state.user.rating_live = parseFloat(state.user.rating_live);
-        state.user.rating_blitz = parseFloat(state.user.rating_blitz);
-        state.user.rating_correspondence = parseFloat(state.user.rating_correspondence);
-        const user = state.user;
-        try {
-            state.website_href =
-                user.website.trim().toLowerCase().indexOf("http") !== 0
-                    ? "http://" + user.website
-                    : user.website;
-        } catch (e) {
-            console.log(e.stack);
-        }
-
-        state.syncRating = (rank, type) => {
-            if (type === "overall") {
-                state.user.rating = rank * 100 + 50 - 900;
-            } else {
-                state.user["rating_" + type] = rank * 100 + 50 - 900;
-            }
-        };
-
-        state.temporary_show_ratings = false;
-
-        this.setState(state);
     }
 
     generateAPIKey() {
@@ -573,7 +496,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                         value={this.state.bot_ai || ""}
                                         onChange={(event) =>
                                             this.setState({
-                                                bot_ai: (event.target as HTMLInputElement).value,
+                                                bot_ai: event.target.value,
                                             })
                                         }
                                     />
@@ -758,7 +681,21 @@ export class User extends React.PureComponent<UserProperties, UserState> {
     }
 }
 
-function SelfReportedAccountLinkages({ links }: { links: any }): JSX.Element {
+type Server = "kgs" | "igs" | "dgs" | "golem" | "wbaduk" | "tygem" | "fox" | "yike" | "goquest";
+
+type AccountLinks = {
+    [org in `org${1 | 2 | 3}`]?: string;
+} & {
+    [org_id in `org${1 | 2 | 3}_id`]?: string;
+} & {
+    [org_rank in `org${1 | 2 | 3}_rank`]?: string;
+} & {
+    [server_username in `${Server}_username`]?: string;
+} & {
+    [server_rank in `${Server}_rank`]?: string;
+};
+
+function SelfReportedAccountLinkages({ links }: { links: AccountLinks }): JSX.Element {
     const has_association = links.org1 || links.org2 || links.org3;
     let has_other_server = false;
     for (const key in links) {
