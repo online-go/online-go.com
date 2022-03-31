@@ -22,6 +22,10 @@
     display: flex;
     flex-direction: column;
 
+    .hide {
+        visibility: hidden
+    }
+
     .audit-actions {
         flex-grow: 1;
 
@@ -32,7 +36,6 @@
         margin-bottom: 0.2rem;
 
         .audit-filters {
-            visibility: hidden  // new back-end doesn't support filtering yet.
             .audit-filter {
                 display: flex;
                 flex-direction: row;
