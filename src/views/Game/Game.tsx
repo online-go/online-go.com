@@ -45,7 +45,7 @@ import {
     JGOFPlayerSummary,
 } from "goban";
 import { isLiveGame } from "TimeControl";
-import { termination_socket, get_network_latency, get_clock_drift } from "sockets";
+import { socket, get_network_latency, get_clock_drift } from "sockets";
 import { Dock } from "Dock";
 import { Player, setExtraActionCallback } from "Player";
 import { Flag } from "Flag";
@@ -4346,7 +4346,7 @@ export function goban_view_squashed(): boolean {
 
 const shared_ip_with_player_map: { [game_id: number]: boolean } = {};
 
-termination_socket.on(
+socket.on(
     "score-estimator-enabled-state",
     (state: { game_id: number; shared_ip_with_player: boolean }) => {
         shared_ip_with_player_map[state.game_id] = state.shared_ip_with_player;

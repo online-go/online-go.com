@@ -18,7 +18,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { _ } from "translate";
-import { comm_socket } from "sockets";
+import { socket } from "sockets";
 import { post } from "requests";
 import * as data from "data";
 import * as preferences from "preferences";
@@ -81,28 +81,26 @@ export function IncidentReportTracker(): JSX.Element {
             setReports([]);
 
             if (!user.anonymous) {
-                comm_socket.send("incident/connect", {
+                socket.send("incident/connect", {
                     player_id: user.id,
                     auth: data.get("config.incident_auth"),
                 });
             }
         };
 
-        comm_socket.on("connect", connect_fn);
-        if (comm_socket.connected) {
+        socket.on("connect", connect_fn);
+        if (socket.connected) {
             connect_fn();
         }
 
-        comm_socket.on("incident-report", handleReport);
+        socket.on("incident-report", handleReport);
 
         return () => {
-            comm_socket.off("incident-report", handleReport);
-            comm_socket.off("connect", connect_fn);
+            socket.off("incident-report", handleReport);
+            socket.off("connect", connect_fn);
         };
 
         function handleReport(report: Report) {
-            console.log("incident report", report);
-
             if (report.state === "resolved") {
                 delete active_incident_reports[report.id];
             } else {

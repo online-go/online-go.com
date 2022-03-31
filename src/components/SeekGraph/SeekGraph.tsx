@@ -20,7 +20,7 @@ import * as ReactDOM from "react-dom";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext, interpolate } from "translate";
 import { del } from "requests";
-import { comm_socket } from "sockets";
+import { socket } from "sockets";
 import { TypedEventEmitter } from "TypedEventEmitter";
 import * as data from "data";
 import { openGameAcceptModal } from "GameAcceptModal";
@@ -145,7 +145,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         this.canvas = $(config.canvas);
         this.show_live_games = config.show_live_games;
-        this.socket = comm_socket;
+        this.socket = socket;
         this.list_hits = [];
         this.redraw();
 

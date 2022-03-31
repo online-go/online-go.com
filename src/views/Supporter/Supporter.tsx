@@ -221,7 +221,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
 
     React.useEffect(() => {
         Promise.all([
-            get(`/billing/summary/${account_id}`)
+            get(`/billing/summary/${Math.max(0, account_id)}`)
                 .then((config: Config) => {
                     paddle_js_promise
                         .then(() => {
@@ -251,7 +251,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                     console.error(err);
                     setError("Failed to get billing configuration");
                 }),
-            get(`players/${account_id}/supporter_overrides`)
+            get(`players/${Math.max(0, account_id)}/supporter_overrides`)
                 .then((overrides: SupporterOverrides) => {
                     setOverrides(overrides);
                     /*
@@ -512,7 +512,7 @@ export function PriceBox({
     const [mor_locations, setMorLocations] = React.useState<string[]>(
         data.get("config.billing_mor_locations") || [],
     );
-    const [disabled, setDisabled]: [boolean, React.Dispatch<React.SetStateAction<boolean>>] =
+    let [disabled, setDisabled]: [boolean, React.Dispatch<React.SetStateAction<boolean>>] =
         React.useState(user.id !== account_id);
     const amount = overrides.plan?.[price.slug]?.[interval] || price.price[currency][interval];
     const paypal_amount = zero_decimal_to_paypal_amount_string(currency, amount);
@@ -619,6 +619,11 @@ export function PriceBox({
     const current_plan_slug = getCurentPlanSlug(config);
 
     const show_sign_up_before_box = null;
+
+    if (user.id !== account_id || user.id < 0) {
+        disabled = true;
+        setDisabled = setDisabled; // make eslint happy about this not being a const
+    }
 
     return (
         <div className="PriceBox">
@@ -1151,10 +1156,13 @@ function SupporterOverridesEditor({
                     tenuki: {},
                 };
             }
+            if (!overrides.plan.meijin) {
+                overrides.plan.meijin = {};
+            }
             overrides.plan[slug][interval] = value;
         }
         let found = false;
-        for (const _slug of ["hane", "tenuki"]) {
+        for (const _slug of ["hane", "tenuki", "meijin"]) {
             for (const _interval of ["month", "year"]) {
                 if (overrides?.plan?.[_slug]?.[_interval]) {
                     found = true;
@@ -1250,13 +1258,13 @@ function SupporterOverridesEditor({
                         id="hane"
                         type="text"
                         placeholder="Monthly"
-                        value={overrides.plan?.hane?.month}
+                        value={overrides.plan?.hane?.month || ""}
                         onChange={(ev) => upprice("hane", "month", ev.target.value || undefined)}
                     />
                     <input
                         placeholder="Yearly"
                         type="text"
-                        value={overrides.plan?.hane?.year}
+                        value={overrides.plan?.hane?.year || ""}
                         onChange={(ev) => upprice("hane", "year", ev.target.value || undefined)}
                     />
                 </dd>
@@ -1266,17 +1274,32 @@ function SupporterOverridesEditor({
                         id="tenuki"
                         type="text"
                         placeholder="Monthly"
-                        value={overrides.plan?.tenuki?.month}
+                        value={overrides.plan?.tenuki?.month || ""}
                         onChange={(ev) => upprice("tenuki", "month", ev.target.value || undefined)}
                     />
                     <input
                         type="text"
                         placeholder="Yearly"
-                        value={overrides.plan?.tenuki?.year}
+                        value={overrides.plan?.tenuki?.year || ""}
                         onChange={(ev) => upprice("tenuki", "year", ev.target.value || undefined)}
                     />
                 </dd>
-
+                <dd>
+                    <label htmlFor="meijin">Meijin</label>
+                    <input
+                        id="meijin"
+                        type="text"
+                        placeholder="Monthly"
+                        value={overrides.plan?.meijin?.month || ""}
+                        onChange={(ev) => upprice("meijin", "month", ev.target.value || undefined)}
+                    />
+                    <input
+                        type="text"
+                        placeholder="Yearly"
+                        value={overrides.plan?.meijin?.year || ""}
+                        onChange={(ev) => upprice("meijin", "year", ev.target.value || undefined)}
+                    />
+                </dd>
                 <dt>
                     <label htmlFor="paddle_promo_code">Paddle Promo Code</label>
                 </dt>

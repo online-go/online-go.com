@@ -24,7 +24,7 @@ import { shouldOpenNewTab, errorAlerter, ignore } from "misc";
 import { getUserRating, humble_rating } from "rank_utils";
 import * as player_cache from "player_cache";
 import { icon_size_url } from "PlayerIcon";
-import { termination_socket } from "sockets";
+import { socket } from "sockets";
 import * as data from "data";
 import { close_all_popovers } from "popover";
 import { Flag } from "Flag";
@@ -232,21 +232,21 @@ export class PlayerDetails extends React.PureComponent<
 
             console.log(game ? "game" : "review", id, channel, chat_id);
             if (game) {
-                termination_socket.send("game/chat/remove", {
+                socket.send("game/chat/remove", {
                     game_id: id,
                     channel: channel,
                     chat_id: chat_id,
                 });
             } else {
                 // review
-                termination_socket.send("review/chat/remove", {
+                socket.send("review/chat/remove", {
                     review_id: id,
                     channel: channel,
                     chat_id: chat_id,
                 });
             }
         } else {
-            termination_socket.send("chat/remove", { uuid: this.props.chatId });
+            socket.send("chat/remove", { uuid: this.props.chatId });
         }
 
         this.close_all_modals_and_popovers();
@@ -263,9 +263,7 @@ export class PlayerDetails extends React.PureComponent<
             showCancelButton: true,
             focusCancel: true,
         })
-            .then(() =>
-                termination_socket.send("chat/remove_all", { player_id: this.props.playerId }),
-            )
+            .then(() => socket.send("chat/remove_all", { player_id: this.props.playerId }))
             .catch(() => 0);
     };
     render() {

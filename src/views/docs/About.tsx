@@ -18,7 +18,7 @@
 import * as React from "react";
 import { _ } from "translate";
 import { Link } from "react-router-dom";
-import { termination_socket } from "sockets";
+import { socket } from "sockets";
 import * as data from "data";
 import { ServerTimeDisplay } from "ServerTimeDisplay";
 
@@ -35,16 +35,12 @@ export class About extends React.Component<{}, any> {
 
     UNSAFE_componentWillMount() {
         window.document.title = _("About");
-        termination_socket.on("connect", () => {
+        socket.on("connect", () => {
             console.log("Got connect[term]");
-            termination_socket.send("versions", true, (res) =>
-                this.setState({ termination_versions: res }),
-            );
+            socket.send("versions", true, (res) => this.setState({ termination_versions: res }));
         });
-        if (termination_socket.connected) {
-            termination_socket.send("versions", true, (res) =>
-                this.setState({ termination_versions: res }),
-            );
+        if (socket.connected) {
+            socket.send("versions", true, (res) => this.setState({ termination_versions: res }));
         }
     }
 
