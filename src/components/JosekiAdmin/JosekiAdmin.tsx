@@ -183,16 +183,17 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
             `changes?page=${this.state.current_page + 1}&page_size=${this.state.current_pageSize}`;
 
         if (this.state.filter_position_id !== "") {
-            audits_url += `&position_id=${this.state.filter_position_id}`;
-        }
-        // note that the back end currently doesn't support multiple filters, but one day it might...
-        if (this.state.filter_user_id !== "") {
-            audits_url += `&user_id=${this.state.filter_user_id}`;
+            audits_url += `&ref=${this.state.filter_position_id}`;
         }
 
-        if (this.state.filter_audit_type !== "") {
-            audits_url += `&audit_type=${this.state.filter_audit_type}`;
+        if (this.state.filter_user_id !== "") {
+            audits_url += `&user=${this.state.filter_user_id}`;
         }
+
+        // Not supported in new backend yet
+        //if (this.state.filter_audit_type !== "") {
+        //    audits_url += `&type=${this.state.filter_audit_type}`;
+        //}
 
         fetch(audits_url, {
             mode: "cors",
@@ -308,14 +309,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                                     onChange={this.onFilterPositionChange}
                                 />
                             </div>
-                            <div
-                                className={
-                                    "audit-filter" +
-                                    (this.state.filter_position_id === ""
-                                        ? ""
-                                        : " audit-filter-overridden")
-                                }
-                            >
+                            <div className="audit-filter">
                                 <div>Filter by user (id):</div>
                                 <input
                                     value={this.state.filter_user_id}
@@ -327,7 +321,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                             </div>
                             <div
                                 className={
-                                    "audit-filter" +
+                                    "hide audit-filter" +
                                     (this.state.filter_position_id === "" &&
                                     this.state.filter_user_id === ""
                                         ? ""
