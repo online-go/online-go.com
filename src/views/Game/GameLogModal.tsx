@@ -22,6 +22,7 @@ import { openModal, Modal } from "Modal";
 import { Player } from "Player";
 import { socket } from "sockets";
 import { GoMath } from "goban";
+import { Game } from "./Game";
 
 interface Events {}
 
@@ -29,6 +30,7 @@ interface GameLogModalProperties {
     config: any;
     black: any;
     white: any;
+    game: Game;
 }
 
 interface LogEntry {
@@ -57,7 +59,7 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
 
     render() {
         const config = this.props.config;
-
+        //console.log(this.props.game);
         return (
             <div className="Modal GameLogModal" ref="modal">
                 <div className="header">
@@ -91,6 +93,7 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
                                             config={this.props.config}
                                             event={entry.event}
                                             data={entry.data}
+                                            game={this.props.game}
                                         />
                                     </td>
                                 </tr>
@@ -106,7 +109,17 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
     }
 }
 
-function LogData({ config, event, data }: { config: any; event: string; data: any }): JSX.Element {
+function LogData({
+    config,
+    event,
+    data,
+    game,
+}: {
+    config: any;
+    event: string;
+    data: any;
+    game: Game;
+}): JSX.Element {
     if (event === "game_created") {
         return null;
     }
@@ -134,9 +147,12 @@ function LogData({ config, event, data }: { config: any; event: string; data: an
                         .join(", ");
 
                     ret.push(
-                        <span key={k} className="field">
-                            {stones}
-                        </span>,
+                        <DrawCoordsButton
+                            stones={stones}
+                            config={config}
+                            key={k}
+                            game={game}
+                        ></DrawCoordsButton>,
                     );
                 } else {
                     ret.push(
@@ -155,6 +171,47 @@ function LogData({ config, event, data }: { config: any; event: string; data: an
     return <div>{ret}</div>;
 }
 
-export function openGameLogModal(config: any, black: any, white: any): void {
-    openModal(<GameLogModal config={config} black={black} white={white} fastDismiss />);
+interface DCBProperties {
+    game: Game;
+    stones: string;
+    config: any;
+}
+
+export class DrawCoordsButton extends React.Component<DCBProperties, {}> {
+    constructor(props: DCBProperties) {
+        super(props);
+    }
+
+    markCoords(stones_string: string, config) {
+        for (let i = 0; i < config.width; i++) {
+            for (let j = 0; j < config.height; j++) {
+                this.props.game.goban.deleteCustomMark(i, j, "triangle", true);
+            }
+        }
+
+        const coordarray = stones_string.split(",").map((item) => item.trim());
+        for (let j = 0; j < coordarray.length; j++) {
+            const move = GoMath.decodeMoves(coordarray[j], config.width, config.height)[0];
+            console.log(move);
+            this.props.game.goban.setMark(move.x, move.y, "triangle", true);
+        }
+        console.log(this.props.game);
+        console.log(coordarray);
+    }
+
+    render() {
+        return (
+            <a
+                onClick={() => this.markCoords(this.props.stones, this.props.config)}
+                className="field"
+            >
+                {this.props.stones}
+            </a>
+        );
+    }
+}
+
+export function openGameLogModal(config: any, black: any, white: any, game: Game): void {
+    openModal(<GameLogModal config={config} black={black} white={white} game={game} fastDismiss />);
+    //console.log(game);
 }

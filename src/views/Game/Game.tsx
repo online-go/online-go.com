@@ -1673,6 +1673,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             this.goban.config,
             this.state[`historical_black`] || this.goban.engine.players.black,
             this.state[`historical_white`] || this.goban.engine.players.white,
+            this,
         );
     };
     toggleAnonymousModerator = () => {
