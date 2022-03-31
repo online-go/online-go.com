@@ -23,6 +23,7 @@ import ReactResizeDetector from "react-resize-detector";
 import { Link, RouteComponentProps } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
 import { _, ngettext, pgettext, interpolate, current_language } from "translate";
+import { popover } from "popover";
 import { post, get, api1, del } from "requests";
 import { KBShortcut } from "KBShortcut";
 import { UIPush } from "UIPush";
@@ -47,7 +48,7 @@ import {
 import { isLiveGame } from "TimeControl";
 import { termination_socket, get_network_latency, get_clock_drift } from "sockets";
 import { Dock } from "Dock";
-import { Player, setExtraActionCallback } from "Player";
+import { Player, setExtraActionCallback, PlayerDetails } from "Player";
 import { Flag } from "Flag";
 import * as player_cache from "player_cache";
 import { icon_size_url } from "PlayerIcon";
@@ -729,6 +730,16 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             }
 
             this.sync_state();
+        });
+
+        this.goban.on("played-by-click", (event) => {
+            const target = this.ref_move_tree_container.getBoundingClientRect();
+            popover({
+                elt: <PlayerDetails playerId={event.player_id} />,
+                at: { x: event.x + target.x, y: event.y + target.y },
+                minWidth: 240,
+                minHeight: 250,
+            });
         });
 
         if (this.move_number !== null) {
