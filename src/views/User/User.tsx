@@ -629,7 +629,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                         <i className="speed-icon ogs-turtle" title={_("Correspondence")} />
                     </span>
                 </div>
-                {[0, 9, 13, 19].map((size: RatingsSize) => (
+                {([0, 9, 13, 19] as const).map((size: RatingsSize) => (
                     <div key={size} className="speed">
                         {size > 0 ? (
                             <span className="title">
@@ -641,7 +641,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                             </span>
                         )}
 
-                        {["overall", "blitz", "live", "correspondence"].map(
+                        {(["overall", "blitz", "live", "correspondence"] as const).map(
                             (speed: RatingsSpeed) => (
                                 <span key={speed} className="cell">
                                     {this.renderRatingOrRank(speed, size, show_ratings)}
