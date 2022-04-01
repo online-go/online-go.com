@@ -1274,7 +1274,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                                 >
                                                     <i className="fa fa-plus" /> KataGo
                                                 </button>
-                                                {((goban.width === 19 && goban.height === 19) ||
+                                                {((goban.width === 19 &&
+                                                    goban.height === 19 &&
+                                                    false) ||
                                                     null) && (
                                                     <button
                                                         onClick={() =>
