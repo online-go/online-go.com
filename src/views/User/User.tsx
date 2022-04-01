@@ -59,10 +59,13 @@ interface UserProperties {
     location: History.Location;
 }
 
+type RatingsSpeed = "overall" | "blitz" | "live" | "correspondence";
+type RatingsSize = 0 | 9 | 13 | 19;
+
 interface UserState extends Partial<rest_api.PlayerDetails> {
     editing: boolean;
-    selected_speed: "overall" | "blitz" | "live" | "correspondence";
-    selected_size: 0 | 9 | 13 | 19;
+    selected_speed: RatingsSpeed;
+    selected_size: RatingsSize;
     resolved: boolean;
     temporary_show_ratings: boolean;
     show_ratings_in_rating_grid: boolean;
@@ -184,7 +187,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
     toggleRatings = () => {
         this.setState((state) => ({ temporary_show_ratings: !state.temporary_show_ratings }));
     };
-    saveAbout = (ev) => {
+    saveAbout = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({ user: Object.assign({}, this.state.user, { about: ev.target.value }) });
     };
     saveEditChanges(profile_card_changes: AvatarCardEditableFields) {
@@ -469,48 +472,50 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                             </div>
                         )}
 
-                        {user.is_bot && user.bot_owner && user.bot_owner.id === window["user"].id && (
-                            <div>
-                                <h2>{_("Bot Controls")}</h2>
-                                <div className="well">
-                                    <h5>
-                                        {_("API Key")}
-                                        <button
-                                            className="btn btn-xs btn-default"
-                                            onClick={() => this.generateAPIKey()}
-                                        >
-                                            {_("Generate API Key")}
-                                        </button>
-                                    </h5>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        value={this.state.bot_apikey}
-                                        readOnly
-                                    />
-                                    <h5>{_("Bot Engine")}</h5>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        placeholder={_("Engine Name")}
-                                        value={this.state.bot_ai || ""}
-                                        onChange={(event) =>
-                                            this.setState({
-                                                bot_ai: event.target.value,
-                                            })
-                                        }
-                                    />
-                                    <div style={{ textAlign: "right" }}>
-                                        <button
-                                            className="btn btn-xs btn-default"
-                                            onClick={() => this.saveBot()}
-                                        >
-                                            {_("Save")}
-                                        </button>
+                        {user.is_bot &&
+                            user.bot_owner &&
+                            user.bot_owner.id === data.get("user").id && (
+                                <div>
+                                    <h2>{_("Bot Controls")}</h2>
+                                    <div className="well">
+                                        <h5>
+                                            {_("API Key")}
+                                            <button
+                                                className="btn btn-xs btn-default"
+                                                onClick={() => this.generateAPIKey()}
+                                            >
+                                                {_("Generate API Key")}
+                                            </button>
+                                        </h5>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            value={this.state.bot_apikey}
+                                            readOnly
+                                        />
+                                        <h5>{_("Bot Engine")}</h5>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            placeholder={_("Engine Name")}
+                                            value={this.state.bot_ai || ""}
+                                            onChange={(event) =>
+                                                this.setState({
+                                                    bot_ai: event.target.value,
+                                                })
+                                            }
+                                        />
+                                        <div style={{ textAlign: "right" }}>
+                                            <button
+                                                className="btn btn-xs btn-default"
+                                                onClick={() => this.saveBot()}
+                                            >
+                                                {_("Save")}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
                         <h2>{_("Activity")}</h2>
                         <Card className="activity-card">
@@ -624,7 +629,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                         <i className="speed-icon ogs-turtle" title={_("Correspondence")} />
                     </span>
                 </div>
-                {[0, 9, 13, 19].map((size) => (
+                {[0, 9, 13, 19].map((size: RatingsSize) => (
                     <div key={size} className="speed">
                         {size > 0 ? (
                             <span className="title">
@@ -636,17 +641,19 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                             </span>
                         )}
 
-                        {["overall", "blitz", "live", "correspondence"].map((speed) => (
-                            <span key={speed} className="cell">
-                                {this.renderRatingOrRank(speed, size, show_ratings)}
-                            </span>
-                        ))}
+                        {["overall", "blitz", "live", "correspondence"].map(
+                            (speed: RatingsSpeed) => (
+                                <span key={speed} className="cell">
+                                    {this.renderRatingOrRank(speed, size, show_ratings)}
+                                </span>
+                            ),
+                        )}
                     </div>
                 ))}
             </div>
         );
     }
-    renderRatingOrRank(speed, size, show_rating: boolean): JSX.Element {
+    renderRatingOrRank(speed: RatingsSpeed, size: RatingsSize, show_rating: boolean): JSX.Element {
         const r = getUserRating(this.state.user, speed, size);
 
         return (
@@ -704,7 +711,7 @@ function SelfReportedAccountLinkages({ links }: { links: AccountLinks }): JSX.El
             key !== "hidden_ids" &&
             key !== "last_updated" &&
             !(key.indexOf("org") === 0) &&
-            links[key]
+            links[key as keyof AccountLinks]
         ) {
             has_other_server = true;
         }
