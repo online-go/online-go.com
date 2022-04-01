@@ -1734,10 +1734,11 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
         this.setState({ extra_info_selected: "variation-filter" });
     };
 
-    onCommentChange = (e) => {
+    onCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         // If they hit enter, we intercept and save.  Otherwise just let them keep typing characters, up to the max length
         // (if they are allowed, of course)
-        if (/\r|\n/.exec(e.target.value)) {
+        // because \r or \n give it length=1, we can't just check falsey to prevent empty comments
+        if (/\r|\n/.exec(e.target.value) && e.target.value.length > 1) { 
             const comment_url = server_url + "comment?id=" + this.props.position_id;
             fetch(comment_url, {
                 method: "post",
