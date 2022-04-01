@@ -17,7 +17,6 @@
 
 import * as React from "react";
 import { _, pgettext } from "translate";
-import { Link } from "react-router-dom";
 import { get, put } from "requests";
 import { parse } from "query-string";
 import * as data from "data";
@@ -37,7 +36,6 @@ import {
     boundedRankString,
     rank_deviation,
 } from "rank_utils";
-import { daysOnlyDurationString } from "TimeControl";
 import { openModerateUserModal } from "ModerateUser";
 import { errorAlerter } from "misc";
 import * as player_cache from "player_cache";
@@ -51,6 +49,7 @@ import { AchievementList } from "Achievements";
 import * as History from "history";
 import { VersusCard } from "./VersusCard";
 import { AvatarCard, AvatarCardEditableFields } from "./AvatarCard";
+import { ActivityCard } from "./ActivityCard";
 
 interface UserProperties {
     match: {
@@ -105,29 +104,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
     componentDidMount() {
         window.document.title = _("Player");
         this.resolve(this.props);
-    }
-
-    isSpecialUser() {
-        if (
-            this.state.user.supporter ||
-            this.state.user.is_moderator ||
-            this.state.user.is_superuser
-        ) {
-            return true;
-        }
-        return false;
-    }
-
-    vacationAccrued() {
-        if (this.state.user) {
-            const vacation_time_accrued = this.state.user.vacation_left;
-            if (this.isSpecialUser()) {
-                return daysOnlyDurationString(vacation_time_accrued) + " " + _("out of 60 Days");
-            } else {
-                return daysOnlyDurationString(vacation_time_accrued) + " " + _("out of 30 Days");
-            }
-        }
-        return "User not Found";
     }
 
     componentDidUpdate(prevProps: UserProperties) {
@@ -462,76 +438,12 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                             )}
 
                         <h2>{_("Activity")}</h2>
-                        <Card className="activity-card">
-                            <h4>
-                                {_("Vacation Accrued:")}{" "}
-                                {this.isSpecialUser() ? _("(Supporter)") : _("(Non-Supporter)")}
-                            </h4>
-                            {!user.on_vacation && <div>{this.vacationAccrued()}</div>}
-                            {user.on_vacation && <div>{_("User On Vacation")}</div>}
-                            <h4>{_("Ladders")}</h4>
-                            {this.state.ladders.length > 0 && (
-                                <div>
-                                    <dl className="activity-dl">
-                                        {this.state.ladders.map((ladder, idx) => (
-                                            <dd key={idx}>
-                                                #{ladder.rank}{" "}
-                                                <Link to={`/ladder/${ladder.id}`}>
-                                                    {ladder.name}
-                                                </Link>
-                                            </dd>
-                                        ))}
-                                    </dl>
-                                </div>
-                            )}
-                            {!this.state.ladders.length && (
-                                <div>
-                                    <div>{_("Not participating in any ladders")}</div>
-                                </div>
-                            )}
-
-                            <h4>{_("Tournaments")}</h4>
-                            {this.state.tournaments.length > 0 && (
-                                <div>
-                                    <dl className="activity-dl">
-                                        {this.state.tournaments.map((tournament, idx) => (
-                                            <dd key={idx}>
-                                                <Link to={`/tournament/${tournament.id}`}>
-                                                    <img src={tournament.icon} className="icon" />{" "}
-                                                    {tournament.name}
-                                                </Link>
-                                            </dd>
-                                        ))}
-                                    </dl>
-                                </div>
-                            )}
-                            {!this.state.tournaments.length && (
-                                <div>
-                                    <div>{_("Not participating in any tournaments")}</div>
-                                </div>
-                            )}
-
-                            <h4>{_("Groups")}</h4>
-                            {this.state.groups.length > 0 && (
-                                <div>
-                                    <dl className="activity-dl">
-                                        {this.state.groups.map((group, idx) => (
-                                            <dd key={idx}>
-                                                <Link to={`/group/${group.id}`}>
-                                                    <img src={group.icon} className="icon" />{" "}
-                                                    {group.name}
-                                                </Link>
-                                            </dd>
-                                        ))}
-                                    </dl>
-                                </div>
-                            )}
-                            {!this.state.groups.length && (
-                                <div>
-                                    <div>{_("Not a member of any groups")}</div>
-                                </div>
-                            )}
-                        </Card>
+                        <ActivityCard
+                            user={user}
+                            ladders={this.state.ladders}
+                            tournaments={this.state.tournaments}
+                            groups={this.state.groups}
+                        />
                     </div>
                     {/* end right col  */}
                 </div>
