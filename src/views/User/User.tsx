@@ -79,7 +79,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
     user_id: number; // BPJ: This is used, but could also be grabbed directly from props
     show_mod_log: boolean; // BPJ: This is used, but could also be grabbed directly from props
 
-    constructor(props) {
+    constructor(props: UserProperties) {
         super(props);
         this.state = {
             editing: /edit/.test(window.location.hash),
@@ -127,15 +127,15 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         return "User not Found";
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-        if (nextProps.match.params.user_id !== this.props.match.params.user_id) {
-            this.setState({ user: null, resolved: false });
-            this.resolve(nextProps);
+    componentDidUpdate(prevProps: UserProperties) {
+        if (prevProps.match.params.user_id !== this.props.match.params.user_id) {
+            this.setState({ user: undefined, resolved: false });
+            this.resolve(this.props);
         }
     }
-    resolve(props) {
+    resolve(props: UserProperties) {
         this.setState({ user: null, editing: /edit/.test(window.location.hash) });
-        this.user_id = parseInt(props.match.params.user_id || data.get("user").id);
+        this.user_id = parseInt(props.match.params.user_id) || data.get("user").id;
         get("players/%%/full", this.user_id)
             .then((response: rest_api.PlayerDetails) => {
                 this.setState({ resolved: true });
