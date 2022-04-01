@@ -18,7 +18,7 @@
 import * as React from "react";
 import { _, pgettext } from "translate";
 import { Link } from "react-router-dom";
-import { post, get, put } from "requests";
+import { get, put } from "requests";
 import { parse } from "query-string";
 import * as data from "data";
 import * as moment from "moment";
@@ -28,6 +28,7 @@ import * as preferences from "preferences";
 import { ModTools } from "./ModTools";
 import { GameHistoryTable } from "./GameHistoryTable";
 import { ReviewsAndDemosTable } from "./ReviewsAndDemosTable";
+import { BotControls } from "./BotControls";
 import {
     rankString,
     getUserRating,
@@ -47,7 +48,6 @@ import { RatingsChartByGame } from "RatingsChartByGame";
 import { associations } from "associations";
 import { Toggle } from "Toggle";
 import { AchievementList } from "Achievements";
-import swal from "sweetalert2";
 import * as History from "history";
 import { VersusCard } from "./VersusCard";
 import { AvatarCard, AvatarCardEditableFields } from "./AvatarCard";
@@ -158,31 +158,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                 console.error(err);
                 this.setState({ user: null, resolved: true });
             });
-    }
-
-    generateAPIKey() {
-        if (
-            !confirm(
-                "Generating a new key will immediate invalidate the previous key, are you sure you wish to continue?",
-            )
-        ) {
-            return;
-        }
-        post("ui/bot/generateAPIKey", { bot_id: this.state.user.id })
-            .then((res) =>
-                this.setState({
-                    bot_apikey: res.bot_apikey,
-                }),
-            )
-            .catch(errorAlerter);
-    }
-    saveBot() {
-        put("ui/bot/saveBotInfo", { bot_id: this.state.user.id, bot_ai: this.state.bot_ai })
-            .then(() => {
-                swal("Bot Engine updated").catch(swal.noop);
-                this.resolve(this.props);
-            })
-            .catch(errorAlerter);
     }
     toggleRatings = () => {
         this.setState((state) => ({ temporary_show_ratings: !state.temporary_show_ratings }));
@@ -475,46 +450,15 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                         {user.is_bot &&
                             user.bot_owner &&
                             user.bot_owner.id === data.get("user").id && (
-                                <div>
-                                    <h2>{_("Bot Controls")}</h2>
-                                    <div className="well">
-                                        <h5>
-                                            {_("API Key")}
-                                            <button
-                                                className="btn btn-xs btn-default"
-                                                onClick={() => this.generateAPIKey()}
-                                            >
-                                                {_("Generate API Key")}
-                                            </button>
-                                        </h5>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            value={this.state.bot_apikey}
-                                            readOnly
-                                        />
-                                        <h5>{_("Bot Engine")}</h5>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            placeholder={_("Engine Name")}
-                                            value={this.state.bot_ai || ""}
-                                            onChange={(event) =>
-                                                this.setState({
-                                                    bot_ai: event.target.value,
-                                                })
-                                            }
-                                        />
-                                        <div style={{ textAlign: "right" }}>
-                                            <button
-                                                className="btn btn-xs btn-default"
-                                                onClick={() => this.saveBot()}
-                                            >
-                                                {_("Save")}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+                                <BotControls
+                                    bot_ai={this.state.bot_ai}
+                                    bot_apikey={this.state.bot_apikey}
+                                    bot_id={this.state.user.id}
+                                    onBotAiChanged={(bot_ai) => this.setState({ bot_ai: bot_ai })}
+                                    onBotApiKeyChanged={(bot_apikey) =>
+                                        this.setState({ bot_apikey: bot_apikey })
+                                    }
+                                />
                             )}
 
                         <h2>{_("Activity")}</h2>
