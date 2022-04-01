@@ -59,7 +59,6 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
 
     render() {
         const config = this.props.config;
-        //console.log(this.props.game);
         return (
             <div className="Modal GameLogModal" ref="modal">
                 <div className="header">
@@ -192,11 +191,8 @@ export class DrawCoordsButton extends React.Component<DCBProperties, {}> {
         const coordarray = stones_string.split(",").map((item) => item.trim());
         for (let j = 0; j < coordarray.length; j++) {
             const move = GoMath.decodeMoves(coordarray[j], config.width, config.height)[0];
-            console.log(move);
             this.props.game.goban.setMark(move.x, move.y, "triangle", false);
         }
-        console.log(this.props.game);
-        console.log(coordarray);
     }
 
     render() {
@@ -213,5 +209,4 @@ export class DrawCoordsButton extends React.Component<DCBProperties, {}> {
 
 export function openGameLogModal(config: any, black: any, white: any, game: Game): void {
     openModal(<GameLogModal config={config} black={black} white={white} game={game} fastDismiss />);
-    //console.log(game);
 }
