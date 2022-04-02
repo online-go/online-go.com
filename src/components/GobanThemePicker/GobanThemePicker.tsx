@@ -92,8 +92,6 @@ export class GobanThemePicker extends React.PureComponent<
         setTimeout(() => this.renderPickers(), 50);
     }
 
-    componentWillUnmount() {}
-
     getCustom(key: keyof CustomGobanThemeSchema): string {
         return data.get(`custom.${key}`);
     }

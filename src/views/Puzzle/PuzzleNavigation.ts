@@ -20,8 +20,6 @@ import { Goban } from "goban";
 export class PuzzleNavigation {
     _goban: Goban;
 
-    constructor() {}
-
     set goban(newValue: Goban) {
         this._goban = newValue;
     }

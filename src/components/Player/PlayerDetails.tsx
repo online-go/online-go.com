@@ -140,7 +140,6 @@ export class PlayerDetails extends React.PureComponent<
             }, 1);
         }
     }
-    componentWillUnmount() {}
 
     close_all_modals_and_popovers = () => {
         close_all_popovers();

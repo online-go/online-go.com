@@ -154,7 +154,6 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
 
         this.socket.on("connect", this.onConnect);
-        this.socket.on("disconnect", this.onDisconnect);
         this.socket.on("seekgraph/global", this.onSeekgraphGlobal);
         this.canvas.on("mousemove", this.onPointerMove);
         this.canvas.on("mouseout", this.onPointerOut);
@@ -171,7 +170,6 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
         return bounded_rank(user);
     }
-    onDisconnect = () => {};
     onConnect = () => {
         this.connected = true;
         this.socket.send("seek_graph/connect", { channel: "global" });
@@ -322,7 +320,6 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
 
         this.socket.off("connect", this.onConnect);
-        this.socket.off("disconnect", this.onDisconnect);
         this.socket.off("seekgraph/global", this.onSeekgraphGlobal);
 
         $(document).off("touchend", this.onTouchEnd);

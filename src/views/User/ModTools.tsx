@@ -36,7 +36,7 @@ interface ModToolsProps {
 
 export function ModTools(props: ModToolsProps): JSX.Element {
     const moderator_note = React.useRef<HTMLTextAreaElement>(null);
-    const addModeratorNote = () => {
+    const addModeratorNote = async () => {
         const txt = moderator_note.current.value.trim();
 
         if (txt.length < 2) {
@@ -46,9 +46,7 @@ export function ModTools(props: ModToolsProps): JSX.Element {
 
         put(`players/${props.user_id}/moderate`, {
             moderation_note: txt,
-        })
-            .then(() => {})
-            .catch(errorAlerter);
+        }).catch(errorAlerter);
 
         moderator_note.current.value = "";
     };

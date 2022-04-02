@@ -63,7 +63,6 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
         this.refresh();
     }
 
-    componentWillUnmount() {}
     refresh = () => {
         get(this.url)
             .then((acl) => this.setState({ acl: acl }))

@@ -164,8 +164,6 @@ export function Report(props: ReportProperties): JSX.Element {
         }
     }
 
-    function save() {}
-
     function canSubmit() {
         if (!category) {
             return false;
@@ -299,10 +297,15 @@ export function Report(props: ReportProperties): JSX.Element {
                     {_("Close")}
                 </button>
                 {report_id ? (
-                    <button className="primary" onClick={save}>
-                        {" "}
-                        {_("Save")}
-                    </button>
+                    <>
+                        {/*
+                        save() is noop & so removed for eslint; commenting for now
+                        <button className="primary" onClick={save}>
+                            {" "}
+                            {_("Save")}
+                        </button>
+                        */}
+                    </>
                 ) : (
                     <button className="primary" onClick={createReport} disabled={!canSubmit()}>
                         {" "}
