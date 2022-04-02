@@ -40,11 +40,14 @@ export class ModNoteModal extends Modal<Events, ModNoteModalProperties, any> {
         };
     }
 
-    submitNote = () => {
-        put(`players/${this.props.player_id}/moderate`, {
-            moderation_note: this.state.current_draft,
-        }).catch(errorAlerter);
-
+    submitNote = async () => {
+        try {
+            await put(`players/${this.props.player_id}/moderate`, {
+                moderation_note: this.state.current_draft,
+            });
+        } catch (e) {
+            errorAlerter(e);
+        }
         this.close();
     };
 

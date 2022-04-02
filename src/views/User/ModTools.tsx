@@ -44,9 +44,13 @@ export function ModTools(props: ModToolsProps): JSX.Element {
             return;
         }
 
-        put(`players/${props.user_id}/moderate`, {
-            moderation_note: txt,
-        }).catch(errorAlerter);
+        try {
+            await put(`players/${props.user_id}/moderate`, {
+                moderation_note: txt,
+            });
+        } catch (e) {
+            errorAlerter(e);
+        }
 
         moderator_note.current.value = "";
     };
