@@ -893,8 +893,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                         onChange={this.update_rengo_casual}
                                     />
                                     <a
-                                        href="https://github.com/online-go/online-go.com/wiki/OGS-Joseki-Explorer"
+                                        href="https://forums.online-go.com/t/how-does-rengo-work-at-ogs/42484"
                                         className="help"
+                                        target="_blank"
                                     >
                                         <i className="fa fa-question-circle-o"></i>
                                     </a>
