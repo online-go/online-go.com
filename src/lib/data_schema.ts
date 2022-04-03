@@ -199,7 +199,7 @@ export interface DataSchema
     "last-visited-since-goals-shown": string;
     "hours-visited-since-goals-shown": number;
     "table-color-default-on": boolean;
-    "joseki-url": string;
+    "oje-url": string;
     "ad-override": boolean;
     "email-banner-dismissed": boolean;
     "active-tournament": Announcement;
