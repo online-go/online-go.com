@@ -892,6 +892,12 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                         checked={this.state.challenge.game.rengo_casual_mode}
                                         onChange={this.update_rengo_casual}
                                     />
+                                    <a
+                                        href="https://github.com/online-go/online-go.com/wiki/OGS-Joseki-Explorer"
+                                        className="help"
+                                    >
+                                        <i className="fa fa-question-circle-o"></i>
+                                    </a>
                                 </div>
                             </div>
                         </div>
