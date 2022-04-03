@@ -125,7 +125,6 @@ export const report_categories: Array<ReportDescription> = [
 
 export function Report(props: ReportProperties): JSX.Element {
     const {
-        report_id,
         reported_user_id,
         onClose,
         reported_conversation,
@@ -296,22 +295,10 @@ export function Report(props: ReportProperties): JSX.Element {
                 <button className="default" onClick={close}>
                     {_("Close")}
                 </button>
-                {report_id ? (
-                    <>
-                        {/*
-                        save() is noop & so removed for eslint; commenting for now
-                        <button className="primary" onClick={save}>
-                            {" "}
-                            {_("Save")}
-                        </button>
-                        */}
-                    </>
-                ) : (
-                    <button className="primary" onClick={createReport} disabled={!canSubmit()}>
-                        {" "}
-                        {_("Report User")}
-                    </button>
-                )}
+                <button className="primary" onClick={createReport} disabled={!canSubmit()}>
+                    {" "}
+                    {_("Report User")}
+                </button>
             </div>
         </Card>
     );
