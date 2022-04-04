@@ -365,9 +365,6 @@ paths:
         "404":
           description: "Not Found"
 
-# https://online-go.com/api/v1/groups/446/banner → seems to work while /icon doesn’t for some reason.
-
-
 #------ladders------   
 
   /ladders:
@@ -794,9 +791,6 @@ paths:
         "404":
           description: "Not Found"
 
-# https://online-go.com/api/v1/puzzles/collections → puzzle collections
-# https://online-go.com/api/v1/puzzles/collections?id=3137 → specific puzzle collections
-          
 #------tournaments------
 
   /tournaments:
