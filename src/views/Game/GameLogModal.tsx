@@ -21,16 +21,14 @@ import { _ } from "translate";
 import { openModal, Modal } from "Modal";
 import { Player } from "Player";
 import { socket } from "sockets";
-import { GoMath } from "goban";
-import { Game } from "./Game";
+import { GoMath, Goban } from "goban";
 
 interface Events {}
 
 interface GameLogModalProperties {
-    config: any;
+    goban: Goban;
     black: any;
     white: any;
-    game: Game;
 }
 
 interface LogEntry {
@@ -40,6 +38,8 @@ interface LogEntry {
 }
 
 export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: Array<LogEntry> }> {
+    config: any;
+
     constructor(props) {
         super(props);
 
@@ -47,8 +47,8 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
             log: [],
         };
 
-        const config = this.props.config;
-        const game_id = config.game_id;
+        this.config = this.props.goban.config;
+        const game_id = this.config.game_id;
         socket.send(`game/log`, { game_id }, (log) => this.setLog(log));
     }
 
@@ -58,12 +58,11 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
     }
 
     render() {
-        const config = this.props.config;
         return (
             <div className="Modal GameLogModal" ref="modal">
                 <div className="header">
                     <div>
-                        <h2>{config.game_name}</h2>
+                        <h2>{this.config.game_name}</h2>
                         <h3>
                             <Player disableCacheUpdate icon rank user={this.props.black} />{" "}
                             {_("vs.")}{" "}
@@ -89,10 +88,9 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
                                     <td className="event">{entry.event}</td>
                                     <td className="data">
                                         <LogData
-                                            config={this.props.config}
+                                            goban={this.props.goban}
                                             event={entry.event}
                                             data={entry.data}
-                                            game={this.props.game}
                                         />
                                     </td>
                                 </tr>
@@ -108,21 +106,12 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
     }
 }
 
-function LogData({
-    config,
-    event,
-    data,
-    game,
-}: {
-    config: any;
-    event: string;
-    data: any;
-    game: Game;
-}): JSX.Element {
+function LogData({ goban, event, data }: { goban: Goban; event: string; data: any }): JSX.Element {
     if (event === "game_created") {
         return null;
     }
 
+    const config = goban.config;
     const ret: Array<JSX.Element> = [];
 
     if (data) {
@@ -145,14 +134,7 @@ function LogData({
                         .map((mv) => GoMath.prettyCoords(mv.x, mv.y, config.height))
                         .join(", ");
 
-                    ret.push(
-                        <DrawCoordsButton
-                            stones={stones}
-                            config={config}
-                            key={k}
-                            game={game}
-                        ></DrawCoordsButton>,
-                    );
+                    ret.push(<DrawCoordsButton stones={stones} goban={goban} key={k} />);
                 } else {
                     ret.push(
                         <span key={k} className="field">
@@ -171,9 +153,8 @@ function LogData({
 }
 
 interface DCBProperties {
-    game: Game;
+    goban: Goban;
     stones: string;
-    config: any;
 }
 
 export class DrawCoordsButton extends React.Component<DCBProperties, {}> {
@@ -184,21 +165,21 @@ export class DrawCoordsButton extends React.Component<DCBProperties, {}> {
     markCoords(stones_string: string, config) {
         for (let i = 0; i < config.width; i++) {
             for (let j = 0; j < config.height; j++) {
-                this.props.game.goban.deleteCustomMark(i, j, "triangle", true);
+                this.props.goban.deleteCustomMark(i, j, "triangle", true);
             }
         }
 
         const coordarray = stones_string.split(",").map((item) => item.trim());
         for (let j = 0; j < coordarray.length; j++) {
             const move = GoMath.decodeMoves(coordarray[j], config.width, config.height)[0];
-            this.props.game.goban.setMark(move.x, move.y, "triangle", false);
+            this.props.goban.setMark(move.x, move.y, "triangle", false);
         }
     }
 
     render() {
         return (
             <a
-                onClick={() => this.markCoords(this.props.stones, this.props.config)}
+                onClick={() => this.markCoords(this.props.stones, this.props.goban.config)}
                 className="field"
             >
                 {this.props.stones}
@@ -207,6 +188,6 @@ export class DrawCoordsButton extends React.Component<DCBProperties, {}> {
     }
 }
 
-export function openGameLogModal(config: any, black: any, white: any, game: Game): void {
-    openModal(<GameLogModal config={config} black={black} white={white} game={game} fastDismiss />);
+export function openGameLogModal(goban: any, black: any, white: any): void {
+    openModal(<GameLogModal goban={goban} black={black} white={white} fastDismiss />);
 }
