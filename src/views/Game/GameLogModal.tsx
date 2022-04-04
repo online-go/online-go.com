@@ -21,12 +21,13 @@ import { _ } from "translate";
 import { openModal, Modal } from "Modal";
 import { Player } from "Player";
 import { socket } from "sockets";
-import { GoMath, Goban } from "goban";
+import { GoMath } from "goban";
 
 interface Events {}
 
 interface GameLogModalProperties {
-    goban: Goban;
+    config: any;
+    markCoords: any;
     black: any;
     white: any;
 }
@@ -47,7 +48,7 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
             log: [],
         };
 
-        this.config = this.props.goban.config;
+        this.config = this.props.config;
         const game_id = this.config.game_id;
         socket.send(`game/log`, { game_id }, (log) => this.setLog(log));
     }
@@ -88,7 +89,8 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
                                     <td className="event">{entry.event}</td>
                                     <td className="data">
                                         <LogData
-                                            goban={this.props.goban}
+                                            config={this.config}
+                                            markCoords={this.props.markCoords}
                                             event={entry.event}
                                             data={entry.data}
                                         />
@@ -106,12 +108,21 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
     }
 }
 
-function LogData({ goban, event, data }: { goban: Goban; event: string; data: any }): JSX.Element {
+function LogData({
+    config,
+    markCoords,
+    event,
+    data,
+}: {
+    config: any;
+    markCoords: any;
+    event: string;
+    data: any;
+}): JSX.Element {
     if (event === "game_created") {
         return null;
     }
 
-    const config = goban.config;
     const ret: Array<JSX.Element> = [];
 
     if (data) {
@@ -134,7 +145,7 @@ function LogData({ goban, event, data }: { goban: Goban; event: string; data: an
                         .map((mv) => GoMath.prettyCoords(mv.x, mv.y, config.height))
                         .join(", ");
 
-                    ret.push(<DrawCoordsButton stones={stones} goban={goban} key={k} />);
+                    ret.push(<DrawCoordsButton stones={stones} markCoords={markCoords} key={k} />);
                 } else {
                     ret.push(
                         <span key={k} className="field">
@@ -153,41 +164,37 @@ function LogData({ goban, event, data }: { goban: Goban; event: string; data: an
 }
 
 interface DCBProperties {
-    goban: Goban;
+    markCoords: any;
     stones: string;
 }
 
 export class DrawCoordsButton extends React.Component<DCBProperties, {}> {
     constructor(props: DCBProperties) {
         super(props);
+        this.handleMarkCoords = this.handleMarkCoords.bind(this);
     }
 
-    markCoords(stones_string: string, config) {
-        for (let i = 0; i < config.width; i++) {
-            for (let j = 0; j < config.height; j++) {
-                this.props.goban.deleteCustomMark(i, j, "triangle", true);
-            }
-        }
-
-        const coordarray = stones_string.split(",").map((item) => item.trim());
-        for (let j = 0; j < coordarray.length; j++) {
-            const move = GoMath.decodeMoves(coordarray[j], config.width, config.height)[0];
-            this.props.goban.setMark(move.x, move.y, "triangle", false);
-        }
+    handleMarkCoords() {
+        this.props.markCoords(this.props.stones);
     }
 
     render() {
         return (
-            <a
-                onClick={() => this.markCoords(this.props.stones, this.props.goban.config)}
-                className="field"
-            >
+            <a onClick={this.handleMarkCoords} className="field">
                 {this.props.stones}
             </a>
         );
     }
 }
 
-export function openGameLogModal(goban: any, black: any, white: any): void {
-    openModal(<GameLogModal goban={goban} black={black} white={white} fastDismiss />);
+export function openGameLogModal(config: any, markCoords: any, black: any, white: any): void {
+    openModal(
+        <GameLogModal
+            config={config}
+            markCoords={markCoords}
+            black={black}
+            white={white}
+            fastDismiss
+        />,
+    );
 }
