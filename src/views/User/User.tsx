@@ -78,7 +78,6 @@ interface UserState extends Partial<rest_api.PlayerDetails> {
 }
 
 export class User extends React.PureComponent<UserProperties, UserState> {
-    user_id: number; // BPJ: This is used, but could also be grabbed directly from props
     show_mod_log: boolean; // BPJ: This is used, but could also be grabbed directly from props
 
     constructor(props: UserProperties) {
@@ -114,8 +113,13 @@ export class User extends React.PureComponent<UserProperties, UserState> {
     }
     resolve(props: UserProperties) {
         this.setState({ user: undefined, editing: /edit/.test(window.location.hash) });
-        this.user_id = parseInt(props.match.params.user_id) || data.get("user")?.id || 0;
-        get("players/%%/full", this.user_id)
+        const user_id = parseInt(props.match.params.user_id) || data.get("user")?.id;
+        if (user_id === undefined) {
+            console.error("invalid user id: ", props.match.params.user_id);
+            this.setState({ user: undefined, resolved: true });
+            return;
+        }
+        get("players/%%/full", user_id)
             .then((response: rest_api.PlayerDetails) => {
                 this.setState({ resolved: true });
                 try {
@@ -148,8 +152,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                 name: `${profile_card_changes.first_name} ${profile_card_changes.last_name}`,
             }),
         });
-        if (this.user_id && this.state.user) {
-            put("players/%%", this.user_id, {
+        if (this.state.user) {
+            put("players/%%", this.state.user.id, {
                 ...profile_card_changes,
                 about: this.state.user.about,
             })
@@ -232,14 +236,14 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                             <div className="ratings-chart">
                                 {this.state.rating_graph_plot_by_games ? (
                                     <RatingsChartByGame
-                                        playerId={this.user_id}
+                                        playerId={user.id}
                                         speed={this.state.selected_speed}
                                         size={this.state.selected_size}
                                         updateChartSize={this.updateTogglePosition}
                                     />
                                 ) : (
                                     <RatingsChart
-                                        playerId={this.user_id}
+                                        playerId={user.id}
                                         speed={this.state.selected_speed}
                                         size={this.state.selected_size}
                                         updateChartSize={this.updateTogglePosition}
@@ -275,7 +279,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                 )}
 
                 {(data.get("user")?.is_moderator || null) && (
-                    <ModTools user_id={this.user_id} show_mod_log={this.show_mod_log} />
+                    <ModTools user_id={user.id} show_mod_log={this.show_mod_log} />
                 )}
 
                 <div className="row">
@@ -311,11 +315,11 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                         )}
 
                         <div className="row">
-                            <GameHistoryTable user_id={this.user_id} />
+                            <GameHistoryTable user_id={user.id} />
                         </div>
 
                         <div className="row">
-                            <ReviewsAndDemosTable user_id={this.user_id} />
+                            <ReviewsAndDemosTable user_id={user.id} />
                         </div>
                     </div>
 
