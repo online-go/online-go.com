@@ -189,7 +189,6 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
             show_player_list: !this.state.show_player_list,
         });
     };
-    togglePlayerListSortOrder = () => {};
 
     sendQuickChat = (msg: string) => {
         this.props.gameview.goban.sendChat(msg, this.state.chat_log);

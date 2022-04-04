@@ -188,7 +188,9 @@ data.watch("config.user", (user) => {
 
     if (last_username && last_username !== user.username) {
         last_username = user.username;
-        forceReactUpdate();
+        if (forceReactUpdate) {
+            forceReactUpdate();
+        }
     }
     last_username = user.username;
 });
@@ -329,7 +331,7 @@ init_tabcomplete();
 const svg_loader = document.getElementById("loading-svg-container");
 svg_loader.parentNode.removeChild(svg_loader);
 
-let forceReactUpdate: () => void = () => {};
+let forceReactUpdate: () => void;
 
 function ForceReactUpdateWrapper(props): JSX.Element {
     const [update, setUpdate] = React.useState(1);

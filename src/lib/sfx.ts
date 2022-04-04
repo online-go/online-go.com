@@ -350,7 +350,6 @@ export class SFXManager {
         [id: string]: SFXSprite;
     } = {};
 
-    constructor() {}
     public enable(): void {
         this.enabled = true;
         this.sync();

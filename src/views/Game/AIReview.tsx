@@ -123,7 +123,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             this.max_entries = ai_table_out.max_entries;
         }
     }
-    componentWillUnmount() {}
 
     getGameId(props?: AIReviewProperties) {
         if (!props) {

@@ -40,14 +40,18 @@ export class ModNoteModal extends Modal<Events, ModNoteModalProperties, any> {
         };
     }
 
-    submitNote = () => {
-        put(`players/${this.props.player_id}/moderate`, {
-            moderation_note: this.state.current_draft,
-        })
-            .then(() => {})
-            .catch(errorAlerter);
-
+    submitNote = async () => {
         this.close();
+        try {
+            await put(`players/${this.props.player_id}/moderate`, {
+                moderation_note: this.state.current_draft,
+            });
+        } catch (e) {
+            // since errorAlerter doesn't access the state of ModNoteModal,
+            // it's okay for this action to happen after the modal is
+            // closed
+            errorAlerter(e);
+        }
     };
 
     updateDraft = (e) => {
