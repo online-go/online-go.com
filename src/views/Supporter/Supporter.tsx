@@ -178,8 +178,6 @@ function load_checkout_libraries(): void {
             };
             document.head.appendChild(script);
         });
-
-        paddle_js_promise.then(() => {}).catch(ignore);
     }
 }
 

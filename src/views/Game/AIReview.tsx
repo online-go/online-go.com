@@ -123,7 +123,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             this.max_entries = ai_table_out.max_entries;
         }
     }
-    componentWillUnmount() {}
 
     getGameId(props?: AIReviewProperties) {
         if (!props) {
@@ -1274,7 +1273,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                                 >
                                                     <i className="fa fa-plus" /> KataGo
                                                 </button>
-                                                {((goban.width === 19 && goban.height === 19) ||
+                                                {((goban.width === 19 &&
+                                                    goban.height === 19 &&
+                                                    false) ||
                                                     null) && (
                                                     <button
                                                         onClick={() =>

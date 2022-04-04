@@ -30,7 +30,7 @@ interface PopupCoordinates {
 
 interface PopoverConfig {
     elt: React.ReactElement<any>;
-    at?: PopupCoordinates;
+    at?: PopupCoordinates; // Relative to window origin
     below?: React.ReactInstance;
     minWidth?: number;
     minHeight?: number;

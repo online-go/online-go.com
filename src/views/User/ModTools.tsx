@@ -36,7 +36,7 @@ interface ModToolsProps {
 
 export function ModTools(props: ModToolsProps): JSX.Element {
     const moderator_note = React.useRef<HTMLTextAreaElement>(null);
-    const addModeratorNote = () => {
+    const addModeratorNote = async () => {
         const txt = moderator_note.current.value.trim();
 
         if (txt.length < 2) {
@@ -44,13 +44,15 @@ export function ModTools(props: ModToolsProps): JSX.Element {
             return;
         }
 
-        put(`players/${props.user_id}/moderate`, {
-            moderation_note: txt,
-        })
-            .then(() => {})
-            .catch(errorAlerter);
-
         moderator_note.current.value = "";
+
+        try {
+            await put(`players/${props.user_id}/moderate`, {
+                moderation_note: txt,
+            });
+        } catch (e) {
+            errorAlerter(e);
+        }
     };
 
     const moderator_log_anchor = React.useRef<HTMLDivElement>(null);

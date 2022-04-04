@@ -28,8 +28,6 @@ export function AppealsCenter(): JSX.Element {
     const user = data.get("user");
     const [show_all, set_show_all] = React.useState(false);
 
-    React.useEffect(() => {}, []);
-
     if (!user.is_moderator) {
         return null;
     }

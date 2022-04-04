@@ -199,7 +199,6 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             this.fetchPuzzle(parseInt(next_props.match.params.puzzle_id));
         }
     }
-    componentWillUnmount() {}
     componentDidUpdate() {
         this.onResize();
     }
