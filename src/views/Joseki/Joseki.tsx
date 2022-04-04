@@ -41,7 +41,7 @@ import { JosekiTagSelector } from "JosekiTagSelector";
 import { Throbber } from "Throbber";
 import { IdType } from "src/lib/types";
 
-const server_url = data.get("joseki-url", "/oje/");
+const server_url = data.get("oje-url", "/oje/");
 
 const prefetch_url = (node_id: string, variation_filter?: any, mode?: string) => {
     let prefetch_url = server_url + "positions?id=" + node_id;
@@ -1144,17 +1144,6 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
         this.setState({ db_locked_down: new_status });
     };
 
-    toggleBackend = () => {
-        const current_setting = data.get("joseki-url", "unset");
-        if (current_setting === "/oje/" || current_setting === "unset") {
-            data.set("joseki-url", "/godojo/");
-        } else {
-            data.set("joseki-url", "/oje/");
-        }
-
-        window.location.assign("/joseki/");
-    };
-
     render() {
         /* console.log(
             "Joseki app rendering ",
@@ -1193,15 +1182,6 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
                           <span>{tag["description"]}</span>
                       </div>
                   ));
-
-        let backend = "?";
-        const current_setting = data.get("joseki-url");
-        if (current_setting === "/oje/" || current_setting === undefined) {
-            backend = "new";
-        }
-        if (current_setting === "/godojo/") {
-            backend = "old";
-        }
 
         return (
             <div className={"Joseki"}>
@@ -1269,10 +1249,6 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
                             >
                                 <i className="fa fa-question-circle-o"></i>
                             </a>
-                            <div className="backend-control">
-                                <i className="fa fa-exchange" onClick={this.toggleBackend}></i>
-                                <span>{backend}</span>
-                            </div>
                         </div>
                     </div>
 
