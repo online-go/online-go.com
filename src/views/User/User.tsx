@@ -113,8 +113,8 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         }
     }
     resolve(props: UserProperties) {
-        this.setState({ user: null, editing: /edit/.test(window.location.hash) });
-        this.user_id = parseInt(props.match.params.user_id) || data.get("user").id;
+        this.setState({ user: undefined, editing: /edit/.test(window.location.hash) });
+        this.user_id = parseInt(props.match.params.user_id) || data.get("user")?.id || 0;
         get("players/%%/full", this.user_id)
             .then((response: rest_api.PlayerDetails) => {
                 this.setState({ resolved: true });
@@ -132,7 +132,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             })
             .catch((err) => {
                 console.error(err);
-                this.setState({ user: null, resolved: true });
+                this.setState({ user: undefined, resolved: true });
             });
     }
     toggleRatings = () => {
@@ -148,12 +148,14 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                 name: `${profile_card_changes.first_name} ${profile_card_changes.last_name}`,
             }),
         });
-        put("players/%%", this.user_id, {
-            ...profile_card_changes,
-            about: this.state.user.about,
-        })
-            .then(console.log)
-            .catch(errorAlerter);
+        if (this.user_id && this.state.user) {
+            put("players/%%", this.user_id, {
+                ...profile_card_changes,
+                about: this.state.user.about,
+            })
+                .then(console.log)
+                .catch(errorAlerter);
+        }
     }
     openModerateUser = () => {
         const modal = openModerateUserModal(this.state.user);
@@ -173,17 +175,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         }
         const editing = this.state.editing;
         const showRatings = this.state.temporary_show_ratings;
-
-        /* any dom binding stuff needs to happen after the template has been
-         * processed and added to the dom, this can be done with a 0ms timer */
-        const doDomWork = () => {
-            try {
-                $("#user-su-is-bot").prop("checked", this.state.user.is_bot);
-            } catch (e) {
-                console.log(e.stack);
-            }
-        };
-        setTimeout(doDomWork, 0);
 
         const global_user = data.get("config.user");
         const cdn_release = data.get("config.cdn_release");
@@ -310,12 +301,14 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                             </Card>
                         )}
 
-                        {(this.state.active_games.length > 0 || null) && (
-                            <h2>
-                                {_("Active Games")} ({this.state.active_games.length})
-                            </h2>
+                        {this.state.active_games != null && this.state.active_games.length > 0 && (
+                            <>
+                                <h2>
+                                    {_("Active Games")} ({this.state.active_games.length})
+                                </h2>
+                                <GameList list={this.state.active_games} player={user} />
+                            </>
                         )}
-                        <GameList list={this.state.active_games} player={user} />
 
                         <div className="row">
                             <GameHistoryTable user_id={this.user_id} />
@@ -338,98 +331,98 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                         </Card>
                                     )}
 
-                                {(this.state.achievements.length > 0 || null) && (
-                                    <Card>
-                                        <h3>{_("Achievements")}</h3>
-                                        <AchievementList list={this.state.achievements} />
-                                    </Card>
-                                )}
+                                {this.state.achievements != null &&
+                                    this.state.achievements.length > 0 && (
+                                        <Card>
+                                            <h3>{_("Achievements")}</h3>
+                                            <AchievementList list={this.state.achievements} />
+                                        </Card>
+                                    )}
 
-                                {(this.state.titles.length > 0 ||
-                                    this.state.trophies.length > 0 ||
-                                    null) && (
-                                    <Card>
-                                        <h3>{_("Trophies")}</h3>
+                                {this.state.titles != null &&
+                                    this.state.trophies != null &&
+                                    (this.state.titles.length > 0 ||
+                                        this.state.trophies.length > 0) && (
+                                        <Card>
+                                            <h3>{_("Trophies")}</h3>
 
-                                        {this.state.titles.length > 0 && (
-                                            <div className="trophies">
-                                                {this.state.titles.map((title, idx) => (
-                                                    <img
-                                                        key={idx}
-                                                        className="trophy"
-                                                        src={`${cdn_release}/img/trophies/${title.icon}`}
-                                                        title={title.title}
-                                                    />
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {this.state.trophies.length > 0 && (
-                                            <div className="trophies">
-                                                {this.state.trophies.map((trophy, idx) => (
-                                                    <a
-                                                        key={idx}
-                                                        href={
-                                                            trophy.tournament_id
-                                                                ? "/tournament/" +
-                                                                  trophy.tournament_id
-                                                                : "#"
-                                                        }
-                                                    >
+                                            {this.state.titles.length > 0 && (
+                                                <div className="trophies">
+                                                    {this.state.titles.map((title, idx) => (
                                                         <img
+                                                            key={idx}
                                                             className="trophy"
-                                                            src={`${cdn_release}/img/trophies/${trophy.icon}`}
-                                                            title={trophy.title}
+                                                            src={`${cdn_release}/img/trophies/${title.icon}`}
+                                                            title={title.title}
                                                         />
-                                                    </a>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {(user.id === 519197 || null) && (
-                                            <React.Fragment>
-                                                <hr />
-                                                <div className="SpicyDragon-trophy">
-                                                    <img
-                                                        src="https://cdn.online-go.com/spicydragon/spicydragon400.jpg"
-                                                        width={400}
-                                                        height={340}
-                                                    />
-                                                    <div>
-                                                        {pgettext(
-                                                            "Special trophy for a professional go player",
-                                                            "1004 simultaneous correspondence games",
-                                                        )}
-                                                    </div>
-                                                    <div>
-                                                        {moment("2020-07-20T14:38:37").format(
-                                                            "LLLL",
-                                                        )}
-                                                    </div>
+                                                    ))}
                                                 </div>
-                                            </React.Fragment>
-                                        )}
-                                    </Card>
-                                )}
+                                            )}
+
+                                            {this.state.trophies.length > 0 && (
+                                                <div className="trophies">
+                                                    {this.state.trophies.map((trophy, idx) => (
+                                                        <a
+                                                            key={idx}
+                                                            href={
+                                                                trophy.tournament_id
+                                                                    ? "/tournament/" +
+                                                                      trophy.tournament_id
+                                                                    : "#"
+                                                            }
+                                                        >
+                                                            <img
+                                                                className="trophy"
+                                                                src={`${cdn_release}/img/trophies/${trophy.icon}`}
+                                                                title={trophy.title}
+                                                            />
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {(user.id === 519197 || null) && (
+                                                <React.Fragment>
+                                                    <hr />
+                                                    <div className="SpicyDragon-trophy">
+                                                        <img
+                                                            src="https://cdn.online-go.com/spicydragon/spicydragon400.jpg"
+                                                            width={400}
+                                                            height={340}
+                                                        />
+                                                        <div>
+                                                            {pgettext(
+                                                                "Special trophy for a professional go player",
+                                                                "1004 simultaneous correspondence games",
+                                                            )}
+                                                        </div>
+                                                        <div>
+                                                            {moment("2020-07-20T14:38:37").format(
+                                                                "LLLL",
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </React.Fragment>
+                                            )}
+                                        </Card>
+                                    )}
                             </div>
                         )}
 
-                        {this.state.vs.wins + this.state.vs.losses + this.state.vs.draws > 0 && (
-                            <div>
-                                <VersusCard
-                                    {...this.state.vs}
-                                    username={this.state.user.username}
-                                />
-                            </div>
-                        )}
+                        {this.state.vs != null &&
+                            this.state.vs.wins + this.state.vs.losses + this.state.vs.draws > 0 && (
+                                <div>
+                                    <VersusCard {...this.state.vs} username={user.username} />
+                                </div>
+                            )}
 
                         {user.is_bot &&
                             user.bot_owner &&
-                            user.bot_owner.id === data.get("user").id && (
+                            user.bot_owner.id === data.get("user")?.id && (
                                 <BotControls
-                                    bot_ai={this.state.bot_ai}
-                                    bot_apikey={this.state.bot_apikey}
-                                    bot_id={this.state.user.id}
+                                    bot_ai={this.state.bot_ai ?? ""}
+                                    bot_apikey={this.state.bot_apikey ?? ""}
+                                    bot_id={user.id}
                                     onBotAiChanged={(bot_ai) => this.setState({ bot_ai: bot_ai })}
                                     onBotApiKeyChanged={(bot_apikey) =>
                                         this.setState({ bot_apikey: bot_apikey })
@@ -602,17 +595,17 @@ function AssociationLink({
     id,
     rank,
 }: {
-    country: string;
+    country?: string;
     id?: string;
     rank?: string;
-}): JSX.Element {
+}): JSX.Element | null {
     try {
         if (!country) {
             return null;
         }
 
         const association = associations.filter((a) => a.country === country)[0];
-        let linker: (id: string) => string;
+        let linker: ((id: string) => string) | undefined;
 
         if (country === "us") {
             linker = (id: string) => `https://agagd.usgo.org/player/${id}/`;
@@ -646,7 +639,15 @@ function AssociationLink({
     }
 }
 
-function ServerLink({ name, id, rank }: { name: string; id?: string; rank?: string }): JSX.Element {
+function ServerLink({
+    name,
+    id,
+    rank,
+}: {
+    name: string;
+    id?: string;
+    rank?: string;
+}): JSX.Element | null {
     if (!id && !rank) {
         return null;
     }

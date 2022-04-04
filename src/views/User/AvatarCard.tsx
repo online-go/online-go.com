@@ -47,7 +47,7 @@ interface AvatarCardUserType extends AvatarCardEditableFields {
     is_moderator: boolean;
     timeout_provisional: boolean;
     supporter: boolean;
-    ui_class_extra: string;
+    ui_class_extra: string | null;
     on_vacation: boolean;
     name: string;
     is_bot: boolean;

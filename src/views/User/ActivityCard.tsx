@@ -31,17 +31,17 @@ interface ActivityCardUser {
 
 interface ActivityCardProps {
     user: ActivityCardUser;
-    ladders: Array<{
+    ladders?: Array<{
         id: number;
         name: string;
         rank: number;
     }>;
-    groups: Array<{
+    groups?: Array<{
         id: number;
         name: string;
         icon: string;
     }>;
-    tournaments: Array<{
+    tournaments?: Array<{
         id: number;
         name: string;
         icon: string;
@@ -58,7 +58,7 @@ export function ActivityCard({ user, ladders, groups, tournaments }: ActivityCar
             {!user.on_vacation && <div>{vacationAccrued(user.vacation_left, user)}</div>}
             {user.on_vacation && <div>{_("User On Vacation")}</div>}
             <h4>{_("Ladders")}</h4>
-            {ladders.length ? (
+            {ladders?.length ? (
                 <div>
                     <dl className="activity-dl">
                         {ladders.map((ladder, idx) => (
@@ -76,7 +76,7 @@ export function ActivityCard({ user, ladders, groups, tournaments }: ActivityCar
             )}
 
             <h4>{_("Tournaments")}</h4>
-            {tournaments.length ? (
+            {tournaments?.length ? (
                 <div>
                     <dl className="activity-dl">
                         {tournaments.map((tournament, idx) => (
@@ -95,7 +95,7 @@ export function ActivityCard({ user, ladders, groups, tournaments }: ActivityCar
             )}
 
             <h4>{_("Groups")}</h4>
-            {groups.length ? (
+            {groups?.length ? (
                 <div>
                     <dl className="activity-dl">
                         {groups.map((group, idx) => (
