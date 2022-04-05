@@ -27,6 +27,7 @@ interface Events {}
 
 interface GameLogModalProperties {
     config: any;
+    markCoords: any;
     black: any;
     white: any;
 }
@@ -38,6 +39,8 @@ interface LogEntry {
 }
 
 export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: Array<LogEntry> }> {
+    config: any;
+
     constructor(props) {
         super(props);
 
@@ -56,13 +59,11 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
     }
 
     render() {
-        const config = this.props.config;
-
         return (
             <div className="Modal GameLogModal" ref="modal">
                 <div className="header">
                     <div>
-                        <h2>{config.game_name}</h2>
+                        <h2>{this.props.config.game_name}</h2>
                         <h3>
                             <Player disableCacheUpdate icon rank user={this.props.black} />{" "}
                             {_("vs.")}{" "}
@@ -89,6 +90,7 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
                                     <td className="data">
                                         <LogData
                                             config={this.props.config}
+                                            markCoords={this.props.markCoords}
                                             event={entry.event}
                                             data={entry.data}
                                         />
@@ -106,7 +108,17 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
     }
 }
 
-function LogData({ config, event, data }: { config: any; event: string; data: any }): JSX.Element {
+function LogData({
+    config,
+    markCoords,
+    event,
+    data,
+}: {
+    config: any;
+    markCoords: (stones: string) => void;
+    event: string;
+    data: any;
+}): JSX.Element {
     if (event === "game_created") {
         return null;
     }
@@ -133,11 +145,7 @@ function LogData({ config, event, data }: { config: any; event: string; data: an
                         .map((mv) => GoMath.prettyCoords(mv.x, mv.y, config.height))
                         .join(", ");
 
-                    ret.push(
-                        <span key={k} className="field">
-                            {stones}
-                        </span>,
-                    );
+                    ret.push(<DrawCoordsButton stones={stones} markCoords={markCoords} key={k} />);
                 } else {
                     ret.push(
                         <span key={k} className="field">
@@ -155,6 +163,43 @@ function LogData({ config, event, data }: { config: any; event: string; data: an
     return <div>{ret}</div>;
 }
 
-export function openGameLogModal(config: any, black: any, white: any): void {
-    openModal(<GameLogModal config={config} black={black} white={white} fastDismiss />);
+interface DCBProperties {
+    markCoords: any;
+    stones: string;
+}
+
+export class DrawCoordsButton extends React.Component<DCBProperties, {}> {
+    constructor(props: DCBProperties) {
+        super(props);
+        this.handleMarkCoords = this.handleMarkCoords.bind(this);
+    }
+
+    handleMarkCoords() {
+        this.props.markCoords(this.props.stones);
+    }
+
+    render() {
+        return (
+            <a onClick={this.handleMarkCoords} className="field">
+                {this.props.stones}
+            </a>
+        );
+    }
+}
+
+export function openGameLogModal(
+    config: any,
+    markCoords: (stones: string) => void,
+    black: any,
+    white: any,
+): void {
+    openModal(
+        <GameLogModal
+            config={config}
+            markCoords={markCoords}
+            black={black}
+            white={white}
+            fastDismiss
+        />,
+    );
 }

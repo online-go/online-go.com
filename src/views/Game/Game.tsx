@@ -258,6 +258,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         this.nav_next_10 = this.nav_next_10.bind(this);
         this.nav_last = this.nav_last.bind(this);
         this.nav_play_pause = this.nav_play_pause.bind(this);
+        this.gameLogModalMarkCoords = this.gameLogModalMarkCoords.bind(this);
 
         this.reviewAdded = this.reviewAdded.bind(this);
         this.set_analyze_tool = {
@@ -1679,13 +1680,33 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         this.setState({ show_game_timing: !this.state.show_game_timing });
     };
 
+    gameLogModalMarkCoords(stones_string: string) {
+        for (let i = 0; i < this.goban.config.width; i++) {
+            for (let j = 0; j < this.goban.config.height; j++) {
+                this.goban.deleteCustomMark(i, j, "triangle", true);
+            }
+        }
+
+        const coordarray = stones_string.split(",").map((item) => item.trim());
+        for (let j = 0; j < coordarray.length; j++) {
+            const move = GoMath.decodeMoves(
+                coordarray[j],
+                this.goban.config.width,
+                this.goban.config.height,
+            )[0];
+            this.goban.setMark(move.x, move.y, "triangle", false);
+        }
+    }
+
     showLogModal = () => {
         openGameLogModal(
             this.goban.config,
+            this.gameLogModalMarkCoords,
             this.state[`historical_black`] || this.goban.engine.players.black,
             this.state[`historical_white`] || this.goban.engine.players.white,
         );
     };
+
     toggleAnonymousModerator = () => {
         const channel = `game-${this.game_id}`;
         data.set(
