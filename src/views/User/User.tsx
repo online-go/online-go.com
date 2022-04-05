@@ -541,21 +541,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
     }
 }
 
-type Server = "kgs" | "igs" | "dgs" | "golem" | "wbaduk" | "tygem" | "fox" | "yike" | "goquest";
-
-type AccountLinks = {
-    [org in `org${1 | 2 | 3}`]?: string;
-} & {
-    [org_id in `org${1 | 2 | 3}_id`]?: string;
-} & {
-    [org_rank in `org${1 | 2 | 3}_rank`]?: string;
-} & {
-    [server_username in `${Server}_username`]?: string;
-} & {
-    [server_rank in `${Server}_rank`]?: string;
-};
-
-function SelfReportedAccountLinkages({ links }: { links: AccountLinks }): JSX.Element {
+function SelfReportedAccountLinkages({ links }: { links: rest_api.AccountLinks }): JSX.Element {
     const has_association = links.org1 || links.org2 || links.org3;
     let has_other_server = false;
     for (const key in links) {
@@ -564,7 +550,7 @@ function SelfReportedAccountLinkages({ links }: { links: AccountLinks }): JSX.El
             key !== "hidden_ids" &&
             key !== "last_updated" &&
             !(key.indexOf("org") === 0) &&
-            links[key as keyof AccountLinks]
+            links[key as keyof rest_api.AccountLinks]
         ) {
             has_other_server = true;
         }

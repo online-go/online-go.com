@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+type Server = "kgs" | "igs" | "dgs" | "golem" | "wbaduk" | "tygem" | "fox" | "yike" | "goquest";
 declare namespace rest_api {
     interface RatingsConfig {
         rating: number;
@@ -56,6 +58,21 @@ declare namespace rest_api {
         is_announcer: boolean;
     }
 
+    type AccountLinks = {
+        [org in `org${1 | 2 | 3}`]?: string;
+    } & {
+        [org_id in `org${1 | 2 | 3}_id`]?: string;
+    } & {
+        [org_rank in `org${1 | 2 | 3}_rank`]?: string;
+    } & {
+        [server_username in `${Server}_username`]?: string;
+    } & {
+        [server_rank in `${Server}_rank`]?: string;
+    } & {
+        hidden: boolean;
+        hidden_ids: boolean;
+    };
+
     interface PlayerDetails {
         user: {
             id: number;
@@ -95,12 +112,7 @@ declare namespace rest_api {
             registration_date: "2018-04-09T13:04:44.987830Z";
             vacation_left: number;
             on_vacation: boolean;
-            self_reported_account_linkages?: {
-                org1: string;
-                org1_id: string;
-                org1_rank: string;
-                last_updated: number;
-            };
+            self_reported_account_linkages?: AccountLinks;
             is_watched: boolean;
         };
         active_games: players.full.Game[];
@@ -108,20 +120,28 @@ declare namespace rest_api {
             rank: number;
             id: number;
             name: string;
+            icon: string; // URL
         }>;
         tournaments: Array<{
             id: number;
             name: string;
             icon: string; // URL
         }>;
-        titles: any[];
+        titles: Array<{
+            title: string;
+            icon: string; // URL
+        }>;
         trophies: Array<{
             tournament_id: number;
             tournament_name: string;
             icon: string;
             title: string;
         }>;
-        groups: any[];
+        groups: Array<{
+            id: number;
+            name: string;
+            icon: string; // URL
+        }>;
         is_friend: boolean;
         friend_request_sent: boolean;
         friend_request_received: boolean;
