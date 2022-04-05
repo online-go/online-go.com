@@ -17,8 +17,7 @@
 
 import * as React from "react";
 import { _, pgettext } from "translate";
-import { Link } from "react-router-dom";
-import { post, get, put } from "requests";
+import { get, put } from "requests";
 import { parse } from "query-string";
 import * as data from "data";
 import * as moment from "moment";
@@ -28,6 +27,7 @@ import * as preferences from "preferences";
 import { ModTools } from "./ModTools";
 import { GameHistoryTable } from "./GameHistoryTable";
 import { ReviewsAndDemosTable } from "./ReviewsAndDemosTable";
+import { BotControls } from "./BotControls";
 import {
     rankString,
     getUserRating,
@@ -36,7 +36,6 @@ import {
     boundedRankString,
     rank_deviation,
 } from "rank_utils";
-import { daysOnlyDurationString } from "TimeControl";
 import { openModerateUserModal } from "ModerateUser";
 import { errorAlerter } from "misc";
 import * as player_cache from "player_cache";
@@ -47,10 +46,10 @@ import { RatingsChartByGame } from "RatingsChartByGame";
 import { associations } from "associations";
 import { Toggle } from "Toggle";
 import { AchievementList } from "Achievements";
-import swal from "sweetalert2";
 import * as History from "history";
 import { VersusCard } from "./VersusCard";
 import { AvatarCard, AvatarCardEditableFields } from "./AvatarCard";
+import { ActivityCard } from "./ActivityCard";
 
 interface UserProperties {
     match: {
@@ -59,78 +58,31 @@ interface UserProperties {
     location: History.Location;
 }
 
-// API: players/%%/full
-export interface UserInfo {
-    id: number;
-    on_vacation: boolean;
-    vacation_left: number;
-    supporter: boolean;
-    is_moderator: boolean;
-    is_superuser: boolean;
-    last_name: string;
-    first_name: string;
-    username: string;
-    about: string;
-    website: string;
-    country: string;
-    real_name_is_private: boolean;
-    is_bot: boolean;
-    self_reported_account_linkages: any;
-    is_watched: boolean;
-    ui_class_extra: any;
-    timeout_provisional: boolean; // deprecated
-    is_tournament_moderator: boolean;
-    name: string;
-    bot_ai: string;
-    bot_owner: player_cache.PlayerCacheEntry;
-    professional: boolean;
-    icon?: string;
-}
+type RatingsSpeed = "overall" | "blitz" | "live" | "correspondence";
+type RatingsSize = 0 | 9 | 13 | 19;
 
-interface UserState {
-    user: UserInfo;
-    vs: rest_api.PlayerDetails["vs"];
-    ratings: {};
-    vacation_left?: number;
-    syncRating: null;
-    bot_apikey: null;
-    bot_ai?: string;
+interface UserState extends Partial<rest_api.PlayerDetails> {
     editing: boolean;
-    selected_speed: "overall";
-    selected_size: 0;
+    selected_speed: RatingsSpeed;
+    selected_size: RatingsSize;
     resolved: boolean;
     temporary_show_ratings: boolean;
     show_ratings_in_rating_grid: boolean;
     rating_graph_plot_by_games: boolean;
     show_graph_type_toggle: boolean;
     rating_chart_type_toggle_left?: number;
-    hovered_game_id?: number;
-    friend_request_sent?: boolean;
-    friend_request_received?: boolean;
-    is_friend?: boolean;
-    active_games?: rest_api.players.full.Game[];
-    achievements?: any[];
-    titles?: any[];
-    trophies?: any[];
-    ladders?: any[];
-    tournaments?: any[];
-    groups?: any[];
+    // These properties also exist on the UserState.user.  These are pulled out to the top level in
+    // order to trigger a re-render when changed individually.
+    bot_apikey?: string;
+    bot_ai?: string;
 }
 
 export class User extends React.PureComponent<UserProperties, UserState> {
-    user_id: number; // BPJ: This is used, but could also be grabbed directly from props
     show_mod_log: boolean; // BPJ: This is used, but could also be grabbed directly from props
 
-    constructor(props) {
+    constructor(props: UserProperties) {
         super(props);
         this.state = {
-            user: null,
-            vs: {} as any,
-            ratings: {},
-            vacation_left: null,
-            syncRating: null,
-            bot_apikey: null,
-            bot_ai: null,
             editing: /edit/.test(window.location.hash),
             selected_speed: "overall",
             selected_size: 0,
@@ -139,7 +91,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             show_ratings_in_rating_grid: preferences.get("show-ratings-in-rating-grid"),
             rating_graph_plot_by_games: preferences.get("rating-graph-plot-by-games"),
             show_graph_type_toggle: !preferences.get("rating-graph-always-use"),
-            hovered_game_id: null,
         };
 
         try {
@@ -154,114 +105,44 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         this.resolve(this.props);
     }
 
-    isSpecialUser() {
-        if (
-            this.state.user.supporter ||
-            this.state.user.is_moderator ||
-            this.state.user.is_superuser
-        ) {
-            return true;
-        }
-        return false;
-    }
-
-    vacationAccrued() {
-        if (this.state.user) {
-            const vacation_time_accrued = this.state.user.vacation_left;
-            if (this.isSpecialUser()) {
-                return daysOnlyDurationString(vacation_time_accrued) + " " + _("out of 60 Days");
-            } else {
-                return daysOnlyDurationString(vacation_time_accrued) + " " + _("out of 30 Days");
-            }
-        }
-        return "User not Found";
-    }
-
-    UNSAFE_componentWillReceiveProps(nextProps) {
-        if (nextProps.match.params.user_id !== this.props.match.params.user_id) {
-            this.setState({ user: null, resolved: false });
-            this.resolve(nextProps);
+    componentDidUpdate(prevProps: UserProperties) {
+        if (prevProps.match.params.user_id !== this.props.match.params.user_id) {
+            this.setState({ user: undefined, resolved: false });
+            this.resolve(this.props);
         }
     }
-    resolve(props) {
-        this.setState({ user: null, editing: /edit/.test(window.location.hash) });
-        this.user_id = parseInt(props.match.params.user_id || data.get("user").id);
-        get("players/%%/full", this.user_id)
-            .then((state) => {
+    resolve(props: UserProperties) {
+        this.setState({ user: undefined, editing: /edit/.test(window.location.hash) });
+        const user_id = parseInt(props.match.params.user_id) || data.get("user")?.id;
+        if (user_id === undefined) {
+            console.error("invalid user id: ", props.match.params.user_id);
+            this.setState({ user: undefined, resolved: true });
+            return;
+        }
+        get("players/%%/full", user_id)
+            .then((response: rest_api.PlayerDetails) => {
                 this.setState({ resolved: true });
                 try {
-                    player_cache.update(state.user);
-                    this.update(state);
-                    window.document.title = state.user.username;
+                    player_cache.update(response.user);
+                    this.setState({
+                        bot_apikey: response.user.bot_apikey,
+                        bot_ai: response.user.bot_ai,
+                        ...response,
+                    });
+                    window.document.title = response.user.username;
                 } catch (err) {
                     console.error(err.stack);
                 }
             })
             .catch((err) => {
                 console.error(err);
-                this.setState({ user: null, resolved: true });
+                this.setState({ user: undefined, resolved: true });
             });
-    }
-
-    update(state) {
-        state.bot_apikey = state.user.bot_apikey;
-
-        state.user.ratings = state.user.ratings;
-        state.user.rating = parseFloat(state.user.rating);
-        state.user.rating_live = parseFloat(state.user.rating_live);
-        state.user.rating_blitz = parseFloat(state.user.rating_blitz);
-        state.user.rating_correspondence = parseFloat(state.user.rating_correspondence);
-        const user = state.user;
-        try {
-            state.website_href =
-                user.website.trim().toLowerCase().indexOf("http") !== 0
-                    ? "http://" + user.website
-                    : user.website;
-        } catch (e) {
-            console.log(e.stack);
-        }
-
-        state.syncRating = (rank, type) => {
-            if (type === "overall") {
-                state.user.rating = rank * 100 + 50 - 900;
-            } else {
-                state.user["rating_" + type] = rank * 100 + 50 - 900;
-            }
-        };
-
-        state.temporary_show_ratings = false;
-
-        this.setState(state);
-    }
-
-    generateAPIKey() {
-        if (
-            !confirm(
-                "Generating a new key will immediate invalidate the previous key, are you sure you wish to continue?",
-            )
-        ) {
-            return;
-        }
-        post("ui/bot/generateAPIKey", { bot_id: this.state.user.id })
-            .then((res) =>
-                this.setState({
-                    bot_apikey: res.bot_apikey,
-                }),
-            )
-            .catch(errorAlerter);
-    }
-    saveBot() {
-        put("ui/bot/saveBotInfo", { bot_id: this.state.user.id, bot_ai: this.state.bot_ai })
-            .then(() => {
-                swal("Bot Engine updated").catch(swal.noop);
-                this.resolve(this.props);
-            })
-            .catch(errorAlerter);
     }
     toggleRatings = () => {
         this.setState((state) => ({ temporary_show_ratings: !state.temporary_show_ratings }));
     };
-    saveAbout = (ev) => {
+    saveAbout = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({ user: Object.assign({}, this.state.user, { about: ev.target.value }) });
     };
     saveEditChanges(profile_card_changes: AvatarCardEditableFields) {
@@ -271,12 +152,14 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                 name: `${profile_card_changes.first_name} ${profile_card_changes.last_name}`,
             }),
         });
-        put("players/%%", this.user_id, {
-            ...profile_card_changes,
-            about: this.state.user.about,
-        })
-            .then(console.log)
-            .catch(errorAlerter);
+        if (this.state.user) {
+            put("players/%%", this.state.user.id, {
+                ...profile_card_changes,
+                about: this.state.user.about,
+            })
+                .then(console.log)
+                .catch(errorAlerter);
+        }
     }
     openModerateUser = () => {
         const modal = openModerateUserModal(this.state.user);
@@ -296,17 +179,6 @@ export class User extends React.PureComponent<UserProperties, UserState> {
         }
         const editing = this.state.editing;
         const showRatings = this.state.temporary_show_ratings;
-
-        /* any dom binding stuff needs to happen after the template has been
-         * processed and added to the dom, this can be done with a 0ms timer */
-        const doDomWork = () => {
-            try {
-                $("#user-su-is-bot").prop("checked", this.state.user.is_bot);
-            } catch (e) {
-                console.log(e.stack);
-            }
-        };
-        setTimeout(doDomWork, 0);
 
         const global_user = data.get("config.user");
         const cdn_release = data.get("config.cdn_release");
@@ -364,14 +236,14 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                             <div className="ratings-chart">
                                 {this.state.rating_graph_plot_by_games ? (
                                     <RatingsChartByGame
-                                        playerId={this.user_id}
+                                        playerId={user.id}
                                         speed={this.state.selected_speed}
                                         size={this.state.selected_size}
                                         updateChartSize={this.updateTogglePosition}
                                     />
                                 ) : (
                                     <RatingsChart
-                                        playerId={this.user_id}
+                                        playerId={user.id}
                                         speed={this.state.selected_speed}
                                         size={this.state.selected_size}
                                         updateChartSize={this.updateTogglePosition}
@@ -407,7 +279,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                 )}
 
                 {(data.get("user")?.is_moderator || null) && (
-                    <ModTools user_id={this.user_id} show_mod_log={this.show_mod_log} />
+                    <ModTools user_id={user.id} show_mod_log={this.show_mod_log} />
                 )}
 
                 <div className="row">
@@ -433,19 +305,21 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                             </Card>
                         )}
 
-                        {(this.state.active_games.length > 0 || null) && (
-                            <h2>
-                                {_("Active Games")} ({this.state.active_games.length})
-                            </h2>
+                        {this.state.active_games != null && this.state.active_games.length > 0 && (
+                            <>
+                                <h2>
+                                    {_("Active Games")} ({this.state.active_games.length})
+                                </h2>
+                                <GameList list={this.state.active_games} player={user} />
+                            </>
                         )}
-                        <GameList list={this.state.active_games} player={user} />
 
                         <div className="row">
-                            <GameHistoryTable user_id={this.user_id} />
+                            <GameHistoryTable user_id={user.id} />
                         </div>
 
                         <div className="row">
-                            <ReviewsAndDemosTable user_id={this.user_id} />
+                            <ReviewsAndDemosTable user_id={user.id} />
                         </div>
                     </div>
 
@@ -461,205 +335,112 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                                         </Card>
                                     )}
 
-                                {(this.state.achievements.length > 0 || null) && (
-                                    <Card>
-                                        <h3>{_("Achievements")}</h3>
-                                        <AchievementList list={this.state.achievements} />
-                                    </Card>
-                                )}
+                                {this.state.achievements != null &&
+                                    this.state.achievements.length > 0 && (
+                                        <Card>
+                                            <h3>{_("Achievements")}</h3>
+                                            <AchievementList list={this.state.achievements} />
+                                        </Card>
+                                    )}
 
-                                {(this.state.titles.length > 0 ||
-                                    this.state.trophies.length > 0 ||
-                                    null) && (
-                                    <Card>
-                                        <h3>{_("Trophies")}</h3>
+                                {this.state.titles != null &&
+                                    this.state.trophies != null &&
+                                    (this.state.titles.length > 0 ||
+                                        this.state.trophies.length > 0) && (
+                                        <Card>
+                                            <h3>{_("Trophies")}</h3>
 
-                                        {this.state.titles.length > 0 && (
-                                            <div className="trophies">
-                                                {this.state.titles.map((title, idx) => (
-                                                    <img
-                                                        key={idx}
-                                                        className="trophy"
-                                                        src={`${cdn_release}/img/trophies/${title.icon}`}
-                                                        title={title.title}
-                                                    />
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {this.state.trophies.length > 0 && (
-                                            <div className="trophies">
-                                                {this.state.trophies.map((trophy, idx) => (
-                                                    <a
-                                                        key={idx}
-                                                        href={
-                                                            trophy.tournament_id
-                                                                ? "/tournament/" +
-                                                                  trophy.tournament_id
-                                                                : "#"
-                                                        }
-                                                    >
+                                            {this.state.titles.length > 0 && (
+                                                <div className="trophies">
+                                                    {this.state.titles.map((title, idx) => (
                                                         <img
+                                                            key={idx}
                                                             className="trophy"
-                                                            src={`${cdn_release}/img/trophies/${trophy.icon}`}
-                                                            title={trophy.title}
+                                                            src={`${cdn_release}/img/trophies/${title.icon}`}
+                                                            title={title.title}
                                                         />
-                                                    </a>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {(user.id === 519197 || null) && (
-                                            <React.Fragment>
-                                                <hr />
-                                                <div className="SpicyDragon-trophy">
-                                                    <img
-                                                        src="https://cdn.online-go.com/spicydragon/spicydragon400.jpg"
-                                                        width={400}
-                                                        height={340}
-                                                    />
-                                                    <div>
-                                                        {pgettext(
-                                                            "Special trophy for a professional go player",
-                                                            "1004 simultaneous correspondence games",
-                                                        )}
-                                                    </div>
-                                                    <div>
-                                                        {moment("2020-07-20T14:38:37").format(
-                                                            "LLLL",
-                                                        )}
-                                                    </div>
+                                                    ))}
                                                 </div>
-                                            </React.Fragment>
-                                        )}
-                                    </Card>
-                                )}
+                                            )}
+
+                                            {this.state.trophies.length > 0 && (
+                                                <div className="trophies">
+                                                    {this.state.trophies.map((trophy, idx) => (
+                                                        <a
+                                                            key={idx}
+                                                            href={
+                                                                trophy.tournament_id
+                                                                    ? "/tournament/" +
+                                                                      trophy.tournament_id
+                                                                    : "#"
+                                                            }
+                                                        >
+                                                            <img
+                                                                className="trophy"
+                                                                src={`${cdn_release}/img/trophies/${trophy.icon}`}
+                                                                title={trophy.title}
+                                                            />
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {(user.id === 519197 || null) && (
+                                                <React.Fragment>
+                                                    <hr />
+                                                    <div className="SpicyDragon-trophy">
+                                                        <img
+                                                            src="https://cdn.online-go.com/spicydragon/spicydragon400.jpg"
+                                                            width={400}
+                                                            height={340}
+                                                        />
+                                                        <div>
+                                                            {pgettext(
+                                                                "Special trophy for a professional go player",
+                                                                "1004 simultaneous correspondence games",
+                                                            )}
+                                                        </div>
+                                                        <div>
+                                                            {moment("2020-07-20T14:38:37").format(
+                                                                "LLLL",
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </React.Fragment>
+                                            )}
+                                        </Card>
+                                    )}
                             </div>
                         )}
 
-                        {this.state.vs.wins + this.state.vs.losses + this.state.vs.draws > 0 && (
-                            <div>
-                                <VersusCard
-                                    {...this.state.vs}
-                                    username={this.state.user.username}
-                                />
-                            </div>
-                        )}
-
-                        {user.is_bot && user.bot_owner && user.bot_owner.id === window["user"].id && (
-                            <div>
-                                <h2>{_("Bot Controls")}</h2>
-                                <div className="well">
-                                    <h5>
-                                        {_("API Key")}
-                                        <button
-                                            className="btn btn-xs btn-default"
-                                            onClick={() => this.generateAPIKey()}
-                                        >
-                                            {_("Generate API Key")}
-                                        </button>
-                                    </h5>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        value={this.state.bot_apikey}
-                                        readOnly
-                                    />
-                                    <h5>{_("Bot Engine")}</h5>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        placeholder={_("Engine Name")}
-                                        value={this.state.bot_ai || ""}
-                                        onChange={(event) =>
-                                            this.setState({
-                                                bot_ai: (event.target as HTMLInputElement).value,
-                                            })
-                                        }
-                                    />
-                                    <div style={{ textAlign: "right" }}>
-                                        <button
-                                            className="btn btn-xs btn-default"
-                                            onClick={() => this.saveBot()}
-                                        >
-                                            {_("Save")}
-                                        </button>
-                                    </div>
+                        {this.state.vs != null &&
+                            this.state.vs.wins + this.state.vs.losses + this.state.vs.draws > 0 && (
+                                <div>
+                                    <VersusCard {...this.state.vs} username={user.username} />
                                 </div>
-                            </div>
-                        )}
+                            )}
+
+                        {user.is_bot &&
+                            user.bot_owner &&
+                            user.bot_owner.id === data.get("user")?.id && (
+                                <BotControls
+                                    bot_ai={this.state.bot_ai ?? ""}
+                                    bot_apikey={this.state.bot_apikey ?? ""}
+                                    bot_id={user.id}
+                                    onBotAiChanged={(bot_ai) => this.setState({ bot_ai: bot_ai })}
+                                    onBotApiKeyChanged={(bot_apikey) =>
+                                        this.setState({ bot_apikey: bot_apikey })
+                                    }
+                                />
+                            )}
 
                         <h2>{_("Activity")}</h2>
-                        <Card className="activity-card">
-                            <h4>
-                                {_("Vacation Accrued:")}{" "}
-                                {this.isSpecialUser() ? _("(Supporter)") : _("(Non-Supporter)")}
-                            </h4>
-                            {!user.on_vacation && <div>{this.vacationAccrued()}</div>}
-                            {user.on_vacation && <div>{_("User On Vacation")}</div>}
-                            <h4>{_("Ladders")}</h4>
-                            {this.state.ladders.length > 0 && (
-                                <div>
-                                    <dl className="activity-dl">
-                                        {this.state.ladders.map((ladder, idx) => (
-                                            <dd key={idx}>
-                                                #{ladder.rank}{" "}
-                                                <Link to={`/ladder/${ladder.id}`}>
-                                                    {ladder.name}
-                                                </Link>
-                                            </dd>
-                                        ))}
-                                    </dl>
-                                </div>
-                            )}
-                            {!this.state.ladders.length && (
-                                <div>
-                                    <div>{_("Not participating in any ladders")}</div>
-                                </div>
-                            )}
-
-                            <h4>{_("Tournaments")}</h4>
-                            {this.state.tournaments.length > 0 && (
-                                <div>
-                                    <dl className="activity-dl">
-                                        {this.state.tournaments.map((tournament, idx) => (
-                                            <dd key={idx}>
-                                                <Link to={`/tournament/${tournament.id}`}>
-                                                    <img src={tournament.icon} className="icon" />{" "}
-                                                    {tournament.name}
-                                                </Link>
-                                            </dd>
-                                        ))}
-                                    </dl>
-                                </div>
-                            )}
-                            {!this.state.tournaments.length && (
-                                <div>
-                                    <div>{_("Not participating in any tournaments")}</div>
-                                </div>
-                            )}
-
-                            <h4>{_("Groups")}</h4>
-                            {this.state.groups.length > 0 && (
-                                <div>
-                                    <dl className="activity-dl">
-                                        {this.state.groups.map((group, idx) => (
-                                            <dd key={idx}>
-                                                <Link to={`/group/${group.id}`}>
-                                                    <img src={group.icon} className="icon" />{" "}
-                                                    {group.name}
-                                                </Link>
-                                            </dd>
-                                        ))}
-                                    </dl>
-                                </div>
-                            )}
-                            {!this.state.groups.length && (
-                                <div>
-                                    <div>{_("Not a member of any groups")}</div>
-                                </div>
-                            )}
-                        </Card>
+                        <ActivityCard
+                            user={user}
+                            ladders={this.state.ladders}
+                            tournaments={this.state.tournaments}
+                            groups={this.state.groups}
+                        />
                     </div>
                     {/* end right col  */}
                 </div>
@@ -701,7 +482,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                         <i className="speed-icon ogs-turtle" title={_("Correspondence")} />
                     </span>
                 </div>
-                {[0, 9, 13, 19].map((size) => (
+                {([0, 9, 13, 19] as const).map((size: RatingsSize) => (
                     <div key={size} className="speed">
                         {size > 0 ? (
                             <span className="title">
@@ -713,17 +494,19 @@ export class User extends React.PureComponent<UserProperties, UserState> {
                             </span>
                         )}
 
-                        {["overall", "blitz", "live", "correspondence"].map((speed) => (
-                            <span key={speed} className="cell">
-                                {this.renderRatingOrRank(speed, size, show_ratings)}
-                            </span>
-                        ))}
+                        {(["overall", "blitz", "live", "correspondence"] as const).map(
+                            (speed: RatingsSpeed) => (
+                                <span key={speed} className="cell">
+                                    {this.renderRatingOrRank(speed, size, show_ratings)}
+                                </span>
+                            ),
+                        )}
                     </div>
                 ))}
             </div>
         );
     }
-    renderRatingOrRank(speed, size, show_rating: boolean): JSX.Element {
+    renderRatingOrRank(speed: RatingsSpeed, size: RatingsSize, show_rating: boolean): JSX.Element {
         const r = getUserRating(this.state.user, speed, size);
 
         return (
@@ -758,7 +541,7 @@ export class User extends React.PureComponent<UserProperties, UserState> {
     }
 }
 
-function SelfReportedAccountLinkages({ links }: { links: any }): JSX.Element {
+function SelfReportedAccountLinkages({ links }: { links: rest_api.AccountLinks }): JSX.Element {
     const has_association = links.org1 || links.org2 || links.org3;
     let has_other_server = false;
     for (const key in links) {
@@ -767,7 +550,7 @@ function SelfReportedAccountLinkages({ links }: { links: any }): JSX.Element {
             key !== "hidden_ids" &&
             key !== "last_updated" &&
             !(key.indexOf("org") === 0) &&
-            links[key]
+            links[key as keyof rest_api.AccountLinks]
         ) {
             has_other_server = true;
         }
@@ -802,17 +585,17 @@ function AssociationLink({
     id,
     rank,
 }: {
-    country: string;
+    country?: string;
     id?: string;
     rank?: string;
-}): JSX.Element {
+}): JSX.Element | null {
     try {
         if (!country) {
             return null;
         }
 
         const association = associations.filter((a) => a.country === country)[0];
-        let linker: (id: string) => string;
+        let linker: ((id: string) => string) | undefined;
 
         if (country === "us") {
             linker = (id: string) => `https://agagd.usgo.org/player/${id}/`;
@@ -846,7 +629,15 @@ function AssociationLink({
     }
 }
 
-function ServerLink({ name, id, rank }: { name: string; id?: string; rank?: string }): JSX.Element {
+function ServerLink({
+    name,
+    id,
+    rank,
+}: {
+    name: string;
+    id?: string;
+    rank?: string;
+}): JSX.Element | null {
     if (!id && !rank) {
         return null;
     }
