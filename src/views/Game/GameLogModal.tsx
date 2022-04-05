@@ -48,8 +48,8 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
             log: [],
         };
 
-        this.config = this.props.config;
-        const game_id = this.config.game_id;
+        const config = this.props.config;
+        const game_id = config.game_id;
         socket.send(`game/log`, { game_id }, (log) => this.setLog(log));
     }
 
@@ -63,7 +63,7 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
             <div className="Modal GameLogModal" ref="modal">
                 <div className="header">
                     <div>
-                        <h2>{this.config.game_name}</h2>
+                        <h2>{this.props.config.game_name}</h2>
                         <h3>
                             <Player disableCacheUpdate icon rank user={this.props.black} />{" "}
                             {_("vs.")}{" "}
@@ -89,7 +89,7 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
                                     <td className="event">{entry.event}</td>
                                     <td className="data">
                                         <LogData
-                                            config={this.config}
+                                            config={this.props.config}
                                             markCoords={this.props.markCoords}
                                             event={entry.event}
                                             data={entry.data}
@@ -115,7 +115,7 @@ function LogData({
     data,
 }: {
     config: any;
-    markCoords: any;
+    markCoords: (stones: string) => void;
     event: string;
     data: any;
 }): JSX.Element {
@@ -187,7 +187,12 @@ export class DrawCoordsButton extends React.Component<DCBProperties, {}> {
     }
 }
 
-export function openGameLogModal(config: any, markCoords: any, black: any, white: any): void {
+export function openGameLogModal(
+    config: any,
+    markCoords: (stones: string) => void,
+    black: any,
+    white: any,
+): void {
     openModal(
         <GameLogModal
             config={config}
