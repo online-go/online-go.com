@@ -77,6 +77,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     ai_review?: JGOFAIReview;
     table_rows: string[][];
     avg_score_loss: number[];
+    median_score_loss: number[];
     moves_pending: number;
     max_entries: number;
 
@@ -103,6 +104,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const ai_table_out = this.AiSummaryTableRowList();
         this.table_rows = ai_table_out.ai_table_rows;
         this.avg_score_loss = ai_table_out.avg_score_loss;
+        this.median_score_loss = ai_table_out.median_score_loss;
         this.moves_pending = ai_table_out.moves_pending;
         this.max_entries = ai_table_out.max_entries;
         if (!data.get("user").is_moderator) {
@@ -119,6 +121,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             const ai_table_out = this.AiSummaryTableRowList();
             this.table_rows = ai_table_out.ai_table_rows;
             this.avg_score_loss = ai_table_out.avg_score_loss;
+            this.median_score_loss = ai_table_out.median_score_loss;
             this.moves_pending = ai_table_out.moves_pending;
             this.max_entries = ai_table_out.max_entries;
         }
@@ -761,6 +764,16 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         return move_list;
     }
 
+    private medianList(nums: number[]) {
+        const mid = nums.length === 0 ? undefined : Math.floor(nums.length / 2);
+        if (mid === undefined) {
+            return mid;
+        }
+
+        const median = nums.length % 2 !== 0 ? nums[mid] : (nums[mid] + nums[mid - 1]) / 2;
+        return median;
+    }
+
     private AiSummaryTableRowList() {
         const summary_moves_list = [
             ["", "", "", ""],
@@ -780,6 +793,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         ];
         const default_table_rows = [["", "", "", "", ""]];
         const avg_score_loss = [0, 0];
+        const median_score_loss = [0, 0];
         let moves_missing = 0;
         let max_entries = 0;
 
@@ -787,18 +801,20 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             return {
                 ai_table_rows: default_table_rows,
                 avg_score_loss,
+                median_score_loss,
                 moves_pending: moves_missing,
                 max_entries,
             };
         }
 
-        if (this.ai_review.engine !== "katago") {
+        if (!this.ai_review?.engine.includes("katago")) {
             this.setState({
                 table_set: true,
             });
             return {
                 ai_table_rows: default_table_rows,
                 avg_score_loss,
+                median_score_loss,
                 moves_pending: moves_missing,
                 max_entries,
             };
@@ -820,6 +836,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 return {
                     ai_table_rows: default_table_rows,
                     avg_score_loss,
+                    median_score_loss,
                     moves_pending: moves_missing,
                     max_entries,
                 };
@@ -837,6 +854,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 return {
                     ai_table_rows: default_table_rows,
                     avg_score_loss,
+                    median_score_loss,
                     moves_pending: moves_missing,
                     max_entries,
                 };
@@ -850,6 +868,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             const othercounters = Array(2).fill(0);
             let wtotal = 0;
             let btotal = 0;
+            const score_loss_list = [[], []];
+
             for (let j = hoffset; j < scores.length - 1; j++) {
                 let scorediff = scores[j + 1] - scores[j];
                 const is_bplayer = move_player_list[j] === JGOFNumericPlayerColor.BLACK;
@@ -857,6 +877,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 const player_index = is_bplayer ? 0 : 1;
                 scorediff = is_bplayer ? -1 * scorediff : scorediff;
                 avg_score_loss[player_index] += scorediff;
+                score_loss_list[player_index].push(scorediff);
 
                 if (scorediff < 1) {
                     movecounters[offset] += 1;
@@ -883,6 +904,22 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             avg_score_loss[0] = btotal > 0 ? Math.round((10 * avg_score_loss[0]) / btotal) / 10 : 0;
             avg_score_loss[1] = wtotal > 0 ? Math.round((10 * avg_score_loss[1]) / wtotal) / 10 : 0;
 
+            score_loss_list[0].sort((a, b) => {
+                return a - b;
+            });
+            score_loss_list[1].sort((a, b) => {
+                return a - b;
+            });
+
+            median_score_loss[0] =
+                this.medianList(score_loss_list[0]) !== undefined
+                    ? Math.round(10 * this.medianList(score_loss_list[0])) / 10
+                    : 0;
+            median_score_loss[1] =
+                this.medianList(score_loss_list[1]) !== undefined
+                    ? Math.round(10 * this.medianList(score_loss_list[1])) / 10
+                    : 0;
+
             for (let j = 0; j < num_rows; j++) {
                 summary_moves_list[j][0] = movecounters[j].toString();
                 summary_moves_list[j][1] =
@@ -903,7 +940,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             this.setState({
                 table_set: true,
             });
-            return { ai_table_rows, avg_score_loss, moves_pending: moves_missing, max_entries };
+            return {
+                ai_table_rows,
+                avg_score_loss,
+                median_score_loss,
+                moves_pending: moves_missing,
+                max_entries,
+            };
         } else if (this.ai_review?.type === "full") {
             const num_rows = ai_table_rows.length;
             const movekeys = Object.keys(this.ai_review?.moves);
@@ -922,7 +965,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 for (let j = 0; j < ai_table_rows.length; j++) {
                     ai_table_rows[j] = ai_table_rows[j].concat(summary_moves_list[j]);
                 }
-                return { ai_table_rows, avg_score_loss, moves_pending: moves_missing, max_entries };
+                return {
+                    ai_table_rows,
+                    avg_score_loss,
+                    median_score_loss,
+                    moves_pending: moves_missing,
+                    max_entries,
+                };
             }
 
             max_entries = this.ai_review.scores.length;
@@ -930,6 +979,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             const othercounters = Array(2).fill(0);
             let wtotal = 0;
             let btotal = 0;
+            const score_loss_list = [[], []];
 
             for (let j = hoffset; j < this.ai_review?.scores.length - 1; j++) {
                 if (
@@ -949,6 +999,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 let scorediff = this.ai_review?.moves[j + 1].score - this.ai_review?.moves[j].score;
                 scorediff = is_bplayer ? -1 * scorediff : scorediff;
                 avg_score_loss[player_index] += scorediff;
+                score_loss_list[player_index].push(scorediff);
 
                 if (bluemove === undefined) {
                     othercounters[player_index] += 1;
@@ -1000,6 +1051,22 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             avg_score_loss[0] = btotal > 0 ? Math.round((10 * avg_score_loss[0]) / btotal) / 10 : 0;
             avg_score_loss[1] = wtotal > 0 ? Math.round((10 * avg_score_loss[1]) / wtotal) / 10 : 0;
 
+            score_loss_list[0].sort((a, b) => {
+                return a - b;
+            });
+            score_loss_list[1].sort((a, b) => {
+                return a - b;
+            });
+
+            median_score_loss[0] =
+                this.medianList(score_loss_list[0]) !== undefined
+                    ? Math.round(10 * this.medianList(score_loss_list[0])) / 10
+                    : 0;
+            median_score_loss[1] =
+                this.medianList(score_loss_list[1]) !== undefined
+                    ? Math.round(10 * this.medianList(score_loss_list[1])) / 10
+                    : 0;
+
             for (let j = 0; j < num_rows; j++) {
                 summary_moves_list[j][0] = movecounters[j].toString();
                 summary_moves_list[j][1] =
@@ -1023,11 +1090,18 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 });
             }
 
-            return { ai_table_rows, avg_score_loss, moves_pending: moves_missing, max_entries };
+            return {
+                ai_table_rows,
+                avg_score_loss,
+                median_score_loss,
+                moves_pending: moves_missing,
+                max_entries,
+            };
         } else {
             return {
                 ai_table_rows: default_table_rows,
                 avg_score_loss,
+                median_score_loss,
                 moves_pending: moves_missing,
                 max_entries,
             };
@@ -1439,12 +1513,13 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         </span>
                     </div>
                 )}
-                {data.get("user").is_moderator && this.ai_review?.engine === "katago" && (
+                {data.get("user").is_moderator && this.ai_review?.engine.includes("katago") && (
                     <div>
                         <AiSummaryTable
                             headinglist={[_("Type"), _("Black"), "%", _("White"), "%"]}
                             bodylist={this.table_rows}
                             avg_loss={this.avg_score_loss}
+                            median_score_loss={this.median_score_loss}
                             table_hidden={this.state.table_hidden}
                             pending_entries={this.moves_pending}
                             max_entries={this.max_entries}
@@ -1641,6 +1716,17 @@ class AiSummaryTable extends React.Component<AiSummaryTableProperties, AiSummary
                             <td colSpan={2}>{"White"}</td>
                             <td colSpan={3}>{this.props.avg_loss[1]}</td>
                         </tr>
+                        <tr>
+                            <td colSpan={5}>{"Median score loss per move"}</td>
+                        </tr>
+                        <tr>
+                            <td colSpan={2}>{"Black"}</td>
+                            <td colSpan={3}>{this.props.median_score_loss[0]}</td>
+                        </tr>
+                        <tr>
+                            <td colSpan={2}>{"White"}</td>
+                            <td colSpan={3}>{this.props.median_score_loss[1]}</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -1657,6 +1743,7 @@ interface AiSummaryTableProperties {
     bodylist: string[][];
     /** values for the average score loss */
     avg_loss: number[];
+    median_score_loss: number[];
     table_hidden: boolean;
     pending_entries: number;
     max_entries: number;
