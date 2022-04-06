@@ -20,7 +20,7 @@ import { interpolate } from "translate";
 import * as moment from "moment";
 import * as React from "react";
 
-type VersusCardProps = rest_api.PlayerDetails["vs"] & { username: string };
+type VersusCardProps = rest_api.FullPlayerDetail["vs"] & { username: string };
 
 function toPrettyDate(date: string) {
     return moment(new Date(date)).format("ll");
