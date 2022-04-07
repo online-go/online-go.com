@@ -901,8 +901,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 wtotal += movecounters[num_rows + j];
             }
 
-            avg_score_loss[0] = btotal > 0 ? Math.round((10 * avg_score_loss[0]) / btotal) / 10 : 0;
-            avg_score_loss[1] = wtotal > 0 ? Math.round((10 * avg_score_loss[1]) / wtotal) / 10 : 0;
+            avg_score_loss[0] = btotal > 0 ? Number((avg_score_loss[0] / btotal).toFixed(1)) : 0;
+            avg_score_loss[1] = wtotal > 0 ? Number((avg_score_loss[1] / wtotal).toFixed(1)) : 0;
 
             score_loss_list[0].sort((a, b) => {
                 return a - b;
@@ -913,23 +913,23 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
             median_score_loss[0] =
                 this.medianList(score_loss_list[0]) !== undefined
-                    ? Math.round(10 * this.medianList(score_loss_list[0])) / 10
+                    ? Number(this.medianList(score_loss_list[0]).toFixed(1))
                     : 0;
             median_score_loss[1] =
                 this.medianList(score_loss_list[1]) !== undefined
-                    ? Math.round(10 * this.medianList(score_loss_list[1])) / 10
+                    ? Number(this.medianList(score_loss_list[1]).toFixed(1))
                     : 0;
 
             for (let j = 0; j < num_rows; j++) {
                 summary_moves_list[j][0] = movecounters[j].toString();
                 summary_moves_list[j][1] =
                     btotal > 0
-                        ? (Math.round((1000 * movecounters[j]) / btotal) / 10).toString()
+                        ? ((100 * movecounters[j]) / btotal).toFixed(1)
                         : "";
                 summary_moves_list[j][2] = movecounters[num_rows + j].toString();
                 summary_moves_list[j][3] =
                     wtotal > 0
-                        ? (Math.round((1000 * movecounters[num_rows + j]) / wtotal) / 10).toString()
+                        ? ((100 * movecounters[num_rows + j]) / wtotal).toFixed(1)
                         : "";
             }
 
@@ -1048,8 +1048,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 wtotal += movecounters[num_rows + j];
             }
 
-            avg_score_loss[0] = btotal > 0 ? Math.round((10 * avg_score_loss[0]) / btotal) / 10 : 0;
-            avg_score_loss[1] = wtotal > 0 ? Math.round((10 * avg_score_loss[1]) / wtotal) / 10 : 0;
+            avg_score_loss[0] = btotal > 0 ? Number((avg_score_loss[0] / btotal).toFixed(1)) : 0;
+            avg_score_loss[1] = wtotal > 0 ? Number((avg_score_loss[1] / wtotal).toFixed(1)) : 0;
 
             score_loss_list[0].sort((a, b) => {
                 return a - b;
@@ -1060,23 +1060,23 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
             median_score_loss[0] =
                 this.medianList(score_loss_list[0]) !== undefined
-                    ? Math.round(10 * this.medianList(score_loss_list[0])) / 10
+                    ? Number(this.medianList(score_loss_list[0]).toFixed(1))
                     : 0;
             median_score_loss[1] =
                 this.medianList(score_loss_list[1]) !== undefined
-                    ? Math.round(10 * this.medianList(score_loss_list[1])) / 10
+                    ? Number(this.medianList(score_loss_list[1]).toFixed(1))
                     : 0;
 
             for (let j = 0; j < num_rows; j++) {
                 summary_moves_list[j][0] = movecounters[j].toString();
                 summary_moves_list[j][1] =
                     btotal > 0
-                        ? (Math.round((1000 * movecounters[j]) / btotal) / 10).toString()
+                        ? ((100 * movecounters[j]) / btotal).toFixed(1)
                         : "";
                 summary_moves_list[j][2] = movecounters[num_rows + j].toString();
                 summary_moves_list[j][3] =
                     wtotal > 0
-                        ? (Math.round((1000 * movecounters[num_rows + j]) / wtotal) / 10).toString()
+                        ? ((100 * movecounters[num_rows + j]) / wtotal).toFixed(1)
                         : "";
             }
 
