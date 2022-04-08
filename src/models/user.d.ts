@@ -23,6 +23,16 @@ declare namespace rest_api {
         volatility: number;
     }
 
+    type RatingsBySizeAndSpeed = {
+        version: number;
+        overall: RatingsConfig;
+    } & {
+        [game_type in
+            | import("../lib/types").Size
+            | import("../lib/types").Speed
+            | `${import("../lib/types").Speed}-${import("../lib/types").Size}`]: RatingsConfig;
+    };
+
     /**
      * The type of `config.user` passed back by the `ui/config` endpoint.
      */
@@ -31,15 +41,7 @@ declare namespace rest_api {
         id: number;
         username: string;
         registration_date: string; // Date
-        ratings: {
-            version: number;
-            overall: RatingsConfig;
-        } & {
-            [game_type in
-                | import("../lib/types").Size
-                | import("../lib/types").Speed
-                | `${import("../lib/types").Speed}-${import("../lib/types").Size}`]: RatingsConfig;
-        };
+        ratings: RatingsBySizeAndSpeed;
         country: string; // country code
         professional: boolean;
         ranking: number;
@@ -73,7 +75,7 @@ declare namespace rest_api {
         hidden_ids: boolean;
     };
 
-    interface PlayerDetails {
+    interface FullPlayerDetail {
         user: {
             id: number;
             username: string;
@@ -92,10 +94,10 @@ declare namespace rest_api {
             };
             country: string; // country code
             language: string;
-            name: any | null;
-            first_name: any | null;
-            last_name: any | null;
-            real_name_is_private: true;
+            name: string | null;
+            first_name: string | null;
+            last_name: string | null;
+            real_name_is_private: boolean;
             about: string;
             supporter: boolean;
             ui_class_extra: null;
@@ -109,7 +111,7 @@ declare namespace rest_api {
             bot_apikey?: any;
             website: string;
             icon: string; // URL
-            registration_date: "2018-04-09T13:04:44.987830Z";
+            registration_date: string; // ISO Date
             vacation_left: number;
             on_vacation: boolean;
             self_reported_account_linkages?: AccountLinks;
@@ -161,5 +163,46 @@ declare namespace rest_api {
         };
         achievements: any[];
         ip?: string;
+    }
+
+    interface PlayerDetail {
+        related: { [key: string]: string };
+        id: number;
+        username: string;
+        professional: boolean;
+        ranking: number;
+        country: string;
+        language: string;
+        about: string;
+        supporter: boolean;
+        is_bot: boolean;
+        bot_ai: string | null;
+        bot_owner: number | null;
+        website: string;
+        registration_date: string; // ISO Date
+        name: string;
+        timeout_provisional: boolean;
+        ratings: {
+            version: number;
+            overall: RatingsConfig;
+        };
+        is_friend: boolean;
+        aga_id: null;
+        ui_class: string;
+        icon: string;
+    }
+
+    namespace termination_api {
+        interface Player {
+            id: number;
+            country: string;
+            username: string;
+            "icon-url": string;
+            ui_class: string;
+            ratings: RatingsBySizeAndSpeed;
+            rating: number;
+            ranking: number;
+            pro: number;
+        }
     }
 }

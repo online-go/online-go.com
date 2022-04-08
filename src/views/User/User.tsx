@@ -61,7 +61,7 @@ interface UserProperties {
 type RatingsSpeed = "overall" | "blitz" | "live" | "correspondence";
 type RatingsSize = 0 | 9 | 13 | 19;
 
-interface UserState extends Partial<rest_api.PlayerDetails> {
+interface UserState extends Partial<rest_api.FullPlayerDetail> {
     editing: boolean;
     selected_speed: RatingsSpeed;
     selected_size: RatingsSize;
@@ -119,8 +119,37 @@ export class User extends React.PureComponent<UserProperties, UserState> {
             this.setState({ user: undefined, resolved: true });
             return;
         }
+
+        // Cheaper API calls provide partial profile data before players/%%/full
+        Promise.all([get("players/%%", user_id), get("/termination-api/player/%%", user_id)])
+            .then((responses: [rest_api.PlayerDetail, rest_api.termination_api.Player]) => {
+                if (this.state.resolved) {
+                    return;
+                }
+                const user: rest_api.FullPlayerDetail["user"] = {
+                    ...responses[0],
+                    professional: responses[0].ui_class.indexOf("professional") >= 0,
+                    is_moderator: responses[0].ui_class.indexOf("moderator") >= 0,
+                    is_superuser: responses[0].ui_class.indexOf("admin") >= 0,
+                    is_tournament_moderator: false,
+                    is_watched: false,
+                    on_vacation: false,
+                    vacation_left: 0,
+                    deviation: responses[0].ratings.overall.deviation,
+                    ranking: responses[1].ranking,
+                    rating: responses[1].rating,
+                    ratings: responses[1].ratings,
+                    first_name: null,
+                    last_name: null,
+                    real_name_is_private: responses[0] === null,
+                    ui_class_extra: null,
+                };
+                this.setState({ user });
+            })
+            .catch(console.log);
+
         get("players/%%/full", user_id)
-            .then((response: rest_api.PlayerDetails) => {
+            .then((response: rest_api.FullPlayerDetail) => {
                 this.setState({ resolved: true });
                 try {
                     player_cache.update(response.user);

@@ -33,8 +33,8 @@ const inlineBlock = { display: "inline-flex", alignItems: "center" };
 
 export interface AvatarCardEditableFields {
     username: string;
-    first_name: string;
-    last_name: string;
+    first_name: string | null;
+    last_name: string | null;
     real_name_is_private: boolean;
     country: string;
     website: string;
@@ -49,7 +49,7 @@ interface AvatarCardUserType extends AvatarCardEditableFields {
     supporter: boolean;
     ui_class_extra: string | null;
     on_vacation: boolean;
-    name: string;
+    name: string | null;
     is_bot: boolean;
     is_tournament_moderator: boolean;
     bot_ai: string;
@@ -330,6 +330,7 @@ function AvatarSubtext({ user, global_user }: { user: AvatarCardUserType; global
     );
 
     React.useEffect(() => {
+        setVacationLeftText(getVacationLeftText(user.vacation_left));
         const interval_start = Date.now();
         const vacation_update_interval = setInterval(() => {
             if (user) {
@@ -344,7 +345,7 @@ function AvatarSubtext({ user, global_user }: { user: AvatarCardUserType; global
         return () => {
             clearInterval(vacation_update_interval);
         };
-    }, [user.id]);
+    }, [user.id, user.vacation_left]);
 
     return (
         <div className="avatar-subtext">
