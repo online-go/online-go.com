@@ -850,7 +850,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 is_uploaded &&
                 this.props.game.goban.config["all_moves"].split("!").length - bplayer !==
                     this.ai_review?.scores.length;
-            if (check1 || check2) {
+
+            // if there's less than 4 moves the worst moves doesn't seem to return 3 moves, otherwise look for these three moves.
+            const check3 =
+                this.ai_review?.moves === undefined ||
+                (Object.keys(this.ai_review?.moves).length !== 3 && scores.length > 4);
+            if (check1 || check2 || check3) {
                 return {
                     ai_table_rows: default_table_rows,
                     avg_score_loss,
@@ -869,6 +874,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             let wtotal = 0;
             let btotal = 0;
             const score_loss_list = [[], []];
+            const worst_move_keys = Object.keys(this.ai_review?.moves);
+
+            for (let j = 0; j < worst_move_keys.length; j++) {
+                scores[worst_move_keys[j]] = this.ai_review?.moves[worst_move_keys[j]].score;
+            }
 
             for (let j = hoffset; j < scores.length - 1; j++) {
                 let scorediff = scores[j + 1] - scores[j];
@@ -923,14 +933,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             for (let j = 0; j < num_rows; j++) {
                 summary_moves_list[j][0] = movecounters[j].toString();
                 summary_moves_list[j][1] =
-                    btotal > 0
-                        ? ((100 * movecounters[j]) / btotal).toFixed(1)
-                        : "";
+                    btotal > 0 ? ((100 * movecounters[j]) / btotal).toFixed(1) : "";
                 summary_moves_list[j][2] = movecounters[num_rows + j].toString();
                 summary_moves_list[j][3] =
-                    wtotal > 0
-                        ? ((100 * movecounters[num_rows + j]) / wtotal).toFixed(1)
-                        : "";
+                    wtotal > 0 ? ((100 * movecounters[num_rows + j]) / wtotal).toFixed(1) : "";
             }
 
             for (let j = 0; j < ai_table_rows.length; j++) {
@@ -940,6 +946,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             this.setState({
                 table_set: true,
             });
+
             return {
                 ai_table_rows,
                 avg_score_loss,
@@ -1070,14 +1077,10 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             for (let j = 0; j < num_rows; j++) {
                 summary_moves_list[j][0] = movecounters[j].toString();
                 summary_moves_list[j][1] =
-                    btotal > 0
-                        ? ((100 * movecounters[j]) / btotal).toFixed(1)
-                        : "";
+                    btotal > 0 ? ((100 * movecounters[j]) / btotal).toFixed(1) : "";
                 summary_moves_list[j][2] = movecounters[num_rows + j].toString();
                 summary_moves_list[j][3] =
-                    wtotal > 0
-                        ? ((100 * movecounters[num_rows + j]) / wtotal).toFixed(1)
-                        : "";
+                    wtotal > 0 ? ((100 * movecounters[num_rows + j]) / wtotal).toFixed(1) : "";
             }
 
             for (let j = 0; j < ai_table_rows.length; j++) {
