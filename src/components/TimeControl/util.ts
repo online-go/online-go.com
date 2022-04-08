@@ -245,7 +245,7 @@ export function makeTimeControlParameters(tc: any): TimeControl {
     const speed: TimeControlTypes.TimeControlSpeed =
         tpm === 0 || tpm > 3600 ? "correspondence" : tpm < 10 ? "blitz" : "live";
 
-    switch (tc.time_control || tc.system) {
+    switch (tc.system || tc.time_control) {
         case "fischer":
             return {
                 system: "fischer",
