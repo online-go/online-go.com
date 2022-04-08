@@ -99,7 +99,6 @@ function handle_pong(data) {
     const drift = now - latency / 2 - data.server;
     last_latency = latency;
     last_clock_drift = drift;
-    console.log("latency: ", latency, "drift: ", drift);
 }
 function send_client_info() {
     socket.send("client/info", {
