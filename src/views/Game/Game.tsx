@@ -930,13 +930,11 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         });
 
         this.goban.on("audio-game-paused", () => {
-            console.log(this.goban.engine.phase);
             if (this.goban.engine.phase === "play") {
                 sfx.play("game_paused");
             }
         });
         this.goban.on("audio-game-resumed", () => {
-            console.log(this.goban.engine.phase);
             if (this.goban.engine.phase === "play") {
                 sfx.play("game_resumed");
             }
