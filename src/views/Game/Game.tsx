@@ -1241,6 +1241,14 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                 if (audio_clock_event.clock.periods_left === 1) {
                     audio_to_play = "last_period";
                 }
+            } else if (
+                audio_clock_event.in_overtime &&
+                time_control.system === "byoyomi" &&
+                seconds_left === time_control.period_time
+            ) {
+                // when we're in a byo-yomi period that we've announced and our turn
+                // just began, don't play the top second sound - otherwise it plays
+                // really fast and the next second sound starts sounding out too quickly.
             } else {
                 if (tick_tock_start > 0 && seconds_left <= tick_tock_start) {
                     audio_to_play = seconds_left % 2 ? "tick" : "tock";
