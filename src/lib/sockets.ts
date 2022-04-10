@@ -70,10 +70,12 @@ export const ai_socket = ai_host ? io(ai_host, ai_config) : io(ai_config);
 
 socket.send = socket.emit;
 ai_socket.send = ai_socket.emit;
+let connect_time = Date.now();
 
 socket.on("connect", () => {
     debug.log("Connection to server established.");
     socket.emit("hostinfo");
+    connect_time = Date.now();
 });
 socket.on("HUP", () => window.location.reload());
 socket.on("hostinfo", (hostinfo) => {
@@ -83,6 +85,12 @@ socket.on("hostinfo", (hostinfo) => {
 let last_clock_drift = 0.0;
 let last_latency = 0.0;
 let last_ai_latency = 0.0;
+
+/* Returns the time in ms since the last time a connection was established to
+ * the server. */
+export function time_since_connect() {
+    return Date.now() - connect_time;
+}
 
 function ping() {
     if (socket.connected) {

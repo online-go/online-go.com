@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { socket } from "sockets";
+import { socket, time_since_connect } from "sockets";
 import * as data from "data";
 import * as preferences from "preferences";
 import { _, interpolate, pgettext } from "translate";
@@ -418,7 +418,7 @@ class NotificationManager {
                         username: notification.user.username,
                     }),
                 );
-                if (Date.now() - boot_time > 5000) {
+                if (time_since_connect() > 5000) {
                     sfx.play("challenge_received");
                 }
             }
@@ -461,7 +461,7 @@ class NotificationManager {
                         if (notification.type === "gameStarted") {
                             title = _("Game Started");
                             body = _("Your game has started");
-                            if (Date.now() - boot_time > 5000) {
+                            if (time_since_connect() > 5000) {
                                 sfx.play("game_started");
                                 //sfx.play("setup-bowl");
                             }
