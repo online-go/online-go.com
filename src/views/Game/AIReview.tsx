@@ -145,6 +145,30 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             return;
         }
 
+        let start_review_attempts_left = 3;
+        const start_review = () => {
+            if (start_review_attempts_left === 0) {
+                console.error("Giving up trying to start AI review");
+                return;
+            }
+            --start_review_attempts_left;
+
+            post(`games/${game_id}/ai_reviews`, {
+                engine: "katago",
+                type: "auto",
+            })
+                .then((res) => {
+                    sanityCheck(res);
+                    if (res.id) {
+                        this.setState({ reviewing: true });
+                    }
+                })
+                .catch((err) => {
+                    console.error("Failed to start AI review", err);
+                    setTimeout(start_review, 500);
+                });
+        };
+
         get(`games/${game_id}/ai_reviews`)
             .then((lst: Array<JGOFAIReview>) => {
                 this.setState({
@@ -175,17 +199,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     //console.log("List: ", lst);
                     this.setSelectedAIReview(lst[0]);
                 } else {
-                    post(`games/${game_id}/ai_reviews`, {
-                        engine: "katago",
-                        type: "auto",
-                    })
-                        .then((res) => {
-                            sanityCheck(res);
-                            if (res.id) {
-                                this.setState({ reviewing: true });
-                            }
-                        })
-                        .catch(errorLogger);
+                    start_review();
                 }
             })
             .catch(errorLogger);
