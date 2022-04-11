@@ -46,9 +46,9 @@ export function AutoTranslate({
         need_translation
             ? null
             : {
-                  source_language: source_language.toLowerCase(),
+                  source_language: source_language?.toLowerCase(),
                   source_text: source,
-                  target_language: source_language.toLowerCase(),
+                  target_language: source_language?.toLowerCase(),
                   target_text: source,
               },
     );

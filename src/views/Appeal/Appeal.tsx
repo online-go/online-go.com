@@ -216,6 +216,7 @@ function Message({ message, mod }: { message: AppealMessage; mod: boolean }) {
                 {((!message.moderator_id && message.moderator_message) || null) && _("Moderator")}
             </div>
             <AutoTranslate source={message.text} markdown />
+
             {((mod && message.moderator_id) || null) && (
                 <div style={{ textAlign: "right" }}>
                     <label htmlFor={`hidden-${message.id}`}>Hidden</label>
