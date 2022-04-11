@@ -37,6 +37,8 @@ export function DismissableMessages(): JSX.Element {
 
     function dismiss(key: string) {
         console.log("Should dismiss", key);
+        delete messages[key];
+        data.set("config.dismissable_messages", messages);
         del(`/api/v1/me/messages/${key}`)
             .then(() => console.log(`Message ${key} dismissed`))
             .catch(console.error);
