@@ -218,7 +218,7 @@ export interface DataSchema
     "settings.page-selected": string;
     "announcement.last-type": string;
     "demo.settings": DemoSettings;
-    "config.dismissable_messages": DismissableMessages;
+    "config.dismissable_messages": DismissableMessagesSchema;
 
     "preferred-game-settings": rest_api.ChallengeDetails[];
 
