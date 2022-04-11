@@ -43,6 +43,10 @@ function render_achievement_entry(entry: AchievementEntry): JSX.Element {
             title = "Western Dan Challenge Contender";
             description = "Played 100 or more games during the 2021 Western Dan Challenge";
             break;
+        case "wsc2022":
+            title = "Western Server Challenge Contender";
+            description = "Played 100 or more games during the 2022 Western Server Challenge";
+            break;
     }
 
     return (
