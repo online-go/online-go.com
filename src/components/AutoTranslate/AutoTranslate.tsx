@@ -40,7 +40,7 @@ export function AutoTranslate({
     className,
     markdown,
 }: AutoTranslateProps): JSX.Element {
-    const need_translation = source_language.toLowerCase() !== current_language;
+    const need_translation = source_language && source_language.toLowerCase() !== current_language;
 
     const [translation, setTranslation] = React.useState<Translation>(
         need_translation
