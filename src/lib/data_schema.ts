@@ -40,6 +40,14 @@ interface CachedSchema {
     group_invitations: any /* me/groups/invitations */;
 }
 
+export interface DismissableMessagesSchema {
+    [key: string]: {
+        language: string;
+        message: string;
+        timestamp: number;
+    };
+}
+
 export interface ConfigSchema {
     user: any;
     cdn: string;
@@ -57,6 +65,7 @@ export interface ConfigSchema {
     superchat_auth: string;
     notification_auth: string;
     incident_auth: string;
+    dismissiable_messages: DismissableMessagesSchema;
 }
 
 interface ChatSchema {
@@ -209,6 +218,7 @@ export interface DataSchema
     "settings.page-selected": string;
     "announcement.last-type": string;
     "demo.settings": DemoSettings;
+    "config.dismissable_messages": DismissableMessages;
 
     "preferred-game-settings": rest_api.ChallengeDetails[];
 

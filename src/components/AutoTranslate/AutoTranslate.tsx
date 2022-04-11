@@ -24,6 +24,7 @@ interface AutoTranslateProps {
     source: string;
     className?: string;
     markdown?: boolean;
+    source_language?: string;
 }
 
 interface Translation {
@@ -33,15 +34,33 @@ interface Translation {
     target_text: string;
 }
 
-export function AutoTranslate({ source, className, markdown }: AutoTranslateProps): JSX.Element {
-    const [translation, setTranslation] = React.useState<Translation>(null);
+export function AutoTranslate({
+    source,
+    source_language,
+    className,
+    markdown,
+}: AutoTranslateProps): JSX.Element {
+    const need_translation = source_language.toLowerCase() !== current_language;
+
+    const [translation, setTranslation] = React.useState<Translation>(
+        need_translation
+            ? null
+            : {
+                  source_language: source_language.toLowerCase(),
+                  source_text: source,
+                  target_language: source_language.toLowerCase(),
+                  target_text: source,
+              },
+    );
 
     React.useEffect(() => {
-        auto_translate(source)
-            .then((translation: Translation) => {
-                setTranslation(translation);
-            })
-            .catch(console.error);
+        if (need_translation) {
+            auto_translate(source)
+                .then((translation: Translation) => {
+                    setTranslation(translation);
+                })
+                .catch(console.error);
+        }
     }, [source]);
 
     return (

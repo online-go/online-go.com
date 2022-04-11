@@ -35,6 +35,7 @@ import { notification_manager } from "Notifications";
 import { ActiveAnnouncements } from "Announcements";
 import { FabX } from "material";
 import { ActiveTournamentList, Group } from "src/lib/types";
+import { DismissableMessages } from "DismissableMessages";
 
 declare let ogs_missing_translation_count: number;
 
@@ -129,6 +130,7 @@ export class Overview extends React.Component<{}, OverviewState> {
                 <SupporterGoals />
                 <div id="Overview">
                     <div className="left">
+                        <DismissableMessages />
                         <EmailBanner />
                         <ActiveAnnouncements />
                         <ChallengesList onAccept={() => this.refresh()} />
