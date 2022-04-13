@@ -94,31 +94,35 @@ export function Clock({
                     <div className="byo-yomi-container">
                         {(!compact || player_clock.main_time <= 0) && (
                             <React.Fragment>
-                                {player_clock.main_time > 0 && (
+                                {player_clock.main_time > 0 && player_clock.periods_left >= 1 && (
                                     <span className="periods-delimiter"> + </span>
                                 )}
-                                <span
-                                    className={
-                                        "period-time boxed" +
-                                        (player_clock.periods_left <= 1 ? "sudden-death" : "")
-                                    }
-                                >
-                                    {prettyTime(player_clock.period_time_left)}
-                                </span>
+                                {player_clock.periods_left >= 1 && (
+                                    <span
+                                        className={
+                                            "period-time boxed" +
+                                            (player_clock.periods_left <= 1 ? "sudden-death" : "")
+                                        }
+                                    >
+                                        {prettyTime(player_clock.period_time_left)}
+                                    </span>
+                                )}
                             </React.Fragment>
                         )}
-                        <span
-                            className={
-                                "byo-yomi-periods " +
-                                (player_clock.periods_left <= 1 ? "sudden-death" : "")
-                            }
-                        >
-                            (
-                            {player_clock.periods_left === 1
-                                ? pgettext("Final byo-yomi period (Sudden Death)", "SD")
-                                : `${player_clock.periods_left}`}
-                            )
-                        </span>
+                        {player_clock.periods_left >= 1 && (
+                            <span
+                                className={
+                                    "byo-yomi-periods " +
+                                    (player_clock.periods_left <= 1 ? "sudden-death" : "")
+                                }
+                            >
+                                (
+                                {player_clock.periods_left === 1
+                                    ? pgettext("Final byo-yomi period (Sudden Death)", "SD")
+                                    : `${player_clock.periods_left}`}
+                                )
+                            </span>
+                        )}
                     </div>
                 )}
 
