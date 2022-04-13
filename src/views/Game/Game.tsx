@@ -639,42 +639,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             } else {
                 this.goban.setByoYomiLabel(null);
             }
-
-            /*
-        if (minutes === 0 && seconds <= 10) {
-            if (seconds % 2 === 0) {
-                cls += " low_time";
-            }
-
-            if (this.on_game_screen && player_id) {
-                if (window["user"] && player_id === window["user"].id && window["user"].id === this.engine.playerToMove()) {
-                    this.byoyomi_label = "" + seconds;
-                    let last_byoyomi_label = this.byoyomi_label;
-                    if (this.last_hover_square) {
-                        this.__drawSquare(this.last_hover_square.x, this.last_hover_square.y);
-                    }
-                    setTimeout(() => {
-                        if (this.byoyomi_label === last_byoyomi_label) {
-                            this.byoyomi_label = null;
-                            if (this.last_hover_square) {
-                                this.__drawSquare(this.last_hover_square.x, this.last_hover_square.y);
-                            }
-                        }
-                    }, 1100);
-                }
-
-                if (this.mode === "play") {
-                    this.emit('audio-clock', {
-                        seconds_left: seconds,
-                        player_to_move: this.engine.playerToMove(),
-                        clock_player: player_id,
-                        time_control_system: timing_type,
-                        in_overtime: in_overtime,
-                    });
-                }
-            }
-        }
-        */
         });
 
         this.goban.on("move-made", this.autoadvance);
