@@ -5111,10 +5111,10 @@ glogg@^1.0.0:
   dependencies:
     sparkles "^1.0.0"
 
-goban@=0.5.77:
-  version "0.5.77"
-  resolved "https://registry.yarnpkg.com/goban/-/goban-0.5.77.tgz#a2bd72394a416b4a461bc3b98d1f49d93675b8c1"
-  integrity sha512-UZ5k8QZJ9I58Ae5IDE+TEI7CrJkBrDUAjjXMvoUYdTe1cLJSh7Nyeo7qqvgyGFZYzfjRZv07lQ4lCrumt8nlCQ==
+goban@=0.5.78:
+  version "0.5.78"
+  resolved "https://registry.yarnpkg.com/goban/-/goban-0.5.78.tgz#671ca18331571ebe1dd87d8976b5d8a1dca52950"
+  integrity sha512-e1EgSMg+5Q8oGmHIOuwx1uKjO45Cy+Npi07bw1Ni7rwve8VgVBX7HK2mwoYdQKKbkx1OBpNQrpHmARRgS20znQ==
 
 graceful-fs@4.X, graceful-fs@^4.0.0, graceful-fs@^4.1.11, graceful-fs@^4.1.2, graceful-fs@^4.1.6, graceful-fs@^4.2.0, graceful-fs@^4.2.4:
   version "4.2.4"

@@ -73,12 +73,24 @@
             text-align: center;
         }
 
-        .pause-text {
+        .pause-and-transmit {
             width: 100%;
-            text-align: right;
             font-size: font-size-small;
-            display: block;
+            margin-left: 1rem;
+            text-align: right;
+
+            .pause-text {
+                flex: 1;
+                flex-basis: 20;
+                margin-left: 0.5rem;
+            }
+            .transmitting {
+                margin-left: 0.5rem;
+                width: 1rem;
+                display: inline-block;
+            }
         }
+
 
         .boxed {
             text-align: right;

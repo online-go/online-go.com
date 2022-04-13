@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { Goban, JGOFClock, JGOFPlayerClock, JGOFTimeControl } from "goban";
+import { Goban, JGOFClockWithTransmitting, JGOFPlayerClock, JGOFTimeControl } from "goban";
 import { _, pgettext, interpolate, ngettext } from "translate";
 
 type clock_color = "black" | "white" | "stone-removal";
@@ -33,7 +33,7 @@ export function Clock({
     className?: string;
     compact?: boolean;
 }): JSX.Element {
-    const [clock, setClock]: [JGOFClock, (x: JGOFClock) => void] = useState(null);
+    const [clock, setClock] = useState<JGOFClockWithTransmitting>(null);
 
     useEffect(() => {
         if (goban) {
@@ -61,6 +61,8 @@ export function Clock({
             color === "black" ? clock.black_clock : clock.white_clock;
         const player_id: number =
             color === "black" ? goban.engine.players.black.id : goban.engine.players.white.id;
+        const transmitting: number =
+            color === "black" ? clock.black_move_transmitting : clock.white_move_transmitting;
 
         let clock_className = "Clock " + color;
         if (clock.pause_state) {
@@ -135,16 +137,21 @@ export function Clock({
                     </React.Fragment>
                 )}
 
-                {!compact && clock.pause_state && (
-                    <ClockPauseReason clock={clock} player_id={player_id} />
-                )}
+                <div className="pause-and-transmit">
+                    {transmitting > 0 ? (
+                        <span className="transmitting fa fa-wifi" title={transmitting.toFixed(0)} />
+                    ) : (
+                        <span className="transmitting" />
+                    )}
+                    {!compact && clock.pause_state && (
+                        <ClockPauseReason clock={clock} player_id={player_id} />
+                    )}
+                </div>
             </span>
         );
     }
 
-    throw new Error("Clock failed to render");
-
-    function update(clock: JGOFClock) {
+    function update(clock: JGOFClockWithTransmitting) {
         if (clock) {
             setClock(Object.assign({}, clock));
         }
@@ -155,7 +162,7 @@ function ClockPauseReason({
     clock,
     player_id,
 }: {
-    clock: JGOFClock;
+    clock: JGOFClockWithTransmitting;
     player_id: number;
 }): JSX.Element {
     let pause_text = _("Paused");
