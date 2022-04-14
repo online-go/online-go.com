@@ -30,6 +30,7 @@ In summary:
     -   The message body for `game/timed_out` should look like the `game/move` without the move,
         https://github.com/online-go/goban/pull/66/files#diff-c46b4a3bf2a9b394ceb534957ab579c2bee4336e0a194d23479387434ec25801R3092-R3096
 -   Clients should stop counting down the clock after a move has been submitted.
+-   Clients can (and should) send latency information to games with the `game/latency` message, and should listen for `game/:id/latency` updates. There is also a new `latencies` dictionary keyed by player id in the gamedata blob. You should also use this latency information to offset your displaeyd clocks to reduce the amount of jumping around they do when clock updates come in. See https://github.com/online-go/goban/pull/66/commits/4594bde1462d17ea9765eaa714d6f0c8c114b6b1 and https://github.com/online-go/goban/pull/66/commits/13819dbbb4d45b9e2c85b79ad530365ccc890465 for the OGS implementation of this.
 
 Transition:
 
