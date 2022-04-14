@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as data from "data";
 import { useEffect, useState } from "react";
 import { Goban, JGOFClockWithTransmitting, JGOFPlayerClock, JGOFTimeControl } from "goban";
 import { _, pgettext, interpolate, ngettext } from "translate";
@@ -34,16 +35,23 @@ export function Clock({
     compact?: boolean;
 }): JSX.Element {
     const [clock, setClock] = useState<JGOFClockWithTransmitting>(null);
+    const [submitting_move, _setSubmittingMove] = useState<boolean>(false);
 
     useEffect(() => {
+        function setSubmittingMove(submitting: boolean) {
+            _setSubmittingMove(submitting);
+        }
+
         if (goban) {
             goban.on("clock", update);
+            goban.on("submitting-move", setSubmittingMove);
         }
 
         return () => {
             // cleanup
             if (goban) {
                 goban.off("clock", update);
+                goban.off("submitting-move", setSubmittingMove);
             }
         };
     });
@@ -142,7 +150,7 @@ export function Clock({
                 )}
 
                 <div className="pause-and-transmit">
-                    {transmitting > 0 ? (
+                    {(submitting_move && player_id !== data.get("user").id) || transmitting > 0 ? (
                         <span className="transmitting fa fa-wifi" title={transmitting.toFixed(0)} />
                     ) : (
                         <span className="transmitting" />
