@@ -138,6 +138,7 @@ interface GameState {
     review_owner_id?: number;
     review_controller_id?: number;
     review_out_of_sync?: boolean;
+    submitting_move: boolean;
 }
 
 export type ViewMode = "portrait" | "wide" | "square";
@@ -243,6 +244,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             show_score_breakdown: false,
             selected_ai_review_uuid: null,
             show_game_timing: false,
+            submitting_move: false,
         };
 
         this.conditional_move_tree = $("<div class='conditional-move-tree-container'/>")[0];
@@ -522,6 +524,9 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             this.goban.setMode("analyze");
         }
 
+        this.goban.on("submitting-move", (tf) => {
+            this.setState({ submitting_move: tf });
+        });
         this.goban.on("gamedata", () => {
             const user = data.get("user");
             try {
@@ -2870,6 +2875,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                         <button
                             className="sm primary bold submit-button"
                             id="game-submit-move"
+                            disabled={state.submitting_move}
                             onClick={this.goban_submit_move}
                         >
                             {_("Submit Move")}
