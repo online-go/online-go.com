@@ -42,7 +42,7 @@ export class CountDown extends React.PureComponent<{ to: Date }, any> {
         this.setState({ display: this.format(left) });
     }
 
-    format(ms) {
+    format(ms: number): string {
         if (ms < 0) {
             return "0:00.0";
         }
@@ -52,6 +52,9 @@ export class CountDown extends React.PureComponent<{ to: Date }, any> {
         const seconds = Math.floor(ms / 1000);
         ms -= seconds * 1000;
         const tenths = Math.floor(ms / 100);
+        if (isNaN(minutes) || isNaN(seconds) || isNaN(tenths)) {
+            return "";
+        }
 
         if (seconds < 10) {
             return `${minutes}:0${seconds}.${tenths}`;

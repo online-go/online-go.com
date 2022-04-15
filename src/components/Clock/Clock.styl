@@ -73,12 +73,22 @@
             text-align: center;
         }
 
-        .pause-text {
+        .pause-and-transmit {
             width: 100%;
-            text-align: right;
             font-size: font-size-small;
-            display: block;
+            margin-left: 0.5rem;
+            text-align: right;
+
+            .pause-text {
+                margin-left: 0.5rem;
+            }
+            .transmitting {
+                margin-right: 0.5rem;
+                width: 0.8rem;
+                display: inline-block;
+            }
         }
+
 
         .boxed {
             text-align: right;
@@ -128,5 +138,22 @@
 .MainGobanView {
     .byo-yomi-container, .canadian-container {
         font-size: font-size-mid;
+    }
+
+}
+
+.MiniGoban {
+    .pause-and-transmit {
+        width: auto;
+        display: inline-block;
+        margin-left: 0;
+
+        .pause-text {
+            margin-left: 0;
+        }
+        .transmitting {
+            margin-left: 0;
+            width: 0;
+        }
     }
 }

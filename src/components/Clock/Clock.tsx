@@ -16,8 +16,9 @@
  */
 
 import * as React from "react";
+import * as data from "data";
 import { useEffect, useState } from "react";
-import { Goban, JGOFClock, JGOFPlayerClock, JGOFTimeControl } from "goban";
+import { Goban, JGOFClockWithTransmitting, JGOFPlayerClock, JGOFTimeControl } from "goban";
 import { _, pgettext, interpolate, ngettext } from "translate";
 
 type clock_color = "black" | "white" | "stone-removal";
@@ -33,17 +34,24 @@ export function Clock({
     className?: string;
     compact?: boolean;
 }): JSX.Element {
-    const [clock, setClock]: [JGOFClock, (x: JGOFClock) => void] = useState(null);
+    const [clock, setClock] = useState<JGOFClockWithTransmitting>(null);
+    const [submitting_move, _setSubmittingMove] = useState<boolean>(false);
 
     useEffect(() => {
+        function setSubmittingMove(submitting: boolean) {
+            _setSubmittingMove(submitting);
+        }
+
         if (goban) {
             goban.on("clock", update);
+            goban.on("submitting-move", setSubmittingMove);
         }
 
         return () => {
             // cleanup
             if (goban) {
                 goban.off("clock", update);
+                goban.off("submitting-move", setSubmittingMove);
             }
         };
     });
@@ -61,6 +69,8 @@ export function Clock({
             color === "black" ? clock.black_clock : clock.white_clock;
         const player_id: number =
             color === "black" ? goban.engine.players.black.id : goban.engine.players.white.id;
+        const transmitting: number =
+            color === "black" ? clock.black_move_transmitting : clock.white_move_transmitting;
 
         let clock_className = "Clock " + color;
         if (clock.pause_state) {
@@ -92,31 +102,35 @@ export function Clock({
                     <div className="byo-yomi-container">
                         {(!compact || player_clock.main_time <= 0) && (
                             <React.Fragment>
-                                {player_clock.main_time > 0 && (
+                                {player_clock.main_time > 0 && player_clock.periods_left >= 1 && (
                                     <span className="periods-delimiter"> + </span>
                                 )}
-                                <span
-                                    className={
-                                        "period-time boxed" +
-                                        (player_clock.periods_left <= 1 ? "sudden-death" : "")
-                                    }
-                                >
-                                    {prettyTime(player_clock.period_time_left)}
-                                </span>
+                                {player_clock.periods_left >= 1 && (
+                                    <span
+                                        className={
+                                            "period-time boxed" +
+                                            (player_clock.periods_left <= 1 ? "sudden-death" : "")
+                                        }
+                                    >
+                                        {prettyTime(player_clock.period_time_left)}
+                                    </span>
+                                )}
                             </React.Fragment>
                         )}
-                        <span
-                            className={
-                                "byo-yomi-periods " +
-                                (player_clock.periods_left <= 1 ? "sudden-death" : "")
-                            }
-                        >
-                            (
-                            {player_clock.periods_left === 1
-                                ? pgettext("Final byo-yomi period (Sudden Death)", "SD")
-                                : `${player_clock.periods_left}`}
-                            )
-                        </span>
+                        {player_clock.periods_left >= 1 && (
+                            <span
+                                className={
+                                    "byo-yomi-periods " +
+                                    (player_clock.periods_left <= 1 ? "sudden-death" : "")
+                                }
+                            >
+                                (
+                                {player_clock.periods_left === 1
+                                    ? pgettext("Final byo-yomi period (Sudden Death)", "SD")
+                                    : `${player_clock.periods_left}`}
+                                )
+                            </span>
+                        )}
                     </div>
                 )}
 
@@ -135,16 +149,21 @@ export function Clock({
                     </React.Fragment>
                 )}
 
-                {!compact && clock.pause_state && (
-                    <ClockPauseReason clock={clock} player_id={player_id} />
-                )}
+                <div className="pause-and-transmit">
+                    {(submitting_move && player_id !== data.get("user").id) || transmitting > 0 ? (
+                        <span className="transmitting fa fa-wifi" title={transmitting.toFixed(0)} />
+                    ) : (
+                        <span className="transmitting" />
+                    )}
+                    {!compact && clock.pause_state && (
+                        <ClockPauseReason clock={clock} player_id={player_id} />
+                    )}
+                </div>
             </span>
         );
     }
 
-    throw new Error("Clock failed to render");
-
-    function update(clock: JGOFClock) {
+    function update(clock: JGOFClockWithTransmitting) {
         if (clock) {
             setClock(Object.assign({}, clock));
         }
@@ -155,7 +174,7 @@ function ClockPauseReason({
     clock,
     player_id,
 }: {
-    clock: JGOFClock;
+    clock: JGOFClockWithTransmitting;
     player_id: number;
 }): JSX.Element {
     let pause_text = _("Paused");
