@@ -17,7 +17,6 @@
 
 import * as ReactDOM from "react-dom";
 import { TypedEventEmitterPureComponent } from "TypedEventEmitterPureComponent";
-import { dup } from "misc";
 
 let current_modal = null;
 
@@ -70,61 +69,6 @@ export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<
     }
     UNSAFE_componentWillReceiveProps() {
         this._open();
-    }
-
-    /********************/
-    /*** State update ***/
-    /********************/
-    /* TODO: This state update system is something I did when I was just getting
-     * started with React, it sucks. It's mostly been removed, but there are
-     * a few modals left that still use it. The eventual goal is to refactor
-     * those uses and remove this funcitonality all together. */
-    upstate_object: any = null;
-
-    nextState(): any {
-        if (this.upstate_object == null) {
-            this.upstate_object = dup(this.state);
-        }
-        return this.upstate_object;
-    }
-    next(): any {
-        return this.nextState();
-    }
-    UNSAFE_componentWillUpdate() {
-        this.upstate_object = null;
-    }
-    bulkUpstate(arr) {
-        const next_state: any = this.nextState();
-        const state_update: any = {};
-
-        for (const elt of arr) {
-            const key = elt[0];
-            const event_or_value = elt[1];
-
-            let value = null;
-            if (typeof event_or_value === "object" && "target" in event_or_value) {
-                const target = event_or_value.target;
-                value = target.type === "checkbox" ? target.checked : target.value;
-            } else {
-                value = event_or_value;
-            }
-            const components = key.split(".");
-            const primary_key = components[0];
-            let cur = next_state;
-            while (components.length > 1) {
-                cur = cur[components[0]];
-                components.shift();
-            }
-            cur[components[0]] = value;
-            state_update[primary_key] = next_state[primary_key];
-        }
-        this.setState(state_update);
-    }
-    upstate(key: string | Array<Array<any>>, event_or_value?) {
-        if (!event_or_value && Array.isArray(key)) {
-            return this.bulkUpstate(key);
-        }
-        return this.bulkUpstate([[key, event_or_value]]);
     }
 }
 
