@@ -87,7 +87,7 @@ export class Play extends React.Component<{}, PlayState> {
             show_13x13_challenges: preferences.get("show-13x13-challenges"),
             show_9x9_challenges: preferences.get("show-9x9-challenges"),
             show_other_boardsize_challenges: preferences.get("show-other-boardsize-challenges"),
-            automatch_size_options: data.get("automatch.size_options", ["19x19"]),
+            automatch_size_options: data.get("automatch.size_options", ["9x9", "13x13", "19x19"]),
             freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
             pending_challenges: [], // challenges received while frozen
             show_in_rengo_management_pane: [],
