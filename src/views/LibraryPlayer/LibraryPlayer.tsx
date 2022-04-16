@@ -24,7 +24,8 @@ import { abort_requests_in_flight, post, get } from "requests";
 import { errorAlerter, ignore, getOutcomeTranslation } from "misc";
 import { Player } from "Player";
 import { Card } from "material";
-import * as Dropzone from "react-dropzone";
+import Dropzone from "react-dropzone";
+import { DropzoneRef } from "react-dropzone";
 import * as moment from "moment";
 import { IdType } from "src/lib/types";
 
@@ -57,9 +58,7 @@ export class LibraryPlayer extends React.PureComponent<
     LibraryPlayerProperties,
     LibraryPlayerState
 > {
-    refs: {
-        dropzone;
-    };
+    dropzone: DropzoneRef;
 
     constructor(props) {
         super(props);
@@ -377,118 +376,149 @@ export class LibraryPlayer extends React.PureComponent<
                 </div>
 
                 <Dropzone
-                    ref="dropzone"
-                    className="Dropzone"
+                    ref={(r) => (this.dropzone = r)}
                     accept=".sgf"
                     onDrop={this.uploadSGFs}
                     multiple={true}
-                    disableClick
+                    noClick
                 >
-                    <Card>
-                        {owner && (
-                            <div className="upload-button">
-                                <button
-                                    className="primary"
-                                    onClick={() => this.refs.dropzone.open()}
-                                >
-                                    {_("Upload")}
-                                </button>
-                            </div>
-                        )}
-
-                        {(collection.collections.length > 0 || null) && (
-                            <div className="collections">
-                                {collection.collections.map((collection, idx) => (
-                                    <div
-                                        key={idx}
-                                        className="collection-entry"
-                                        onClick={this.setCollection.bind(this, collection.id)}
-                                    >
-                                        {owner && (
-                                            <span className="private-lock">
-                                                {collection["private"] ? (
-                                                    <i className="fa fa-lock" />
-                                                ) : (
-                                                    <i className="fa fa-unlock" />
-                                                )}
-                                            </span>
-                                        )}
-                                        <span className="collection">{collection.name}/</span>
-                                        <span className="game-count">
-                                            {interpolate(_("{{library_collection_size}} games"), {
-                                                library_collection_size: collection.game_ct,
-                                            })}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                        {(collection.collections.length > 0 || null) && <hr />}
-
-                        <div className="games">
-                            {owner && (collection.games.length > 0 || null) && (
-                                <div className="game-entry">
-                                    <span className="select">
-                                        <input
-                                            type="checkbox"
-                                            checked={all_games_checked}
-                                            onChange={this.toggleAllGamesChecked}
-                                        />
-                                    </span>
-                                </div>
-                            )}
-                            {collection.games.map((game, idx) => (
-                                <div key={idx} className="game-entry">
+                    {({ getRootProps, getInputProps }) => (
+                        <section className="Dropzone">
+                            <div {...getRootProps()}>
+                                <input {...getInputProps()} />
+                                <Card>
                                     {owner && (
-                                        <span className="select">
-                                            <input
-                                                type="checkbox"
-                                                checked={
-                                                    this.state.games_checked[game.entry_id] || false
-                                                }
-                                                onChange={this.setCheckedGame.bind(
-                                                    this,
-                                                    game.entry_id,
-                                                )}
-                                            />
-                                        </span>
+                                        <div className="upload-button">
+                                            <button
+                                                className="primary"
+                                                onClick={() => this.dropzone.open()}
+                                            >
+                                                {_("Upload")}
+                                            </button>
+                                        </div>
                                     )}
-                                    <span className="date">
-                                        {moment(game.started).format("ll")}
-                                    </span>
-                                    <span className="name">
-                                        <Link to={`/game/${game.game_id}`}>{game.name}</Link>
-                                    </span>
-                                    <span className="black">
-                                        <Player user={game.black} disableCacheUpdate={true} />
-                                    </span>
-                                    <span className="white">
-                                        <Player user={game.white} disableCacheUpdate={true} />
-                                    </span>
-                                    <span className="outcome">{outcome_formatter(game)}</span>
-                                </div>
-                            ))}
-                        </div>
 
-                        {((collection.games.length === 0 && collection.collections.length === 0) ||
-                            null) && (
-                            <div className="empty-text">
-                                <h3>{_("This SGF collection is empty.")}</h3>
-                                {owner && (
-                                    <h4>
-                                        {_(
-                                            "Add some SGFs to this collection by dragging the SGF files here or using the 'Upload' button.",
+                                    {(collection.collections.length > 0 || null) && (
+                                        <div className="collections">
+                                            {collection.collections.map((collection, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className="collection-entry"
+                                                    onClick={this.setCollection.bind(
+                                                        this,
+                                                        collection.id,
+                                                    )}
+                                                >
+                                                    {owner && (
+                                                        <span className="private-lock">
+                                                            {collection["private"] ? (
+                                                                <i className="fa fa-lock" />
+                                                            ) : (
+                                                                <i className="fa fa-unlock" />
+                                                            )}
+                                                        </span>
+                                                    )}
+                                                    <span className="collection">
+                                                        {collection.name}/
+                                                    </span>
+                                                    <span className="game-count">
+                                                        {interpolate(
+                                                            _("{{library_collection_size}} games"),
+                                                            {
+                                                                library_collection_size:
+                                                                    collection.game_ct,
+                                                            },
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {(collection.collections.length > 0 || null) && <hr />}
+
+                                    <div className="games">
+                                        {owner && (collection.games.length > 0 || null) && (
+                                            <div className="game-entry">
+                                                <span className="select">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={all_games_checked}
+                                                        onChange={this.toggleAllGamesChecked}
+                                                    />
+                                                </span>
+                                            </div>
                                         )}
-                                    </h4>
-                                )}
-                                {owner && (
-                                    <button className="reject" onClick={this.deleteCollection}>
-                                        {_("Delete this collection")}
-                                    </button>
-                                )}
+                                        {collection.games.map((game, idx) => (
+                                            <div key={idx} className="game-entry">
+                                                {owner && (
+                                                    <span className="select">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={
+                                                                this.state.games_checked[
+                                                                    game.entry_id
+                                                                ] || false
+                                                            }
+                                                            onChange={this.setCheckedGame.bind(
+                                                                this,
+                                                                game.entry_id,
+                                                            )}
+                                                        />
+                                                    </span>
+                                                )}
+                                                <span className="date">
+                                                    {moment(game.started).format("ll")}
+                                                </span>
+                                                <span className="name">
+                                                    <Link to={`/game/${game.game_id}`}>
+                                                        {game.name}
+                                                    </Link>
+                                                </span>
+                                                <span className="black">
+                                                    <Player
+                                                        user={game.black}
+                                                        disableCacheUpdate={true}
+                                                    />
+                                                </span>
+                                                <span className="white">
+                                                    <Player
+                                                        user={game.white}
+                                                        disableCacheUpdate={true}
+                                                    />
+                                                </span>
+                                                <span className="outcome">
+                                                    {outcome_formatter(game)}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {((collection.games.length === 0 &&
+                                        collection.collections.length === 0) ||
+                                        null) && (
+                                        <div className="empty-text">
+                                            <h3>{_("This SGF collection is empty.")}</h3>
+                                            {owner && (
+                                                <h4>
+                                                    {_(
+                                                        "Add some SGFs to this collection by dragging the SGF files here or using the 'Upload' button.",
+                                                    )}
+                                                </h4>
+                                            )}
+                                            {owner && (
+                                                <button
+                                                    className="reject"
+                                                    onClick={this.deleteCollection}
+                                                >
+                                                    {_("Delete this collection")}
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                </Card>
                             </div>
-                        )}
-                    </Card>
+                        </section>
+                    )}
                 </Dropzone>
             </div>
         );

@@ -44,7 +44,7 @@ import { close_all_popovers } from "popover";
 import { computeAverageMoveTime, GoEngineRules } from "goban";
 import { openMergeReportModal } from "MergeReportModal";
 import * as d3 from "d3";
-import * as Dropzone from "react-dropzone";
+import Dropzone from "react-dropzone";
 import swal from "sweetalert2";
 
 let logspam_debounce: any;
@@ -3539,14 +3539,21 @@ function OpenGothaTournamentUploadDownload({
                 </a>
             </h3>
             <div className="OpenGothaUploadDownload">
-                <Dropzone className="Dropzone" onDrop={uploadFile} multiple={false}>
-                    <i className="fa fa-upload" />
-                    {pgettext(
-                        "Upload a file from OpenGotha to update an OpenGotha tournament on online-go.com",
-                        "Upload to Online-Go.com ",
+                <Dropzone onDrop={uploadFile} multiple={false}>
+                    {({ getRootProps, getInputProps }) => (
+                        <section className="Dropzone">
+                            <div {...getRootProps()}>
+                                <input {...getInputProps()} />
+                                <i className="fa fa-upload" />
+                                {pgettext(
+                                    "Upload a file from OpenGotha to update an OpenGotha tournament on online-go.com",
+                                    "Upload to Online-Go.com ",
+                                )}
+                            </div>
+                        </section>
                     )}
                 </Dropzone>
-                <div onClick={download}>
+                <div className="download" onClick={download}>
                     <i className="fa fa-download" />
                     {pgettext(
                         "Download an updated XML file for use with OpenGotha",

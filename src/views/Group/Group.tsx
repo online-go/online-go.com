@@ -30,7 +30,7 @@ import { UIPush } from "UIPush";
 import { TournamentList } from "TournamentList";
 import { close_all_popovers } from "popover";
 import * as player_cache from "player_cache";
-import * as Dropzone from "react-dropzone";
+import Dropzone from "react-dropzone";
 import { image_resizer } from "image_resizer";
 import * as moment from "moment";
 import { PlayerAutocomplete } from "PlayerAutocomplete";
@@ -240,7 +240,9 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
             .catch(errorAlerter);
     }
     updateIcon = (files) => {
-        this.setState({ new_icon: files[0] });
+        this.setState({
+            new_icon: Object.assign(files[0], { preview: URL.createObjectURL(files[0]) }),
+        });
         image_resizer(files[0], 512, 512)
             .then((file: Blob) => {
                 put("group/%%/icon", this.state.group_id, file)
@@ -252,7 +254,9 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
             .catch(errorAlerter);
     };
     updateBanner = (files) => {
-        this.setState({ new_banner: files[0] });
+        this.setState({
+            new_banner: Object.assign(files[0], { preview: URL.createObjectURL(files[0]) }),
+        });
         image_resizer(files[0], 2560, 512)
             .then((file: Blob) => {
                 put("group/%%/banner", this.state.group_id, file)
@@ -479,17 +483,20 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                 {(editing || group.has_banner || null) && (
                     <div className="banner">
                         {editing ? (
-                            <Dropzone
-                                className="Dropzone"
-                                onDrop={this.updateBanner}
-                                multiple={false}
-                            >
-                                {this.state.new_banner ? (
-                                    <img src={this.state.new_banner.preview} />
-                                ) : group.banner ? (
-                                    <img src={group.banner} />
-                                ) : (
-                                    <i className="fa fa-picture-o" />
+                            <Dropzone onDrop={this.updateBanner} multiple={false}>
+                                {({ getRootProps, getInputProps }) => (
+                                    <section className="Dropzone">
+                                        <div {...getRootProps()}>
+                                            <input {...getInputProps()} />
+                                            {this.state.new_banner ? (
+                                                <img src={this.state.new_banner.preview} />
+                                            ) : group.banner ? (
+                                                <img src={group.banner} />
+                                            ) : (
+                                                <i className="fa fa-picture-o" />
+                                            )}
+                                        </div>
+                                    </section>
                                 )}
                             </Dropzone>
                         ) : group.banner ? (
@@ -513,27 +520,30 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                             <div className="row">
                                 <div className="col-sm-2" style={{ minWidth: "128px" }}>
                                     {editing ? (
-                                        <Dropzone
-                                            className="Dropzone Dropzone-128"
-                                            onDrop={this.updateIcon}
-                                            multiple={false}
-                                        >
-                                            {this.state.new_icon ? (
-                                                <img
-                                                    src={this.state.new_icon.preview}
-                                                    style={{
-                                                        maxHeight: "128px",
-                                                        maxWidth: "128px",
-                                                    }}
-                                                />
-                                            ) : (
-                                                <img
-                                                    src={group.icon}
-                                                    style={{
-                                                        maxHeight: "128px",
-                                                        maxWidth: "128px",
-                                                    }}
-                                                />
+                                        <Dropzone onDrop={this.updateIcon} multiple={false}>
+                                            {({ getRootProps, getInputProps }) => (
+                                                <section className="Dropzone Dropzone-128">
+                                                    <div {...getRootProps()}>
+                                                        <input {...getInputProps()} />
+                                                        {this.state.new_icon ? (
+                                                            <img
+                                                                src={this.state.new_icon.preview}
+                                                                style={{
+                                                                    maxHeight: "128px",
+                                                                    maxWidth: "128px",
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <img
+                                                                src={group.icon}
+                                                                style={{
+                                                                    maxHeight: "128px",
+                                                                    maxWidth: "128px",
+                                                                }}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                </section>
                                             )}
                                         </Dropzone>
                                     ) : (
