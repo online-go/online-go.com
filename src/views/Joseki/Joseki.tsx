@@ -37,7 +37,7 @@ import { JosekiAdmin } from "JosekiAdmin";
 import { openModal } from "Modal";
 import { JosekiSourceModal } from "JosekiSourceModal";
 import { JosekiVariationFilter } from "JosekiVariationFilter";
-import { JosekiTagSelector } from "JosekiTagSelector";
+import { JosekiTagSelector, JosekiTag } from "JosekiTagSelector";
 import { Throbber } from "Throbber";
 import { IdType } from "src/lib/types";
 
@@ -181,7 +181,7 @@ interface JosekiState {
     };
     tags: any[];
 
-    variation_filter: { contributor: number; tags: number[]; source: number }; // start with no filter defined
+    variation_filter: { contributor: number; tags: JosekiTag[]; source: number }; // start with no filter defined
 
     count_details_open: boolean;
     tag_counts: { tagname: string; count: number }[];
@@ -259,7 +259,7 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
             joseki_source: undefined as { url: string; description: string }, // the source of the current position
             tags: [], // the tags that are on the current position
 
-            variation_filter: {} as { contributor: number; tags: number[]; source: number }, // start with no filter defined
+            variation_filter: {} as { contributor: number; tags: JosekiTag[]; source: number }, // start with no filter defined
 
             count_details_open: false,
             tag_counts: [], // A count of the number of continuations from this position that have each tag
@@ -1567,7 +1567,7 @@ interface ExploreProps {
     joseki_source: { url: string; description: string };
     tags: Array<any>;
     set_variation_filter(filter: any): void;
-    current_filter: { contributor: number; tags: number[]; source: number };
+    current_filter: { contributor: number; tags: JosekiTag[]; source: number };
     child_count: number;
     show_comments: boolean;
 }
@@ -1886,7 +1886,7 @@ interface PlayProps {
     joseki_successes: number;
     joseki_tag_id: number;
     set_variation_filter(filter: any): void;
-    current_filter: { contributor: number; tags: number[]; source: number };
+    current_filter: { contributor: number; tags: JosekiTag[]; source: number };
 }
 
 interface PlayState {
@@ -2341,7 +2341,7 @@ class EditPane extends React.Component<EditProps, EditState> {
                         <JosekiTagSelector
                             oje_headers={oje_headers()}
                             tag_list_url={server_url + "tags"}
-                            selected_tags={this.state.tags as any} // selected_tags is typed as number[], I haven't figured out how to resolve yet.
+                            selected_tags={this.state.tags as any}
                             on_tag_update={this.onTagChange}
                         />
                     </div>

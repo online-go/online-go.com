@@ -19,15 +19,20 @@ import * as React from "react";
 
 import Select from "react-select";
 
+export interface JosekiTag {
+    value: string;
+    label: string;
+}
+
 interface JosekiTagSelectorProps {
     oje_headers: HeadersInit;
     tag_list_url: string;
-    selected_tags: number[];
+    selected_tags: JosekiTag[];
     on_tag_update: any;
 }
 
 interface JosekiTagSelectorState {
-    tag_list: [];
+    tag_list: JosekiTag[];
     tag_map: {};
 }
 
