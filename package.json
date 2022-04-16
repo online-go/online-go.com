@@ -111,7 +111,7 @@
     "react-resize-detector": "^4.2.0",
     "react-router-dom": "^5.1.2",
     "react-select": "^5.0.1",
-    "react-sortable-hoc": "^1.11.0",
+    "react-sortable-hoc": "^2.0.0",
     "react-split": "^2.0.9",
     "react-switch": "^5.0.1",
     "react-table": "^6.10.0",

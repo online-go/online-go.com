@@ -25,7 +25,7 @@ import { SortableContainer, SortableElement } from "react-sortable-hoc";
 import arrayMove from "array-move";
 import { IdType } from "src/lib/types";
 
-interface PuzzleEntry {
+interface PuzzleEntryInterface {
     id: number;
     order: number;
     name: string;
@@ -39,14 +39,14 @@ interface SortablePuzzleListProperties {
     collection: IdType;
 }
 interface SortablePuzzleListState {
-    entries: Array<PuzzleEntry>;
+    entries: Array<PuzzleEntryInterface>;
 }
 
 export class SortablePuzzleList extends React.Component<
     SortablePuzzleListProperties,
     SortablePuzzleListState
 > {
-    constructor(props) {
+    constructor(props: SortablePuzzleListProperties) {
         super(props);
 
         this.state = {
@@ -93,7 +93,7 @@ export class SortablePuzzleList extends React.Component<
     }
 }
 
-const PuzzleEntry = SortableElement(({ puzzle }) => (
+const PuzzleEntry: any = SortableElement(({ puzzle }: { puzzle: PuzzleEntryInterface }) => (
     <li className="SortablePuzzleListEntry">
         <span className="minigoban">
             <MiniGoban
@@ -125,8 +125,8 @@ const PuzzleEntry = SortableElement(({ puzzle }) => (
     </li>
 ));
 
-const SortablePuzzleListContainer = SortableContainer(
-    ({ entries }: { entries: Array<PuzzleEntry> }) => (
+const SortablePuzzleListContainer: any = SortableContainer(
+    ({ entries }: { entries: Array<PuzzleEntryInterface> }) => (
         <ul className="SortablePuzzleList">
             {entries.map((entry, index) => (
                 <PuzzleEntry key={entry.id} index={index} puzzle={entry} />
