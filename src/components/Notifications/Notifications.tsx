@@ -547,50 +547,35 @@ class NotificationManager {
 
 export const notification_manager: NotificationManager = new NotificationManager();
 
-export class TurnIndicator extends React.Component<{}, any> {
-    constructor(props) {
-        super(props);
-        this.state = {
-            count: Object.keys(notification_manager.boards_to_move_on).length,
-            total: Object.keys(notification_manager.active_boards).length,
-        };
+export function TurnIndicator(): JSX.Element {
+    const [count, setCount] = React.useState(0);
+    const [total, setTotal] = React.useState(0);
 
-        this.advanceToNextBoard = this.advanceToNextBoard.bind(this);
-
+    React.useEffect(() => {
         notification_manager.event_emitter.on("turn-count", (ct) => {
-            this.setState({ count: ct });
+            setCount(ct);
         });
 
         notification_manager.event_emitter.on("total-count", (tt) => {
-            this.setState({ total: tt });
+            setTotal(tt);
         });
-    }
+    }, []);
 
-    advanceToNextBoard(ev) {
-        notification_manager.advanceToNextBoard(ev);
-    }
-
-    render() {
-        return (
-            <span
-                className="turn-indicator"
-                onAuxClick={this.advanceToNextBoard}
-                onClick={this.advanceToNextBoard}
-            >
-                <span
-                    className={
-                        this.state.total > 0
-                            ? this.state.count > 0
-                                ? "active count"
-                                : "inactive count"
-                            : "count"
-                    }
-                >
-                    <span>{this.state.count}</span>
-                </span>
+    return (
+        <span
+            className="turn-indicator"
+            onAuxClick={advanceToNextBoard}
+            onClick={advanceToNextBoard}
+        >
+            <span className={total > 0 ? (count > 0 ? "active count" : "inactive count") : "count"}>
+                <span>{count}</span>
             </span>
-        );
-    }
+        </span>
+    );
+}
+
+function advanceToNextBoard(ev: React.MouseEvent) {
+    notification_manager.advanceToNextBoard(ev);
 }
 
 export class NotificationIndicator extends React.Component<{}, any> {
