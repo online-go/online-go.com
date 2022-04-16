@@ -43,7 +43,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
         };
     }
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         get("players/%%/full", this.props.playerId)
             .then((result) => {
                 console.log(result);

@@ -86,7 +86,7 @@ export class PlayerDetails extends React.PureComponent<
         }
     }
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         this.resolve(this.props.playerId);
     }
 

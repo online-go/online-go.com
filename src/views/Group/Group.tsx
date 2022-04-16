@@ -141,12 +141,10 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
         };
     }
 
-    UNSAFE_componentWillMount() {
-        setExtraActionCallback(this.renderExtraPlayerActions);
-    }
     componentDidMount() {
         window.document.title = _("Group");
         this.resolve(parseInt(this.props.match.params.group_id));
+        setExtraActionCallback(this.renderExtraPlayerActions);
     }
     componentWillUnmount() {
         setExtraActionCallback(null);

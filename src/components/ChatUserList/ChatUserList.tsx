@@ -45,7 +45,7 @@ export class ChatUsers<
         super(props);
         (this.state as ChatUsersState) = { tick: 0 };
     }
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         this.init(this.props.channel);
     }
     UNSAFE_componentWillReceiveProps(next_props) {

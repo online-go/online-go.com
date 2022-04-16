@@ -57,7 +57,7 @@ export class AnnouncementCenter extends React.PureComponent<{}, AnnouncementCent
         };
     }
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         window.document.title = _("Announcement Center");
         this.refresh();
     }

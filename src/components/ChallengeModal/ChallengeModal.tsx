@@ -1598,7 +1598,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     next(): any {
         return this.nextState();
     }
-    UNSAFE_componentWillUpdate() {
+    componentDidUpdate() {
         this.upstate_object = null;
     }
     bulkUpstate(arr) {

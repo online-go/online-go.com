@@ -327,11 +327,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         this.goban_resumeGame = this.goban_resumeGame.bind(this);
         this.updateVariationName = this.updateVariationName.bind(this);
     }
-    UNSAFE_componentWillMount() {
-        setActiveGameView(this);
-        setExtraActionCallback(this.renderExtraPlayerActions);
-        $(window).on("focus", this.onFocus);
-    }
     UNSAFE_componentWillReceiveProps(nextProps) {
         if (
             this.props.match.params.game_id !== nextProps.match.params.game_id ||
@@ -379,6 +374,10 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         this.onResize(false, true);
     }
     componentDidMount() {
+        setActiveGameView(this);
+        setExtraActionCallback(this.renderExtraPlayerActions);
+        $(window).on("focus", this.onFocus);
+
         this.initialize();
         if (this.computeViewMode() === "portrait") {
             this.ref_goban_container.style.minHeight = `${screen.width}px`;
