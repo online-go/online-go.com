@@ -30,93 +30,69 @@ export function icon_size_url(url: string, size: number): string {
     return url.replace(/-[0-9]+.png$/, `-${size}.png`).replace(/s=[0-9]+/, `s=${size}`);
 }
 
-export function getPlayerIconURL(id: number, size: number): Promise<string> {
+export async function getPlayerIconURL(id: number, size: number): Promise<string> {
     return player_cache.fetch(id, ["icon"]).then((user) => icon_size_url(user.icon, size));
 }
 
-export class PlayerIcon extends React.PureComponent<PlayerIconProps, { url }> {
-    mounted: boolean = false;
-    subscriber = new player_cache.Subscriber((user) => this.fetch(user.id, this.props));
+export function PlayerIcon(props: PlayerIconProps): JSX.Element {
+    const [url, setUrl] = React.useState<string | null>(null);
 
-    constructor(props: PlayerIconProps) {
-        super(props);
-        const id = this.getId(props);
+    const subscriber = React.useRef<player_cache.Subscriber>();
+
+    React.useEffect(() => {
+        const id = getId(props);
         if (!id) {
-            this.state = { url: null };
+            setUrl(null);
             return;
         }
 
         const user = player_cache.lookup(id);
         const size = typeof props.size === "number" ? props.size : parseInt(props.size);
-        this.state = {
-            url: user && user.icon ? icon_size_url(user.icon, size) : null,
+        const new_url = user && user.icon ? icon_size_url(user.icon, size) : null;
+        setUrl(new_url);
+
+        if (!url) {
+            fetchIconUrl(id, props);
+        }
+
+        subscriber.current = new player_cache.Subscriber((user) => fetchIconUrl(user.id, props));
+        subscriber.current.on(id);
+
+        let cancelled = false;
+
+        return () => {
+            cancelled = true;
+            subscriber.current.off(subscriber.current.players());
+            delete subscriber.current;
         };
-        if (!this.state.url) {
-            this.fetch(id, props);
-        }
-    }
 
-    getId(props: PlayerIconProps): number {
-        let ret = parseInt(props.id || (props.user && (props.user.id || props.user.user_id)));
-        if (isNaN(ret)) {
-            ret = null;
-        }
-        return ret;
-    }
-
-    fetch(id, props) {
-        getPlayerIconURL(id, props.size)
-            .then((url) => {
-                if (id === this.getId(props)) {
-                    if (this.mounted && this.state.url !== url) {
-                        this.setState({ url: url });
+        function fetchIconUrl(id: number, props: PlayerIconProps): void {
+            getPlayerIconURL(id, parseInt(`${props.size}`))
+                .then((url) => {
+                    if (!cancelled) {
+                        setUrl(url);
                     }
-                }
-            })
-            .catch(errorLogger);
-    }
-    componentDidMount() {
-        this.mounted = true;
-        const id = this.getId(this.props);
-        if (!isNaN(id) && id > 0) {
-            this.subscriber.on(id);
+                })
+                .catch(errorLogger);
         }
-    }
-    componentWillUnmount() {
-        this.mounted = false;
-        this.subscriber.off(this.subscriber.players());
-    }
+    }, [props.id, props.size]);
 
-    UNSAFE_componentWillReceiveProps(next_props) {
-        const current_id = this.getId(this.props);
-        const next_id = this.getId(next_props);
-        if (current_id !== next_id) {
-            this.setState({ url: null });
-            this.subscriber.off(this.subscriber.players());
-            if (next_id > 0) {
-                this.subscriber.on(next_id);
-            } else {
-                return;
-            }
-            this.fetch(next_id, next_props);
-        }
-    }
-    render() {
-        if (this.state.url) {
-            return (
-                <img
-                    className={`PlayerIcon PlayerIcon-${this.props.size} ${
-                        this.props.className || ""
-                    }`}
-                    src={this.state.url}
-                />
-            );
-        }
-
+    if (url) {
         return (
-            <span
-                className={`PlayerIcon PlayerIcon-${this.props.size} ${this.props.className || ""}`}
+            <img
+                className={`PlayerIcon PlayerIcon-${props.size} ${props.className || ""}`}
+                src={url}
             />
         );
     }
+
+    return <span className={`PlayerIcon PlayerIcon-${props.size} ${props.className || ""}`} />;
+}
+
+function getId(props: PlayerIconProps): number {
+    let ret = parseInt(props.id || (props.user && (props.user.id || props.user.user_id)));
+    if (isNaN(ret)) {
+        ret = null;
+    }
+    return ret;
 }
