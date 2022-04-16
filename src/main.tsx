@@ -134,7 +134,7 @@ data.setDefault("config.release", window["ogs_release"]);
 configure_goban();
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import * as ReactDOM from "react-dom/client";
 import { browserHistory } from "./ogsHistory";
 import { routes } from "./routes";
 
@@ -340,10 +340,17 @@ function ForceReactUpdateWrapper(props): JSX.Element {
     };
     return <React.Fragment key={update}>{props.children}</React.Fragment>;
 }
-ReactDOM.render(
-    <ForceReactUpdateWrapper>{routes}</ForceReactUpdateWrapper>,
-    document.getElementById("main-content"),
+
+const react_root = ReactDOM.createRoot(document.getElementById("main-content"));
+react_root.render(<ForceReactUpdateWrapper>{routes}</ForceReactUpdateWrapper>);
+
+/*
+react_root.render(
+    <React.StrictMode>
+        <ForceReactUpdateWrapper>{routes}</ForceReactUpdateWrapper>
+    </React.StrictMode>,
 );
+*/
 
 window["data"] = data;
 window["preferences"] = preferences;
