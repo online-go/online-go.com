@@ -29,6 +29,7 @@ interface RengoManagementPaneProperties {
     withdrawFromRengoChallenge: (challenge: any) => void;
     joinRengoChallenge: (challenge: any) => void;
     dontShowCancelButton?: boolean;
+    children: React.ReactNode;
 }
 
 interface RengoManagementPaneState {}
