@@ -2125,7 +2125,7 @@ function SoundPreferences(): JSX.Element {
                             className="sound-option-select"
                             classNamePrefix="ogs-react-select"
                             value={start_options.filter((opt) => opt.value === tick_tock_start)[0]}
-                            getOptionValue={(data) => data.value}
+                            getOptionValue={(data) => data.value.toString()}
                             onChange={setTickTockStart}
                             options={start_options}
                             isClearable={false}
@@ -2189,7 +2189,7 @@ function SoundPreferences(): JSX.Element {
                                     (opt) => opt.value === ten_seconds_start,
                                 )[0]
                             }
-                            getOptionValue={(data) => data.value}
+                            getOptionValue={(data) => data.value.toString()}
                             onChange={setTenSecondsStart}
                             options={start_options_tens}
                             isClearable={false}
@@ -2242,7 +2242,7 @@ function SoundPreferences(): JSX.Element {
                                     (opt) => opt.value === five_seconds_start,
                                 )[0]
                             }
-                            getOptionValue={(data) => data.value}
+                            getOptionValue={(data) => data.value.toString()}
                             onChange={setFiveSecondsStart}
                             options={start_options_fives}
                             isClearable={false}
@@ -2294,7 +2294,7 @@ function SoundPreferences(): JSX.Element {
                             value={
                                 start_options.filter((opt) => opt.value === every_second_start)[0]
                             }
-                            getOptionValue={(data) => data.value}
+                            getOptionValue={(data) => data.value.toString()}
                             onChange={setEverySecondStart}
                             options={start_options}
                             isClearable={false}
@@ -2813,7 +2813,6 @@ function SoundPackSelect(props: {
             isClearable={false}
             isSearchable={false}
             blurInputOnSelect={true}
-            noResultsText={_("No results found")}
             filterOption={filter}
             getOptionLabel={(pack) => pack.pack_id}
             getOptionValue={(pack) => pack.pack_id}
