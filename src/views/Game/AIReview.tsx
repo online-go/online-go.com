@@ -1246,7 +1246,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         options={this.state.ai_reviews}
                         onChange={this.setSelectedAIReview as any}
                         isClearable={false}
-                        autoBlur={true}
+                        blurInputOnSelect={true}
                         isSearchable={false}
                         components={{
                             Option: ({ innerRef, innerProps, isFocused, data, getValue }) => {
