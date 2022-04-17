@@ -65,7 +65,7 @@ interface PlayerDetailsState {
     resolved: boolean;
     username: string | PlayerCacheEntry["username"];
     icon: PlayerCacheEntry["icon"];
-    ranking: string | PlayerCacheEntry["ranking"];
+    ranking: PlayerCacheEntry["ranking"];
     rating: string | PlayerCacheEntry["rating"];
     ratings?: PlayerCacheEntry["ratings"];
     ui_class: string | PlayerCacheEntry["ui_class"];
@@ -96,7 +96,7 @@ export class PlayerDetails extends React.PureComponent<
             username: "...",
             //icon: data.get('config.cdn_release') + '/img/default-user.svg',
             icon: "",
-            ranking: "...",
+            ranking: 0,
             rating: "...",
             ui_class: "...",
             country: "un",

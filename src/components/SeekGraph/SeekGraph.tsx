@@ -766,7 +766,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 e.append(f);
                 ReactDOM.render(
                     <Player
-                        user={{ user_id: 0, ranking: C.black_rank, username: C.black_username }}
+                        user={{ id: 0, ranking: C.black_rank, username: C.black_username }}
                         rank
                         nolink
                     />,
@@ -777,7 +777,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 e.append(f);
                 ReactDOM.render(
                     <Player
-                        user={{ user_id: 0, ranking: C.white_rank, username: C.white_username }}
+                        user={{ id: 0, ranking: C.white_rank, username: C.white_username }}
                         rank
                         nolink
                     />,

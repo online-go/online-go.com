@@ -1819,7 +1819,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
                                 {this.state.commentary.map((comment, idx) => (
                                     <div className="comment" key={idx}>
                                         <div className="comment-header">
-                                            <Player user={comment.user_id}></Player>
+                                            <Player user={parseInt(comment.user_id)}></Player>
                                             <div className="comment-date">
                                                 {comment.date.toDateString()}
                                             </div>
@@ -1847,7 +1847,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
                             {this.state.audit_log.map((audit, idx) => (
                                 <div className="audit-entry" key={idx}>
                                     <div className="audit-header">
-                                        <Player user={audit.user_id}></Player>
+                                        <Player user={parseInt(audit.user_id)}></Player>
                                         <div className="audit-date">
                                             {new Date(audit.date).toDateString()}
                                         </div>

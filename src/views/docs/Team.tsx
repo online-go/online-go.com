@@ -124,7 +124,7 @@ export class Team extends React.PureComponent<{}, any> {
                                     ))}
                                 </span>
                                 <span style={{ display: "inline-block", width: "10em" }}>
-                                    <Player user={u} />
+                                    <Player user={Object.assign(u, { country: u.country[0] })} />
                                 </span>
                                 {_("Languages")}:{" "}
                                 {u.languages.map((c) => (
@@ -147,7 +147,7 @@ export class Team extends React.PureComponent<{}, any> {
                                     ))}
                                 </span>
                                 <span style={{ display: "inline-block", width: "9em" }}>
-                                    <Player user={u} />
+                                    <Player user={Object.assign(u, { country: u.country[0] })} />
                                 </span>
                                 {_("Languages")}:{" "}
                                 {u.languages.map((c) => (

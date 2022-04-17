@@ -30,6 +30,7 @@ import { browserHistory } from "ogsHistory";
 import { openReportedConversationModal } from "ReportedConversationModal";
 import { ReportedConversation, report_categories } from "Report";
 import { AutoTranslate } from "AutoTranslate";
+import { PlayerCacheEntry } from "player_cache";
 import swal from "sweetalert2";
 
 export interface Report {
@@ -45,7 +46,7 @@ export interface Report {
     reported_review: number;
     reported_conversation: ReportedConversation;
     url: string;
-    moderator: Player;
+    moderator: PlayerCacheEntry;
     cleared_by_user: boolean;
     was_helpful: boolean;
     reporter_note: string;

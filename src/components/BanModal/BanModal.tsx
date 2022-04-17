@@ -26,7 +26,7 @@ import { Player } from "Player";
 interface Events {}
 
 interface BanModalProperties {
-    player_id: string | number;
+    player_id: number;
 }
 
 export class BanModal extends Modal<Events, BanModalProperties, any> {
