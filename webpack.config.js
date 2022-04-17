@@ -107,7 +107,8 @@ module.exports = (env, argv) => {
                     test: /\.tsx?$/,
                     exclude: /node_modules/,
                     use: [
-                        { loader: 'cache-loader' },
+                        // cache is set to true for development in webpack 5 https://webpack.js.org/configuration/cache/
+                        // { loader: 'cache-loader' },
                         {
                             loader: "ts-loader",
                             options: {
