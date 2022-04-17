@@ -71,7 +71,9 @@ module.exports = (env, argv) => {
 
 
     if (process.env.ANALYZE) {
-        plugins.push(new BundleAnalyzerPlugin());
+        plugins.push(new BundleAnalyzerPlugin({
+            analyzerPort: 18888,
+        }));
     }
 
 
