@@ -84,8 +84,6 @@
         "@types/react": "^18.0.5",
         "@types/react-autosuggest": "^10.1.5",
         "@types/react-dom": "^18.0.1",
-        "@types/react-select": "^5.0.1",
-        "@types/react-virtualized": "^9.21.21",
         "@types/react-router-dom": "^5.3.2",
         "@types/sanitize-html": "^1.22.0",
         "array-move": "^2.2.1",
