@@ -17,9 +17,9 @@
 
 import * as React from "react";
 import * as moment from "moment";
-import { Chart } from "react-charts";
+import { Chart, AxisOptions } from "react-charts";
 
-import * as data from "data";
+// import * as data from "data";
 
 import { _ } from "translate";
 import { Modal } from "Modal";
@@ -38,54 +38,66 @@ interface JosekiStatsModalProperties {
     daily_page_visits: Array<JosekiPageVisits>;
 }
 
+interface DailyPageVisits {
+    date: Date;
+    visits: number;
+}
+
+function round_date(the_date: Date): Date {
+    return new Date(the_date.setHours(0, 0, 0, 0));
+}
+
 function StatsChart(props: JosekiStatsModalProperties) {
-    const stats_data = React.useMemo(
-        () => [
-            {
-                label: "Total Page Visits",
-                data: props.daily_page_visits.map((day) => ({
-                    x: new Date(day.date).setHours(0, 0, 0, 0),
-                    y: day.pageVisits,
-                })),
+    const data = [
+        {
+            label: "Total Page Visits",
+            data: props.daily_page_visits.map((day) => ({
+                date: round_date(new Date(day.date)),
+                visits: day.pageVisits,
+            })),
+        },
+        {
+            label: "Explore Page Visits",
+            data: props.daily_page_visits.map((day) => ({
+                date: round_date(new Date(day.date)),
+                visits: day.explorePageVisits,
+            })),
+        },
+        {
+            label: "Play Mode Visits",
+            data: props.daily_page_visits.map((day) => ({
+                date: round_date(new Date(day.date)),
+                visits: day.playPageVisits,
+            })),
+        },
+        {
+            label: "Guest Visits",
+            data: props.daily_page_visits.map((day) => ({
+                date: round_date(new Date(day.date)),
+                visits: day.guestPageVisits,
+            })),
+        },
+    ];
+    const primaryAxis = React.useMemo(
+        (): AxisOptions<DailyPageVisits> => ({
+            getValue: (datum) => {
+                //console.log(datum.date);
+                return datum.date;
             },
-            {
-                label: "Explore Page Visits",
-                data: props.daily_page_visits.map((day) => [
-                    new Date(day.date).setHours(0, 0, 0, 0),
-                    day.explorePageVisits,
-                ]),
-            },
-            {
-                label: "Play Mode Visits",
-                data: props.daily_page_visits.map((day) => [
-                    new Date(day.date).setHours(0, 0, 0, 0),
-                    day.playPageVisits,
-                ]),
-            },
-            {
-                label: "Guest Visits",
-                data: props.daily_page_visits.map((day) => [
-                    new Date(day.date).setHours(0, 0, 0, 0),
-                    day.guestPageVisits,
-                ]),
-            },
-        ],
-        [props],
+        }),
+        [],
     );
 
-    const axes = [
-        { primary: true, type: "time", position: "bottom" },
-        { type: "linear", position: "left" },
-    ];
+    const secondaryAxes = React.useMemo(
+        (): AxisOptions<DailyPageVisits>[] => [
+            {
+                getValue: (datum) => datum.visits,
+            },
+        ],
+        [],
+    );
 
-    const series = {
-        showPoints: false,
-    };
-
-    // Accessible TBD - assumes dark for now
-    const label_colour = data.get("theme") === "light" ? false : true;
-
-    return <Chart data={stats_data} axes={axes} series={series} tooltip dark={label_colour} />;
+    return <Chart options={{ data, primaryAxis, secondaryAxes }} />;
 }
 
 export class JosekiStatsModal extends Modal<Events, JosekiStatsModalProperties, any> {

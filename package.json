@@ -103,7 +103,7 @@
         "query-string": "^5.0.1",
         "react": "^18.0.0",
         "react-autosuggest": "^10.1.0",
-        "react-charts": "^2.0.0-beta.6",
+        "react-charts": "^3.0.0-beta.36",
         "react-datetime": "^3.0.4",
         "react-dom": "^18.0.0",
         "react-dropzone": "^12.0.5",
