@@ -228,6 +228,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
 
         return () => {
             goban.current.destroy();
+            goban_div.current.childNodes.forEach((node) => node.remove());
         };
     }, [props.id]);
 
