@@ -143,12 +143,7 @@ interface GameState {
 }
 
 export class Game extends React.PureComponent<GameProperties, GameState> {
-    ref_goban;
     ref_goban_container: HTMLElement;
-    ref_players;
-    ref_action_bar;
-    ref_game_action_buttons;
-    ref_game_state_label;
     ref_move_tree_container: HTMLElement;
 
     game_id: number;
@@ -2880,10 +2875,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
 
         return (
             <div className="play-controls">
-                <div
-                    ref={(el) => (this.ref_game_action_buttons = el)}
-                    className="game-action-buttons"
-                >
+                <div className="game-action-buttons">
                     {/* { */}
                     {((state.mode === "play" &&
                         state.phase === "play" &&
@@ -2893,7 +2885,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                     {/* (this.state.view_mode === 'portrait' || null) && <i onClick={this.togglePortraitTab} className={'tab-icon fa fa-commenting'}/> */}
                 </div>
                 {/* } */}
-                <div ref={(el) => (this.ref_game_state_label = el)} className="game-state">
+                <div className="game-state">
                     {/*{*/}
                     {((state.mode === "play" && state.phase === "play") || null) && (
                         <span>
@@ -3276,7 +3268,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
 
         return (
             <div className="play-controls">
-                <div ref={(el) => (this.ref_game_state_label = el)} className="game-state">
+                <div className="game-state">
                     {(this.state.mode === "analyze" || null) && (
                         <div>
                             {_("Review by")}: <Player user={this.state.review_owner_id} />
@@ -3646,7 +3638,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         const engine = goban.engine;
 
         return (
-            <div ref={(el) => (this.ref_players = el)} className="players">
+            <div className="players">
                 <div className="player-icons">
                     {["black", "white"].map((color: "black" | "white", idx) => {
                         const player_bg: any = {};
@@ -3832,7 +3824,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
 
         if (this.state.view_mode === "portrait" && this.state.portrait_tab === "dock") {
             return (
-                <div ref={(el) => (this.ref_action_bar = el)} className="action-bar">
+                <div className="action-bar">
                     <span className="move-number">
                         <i onClick={this.togglePortraitTab} className={"tab-icon ogs-goban"} />
                     </span>
@@ -3842,7 +3834,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
 
         if (this.state.view_mode === "portrait" && this.state.portrait_tab === "chat") {
             return (
-                <div ref={(el) => (this.ref_action_bar = el)} className="action-bar">
+                <div className="action-bar">
                     <span className="move-number">
                         <i onClick={this.togglePortraitTab} className={"tab-icon ogs-goban"} />
                     </span>
@@ -3850,7 +3842,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             );
         }
         return (
-            <div ref={(el) => (this.ref_action_bar = el)} className="action-bar">
+            <div className="action-bar">
                 <span className="icons" />
                 <span className="controls">
                     <span onClick={this.nav_first} className="move-control">
