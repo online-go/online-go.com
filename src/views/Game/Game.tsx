@@ -152,7 +152,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
     ref_move_tree_container: HTMLElement;
 
     game_id: number;
-    creator_id: number;
     ladder_id: number;
     tournament_id: number;
     ai_review_selected: string | null = null;
@@ -381,6 +380,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         }
         this.onResize();
         game_control.on("stopEstimatingScore", this.stopEstimatingScore);
+        game_control.on("gotoMove", this.nav_goto_move);
     }
     componentWillUnmount() {
         this.deinitialize();
@@ -390,6 +390,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         const body = document.getElementsByTagName("body")[0];
         body.classList.remove("zen"); //remove the class
         game_control.off("stopEstimatingScore", this.stopEstimatingScore);
+        game_control.off("gotoMove", this.nav_goto_move);
     }
     getLocation(): string {
         return window.location.pathname;
@@ -420,7 +421,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
     deinitialize() {
         this.chat_proxy.part();
         this.selected_chat_log = "main";
-        this.creator_id = null;
+        delete game_control.creator_id;
         this.ladder_id = null;
         this.tournament_id = null;
         $(document).off("keypress", this.setLabelHandler);
@@ -801,7 +802,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                         this.on_refocus_title = this.black_username + " vs " + this.white_username;
                         window.document.title = this.on_refocus_title;
                     }
-                    this.creator_id = game.creator;
+                    game_control.creator_id = game.creator;
                     this.ladder_id = game.ladder;
                     this.tournament_id = game.tournament;
 
@@ -1623,7 +1624,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             this.state[`historical_black`] || this.goban.engine.players.black,
             this.state[`historical_white`] || this.goban.engine.players.white,
             this.state.annulled,
-            this.creator_id || this.goban.review_owner_id,
+            game_control.creator_id || this.goban.review_owner_id,
         );
     }
 
@@ -3587,7 +3588,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             return (
                 <AIReview
                     onAIReviewSelected={(r) => this.setState({ selected_ai_review_uuid: r?.uuid })}
-                    game={this}
+                    game_id={this.game_id}
                     move={this.goban.engine.cur_move}
                     hidden={!this.state.ai_review_enabled}
                 />

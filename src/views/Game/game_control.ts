@@ -20,6 +20,7 @@ import { Goban } from "goban";
 
 interface Events {
     stopEstimatingScore: void; // emitted when we want to stop estimating the score
+    gotoMove: number; // emitted when we want to go to a specific move
 }
 
 /** The Game interface is a complex hierarchy of components. This GameControl
@@ -31,6 +32,7 @@ class GameControl extends TypedEventEmitter<Events> {
     public in_pushed_analysis: boolean = false;
     public onPushAnalysisLeft?: () => void;
     public last_variation_number: number = 0;
+    public creator_id?: number;
     constructor() {
         super();
     }
