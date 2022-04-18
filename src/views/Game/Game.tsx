@@ -46,7 +46,7 @@ import {
     JGOFPlayerSummary,
 } from "goban";
 import { isLiveGame } from "TimeControl";
-import { socket, get_network_latency, get_clock_drift } from "sockets";
+import { get_network_latency, get_clock_drift } from "sockets";
 import { Dock } from "Dock";
 import { Player, setExtraActionCallback, PlayerDetails } from "Player";
 import { Flag } from "Flag";
@@ -72,6 +72,7 @@ import { Clock } from "Clock";
 import { JGOFClock } from "goban";
 import { GameTimings } from "./GameTimings";
 import { openReport } from "Report";
+import { goban_view_mode, goban_view_squashed, ViewMode } from "./util";
 
 import swal from "sweetalert2";
 
@@ -140,8 +141,6 @@ interface GameState {
     review_out_of_sync?: boolean;
     submitting_move: boolean;
 }
-
-export type ViewMode = "portrait" | "wide" | "square";
 
 export class Game extends React.PureComponent<GameProperties, GameState> {
     ref_goban;
@@ -4326,36 +4325,3 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         }
     };
 }
-
-export function goban_view_mode(bar_width?: number): ViewMode {
-    if (!bar_width) {
-        bar_width = 300;
-    }
-
-    const h = win.height() || 1;
-    const w = win.width() || 1;
-    const aspect_ratio = w / h;
-
-    if ((aspect_ratio <= 0.8 || w < bar_width * 2) && w < 1280) {
-        return "portrait";
-    }
-
-    if (aspect_ratio >= 1920 / 1200 && w >= 1280) {
-        return "wide";
-    }
-
-    return "wide";
-}
-export function goban_view_squashed(): boolean {
-    /* This value needs to match the "dock-inline-height" found in Dock.styl */
-    return win.height() <= 500;
-}
-
-const shared_ip_with_player_map: { [game_id: number]: boolean } = {};
-
-socket.on(
-    "score-estimator-enabled-state",
-    (state: { game_id: number; shared_ip_with_player: boolean }) => {
-        shared_ip_with_player_map[state.game_id] = state.shared_ip_with_player;
-    },
-);
