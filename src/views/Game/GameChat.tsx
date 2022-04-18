@@ -238,7 +238,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
             : `review-${this.props.gameview.review_id}`;
 
         return (
-            <div className="chat-container">
+            <div className="GameChat">
                 <div
                     className={
                         "log-player-container" +
