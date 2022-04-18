@@ -24,31 +24,28 @@ import { Link } from "react-router-dom";
 import { _, pgettext, interpolate } from "translate";
 import { Player } from "Player";
 import { profanity_filter } from "profanity_filter";
-import { Game } from "./Game";
+import { Goban } from "goban";
 import { ChatUserList, ChatUserCount } from "ChatUserList";
 import { TabCompleteInput } from "TabCompleteInput";
 import { chat_markup } from "components/Chat";
 import { inGameModChannel } from "chat_manager";
 import { MoveTree } from "goban";
+import { game_control } from "./game_control";
 
-let active_game_view: Game = null;
-
-export function setActiveGameView(game: Game) {
-    active_game_view = game;
-}
-
-type ChatMode = "main" | "malkovich" | "moderator" | "hidden";
+export type ChatMode = "main" | "malkovich" | "moderator" | "hidden";
 interface GameChatProperties {
-    chatlog: ChatLine[];
-    gameview: Game;
+    goban: Goban;
     userIsPlayer: boolean;
-    onChatLogChanged: (c: ChatMode) => void;
+    selected_chat_log: ChatMode;
+    onSelectedChatModeChange: (c: ChatMode) => void;
     channel: string;
+    game_id?: number;
+    review_id?: number;
 }
 
 interface ChatLine {
     chat_id: number;
-    body: string;
+    body: string | AnalysisComment | ReviewComment;
     date: number;
     move_number: number;
     from: number;
@@ -60,393 +57,387 @@ interface ChatLine {
 interface GameChatLineProperties {
     line: ChatLine;
     lastline: ChatLine;
-    gameview: Game;
+    game_id: number;
+    review_id: number;
 }
 
-interface GameChatState {
-    chat_log: "main" | "malkovich" | "moderator" | "hidden";
-    show_player_list: boolean;
-    qc_visible: boolean;
-    qc_editing: boolean;
-}
+export function GameChat(props: GameChatProperties): JSX.Element {
+    const user = data.get("user");
+    const in_game_mod_channel = inGameModChannel(props.game_id || props.review_id);
 
-/* Chat  */
-export class GameChat extends React.PureComponent<GameChatProperties, GameChatState> {
-    ref_chat_log: HTMLElement;
-    qc_editableMsgs: HTMLLIElement[] = null;
-    scrolled_to_bottom: boolean = true;
+    const ref_chat_log = React.useRef<HTMLDivElement>(null);
+    const scrolled_to_bottom = React.useRef(true);
+    const [show_quick_chat, setShowQuickChat] = React.useState(false);
+    const [selected_chat_log, setSelectedChatLog] = React.useState<ChatMode>(
+        in_game_mod_channel ? "hidden" : "main",
+    );
+    const [show_player_list, setShowPlayerList] = React.useState(false);
 
-    constructor(props: GameChatProperties) {
-        super(props);
-        const in_game_mod_channel = inGameModChannel(props.gameview.game_id);
-        this.state = {
-            chat_log: in_game_mod_channel ? "hidden" : "main",
-            show_player_list: false,
-            qc_visible: false,
-            qc_editing: false,
+    const chat_lines = React.useRef<ChatLine[]>([]);
+    const [, refresh] = React.useState<number>();
+
+    React.useEffect(() => {
+        if (!props.goban) {
+            return;
+        }
+
+        let chat_update_debounce: ReturnType<typeof setTimeout> | null = null;
+        const debouncedChatUpdate = () => {
+            if (chat_update_debounce) {
+                return;
+            }
+            chat_update_debounce = setTimeout(() => {
+                chat_update_debounce = null;
+                refresh(Math.random());
+            }, 1);
         };
-        this.onKeyPress = this.onKeyPress.bind(this);
-        this.onFocus = this.onFocus.bind(this);
-        this.updateScrollPosition = this.updateScrollPosition.bind(this);
 
-        const channel = `game-${props.gameview.game_id}`;
+        const onChat = (line) => {
+            chat_lines.current.push(line);
+            debouncedChatUpdate();
+        };
+
+        const onChatRemove = (obj) => {
+            for (const chat_id of obj.chat_ids) {
+                for (let i = 0; i < chat_lines.current.length; ++i) {
+                    if (chat_lines.current[i].chat_id === chat_id) {
+                        chat_lines.current.splice(i, 1);
+                        break;
+                    } else {
+                        console.log(chat_id, chat_lines.current[i]);
+                    }
+                }
+            }
+            debouncedChatUpdate();
+        };
+
+        const onChatReset = () => {
+            chat_lines.current.length = 0;
+            debouncedChatUpdate();
+        };
+
+        props.goban.on("chat", onChat);
+        props.goban.on("chat-remove", onChatRemove);
+        props.goban.on("chat-reset", onChatReset);
+
+        return () => {
+            props.goban.off("chat", onChat);
+            props.goban.off("chat-remove", onChatRemove);
+            props.goban.off("chat-reset", onChatReset);
+        };
+    }, [props.goban]);
+
+    const channel = props.game_id ? `game-${props.game_id}` : `review-${props.review_id}`;
+
+    React.useEffect(() => {
+        const onAnonymousOverrideChange = () => {
+            const in_game_mod_channel = inGameModChannel(props.game_id || props.review_id);
+            if (in_game_mod_channel) {
+                setSelectedChatLog("hidden");
+            } else {
+                setSelectedChatLog("main");
+            }
+        };
+
         data.watch(
             `moderator.join-game-publicly.${channel}`,
-            this.onAnonymousOverrideChange,
+            onAnonymousOverrideChange,
             true,
             true,
         );
-    }
+        return () => {
+            data.unwatch(`moderator.join-game-publicly.${channel}`, onAnonymousOverrideChange);
+        };
+    }, []);
 
-    onAnonymousOverrideChange = () => {
-        const in_game_mod_channel = inGameModChannel(this.props.gameview.game_id);
-        if (in_game_mod_channel) {
-            this.setState({ chat_log: "hidden" });
-        } else {
-            this.setState({ chat_log: "main" });
-        }
-    };
-    componentWillUnmount() {
-        const channel = `game-${this.props.gameview.game_id}`;
-        data.unwatch(`moderator.join-game-publicly.${channel}`, this.onAnonymousOverrideChange);
-    }
-
-    onKeyPress(event: React.KeyboardEvent<HTMLElement>) {
+    const onKeyPress = (event: React.KeyboardEvent<HTMLElement>) => {
         if (event.key === "Enter") {
             const input = event.target as HTMLInputElement;
             if (input.className === "qc-option") {
-                this.saveEdit();
+                //saveEdit();
+                console.warn("Quick chat editing not implemented");
                 event.preventDefault();
             } else {
-                this.props.gameview.goban.sendChat(input.value, this.state.chat_log);
+                props.goban.sendChat(input.value, selected_chat_log);
                 input.value = "";
                 return false;
             }
         }
-    }
+    };
 
-    onFocus() {
-        this.hideQCOptions();
-    }
+    const updateScrollPosition = () => {
+        const chat_log = ref_chat_log.current;
 
-    componentDidMount() {
-        this.autoscroll();
-    }
-    componentDidUpdate() {
-        this.autoscroll();
-        if (this.qc_editableMsgs !== null && this.qc_editableMsgs[0] !== null) {
-            this.qc_editableMsgs[0].focus();
+        const tf = chat_log.scrollHeight - chat_log.scrollTop - 10 < chat_log.offsetHeight;
+        if (tf !== scrolled_to_bottom.current) {
+            scrolled_to_bottom.current = tf;
+            chat_log.className = "chat-log " + (tf ? "autoscrolling" : "");
         }
-    }
+        scrolled_to_bottom.current =
+            chat_log.scrollHeight - chat_log.scrollTop - 10 < chat_log.offsetHeight;
+    };
+    /*
+    const autoscroll = () => {
+        const chat_log = ref_chat_log.current;
 
-    updateScrollPosition() {
-        const tf =
-            this.ref_chat_log.scrollHeight - this.ref_chat_log.scrollTop - 10 <
-            this.ref_chat_log.offsetHeight;
-        if (tf !== this.scrolled_to_bottom) {
-            this.scrolled_to_bottom = tf;
-            this.ref_chat_log.className = "chat-log " + (tf ? "autoscrolling" : "");
-        }
-        this.scrolled_to_bottom =
-            this.ref_chat_log.scrollHeight - this.ref_chat_log.scrollTop - 10 <
-            this.ref_chat_log.offsetHeight;
-    }
-    autoscroll() {
-        if (this.scrolled_to_bottom) {
-            this.ref_chat_log.scrollTop = this.ref_chat_log.scrollHeight;
+        if (scrolled_to_bottom.current) {
+            chat_log.scrollTop = chat_log.scrollHeight;
             setTimeout(() => {
-                if (this.ref_chat_log) {
-                    this.ref_chat_log.scrollTop = this.ref_chat_log.scrollHeight;
+                if (chat_log) {
+                    chat_log.scrollTop = chat_log.scrollHeight;
                 }
             }, 100);
         }
-    }
-    toggleChatLog = () => {
-        const new_chat_log = this.state.chat_log === "main" ? "malkovich" : "main";
-        this.setState({
-            chat_log: new_chat_log,
-            qc_visible: false,
-            qc_editing: false,
-        });
-        this.props.onChatLogChanged(new_chat_log);
     };
-    toggleModeratorChatLog = () => {
+    */
+    const toggleChatLog = () => {
+        const new_chat_log = selected_chat_log === "main" ? "malkovich" : "main";
+        setSelectedChatLog(new_chat_log);
+        setShowQuickChat(false);
+        props.onSelectedChatModeChange(new_chat_log);
+    };
+
+    const toggleModeratorChatLog = () => {
         const new_chat_log =
-            this.state.chat_log === "main"
+            selected_chat_log === "main"
                 ? "moderator"
-                : this.state.chat_log === "hidden"
+                : selected_chat_log === "hidden"
                 ? "main"
                 : "hidden";
-        this.setState({
-            chat_log: new_chat_log,
-            qc_visible: false,
-            qc_editing: false,
-        });
-        this.props.onChatLogChanged(new_chat_log);
-    };
-    togglePlayerList = () => {
-        this.setState({
-            show_player_list: !this.state.show_player_list,
-        });
+        setSelectedChatLog(new_chat_log);
+        setShowQuickChat(false);
+        props.onSelectedChatModeChange(new_chat_log);
     };
 
-    sendQuickChat = (msg: string) => {
-        this.props.gameview.goban.sendChat(msg, this.state.chat_log);
-        this.hideQCOptions();
+    const togglePlayerList = () => {
+        setShowPlayerList(!show_player_list);
     };
 
-    showQCOptions = () => {
-        this.setState({
-            qc_visible: true,
-        });
-    };
-
-    hideQCOptions = () => {
-        this.setState({
-            qc_visible: false,
-            qc_editing: false,
-        });
-    };
-
-    startEdit = () => {
-        this.setState({
-            qc_editing: true,
-        });
-    };
-
-    saveEdit = () => {
-        const user = data.get("user") as any;
-        this.qc_editableMsgs.map((li, index) => {
-            user.qc_phrases[index] = li.innerText.trim();
-        });
-        localStorage.setItem("ogs.qc.messages", JSON.stringify(user.qc_phrases));
-        this.finishEdit();
-    };
-
-    finishEdit = () => {
-        this.qc_editableMsgs = null;
-        this.setState({
-            qc_editing: false,
-        });
-    };
-
-    render() {
-        let last_line: ChatLine = null;
-        const user = data.get("user");
-        const channel = this.props.gameview.game_id
-            ? `game-${this.props.gameview.game_id}`
-            : `review-${this.props.gameview.review_id}`;
-
-        return (
-            <div className="GameChat">
-                <div
-                    className={
-                        "log-player-container" +
-                        (this.state.show_player_list ? " show-player-list" : "")
-                    }
-                >
-                    <div className="chat-log-container">
-                        <div
-                            ref={(el) => (this.ref_chat_log = el)}
-                            className="chat-log autoscrolling"
-                            onScroll={this.updateScrollPosition}
-                        >
-                            {this.props.chatlog.map((line) => {
-                                const ll = last_line;
-                                last_line = line;
-                                // return <GameChatLine key={line.chat_id} line={line} lastline={ll} gameview={this.props.gameview} />
-                                return (
-                                    <GameChatLine
-                                        key={line.chat_id}
-                                        line={line}
-                                        lastline={ll}
-                                        gameview={this.props.gameview}
-                                    />
-                                );
-                            })}
-
-                            {/*
-                                this.props.chatlog.length === 0 &&
-                                <div className='chat-log-please-be-nice'>{_("Please be nice in chat.")}</div>
-                            */}
-                        </div>
+    let last_line: ChatLine = null;
+    return (
+        <div className="GameChat">
+            <div className={"log-player-container" + (show_player_list ? " show-player-list" : "")}>
+                <div className="chat-log-container">
+                    <div
+                        ref={ref_chat_log}
+                        className="chat-log autoscrolling"
+                        onScroll={updateScrollPosition}
+                    >
+                        {chat_lines.current.map((line: ChatLine) => {
+                            const ll = last_line;
+                            last_line = line;
+                            return (
+                                <GameChatLine
+                                    key={line.chat_id}
+                                    line={line}
+                                    lastline={ll}
+                                    game_id={props.game_id}
+                                    review_id={props.review_id}
+                                />
+                            );
+                        })}
                     </div>
-                    {(this.state.show_player_list || null) && <ChatUserList channel={channel} />}
                 </div>
-                {this.renderQC(user)}
-                <div className="chat-input-container input-group">
-                    {((this.props.userIsPlayer && data.get("user").email_validated) || null) && (
-                        <button
-                            className={`chat-input-chat-log-toggle sm ${this.state.chat_log}`}
-                            onClick={this.toggleChatLog}
-                        >
-                            {this.state.chat_log === "malkovich"
-                                ? _("Malkovich")
-                                : this.state.chat_log === "hidden"
-                                ? _("Hidden")
-                                : _("Chat")}{" "}
-                            <i
-                                className={
-                                    "fa " +
-                                    (this.state.chat_log === "main"
-                                        ? "fa-caret-down"
-                                        : "fa-caret-up")
-                                }
-                            />
-                        </button>
-                    )}
-                    {((!this.props.userIsPlayer && data.get("user").is_moderator) || null) && (
-                        <button
-                            className={`chat-input-chat-log-toggle sm ${this.state.chat_log}`}
-                            onClick={this.toggleModeratorChatLog}
-                        >
-                            {this.state.chat_log === "moderator"
-                                ? _("Moderator")
-                                : this.state.chat_log === "hidden"
-                                ? _("Hidden")
-                                : _("Chat")}{" "}
-                            <i
-                                className={
-                                    "fa " +
-                                    (this.state.chat_log === "main"
-                                        ? "fa-caret-down"
-                                        : "fa-caret-up")
-                                }
-                            />
-                        </button>
-                    )}
-                    <TabCompleteInput
-                        ref={() => 0}
-                        className={`chat-input  ${this.state.chat_log}`}
-                        disabled={user.anonymous || !data.get("user").email_validated}
-                        placeholder={
-                            user.anonymous
-                                ? _("Sign in to chat")
-                                : !data.get("user").email_validated
-                                ? _(
-                                      "Chat will be enabled once your email address has been validated",
-                                  )
-                                : this.state.chat_log === "malkovich"
-                                ? pgettext(
-                                      "Malkovich logs are only visible after the game has ended",
-                                      "Visible after the game",
-                                  )
-                                : this.state.chat_log === "moderator"
-                                ? "Message players as a moderator"
-                                : this.state.chat_log === "hidden"
-                                ? "Visible only to moderators"
-                                : pgettext(
-                                      "This is the placeholder text for the chat input field in games, chat channels, and private messages",
-                                      interpolate("Message {{who}}", { who: "..." }),
-                                  )
-                        }
-                        onKeyPress={this.onKeyPress}
-                        onFocus={this.onFocus}
-                    />
-                    {this.props.userIsPlayer &&
-                    user.email_validated &&
-                    this.props.gameview.game_id &&
-                    this.state.chat_log === "main" ? (
+                {(show_player_list || null) && <ChatUserList channel={channel} />}
+            </div>
+            {(show_quick_chat || null) && (
+                <QuickChat
+                    goban={props.goban}
+                    selected_chat_log={selected_chat_log}
+                    onSend={() => setShowQuickChat(false)}
+                />
+            )}
+            <div className="chat-input-container input-group">
+                {((props.userIsPlayer && data.get("user").email_validated) || null) && (
+                    <button
+                        className={`chat-input-chat-log-toggle sm ${selected_chat_log}`}
+                        onClick={toggleChatLog}
+                    >
+                        {selected_chat_log === "malkovich"
+                            ? _("Malkovich")
+                            : selected_chat_log === "hidden"
+                            ? _("Hidden")
+                            : _("Chat")}{" "}
                         <i
                             className={
-                                "qc-toggle fa " +
-                                (this.state.qc_visible ? "fa-caret-down" : "fa-caret-up")
-                            }
-                            onClick={
-                                this.state.qc_visible ? this.hideQCOptions : this.showQCOptions
+                                "fa " +
+                                (selected_chat_log === "main" ? "fa-caret-down" : "fa-caret-up")
                             }
                         />
-                    ) : null}
-                    <ChatUserCount
-                        onClick={this.togglePlayerList}
-                        active={this.state.show_player_list}
-                        channel={channel}
-                    />
-                </div>
-            </div>
-        );
-    }
-
-    // TODO:Don't save qc_phrases on the user - there really is no need since
-    // it is pulled/saved in local storage anyway.
-    renderQC = (user: rest_api.UserConfig & { qc_phrases?: string[] }) => {
-        let quick_chat: JSX.Element = null;
-
-        if (this.state.qc_visible) {
-            if (user.qc_phrases === undefined) {
-                const qc_local = localStorage.getItem("ogs.qc.messages");
-                if (qc_local === null) {
-                    user.qc_phrases = [
-                        _("Hi") + ".",
-                        _("Have fun") + ".",
-                        _("Sorry - misclick") + ".",
-                        _("Good game") + ".",
-                        _("Thanks for the game") + ".",
-                    ];
-                    localStorage.setItem("ogs.qc.messages", JSON.stringify(user.qc_phrases));
-                } else {
-                    user.qc_phrases = JSON.parse(qc_local);
-                }
-            }
-
-            const lis = user.qc_phrases.map((msg, index) => (
-                <li
-                    className="qc-option"
-                    key={index}
-                    contentEditable={this.state.qc_editing}
-                    onKeyPress={this.onKeyPress}
-                    ref={
-                        this.state.qc_editing
-                            ? (input) => {
-                                  this.qc_editableMsgs = index === 0 ? [] : this.qc_editableMsgs;
-                                  this.qc_editableMsgs.push(input);
-                              }
-                            : null
+                    </button>
+                )}
+                {((!props.userIsPlayer && data.get("user").is_moderator) || null) && (
+                    <button
+                        className={`chat-input-chat-log-toggle sm ${selected_chat_log}`}
+                        onClick={toggleModeratorChatLog}
+                    >
+                        {selected_chat_log === "moderator"
+                            ? _("Moderator")
+                            : selected_chat_log === "hidden"
+                            ? _("Hidden")
+                            : _("Chat")}{" "}
+                        <i
+                            className={
+                                "fa " +
+                                (selected_chat_log === "main" ? "fa-caret-down" : "fa-caret-up")
+                            }
+                        />
+                    </button>
+                )}
+                <TabCompleteInput
+                    ref={() => 0}
+                    className={`chat-input  ${selected_chat_log}`}
+                    disabled={user.anonymous || !data.get("user").email_validated}
+                    placeholder={
+                        user.anonymous
+                            ? _("Sign in to chat")
+                            : !data.get("user").email_validated
+                            ? _("Chat will be enabled once your email address has been validated")
+                            : selected_chat_log === "malkovich"
+                            ? pgettext(
+                                  "Malkovich logs are only visible after the game has ended",
+                                  "Visible after the game",
+                              )
+                            : selected_chat_log === "moderator"
+                            ? "Message players as a moderator"
+                            : selected_chat_log === "hidden"
+                            ? "Visible only to moderators"
+                            : pgettext(
+                                  "This is the placeholder text for the chat input field in games, chat channels, and private messages",
+                                  interpolate("Message {{who}}", { who: "..." }),
+                              )
                     }
-                >
-                    {this.state.qc_editing ? (
-                        msg
-                    ) : (
-                        <a
-                            onClick={() => {
-                                this.sendQuickChat(msg);
-                            }}
-                        >
-                            {msg}
-                        </a>
-                    )}
-                </li>
-            ));
+                    onKeyPress={onKeyPress}
+                    onFocus={() => setShowQuickChat(false)}
+                />
+                {props.userIsPlayer &&
+                user.email_validated &&
+                props.game_id &&
+                selected_chat_log === "main" ? (
+                    <i
+                        className={
+                            "qc-toggle fa " + (show_quick_chat ? "fa-caret-down" : "fa-caret-up")
+                        }
+                        onClick={() => setShowQuickChat(!show_quick_chat)}
+                    />
+                ) : null}
+                <ChatUserCount
+                    onClick={togglePlayerList}
+                    active={show_player_list}
+                    channel={channel}
+                />
+            </div>
+        </div>
+    );
+}
 
-            quick_chat = (
-                <div className="qc-option-list-container">
-                    {this.state.qc_editing ? (
-                        <span className="qc-edit">
-                            <button
-                                onClick={() => {
-                                    this.saveEdit();
-                                }}
-                                className="xs edit-button"
-                            >
-                                <i className={"fa fa-save"} /> {_("Save")}
-                            </button>
-                            <button onClick={this.finishEdit} className="xs edit-button">
-                                <i className={"fa fa-times-circle"} /> {_("Cancel")}
-                            </button>
-                        </span>
-                    ) : (
-                        <span className="qc-edit">
-                            <button onClick={this.startEdit} className="xs edit-button">
-                                <i className={"fa fa-pencil"} /> {_("Edit")}
-                            </button>
-                        </span>
-                    )}
-                    <ul>{lis}</ul>
-                </div>
-            );
-        }
-        return quick_chat;
+interface QuickChatProperties {
+    selected_chat_log: ChatMode;
+    goban: Goban;
+    onSend: () => void;
+}
+
+export function QuickChat(props: QuickChatProperties): JSX.Element {
+    const [editing, setEditing] = React.useState<boolean>(false);
+    const lc_phrases = localStorage.getItem("ogs.qc.messages");
+    const phrases = React.useRef<string[]>(
+        data.get(
+            "quick-chat.phrases",
+            (lc_phrases ? JSON.parse(lc_phrases) : null) || [
+                _("Hi") + ".",
+                _("Have fun") + ".",
+                _("Sorry - misclick") + ".",
+                _("Good game") + ".",
+                _("Thanks for the game") + ".",
+            ],
+        ),
+    );
+
+    const editable_messages = React.useRef<HTMLLIElement[]>(null);
+
+    const saveEdit = () => {
+        editable_messages.current.map((li, index) => {
+            phrases.current[index] = li.innerText.trim();
+        });
+        data.set("quick-chat.phrases", phrases.current);
+        finishEdit();
     };
+
+    const finishEdit = () => {
+        editable_messages.current = null;
+        setEditing(false);
+    };
+
+    const sendQuickChat = (msg: string) => {
+        props.goban.sendChat(msg, props.selected_chat_log);
+        props.onSend();
+    };
+
+    const onKeyPress = (event: React.KeyboardEvent<HTMLElement>) => {
+        if (event.key === "Enter") {
+            const input = event.target as HTMLInputElement;
+            if (input.className === "qc-option") {
+                saveEdit();
+                event.preventDefault();
+            }
+        }
+    };
+
+    const lis = phrases.current.map((msg, index) => (
+        <li
+            className="qc-option"
+            key={index}
+            contentEditable={editing}
+            onKeyPress={onKeyPress}
+            ref={
+                editing
+                    ? (input) => {
+                          editable_messages.current = index === 0 ? [] : editable_messages.current;
+                          editable_messages.current.push(input);
+                      }
+                    : null
+            }
+        >
+            {editing ? (
+                msg
+            ) : (
+                <a
+                    onClick={() => {
+                        sendQuickChat(msg);
+                    }}
+                >
+                    {msg}
+                </a>
+            )}
+        </li>
+    ));
+
+    return (
+        <div className="qc-option-list-container">
+            {editing ? (
+                <span className="qc-edit">
+                    <button
+                        onClick={() => {
+                            saveEdit();
+                        }}
+                        className="xs edit-button"
+                    >
+                        <i className={"fa fa-save"} /> {_("Save")}
+                    </button>
+                    <button onClick={finishEdit} className="xs edit-button">
+                        <i className={"fa fa-times-circle"} /> {_("Cancel")}
+                    </button>
+                </span>
+            ) : (
+                <span className="qc-edit">
+                    <button onClick={() => setEditing(true)} className="xs edit-button">
+                        <i className={"fa fa-pencil"} /> {_("Edit")}
+                    </button>
+                </span>
+            )}
+            <ul>{lis}</ul>
+        </div>
+    );
 }
 
 export function GameChatLine(props: GameChatLineProperties): JSX.Element {
@@ -458,7 +449,6 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
         third_person = line.body.substr(0, 4) === "/me " ? "third-person" : "";
         line.body = line.body.substr(4);
     }
-    const msg = markup(line.body, props);
     let show_date: JSX.Element = null;
     let move_number: JSX.Element = null;
 
@@ -483,9 +473,9 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
         line.moves !== lastline.moves
     ) {
         const jumpToMove = () => {
-            props.gameview.stopEstimatingScore();
+            game_control.emit("stopEstimatingScore");
             const line = props.line;
-            const goban = props.gameview.goban;
+            const goban = game_control.goban;
 
             if ("move_number" in line) {
                 if (!goban.isAnalysisDisabled()) {
@@ -528,9 +518,7 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
         );
     }
 
-    let chat_id = props.gameview.review_id
-        ? "r." + props.gameview.review_id
-        : "g." + props.gameview.game_id;
+    let chat_id = props.review_id ? "r." + props.review_id : "g." + props.game_id;
     chat_id += "." + line.channel + "." + line.chat_id;
 
     return (
@@ -549,7 +537,7 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
                 {(line.player_id || null) && <Player user={line} flare disableCacheUpdate />}
                 <span className="body">
                     {third_person ? " " : ": "}
-                    {msg}
+                    <MarkupChatLine line={line} />
                 </span>
             </div>
         </div>
@@ -557,13 +545,13 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
 }
 
 function parsePosition(position: string) {
-    if (!active_game_view || !position) {
+    if (!game_control.goban || !position) {
         return {
             i: -1,
             j: -1,
         };
     }
-    const goban = active_game_view.goban;
+    const goban = game_control.goban;
 
     let i = "abcdefghjklmnopqrstuvwxyz".indexOf(position[0].toLowerCase());
     let j = ((goban && goban.height) || 19) - parseInt(position.substring(1));
@@ -578,25 +566,25 @@ function parsePosition(position: string) {
     return { i: i, j: j };
 }
 function highlight_position(event: React.MouseEvent<HTMLSpanElement>) {
-    if (!active_game_view) {
+    if (!game_control.goban) {
         return;
     }
 
     const pos = parsePosition((event.target as HTMLSpanElement).innerText);
     if (pos.i >= 0) {
-        active_game_view.goban.getMarks(pos.i, pos.j).chat_triangle = true;
-        active_game_view.goban.drawSquare(pos.i, pos.j);
+        game_control.goban.getMarks(pos.i, pos.j).chat_triangle = true;
+        game_control.goban.drawSquare(pos.i, pos.j);
     }
 }
 function unhighlight_position(event: React.MouseEvent<HTMLSpanElement>) {
-    if (!active_game_view) {
+    if (!game_control.goban) {
         return;
     }
 
     const pos = parsePosition((event.target as HTMLSpanElement).innerText);
     if (pos.i >= 0) {
-        active_game_view.goban.getMarks(pos.i, pos.j).chat_triangle = false;
-        active_game_view.goban.drawSquare(pos.i, pos.j);
+        game_control.goban.getMarks(pos.i, pos.j).chat_triangle = false;
+        game_control.goban.drawSquare(pos.i, pos.j);
     }
 }
 
@@ -614,33 +602,36 @@ interface ReviewComment {
     review_id: number;
 }
 
-function markup(
-    body: string | AnalysisComment | ReviewComment,
-    props: GameChatLineProperties,
-): JSX.Element | Array<JSX.Element> {
+function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
+    const body = line.body;
+
     if (typeof body === "string") {
-        return chat_markup(body, [
-            {
-                split: /(\b[a-zA-Z][0-9]{1,2}\b)/gm,
-                pattern: /\b([a-zA-Z][0-9]{1,2})\b/gm,
-                replacement: (m, idx) => {
-                    const pos = m[1];
-                    if (parsePosition(pos).i < 0) {
-                        return <span key={idx}>{m[1]}</span>;
-                    }
-                    return (
-                        <span
-                            key={idx}
-                            className="position"
-                            onMouseEnter={highlight_position}
-                            onMouseLeave={unhighlight_position}
-                        >
-                            {m[1]}
-                        </span>
-                    );
-                },
-            },
-        ]);
+        return (
+            <React.Fragment>
+                {chat_markup(body, [
+                    {
+                        split: /(\b[a-zA-Z][0-9]{1,2}\b)/gm,
+                        pattern: /\b([a-zA-Z][0-9]{1,2})\b/gm,
+                        replacement: (m, idx) => {
+                            const pos = m[1];
+                            if (parsePosition(pos).i < 0) {
+                                return <span key={idx}>{m[1]}</span>;
+                            }
+                            return (
+                                <span
+                                    key={idx}
+                                    className="position"
+                                    onMouseEnter={highlight_position}
+                                    onMouseLeave={unhighlight_position}
+                                >
+                                    {m[1]}
+                                </span>
+                            );
+                        },
+                    },
+                ])}
+            </React.Fragment>
+        );
     } else {
         try {
             switch (body.type) {
@@ -655,24 +646,23 @@ function markup(
                         );
                     }
 
-                    const gameview = props.gameview;
-                    const goban = gameview.goban;
+                    const goban = game_control.goban;
                     let orig_move: MoveTree = null;
                     let stashed_pen_marks = goban.pen_marks;
                     let orig_marks: unknown[] = null;
 
                     const v = parseInt("" + (body.name ? body.name.replace(/^[^0-9]*/, "") : 0));
                     if (v) {
-                        props.gameview.last_variation_number = Math.max(
+                        game_control.last_variation_number = Math.max(
                             v,
-                            props.gameview.last_variation_number,
+                            game_control.last_variation_number,
                         );
                     }
 
                     const onLeave = () => {
-                        if (props.gameview.in_pushed_analysis) {
-                            props.gameview.in_pushed_analysis = false;
-                            props.gameview.leave_pushed_analysis = null;
+                        if (game_control.in_pushed_analysis) {
+                            game_control.in_pushed_analysis = false;
+                            delete game_control.onPushAnalysisLeft;
                             goban.engine.jumpTo(orig_move);
                             (orig_move as any).marks = orig_marks;
                             goban.pen_marks = stashed_pen_marks;
@@ -684,8 +674,8 @@ function markup(
                     };
 
                     const onEnter = () => {
-                        props.gameview.in_pushed_analysis = true;
-                        props.gameview.leave_pushed_analysis = onLeave;
+                        game_control.in_pushed_analysis = true;
+                        game_control.onPushAnalysisLeft = onLeave;
                         const turn =
                             "branch_move" in body
                                 ? body.branch_move - 1
@@ -718,7 +708,7 @@ function markup(
                         onLeave();
                         goban.setMode("analyze");
                         onEnter();
-                        props.gameview.in_pushed_analysis = false;
+                        game_control.in_pushed_analysis = false;
                         goban.updateTitleAndStonePlacement();
                         goban.syncReviewMove();
                         goban.redraw();

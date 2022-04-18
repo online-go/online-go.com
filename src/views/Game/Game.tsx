@@ -64,7 +64,7 @@ import { openGameLogModal } from "./GameLogModal";
 import { openACLModal } from "ACLModal";
 import { sfx, SFXSprite, ValidSound } from "sfx";
 import { AIReview } from "./AIReview";
-import { GameChat, setActiveGameView } from "./GameChat";
+import { GameChat, ChatMode } from "./GameChat";
 import { CountDown } from "./CountDown";
 import { toast } from "toast";
 import { Clock } from "Clock";
@@ -72,6 +72,7 @@ import { JGOFClock } from "goban";
 import { GameTimings } from "./GameTimings";
 import { openReport } from "Report";
 import { goban_view_mode, goban_view_squashed, ViewMode, shared_ip_with_player_map } from "./util";
+import { game_control } from "./game_control";
 
 import swal from "sweetalert2";
 
@@ -95,7 +96,7 @@ interface GameState {
     autoplaying: boolean;
     portrait_tab: "game" | "chat" | "dock";
     review_list: any[];
-    chat_log: "main" | "malkovich";
+    selected_chat_log: ChatMode;
     variation_name: string;
     strict_seki_mode: boolean;
     player_icons: {};
@@ -148,7 +149,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
     ref_action_bar;
     ref_game_action_buttons;
     ref_game_state_label;
-    ref_chat;
     ref_move_tree_container: HTMLElement;
 
     game_id: number;
@@ -168,10 +168,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
     stone_removal_accept_timeout: any = null;
     conditional_move_list = [];
     selected_conditional_move = null;
-    chat_log = [];
-    chat_update_debounce: any = null;
-    last_variation_number: number = 0;
-    in_pushed_analysis: boolean = false;
+    selected_chat_log: ChatMode = "main";
     chat_proxy;
     last_analysis_sent = null;
     orig_marks = null;
@@ -179,7 +176,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
     on_refocus_title: string = "OGS";
     last_move_viewed: number = 0;
     conditional_move_tree;
-    leave_pushed_analysis: () => void = null;
     stashed_conditional_moves = null;
     volume_sound_debounce: any = null;
     copied_node: MoveTree = null;
@@ -197,6 +193,8 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
     constructor(props) {
         super(props);
         window["Game"] = this;
+
+        game_control.last_variation_number = 0;
 
         try {
             this.return_url =
@@ -228,7 +226,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             autoplaying: false,
             portrait_tab: "game",
             review_list: [],
-            chat_log: "main",
+            selected_chat_log: "main",
             variation_name: "",
             strict_seki_mode: false,
             player_icons: {},
@@ -372,7 +370,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         this.onResize(false, true);
     }
     componentDidMount() {
-        setActiveGameView(this);
         setExtraActionCallback(this.renderExtraPlayerActions);
         $(window).on("focus", this.onFocus);
 
@@ -383,15 +380,16 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             this.ref_goban_container.style.minHeight = `initial`;
         }
         this.onResize();
+        game_control.on("stopEstimatingScore", this.stopEstimatingScore);
     }
     componentWillUnmount() {
         this.deinitialize();
-        setActiveGameView(null);
         setExtraActionCallback(null);
         $(window).off("focus", this.onFocus);
         window.document.title = "OGS";
         const body = document.getElementsByTagName("body")[0];
         body.classList.remove("zen"); //remove the class
+        game_control.off("stopEstimatingScore", this.stopEstimatingScore);
     }
     getLocation(): string {
         return window.location.pathname;
@@ -421,7 +419,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
 
     deinitialize() {
         this.chat_proxy.part();
-        this.chat_log = [];
+        this.selected_chat_log = "main";
         this.creator_id = null;
         this.ladder_id = null;
         this.tournament_id = null;
@@ -432,6 +430,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             console.error(e.stack);
         }
         this.goban = null;
+        game_control.goban = this.goban;
         if (this.resize_debounce) {
             clearTimeout(this.resize_debounce);
             this.resize_debounce = null;
@@ -464,10 +463,10 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
             move_tree_container: this.ref_move_tree_container,
             interactive: true,
             connect_to_chat: true,
-            isInPushedAnalysis: () => this.in_pushed_analysis,
+            isInPushedAnalysis: () => game_control.in_pushed_analysis,
             leavePushedAnalysis: () => {
-                if (this.leave_pushed_analysis) {
-                    this.leave_pushed_analysis();
+                if (game_control.onPushAnalysisLeft) {
+                    game_control.onPushAnalysisLeft();
                 }
             },
             game_id: null,
@@ -515,6 +514,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         }
 
         this.goban = new Goban(opts);
+        game_control.goban = this.goban;
         this.onResize(true);
         window["global_goban"] = this.goban;
         if (this.review_id) {
@@ -650,27 +650,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         this.goban.on("reset", () => this.sync_state());
         this.goban.on("show-submit", (tf) => {
             this.setState({ show_submit: tf });
-        });
-        this.goban.on("chat", (line) => {
-            this.chat_log.push(line);
-            this.debouncedChatUpdate();
-        });
-        this.goban.on("chat-remove", (obj) => {
-            for (const chat_id of obj.chat_ids) {
-                for (let i = 0; i < this.chat_log.length; ++i) {
-                    if (this.chat_log[i].chat_id === chat_id) {
-                        this.chat_log.splice(i, 1);
-                        break;
-                    } else {
-                        console.log(chat_id, this.chat_log[i]);
-                    }
-                }
-            }
-            this.debouncedChatUpdate();
-        });
-        this.goban.on("chat-reset", () => {
-            this.chat_log.length = 0;
-            this.debouncedChatUpdate();
         });
 
         this.goban.on("gamedata", (gamedata) => {
@@ -1780,17 +1759,6 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         this.setState({ move_text: ev.target.value });
         this.goban.syncReviewMove(null, ev.target.value);
     };
-    debouncedChatUpdate() {
-        if (this.chat_update_debounce) {
-            return;
-        }
-        this.chat_update_debounce = setTimeout(() => {
-            this.chat_update_debounce = null;
-            if (this.ref_chat) {
-                this.ref_chat.forceUpdate();
-            }
-        }, 1);
-    }
     shareAnalysis() {
         const diff = this.goban.engine.getMoveDiff();
         let name = this.state.variation_name;
@@ -1799,7 +1767,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
 
         if (!name) {
             autonamed = true;
-            name = "" + ++this.last_variation_number;
+            name = "" + ++game_control.last_variation_number;
         }
 
         const marks = {};
@@ -1848,16 +1816,16 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                 last_analysis_sent.pen_marks === analysis.pen_marks)
         ) {
             if (autonamed) {
-                --this.last_variation_number;
+                --game_control.last_variation_number;
             }
             return;
         }
 
         if (!data.get("user").anonymous) {
-            goban.sendChat(analysis, this.ref_chat.state.chat_log);
+            goban.sendChat(analysis, this.state.selected_chat_log);
             this.last_analysis_sent = analysis;
         } else {
-            goban.message("Can't send to the " + this.ref_chat.state.chat_log + " chat_log");
+            goban.message("Can't send to the " + this.state.selected_chat_log + " chat_log");
         }
     }
     openACL = () => {
@@ -2618,8 +2586,8 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
         this.goban.syncReviewMove({ clearpen: true });
         this.goban.clearAnalysisDrawing();
     }
-    setChatLog = (chat_log) => {
-        this.setState({ chat_log: chat_log });
+    setSelectedChatLog = (selected_chat_log) => {
+        this.setState({ selected_chat_log: selected_chat_log });
     };
 
     toggleVolume = () => {
@@ -2692,12 +2660,13 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
     render() {
         const CHAT = (
             <GameChat
-                ref={(el) => (this.ref_chat = el)}
-                chatlog={this.chat_log}
-                onChatLogChanged={this.setChatLog}
-                gameview={this}
+                selected_chat_log={this.selected_chat_log}
+                onSelectedChatModeChange={this.setSelectedChatLog}
+                goban={this.goban}
                 userIsPlayer={this.state.user_is_player}
                 channel={this.game_id ? `game-${this.game_id}` : `review-${this.review_id}`}
+                game_id={this.game_id}
+                review_id={this.review_id}
             />
         );
         const review = !!this.review_id;
@@ -3236,14 +3205,14 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                                 <div className="input-group">
                                     <input
                                         type="text"
-                                        className={`form-control ${this.state.chat_log}`}
+                                        className={`form-control ${this.state.selected_chat_log}`}
                                         placeholder={_("Variation name...")}
                                         value={this.state.variation_name}
                                         onChange={this.updateVariationName}
                                         onKeyDown={this.variationKeyPress}
                                         disabled={user.anonymous}
                                     />
-                                    {(this.state.chat_log !== "malkovich" || null) && (
+                                    {(this.state.selected_chat_log !== "malkovich" || null) && (
                                         <button
                                             className="sm"
                                             type="button"
@@ -3253,7 +3222,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                                             {_("Share")}
                                         </button>
                                     )}
-                                    {(this.state.chat_log === "malkovich" || null) && (
+                                    {(this.state.selected_chat_log === "malkovich" || null) && (
                                         <button
                                             className="sm malkovich"
                                             type="button"
@@ -3362,7 +3331,7 @@ export class Game extends React.PureComponent<GameProperties, GameState> {
                             <div className="input-group">
                                 <input
                                     type="text"
-                                    className={`form-control ${this.state.chat_log}`}
+                                    className={`form-control ${this.state.selected_chat_log}`}
                                     placeholder={_("Variation name...")}
                                     value={this.state.variation_name}
                                     onChange={this.updateVariationName}
