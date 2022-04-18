@@ -449,6 +449,113 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
     };
 }
 
+export function GameChatLine(props: GameChatLineProperties): JSX.Element {
+    const line = props.line;
+    const lastline = props.lastline;
+    const ts = line.date ? new Date(line.date * 1000) : null;
+    let third_person = "";
+    if (typeof line.body === "string" && line.body.substr(0, 4) === "/me ") {
+        third_person = line.body.substr(0, 4) === "/me " ? "third-person" : "";
+        line.body = line.body.substr(4);
+    }
+    const msg = markup(line.body, props);
+    let show_date: JSX.Element = null;
+    let move_number: JSX.Element = null;
+
+    if (!lastline || (line.date && lastline.date)) {
+        if (line.date) {
+            if (
+                !lastline ||
+                moment(new Date(line.date * 1000)).format("YYYY-MM-DD") !==
+                    moment(new Date(lastline.date * 1000)).format("YYYY-MM-DD")
+            ) {
+                show_date = (
+                    <div className="date">{moment(new Date(line.date * 1000)).format("LL")}</div>
+                );
+            }
+        }
+    }
+
+    if (
+        !lastline ||
+        line.move_number !== lastline.move_number ||
+        line.from !== lastline.from ||
+        line.moves !== lastline.moves
+    ) {
+        const jumpToMove = () => {
+            props.gameview.stopEstimatingScore();
+            const line = props.line;
+            const goban = props.gameview.goban;
+
+            if ("move_number" in line) {
+                if (!goban.isAnalysisDisabled()) {
+                    goban.setMode("analyze");
+                }
+
+                goban.engine.followPath(line.move_number, "");
+                goban.redraw();
+
+                if (goban.isAnalysisDisabled()) {
+                    goban.updatePlayerToMoveTitle();
+                }
+
+                goban.emit("update");
+            }
+
+            if ("from" in line) {
+                if (goban.isAnalysisDisabled()) {
+                    goban.setMode("analyze");
+                }
+
+                goban.engine.followPath(line.from, line.moves);
+                goban.syncReviewMove();
+                goban.drawPenMarks(goban.engine.cur_move.pen_marks);
+                goban.redraw();
+                //last_move_number[type] = line.from;
+                //last_moves[type] = line.moves;
+            }
+        };
+
+        move_number = (
+            <LineText className="move-number" onClick={jumpToMove}>
+                Move{" "}
+                {"move_number" in line
+                    ? line.move_number
+                    : "moves" in line
+                    ? line.from + (line.moves.length ? " + " + line.moves.length / 2 : "")
+                    : ""}
+            </LineText>
+        );
+    }
+
+    let chat_id = props.gameview.review_id
+        ? "r." + props.gameview.review_id
+        : "g." + props.gameview.game_id;
+    chat_id += "." + line.channel + "." + line.chat_id;
+
+    return (
+        <div className={`chat-line-container`} data-chat-id={chat_id}>
+            {move_number}
+            {show_date}
+            <div
+                className={`chat-line ${line.channel} ${third_person} chat-user-${line.player_id}`}
+            >
+                {ts && (
+                    <span className="timestamp">
+                        [{ts.getHours() + ":" + (ts.getMinutes() < 10 ? "0" : "") + ts.getMinutes()}
+                        ]{" "}
+                    </span>
+                )}
+                {(line.player_id || null) && <Player user={line} flare disableCacheUpdate />}
+                <span className="body">
+                    {third_person ? " " : ": "}
+                    {msg}
+                </span>
+            </div>
+        </div>
+    );
+}
+
 function parsePosition(position: string) {
     if (!active_game_view || !position) {
         return {
@@ -459,7 +566,7 @@ function parsePosition(position: string) {
     const goban = active_game_view.goban;
 
     let i = "abcdefghjklmnopqrstuvwxyz".indexOf(position[0].toLowerCase());
-    let j = ((goban && goban.height) || 19) - parseInt(position.substr(1));
+    let j = ((goban && goban.height) || 19) - parseInt(position.substring(1));
     if (j < 0 || i < 0) {
         i = -1;
         j = -1;
@@ -506,263 +613,142 @@ interface ReviewComment {
     type: "review";
     review_id: number;
 }
-export class GameChatLine extends React.Component<GameChatLineProperties> {
-    constructor(props: GameChatLineProperties) {
-        super(props);
-    }
 
-    markup(body: string | AnalysisComment | ReviewComment): JSX.Element | Array<JSX.Element> {
-        if (typeof body === "string") {
-            return chat_markup(body, [
-                {
-                    split: /(\b[a-zA-Z][0-9]{1,2}\b)/gm,
-                    pattern: /\b([a-zA-Z][0-9]{1,2})\b/gm,
-                    replacement: (m, idx) => {
-                        const pos = m[1];
-                        if (parsePosition(pos).i < 0) {
-                            return <span key={idx}>{m[1]}</span>;
-                        }
-                        return (
-                            <span
-                                key={idx}
-                                className="position"
-                                onMouseEnter={highlight_position}
-                                onMouseLeave={unhighlight_position}
-                            >
-                                {m[1]}
-                            </span>
-                        );
-                    },
+function markup(
+    body: string | AnalysisComment | ReviewComment,
+    props: GameChatLineProperties,
+): JSX.Element | Array<JSX.Element> {
+    if (typeof body === "string") {
+        return chat_markup(body, [
+            {
+                split: /(\b[a-zA-Z][0-9]{1,2}\b)/gm,
+                pattern: /\b([a-zA-Z][0-9]{1,2})\b/gm,
+                replacement: (m, idx) => {
+                    const pos = m[1];
+                    if (parsePosition(pos).i < 0) {
+                        return <span key={idx}>{m[1]}</span>;
+                    }
+                    return (
+                        <span
+                            key={idx}
+                            className="position"
+                            onMouseEnter={highlight_position}
+                            onMouseLeave={unhighlight_position}
+                        >
+                            {m[1]}
+                        </span>
+                    );
                 },
-            ]);
-        } else {
-            try {
-                switch (body.type) {
-                    case "analysis": {
-                        if (!preferences.get("variations-in-chat-enabled")) {
-                            return (
-                                <span>
-                                    {_("Variation") +
-                                        ": " +
-                                        (body.name ? profanity_filter(body.name) : "<error>")}
-                                </span>
-                            );
-                        }
-
-                        const gameview = this.props.gameview;
-                        const goban = gameview.goban;
-                        let orig_move: MoveTree = null;
-                        let stashed_pen_marks = goban.pen_marks;
-                        let orig_marks: unknown[] = null;
-
-                        const v = parseInt(
-                            "" + (body.name ? body.name.replace(/^[^0-9]*/, "") : 0),
-                        );
-                        if (v) {
-                            this.props.gameview.last_variation_number = Math.max(
-                                v,
-                                this.props.gameview.last_variation_number,
-                            );
-                        }
-
-                        const onLeave = () => {
-                            if (this.props.gameview.in_pushed_analysis) {
-                                this.props.gameview.in_pushed_analysis = false;
-                                this.props.gameview.leave_pushed_analysis = null;
-                                goban.engine.jumpTo(orig_move);
-                                (orig_move as any).marks = orig_marks;
-                                goban.pen_marks = stashed_pen_marks;
-                                if (goban.pen_marks.length === 0) {
-                                    goban.disablePen();
-                                }
-                                goban.redraw();
-                            }
-                        };
-
-                        const onEnter = () => {
-                            this.props.gameview.in_pushed_analysis = true;
-                            this.props.gameview.leave_pushed_analysis = onLeave;
-                            const turn =
-                                "branch_move" in body
-                                    ? body.branch_move - 1
-                                    : body.from; /* branch_move exists in old games, and was +1 from our current counting */
-                            const moves = body.moves;
-
-                            orig_move = goban.engine.cur_move;
-                            if (orig_move) {
-                                orig_marks = (orig_move as any).marks;
-                                orig_move.clearMarks();
-                            } else {
-                                orig_marks = null;
-                            }
-                            goban.engine.followPath(parseInt(turn as any), moves);
-
-                            if (body.marks) {
-                                goban.setMarks(body.marks);
-                            }
-                            stashed_pen_marks = goban.pen_marks;
-                            if (body.pen_marks) {
-                                goban.pen_marks = [].concat(body.pen_marks);
-                            } else {
-                                goban.pen_marks = [];
-                            }
-
-                            goban.redraw();
-                        };
-
-                        const onClick = () => {
-                            onLeave();
-                            goban.setMode("analyze");
-                            onEnter();
-                            this.props.gameview.in_pushed_analysis = false;
-                            goban.updateTitleAndStonePlacement();
-                            goban.syncReviewMove();
-                            goban.redraw();
-                        };
-
+            },
+        ]);
+    } else {
+        try {
+            switch (body.type) {
+                case "analysis": {
+                    if (!preferences.get("variations-in-chat-enabled")) {
                         return (
-                            <span
-                                className="variation"
-                                onMouseEnter={onEnter}
-                                onMouseLeave={onLeave}
-                                onClick={onClick}
-                            >
+                            <span>
                                 {_("Variation") +
                                     ": " +
                                     (body.name ? profanity_filter(body.name) : "<error>")}
                             </span>
                         );
                     }
-                    case "review":
-                        return (
-                            <Link to={`/review/${body.review_id}`}>
-                                {interpolate(_("Review: ##{{id}}"), { id: body.review_id })}
-                            </Link>
+
+                    const gameview = props.gameview;
+                    const goban = gameview.goban;
+                    let orig_move: MoveTree = null;
+                    let stashed_pen_marks = goban.pen_marks;
+                    let orig_marks: unknown[] = null;
+
+                    const v = parseInt("" + (body.name ? body.name.replace(/^[^0-9]*/, "") : 0));
+                    if (v) {
+                        props.gameview.last_variation_number = Math.max(
+                            v,
+                            props.gameview.last_variation_number,
                         );
-                    default:
-                        return <span>[error loading chat line]</span>;
-                }
-            } catch (e) {
-                console.log(e.stack);
-                return <span>[error loading chat line]</span>;
-            }
-        }
-    }
+                    }
 
-    shouldComponentUpdate(next_props: GameChatLineProperties, _next_state: {}) {
-        return this.props.line.chat_id !== next_props.line.chat_id;
-    }
+                    const onLeave = () => {
+                        if (props.gameview.in_pushed_analysis) {
+                            props.gameview.in_pushed_analysis = false;
+                            props.gameview.leave_pushed_analysis = null;
+                            goban.engine.jumpTo(orig_move);
+                            (orig_move as any).marks = orig_marks;
+                            goban.pen_marks = stashed_pen_marks;
+                            if (goban.pen_marks.length === 0) {
+                                goban.disablePen();
+                            }
+                            goban.redraw();
+                        }
+                    };
 
-    jumpToMove = () => {
-        this.props.gameview.stopEstimatingScore();
-        const line = this.props.line;
-        const goban = this.props.gameview.goban;
+                    const onEnter = () => {
+                        props.gameview.in_pushed_analysis = true;
+                        props.gameview.leave_pushed_analysis = onLeave;
+                        const turn =
+                            "branch_move" in body
+                                ? body.branch_move - 1
+                                : body.from; /* branch_move exists in old games, and was +1 from our current counting */
+                        const moves = body.moves;
 
-        if ("move_number" in line) {
-            if (!goban.isAnalysisDisabled()) {
-                goban.setMode("analyze");
-            }
+                        orig_move = goban.engine.cur_move;
+                        if (orig_move) {
+                            orig_marks = (orig_move as any).marks;
+                            orig_move.clearMarks();
+                        } else {
+                            orig_marks = null;
+                        }
+                        goban.engine.followPath(parseInt(turn as any), moves);
 
-            goban.engine.followPath(line.move_number, "");
-            goban.redraw();
+                        if (body.marks) {
+                            goban.setMarks(body.marks);
+                        }
+                        stashed_pen_marks = goban.pen_marks;
+                        if (body.pen_marks) {
+                            goban.pen_marks = [].concat(body.pen_marks);
+                        } else {
+                            goban.pen_marks = [];
+                        }
 
-            if (goban.isAnalysisDisabled()) {
-                goban.updatePlayerToMoveTitle();
-            }
+                        goban.redraw();
+                    };
 
-            goban.emit("update");
-        }
+                    const onClick = () => {
+                        onLeave();
+                        goban.setMode("analyze");
+                        onEnter();
+                        props.gameview.in_pushed_analysis = false;
+                        goban.updateTitleAndStonePlacement();
+                        goban.syncReviewMove();
+                        goban.redraw();
+                    };
 
-        if ("from" in line) {
-            if (goban.isAnalysisDisabled()) {
-                goban.setMode("analyze");
-            }
-
-            goban.engine.followPath(line.from, line.moves);
-            goban.syncReviewMove();
-            goban.drawPenMarks(goban.engine.cur_move.pen_marks);
-            goban.redraw();
-            //last_move_number[type] = line.from;
-            //last_moves[type] = line.moves;
-        }
-    };
-
-    render() {
-        const line = this.props.line;
-        const lastline = this.props.lastline;
-        const ts = line.date ? new Date(line.date * 1000) : null;
-        let third_person = "";
-        if (typeof line.body === "string" && line.body.substr(0, 4) === "/me ") {
-            third_person = line.body.substr(0, 4) === "/me " ? "third-person" : "";
-            line.body = line.body.substr(4);
-        }
-        const msg = this.markup(line.body);
-        let show_date: JSX.Element = null;
-        let move_number: JSX.Element = null;
-
-        if (!lastline || (line.date && lastline.date)) {
-            if (line.date) {
-                if (
-                    !lastline ||
-                    moment(new Date(line.date * 1000)).format("YYYY-MM-DD") !==
-                        moment(new Date(lastline.date * 1000)).format("YYYY-MM-DD")
-                ) {
-                    show_date = (
-                        <div className="date">
-                            {moment(new Date(line.date * 1000)).format("LL")}
-                        </div>
+                    return (
+                        <span
+                            className="variation"
+                            onMouseEnter={onEnter}
+                            onMouseLeave={onLeave}
+                            onClick={onClick}
+                        >
+                            {_("Variation") +
+                                ": " +
+                                (body.name ? profanity_filter(body.name) : "<error>")}
+                        </span>
                     );
                 }
+                case "review":
+                    return (
+                        <Link to={`/review/${body.review_id}`}>
+                            {interpolate(_("Review: ##{{id}}"), { id: body.review_id })}
+                        </Link>
+                    );
+                default:
+                    return <span>[error loading chat line]</span>;
             }
+        } catch (e) {
+            console.log(e.stack);
+            return <span>[error loading chat line]</span>;
         }
-
-        if (
-            !lastline ||
-            line.move_number !== lastline.move_number ||
-            line.from !== lastline.from ||
-            line.moves !== lastline.moves
-        ) {
-            move_number = (
-                <LineText className="move-number" onClick={this.jumpToMove}>
-                    Move{" "}
-                    {"move_number" in line
-                        ? line.move_number
-                        : "moves" in line
-                        ? line.from + (line.moves.length ? " + " + line.moves.length / 2 : "")
-                        : ""}
-                </LineText>
-            );
-        }
-
-        let chat_id = this.props.gameview.review_id
-            ? "r." + this.props.gameview.review_id
-            : "g." + this.props.gameview.game_id;
-        chat_id += "." + line.channel + "." + line.chat_id;
-
-        return (
-            <div className={`chat-line-container`} data-chat-id={chat_id}>
-                {move_number}
-                {show_date}
-                <div
-                    className={`chat-line ${line.channel} ${third_person} chat-user-${line.player_id}`}
-                >
-                    {ts && (
-                        <span className="timestamp">
-                            [
-                            {ts.getHours() +
-                                ":" +
-                                (ts.getMinutes() < 10 ? "0" : "") +
-                                ts.getMinutes()}
-                            ]{" "}
-                        </span>
-                    )}
-                    {(line.player_id || null) && <Player user={line} flare disableCacheUpdate />}
-                    <span className="body">
-                        {third_person ? " " : ": "}
-                        {msg}
-                    </span>
-                </div>
-            </div>
-        );
     }
 }
