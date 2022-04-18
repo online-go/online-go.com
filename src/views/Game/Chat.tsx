@@ -358,7 +358,7 @@ export class GameChat extends React.PureComponent<GameChatProperties, GameChatSt
                         />
                     ) : null}
                     <ChatUserCount
-                        chat={this}
+                        onClick={this.togglePlayerList}
                         active={this.state.show_player_list}
                         channel={channel}
                     />

@@ -20,114 +20,94 @@ import { _, interpolate } from "translate";
 import { chat_manager, ChatChannelProxy } from "chat_manager";
 import * as preferences from "preferences";
 import { Player } from "Player";
-import { GameChat } from "Game/Chat";
 
 interface ChatUserListProperties {
     channel: string;
 }
 
 interface ChatUserCountProperties extends ChatUserListProperties {
-    chat: GameChat;
+    onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
     active: boolean;
 }
 
-interface ChatUsersState {
-    tick: number;
-}
+export function ChatUserList(props: ChatUserListProperties): JSX.Element {
+    const [user_sort_order, set_user_sort_order] = React.useState<"alpha" | "rank">(
+        preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank",
+    );
+    const [, refresh] = React.useState<number>(0);
+    const proxy = React.useRef<ChatChannelProxy>();
 
-export class ChatUsers<
-    P extends ChatUserListProperties,
-    S extends ChatUsersState,
-> extends React.PureComponent<P, S> {
-    proxy: ChatChannelProxy;
+    React.useEffect(() => {
+        proxy.current = chat_manager.join(props.channel);
+        proxy.current.on("join", () => refresh(proxy.current.channel.users_by_name.length));
+        proxy.current.on("part", () => refresh(proxy.current.channel.users_by_name.length));
+        proxy.current.on("join", () => console.log("JOin!"));
+        proxy.current.on("part", () => console.log("Part!"));
+        window["proxy"] = proxy.current;
+        refresh(proxy.current.channel.users_by_name.length);
 
-    constructor(props) {
-        super(props);
-        (this.state as ChatUsersState) = { tick: 0 };
-    }
-    componentDidMount() {
-        this.init(this.props.channel);
-    }
-    UNSAFE_componentWillReceiveProps(next_props) {
-        if (this.props.channel !== next_props.channel) {
-            this.deinit();
-            this.init(next_props.channel);
-        }
-    }
-    //componentDidUpdate(old_props, old_state) { }
-    componentWillUnmount() {
-        this.deinit();
-    }
+        return () => {
+            proxy.current.part();
+        };
+    }, [props.channel]);
 
-    init(channel) {
-        this.proxy = chat_manager.join(channel);
-        this.proxy.on("join", () => this.setState({ tick: this.state.tick + 1 }));
-        this.proxy.on("part", () => this.setState({ tick: this.state.tick + 1 }));
-    }
-    deinit() {
-        this.proxy.part();
-        this.proxy = null;
-    }
-}
-
-interface ChatUserListState extends ChatUsersState {
-    user_sort_order: "alpha" | "rank";
-}
-
-export class ChatUserList extends ChatUsers<ChatUserListProperties, ChatUserListState> {
-    constructor(props) {
-        super(props);
-        (this.state as any).user_sort_order = preferences.get("chat.user-sort-order");
-    }
-
-    toggleSortOrder = () => {
+    const toggleSortOrder = () => {
         const new_sort_order =
             preferences.get("chat.user-sort-order") === "rank" ? "alpha" : "rank";
         preferences.set("chat.user-sort-order", new_sort_order);
-        this.setState({ user_sort_order: new_sort_order });
+        set_user_sort_order(new_sort_order);
     };
 
-    render() {
-        const sorted_users: Array<any> =
-            this.state.user_sort_order === "alpha"
-                ? this.proxy.channel.users_by_name
-                : this.proxy.channel.users_by_rank;
+    const sorted_users: Array<any> = proxy.current
+        ? user_sort_order === "alpha"
+            ? proxy.current.channel.users_by_name
+            : proxy.current.channel.users_by_rank
+        : [];
 
-        return (
-            <div className="ChatUserList">
-                <div className="user-header" onClick={this.toggleSortOrder}>
-                    <i
-                        className={
-                            this.state.user_sort_order === "rank"
-                                ? "fa fa-sort-numeric-asc"
-                                : "fa fa-sort-alpha-asc"
-                        }
-                    />{" "}
-                    {interpolate(_("Users : {{in_chat}}"), { in_chat: sorted_users.length })}
-                </div>
-
-                {sorted_users.map((user) => (
-                    <div key={user.id}>
-                        <Player user={user} flag rank />
-                    </div>
-                ))}
+    return (
+        <div className="ChatUserList">
+            <div className="user-header" onClick={toggleSortOrder}>
+                <i
+                    className={
+                        user_sort_order === "rank"
+                            ? "fa fa-sort-numeric-asc"
+                            : "fa fa-sort-alpha-asc"
+                    }
+                />{" "}
+                {interpolate(_("Users : {{in_chat}}"), { in_chat: sorted_users.length })}
             </div>
-        );
-    }
+
+            {sorted_users.map((user) => (
+                <div key={user.id}>
+                    <Player user={user} flag rank />
+                </div>
+            ))}
+        </div>
+    );
 }
 
-export class ChatUserCount extends ChatUsers<ChatUserCountProperties, ChatUsersState> {
-    render() {
-        return (
-            <button
-                onClick={this.props.chat.togglePlayerList}
-                className={
-                    "chat-input-player-list-toggle sm" + (this.props.active ? " active" : "")
-                }
-            >
-                <i className="fa fa-users" />{" "}
-                {this.proxy ? this.proxy.channel.users_by_name.length : ""}
-            </button>
-        );
-    }
+export function ChatUserCount(props: ChatUserCountProperties): JSX.Element {
+    const [num_users, set_num_users] = React.useState<number>(0);
+    const proxy = React.useRef<ChatChannelProxy>();
+
+    React.useEffect(() => {
+        proxy.current = chat_manager.join(props.channel);
+        proxy.current.on("join", () => set_num_users(num_users + 1));
+        proxy.current.on("part", () => set_num_users(num_users - 1));
+        set_num_users(proxy.current.channel.users_by_name.length);
+
+        return () => {
+            proxy.current.part();
+        };
+    }, [props.channel]);
+
+    return (
+        <button
+            onClick={props.onClick}
+            className={"chat-input-player-list-toggle sm" + (props.active ? " active" : "")}
+        >
+            <i className="fa fa-users" />{" "}
+            {proxy.current ? proxy.current.channel.users_by_name.length : ""}
+        </button>
+    );
 }
