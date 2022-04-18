@@ -18,9 +18,7 @@
 import * as React from "react";
 import * as moment from "moment";
 import { Chart, AxisOptions } from "react-charts";
-
-// import * as data from "data";
-
+import * as data from "data";
 import { _ } from "translate";
 import { Modal } from "Modal";
 
@@ -48,7 +46,7 @@ function round_date(the_date: Date): Date {
 }
 
 function StatsChart(props: JosekiStatsModalProperties) {
-    const data = [
+    const chart_data = [
         {
             label: "Total Page Visits",
             data: props.daily_page_visits.map((day) => ({
@@ -97,7 +95,10 @@ function StatsChart(props: JosekiStatsModalProperties) {
         [],
     );
 
-    return <Chart options={{ data, primaryAxis, secondaryAxes }} />;
+    // Accessible theme TBD - this assumes accessible is dark for now
+    const dark_mode = data.get("theme") === "light" ? false : true;
+
+    return <Chart options={{ data: chart_data, primaryAxis, secondaryAxes, dark: dark_mode }} />;
 }
 
 export class JosekiStatsModal extends Modal<Events, JosekiStatsModalProperties, any> {
