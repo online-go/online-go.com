@@ -72,7 +72,7 @@ import { Clock } from "Clock";
 import { JGOFClock } from "goban";
 import { GameTimings } from "./GameTimings";
 import { openReport } from "Report";
-import { goban_view_mode, goban_view_squashed, ViewMode } from "./util";
+import { goban_view_mode, goban_view_squashed, ViewMode, shared_ip_with_player_map } from "./util";
 
 import swal from "sweetalert2";
 

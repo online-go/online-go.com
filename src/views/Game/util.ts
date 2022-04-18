@@ -45,7 +45,7 @@ export function goban_view_squashed(): boolean {
     return win.height() <= 500;
 }
 
-const shared_ip_with_player_map: { [game_id: number]: boolean } = {};
+export const shared_ip_with_player_map: { [game_id: number]: boolean } = {};
 
 socket.on(
     "score-estimator-enabled-state",
