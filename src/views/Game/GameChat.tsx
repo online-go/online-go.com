@@ -602,6 +602,10 @@ interface ReviewComment {
     review_id: number;
 }
 
+let orig_move: MoveTree = null;
+let stashed_pen_marks = null; //goban.pen_marks;
+let orig_marks: unknown[] = null;
+
 function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
     const body = line.body;
 
@@ -646,11 +650,6 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                         );
                     }
 
-                    const goban = game_control.goban;
-                    let orig_move: MoveTree = null;
-                    let stashed_pen_marks = goban.pen_marks;
-                    let orig_marks: unknown[] = null;
-
                     const v = parseInt("" + (body.name ? body.name.replace(/^[^0-9]*/, "") : 0));
                     if (v) {
                         game_control.last_variation_number = Math.max(
@@ -660,6 +659,7 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                     }
 
                     const onLeave = () => {
+                        const goban = game_control.goban;
                         if (game_control.in_pushed_analysis) {
                             game_control.in_pushed_analysis = false;
                             delete game_control.onPushAnalysisLeft;
@@ -674,8 +674,10 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                     };
 
                     const onEnter = () => {
+                        const goban = game_control.goban;
                         game_control.in_pushed_analysis = true;
                         game_control.onPushAnalysisLeft = onLeave;
+
                         const turn =
                             "branch_move" in body
                                 ? body.branch_move - 1
@@ -705,6 +707,7 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                     };
 
                     const onClick = () => {
+                        const goban = game_control.goban;
                         onLeave();
                         goban.setMode("analyze");
                         onEnter();
