@@ -204,7 +204,6 @@ export class NotificationManager {
         ++this.advances;
 
         const looking_at_game = getCurrentGameId() || 0;
-        console.log(looking_at_game);
         const target_boards = [];
         let we_have_moves_to_play = false;
 
@@ -234,7 +233,6 @@ export class NotificationManager {
             target_boards.length === 0 ||
             (target_boards.length === 1 && target_boards[0].id === looking_at_game)
         ) {
-            console.log(target_boards);
             return;
         }
 
