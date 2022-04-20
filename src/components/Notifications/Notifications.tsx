@@ -19,51 +19,16 @@ import * as React from "react";
 import * as data from "data";
 
 import { _, interpolate, pgettext } from "translate";
-import { dup, deepEqual } from "misc";
-import { isLiveGame } from "TimeControl";
+
 import { post, del } from "requests";
 import { browserHistory } from "ogsHistory";
 import { challenge_text_description } from "ChallengeModal";
 import { Player } from "Player";
 import { FabX, FabCheck } from "material";
+import { dup, deepEqual, formatTime } from "misc";
+import { isLiveGame } from "TimeControl";
 
 import { NotificationManager } from "./NotificationManager";
-
-function formatTime(seconds) {
-    const days = Math.floor(seconds / 86400);
-    seconds -= days * 86400;
-    const hours = Math.floor(seconds / 3600);
-    seconds -= hours * 3600;
-    const minutes = Math.floor(seconds / 60);
-    seconds -= minutes * 60;
-
-    function plurality(num, single, plural) {
-        if (num > 0) {
-            if (num === 1) {
-                return num + " " + single;
-            }
-            return num + " " + plural;
-        }
-        return "";
-    }
-
-    if (days > 1) {
-        return plurality(days + 1, _("day"), _("days"));
-    }
-
-    if (hours > 4) {
-        return hours + 1 + " " + _("hours");
-    }
-
-    if (hours) {
-        return hours + ":" + (minutes < 10 ? "0" : "") + minutes;
-    }
-
-    if (minutes) {
-        return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
-    }
-    return _("no time left");
-}
 
 export const notification_manager: NotificationManager = new NotificationManager();
 
@@ -84,18 +49,14 @@ export function TurnIndicator(): JSX.Element {
     return (
         <span
             className="turn-indicator"
-            onAuxClick={advanceToNextBoard}
-            onClick={advanceToNextBoard}
+            onAuxClick={(e) => notification_manager.advanceToNextBoard(e)}
+            onClick={(e) => notification_manager.advanceToNextBoard(e)}
         >
             <span className={total > 0 ? (count > 0 ? "active count" : "inactive count") : "count"}>
                 <span>{count}</span>
             </span>
         </span>
     );
-}
-
-function advanceToNextBoard(ev: React.MouseEvent) {
-    notification_manager.advanceToNextBoard(ev);
 }
 
 export class NotificationIndicator extends React.Component<{}, any> {

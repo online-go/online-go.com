@@ -20,16 +20,14 @@ import { socket, time_since_connect } from "sockets";
 import * as data from "data";
 import * as preferences from "preferences";
 import { _, interpolate } from "translate";
-import { ogs_has_focus, shouldOpenNewTab } from "misc";
-import { isLiveGame } from "TimeControl";
-
 import { browserHistory } from "ogsHistory";
 
 import { FabX, FabCheck } from "material";
 import { TypedEventEmitter } from "TypedEventEmitter";
 import { toast } from "toast";
 import { sfx } from "sfx";
-import { Goban } from "goban";
+
+import { ogs_has_focus, getCurrentGameId, shouldOpenNewTab, lookingAtOurLiveGame } from "misc";
 
 declare let Notification: any;
 
@@ -39,15 +37,6 @@ interface Events {
     notification: any;
     "notification-list-updated": never;
     "notification-count": number;
-}
-
-// null or id of game that we're current viewing
-function getCurrentGameId() {
-    const m = window.location.pathname.match(/game\/(view\/)?([0-9]+)/);
-    if (m) {
-        return parseInt(m[2]);
-    }
-    return null;
 }
 
 const boot_time = Date.now();
@@ -249,8 +238,8 @@ export class NotificationManager {
         idx = (idx + 1 + this.turn_offset) % board_ids.length;
 
         // open a new tab if the user asked for it, or if we must protect against disconnection from a live game
-        // (there's no point in opening a new tab if they only have one game, because it will be this same game)
-        if ((ev && shouldOpenNewTab(ev)) || (this.lookingAtOurLiveGame() && board_ids.length > 1)) {
+        // (there's no point in opening a new tab if they only have one live game, because it will be this same game)
+        if ((ev && shouldOpenNewTab(ev)) || (lookingAtOurLiveGame() && board_ids.length > 1)) {
             ++this.turn_offset;
             window.open("/game/" + board_ids[idx], "_blank");
         } else {
@@ -260,22 +249,6 @@ export class NotificationManager {
             }
         }
     }
-
-    lookingAtOurLiveGame = (): boolean => {
-        // Is the current page looking at a game we are live playing in...
-        const goban = window["global_goban"] as Goban;
-        if (!goban) {
-            return false;
-        }
-        const player_id = goban.config.player_id;
-
-        return (
-            goban &&
-            goban.engine.phase !== "finished" &&
-            isLiveGame(goban.engine.time_control) &&
-            goban.engine.isParticipant(player_id)
-        );
-    };
 
     deleteNotification(notification, dont_rebuild?: boolean) {
         socket.send("notification/delete", {
@@ -317,6 +290,7 @@ export class NotificationManager {
             //console.log("Notifier disconnected from " + server);
         });
         socket.on("active_game", (game) => {
+            console.log("active_game update", game);
             delete this.boards_to_move_on[game.id];
             if (game.phase === "finished") {
                 delete this.active_boards[game.id];
