@@ -73,6 +73,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
     );
     const [show_player_list, setShowPlayerList] = React.useState(false);
 
+    const chat_log_hash = React.useRef<{ [k: string]: boolean }>({});
     const chat_lines = React.useRef<ChatLine[]>([]);
     const [, refresh] = React.useState<number>();
 
@@ -81,6 +82,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
             return;
         }
 
+        chat_log_hash.current = {};
         let chat_update_debounce: ReturnType<typeof setTimeout> | null = null;
         const debouncedChatUpdate = () => {
             if (chat_update_debounce) {
@@ -93,8 +95,11 @@ export function GameChat(props: GameChatProperties): JSX.Element {
         };
 
         const onChat = (line) => {
-            chat_lines.current.push(line);
-            debouncedChatUpdate();
+            if (!(line.chat_id in chat_log_hash.current)) {
+                chat_log_hash.current[line.chat_id] = true;
+                chat_lines.current.push(line);
+                debouncedChatUpdate();
+            }
         };
 
         const onChatRemove = (obj) => {
@@ -102,6 +107,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
                 for (let i = 0; i < chat_lines.current.length; ++i) {
                     if (chat_lines.current[i].chat_id === chat_id) {
                         chat_lines.current.splice(i, 1);
+                        delete chat_log_hash.current[chat_id];
                         break;
                     } else {
                         console.log(chat_id, chat_lines.current[i]);
@@ -113,8 +119,13 @@ export function GameChat(props: GameChatProperties): JSX.Element {
 
         const onChatReset = () => {
             chat_lines.current.length = 0;
+            chat_log_hash.current = {};
             debouncedChatUpdate();
         };
+
+        for (const line of props.goban.chat_log) {
+            onChat(line);
+        }
 
         props.goban.on("chat", onChat);
         props.goban.on("chat-remove", onChatRemove);
@@ -124,6 +135,8 @@ export function GameChat(props: GameChatProperties): JSX.Element {
             props.goban.off("chat", onChat);
             props.goban.off("chat-remove", onChatRemove);
             props.goban.off("chat-reset", onChatReset);
+            chat_lines.current.length = 0;
+            chat_log_hash.current = {};
         };
     }, [props.goban]);
 
