@@ -22,7 +22,46 @@ import { browserHistory } from "ogsHistory";
 import * as preferences from "preferences";
 import swal from "sweetalert2";
 
+import { Goban } from "goban";
+import { isLiveGame } from "TimeControl";
+
 export type Timeout = ReturnType<typeof setTimeout>;
+
+export function formatTime(seconds) {
+    const days = Math.floor(seconds / 86400);
+    seconds -= days * 86400;
+    const hours = Math.floor(seconds / 3600);
+    seconds -= hours * 3600;
+    const minutes = Math.floor(seconds / 60);
+    seconds -= minutes * 60;
+
+    function plurality(num, single, plural) {
+        if (num > 0) {
+            if (num === 1) {
+                return num + " " + single;
+            }
+            return num + " " + plural;
+        }
+        return "";
+    }
+
+    if (days > 1) {
+        return plurality(days + 1, _("day"), _("days"));
+    }
+
+    if (hours > 4) {
+        return hours + 1 + " " + _("hours");
+    }
+
+    if (hours) {
+        return hours + ":" + (minutes < 10 ? "0" : "") + minutes;
+    }
+
+    if (minutes) {
+        return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+    }
+    return _("no time left");
+}
 
 export function updateDup(obj: any, field: string, value: any) {
     const ret = dup(obj);
@@ -660,6 +699,31 @@ export function ogs_has_focus() {
         console.error(e);
         return true;
     }
+}
+
+// null or id of game that we're current viewing
+export function getCurrentGameId() {
+    const m = window.location.pathname.match(/game\/(view\/)?([0-9]+)/);
+    if (m) {
+        return parseInt(m[2]);
+    }
+    return null;
+}
+
+export function lookingAtOurLiveGame(): boolean {
+    // Is the current page looking at a game we are live playing in...
+    const goban = window["global_goban"] as Goban;
+    if (!goban) {
+        return false;
+    }
+    const player_id = goban.config.player_id;
+
+    return (
+        goban &&
+        goban.engine.phase !== "finished" &&
+        isLiveGame(goban.engine.time_control) &&
+        goban.engine.isParticipant(player_id)
+    );
 }
 
 /* This code is hacked together from
