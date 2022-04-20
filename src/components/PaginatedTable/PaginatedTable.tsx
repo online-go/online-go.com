@@ -140,7 +140,6 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
                 let new_rows;
                 if (props.groom) {
                     try {
-                        console.log(res);
                         new_rows = props.groom(res.results || []);
                     } catch (e) {
                         console.error(e);
