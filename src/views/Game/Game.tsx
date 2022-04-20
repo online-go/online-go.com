@@ -43,6 +43,7 @@ import {
     GoEngineRules,
     AnalysisTool,
     JGOFPlayerSummary,
+    JGOFNumericPlayerColor,
 } from "goban";
 import { isLiveGame } from "TimeControl";
 import { get_network_latency, get_clock_drift } from "sockets";
@@ -1410,10 +1411,7 @@ export function Game(props: GameProperties): JSX.Element {
             <div className="play-controls">
                 <div className="game-action-buttons">
                     {/* { */}
-                    {((mode === "play" &&
-                        phase === "play" &&
-                        cur_move_number >= official_move_number) ||
-                        null) &&
+                    {((mode === "play" && phase === "play") || null) &&
                         frag_play_buttons(show_cancel_button)}
                     {/* (view_mode === 'portrait' || null) && <i onClick={togglePortraitTab} className={'tab-icon fa fa-commenting'}/> */}
                 </div>
@@ -3029,19 +3027,29 @@ export function Game(props: GameProperties): JSX.Element {
 
         const sync_move_text = () => set_move_text(goban.current.engine.cur_move?.text || "");
 
-        const sync_show_undo_requested = () =>
+        const sync_show_undo_requested = () => {
+            if (game_control.in_pushed_analysis) {
+                return;
+            }
+
             set_show_undo_requested(
                 goban.current.engine.undo_requested ===
                     goban.current.engine.last_official_move.move_number,
             );
+        };
 
-        const sync_show_accept_undo = () =>
+        const sync_show_accept_undo = () => {
+            if (game_control.in_pushed_analysis) {
+                return;
+            }
+
             set_show_accept_undo(
                 goban.current.engine.playerToMove() === data.get("user").id ||
                     (goban.current.submit_move != null &&
                         goban.current.engine.playerNotToMove() === data.get("user").id) ||
                     null,
             );
+        };
         const sync_show_title = () =>
             set_show_title(
                 !goban.current.submit_move ||
@@ -3052,7 +3060,12 @@ export function Game(props: GameProperties): JSX.Element {
         const sync_move_info = () => {
             set_player_to_move(goban.current.engine.playerToMove());
             set_player_not_to_move(goban.current.engine.playerNotToMove());
-            set_is_my_move(goban.current.engine.playerToMove() === data.get("user").id);
+
+            const real_player_to_move =
+                goban.current.engine.last_official_move?.player === JGOFNumericPlayerColor.BLACK
+                    ? goban.current.engine.players.white.id
+                    : goban.current.engine.players.black.id;
+            set_is_my_move(real_player_to_move === data.get("user").id);
         };
 
         const sync_stone_removal = () => {
@@ -3206,11 +3219,13 @@ export function Game(props: GameProperties): JSX.Element {
         goban.current.on("cur_move", sync_resign_text);
         goban.current.on("cur_move", sync_move_text);
         goban.current.on("undo_requested", sync_show_undo_requested);
+        goban.current.on("last_official_move", sync_show_undo_requested);
         goban.current.on("cur_move", sync_show_title);
         goban.current.on("cur_move", sync_show_accept_undo);
         goban.current.on("submit_move", sync_show_title);
         goban.current.on("submit_move", sync_show_accept_undo);
         goban.current.on("cur_move", sync_move_info);
+        goban.current.on("last_official_move", sync_move_info);
         goban.current.on("paused", set_paused);
         goban.current.on("review_owner_id", set_review_owner_id);
         goban.current.on("review_controller_id", set_review_controller_id);
