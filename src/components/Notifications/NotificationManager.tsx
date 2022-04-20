@@ -172,7 +172,7 @@ export class NotificationManager {
     unread_notification_count;
     boards_to_move_on;
     active_boards;
-    turn_offset;
+    advances;
     auth;
     event_emitter: TypedEventEmitter<Events>;
 
@@ -185,7 +185,7 @@ export class NotificationManager {
 
         this.boards_to_move_on = {};
         this.active_boards = {};
-        this.turn_offset = 0;
+        this.advances = 0; // count of times "advance" has been called (since last "urgent board" advance)
         browserHistory.listen(this.onNavigate);
     }
     setUser(user) {
@@ -201,52 +201,78 @@ export class NotificationManager {
     }
 
     advanceToNextBoard(ev?) {
-        const game_id = getCurrentGameId() || 0;
-        const board_ids = [];
-        //notificationPermissionRequest();
+        ++this.advances;
+
+        const looking_at_game = getCurrentGameId() || 0;
+        console.log(looking_at_game);
+        const target_boards = [];
+        let we_have_moves_to_play = false;
+
+        // If there are boards where we have a move, then we'll chose on of these.
         for (const k in this.boards_to_move_on) {
-            board_ids.push(parseInt(this.boards_to_move_on[k].id));
+            const board = this.boards_to_move_on[k];
+            target_boards.push({
+                id: parseInt(board.id),
+                expiration: parseInt(board.clock_expiration),
+            });
         }
 
-        if (board_ids.length === 0) {
+        // otherwise, if there are boards where we don't have a move, we'll chose one of those.
+        if (target_boards.length === 0) {
             for (const k in this.active_boards) {
-                board_ids.push(parseInt(this.active_boards[k].id));
+                const board = this.active_boards[k];
+                target_boards.push({
+                    id: parseInt(board.id),
+                    expiration: parseInt(board.clock_expiration),
+                });
             }
+        } else {
+            we_have_moves_to_play = true;
         }
 
-        if (board_ids.length === 0) {
+        if (
+            target_boards.length === 0 ||
+            (target_boards.length === 1 && target_boards[0].id === looking_at_game)
+        ) {
+            console.log(target_boards);
             return;
         }
 
-        board_ids.sort((a, b) => {
-            return a - b;
+        // If we are looking at a board with our move, we want to chose the next lowest-expiration board
+        // from the one we chose last time.
+
+        // If we're not looking at a board with move of ours, and we have a move to play, then we want to chose the
+        // most urgent move to jump to.
+
+        // So whatever happens, we have to sort the games by expiration:
+        target_boards.sort((a, b) => {
+            return a.expiration - b.expiration;
         });
 
-        let idx = -1;
-
-        for (let i = 0; i < board_ids.length; ++i) {
-            if (game_id === board_ids[i]) {
-                idx = i;
-                break;
-            }
-            if (game_id < board_ids[i]) {
-                idx = i - 1;
-                break;
-            }
+        if (
+            we_have_moves_to_play &&
+            (!looking_at_game ||
+                !this.boards_to_move_on[looking_at_game] ||
+                this.boards_to_move_on[looking_at_game].player_to_move !== this.user.id)
+        ) {
+            this.advances = 1; // reset to the most urgent board: the first one we would pick
         }
 
-        idx = (idx + 1 + this.turn_offset) % board_ids.length;
+        let target_board = (this.advances - 1) % target_boards.length;
 
-        // open a new tab if the user asked for it, or if we must protect against disconnection from a live game
-        // (there's no point in opening a new tab if they only have one live game, because it will be this same game)
-        if ((ev && shouldOpenNewTab(ev)) || (lookingAtOurLiveGame() && board_ids.length > 1)) {
-            ++this.turn_offset;
-            window.open("/game/" + board_ids[idx], "_blank");
+        if (target_boards[target_board].id === looking_at_game) {
+            // if somehow we're targetting the board we're looking at, then just go to the next one
+            // (can happen as the number of boards available changes while we are clicking around)
+            ++this.advances;
+            target_board = (this.advances - 1) % target_boards.length;
+        }
+
+        // open a new tab if the user `asked for it`, or if we must protect against disconnection from a live game
+
+        if ((ev && shouldOpenNewTab(ev)) || lookingAtOurLiveGame()) {
+            window.open("/game/" + target_boards[target_board].id, "_blank");
         } else {
-            //window.open("/game/" + board_ids[idx]);
-            if (window.location.pathname !== "/game/" + board_ids[idx]) {
-                browserHistory.push("/game/" + board_ids[idx]);
-            }
+            browserHistory.push("/game/" + target_boards[target_board].id);
         }
     }
 
@@ -290,7 +316,6 @@ export class NotificationManager {
             //console.log("Notifier disconnected from " + server);
         });
         socket.on("active_game", (game) => {
-            console.log("active_game update", game);
             delete this.boards_to_move_on[game.id];
             if (game.phase === "finished") {
                 delete this.active_boards[game.id];
