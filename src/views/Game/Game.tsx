@@ -2491,7 +2491,10 @@ export function Game(props: GameProperties): JSX.Element {
                         <i className="fa fa-sitemap"></i> {_("Analyze game")}
                     </a>
                 )}
-                {((goban && user_is_player && goban.current.engine.phase !== "finished") ||
+                {((goban &&
+                    !review_id &&
+                    user_is_player &&
+                    goban.current.engine.phase !== "finished") ||
                     null) && (
                     <a
                         style={{
@@ -2514,7 +2517,10 @@ export function Game(props: GameProperties): JSX.Element {
                         <i className="fa fa-exchange"></i> {_("Plan conditional moves")}
                     </a>
                 )}
-                {((goban && (user_is_player || mod) && goban.current.engine.phase !== "finished") ||
+                {((goban &&
+                    !review_id &&
+                    (user_is_player || mod) &&
+                    goban.current.engine.phase !== "finished") ||
                     null) && (
                     <a onClick={pauseGame}>
                         <i className="fa fa-pause"></i> {_("Pause game")}
