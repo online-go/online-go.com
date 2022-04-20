@@ -22,7 +22,7 @@ import { browserHistory } from "ogsHistory";
 import * as preferences from "preferences";
 import swal from "sweetalert2";
 
-import { Goban } from "Goban";
+import { Goban } from "goban";
 import { isLiveGame } from "TimeControl";
 
 export type Timeout = ReturnType<typeof setTimeout>;
