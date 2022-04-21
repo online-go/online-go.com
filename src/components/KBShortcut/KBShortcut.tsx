@@ -21,12 +21,12 @@ import * as preferences from "preferences";
 let binding_id = 0;
 
 class Binding {
-    id;
-    shortcut;
-    fn;
-    priority;
+    id: number;
+    shortcut: string;
+    fn: (evt: any) => void;
+    priority: number;
 
-    constructor(shortcut, fn, priority) {
+    constructor(shortcut: string, fn: (evt: any) => void, priority: number) {
         this.id = ++binding_id;
         this.shortcut = shortcut;
         this.fn = fn;
@@ -40,28 +40,15 @@ interface KBProps {
     priority?: number;
 }
 
-export class KBShortcut extends React.Component<KBProps> {
-    binding: Binding;
+export function KBShortcut({ shortcut, action, priority }: KBProps) {
+    React.useEffect(() => {
+        const binding = kb_bind(shortcut, action, priority || 0);
+        return () => {
+            kb_unbind(binding);
+        };
+    }, [shortcut, action, priority]);
 
-    constructor(props) {
-        super(props);
-    }
-    shouldComponentUpdate() {
-        return false;
-    }
-    componentDidUpdate() {
-        kb_unbind(this.binding);
-        this.binding = kb_bind(this.props.shortcut, this.props.action, this.props.priority || 0);
-    }
-    componentDidMount() {
-        this.binding = kb_bind(this.props.shortcut, this.props.action, this.props.priority || 0);
-    }
-    componentWillUnmount() {
-        kb_unbind(this.binding);
-    }
-    render() {
-        return null;
-    }
+    return null;
 }
 
 const keymap = {
@@ -110,13 +97,9 @@ const input_enabled_keys = {
     121: "f10",
 };
 
-// It looks like this should be something like
-//    `let bound_shortcuts: {[x: string]: Binding} = {};
-// but I won't touch this for now -BPJ
-// eslint-disable-next-line id-denylist
-const bound_shortcuts = { string: Binding };
+const bound_shortcuts: { [shortcut: string]: Binding[] } = {};
 
-function sanitize_shortcut(shortcut) {
+function sanitize_shortcut(shortcut: string) {
     const shift = shortcut.indexOf("shift-") >= 0;
     const ctrl = shortcut.indexOf("ctrl-") >= 0;
     const alt = shortcut.indexOf("alt-") >= 0;
@@ -220,19 +203,18 @@ $(() => {
     });
 });
 
-export function kb_bind(shortcut, fn, priority) {
+export function kb_bind(shortcut: string, fn: () => void, priority: number): Binding {
     if (!priority) {
         priority = 0;
     }
     shortcut = sanitize_shortcut(shortcut);
-    //console.log("KB Binding", shortcut);
     const b = new Binding(shortcut, fn, priority);
     if (!(shortcut in bound_shortcuts)) {
         bound_shortcuts[shortcut] = [];
     }
 
     bound_shortcuts[shortcut].push(b);
-    bound_shortcuts[shortcut].sort((a, b) => {
+    bound_shortcuts[shortcut].sort((a: Binding, b: Binding) => {
         if (a.priority === b.priority) {
             return a.id - b.id;
         }
@@ -241,8 +223,7 @@ export function kb_bind(shortcut, fn, priority) {
     return b;
 }
 
-export function kb_unbind(b) {
-    //console.log("KB Unbinding", b.shortcut);
+export function kb_unbind(b: Binding) {
     for (let i = 0; i < bound_shortcuts[b.shortcut].length; ++i) {
         if (bound_shortcuts[b.shortcut][i].id === b.id) {
             bound_shortcuts[b.shortcut].splice(i, 1);
