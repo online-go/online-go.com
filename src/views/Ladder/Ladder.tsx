@@ -69,14 +69,10 @@ export class Ladder extends React.PureComponent<LadderProperties, LadderState> {
         this.resolve(this.props.match.params.ladder_id);
     }
 
-    UNSAFE_componentWillReceiveProps(next_props) {
-        if (this.props.match.params.ladder_id !== next_props.match.params.ladder_id) {
-            this.resolve(next_props.match.params.ladder_id);
-        }
-    }
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps: LadderProperties) {
         if (this.props.match.params.ladder_id !== prevProps.match.params.ladder_id) {
             this.setState({ ladder_id: this.props.match.params.ladder_id });
+            this.resolve(this.props.match.params.ladder_id);
         }
     }
 
