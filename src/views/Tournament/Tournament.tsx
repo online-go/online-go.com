@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import * as ReactDOM from "react-dom/client";
 import { LoadingPage } from "Loading";
 import { Link, RouteComponentProps } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
@@ -589,8 +589,18 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                     const white = $("<div>")
                         .addClass("white")
                         .addClass("elimination-player-" + match.white);
-                    ReactDOM.render(<Player user={players[match.black]} icon rank />, black[0]);
-                    ReactDOM.render(<Player user={players[match.white]} icon rank />, white[0]);
+                    const black_root = ReactDOM.createRoot(black[0]);
+                    black_root.render(
+                        <React.StrictMode>
+                            <Player user={players[match.black]} icon rank />
+                        </React.StrictMode>,
+                    );
+                    const white_root = ReactDOM.createRoot(white[0]);
+                    white_root.render(
+                        <React.StrictMode>
+                            <Player user={players[match.white]} icon rank />
+                        </React.StrictMode>,
+                    );
 
                     black.prepend(
                         $("<a class='elimination-game'><i class='ogs-goban'></i> </a>").attr(
@@ -649,7 +659,12 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                     const byee = $("<div>")
                         .addClass("bye")
                         .addClass("elimination-player-" + bye);
-                    ReactDOM.render(<Player user={players[bye]} icon rank />, byee[0]);
+                    const root = ReactDOM.createRoot(byee[0]);
+                    root.render(
+                        <React.StrictMode>
+                            <Player user={players[bye]} icon rank />
+                        </React.StrictMode>,
+                    );
                     bindHovers(byee, bye);
                     byediv.append(byee);
                     const obj = {
