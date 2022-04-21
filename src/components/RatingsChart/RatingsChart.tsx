@@ -68,7 +68,7 @@ const height = chart_height - margin.top - margin.bottom;
 const secondary_charts_height = chart_height - margin2.top - margin2.bottom;
 
 export class RatingsChart extends React.Component<RatingsChartProperties, RatingsChartState> {
-    container = null;
+    container = React.createRef<HTMLDivElement>();
     chart_div;
     svg;
     clip;
@@ -173,6 +173,9 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
             this.props.speed !== prevProps.speed ||
             this.props.size !== prevProps.size
         ) {
+            const size_text = this.props.size ? `${this.props.size}x${this.props.size}` : "";
+            this.legend_label.text(`${speed_translation(this.props.speed)} ${size_text}`);
+
             this.refreshData();
         }
         if (this.shouldDisplayRankInformation()) {
@@ -184,10 +187,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
     componentWillUnmount() {
         this.deinitialize();
     }
-    UNSAFE_componentWillReceiveProps(nextProps) {
-        const size_text = nextProps.size ? `${nextProps.size}x${nextProps.size}` : "";
-        this.legend_label.text(`${speed_translation(nextProps.speed)} ${size_text}`);
-    }
+
     shouldComponentUpdate(nextProps, nextState) {
         if (
             this.props.playerId !== nextProps.playerId ||
@@ -265,6 +265,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
 
     initialize() {
         const self = this;
+        this.destroyed = false;
 
         this.setRanges();
 
@@ -610,7 +611,6 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
             this.resize_debounce = null;
         }
         this.svg.remove();
-        this.container = null;
     }
     refreshData() {
         this.setState({ loading: true });
@@ -625,10 +625,10 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
     }
 
     /* The area we can draw all of our charting in */
-    chart_sizes() {
+    chart_sizes(): { width: number; height: number } {
         const width = Math.max(
             chart_min_width,
-            $(this.container).width() - margin.left - margin.right,
+            $(this.container.current).width() - margin.left - margin.right,
         );
         return {
             width: width,
@@ -1194,21 +1194,13 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
         this.y_axis_rank_labels.call(this.rank_axis);
     };
 
-    setContainer = (e) => {
-        const need_resize = this.container === null;
-        this.container = e;
-        if (need_resize) {
-            this.onResize();
-        }
-    };
-
     render() {
         this.computeWinLossNumbers();
         if (!this.state.loading && this.show_pie) {
             this.plotWinLossPie();
         }
         return (
-            <div ref={this.setContainer} className="RatingsChart">
+            <div ref={this.container} className="RatingsChart">
                 {this.state.loading ? (
                     <div className="loading">{_("Loading")}</div>
                 ) : this.state.nodata ? (
