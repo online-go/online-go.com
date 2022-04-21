@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import * as ReactDOM from "react-dom/client";
 import * as player_cache from "player_cache";
 import { Card } from "material";
 import { _, pgettext } from "translate";
@@ -314,6 +314,7 @@ export function openReport(report: ReportProperties): void {
     );
     container.className = "Report-container-container";
     document.body.append(container);
+    const root = ReactDOM.createRoot(container);
 
     if (game_id && !("reported_game_id" in report)) {
         report["reported_game_id"] = game_id;
@@ -323,7 +324,8 @@ export function openReport(report: ReportProperties): void {
     }
 
     function onClose() {
-        ReactDOM.unmountComponentAtNode(container);
+        //ReactDOM.unmountComponentAtNode(container);
+        root.unmount();
         document.body.removeChild(container);
         if (report.onClose) {
             report.onClose();
@@ -332,17 +334,18 @@ export function openReport(report: ReportProperties): void {
 
     console.log("Preparing report: ", report);
 
-    ReactDOM.render(
-        <div
-            className="Report-container"
-            onClick={(ev) => {
-                if ((ev.target as HTMLElement).className === "Report-container") {
-                    onClose();
-                }
-            }}
-        >
-            <Report {...report} onClose={onClose} />
-        </div>,
-        container,
+    root.render(
+        <React.StrictMode>
+            <div
+                className="Report-container"
+                onClick={(ev) => {
+                    if ((ev.target as HTMLElement).className === "Report-container") {
+                        onClose();
+                    }
+                }}
+            >
+                <Report {...report} onClose={onClose} />
+            </div>
+        </React.StrictMode>,
     );
 }
