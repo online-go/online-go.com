@@ -47,7 +47,7 @@ interface Collection {
 
 interface LibraryPlayerState {
     player_id: IdType;
-    collection_id: IdType;
+    collection_id: string;
     collections?: { [id: number]: Collection };
     games_checked: {};
     new_collection_name: string;
@@ -65,7 +65,7 @@ export class LibraryPlayer extends React.PureComponent<
 
         this.state = {
             player_id: parseInt(this.props.match.params.player_id),
-            collection_id: this.props.match.params.collection_id || 0,
+            collection_id: this.props.match.params.collection_id || "",
             collections: null,
             games_checked: {},
             new_collection_name: "",
@@ -76,26 +76,30 @@ export class LibraryPlayer extends React.PureComponent<
     componentDidMount() {
         this.refresh(this.state.player_id).then(ignore).catch(ignore);
     }
-    UNSAFE_componentWillReceiveProps(next_props) {
+    componentDidUpdate(prev_props: LibraryPlayerProperties) {
+        let updated = false;
         const update: any = {};
 
-        if (this.props.match.params.player_id !== next_props.match.params.player_id) {
-            this.refresh(parseInt(next_props.match.params.player_id)).then(ignore).catch(ignore);
-            update.player_id = parseInt(next_props.match.params.player_id);
+        if (this.props.match.params.player_id !== prev_props.match.params.player_id) {
+            this.refresh(parseInt(this.props.match.params.player_id)).then(ignore).catch(ignore);
+            update.player_id = parseInt(this.props.match.params.player_id);
             update.games_checked = {};
+            updated = true;
         }
 
-        if (next_props.match.params.collection_id) {
-            if (this.props.match.params.collection_id !== next_props.match.params.collection_id) {
-                update.collection_id = parseInt(next_props.match.params.collection_id);
-                update.games_checked = {};
+        if (this.props.match.params.collection_id !== prev_props.match.params.collection_id) {
+            if (this.props.match.params.collection_id) {
+                update.collection_id = parseInt(this.props.match.params.collection_id);
+            } else {
+                update.collection_id = "";
             }
-        } else {
-            update.collection_id = 0;
             update.games_checked = {};
+            updated = true;
         }
 
-        this.setState(update);
+        if (updated) {
+            this.setState(update);
+        }
     }
     componentWillUnmount() {
         abort_requests_in_flight("library/");
