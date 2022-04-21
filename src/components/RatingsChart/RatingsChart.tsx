@@ -235,9 +235,6 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
     }
 
     setRanges = () => {
-        if (!this.container) {
-            return;
-        }
         const sizes = this.chart_sizes();
 
         this.width = sizes.width;
