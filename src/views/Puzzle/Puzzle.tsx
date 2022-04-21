@@ -82,14 +82,11 @@ interface PuzzleState {
 const ranks = rankList(0, 38, false);
 
 export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
-    refs: {
-        goban;
-        goban_container;
+    ref_goban_container = React.createRef<HTMLDivElement>();
+    ref_collection = React.createRef<HTMLSelectElement>();
+    ref_name = React.createRef<HTMLInputElement>();
+    ref_puzzle_type = React.createRef<HTMLSelectElement>();
 
-        collection;
-        name;
-        puzzle_type;
-    };
     ref_move_tree_container: HTMLElement;
 
     ref_transform_x_button: React.RefObject<HTMLButtonElement>;
@@ -186,8 +183,8 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         this.fetchPuzzle(parseInt(this.props.match.params.puzzle_id));
         this.onResize();
     }
-    UNSAFE_componentWillReceiveProps(next_props) {
-        if (this.props.match.params.puzzle_id !== next_props.match.params.puzzle_id) {
+    componentDidUpdate(prev_props: PuzzleProperties) {
+        if (this.props.match.params.puzzle_id !== prev_props.match.params.puzzle_id) {
             this.reinitialize();
             this.setState({
                 loaded: false,
@@ -196,14 +193,13 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                 show_wrong: false,
                 editing: false,
             });
-            this.fetchPuzzle(parseInt(next_props.match.params.puzzle_id));
+            this.fetchPuzzle(parseInt(this.props.match.params.puzzle_id));
         }
-    }
-    componentDidUpdate() {
+
         this.onResize();
     }
     onResize = () => {
-        if (!this.refs.goban_container) {
+        if (!this.ref_goban_container.current) {
             return;
         }
 
@@ -220,8 +216,8 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         if (this.goban) {
             this.goban.setSquareSizeBasedOnDisplayWidth(
                 Math.min(
-                    this.refs.goban_container.offsetWidth,
-                    this.refs.goban_container.offsetHeight,
+                    this.ref_goban_container.current.offsetWidth,
+                    this.ref_goban_container.current.offsetHeight,
                 ),
             );
 
@@ -230,9 +226,9 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     };
     recenterGoban() {
         const m = this.goban.computeMetrics();
-        $(this.refs.goban_container).css({
-            top: Math.ceil(this.refs.goban_container.offsetHeight - m.height) / 2,
-            left: Math.ceil(this.refs.goban_container.offsetWidth - m.width) / 2,
+        $(this.ref_goban_container.current).css({
+            top: Math.ceil(this.ref_goban_container.current.offsetHeight - m.height) / 2,
+            left: Math.ceil(this.ref_goban_container.current.offsetWidth - m.width) / 2,
         });
     }
     reinitialize() {
@@ -552,15 +548,15 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     };
     validateSetup = () => {
         if (!(this.state.puzzle.puzzle_collection > 0)) {
-            this.refs.collection.focus();
+            this.ref_collection.current.focus();
             return false;
         }
         if (this.state.name.length < 5) {
-            this.refs.name.focus();
+            this.ref_name.current.focus();
             return false;
         }
         if (!this.state.puzzle.puzzle_type) {
-            this.refs.puzzle_type.focus();
+            this.ref_puzzle_type.current.focus();
             return false;
         }
         return true;
@@ -744,7 +740,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                 <KBShortcut shortcut="left" action={this.undo} />
 
                 <div className={"center-col"}>
-                    <div ref="goban_container" className="goban-container">
+                    <div ref={this.ref_goban_container} className="goban-container">
                         <ReactResizeDetector
                             handleWidth
                             handleHeight
@@ -1062,7 +1058,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                         <div>
                             <div className="space-around padded">
                                 <select
-                                    ref="collection"
+                                    ref={this.ref_collection}
                                     value={this.state.puzzle.puzzle_collection}
                                     onChange={this.setPuzzleCollection}
                                 >
@@ -1078,7 +1074,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
                             <div className="padded">
                                 <input
-                                    ref="name"
+                                    ref={this.ref_name}
                                     type="text"
                                     value={this.state.name}
                                     onChange={this.setName}
@@ -1089,7 +1085,7 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                             <div className="padded">
                                 <div className="space-around">
                                     <select
-                                        ref="puzzle_type"
+                                        ref={this.ref_puzzle_type}
                                         value={this.state.puzzle.puzzle_type}
                                         onChange={this.setPuzzleType}
                                     >
