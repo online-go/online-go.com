@@ -63,7 +63,7 @@ interface GameChatLineProperties {
 
 export function GameChat(props: GameChatProperties): JSX.Element {
     const user = data.get("user");
-    const in_game_mod_channel = inGameModChannel(props.game_id || props.review_id);
+    const in_game_mod_channel = !props.review_id && inGameModChannel(props.game_id);
 
     const ref_chat_log = React.useRef<HTMLDivElement>(null);
     const scrolled_to_bottom = React.useRef(true);
