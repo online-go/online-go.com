@@ -100,10 +100,8 @@ interface GroupState {
 }
 
 export class Group extends React.PureComponent<GroupProperties, GroupState> {
-    refs: {
-        new_news_title;
-        new_news_body;
-    };
+    ref_new_news_title = React.createRef<HTMLInputElement>();
+    ref_new_news_body = React.createRef<HTMLTextAreaElement>();
 
     news_ref = React.createRef<PaginatedTableRef>();
 
@@ -149,8 +147,8 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
     componentWillUnmount() {
         setExtraActionCallback(null);
     }
-    UNSAFE_componentWillReceiveProps(next_props) {
-        const group_id = parseInt(next_props.match.params.group_id);
+    componentDidUpdate() {
+        const group_id = parseInt(this.props.match.params.group_id);
         if (group_id !== this.state.group_id) {
             this.resolve(group_id);
             this.setState({ group_id: group_id });
@@ -341,16 +339,16 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
     postNewNews = () => {
         if (this.state.new_news_title.trim().length < 5) {
             swal({ title: _("Please provide a title") })
-                .then(() => this.refs.new_news_title.focus())
+                .then(() => this.ref_new_news_title.current.focus())
                 .catch(errorAlerter);
-            this.refs.new_news_title.focus();
+            this.ref_new_news_title.current.focus();
             return;
         }
         if (this.state.new_news_body.trim().length < 16) {
             swal({ title: _("Please provide more content for your news") })
-                .then(() => this.refs.new_news_body.focus())
+                .then(() => this.ref_new_news_body.current.focus())
                 .catch(errorAlerter);
-            this.refs.new_news_body.focus();
+            this.ref_new_news_body.current.focus();
             return;
         }
         this.toggleNewNewsPost();
@@ -373,8 +371,8 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
     toggleNewNewsPost = () => {
         this.setState({ show_new_news_post: !this.state.show_new_news_post });
         setTimeout(() => {
-            if (this.refs.new_news_title) {
-                this.refs.new_news_title.focus();
+            if (this.ref_new_news_title.current) {
+                this.ref_new_news_title.current.focus();
             }
         }, 1);
     };
@@ -821,14 +819,14 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                             {(this.state.show_new_news_post || null) && (
                                 <div>
                                     <input
-                                        ref="new_news_title"
+                                        ref={this.ref_new_news_title}
                                         type="text"
                                         placeholder={_("Title")}
                                         value={this.state.new_news_title}
                                         onChange={this.setNewNewsTitle}
                                     />
                                     <textarea
-                                        ref="new_news_body"
+                                        ref={this.ref_new_news_body}
                                         rows={7}
                                         placeholder={_("News")}
                                         value={this.state.new_news_body}
