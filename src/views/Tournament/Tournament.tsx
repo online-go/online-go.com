@@ -140,14 +140,9 @@ function sortDropoutsToBottom(player_a, player_b) {
 /* TODO: Implement me TD Options */
 
 export class Tournament extends React.PureComponent<TournamentProperties, TournamentState> {
-    refs: {
-        player_list;
-        time_control_picker;
-        tournament_name;
-        description;
-        players_start;
-        max_players;
-    };
+    ref_tournament_name = React.createRef<HTMLInputElement>();
+    ref_description = React.createRef<HTMLTextAreaElement>();
+    ref_max_players = React.createRef<HTMLInputElement>();
 
     elimination_tree_container = $(`<div class="tournament-elimination-container">`);
     elimination_tree = $(`<svg xmlns="http://www.w3.org/2000/svg">`);
@@ -250,10 +245,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
         this.abort_requests();
         setExtraActionCallback(null);
     }
-    UNSAFE_componentWillReceiveProps(next_props) {
-        if (next_props.match.params.tournament_id !== this.props.match.params.tournament_id) {
-            this.setState({ tournament_id: parseInt(next_props.match.params.tournament_id) });
-            this.resolve(parseInt(next_props.match.params.tournament_id));
+    componentDidUpdate() {
+        if (this.state.tournament_id !== parseInt(this.props.match.params.tournament_id)) {
+            this.setState({ tournament_id: parseInt(this.props.match.params.tournament_id) });
+            this.resolve(parseInt(this.props.match.params.tournament_id));
         }
     }
     abort_requests() {
@@ -1206,27 +1201,27 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
         tournament.description = tournament.description.trim();
 
         if (tournament.name.length < 5) {
-            this.refs.tournament_name.focus();
+            this.ref_tournament_name.current.focus();
             swal(_("Please provide a name for the tournament")).catch(swal.noop);
             return;
         }
 
         if (tournament.description.length < 5) {
-            this.refs.description.focus();
+            this.ref_description.current.focus();
             swal(_("Please provide a description for the tournament")).catch(swal.noop);
             return;
         }
 
         const max_players = parseInt(tournament.settings.maximum_players);
         if (max_players > 10 && tournament.tournament_type === "roundrobin") {
-            this.refs.max_players.focus();
+            this.ref_max_players.current.focus();
             swal(_("Round Robin tournaments are limited to a maximum of 10 players")).catch(
                 swal.noop,
             );
             return;
         }
         if (max_players < 2) {
-            this.refs.max_players.focus();
+            this.ref_max_players.current.focus();
             swal(_("You need at least two players in a tournament")).catch(swal.noop);
             return;
         }
@@ -1629,7 +1624,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                 </h2>
                             ) : (
                                 <input
-                                    ref="tournament_name"
+                                    ref={this.ref_tournament_name}
                                     className="fill big"
                                     value={tournament.name}
                                     placeholder={_("Tournament Name")}
@@ -1751,7 +1746,6 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                             )}
                             {editing && (
                                 <TimeControlPicker
-                                    ref="time_control_picker"
                                     value={tournament.time_control_parameters}
                                     onChange={this.setTimeControl}
                                 />
@@ -1760,7 +1754,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                 <Markdown source={tournament.description} />
                             ) : (
                                 <textarea
-                                    ref="description"
+                                    ref={this.ref_description}
                                     rows={7}
                                     className="fill"
                                     value={tournament.description}
@@ -1908,7 +1902,6 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                 {editing ? (
                                                     <span>
                                                         <input
-                                                            ref="players_start"
                                                             type="number"
                                                             value={tournament.players_start}
                                                             onChange={this.setPlayersStart}
@@ -2347,7 +2340,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                 .filter((p) => p.rank > 0 && p.rank <= 3)
                                 .sort((a, b) => (a.rank > b.rank ? 1 : -1))
                                 .map((player) => (
-                                    <div>
+                                    <div key={player.id}>
                                         <span className="final-results-place">
                                             <img
                                                 className="trophy"
