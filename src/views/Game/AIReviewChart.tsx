@@ -47,7 +47,7 @@ const INITIAL_HEIGHT = 100 - MARGIN.top - MARGIN.bottom;
 const simplex = new JSNoise.Module.Simplex();
 
 export class AIReviewChart extends React.Component<AIReviewChartProperties> {
-    container?: HTMLElement;
+    container = React.createRef<HTMLDivElement>();
     chart_div: HTMLElement;
     svg?: d3.Selection<SVGSVGElement, unknown, null, undefined>;
     destroyed = false;
@@ -113,6 +113,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
 
         //let this.props.use_score = this.props.use_score && this.props.ai_review.scores != null;
 
+        this.destroyed = false;
         this.width = INITIAL_WIDTH;
         this.height = INITIAL_HEIGHT;
         this.svg = d3
@@ -553,7 +554,6 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             delete this.replot_timeout;
         }
         this.svg?.remove();
-        delete this.container;
     }
     onResize = (no_debounce: boolean = false) => {
         if (this.destroyed) {
@@ -570,7 +570,10 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             return;
         }
 
-        this.width = Math.max(100, (this.container?.clientWidth || 0) - MARGIN.left - MARGIN.right);
+        this.width = Math.max(
+            100,
+            (this.container.current?.clientWidth || 0) - MARGIN.left - MARGIN.right,
+        );
 
         this.svg?.attr("width", this.width + MARGIN.left + MARGIN.right);
 
@@ -615,22 +618,9 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
 
         this.plot();
     };
-    setContainer = (e: HTMLElement | null) => {
-        const need_resize = !this.container;
-
-        if (e) {
-            this.container = e;
-        } else {
-            delete this.container;
-        }
-
-        if (need_resize) {
-            this.onResize();
-        }
-    };
     render() {
         return (
-            <div ref={this.setContainer} className="AIReviewChart">
+            <div ref={this.container} className="AIReviewChart">
                 <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
                 <PersistentElement elt={this.chart_div} />
             </div>
