@@ -85,9 +85,6 @@ export function logout() {
 }
 
 export class NavBar extends React.PureComponent<{}, any> {
-    refs: {
-        input: any;
-    };
     omnisearch_input_ref = React.createRef<HTMLInputElement>();
     notification_list = React.createRef<NotificationList>();
 
