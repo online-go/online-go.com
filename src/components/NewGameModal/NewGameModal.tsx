@@ -84,7 +84,7 @@ export class NewGameModal extends Modal<Events, NewGameModalProperties, any> {
 
     render() {
         return (
-            <div className="Modal NewGameModal" ref="modal">
+            <div className="Modal NewGameModal">
                 <div className="header">
                     <h2>{_("What kind of game would you like to play?")}</h2>
                 </div>

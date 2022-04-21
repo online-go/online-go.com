@@ -46,7 +46,7 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
         }
 
         return (
-            <div className="Modal GameLinkModal" ref="modal">
+            <div className="Modal GameLinkModal">
                 <div className="header">
                     <div>
                         <h2>{goban.engine.config.game_name}</h2>

@@ -118,7 +118,7 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
 
     render() {
         return (
-            <div className="Modal ACLModal" ref="modal">
+            <div className="Modal ACLModal">
                 <div className="header">
                     <h2>{_("Access Control")}</h2>
                 </div>

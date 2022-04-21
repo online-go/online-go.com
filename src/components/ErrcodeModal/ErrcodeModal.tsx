@@ -45,7 +45,7 @@ export class ErrcodeModal extends Modal<Events, ErrcodeModalProperties, any> {
         body = <Errcode message_id={this.props.message_id} />;
 
         return (
-            <div className="Modal ErrcodeModal" ref="modal">
+            <div className="Modal ErrcodeModal">
                 {header && <div className="header">{header}</div>}
                 <div className="body">{body}</div>
                 <div className="buttons">

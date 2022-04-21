@@ -42,7 +42,7 @@ export class ReportedConversationModal extends Modal<Events, ReportedConversatio
                 : this.props.conversation.split("\n");
 
         return (
-            <div className="Modal ReportedConversationModal" ref="modal">
+            <div className="Modal ReportedConversationModal">
                 <div className="header">
                     <h2>
                         {_("Reported Conversation with")} <Player user={this.props.player_id} />

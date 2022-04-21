@@ -59,7 +59,7 @@ export class JosekiSourceModal extends Modal<Events, JosekiSourceModalProperties
             this.state.description.length > 8; // some basic sanity that they put something in
 
         return (
-            <div className="Modal JosekiSourceModal" ref="modal">
+            <div className="Modal JosekiSourceModal">
                 <div className="header">{_("New Joseki Source")}</div>
                 <div className="description">
                     <div>{_("Source")}:</div>

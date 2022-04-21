@@ -113,7 +113,7 @@ export class JosekiStatsModal extends Modal<Events, JosekiStatsModalProperties, 
             .filter((day) => day.pageVisits > 2);
 
         return (
-            <div className="Modal JosekiStatsModal" ref="modal">
+            <div className="Modal JosekiStatsModal">
                 <div className="header">{_("Joseki Explorer Stats - Daily Position Loads")}</div>
                 <div className="daily-visit-results">
                     <StatsChart daily_page_visits={daily_page_visits} />

@@ -35,9 +35,9 @@ export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<
         current_modal = this;
         if (open_modal_cb) {
             open_modal_cb(this);
-            open_modal_cb = null;
         }
     }
+
     close = () => {
         this.emit("close");
     };
@@ -69,7 +69,7 @@ export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<
         };
         const on_close = () => {
             //container.remove();
-            backdrop.remove();
+            backdrop.parentNode?.removeChild(backdrop);
             this.off("close", on_close);
             $(document.body).off("keydown", on_escape);
         };
@@ -85,6 +85,10 @@ export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<
 }
 
 export function openModal(modal: any): any {
+    if (open_modal_cb) {
+        console.warn("Modal already open, calling openModal again might have unexpected results");
+    }
+
     const container = document.createElement("div");
     container.className = "Modal-container";
 
@@ -94,7 +98,8 @@ export function openModal(modal: any): any {
     open_modal_cb = (modal) => {
         modal.on("close", () => {
             root.unmount();
-            container.remove();
+            container.parentNode?.removeChild(container);
+            open_modal_cb = null;
         });
         modal.bindContainer(container);
     };

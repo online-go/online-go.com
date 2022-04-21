@@ -1524,7 +1524,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         }
 
         return (
-            <div className="Modal ChallengeModal" ref="modal">
+            <div className="Modal ChallengeModal">
                 <div className="header">
                     <h2>
                         {(mode === "open" || null) && <span>{_("Custom Game")}</span>}

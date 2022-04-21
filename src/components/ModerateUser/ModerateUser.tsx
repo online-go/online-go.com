@@ -139,7 +139,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
         const user = this.state;
 
         return (
-            <div className="Modal ModerateUser" ref="modal">
+            <div className="Modal ModerateUser">
                 <div className="header">
                     <h1>{this.state.username}</h1>
                 </div>

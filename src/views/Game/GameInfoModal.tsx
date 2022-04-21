@@ -183,7 +183,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
             editable && (config.white_player_id === 0 || !config.players?.white?.id);
 
         return (
-            <div className="Modal GameInfoModal" ref="modal">
+            <div className="Modal GameInfoModal">
                 <div className="header">
                     {(config.rengo || null) && (
                         <div className="rengo-header">
