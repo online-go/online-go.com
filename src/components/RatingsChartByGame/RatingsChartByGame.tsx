@@ -77,7 +77,7 @@ const pie_restore_delay = 1500; // long enough to go click on the minigoban if y
 const format_date = (d: Date) => moment(d).format("ll");
 
 export class RatingsChartByGame extends React.Component<RatingsChartProperties, RatingsChartState> {
-    container = null;
+    container = React.createRef<HTMLDivElement>();
     chart_div;
     svg;
     clip;
@@ -187,6 +187,8 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             this.props.speed !== prevProps.speed ||
             this.props.size !== prevProps.size
         ) {
+            const size_text = this.props.size ? `${this.props.size}x${this.props.size}` : "";
+            this.legend_label.text(`${speed_translation(this.props.speed)} ${size_text}`);
             this.refreshData();
         }
         if (this.shouldDisplayRankInformation()) {
@@ -198,10 +200,6 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     componentWillUnmount() {
         this.deinitialize();
         window.clearTimeout(this.hover_timer);
-    }
-    UNSAFE_componentWillReceiveProps(nextProps) {
-        const size_text = nextProps.size ? `${nextProps.size}x${nextProps.size}` : "";
-        this.legend_label.text(`${speed_translation(nextProps.speed)} ${size_text}`);
     }
     shouldComponentUpdate(nextProps, nextState) {
         if (
@@ -272,6 +270,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         const self = this;
         this.hover_timer = null;
 
+        this.destroyed = false;
         this.setRanges();
 
         const width = this.graph_width;
@@ -527,7 +526,6 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             this.resize_debounce = null;
         }
         this.svg.remove();
-        this.container = null;
     }
     refreshData() {
         this.setState({ loading: true });
@@ -550,7 +548,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     chart_sizes() {
         const width = Math.max(
             chart_min_width,
-            $(this.container).width() - margin.left - margin.right,
+            $(this.container.current).width() - margin.left - margin.right,
         );
         return {
             width: width,
@@ -915,14 +913,6 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         }
     };
 
-    setContainer = (e) => {
-        const need_resize = this.container === null;
-        this.container = e;
-        if (need_resize) {
-            this.onResize();
-        }
-    };
-
     updateHoveredGame = (game_id: number) => {
         this.setState({
             hovered_game_id: game_id,
@@ -934,7 +924,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     render() {
         // NOTE: we have a shouldComponentUpdate controlling this render (in case you wonder why it doesn't run ;) )
         return (
-            <div ref={this.setContainer} className="RatingsChartByGame">
+            <div ref={this.container} className="RatingsChartByGame">
                 {this.state.loading ? (
                     <div className="loading">{_("Loading")}</div>
                 ) : this.state.nodata ? (
