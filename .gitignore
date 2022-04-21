@@ -15,7 +15,7 @@ Makefile.passwords
 how_to_add_a_new_language.txt
 .DS_Store
 /.alm/
-yarn.lock
+package-lock.json
 report.*.json
 
 

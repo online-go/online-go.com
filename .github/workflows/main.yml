@@ -35,12 +35,12 @@ jobs:
           path: node_modules
           key: ${{ runner.os }}-node-modules
 
-      - name: NPM install
+      - name: yarn install
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10
           max_attempts: 3
-          command: npm ci --force
+          command: yarn install
 
       # Build
       - name: Build CSS

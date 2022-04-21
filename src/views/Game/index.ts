@@ -16,3 +16,4 @@
  */
 
 export * from "./Game";
+export * from "./util";

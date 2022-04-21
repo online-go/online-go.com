@@ -18,7 +18,8 @@
         "test": "jest",
         "gulp": "gulp",
         "minify-index": "gulp minify-index --silent",
-        "analyze": "webpack --mode production --profile --optimization-minimize --devtool=source-map"
+        "analyze": "webpack --mode production --profile --optimization-minimize --devtool=source-map",
+        "yarn": "yarn"
     },
     "browserslist": [
         "defaults"
@@ -30,7 +31,6 @@
         "@typescript-eslint/parser": "^5.14.0",
         "autoprefixer": "^10.4.2",
         "body-parser": "^1.16.1",
-
         "cssnano": "^5.0.8",
         "eslint": "^7.32.0",
         "eslint-config-prettier": "^8.3.0",
@@ -42,7 +42,7 @@
         "express": "^4.17.1",
         "express-http-proxy": "^1.6.0",
         "fork-ts-checker-webpack-plugin": "^6.3.4",
-        "goban": "=0.5.80",
+        "goban": "=0.5.81",
         "gulp": "^4.0.2",
         "gulp-clean-css": "^4.3.0",
         "gulp-eslint7": "^0.3.2",
@@ -71,7 +71,8 @@
         "webpack": "^5.70.0",
         "webpack-bundle-analyzer": "^4.5.0",
         "webpack-cli": "^4.9.2",
-        "xgettext-js": "^3.0.0"
+        "xgettext-js": "^3.0.0",
+        "yarn": "^1.22.18"
     },
     "dependencies": {
         "@sentry/browser": "^6.16.1",
@@ -84,8 +85,8 @@
         "@types/react": "^18.0.5",
         "@types/react-autosuggest": "^10.1.5",
         "@types/react-dom": "^18.0.1",
-        "@types/react-virtualized": "^9.21.21",
         "@types/react-router-dom": "^5.3.2",
+        "@types/react-virtualized": "^9.21.21",
         "@types/sanitize-html": "^1.22.0",
         "array-move": "^2.2.1",
         "d3": "^5.15.0",
@@ -98,6 +99,7 @@
         "moment": "^2.29.2",
         "moment-duration-format": "^2.3.2",
         "moment-timezone": "^0.5.31",
+        "performance-now": "^2.1.0",
         "prop-types": "^15.5.0",
         "query-string": "^5.0.1",
         "react": "^18.0.0",
@@ -116,7 +118,6 @@
         "react-switch": "^5.0.1",
         "react-table": "^6.10.0",
         "react-virtualized": "^9.22.3",
-        "performance-now": "^2.1.0",
         "redux": "^3.7.2",
         "sanitize-html": "^2.3.2",
         "socket.io-client": "4.3.2",
@@ -135,5 +136,11 @@
         "react-dom": "$react-dom",
         "@types/react": "$@types/react",
         "@types/react-dom": "$@types/react-dom"
+    },
+    "resolutions": {
+        "**/react": "^18.0.0",
+        "**/react-dom": "^18.0.0",
+        "**/@types/react": "^18.0.5",
+        "**/@types/react-dom": "^18.0.1"
     }
 }

@@ -158,6 +158,7 @@ interface JosekiState {
     pass_available: boolean;
     contributor_id: number;
     child_count: number;
+    goban_container_left_padding: number;
 
     throb: boolean;
 
@@ -203,7 +204,6 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
     goban_div: HTMLDivElement;
     goban_opts: any = {};
     goban_container: HTMLDivElement;
-    goban_persistent_element: PersistentElement;
 
     last_server_position = ""; // the most recent position that the server returned to us, used in backstepping
     last_placement = "";
@@ -240,6 +240,7 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
             pass_available: false, // Whether pass is one of the joseki moves or not.   Contains the category of the position resulting from pass, if present
             contributor_id: -1, // the person who created the node that we are displaying
             child_count: 0,
+            goban_container_left_padding: 0,
 
             throb: false, // whether to show board-loading throbber
 
@@ -401,8 +402,15 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
     recenterGoban() {
         const m = this.goban.computeMetrics();
         if (this.goban_container.offsetWidth > 0 && m.width > 0) {
+            this.setState({
+                goban_container_left_padding: Math.round(
+                    Math.ceil(this.goban_container.offsetWidth - m.width) / 2,
+                ),
+            });
+            /*
             this.goban_persistent_element.container.style.left =
                 Math.round(Math.ceil(this.goban_container.offsetWidth - m.width) / 2) + "px";
+                */
         }
     }
 
@@ -1201,8 +1209,10 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
                             onResize={() => this.onResize()}
                         />
                         <PersistentElement
-                            ref={(e) => (this.goban_persistent_element = e)}
                             className="Goban"
+                            extra_props={{
+                                style: { paddingLeft: this.state.goban_container_left_padding },
+                            }}
                             elt={this.goban_div}
                         />
                     </div>

@@ -5,7 +5,8 @@ then simply clone the repository and within the working directory run the follow
 
 ```
 # You only need to run this the first time
-npm install
+npm install yarn
+npm run yarn install
 npx husky install
 
 # Run this to start the development server and build system
