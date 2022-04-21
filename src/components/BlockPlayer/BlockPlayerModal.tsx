@@ -39,8 +39,10 @@ export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProper
         this.state = Object.assign({}, getBlocks(this.props.playerId));
     }
 
-    UNSAFE_componentWillReceiveProps(next_props) {
-        this.setState(getBlocks(next_props.playerId));
+    componentDidUpdate(prev_props: BlockPlayerModalProperties) {
+        if (this.props.playerId !== prev_props.playerId) {
+            this.setState(getBlocks(this.props.playerId));
+        }
     }
 
     toggleChatBlock = () => {
@@ -71,7 +73,7 @@ export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProper
                             <input
                                 id={"block-chat-" + this.props.playerId}
                                 type="checkbox"
-                                checked={this.state.block_chat}
+                                checked={this.state.block_chat || false}
                                 onChange={this.toggleChatBlock}
                             />
                             <label htmlFor={"block-chat-" + this.props.playerId}>
@@ -84,7 +86,7 @@ export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProper
                             <input
                                 id={"block-game-" + this.props.playerId}
                                 type="checkbox"
-                                checked={this.state.block_games}
+                                checked={this.state.block_games || false}
                                 onChange={this.toggleGameBlock}
                             />
                             <label htmlFor={"block-game-" + this.props.playerId}>
@@ -97,7 +99,7 @@ export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProper
                             <input
                                 id={"block-announcements-" + this.props.playerId}
                                 type="checkbox"
-                                checked={this.state.block_announcements}
+                                checked={this.state.block_announcements || false}
                                 onChange={this.toggleAnnouncementBlock}
                             />
                             <label htmlFor={"block-announcements-" + this.props.playerId}>
