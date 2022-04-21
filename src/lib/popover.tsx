@@ -130,7 +130,7 @@ export function popover(config: PopoverConfig): PopOver {
     $(document.body).append(container);
 
     const root = ReactDOM.createRoot(container[0]);
-    root.render(config.elt);
+    root.render(<React.StrictMode>{config.elt}</React.StrictMode>);
 
     return new PopOver(config, backdrop[0] as HTMLElement, container[0] as HTMLElement);
 }
