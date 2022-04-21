@@ -15,10 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as ReactDOM from "react-dom";
+import * as React from "react";
+import * as ReactDOM from "react-dom/client";
 import { TypedEventEmitterPureComponent } from "TypedEventEmitterPureComponent";
 
 let current_modal = null;
+
+let open_modal_cb: ((modal: Modal<any, any, any>) => void) | null = null;
 
 type ModalProps<P> = P & { fastDismiss?: boolean };
 export type ModalConstructorInput<P> = ModalProps<P> | Readonly<ModalProps<P>>;
@@ -30,21 +33,33 @@ export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<
     constructor(props: ModalConstructorInput<P>) {
         super(props);
         current_modal = this;
+        if (open_modal_cb) {
+            open_modal_cb(this);
+            open_modal_cb = null;
+        }
     }
     close = () => {
         this.emit("close");
     };
-    _open = () => {
-        const container = $(ReactDOM.findDOMNode(this)).parent();
-        const backdrop = $("<div class='Modal-backdrop'></div>");
-        $(document.body).append(backdrop);
-
+    bindContainer(container: HTMLElement) {
         if (this.props.fastDismiss) {
-            container.click((ev) => {
-                if (ev.target === container[0]) {
+            container.onclick = (ev) => {
+                if (ev.target === container) {
                     this.close();
                 }
-            });
+            };
+        }
+    }
+    _open = () => {
+        const backdrop = document.createElement("div");
+        backdrop.className = "Modal-backdrop";
+
+        document.body.appendChild(backdrop);
+
+        if (this.props.fastDismiss) {
+            backdrop.onclick = () => {
+                this.close();
+            };
         }
 
         const on_escape = (event) => {
@@ -53,7 +68,7 @@ export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<
             }
         };
         const on_close = () => {
-            container.remove();
+            //container.remove();
             backdrop.remove();
             this.off("close", on_close);
             $(document.body).off("keydown", on_escape);
@@ -67,14 +82,21 @@ export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<
     componentDidMount() {
         this._open();
     }
-    UNSAFE_componentWillReceiveProps() {
-        this._open();
-    }
 }
 
 export function openModal(modal: any): any {
-    const container = $("<div class='Modal-container'></div>");
-    $(document.body).append(container);
-    ReactDOM.render(modal, container[0]);
+    const container = document.createElement("div");
+    container.className = "Modal-container";
+
+    const root = ReactDOM.createRoot(container);
+    document.body.appendChild(container);
+    root.render(<React.StrictMode>{modal}</React.StrictMode>);
+    open_modal_cb = (modal) => {
+        modal.on("close", () => {
+            root.unmount();
+            container.remove();
+        });
+        modal.bindContainer(container);
+    };
     return current_modal;
 }
