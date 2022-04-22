@@ -474,9 +474,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
         challenge.game.time_control = this.ref_time_control_picker.current.time_control.system;
         challenge.game.time_control_parameters = this.ref_time_control_picker.current.time_control;
+
+        /* on our backend we still expect this to be named `time_control` for
+         * old legacy reasons.. hopefully we can reconcile that someday */
         (challenge.game.time_control_parameters as any).time_control =
-            this.ref_time_control_picker.current.time_control.system; /* on our backend we still expect this to be named `time_control` for
-                                                                  old legacy reasons.. hopefully we can reconcile that someday */
+            this.ref_time_control_picker.current.time_control.system;
         challenge.game.pause_on_weekends =
             this.ref_time_control_picker.current.time_control.pause_on_weekends;
 
