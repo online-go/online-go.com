@@ -23,7 +23,7 @@ import * as moment from "moment";
 import Select from "react-select";
 import ITC from "ITC";
 import { ValidPreference } from "preferences";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { _, pgettext, interpolate } from "translate";
 import { post, get, put, del, abort_requests_in_flight, getCookie } from "requests";
 import { errorAlerter, errorLogger, ignore, Timeout, dup } from "misc";
@@ -116,13 +116,8 @@ interface SettingGroupProps {
     updateSelfReportedAccountLinkages: (link: any) => void;
 }
 
-type SettingsProperties = RouteComponentProps<{ category: string }>;
-
-export function Settings({
-    match: {
-        params: { category },
-    },
-}: SettingsProperties): JSX.Element {
+export function Settings(): JSX.Element {
+    const { category } = useParams();
     const [settings_state, setSettingsState]: [SettingsState, (s: SettingsState) => void] =
         React.useState({});
     const [vacation_base_time, set_vacation_base_time]: [number, (s: number) => void] =
