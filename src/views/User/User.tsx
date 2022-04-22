@@ -190,7 +190,7 @@ export function User(props: { user_id?: number }): JSX.Element {
         const modal = openModerateUserModal(user);
         modal.on("close", () => {
             // reload after moderator changes something
-            resolve((user_id && parseInt(user_id)) || data.get("user")?.id);
+            resolve(user_id);
         });
     };
 
@@ -295,7 +295,7 @@ export function User(props: { user_id?: number }): JSX.Element {
 
     React.useEffect(() => {
         window.document.title = _("Player");
-        resolve((user_id && parseInt(user_id)) || data.get("user")?.id);
+        resolve(user_id);
 
         return () => {
             setResolved(false);
