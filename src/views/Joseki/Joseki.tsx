@@ -402,11 +402,16 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
     recenterGoban() {
         const m = this.goban.computeMetrics();
         if (this.goban_container.offsetWidth > 0 && m.width > 0) {
-            this.setState({
-                goban_container_left_padding: Math.round(
-                    Math.ceil(this.goban_container.offsetWidth - m.width) / 2,
-                ),
-            });
+            if (
+                this.state.goban_container_left_padding !==
+                Math.round(Math.ceil(this.goban_container.offsetWidth - m.width) / 2)
+            ) {
+                this.setState({
+                    goban_container_left_padding: Math.round(
+                        Math.ceil(this.goban_container.offsetWidth - m.width) / 2,
+                    ),
+                });
+            }
             /*
             this.goban_persistent_element.container.style.left =
                 Math.round(Math.ceil(this.goban_container.offsetWidth - m.width) / 2) + "px";
