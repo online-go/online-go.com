@@ -155,162 +155,151 @@ function SettingsRedirect(): JSX.Element {
 
 export const routes = (
     <Router history={browserHistory}>
-        <React.StrictMode>
-            <Main>
-                <Routes>
-                    <Route path="/sign-in" element={<SignIn />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/appeal/:player_id" element={<Appeal />} />
-                    <Route path="/appeal" element={<Appeal />} />
-                    <Route path="/appeals-center" element={<AppealsCenter />} />
-                    <Route path="/overview" element={<Overview />} />
-                    <Route path="/play" element={<Play />} />
-                    <Route path="/chat/:channel" element={<ChatView />} />
-                    <Route path="/chat/:channel/*" element={<ChatView />} />
-                    <Route path="/chat/:channel/**/*" element={<ChatView />} />
-                    <Route path="/chat" element={<ChatRedirect />} />
-                    <Route path="/observe-games" element={<ObserveGames />} />
-                    <Route path="/game/view/:game_id" element={<Game />} />
-                    <Route path="/game/:game_id/:move_number" element={<Game />} />
-                    <Route path="/game/:game_id" element={<Game />} />
-                    <Route path="/review/view/:review_id" element={<Game />} />
-                    <Route path="/review/:review_id" element={<Game />} />
-                    <Route path="/demo/view/:review_id" element={<Game />} />
-                    <Route path="/demo/:review_id" element={<Game />} />
-                    <Route path="/joseki/" element={<Joseki />} />{" "}
-                    {/* this is equivalent to specifying pos = "root" */}
-                    <Route path="/joseki/:pos" element={<Joseki />} />
-                    <Route path="/settings/:category" element={<Settings />} />
-                    <Route path="/settings/:category/*" element={<Settings />} />
-                    <Route path="/settings/:category/**/*" element={<Settings />} />
-                    <Route path="/settings" element={<SettingsRedirect />} />
-                    <Route path="/user/settings" element={<SettingsRedirect />} />
-                    <Route path="/player/settings" element={<SettingsRedirect />} />
-                    <Route path="/player/supporter/:account_id" element={<Supporter />} />
-                    <Route path="/player/supporter" element={<Supporter />} />
-                    <Route path="/player/:user_id" element={<User />} />
-                    <Route path="/player/:user_id/*" element={<User />} />
-                    <Route path="/player/:user_id/**/*" element={<User />} />
-                    <Route path="/user/view/:user_id" element={<User />} />
-                    <Route path="/user/view/:user_id/*" element={<User />} />
-                    <Route path="/user/view/:user_id/**/*" element={<User />} />
-                    <Route path="/user/supporter/:account_id" element={<Supporter />} />
-                    <Route path="/user/supporter" element={<Supporter />} />
-                    <Route path="/user/verifyEmail" element={<VerifyEmail />} />
-                    <Route path="/u/:username" element={<UserByName />} />
-                    <Route path="/user/:username" element={<UserByName />} />
-                    <Route path="/supporter/:account_id" element={<Supporter />} />
-                    <Route path="/supporter" element={<Supporter />} />
-                    <Route path="/support" element={<Supporter />} />
-                    <Route path="/donate" element={<Supporter />} />
-                    {/*
+        <Main>
+            <Routes>
+                <Route path="/sign-in" element={<SignIn />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/appeal/:player_id" element={<Appeal />} />
+                <Route path="/appeal" element={<Appeal />} />
+                <Route path="/appeals-center" element={<AppealsCenter />} />
+                <Route path="/overview" element={<Overview />} />
+                <Route path="/play" element={<Play />} />
+                <Route path="/chat/:channel" element={<ChatView />} />
+                <Route path="/chat/:channel/*" element={<ChatView />} />
+                <Route path="/chat/:channel/**/*" element={<ChatView />} />
+                <Route path="/chat" element={<ChatRedirect />} />
+                <Route path="/observe-games" element={<ObserveGames />} />
+                <Route path="/game/view/:game_id" element={<Game />} />
+                <Route path="/game/:game_id/:move_number" element={<Game />} />
+                <Route path="/game/:game_id" element={<Game />} />
+                <Route path="/review/view/:review_id" element={<Game />} />
+                <Route path="/review/:review_id" element={<Game />} />
+                <Route path="/demo/view/:review_id" element={<Game />} />
+                <Route path="/demo/:review_id" element={<Game />} />
+                <Route path="/joseki/" element={<Joseki />} />{" "}
+                {/* this is equivalent to specifying pos = "root" */}
+                <Route path="/joseki/:pos" element={<Joseki />} />
+                <Route path="/settings/:category" element={<Settings />} />
+                <Route path="/settings/:category/*" element={<Settings />} />
+                <Route path="/settings/:category/**/*" element={<Settings />} />
+                <Route path="/settings" element={<SettingsRedirect />} />
+                <Route path="/user/settings" element={<SettingsRedirect />} />
+                <Route path="/player/settings" element={<SettingsRedirect />} />
+                <Route path="/player/supporter/:account_id" element={<Supporter />} />
+                <Route path="/player/supporter" element={<Supporter />} />
+                <Route path="/player/:user_id" element={<User />} />
+                <Route path="/player/:user_id/*" element={<User />} />
+                <Route path="/player/:user_id/**/*" element={<User />} />
+                <Route path="/user/view/:user_id" element={<User />} />
+                <Route path="/user/view/:user_id/*" element={<User />} />
+                <Route path="/user/view/:user_id/**/*" element={<User />} />
+                <Route path="/user/supporter/:account_id" element={<Supporter />} />
+                <Route path="/user/supporter" element={<Supporter />} />
+                <Route path="/user/verifyEmail" element={<VerifyEmail />} />
+                <Route path="/u/:username" element={<UserByName />} />
+                <Route path="/user/:username" element={<UserByName />} />
+                <Route path="/supporter/:account_id" element={<Supporter />} />
+                <Route path="/supporter" element={<Supporter />} />
+                <Route path="/support" element={<Supporter />} />
+                <Route path="/donate" element={<Supporter />} />
+                {/*
             <Route path="/library" component={Library}/>
             <Route path="/library/game-history" component={LibraryGameHistory}/>
             */}
-                    <Route path="/library/:player_id/:collection_id" element={<LibraryPlayer />} />
-                    <Route path="/library/:player_id" element={<LibraryPlayer />} />
-                    <Route path="/groups" element={<GroupList />} />
-                    <Route path="/group/create" element={<GroupCreate />} />
-                    <Route path="/group/:group_id" element={<Group />} />
-                    <Route path="/group/:group_id/*" element={<Group />} />
-                    <Route path="/groupadmin/:group_id" element={<Group />} />
-                    <Route path="/groupadmin/:group_id/*" element={<Group />} />
-                    <Route path="/tournament/new/:group_id" element={<Tournament />} />
-                    <Route path="/tournament/new" element={<Tournament />} />
-                    <Route path="/tournament/:tournament_id" element={<Tournament />} />
-                    <Route path="/tournaments/:tournament_id" element={<Tournament />} />
-                    <Route path="/tournaments" element={<TournamentListMainView />} />
-                    <Route path="/tournaments/" element={<TournamentListMainView />} />
-                    <Route
-                        path="/tournament-record/:tournament_record_id"
-                        element={<TournamentRecord />}
-                    />
-                    <Route
-                        path="/tournament-records/:tournament_record_id"
-                        element={<TournamentRecord />}
-                    />
-                    <Route
-                        path="/tournament-record/:tournament_record_id/*"
-                        element={<TournamentRecord />}
-                    />
-                    <Route
-                        path="/tournament-records/:tournament_record_id/*"
-                        element={<TournamentRecord />}
-                    />
-                    <Route path="/ladders" element={<LadderList />} />
-                    <Route path="/ladder/:ladder_id" element={<Ladder />} />
-                    <Route path="/puzzles" element={<PuzzleList />} />
-                    <Route path="/puzzle/:puzzle_id" element={<Puzzle />} />
-                    <Route
-                        path="/puzzle-collections/:player_id"
-                        element={<PuzzleCollectionList />}
-                    />
-                    <Route
-                        path="/puzzle-collection/:collection_id"
-                        element={<PuzzleCollection />}
-                    />
-                    <Route path="/leaderboards" element={<LeaderBoard />} />
-                    <Route path="/leaderboard" element={<LeaderBoard />} />
-                    <Route path="/developer" element={<Developer />} />
-                    <Route path="/admin/merchant_log" element={<MerchantLog />} />
-                    <Route path="/admin/firewall" element={<Firewall />} />
-                    <Route path="/admin" element={<Admin />} />
-                    <Route path="/announcement-center" element={<AnnouncementCenter />} />
-                    {/*
+                <Route path="/library/:player_id/:collection_id" element={<LibraryPlayer />} />
+                <Route path="/library/:player_id" element={<LibraryPlayer />} />
+                <Route path="/groups" element={<GroupList />} />
+                <Route path="/group/create" element={<GroupCreate />} />
+                <Route path="/group/:group_id" element={<Group />} />
+                <Route path="/group/:group_id/*" element={<Group />} />
+                <Route path="/groupadmin/:group_id" element={<Group />} />
+                <Route path="/groupadmin/:group_id/*" element={<Group />} />
+                <Route path="/tournament/new/:group_id" element={<Tournament />} />
+                <Route path="/tournament/new" element={<Tournament />} />
+                <Route path="/tournament/:tournament_id" element={<Tournament />} />
+                <Route path="/tournaments/:tournament_id" element={<Tournament />} />
+                <Route path="/tournaments" element={<TournamentListMainView />} />
+                <Route path="/tournaments/" element={<TournamentListMainView />} />
+                <Route
+                    path="/tournament-record/:tournament_record_id"
+                    element={<TournamentRecord />}
+                />
+                <Route
+                    path="/tournament-records/:tournament_record_id"
+                    element={<TournamentRecord />}
+                />
+                <Route
+                    path="/tournament-record/:tournament_record_id/*"
+                    element={<TournamentRecord />}
+                />
+                <Route
+                    path="/tournament-records/:tournament_record_id/*"
+                    element={<TournamentRecord />}
+                />
+                <Route path="/ladders" element={<LadderList />} />
+                <Route path="/ladder/:ladder_id" element={<Ladder />} />
+                <Route path="/puzzles" element={<PuzzleList />} />
+                <Route path="/puzzle/:puzzle_id" element={<Puzzle />} />
+                <Route path="/puzzle-collections/:player_id" element={<PuzzleCollectionList />} />
+                <Route path="/puzzle-collection/:collection_id" element={<PuzzleCollection />} />
+                <Route path="/leaderboards" element={<LeaderBoard />} />
+                <Route path="/leaderboard" element={<LeaderBoard />} />
+                <Route path="/developer" element={<Developer />} />
+                <Route path="/admin/merchant_log" element={<MerchantLog />} />
+                <Route path="/admin/firewall" element={<Firewall />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/announcement-center" element={<AnnouncementCenter />} />
+                {/*
             <Route path="/admin/tournament-scheduler/:schedule_id" element={<TournamentModify />}/>
             <Route path="/admin/tournament-schedule-list" element={<AdminTournamentScheduleList />}/>
             */}
-                    <Route path="/moderator" element={<Moderator />} />
-                    <Route path="/learning-hub/:section/:page" element={<LearningHub />} />
-                    <Route path="/learning-hub/:section" element={<LearningHub />} />
-                    <Route path="/learning-hub" element={<LearningHub />} />
-                    <Route path="/learn-to-play-go/:section/:page" element={<LearningHub />} />
-                    <Route path="/learn-to-play-go/:section" element={<LearningHub />} />
-                    <Route path="/learn-to-play-go" element={<LearningHub />} />
-                    <Route path="/docs/learn-to-play-go/:section/:page" element={<LearningHub />} />
-                    <Route path="/docs/learn-to-play-go/:section" element={<LearningHub />} />
-                    <Route path="/docs/learn-to-play-go" element={<LearningHub />} />
-                    <Route path="/crash-course-learn-to-play-go/:step" element={<Tutorial />} />
-                    <Route path="/crash-course-learn-to-play-go" element={<Tutorial />} />
-                    <Route
-                        path="/docs/crash-course-learn-to-play-go/:step"
-                        element={<Tutorial />}
-                    />
-                    <Route path="/docs/crash-course-learn-to-play-go" element={<Tutorial />} />
-                    {/* these aren't meant to be linked anywhere, just entered by hand
+                <Route path="/moderator" element={<Moderator />} />
+                <Route path="/learning-hub/:section/:page" element={<LearningHub />} />
+                <Route path="/learning-hub/:section" element={<LearningHub />} />
+                <Route path="/learning-hub" element={<LearningHub />} />
+                <Route path="/learn-to-play-go/:section/:page" element={<LearningHub />} />
+                <Route path="/learn-to-play-go/:section" element={<LearningHub />} />
+                <Route path="/learn-to-play-go" element={<LearningHub />} />
+                <Route path="/docs/learn-to-play-go/:section/:page" element={<LearningHub />} />
+                <Route path="/docs/learn-to-play-go/:section" element={<LearningHub />} />
+                <Route path="/docs/learn-to-play-go" element={<LearningHub />} />
+                <Route path="/crash-course-learn-to-play-go/:step" element={<Tutorial />} />
+                <Route path="/crash-course-learn-to-play-go" element={<Tutorial />} />
+                <Route path="/docs/crash-course-learn-to-play-go/:step" element={<Tutorial />} />
+                <Route path="/docs/crash-course-learn-to-play-go" element={<Tutorial />} />
+                {/* these aren't meant to be linked anywhere, just entered by hand
                 for developers looking to test and play with things */}
-                    <Route path="/dev/styling" element={<Styling />} />
-                    <Route path="/dev/goban-test" element={<GobanTest />} />
-                    <Route path="/docs/about" element={<docs.About />} />
-                    <Route path="/docs/privacy-policy" element={<docs.PrivacyPolicy />} />
-                    <Route path="/docs/terms-of-service" element={<docs.TermsOfService />} />
-                    <Route path="/docs/contact-information" element={<docs.ContactInformation />} />
-                    <Route path="/docs/refund-policy" element={<docs.RefundPolicy />} />
-                    <Route path="/docs/go-rules-comparison-matrix" element={<docs.RulesMatrix />} />
-                    <Route path="/docs/team" element={<docs.Team />} />
-                    <Route path="/docs/other-go-resources" element={<docs.GoResources />} />
-                    <Route path="/blocked-vpn" element={<BlockedVPN />} />
-                    {/* These are short hand slugs we've created for the bigger AGA tournaments */}
-                    <Route
-                        path="/2019usgc"
-                        element={
-                            <Navigate to="/group/3837/2019-us-go-congress-in-madison-wi" replace />
-                        }
-                    />
-                    <Route
-                        path="/usgc2019"
-                        element={
-                            <Navigate to="/group/3837/2019-us-go-congress-in-madison-wi" replace />
-                        }
-                    />
-                    <Route
-                        path="/cotsen2019"
-                        element={<Navigate to="/tournament-record/45/" replace />}
-                    />
-                    <Route path="/" element={<Default />} />
-                    <Route path="/*" element={<PageNotFound />} />
-                </Routes>
-            </Main>
-        </React.StrictMode>
+                <Route path="/dev/styling" element={<Styling />} />
+                <Route path="/dev/goban-test" element={<GobanTest />} />
+                <Route path="/docs/about" element={<docs.About />} />
+                <Route path="/docs/privacy-policy" element={<docs.PrivacyPolicy />} />
+                <Route path="/docs/terms-of-service" element={<docs.TermsOfService />} />
+                <Route path="/docs/contact-information" element={<docs.ContactInformation />} />
+                <Route path="/docs/refund-policy" element={<docs.RefundPolicy />} />
+                <Route path="/docs/go-rules-comparison-matrix" element={<docs.RulesMatrix />} />
+                <Route path="/docs/team" element={<docs.Team />} />
+                <Route path="/docs/other-go-resources" element={<docs.GoResources />} />
+                <Route path="/blocked-vpn" element={<BlockedVPN />} />
+                {/* These are short hand slugs we've created for the bigger AGA tournaments */}
+                <Route
+                    path="/2019usgc"
+                    element={
+                        <Navigate to="/group/3837/2019-us-go-congress-in-madison-wi" replace />
+                    }
+                />
+                <Route
+                    path="/usgc2019"
+                    element={
+                        <Navigate to="/group/3837/2019-us-go-congress-in-madison-wi" replace />
+                    }
+                />
+                <Route
+                    path="/cotsen2019"
+                    element={<Navigate to="/tournament-record/45/" replace />}
+                />
+                <Route path="/" element={<Default />} />
+                <Route path="/*" element={<PageNotFound />} />
+            </Routes>
+        </Main>
     </Router>
 );
