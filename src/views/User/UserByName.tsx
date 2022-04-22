@@ -19,13 +19,11 @@ import * as React from "react";
 import { get } from "requests";
 import { errorAlerter } from "misc";
 import * as player_cache from "player_cache";
+import { useParams } from "react-router-dom";
 import { User } from "./User";
-import { RouteComponentProps } from "react-router";
 
-type UserByNameProperties = RouteComponentProps<{ username: string }>;
-
-export function UserByName(props: UserByNameProperties): JSX.Element {
-    const username = props.match.params.username;
+export function UserByName(): JSX.Element {
+    const { username } = useParams();
     const [user_id, set_user_id] = React.useState<number>(null);
 
     const doFetch = (username: string) => {
@@ -51,9 +49,7 @@ export function UserByName(props: UserByNameProperties): JSX.Element {
     }, [username]);
 
     if (user_id) {
-        return (
-            <User match={{ params: { user_id: user_id.toString() } }} location={props.location} />
-        );
+        return <User user_id={user_id} />;
     }
     return null;
 }

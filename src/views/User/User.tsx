@@ -54,8 +54,10 @@ import { ActivityCard } from "./ActivityCard";
 type RatingsSpeed = "overall" | "blitz" | "live" | "correspondence";
 type RatingsSize = 0 | 9 | 13 | 19;
 
-export function User(): JSX.Element {
-    const { user_id } = useParams();
+export function User(props: { user_id?: number }): JSX.Element {
+    const params = useParams();
+    const user_id =
+        props.user_id || ("user_id" in params ? parseInt(params.user_id) : data.get("user").id);
     const location = useLocation();
     const show_mod_log = parse(location.search)["show_mod_log"] === "1";
 
