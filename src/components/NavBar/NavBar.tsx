@@ -30,7 +30,6 @@ import {
     rejectGroupInvite,
     rejectTournamentInvite,
     ignore,
-    errorLogger,
 } from "misc";
 import { LineText } from "misc-ui";
 import { createDemoBoard } from "ChallengeModal";
@@ -45,8 +44,8 @@ import { FriendIndicator } from "FriendList";
 import { Player } from "Player";
 import * as player_cache from "player_cache";
 import * as preferences from "preferences";
-import cached from "cached";
 import { ChatIndicator } from "Chat";
+import { logout } from "auth";
 
 const body = $(document.body);
 
@@ -74,15 +73,6 @@ function toggleTheme() {
 const setThemeLight = setTheme.bind(null, "light");
 const setThemeDark = setTheme.bind(null, "dark");
 const setThemeAccessible = setTheme.bind(null, "accessible");
-
-export function logout() {
-    get("/api/v0/logout")
-        .then((config) => {
-            data.set(cached.config, config);
-            window.location.href = "/";
-        })
-        .catch(errorLogger);
-}
 
 export class NavBar extends React.PureComponent<{}, any> {
     omnisearch_input_ref = React.createRef<HTMLInputElement>();
