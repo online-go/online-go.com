@@ -101,7 +101,7 @@ navbar-width= 17rem;
                 pointer-events: none;
             }
 
-            .fa {
+            .fa, .ogs-goban {
                 font-size: 1.0rem;
                 font-weight: 400;
                 margin-left: 0.5rem;
@@ -164,6 +164,10 @@ navbar-width= 17rem;
 
     .leftnav > #items .fa {
         margin-right: 4px;
+    }
+    .leftnav > #items .ogs-goban {
+        margin-right: 4px;
+        text-decoration: none !important;
     }
 
     .rightnav {
@@ -299,7 +303,7 @@ navbar-width= 17rem;
             }
         }
 
-        a:hover i {
+        a:hover i, .fakelink:hover i  {
             themed color shade0
         }
     }

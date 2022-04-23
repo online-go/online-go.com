@@ -358,7 +358,7 @@ export function NavBar(): JSX.Element {
                         {valid_user && (
                             <li>
                                 <Link to="/play">
-                                    <i className="fa ogs-goban"></i>
+                                    <i className="ogs-goban"></i>
                                     {_("Play")}
                                 </Link>
                             </li>
