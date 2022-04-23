@@ -157,7 +157,8 @@ export function Game(): JSX.Element {
     const [resign_mode, set_resign_mode] = React.useState<"cancel" | "resign">();
     const [resign_text, set_resign_text] = React.useState<string>();
     const [cur_move_number, set_cur_move_number] = React.useState<number>();
-    const [score_estimate, set_score_estimate] = React.useState<any | null>();
+    const [score_estimate_winner, set_score_estimate_winner] = React.useState<string>();
+    const [score_estimate_amount, set_score_estimate_amount] = React.useState<number>();
     const [show_undo_requested, set_show_undo_requested] = React.useState<boolean>();
     const [show_accept_undo, set_show_accept_undo] = React.useState<boolean>();
     const [show_title, set_show_title] = React.useState<boolean>();
@@ -1887,15 +1888,15 @@ export function Game(): JSX.Element {
     const frag_estimate_score = () => {
         return (
             <span>
-                {(score_estimate.winner || null) && (
+                {(score_estimate_winner || null) && (
                     <span>
                         {interpolate(_("{{winner}} by {{score}}"), {
-                            winner: goban.current.score_estimate.winner,
-                            score: goban.current.score_estimate.amount?.toFixed(1),
+                            winner: score_estimate_winner,
+                            score: score_estimate_amount?.toFixed(1),
                         })}
                     </span>
                 )}
-                {(!score_estimate.winner || null) && <span>{_("Estimating...")}</span>}
+                {(!score_estimate_winner || null) && <span>{_("Estimating...")}</span>}
             </span>
         );
     };
@@ -3164,7 +3165,7 @@ export function Game(): JSX.Element {
             set_strict_seki_mode(engine.strict_seki_mode);
             set_rules(engine.rules);
             set_winner(goban.current.engine.winner);
-            set_score_estimate(goban.current.score_estimate || {});
+            set_score_estimate_winner(undefined);
             set_undo_requested(engine.undo_requested);
             set_paused(goban.current.pause_control && !!goban.current.pause_control.paused);
 
@@ -3222,7 +3223,10 @@ export function Game(): JSX.Element {
         goban.current.on("strict_seki_mode", set_strict_seki_mode);
         goban.current.on("rules", set_rules);
         goban.current.on("winner", set_winner);
-        goban.current.on("score_estimate", (est) => set_score_estimate(est || {}));
+        goban.current.on("score_estimate", (est) => {
+            set_score_estimate_winner(est?.winner || "");
+            set_score_estimate_amount(est?.amount || "");
+        });
         goban.current.on("undo_requested", set_undo_requested);
         goban.current.on("submit_move", sync_show_submit);
         goban.current.on("last_official_move", sync_show_submit);
