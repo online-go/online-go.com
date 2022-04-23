@@ -2411,7 +2411,7 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
                                                 </button>
                                             )}
                                             {((!this.state.is_joined && !can_join) || null) && (
-                                                <div>{cant_join_reason}</div>
+                                                <span>{cant_join_reason}</span>
                                             )}
                                             {(this.state.is_joined || null) && (
                                                 <button
