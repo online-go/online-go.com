@@ -115,19 +115,22 @@ export function PuzzleCollection(): JSX.Element {
                     </dd>
 
                     {puzzle_is_private && (
-                        <dd>
-                            <button
-                                className="success"
-                                onClick={() =>
-                                    openACLModal({ puzzle_collection_id: collection_id })
-                                }
-                            >
-                                {pgettext(
-                                    "Control who can access the game or review",
-                                    "Access settings",
-                                )}
-                            </button>
-                        </dd>
+                        <React.Fragment>
+                            <dt></dt>
+                            <dd>
+                                <button
+                                    className="success"
+                                    onClick={() =>
+                                        openACLModal({ puzzle_collection_id: collection_id })
+                                    }
+                                >
+                                    {pgettext(
+                                        "Control who can access the game or review",
+                                        "Access settings",
+                                    )}
+                                </button>
+                            </dd>
+                        </React.Fragment>
                     )}
                 </dl>
 
