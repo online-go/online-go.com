@@ -194,7 +194,7 @@ export class RengoTeamManagementPane extends React.PureComponent<
                         </div>
                     ))}
 
-                    {(own_challenge || null) && (
+                    {(own_challenge || this.props.moderator || null) && (
                         <div className="rengo-balancer-buttons">
                             {has_assigned_players ? (
                                 <button
