@@ -1035,7 +1035,12 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                 <KBShortcut shortcut="del" action={this.set_analyze_tool.delete_branch} />
 
                 <div className={"center-col"}>
-                    <div ref="goban_container" className="goban-container">
+                    <div ref={this.ref_goban_container} className="goban-container">
+                        <ReactResizeDetector
+                            handleWidth
+                            handleHeight
+                            onResize={() => this.onResize()}
+                        />
                         <PersistentElement className="Goban" elt={this.goban_div} />
                     </div>
                 </div>
