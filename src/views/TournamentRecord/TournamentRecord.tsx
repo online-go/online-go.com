@@ -24,7 +24,7 @@ import { Player } from "Player";
 import { ignore, errorAlerter, dup } from "misc";
 import { rankString, allRanks } from "rank_utils";
 import { createDemoBoard } from "ChallengeModal";
-import { RouteComponentProps } from "react-router-dom";
+import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
 
 window["dup"] = dup;
 
@@ -55,7 +55,7 @@ interface TournamentRecordState {
     editable_by_current_user?: boolean;
 }
 
-export class TournamentRecord extends React.PureComponent<
+class _TournamentRecord extends React.PureComponent<
     TournamentRecordProperties,
     TournamentRecordState
 > {
@@ -543,3 +543,5 @@ export class TournamentRecord extends React.PureComponent<
         );
     }
 }
+
+export const TournamentRecord = rr6ClassShim(_TournamentRecord);

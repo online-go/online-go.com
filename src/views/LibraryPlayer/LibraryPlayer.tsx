@@ -18,7 +18,8 @@
 import * as React from "react";
 import * as data from "data";
 import { _, interpolate } from "translate";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
 import { browserHistory } from "ogsHistory";
 import { abort_requests_in_flight, post, get } from "requests";
 import { errorAlerter, ignore, getOutcomeTranslation } from "misc";
@@ -54,10 +55,7 @@ interface LibraryPlayerState {
     new_collection_private: boolean;
 }
 
-export class LibraryPlayer extends React.PureComponent<
-    LibraryPlayerProperties,
-    LibraryPlayerState
-> {
+class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, LibraryPlayerState> {
     dropzone: DropzoneRef;
 
     constructor(props) {
@@ -528,6 +526,8 @@ export class LibraryPlayer extends React.PureComponent<
         );
     }
 }
+
+export const LibraryPlayer = rr6ClassShim(_LibraryPlayer);
 
 function outcome_formatter(entry) {
     if (entry.outcome && entry.outcome !== "?") {

@@ -18,17 +18,11 @@
 import * as React from "react";
 import * as data from "data";
 import { useState, useEffect, useCallback } from "react";
-
-//import {post, get} from "requests";
-//import {errorAlerter} from "misc";
-//import {Chat} from "Chat";
 import { ChatChannelList, ChatLog, ChatUsersList } from "Chat";
-import { RouteComponentProps } from "react-router";
+import { useParams } from "react-router";
 
-type ChatViewProperties = RouteComponentProps<{ channel: string }>;
-
-export function ChatView(props: ChatViewProperties): JSX.Element {
-    const channel = props.match.params.channel;
+export function ChatView(): JSX.Element {
+    const { channel } = useParams();
 
     data.set("chat.active_channel", channel);
 

@@ -343,7 +343,11 @@ function ForceReactUpdateWrapper(props): JSX.Element {
 
 const react_root = ReactDOM.createRoot(document.getElementById("main-content"));
 
-react_root.render(<ForceReactUpdateWrapper>{routes}</ForceReactUpdateWrapper>);
+react_root.render(
+    <React.StrictMode>
+        <ForceReactUpdateWrapper>{routes}</ForceReactUpdateWrapper>
+    </React.StrictMode>,
+);
 
 window["data"] = data;
 window["preferences"] = preferences;

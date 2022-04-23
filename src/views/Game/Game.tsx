@@ -20,7 +20,7 @@ import device from "device";
 import * as preferences from "preferences";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
 import { _, ngettext, pgettext, interpolate, current_language } from "translate";
 import { popover } from "popover";
@@ -76,17 +76,22 @@ import { game_control } from "./game_control";
 
 import swal from "sweetalert2";
 
-const win = $(window);
-
-type GameProperties = RouteComponentProps<{
+/*
+interface GameParams {
     game_id?: string;
     review_id?: string;
     move_number?: string;
-}>;
+}
+*/
 
-export function Game(props: GameProperties): JSX.Element {
-    const game_id = props.match.params.game_id ? parseInt(props.match.params.game_id) : 0;
-    const review_id = props.match.params.review_id ? parseInt(props.match.params.review_id) : 0;
+const win = $(window);
+
+export function Game(): JSX.Element {
+    //const params = useParams<GameParams>();
+    const params = useParams();
+
+    const game_id = params.game_id ? parseInt(params.game_id) : 0;
+    const review_id = params.review_id ? parseInt(params.review_id) : 0;
 
     /* Refs */
     const ref_goban_container = React.useRef<HTMLDivElement>();
@@ -3285,9 +3290,9 @@ export function Game(props: GameProperties): JSX.Element {
             });
         });
 
-        if (props.match.params.move_number) {
+        if (params.move_number) {
             goban.current.once("gamedata", () => {
-                nav_goto_move(parseInt(props.match.params.move_number));
+                nav_goto_move(parseInt(params.move_number));
             });
         }
 

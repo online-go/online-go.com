@@ -18,53 +18,41 @@
 import * as data from "data";
 import { parse } from "query-string";
 import * as React from "react";
-import { RouteComponentProps } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { post } from "requests";
 import { _ } from "translate";
 
-interface VerifyEmailState {
-    verifying: boolean;
-    message: string;
-}
+export function VerifyEmail() {
+    const location = useLocation();
+    const [verifying, setVerifying] = React.useState(true);
+    const [message, setMessage] = React.useState<string>();
 
-export class VerifyEmail extends React.PureComponent<RouteComponentProps, VerifyEmailState> {
-    constructor(props: RouteComponentProps) {
-        super(props);
-        this.state = {
-            verifying: true,
-            message: null,
-        };
-    }
-
-    componentDidMount() {
-        const q = parse(this.props.location.search);
+    React.useEffect(() => {
+        const q = parse(location.search);
 
         post("me/validateEmail", {
             id: q["id"],
             verification: q["v"],
         })
             .then(() => {
-                this.setState({
-                    verifying: false,
-                    message: _("Great, your email address has been verified!"),
-                });
+                setVerifying(false);
+                setMessage(_("Great, your email address has been verified!"));
                 const user = data.get("user");
                 user.email_validated = new Date().toString();
                 data.set("user", user);
             })
             .catch((err) => {
-                this.setState({ verifying: false, message: JSON.parse(err.responseText).error });
+                setVerifying(false);
+                setMessage(JSON.parse(err.responseText).error);
             });
-    }
+    }, [location.search]);
 
-    render() {
-        return (
-            <div className="VerifyEmail">
-                <h3>
-                    {this.state.verifying && <div>{_("Verifying...")}</div>}
-                    {this.state.message && <div>{this.state.message}</div>}
-                </h3>
-            </div>
-        );
-    }
+    return (
+        <div className="VerifyEmail">
+            <h3>
+                {verifying && <div>{_("Verifying...")}</div>}
+                {message && <div>{message}</div>}
+            </h3>
+        </div>
+    );
 }
