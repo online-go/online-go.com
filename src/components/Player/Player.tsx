@@ -143,9 +143,13 @@ export function Player(props: PlayerProperties): JSX.Element {
             }
         }
 
+        const set_online = (player_id: number, tf: boolean) => {
+            set_is_online(tf);
+        };
+
         /* Online status */
         if (props.online) {
-            online_status.subscribe(player_id, set_is_online);
+            online_status.subscribe(player_id, set_online);
         }
 
         /* Has notes */
@@ -166,7 +170,7 @@ export function Player(props: PlayerProperties): JSX.Element {
                 data.unwatch(`player-notes.${user.id}.${player.id}`, updateHasNotes);
             }
             if (props.online) {
-                online_status.unsubscribe(player_id, set_is_online);
+                online_status.subscribe(player_id, set_online);
             }
         };
     }, [player_id]);

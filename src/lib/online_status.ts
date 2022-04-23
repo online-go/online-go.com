@@ -38,10 +38,9 @@ socket.on("connect", () => {
 });
 
 socket.on("user/state", (states) => {
-    let i;
     for (const id in states) {
         state[id] = states[id];
-        for (i = 0; i < listeners[id].length; ++i) {
+        for (let i = 0; i < listeners[id].length; ++i) {
             listeners[id][i](id, state[id]);
         }
     }
@@ -62,7 +61,9 @@ const subscribe_queue = new Batcher<number>((ids) => {
     socket.send("user/monitor", ids);
 });
 
-function subscribe(player_id, cb) {
+type callback = (player_id: number, online: boolean) => void;
+
+function subscribe(player_id: number, cb: callback) {
     if (player_id in state) {
         cb(player_id, state[player_id]);
         listeners[player_id].push(cb);
@@ -74,10 +75,10 @@ function subscribe(player_id, cb) {
     subscribe_queue.soon(player_id);
 }
 
-function unsubscribe(player_id, cb) {
+function unsubscribe(player_id: number, cb: callback) {
     if (player_id in listeners) {
         for (let i = 0; i < listeners[player_id].length; ++i) {
-            if (listeners[player_id] === cb) {
+            if (listeners[player_id][i] === cb) {
                 listeners[player_id].splice(i, 1);
                 return;
             }
@@ -85,7 +86,7 @@ function unsubscribe(player_id, cb) {
     }
 }
 
-function is_player_online(player_id) {
+function is_player_online(player_id: number) {
     if (player_id in state) {
         return state[player_id];
     }
