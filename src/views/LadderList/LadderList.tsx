@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as data from "data";
 import { _, interpolate } from "translate";
 import { Link } from "react-router-dom";
 import { post, get } from "requests";
@@ -68,6 +69,8 @@ export class LadderList extends React.PureComponent<{}, LadderListState> {
     }
 
     render() {
+        const user = data.get("user");
+
         return (
             <div className="page-width">
                 <div className="page-nav">
@@ -89,6 +92,7 @@ export class LadderList extends React.PureComponent<{}, LadderListState> {
                             {(ladder.player_rank < 0 || null) && (
                                 <button
                                     className="primary sm"
+                                    disabled={user.anonymous}
                                     onClick={this.join.bind(this, ladder.id)}
                                 >
                                     {_("Join")}
