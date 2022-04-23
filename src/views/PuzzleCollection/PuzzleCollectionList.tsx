@@ -26,13 +26,11 @@ import { StarRating } from "StarRating";
 import { Player } from "Player";
 import { MiniGoban } from "MiniGoban";
 import swal from "sweetalert2";
-import { RouteComponentProps } from "react-router";
+import { useParams } from "react-router";
 
-export function PuzzleCollectionList({
-    match: {
-        params: { player_id },
-    },
-}: RouteComponentProps<{ player_id: string }>): JSX.Element {
+export function PuzzleCollectionList(): JSX.Element {
+    const { player_id } = useParams();
+
     return (
         <div className="page-width">
             <div className="PuzzleList container">
