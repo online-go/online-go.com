@@ -30,7 +30,11 @@ export function PersistentElement(props: PersistentElementProps): JSX.Element {
         if (container.current) {
             const elt = props.elt instanceof jQuery ? props.elt[0] : props.elt;
             if (elt) {
-                container.current.appendChild(elt);
+                const cont = container.current;
+                cont.appendChild(elt);
+                return () => {
+                    cont.removeChild(elt);
+                };
             }
         }
     }, [container.current, props.elt]);
