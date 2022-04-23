@@ -28,7 +28,7 @@ import { PlayerAutocomplete } from "PlayerAutocomplete";
 import { close_all_popovers, popover } from "popover";
 import { browserHistory } from "ogsHistory";
 import swal from "sweetalert2";
-import { RouteComponentProps } from "react-router-dom";
+import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
 import { IdType } from "src/lib/types";
 
 type LadderProperties = RouteComponentProps<{
@@ -50,7 +50,7 @@ interface LadderState {
     invalidationCount: number;
 }
 
-export class Ladder extends React.PureComponent<LadderProperties, LadderState> {
+class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
     constructor(props) {
         super(props);
         this.state = {
@@ -297,11 +297,13 @@ export class Ladder extends React.PureComponent<LadderProperties, LadderState> {
     };
 }
 
+export const Ladder = rr6ClassShim(_Ladder);
+
 interface LadderRowProperties {
     index: number;
     isScrolling: boolean;
     highlightRank: number;
-    ladder: Ladder;
+    ladder: _Ladder;
     invalidationCount: number;
 }
 

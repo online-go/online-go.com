@@ -18,7 +18,8 @@
 /* A page for looking up and playing against josekis stored in the OGS OJE*/
 
 import * as React from "react";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
 import ReactResizeDetector from "react-resize-detector";
 import * as queryString from "query-string";
 
@@ -199,7 +200,7 @@ interface JosekiState {
     position_type?: "new"; // It seems this is never set
 }
 
-export class Joseki extends React.Component<JosekiProps, JosekiState> {
+class _Joseki extends React.Component<JosekiProps, JosekiState> {
     goban: Goban;
     goban_div: HTMLDivElement;
     goban_opts: any = {};
@@ -944,7 +945,7 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
 
     componentDidUpdate(prevProps) {
         // console.log("did update...");
-        if (prevProps.location.key !== this.props.location.key) {
+        if (prevProps.location !== this.props.location) {
             this.componentDidMount(); // force reload of position if they click a position link
         }
 
@@ -1571,6 +1572,8 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
         }
     };
 }
+
+export const Joseki = rr6ClassShim(_Joseki);
 
 // This pane responds to changes in position ID by showing the new node information
 interface ExploreProps {

@@ -100,7 +100,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                     del(`reviews/${review_id}`)
                         .then(() => {
                             this.close();
-                            console.log(browserHistory.goBack());
+                            console.log(browserHistory.back());
                         })
                         .catch(errorAlerter);
                 })

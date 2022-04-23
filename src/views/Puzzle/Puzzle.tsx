@@ -17,7 +17,8 @@
 
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext, interpolate } from "translate";
 import { post, get, put, del } from "requests";
@@ -81,7 +82,7 @@ interface PuzzleState {
 
 const ranks = rankList(0, 38, false);
 
-export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
+export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     ref_goban_container = React.createRef<HTMLDivElement>();
     ref_collection = React.createRef<HTMLSelectElement>();
     ref_name = React.createRef<HTMLInputElement>();
@@ -1394,6 +1395,8 @@ export class Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         );
     }
 }
+
+export const Puzzle = rr6ClassShim(_Puzzle);
 
 import { PopOver, popover } from "popover";
 import { PuzzleSettingsModal } from "./PuzzleSettingsModal";

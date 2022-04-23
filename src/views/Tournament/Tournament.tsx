@@ -18,7 +18,8 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { LoadingPage } from "Loading";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext, interpolate } from "translate";
 import { abort_requests_in_flight, del, put, post, get } from "requests";
@@ -139,7 +140,7 @@ function sortDropoutsToBottom(player_a, player_b) {
 
 /* TODO: Implement me TD Options */
 
-export class Tournament extends React.PureComponent<TournamentProperties, TournamentState> {
+class _Tournament extends React.PureComponent<TournamentProperties, TournamentState> {
     ref_tournament_name = React.createRef<HTMLInputElement>();
     ref_description = React.createRef<HTMLTextAreaElement>();
     ref_max_players = React.createRef<HTMLInputElement>();
@@ -3234,6 +3235,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
         }
     };
 }
+
+export const Tournament = rr6ClassShim(_Tournament);
 
 function OpenGothaRoster({ players }: { tournament: any; players: Array<any> }): JSX.Element {
     window["players"] = players;

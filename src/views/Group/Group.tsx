@@ -16,7 +16,8 @@
  */
 
 import * as React from "react";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
 import { browserHistory } from "ogsHistory";
 import { _ } from "translate";
 import { post, del, put, get } from "requests";
@@ -99,7 +100,7 @@ interface GroupState {
     user_to_invite?: PlayerCacheEntry;
 }
 
-export class Group extends React.PureComponent<GroupProperties, GroupState> {
+class _Group extends React.PureComponent<GroupProperties, GroupState> {
     ref_new_news_title = React.createRef<HTMLInputElement>();
     ref_new_news_body = React.createRef<HTMLTextAreaElement>();
 
@@ -1196,3 +1197,5 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
         close_all_popovers();
     }
 }
+
+export const Group = rr6ClassShim(_Group);
