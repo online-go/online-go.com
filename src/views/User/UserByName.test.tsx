@@ -28,6 +28,10 @@ jest.mock("./User", () => {
     };
 });
 
+test("Dummy test", async () => {
+    return;
+});
+
 /*
 test("Renders User page if found in cache", async () => {
     player_cache.update({ id: 12345, username: "benjito" });
