@@ -292,10 +292,6 @@ export function NavBar(): JSX.Element {
             {/* Right Nav */}
             {valid_user && (
                 <div className={"rightnav " + (right_nav_active ? "active" : "")}>
-                    <div style={{ textAlign: "right" }}>
-                        <Player user={user} disable-cache-update />
-                    </div>
-
                     <NotificationList ref={notification_list} />
 
                     <LineText>{_("Theme")}</LineText>
