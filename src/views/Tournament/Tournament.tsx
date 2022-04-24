@@ -1924,7 +1924,7 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
                                                         />
                                                         -
                                                         <input
-                                                            ref="max_players"
+                                                            ref={this.ref_max_players}
                                                             type="number"
                                                             value={
                                                                 tournament.settings.maximum_players

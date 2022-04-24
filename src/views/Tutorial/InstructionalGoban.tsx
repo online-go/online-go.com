@@ -160,7 +160,7 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps>
     render() {
         return (
             <div className="InstructionalGoban">
-                <div ref="goban_container" className="goban-container">
+                <div className="goban-container">
                     <PersistentElement elt={this.goban_div} />
                 </div>
             </div>

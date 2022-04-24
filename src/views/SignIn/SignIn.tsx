@@ -74,10 +74,8 @@ export function get_ebi() {
 }
 
 export class SignIn extends React.PureComponent<{}, any> {
-    refs: {
-        username: any;
-        password: any;
-    };
+    ref_username = React.createRef<HTMLInputElement>();
+    ref_password = React.createRef<HTMLInputElement>();
 
     constructor(props) {
         super(props);
@@ -88,8 +86,8 @@ export class SignIn extends React.PureComponent<{}, any> {
     login(event) {
         const actually_login = () => {
             post("/api/v0/login", {
-                username: this.refs.username.value.trim(),
-                password: this.refs.password.value,
+                username: this.ref_username.current.value.trim(),
+                password: this.ref_password.current.value,
                 ebi: get_ebi(),
             })
                 .then((config) => {
@@ -122,12 +120,12 @@ export class SignIn extends React.PureComponent<{}, any> {
         };
 
         const focus_empty = () => {
-            if (this.refs.username.value.trim() === "") {
-                this.refs.username.focus();
+            if (this.ref_username.current.value.trim() === "") {
+                this.ref_username.current.focus();
                 return true;
             }
-            if (this.refs.password.value.trim() === "") {
-                this.refs.password.focus();
+            if (this.ref_password.current.value.trim() === "") {
+                this.ref_password.current.focus();
                 return true;
             }
 
@@ -193,7 +191,7 @@ export class SignIn extends React.PureComponent<{}, any> {
                                 className="boxed"
                                 id="username"
                                 autoFocus
-                                ref="username"
+                                ref={this.ref_username}
                                 name="username"
                                 onKeyPress={this.login}
                             />
@@ -203,7 +201,7 @@ export class SignIn extends React.PureComponent<{}, any> {
                             <input
                                 className="boxed"
                                 id="password"
-                                ref="password"
+                                ref={this.ref_password}
                                 type="password"
                                 name="password"
                                 onKeyPress={this.login}

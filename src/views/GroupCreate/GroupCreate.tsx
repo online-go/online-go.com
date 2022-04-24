@@ -29,9 +29,7 @@ interface GroupCreateState {
 }
 
 export class GroupCreate extends React.PureComponent<{}, GroupCreateState> {
-    refs: {
-        name;
-    };
+    ref_name = React.createRef<HTMLInputElement>();
 
     constructor(props) {
         super(props);
@@ -57,7 +55,7 @@ export class GroupCreate extends React.PureComponent<{}, GroupCreateState> {
                 })
                 .catch(errorAlerter);
         } else {
-            this.refs.name.focus();
+            this.ref_name.current.focus();
         }
     }
 
@@ -90,7 +88,7 @@ export class GroupCreate extends React.PureComponent<{}, GroupCreateState> {
                                 <div className="col-sm-6">
                                     <input
                                         type="text"
-                                        ref="name"
+                                        ref={this.ref_name}
                                         className="form-control"
                                         id="group-create-name"
                                         value={this.state.name}

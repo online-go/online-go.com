@@ -71,9 +71,7 @@ interface TutorialPageState {
 }
 
 abstract class TutorialPage extends React.PureComponent<{}, TutorialPageState> {
-    refs: {
-        igoban;
-    };
+    ref_igoban = React.createRef<InstructionalGoban>();
     _config: any;
 
     constructor(props) {
@@ -134,7 +132,7 @@ abstract class TutorialPage extends React.PureComponent<{}, TutorialPageState> {
                     <div className="tutorial-text">{this.text()}</div>
 
                     <InstructionalGoban
-                        ref="igoban"
+                        ref={this.ref_igoban}
                         config={this._config}
                         onUpdate={this.onUpdate}
                     />
@@ -204,7 +202,7 @@ class ThisIsAGoban extends TutorialPage {
         };
     }
     showNext() {
-        return !!this.refs.igoban.goban.engine.cur_move.parent;
+        return !!this.ref_igoban.current.goban.engine.cur_move.parent;
     }
 }
 class CapturingStones1 extends TutorialPage {
@@ -248,7 +246,7 @@ class CapturingStones1 extends TutorialPage {
         };
     }
     showNext() {
-        return this.refs.igoban.goban.engine.board[4][4] !== 2;
+        return this.ref_igoban.current.goban.engine.board[4][4] !== 2;
     }
 }
 class CapturingStones2 extends TutorialPage {
@@ -288,7 +286,7 @@ class CapturingStones2 extends TutorialPage {
         };
     }
     showNext() {
-        return this.refs.igoban.goban.engine.board[4][4] !== 2;
+        return this.ref_igoban.current.goban.engine.board[4][4] !== 2;
     }
 }
 class CapturingStones3 extends TutorialPage {
@@ -328,7 +326,7 @@ class CapturingStones3 extends TutorialPage {
         };
     }
     showNext() {
-        return this.refs.igoban.goban.engine.board[4][0] !== 2;
+        return this.ref_igoban.current.goban.engine.board[4][0] !== 2;
     }
 }
 class CapturingStones4 extends TutorialPage {
@@ -370,7 +368,7 @@ class CapturingStones4 extends TutorialPage {
         };
     }
     showNext() {
-        return this.refs.igoban.goban.engine.board[4][3] !== 2;
+        return this.ref_igoban.current.goban.engine.board[4][3] !== 2;
     }
 }
 
@@ -601,8 +599,8 @@ class Snapback extends TutorialPage {
     }
     showNext() {
         return (
-            this.refs.igoban.goban.engine.board[5][4] === 0 &&
-            this.refs.igoban.goban.engine.board[5][5] === 1
+            this.ref_igoban.current.goban.engine.board[5][4] === 0 &&
+            this.ref_igoban.current.goban.engine.board[5][5] === 1
         );
     }
 }
