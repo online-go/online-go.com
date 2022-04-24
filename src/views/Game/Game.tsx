@@ -413,9 +413,11 @@ export function Game(): JSX.Element {
             return;
         }
 
-        goban.current.setGameClock(
-            goban.current.last_clock,
-        ); /* this forces a clock refresh, important after a layout when the dom could have been replaced */
+        // this forces a clock refresh, important after a layout when the dom
+        // could have been replaced
+        // TODO: When we are revamping this view we should see if we can either remove this
+        // or move it into a clock component or something.
+        goban.current.setGameClock(goban.current.last_clock);
 
         if (!ref_goban_container.current) {
             return;
@@ -3259,6 +3261,7 @@ export function Game(): JSX.Element {
         goban.current.on("player-update", processPlayerUpdate);
         //goban.current.on("update", () => sync_state());
         //goban.current.on("reset", () => sync_state());
+        goban.current.on("gamedata", onResize);
 
         goban.current.on("gamedata", (gamedata) => {
             try {
