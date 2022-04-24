@@ -57,7 +57,6 @@ import { Settings } from "Settings";
 import { Styling } from "Styling";
 import { AnnouncementCenter } from "AnnouncementCenter";
 import { VerifyEmail } from "VerifyEmail";
-import { GobanTest } from "GobanTest";
 import { global_channels } from "chat_manager";
 import { ForceUsernameChange } from "ForceUsernameChange";
 import { BlockedVPN } from "BlockedVPN";
@@ -270,7 +269,6 @@ export const routes = (
                 {/* these aren't meant to be linked anywhere, just entered by hand
                 for developers looking to test and play with things */}
                 <Route path="/dev/styling" element={<Styling />} />
-                <Route path="/dev/goban-test" element={<GobanTest />} />
                 <Route path="/docs/about" element={<docs.About />} />
                 <Route path="/docs/privacy-policy" element={<docs.PrivacyPolicy />} />
                 <Route path="/docs/terms-of-service" element={<docs.TermsOfService />} />
