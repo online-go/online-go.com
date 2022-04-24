@@ -40,7 +40,7 @@ export class Team extends React.PureComponent<{}, any> {
         };
     }
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         get("https://api.github.com/repos/online-go/online-go.com/contributors?per_page=100")
             .then((list) => {
                 this.setState({ contributors: list });
@@ -124,7 +124,7 @@ export class Team extends React.PureComponent<{}, any> {
                                     ))}
                                 </span>
                                 <span style={{ display: "inline-block", width: "10em" }}>
-                                    <Player user={u} />
+                                    <Player user={Object.assign(u, { country: u.country[0] })} />
                                 </span>
                                 {_("Languages")}:{" "}
                                 {u.languages.map((c) => (
@@ -147,7 +147,7 @@ export class Team extends React.PureComponent<{}, any> {
                                     ))}
                                 </span>
                                 <span style={{ display: "inline-block", width: "9em" }}>
-                                    <Player user={u} />
+                                    <Player user={Object.assign(u, { country: u.country[0] })} />
                                 </span>
                                 {_("Languages")}:{" "}
                                 {u.languages.map((c) => (

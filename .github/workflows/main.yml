@@ -22,11 +22,11 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: '16'
           
       - name: Cache node modules
         id: cache-node-modules
@@ -35,7 +35,7 @@ jobs:
           path: node_modules
           key: ${{ runner.os }}-node-modules
 
-      - name: Yarn install
+      - name: yarn install
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10

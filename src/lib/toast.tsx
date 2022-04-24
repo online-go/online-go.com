@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import * as ReactDOM from "react-dom/client";
 import { TypedEventEmitter } from "TypedEventEmitter";
 
 interface Events {
@@ -26,12 +26,15 @@ interface Events {
 let toast_meta_container = null;
 
 export class Toast extends TypedEventEmitter<Events> {
+    private react_root: ReactDOM.Root;
     container: HTMLElement;
+
     timeout: any = null;
 
-    constructor(container: HTMLElement, timeout: number) {
+    constructor(root: ReactDOM.Root, container: HTMLElement, timeout: number) {
         super();
         this.container = container;
+        this.react_root = root;
         if (timeout) {
             this.timeout = setTimeout(() => {
                 this.timeout = null;
@@ -41,7 +44,7 @@ export class Toast extends TypedEventEmitter<Events> {
     }
 
     close() {
-        ReactDOM.unmountComponentAtNode(this.container);
+        this.react_root.unmount();
         $(this.container).parent().remove();
         $(this.container).remove();
         if (this.timeout) {
@@ -64,8 +67,10 @@ export function toast(element: React.ReactElement<any>, timeout?: number): Toast
     const container = $("<div class='toast-container'>");
     position_container.append(container);
 
-    ReactDOM.render(element, container[0]);
-    const ret = new Toast(container[0] as HTMLElement, timeout);
+    const root = ReactDOM.createRoot(container[0]);
+    root.render(<React.StrictMode>{element}</React.StrictMode>);
+    const ret = new Toast(root, container[0] as HTMLElement, timeout);
+
     container.click((ev) => {
         if (ev.target.nodeName !== "BUTTON" && ev.target.className.indexOf("fab") === -1) {
             ret.close();
@@ -83,3 +88,5 @@ export function toast(element: React.ReactElement<any>, timeout?: number): Toast
 
     return ret;
 }
+
+(window as any)["toast"] = toast;

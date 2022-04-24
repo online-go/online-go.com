@@ -76,7 +76,7 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
         }
 
         return (
-            <div className="Modal GameAcceptModal" ref="modal">
+            <div className="Modal GameAcceptModal">
                 <div className="header">
                     <div>
                         <h2>

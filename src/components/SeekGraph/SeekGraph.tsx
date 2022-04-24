@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import * as ReactDOM from "react-dom/client";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext, interpolate } from "translate";
 import { del } from "requests";
@@ -762,36 +762,39 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             }
 
             if (C.live_game) {
-                let f = $("<span>");
-                e.append(f);
-                ReactDOM.render(
-                    <Player
-                        user={{ user_id: 0, ranking: C.black_rank, username: C.black_username }}
-                        rank
-                        nolink
-                    />,
-                    f[0],
-                );
-                e.append($("<span>").text(" " + _("vs.") + " "));
-                f = $("<span>");
-                e.append(f);
-                ReactDOM.render(
-                    <Player
-                        user={{ user_id: 0, ranking: C.white_rank, username: C.white_username }}
-                        rank
-                        nolink
-                    />,
-                    f[0],
+                /* I don't think this is used anymore, I think this was for showing ongoing live games */
+                const container = document.createElement("span");
+                const root = ReactDOM.createRoot(container);
+                e.append($(container));
+                root.render(
+                    <React.StrictMode>
+                        <Player
+                            user={{ id: 0, ranking: C.black_rank, username: C.black_username }}
+                            rank
+                            nolink
+                        />
+                        {" " + _("vs.") + " "}
+                        <Player
+                            user={{ id: 0, ranking: C.white_rank, username: C.white_username }}
+                            rank
+                            nolink
+                        />
+                    </React.StrictMode>,
                 );
             } else {
-                const f = $("<span>");
-                e.append(f);
+                const container = document.createElement("span");
+                const root = ReactDOM.createRoot(container);
+                e.append($(container));
                 const U = player_cache.lookup(C.user_id) || {
                     user_id: C.user_id,
                     ranking: C.rank,
                     username: C.username,
                 };
-                ReactDOM.render(<Player user={U} rank disableCacheUpdate />, f[0]);
+                root.render(
+                    <React.StrictMode>
+                        <Player user={U} rank disableCacheUpdate />
+                    </React.StrictMode>,
+                );
 
                 let details_html =
                     ", " +

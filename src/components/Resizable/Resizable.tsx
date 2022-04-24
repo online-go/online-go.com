@@ -21,6 +21,7 @@ interface ResizableProperties {
     id?: string;
     className?: string;
     onResize?: (w, h) => void;
+    children?: React.ReactNode;
 }
 
 export class Resizable extends React.Component<ResizableProperties, {}> {

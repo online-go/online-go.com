@@ -39,7 +39,7 @@ export class FriendIndicator extends React.PureComponent<{}, any> {
         friend_indicator_singleton = this;
     }
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         data.watch(cached.friends, this.updateFriends);
         online_status.event_emitter.on("users-online-updated", this.updateFriendCount);
     }

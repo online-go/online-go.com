@@ -20,7 +20,11 @@ import * as data from "data";
 import { _ } from "translate";
 import * as Sentry from "@sentry/browser";
 
-export class ErrorBoundary extends React.Component<{}, any> {
+interface ErrorBoundaryProps {
+    children: React.ReactNode;
+}
+
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, any> {
     constructor(props) {
         super(props);
         this.state = {

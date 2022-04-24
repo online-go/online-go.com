@@ -62,7 +62,7 @@ export class ModNoteModal extends Modal<Events, ModNoteModalProperties, any> {
 
     render() {
         return (
-            <div className="Modal ModNoteModal" ref="modal">
+            <div className="Modal ModNoteModal">
                 <div className="header">
                     <h2>
                         {_("Add moderator note for: ")} <Player user={this.props.player_id} />

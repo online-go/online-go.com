@@ -16,7 +16,8 @@
  */
 
 import * as React from "react";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
 import { browserHistory } from "ogsHistory";
 import { _ } from "translate";
 import { post, del, put, get } from "requests";
@@ -30,7 +31,7 @@ import { UIPush } from "UIPush";
 import { TournamentList } from "TournamentList";
 import { close_all_popovers } from "popover";
 import * as player_cache from "player_cache";
-import * as Dropzone from "react-dropzone";
+import Dropzone from "react-dropzone";
 import { image_resizer } from "image_resizer";
 import * as moment from "moment";
 import { PlayerAutocomplete } from "PlayerAutocomplete";
@@ -99,11 +100,9 @@ interface GroupState {
     user_to_invite?: PlayerCacheEntry;
 }
 
-export class Group extends React.PureComponent<GroupProperties, GroupState> {
-    refs: {
-        new_news_title;
-        new_news_body;
-    };
+class _Group extends React.PureComponent<GroupProperties, GroupState> {
+    ref_new_news_title = React.createRef<HTMLInputElement>();
+    ref_new_news_body = React.createRef<HTMLTextAreaElement>();
 
     news_ref = React.createRef<PaginatedTableRef>();
 
@@ -141,18 +140,16 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
         };
     }
 
-    UNSAFE_componentWillMount() {
-        setExtraActionCallback(this.renderExtraPlayerActions);
-    }
     componentDidMount() {
         window.document.title = _("Group");
         this.resolve(parseInt(this.props.match.params.group_id));
+        setExtraActionCallback(this.renderExtraPlayerActions);
     }
     componentWillUnmount() {
         setExtraActionCallback(null);
     }
-    UNSAFE_componentWillReceiveProps(next_props) {
-        const group_id = parseInt(next_props.match.params.group_id);
+    componentDidUpdate() {
+        const group_id = parseInt(this.props.match.params.group_id);
         if (group_id !== this.state.group_id) {
             this.resolve(group_id);
             this.setState({ group_id: group_id });
@@ -234,13 +231,15 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
     };
     saveEditChanges() {
         put(`groups/${this.state.group_id}`, this.state.group)
-            .then((res) => {
-                console.log(res);
+            .then(() => {
+                this.refreshGroup();
             })
             .catch(errorAlerter);
     }
     updateIcon = (files) => {
-        this.setState({ new_icon: files[0] });
+        this.setState({
+            new_icon: Object.assign(files[0], { preview: URL.createObjectURL(files[0]) }),
+        });
         image_resizer(files[0], 512, 512)
             .then((file: Blob) => {
                 put("group/%%/icon", this.state.group_id, file)
@@ -252,7 +251,9 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
             .catch(errorAlerter);
     };
     updateBanner = (files) => {
-        this.setState({ new_banner: files[0] });
+        this.setState({
+            new_banner: Object.assign(files[0], { preview: URL.createObjectURL(files[0]) }),
+        });
         image_resizer(files[0], 2560, 512)
             .then((file: Blob) => {
                 put("group/%%/banner", this.state.group_id, file)
@@ -339,16 +340,16 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
     postNewNews = () => {
         if (this.state.new_news_title.trim().length < 5) {
             swal({ title: _("Please provide a title") })
-                .then(() => this.refs.new_news_title.focus())
+                .then(() => this.ref_new_news_title.current.focus())
                 .catch(errorAlerter);
-            this.refs.new_news_title.focus();
+            this.ref_new_news_title.current.focus();
             return;
         }
         if (this.state.new_news_body.trim().length < 16) {
             swal({ title: _("Please provide more content for your news") })
-                .then(() => this.refs.new_news_body.focus())
+                .then(() => this.ref_new_news_body.current.focus())
                 .catch(errorAlerter);
-            this.refs.new_news_body.focus();
+            this.ref_new_news_body.current.focus();
             return;
         }
         this.toggleNewNewsPost();
@@ -357,6 +358,7 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
             content: this.state.new_news_body,
         })
             .then(() => {
+                this.refreshGroup();
                 this.news_ref.current?.refresh();
                 /* Since the removal of the refs I don't think we need to worry about this? - anoek 2021-12-23
             if (this.refs.news) {
@@ -371,8 +373,8 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
     toggleNewNewsPost = () => {
         this.setState({ show_new_news_post: !this.state.show_new_news_post });
         setTimeout(() => {
-            if (this.refs.new_news_title) {
-                this.refs.new_news_title.focus();
+            if (this.ref_new_news_title.current) {
+                this.ref_new_news_title.current.focus();
             }
         }, 1);
     };
@@ -479,17 +481,20 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                 {(editing || group.has_banner || null) && (
                     <div className="banner">
                         {editing ? (
-                            <Dropzone
-                                className="Dropzone"
-                                onDrop={this.updateBanner}
-                                multiple={false}
-                            >
-                                {this.state.new_banner ? (
-                                    <img src={this.state.new_banner.preview} />
-                                ) : group.banner ? (
-                                    <img src={group.banner} />
-                                ) : (
-                                    <i className="fa fa-picture-o" />
+                            <Dropzone onDrop={this.updateBanner} multiple={false}>
+                                {({ getRootProps, getInputProps }) => (
+                                    <section className="Dropzone">
+                                        <div {...getRootProps()}>
+                                            <input {...getInputProps()} />
+                                            {this.state.new_banner ? (
+                                                <img src={this.state.new_banner.preview} />
+                                            ) : group.banner ? (
+                                                <img src={group.banner} />
+                                            ) : (
+                                                <i className="fa fa-picture-o" />
+                                            )}
+                                        </div>
+                                    </section>
                                 )}
                             </Dropzone>
                         ) : group.banner ? (
@@ -513,27 +518,30 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                             <div className="row">
                                 <div className="col-sm-2" style={{ minWidth: "128px" }}>
                                     {editing ? (
-                                        <Dropzone
-                                            className="Dropzone Dropzone-128"
-                                            onDrop={this.updateIcon}
-                                            multiple={false}
-                                        >
-                                            {this.state.new_icon ? (
-                                                <img
-                                                    src={this.state.new_icon.preview}
-                                                    style={{
-                                                        maxHeight: "128px",
-                                                        maxWidth: "128px",
-                                                    }}
-                                                />
-                                            ) : (
-                                                <img
-                                                    src={group.icon}
-                                                    style={{
-                                                        maxHeight: "128px",
-                                                        maxWidth: "128px",
-                                                    }}
-                                                />
+                                        <Dropzone onDrop={this.updateIcon} multiple={false}>
+                                            {({ getRootProps, getInputProps }) => (
+                                                <section className="Dropzone Dropzone-128">
+                                                    <div {...getRootProps()}>
+                                                        <input {...getInputProps()} />
+                                                        {this.state.new_icon ? (
+                                                            <img
+                                                                src={this.state.new_icon.preview}
+                                                                style={{
+                                                                    maxHeight: "128px",
+                                                                    maxWidth: "128px",
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <img
+                                                                src={group.icon}
+                                                                style={{
+                                                                    maxHeight: "128px",
+                                                                    maxWidth: "128px",
+                                                                }}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                </section>
                                             )}
                                         </Dropzone>
                                     ) : (
@@ -813,14 +821,14 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
                             {(this.state.show_new_news_post || null) && (
                                 <div>
                                     <input
-                                        ref="new_news_title"
+                                        ref={this.ref_new_news_title}
                                         type="text"
                                         placeholder={_("Title")}
                                         value={this.state.new_news_title}
                                         onChange={this.setNewNewsTitle}
                                     />
                                     <textarea
-                                        ref="new_news_body"
+                                        ref={this.ref_new_news_body}
                                         rows={7}
                                         placeholder={_("News")}
                                         value={this.state.new_news_body}
@@ -1190,3 +1198,5 @@ export class Group extends React.PureComponent<GroupProperties, GroupState> {
         close_all_popovers();
     }
 }
+
+export const Group = rr6ClassShim(_Group);

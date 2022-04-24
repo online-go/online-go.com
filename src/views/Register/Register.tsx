@@ -26,11 +26,9 @@ import { get_ebi } from "SignIn";
 import cached from "cached";
 
 export class Register extends React.PureComponent<{}, any> {
-    refs: {
-        username: any;
-        email: any;
-        password: any;
-    };
+    ref_username = React.createRef<HTMLInputElement>();
+    ref_email = React.createRef<HTMLInputElement>();
+    ref_password = React.createRef<HTMLInputElement>();
 
     constructor(props) {
         super(props);
@@ -42,9 +40,9 @@ export class Register extends React.PureComponent<{}, any> {
             console.log("Should be logging in");
 
             post("/api/v0/register", {
-                username: this.refs.username.value.trim(),
-                password: this.refs.password.value,
-                email: this.refs.email.value.trim(),
+                username: this.ref_username.current.value.trim(),
+                password: this.ref_password.current.value,
+                email: this.ref_email.current.value.trim(),
                 ebi: get_ebi(),
             })
                 .then((config) => {
@@ -81,26 +79,26 @@ export class Register extends React.PureComponent<{}, any> {
         };
 
         const focus_empty = (focus_email?: boolean) => {
-            if (this.refs.username.value.trim() === "" || !this.validateUsername()) {
-                this.refs.username.focus();
+            if (this.ref_username.current.value.trim() === "" || !this.validateUsername()) {
+                this.ref_username.current.focus();
                 return true;
             }
 
-            if (this.refs.username.value.trim() === "") {
-                this.refs.username.focus();
+            if (this.ref_username.current.value.trim() === "") {
+                this.ref_username.current.focus();
                 return true;
             }
 
-            if (this.refs.password.value.trim() === "") {
-                this.refs.password.focus();
+            if (this.ref_password.current.value.trim() === "") {
+                this.ref_password.current.focus();
                 return true;
             }
             if (
                 focus_email &&
-                this.refs.email.value.trim() === "" &&
-                this.refs.email !== document.activeElement
+                this.ref_email.current.value.trim() === "" &&
+                this.ref_email.current !== document.activeElement
             ) {
-                this.refs.email.focus();
+                this.ref_email.current.focus();
                 return true;
             }
 
@@ -130,18 +128,18 @@ export class Register extends React.PureComponent<{}, any> {
     };
 
     validateUsername = () => {
-        if (/@/.test(this.refs.username.value)) {
-            $(this.refs.username).addClass("validation-error");
+        if (/@/.test(this.ref_username.current.value)) {
+            $(this.ref_username.current).addClass("validation-error");
             this.setState({
                 error: _(
                     "Your username will be publically visible, please do not use your email address here.",
                 ),
             });
-            this.refs.username.focus();
+            this.ref_username.current.focus();
             return false;
         } else {
-            if ($(this.refs.username).hasClass("validation-error")) {
-                $(this.refs.username).removeClass("validation-error");
+            if ($(this.ref_username.current).hasClass("validation-error")) {
+                $(this.ref_username.current).removeClass("validation-error");
                 this.setState({ error: null });
             }
         }
@@ -161,7 +159,7 @@ export class Register extends React.PureComponent<{}, any> {
                             className="boxed"
                             id="username"
                             autoFocus
-                            ref="username"
+                            ref={this.ref_username}
                             name="username"
                             onKeyPress={this.register}
                             onChange={this.validateUsername}
@@ -175,7 +173,7 @@ export class Register extends React.PureComponent<{}, any> {
                         <input
                             className="boxed"
                             id="password"
-                            ref="password"
+                            ref={this.ref_password}
                             type="password"
                             name="password"
                             onKeyPress={this.register}
@@ -186,7 +184,7 @@ export class Register extends React.PureComponent<{}, any> {
                         <input
                             className="boxed"
                             id="email"
-                            ref="email"
+                            ref={this.ref_email}
                             type="email"
                             name="email"
                             onKeyPress={this.register}

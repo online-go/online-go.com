@@ -28,16 +28,37 @@ import { openPlayerNotesModal } from "PlayerNotesModal";
 import { Flag } from "Flag";
 import { PlayerIcon } from "PlayerIcon";
 import * as player_cache from "player_cache";
+//import { PlayerCacheEntry } from "player_cache";
 import * as preferences from "preferences";
 import online_status from "online_status";
 
+/* There are cases where what we are handed is some odd looking dirty data. We
+ * should probably start warning about remaining uses of these fields and then
+ * clean/remove them when they pop up. */
+
+interface PlayerObjectType {
+    id?: number;
+    player_id?: number; // alias for id, should be removed but here for backwards compatibility
+
+    professional?: boolean | number;
+    pro?: boolean;
+
+    rank?: number;
+    ranking?: number;
+
+    name?: string;
+    username?: string;
+
+    anonymous?: boolean;
+
+    country?: string;
+    ui_class?: string;
+}
+
 interface PlayerProperties {
-    // id?: any,
-    // user?: any,
-    // callback?: ()=>any,
     icon?: boolean;
     iconSize?: number;
-    user: any;
+    user: number | PlayerObjectType;
     flag?: boolean;
     rank?: boolean;
     flare?: boolean;
@@ -52,375 +73,114 @@ interface PlayerProperties {
     forceShowRank?: boolean;
 }
 
-interface PlayerState {
-    is_online: boolean;
-    user: any;
-    has_notes: boolean;
-}
+export function Player(props: PlayerProperties): JSX.Element {
+    const user = data.get("user");
+    const player_id =
+        typeof props.user !== "object" ? props.user : props.user.id || props.user.player_id;
 
-export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
-    elt_ref = React.createRef<HTMLSpanElement | HTMLAnchorElement>();
-    online_subscription_user_id = null;
-    unmounted: boolean = false;
+    const [is_online, set_is_online] = React.useState<boolean>(false);
+    const [player, set_player] = React.useState<PlayerObjectType>(
+        typeof props.user === "object" ? props.user : null,
+    );
+    const [has_notes, set_has_notes] = React.useState<boolean>(
+        player && !!data.get(`player-notes.${user.id}.${player.id}`),
+    );
 
-    constructor(props) {
-        super(props);
-        const user = data.get("config.user");
-        const viewed_user = typeof props.user === "object" ? props.user : null;
-        this.state = {
-            is_online: false,
-            user: viewed_user,
-            has_notes: viewed_user && !!data.get(`player-notes.${user.id}.${viewed_user.id}`),
-        };
-    }
+    const elt_ref = React.useRef<HTMLSpanElement | HTMLAnchorElement>();
+    const player_id_ref = React.useRef<number>(player_id);
+    const username_ref = React.useRef<string>();
 
-    componentDidMount() {
-        const user = data.get("config.user");
-        if (!this.props.disableCacheUpdate) {
-            if (this.state.user && this.state.user.id > 0) {
-                player_cache.update(this.state.user);
+    player_id_ref.current = player_id;
+    username_ref.current = typeof props.user !== "object" ? null : props.user.username;
+
+    React.useEffect(() => {
+        if (!props.disableCacheUpdate) {
+            if (player && player.id > 0) {
+                player_cache.update(player);
             }
 
-            const player_id =
-                typeof this.props.user !== "object"
-                    ? this.props.user
-                    : this.props.user.id || this.props.user.player_id;
-            const username = typeof this.props.user !== "object" ? null : this.props.user.username;
+            const username = typeof props.user !== "object" ? null : props.user.username;
             if (player_id && player_id > 0) {
                 player_cache
                     .fetch(player_id, ["username", "ui_class", "ranking", "pro"])
-                    .then((user) => {
-                        const player_id =
-                            typeof this.props.user !== "object"
-                                ? this.props.user
-                                : this.props.user.id || this.props.user.player_id;
-                        if (this.unmounted) {
-                            return;
-                        }
-                        if (player_id === user.id) {
-                            this.setState({ user: user });
+                    .then((player) => {
+                        if (player_id_ref.current === player.id) {
+                            set_player(player);
                         }
                     })
-                    .catch((user) => {
-                        this.setState({
-                            user: {
+                    .catch((err: any) => {
+                        if (player_id_ref.current === player.id) {
+                            set_player({
                                 id: player_id,
                                 username: "?player" + player_id + "?",
                                 ui_class: "provisional",
                                 pro: false,
-                            },
-                        });
-                        errorLogger(user);
+                            });
+                        }
+                        errorLogger(err);
                     });
             } else if (player_id && player_id <= 0) {
                 // do nothing
             } else if (username && username !== "...") {
                 player_cache
                     .fetch_by_username(username, ["username", "ui_class", "ranking", "pro"])
-                    .then((user) => {
-                        if (this.unmounted) {
-                            return;
-                        }
-                        if (username === user.username) {
-                            this.setState({ user: user });
+                    .then((player) => {
+                        if (username_ref.current === player.username) {
+                            set_player(player);
                         }
                     })
-                    .catch((user) => {
-                        this.setState({
-                            user: {
+                    .catch((err: any) => {
+                        if (username_ref.current === player.username) {
+                            set_player({
                                 id: null,
                                 username: username,
                                 ui_class: "provisional",
                                 pro: false,
-                            },
-                        });
-                        errorLogger(user);
+                            });
+                        }
+                        errorLogger(err);
                     });
             }
         }
 
-        this.syncUpdateOnline(this.props.user);
-        if (this.props.shownotesindicator) {
-            data.watch(`player-notes.${user.id}.${this.props.user.id}`, this.updateHasNotes);
-        }
-    }
-
-    updateHasNotes = () => {
-        const user = data.get("config.user");
-        const tf = !!data.get(`player-notes.${user.id}.${this.props.user.id}`);
-        if (tf !== this.state.has_notes) {
-            this.setState({ has_notes: tf });
-        }
-    };
-
-    updateOnline = (_player_id, tf) => {
-        if (this.unmounted) {
-            return;
-        }
-        this.setState({ is_online: tf });
-    };
-
-    syncUpdateOnline(user_or_id) {
-        const id =
-            typeof user_or_id === "number"
-                ? user_or_id
-                : typeof user_or_id === "object" && user_or_id
-                ? user_or_id.id
-                : null;
-
-        if (!this.props.online || id !== this.online_subscription_user_id) {
-            if (this.online_subscription_user_id) {
-                this.online_subscription_user_id = null;
-                online_status.unsubscribe(this.online_subscription_user_id, this.updateOnline);
-            }
-        }
-        if (this.props.online && id && id !== this.online_subscription_user_id) {
-            this.online_subscription_user_id = id;
-            online_status.subscribe(this.online_subscription_user_id, this.updateOnline);
-        }
-    }
-
-    UNSAFE_componentWillReceiveProps(new_props) {
-        const user = data.get("config.user");
-        if (this.props.shownotesindicator) {
-            data.unwatch(`player-notes.${user.id}.${this.state.user.id}`, this.updateHasNotes);
-        }
-
-        if (typeof new_props.user === "object") {
-            this.setState({ user: new_props.user });
-        } else {
-            this.setState({ user: null });
-        }
-
-        if (new_props.shownotesindicator) {
-            data.watch(`player-notes.${user.id}.${new_props.user.id}`, this.updateHasNotes);
-        }
-
-        if (!new_props.disableCacheUpdate) {
-            const player_id =
-                typeof new_props.user !== "object"
-                    ? new_props.user
-                    : new_props.user.id || new_props.user.player_id;
-            const username = typeof new_props.user !== "object" ? null : new_props.user.username;
-
-            if (typeof new_props.user === "object" && new_props.user.id > 0) {
-                player_cache.update(new_props.user);
-            }
-
-            if (player_id && player_id > 0) {
-                player_cache
-                    .fetch(player_id, ["username", "ui_class", "ranking", "pro"])
-                    .then((user) => {
-                        const player_id =
-                            typeof this.props.user !== "object"
-                                ? this.props.user
-                                : this.props.user.id || this.props.user.player_id;
-                        if (this.unmounted) {
-                            return;
-                        }
-                        if (player_id === user.id) {
-                            this.setState({ user: user });
-                        }
-                    })
-                    .catch((user) => {
-                        this.setState({
-                            user: {
-                                id: player_id,
-                                username: "?player" + player_id + "?",
-                                ui_class: "provisional",
-                                pro: false,
-                            },
-                        });
-                        errorLogger(user);
-                    });
-            } else if (player_id && player_id <= 0) {
-                // do nothing
-            } else if (username && username !== "...") {
-                player_cache
-                    .fetch_by_username(username, ["username", "ui_class", "ranking", "pro"])
-                    .then((user) => {
-                        if (this.unmounted) {
-                            return;
-                        }
-                        if (username === user.username) {
-                            this.setState({ user: user });
-                        }
-                    })
-                    .catch((user) => {
-                        this.setState({
-                            user: {
-                                id: null,
-                                username: username,
-                                ui_class: "provisional",
-                                pro: false,
-                            },
-                        });
-                        errorLogger(user);
-                    });
-            }
-        }
-
-        this.syncUpdateOnline(new_props.user);
-    }
-    componentDidUpdate() {
-        this.syncUpdateOnline(this.props.user);
-    }
-    componentWillUnmount() {
-        const user = data.get("config.user");
-        this.unmounted = true;
-        this.syncUpdateOnline(null);
-        if (this.props.shownotesindicator) {
-            data.unwatch(`player-notes.${user.id}.${this.state.user.id}`, this.updateHasNotes);
-        }
-    }
-
-    openPlayerNotes = (ev) => {
-        openPlayerNotesModal(ev.target.getAttribute("data-id"));
-    };
-
-    render() {
-        if (!this.state.user) {
-            if (typeof this.props.user === "number") {
-                return (
-                    <span className="Player" data-player-id={0}>
-                        ...
-                    </span>
-                );
-            } else {
-                return (
-                    <span className="Player" data-player-id={0}>
-                        [NULL USER]
-                    </span>
-                );
-            }
-        }
-
-        const props = this.props;
-        const player = this.state.user;
-        const player_id = player.id || player.player_id;
-        const nolink = !!this.props.nolink;
-        let rank: JSX.Element = null;
-
-        const main_attrs: any = {
-            className: "Player",
-            "data-player-id": player_id,
+        const set_online = (player_id: number, tf: boolean) => {
+            set_is_online(tf);
         };
 
-        if (props.icon) {
-            main_attrs.className += " Player-with-icon";
-        }
-
-        if (player.ui_class) {
-            main_attrs.className += " " + player.ui_class;
-        }
-
-        if (player_id < 0) {
-            main_attrs.className += " guest";
-        }
-
-        if (!player_id || nolink) {
-            main_attrs.className += " nolink";
-        }
-
-        if (this.props.nodetails) {
-            main_attrs.className += " nodetails";
-        }
-
-        if (this.props.noextracontrols) {
-            main_attrs.className += " noextracontrols";
-        }
-
-        if (this.props.rank !== false) {
-            const rating = getUserRating(player, "overall", 0);
-            let rank_text = "E";
-
-            if (player.pro || player.professional) {
-                rank_text = rankString(player);
-            } else if (rating.unset && (player.rank > 0 || player.ranking > 0)) {
-                /* This is to support displaying archived chat lines */
-                rank_text = rankString(player);
-            } else if (rating.deviation >= PROVISIONAL_RATING_CUTOFF) {
-                rank_text = "?";
-            } else {
-                rank_text = rating.bounded_rank_label;
-            }
-
-            if (!preferences.get("hide-ranks") || props.forceShowRank) {
-                rank = <span className="Player-rank">[{rank_text}]</span>;
-            }
-        }
-
-        if (props.flare) {
-            main_attrs.className += " with-flare";
-        }
-
+        /* Online status */
         if (props.online) {
-            main_attrs.className += this.state.is_online ? " online" : " offline";
+            online_status.subscribe(player_id, set_online);
         }
 
-        const username_string = unicodeFilter(player.username || player.name);
-        const username = <span className="Player-username">{username_string}</span>;
+        /* Has notes */
+        const updateHasNotes = () => {
+            const user = data.get("config.user");
+            const tf = !!data.get(`player-notes.${user.id}.${player_id}`);
+            if (tf !== has_notes) {
+                set_has_notes(tf);
+            }
+        };
 
-        const player_note_indicator =
-            this.props.shownotesindicator && this.state.has_notes ? (
-                <i
-                    className={"Player fa fa-clipboard"}
-                    onClick={this.openPlayerNotes}
-                    data-id={player.id}
-                />
-            ) : null;
-
-        if (
-            this.props.nolink ||
-            this.props.fakelink ||
-            !(this.state.user.id || this.state.user.player_id) ||
-            this.state.user.anonymous ||
-            (this.state.user.id || this.state.user.player_id) < 0
-        ) {
-            return (
-                <span ref={this.elt_ref} {...main_attrs} onMouseDown={this.display_details}>
-                    {(props.icon || null) && (
-                        <PlayerIcon user={player} size={props.iconSize || 16} />
-                    )}
-                    {(props.flag || null) && <Flag country={player.country} />}
-                    {username}
-                    {rank}
-                    {player_note_indicator}
-                </span>
-            );
-        } else {
-            const player_id = this.state.user.id || this.state.user.player_id;
-            const uri = `/player/${player_id}/${encodeURIComponent(username_string)}`;
-
-            return (
-                // if only we could put {...main_attrs} on the span, we could put the styles in .Player.  But router seems to hate that.
-                <span>
-                    <a
-                        href={uri}
-                        ref={this.elt_ref}
-                        {...main_attrs}
-                        onMouseDown={this.display_details}
-                        router={routes}
-                    >
-                        {(props.icon || null) && (
-                            <PlayerIcon user={player} size={props.iconSize || 16} />
-                        )}
-                        {(props.flag || null) && <Flag country={player.country} />}
-                        {username}
-                        {rank}
-                    </a>
-                    {player_note_indicator}
-                </span>
-            );
+        if (props.shownotesindicator) {
+            data.watch(`player-notes.${user.id}.${player_id}`, updateHasNotes);
         }
-    }
 
-    display_details = (event) => {
+        return () => {
+            if (props.shownotesindicator) {
+                data.unwatch(`player-notes.${user.id}.${player.id}`, updateHasNotes);
+            }
+            if (props.online) {
+                online_status.subscribe(player_id, set_online);
+            }
+        };
+    }, [player_id]);
+
+    const display_details = (event: React.MouseEvent) => {
         if (
-            this.props.nolink ||
-            !(this.state.user.id || this.state.user.player_id) ||
-            this.state.user.anonymous ||
-            (this.state.user.id || this.state.user.player_id) < 0
+            props.nolink ||
+            !(player.id || player.player_id) ||
+            player.anonymous ||
+            (player.id || player.player_id) < 0
         ) {
             return;
         }
@@ -435,7 +195,7 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
             return;
         }
 
-        if (!this.props.fakelink && shouldOpenNewTab(event)) {
+        if (!props.fakelink && shouldOpenNewTab(event)) {
             /* let browser deal with opening the window so we don't get popup warnings */
             return;
         }
@@ -443,7 +203,7 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
         event.stopPropagation();
         event.preventDefault();
 
-        const player_id = this.state.user.id || this.state.user.player_id;
+        const player_id = player.id || player.player_id;
         if (shouldOpenNewTab(event)) {
             let uri = `/player/${player_id}`;
             const player = player_cache.lookup(player_id);
@@ -451,7 +211,7 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
                 uri += "/" + encodeURIComponent(unicodeFilter(player.username));
             }
             window.open(uri, "_blank");
-        } else if (this.props.nodetails) {
+        } else if (props.nodetails) {
             close_all_popovers();
             close_friend_list();
             browserHistory.push(`/player/${player_id}/`);
@@ -459,7 +219,7 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
         } else {
             let chat_id = null;
             try {
-                let cur = $(this.elt_ref.current);
+                let cur = $(elt_ref.current);
 
                 while (cur && cur[0].nodeName !== "BODY") {
                     chat_id = cur.attr("data-chat-id");
@@ -476,15 +236,142 @@ export class Player extends React.PureComponent<PlayerProperties, PlayerState> {
                 elt: (
                     <PlayerDetails
                         playerId={player_id}
-                        noextracontrols={this.props.noextracontrols}
-                        nochallenge={this.props.nochallenge}
+                        noextracontrols={props.noextracontrols}
+                        nochallenge={props.nochallenge}
                         chatId={chat_id}
                     />
                 ),
-                below: this.elt_ref.current,
+                below: elt_ref.current,
                 minWidth: 240,
                 minHeight: 250,
             });
         }
     };
+
+    /************/
+    /** Render **/
+    /************/
+
+    if (!player) {
+        if (typeof props.user === "number") {
+            return (
+                <span className="Player" data-player-id={0}>
+                    ...
+                </span>
+            );
+        } else {
+            return (
+                <span className="Player" data-player-id={0}>
+                    [NULL USER]
+                </span>
+            );
+        }
+    }
+
+    const nolink = !!props.nolink;
+    let rank: JSX.Element = null;
+
+    const main_attrs: any = {
+        className: "Player",
+        "data-player-id": player_id,
+    };
+
+    if (props.icon) {
+        main_attrs.className += " Player-with-icon";
+    }
+
+    if (player.ui_class) {
+        main_attrs.className += " " + player.ui_class;
+    }
+
+    if (player_id < 0) {
+        main_attrs.className += " guest";
+    }
+
+    if (!player_id || nolink) {
+        main_attrs.className += " nolink";
+    }
+
+    if (props.nodetails) {
+        main_attrs.className += " nodetails";
+    }
+
+    if (props.noextracontrols) {
+        main_attrs.className += " noextracontrols";
+    }
+
+    if (props.rank !== false) {
+        const rating = getUserRating(player, "overall", 0);
+        let rank_text = "E";
+
+        if (player.pro || player.professional) {
+            rank_text = rankString(player);
+        } else if (rating.unset && (player.rank > 0 || player.ranking > 0)) {
+            /* This is to support displaying archived chat lines */
+            rank_text = rankString(player);
+        } else if (rating.deviation >= PROVISIONAL_RATING_CUTOFF) {
+            rank_text = "?";
+        } else {
+            rank_text = rating.bounded_rank_label;
+        }
+
+        if (!preferences.get("hide-ranks") || props.forceShowRank) {
+            rank = <span className="Player-rank">[{rank_text}]</span>;
+        }
+    }
+
+    if (props.flare) {
+        main_attrs.className += " with-flare";
+    }
+
+    if (props.online) {
+        main_attrs.className += is_online ? " online" : " offline";
+    }
+
+    const username_string = unicodeFilter(player.username || player.name);
+    const username = <span className="Player-username">{username_string}</span>;
+
+    const player_note_indicator =
+        props.shownotesindicator && has_notes ? (
+            <i
+                className={"Player fa fa-clipboard"}
+                onClick={() => openPlayerNotesModal(player_id)}
+            />
+        ) : null;
+
+    if (props.nolink || props.fakelink || !player_id || player.anonymous || player_id < 0) {
+        return (
+            <span ref={elt_ref} {...main_attrs} onMouseDown={display_details}>
+                {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16} />}
+                {(props.flag || null) && <Flag country={player.country} />}
+                {username}
+                {rank}
+                {player_note_indicator}
+            </span>
+        );
+    } else {
+        const player_id = player.id || player.player_id;
+        const uri = `/player/${player_id}/${encodeURIComponent(username_string)}`;
+
+        return (
+            // if only we could put {...main_attrs} on the span, we could put the styles in .Player.  But router seems to hate that.
+            <span>
+                <a
+                    href={uri}
+                    ref={elt_ref}
+                    {...main_attrs}
+                    onMouseDown={display_details}
+                    router={routes}
+                >
+                    {(props.icon || null) && (
+                        <PlayerIcon user={player} size={props.iconSize || 16} />
+                    )}
+                    {(props.flag || null) && <Flag country={player.country} />}
+                    {username}
+                    {rank}
+                </a>
+                {player_note_indicator}
+            </span>
+        );
+    }
 }

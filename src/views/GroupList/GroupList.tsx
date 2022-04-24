@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as data from "data";
 import { Link } from "react-router-dom";
 import { _ } from "translate";
 import { PaginatedTable } from "PaginatedTable";
@@ -38,6 +39,7 @@ export class GroupList extends React.PureComponent<{}, GroupListState> {
     }
 
     render() {
+        const user = data.get("user");
         return (
             <div className="page-width">
                 <div className="GroupList">
@@ -46,9 +48,11 @@ export class GroupList extends React.PureComponent<{}, GroupListState> {
                             <i className="fa fa-users"></i> {_("Groups")}
                         </h2>
                         <div>
-                            <Link className="primary" to="/group/create">
-                                <i className="fa fa-plus-square"></i> {_("New group")}
-                            </Link>
+                            {(!user.anonymous || null) && (
+                                <Link className="primary" to="/group/create">
+                                    <i className="fa fa-plus-square"></i> {_("New group")}
+                                </Link>
+                            )}
 
                             <SearchInput
                                 placeholder={_("Search")}

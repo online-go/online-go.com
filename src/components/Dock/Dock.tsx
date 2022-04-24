@@ -21,6 +21,7 @@ import { MAX_DOCK_DELAY } from "Settings";
 
 interface DockProperties {
     className?: string;
+    children: React.ReactNode;
 }
 interface DockState {
     dock_delay: number;

@@ -23,7 +23,7 @@ import { Player } from "Player";
 import { PlayerIcon } from "PlayerIcon";
 import * as player_cache from "player_cache";
 import * as React from "react";
-import * as Dropzone from "react-dropzone";
+import Dropzone from "react-dropzone";
 import { del, put } from "requests";
 import swal from "sweetalert2";
 import { durationString } from "TimeControl";
@@ -135,10 +135,12 @@ export function AvatarCard({
         }
     }
 
-    const [new_icon, setNewIcon] = React.useState<Dropzone.ImageFile | null>(null);
-    const updateIcon = (files: Dropzone.ImageFile[]) => {
+    const [new_icon, setNewIcon] = React.useState<(File & { preview: any }) | null>(null);
+    const updateIcon = (files: File[]) => {
         console.log(files);
-        setNewIcon(files[0]);
+        const file = files[0];
+        setNewIcon(Object.assign(file, { preview: URL.createObjectURL(file) }));
+
         image_resizer(files[0], 512, 512)
             .then((file: Blob) => {
                 put("players/%%/icon", user.id, file)
@@ -185,14 +187,21 @@ export function AvatarCard({
 
             {editing ? (
                 <div className="dropzone-container">
-                    <Dropzone className="Dropzone" onDrop={updateIcon} multiple={false}>
-                        {new_icon ? (
-                            <img
-                                src={new_icon.preview}
-                                style={{ height: "128px", width: "128px" }}
-                            />
-                        ) : (
-                            <PlayerIcon id={user.id} size={128} />
+                    <Dropzone onDrop={updateIcon} multiple={false}>
+                        {({ getRootProps, getInputProps }) => (
+                            <section className="Dropzone">
+                                <div {...getRootProps()}>
+                                    <input {...getInputProps()} />
+                                    {new_icon ? (
+                                        <img
+                                            src={new_icon.preview}
+                                            style={{ height: "128px", width: "128px" }}
+                                        />
+                                    ) : (
+                                        <PlayerIcon id={user.id} size={128} />
+                                    )}
+                                </div>
+                            </section>
                         )}
                     </Dropzone>
                 </div>

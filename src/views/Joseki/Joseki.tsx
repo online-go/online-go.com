@@ -18,7 +18,8 @@
 /* A page for looking up and playing against josekis stored in the OGS OJE*/
 
 import * as React from "react";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
 import ReactResizeDetector from "react-resize-detector";
 import * as queryString from "query-string";
 
@@ -37,7 +38,7 @@ import { JosekiAdmin } from "JosekiAdmin";
 import { openModal } from "Modal";
 import { JosekiSourceModal } from "JosekiSourceModal";
 import { JosekiVariationFilter } from "JosekiVariationFilter";
-import { JosekiTagSelector } from "JosekiTagSelector";
+import { JosekiTagSelector, JosekiTag } from "JosekiTagSelector";
 import { Throbber } from "Throbber";
 import { IdType } from "src/lib/types";
 
@@ -158,6 +159,7 @@ interface JosekiState {
     pass_available: boolean;
     contributor_id: number;
     child_count: number;
+    goban_container_left_padding: number;
 
     throb: boolean;
 
@@ -181,7 +183,7 @@ interface JosekiState {
     };
     tags: any[];
 
-    variation_filter: { contributor: number; tags: number[]; source: number }; // start with no filter defined
+    variation_filter: { contributor: number; tags: JosekiTag[]; source: number }; // start with no filter defined
 
     count_details_open: boolean;
     tag_counts: { tagname: string; count: number }[];
@@ -198,12 +200,11 @@ interface JosekiState {
     position_type?: "new"; // It seems this is never set
 }
 
-export class Joseki extends React.Component<JosekiProps, JosekiState> {
+class _Joseki extends React.Component<JosekiProps, JosekiState> {
     goban: Goban;
     goban_div: HTMLDivElement;
     goban_opts: any = {};
     goban_container: HTMLDivElement;
-    goban_persistent_element: PersistentElement;
 
     last_server_position = ""; // the most recent position that the server returned to us, used in backstepping
     last_placement = "";
@@ -240,6 +241,7 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
             pass_available: false, // Whether pass is one of the joseki moves or not.   Contains the category of the position resulting from pass, if present
             contributor_id: -1, // the person who created the node that we are displaying
             child_count: 0,
+            goban_container_left_padding: 0,
 
             throb: false, // whether to show board-loading throbber
 
@@ -259,7 +261,7 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
             joseki_source: undefined as { url: string; description: string }, // the source of the current position
             tags: [], // the tags that are on the current position
 
-            variation_filter: {} as { contributor: number; tags: number[]; source: number }, // start with no filter defined
+            variation_filter: {} as { contributor: number; tags: JosekiTag[]; source: number }, // start with no filter defined
 
             count_details_open: false,
             tag_counts: [], // A count of the number of continuations from this position that have each tag
@@ -401,8 +403,20 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
     recenterGoban() {
         const m = this.goban.computeMetrics();
         if (this.goban_container.offsetWidth > 0 && m.width > 0) {
+            if (
+                this.state.goban_container_left_padding !==
+                Math.round(Math.ceil(this.goban_container.offsetWidth - m.width) / 2)
+            ) {
+                this.setState({
+                    goban_container_left_padding: Math.round(
+                        Math.ceil(this.goban_container.offsetWidth - m.width) / 2,
+                    ),
+                });
+            }
+            /*
             this.goban_persistent_element.container.style.left =
                 Math.round(Math.ceil(this.goban_container.offsetWidth - m.width) / 2) + "px";
+                */
         }
     }
 
@@ -931,7 +945,7 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
 
     componentDidUpdate(prevProps) {
         // console.log("did update...");
-        if (prevProps.location.key !== this.props.location.key) {
+        if (prevProps.location !== this.props.location) {
             this.componentDidMount(); // force reload of position if they click a position link
         }
 
@@ -1201,8 +1215,10 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
                             onResize={() => this.onResize()}
                         />
                         <PersistentElement
-                            ref={(e) => (this.goban_persistent_element = e)}
                             className="Goban"
+                            extra_props={{
+                                style: { paddingLeft: this.state.goban_container_left_padding },
+                            }}
                             elt={this.goban_div}
                         />
                     </div>
@@ -1557,6 +1573,8 @@ export class Joseki extends React.Component<JosekiProps, JosekiState> {
     };
 }
 
+export const Joseki = rr6ClassShim(_Joseki);
+
 // This pane responds to changes in position ID by showing the new node information
 interface ExploreProps {
     position_id: string;
@@ -1567,7 +1585,7 @@ interface ExploreProps {
     joseki_source: { url: string; description: string };
     tags: Array<any>;
     set_variation_filter(filter: any): void;
-    current_filter: { contributor: number; tags: number[]; source: number };
+    current_filter: { contributor: number; tags: JosekiTag[]; source: number };
     child_count: number;
     show_comments: boolean;
 }
@@ -1819,7 +1837,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
                                 {this.state.commentary.map((comment, idx) => (
                                     <div className="comment" key={idx}>
                                         <div className="comment-header">
-                                            <Player user={comment.user_id}></Player>
+                                            <Player user={parseInt(comment.user_id)}></Player>
                                             <div className="comment-date">
                                                 {comment.date.toDateString()}
                                             </div>
@@ -1847,7 +1865,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
                             {this.state.audit_log.map((audit, idx) => (
                                 <div className="audit-entry" key={idx}>
                                     <div className="audit-header">
-                                        <Player user={audit.user_id}></Player>
+                                        <Player user={parseInt(audit.user_id)}></Player>
                                         <div className="audit-date">
                                             {new Date(audit.date).toDateString()}
                                         </div>
@@ -1886,7 +1904,7 @@ interface PlayProps {
     joseki_successes: number;
     joseki_tag_id: number;
     set_variation_filter(filter: any): void;
-    current_filter: { contributor: number; tags: number[]; source: number };
+    current_filter: { contributor: number; tags: JosekiTag[]; source: number };
 }
 
 interface PlayState {
@@ -2341,7 +2359,7 @@ class EditPane extends React.Component<EditProps, EditState> {
                         <JosekiTagSelector
                             oje_headers={oje_headers()}
                             tag_list_url={server_url + "tags"}
-                            selected_tags={this.state.tags as any} // selected_tags is typed as number[], I haven't figured out how to resolve yet.
+                            selected_tags={this.state.tags as any}
                             on_tag_update={this.onTagChange}
                         />
                     </div>

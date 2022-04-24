@@ -21,6 +21,7 @@ import * as data from "data";
 interface DismissableNotificationProperties {
     dismissedKey: string;
     className?: string;
+    children: React.ReactNode;
 }
 
 interface DismissableNotificationState {

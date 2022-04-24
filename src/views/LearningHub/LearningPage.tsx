@@ -295,7 +295,8 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
 
     at(coord: string): number {
         if (this.instructional_goban && this.instructional_goban.goban) {
-            const obj = this.instructional_goban.goban.engine.decodeMoves(coord, 9, 9);
+            //const obj = this.instructional_goban.goban.engine.decodeMoves(coord, 9, 9);
+            const obj = this.instructional_goban.goban.engine.decodeMoves(coord);
             return this.instructional_goban.goban.engine.board[obj[0].y][obj[0].x];
         }
         return 0;

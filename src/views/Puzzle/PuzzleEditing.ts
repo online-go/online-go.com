@@ -18,7 +18,7 @@
 import { GobanCanvasConfig, GoMath, PuzzleConfig, PuzzlePlacementSetting } from "goban";
 import { errorAlerter, dup } from "misc";
 import { PuzzleTransform } from "./PuzzleTransform";
-import { Puzzle } from "./Puzzle";
+import { _Puzzle } from "./Puzzle";
 import * as data from "data";
 import { abort_requests_in_flight, post, get } from "requests";
 import * as preferences from "preferences";
@@ -26,10 +26,10 @@ import * as preferences from "preferences";
 export class PuzzleEditor {
     orig_puzzle_config: PuzzleConfig = null;
     puzzle_config: PuzzleConfig = null;
-    puzzle: Puzzle;
+    puzzle: _Puzzle;
     transform: PuzzleTransform;
 
-    constructor(puzzle: Puzzle, transform: PuzzleTransform) {
+    constructor(puzzle: _Puzzle, transform: PuzzleTransform) {
         this.puzzle = puzzle;
         this.transform = transform;
     }

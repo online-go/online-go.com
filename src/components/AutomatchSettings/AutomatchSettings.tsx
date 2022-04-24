@@ -223,7 +223,7 @@ export class AutomatchSettings extends Modal<
         const tab = this.state.tab;
 
         return (
-            <div className="Modal AutomatchSettings" ref="modal">
+            <div className="Modal AutomatchSettings">
                 <div className="header">
                     <h2>{_("Automatch Settings")}</h2>
                 </div>

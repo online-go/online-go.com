@@ -108,9 +108,7 @@ const standard_board_sizes = {
 };
 
 export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any> {
-    refs: {
-        time_control_picker;
-    };
+    ref_time_control_picker = React.createRef<TimeControlPicker>();
     constructor(props) {
         super(props);
 
@@ -326,8 +324,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
     saveSettings() {
         const next = this.next();
-        if (this.refs.time_control_picker) {
-            this.refs.time_control_picker.saveSettings();
+        if (this.ref_time_control_picker.current) {
+            this.ref_time_control_picker.current.saveSettings();
         }
         const speed = data.get("challenge.speed", "live");
         data.set(`challenge.challenge.${speed}`, next.challenge);
@@ -474,13 +472,15 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             challenge.max_ranking = 1000;
         }
 
-        challenge.game.time_control = this.refs.time_control_picker.time_control.system;
-        challenge.game.time_control_parameters = this.refs.time_control_picker.time_control;
+        challenge.game.time_control = this.ref_time_control_picker.current.time_control.system;
+        challenge.game.time_control_parameters = this.ref_time_control_picker.current.time_control;
+
+        /* on our backend we still expect this to be named `time_control` for
+         * old legacy reasons.. hopefully we can reconcile that someday */
         (challenge.game.time_control_parameters as any).time_control =
-            this.refs.time_control_picker.time_control.system; /* on our backend we still expect this to be named `time_control` for
-                                                                  old legacy reasons.. hopefully we can reconcile that someday */
+            this.ref_time_control_picker.current.time_control.system;
         challenge.game.pause_on_weekends =
-            this.refs.time_control_picker.time_control.pause_on_weekends;
+            this.ref_time_control_picker.current.time_control.pause_on_weekends;
 
         // Autostart only in casual mode
         challenge.rengo_auto_start =
@@ -1243,7 +1243,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     )}
                     <TimeControlPicker
                         value={this.state.initial_time_control}
-                        ref="time_control_picker"
+                        ref={this.ref_time_control_picker}
                         force_system={
                             challenge.game.rengo && challenge.game.rengo_casual_mode
                                 ? "simple"
@@ -1526,7 +1526,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         }
 
         return (
-            <div className="Modal ChallengeModal" ref="modal">
+            <div className="Modal ChallengeModal">
                 <div className="header">
                     <h2>
                         {(mode === "open" || null) && <span>{_("Custom Game")}</span>}
@@ -1598,7 +1598,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     next(): any {
         return this.nextState();
     }
-    UNSAFE_componentWillUpdate() {
+    componentDidUpdate() {
         this.upstate_object = null;
     }
     bulkUpstate(arr) {

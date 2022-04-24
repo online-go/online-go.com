@@ -16,56 +16,52 @@
  */
 
 import * as React from "react";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Markdown } from "Markdown";
 import { browserHistory } from "ogsHistory";
 import { _ } from "translate";
 import { InstructionalGoban } from "./InstructionalGoban";
 import { openNewGameModal } from "NewGameModal";
 
-type TutorialProperties = RouteComponentProps<{
+type TutorialParams = {
     step: string;
-}>;
+};
 
 const NUM_PAGES = 12;
 declare let ogs_current_language;
 
-export class Tutorial extends React.PureComponent<TutorialProperties> {
-    constructor(props) {
-        super(props);
-    }
+export function Tutorial() {
+    const { step } = useParams<TutorialParams>();
 
-    render() {
-        const page_number = parseInt(this.props.match.params.step) || 0;
+    const page_number = parseInt(step) || 0;
 
-        switch (page_number) {
-            case 0:
-                return <ThisIsAGoban />;
-            case 1:
-                return <CapturingStones1 />;
-            case 2:
-                return <CapturingStones2 />;
-            case 3:
-                return <CapturingStones3 />;
-            case 4:
-                return <CapturingStones4 />;
-            case 5:
-                return <StayingAlive1 />;
-            case 6:
-                return <StayingAlive2 />;
-            case 7:
-                return <Ko />;
-            case 8:
-                return <Snapback />;
-            case 9:
-                return <Scoring1 />;
-            case 10:
-                return <Scoring2 />;
-            case 11:
-                return <Done />;
-            default:
-                return <div>Invalid page</div>;
-        }
+    switch (page_number) {
+        case 0:
+            return <ThisIsAGoban />;
+        case 1:
+            return <CapturingStones1 />;
+        case 2:
+            return <CapturingStones2 />;
+        case 3:
+            return <CapturingStones3 />;
+        case 4:
+            return <CapturingStones4 />;
+        case 5:
+            return <StayingAlive1 />;
+        case 6:
+            return <StayingAlive2 />;
+        case 7:
+            return <Ko />;
+        case 8:
+            return <Snapback />;
+        case 9:
+            return <Scoring1 />;
+        case 10:
+            return <Scoring2 />;
+        case 11:
+            return <Done />;
+        default:
+            return <div>Invalid page</div>;
     }
 }
 
@@ -75,9 +71,7 @@ interface TutorialPageState {
 }
 
 abstract class TutorialPage extends React.PureComponent<{}, TutorialPageState> {
-    refs: {
-        igoban;
-    };
+    ref_igoban = React.createRef<InstructionalGoban>();
     _config: any;
 
     constructor(props) {
@@ -138,7 +132,7 @@ abstract class TutorialPage extends React.PureComponent<{}, TutorialPageState> {
                     <div className="tutorial-text">{this.text()}</div>
 
                     <InstructionalGoban
-                        ref="igoban"
+                        ref={this.ref_igoban}
                         config={this._config}
                         onUpdate={this.onUpdate}
                     />
@@ -208,7 +202,7 @@ class ThisIsAGoban extends TutorialPage {
         };
     }
     showNext() {
-        return !!this.refs.igoban.goban.engine.cur_move.parent;
+        return !!this.ref_igoban.current.goban.engine.cur_move.parent;
     }
 }
 class CapturingStones1 extends TutorialPage {
@@ -252,7 +246,7 @@ class CapturingStones1 extends TutorialPage {
         };
     }
     showNext() {
-        return this.refs.igoban.goban.engine.board[4][4] !== 2;
+        return this.ref_igoban.current.goban.engine.board[4][4] !== 2;
     }
 }
 class CapturingStones2 extends TutorialPage {
@@ -292,7 +286,7 @@ class CapturingStones2 extends TutorialPage {
         };
     }
     showNext() {
-        return this.refs.igoban.goban.engine.board[4][4] !== 2;
+        return this.ref_igoban.current.goban.engine.board[4][4] !== 2;
     }
 }
 class CapturingStones3 extends TutorialPage {
@@ -332,7 +326,7 @@ class CapturingStones3 extends TutorialPage {
         };
     }
     showNext() {
-        return this.refs.igoban.goban.engine.board[4][0] !== 2;
+        return this.ref_igoban.current.goban.engine.board[4][0] !== 2;
     }
 }
 class CapturingStones4 extends TutorialPage {
@@ -374,7 +368,7 @@ class CapturingStones4 extends TutorialPage {
         };
     }
     showNext() {
-        return this.refs.igoban.goban.engine.board[4][3] !== 2;
+        return this.ref_igoban.current.goban.engine.board[4][3] !== 2;
     }
 }
 
@@ -605,8 +599,8 @@ class Snapback extends TutorialPage {
     }
     showNext() {
         return (
-            this.refs.igoban.goban.engine.board[5][4] === 0 &&
-            this.refs.igoban.goban.engine.board[5][5] === 1
+            this.ref_igoban.current.goban.engine.board[5][4] === 0 &&
+            this.ref_igoban.current.goban.engine.board[5][5] === 1
         );
     }
 }

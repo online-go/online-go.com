@@ -28,7 +28,6 @@ import { Clock } from "Clock";
 import { fetch } from "player_cache";
 import { getGameResultText } from "misc";
 import { PlayerCacheEntry } from "player_cache";
-import { GobanInfoStateBase } from "src/lib/types";
 
 interface MiniGobanProps {
     id: number;
@@ -50,276 +49,249 @@ interface MiniGobanProps {
     title?: boolean;
 }
 
-interface MiniGobanState extends GobanInfoStateBase {
-    white_points: string;
-    black_points: string;
+export function MiniGoban(props: MiniGobanProps): JSX.Element {
+    const goban_div = React.useRef<HTMLDivElement>(
+        (() => {
+            const ret = document.createElement("div");
+            ret.className = "Goban";
+            return ret;
+        })(),
+    );
+    const goban = React.useRef<Goban>();
 
-    game_date?: string;
-    game_result?: string;
+    const [white_points, setWhitePoints] = React.useState("");
+    const [black_points, setBlackPoints] = React.useState("");
+    const [game_date, setGameDate] = React.useState("");
+    const [game_result, setGameResult] = React.useState("");
+    const [black_rank, setBlackRank] = React.useState("");
+    const [white_rank, setWhiteRank] = React.useState("");
+    const [black_name, setBlackName] = React.useState("");
+    const [white_name, setWhiteName] = React.useState("");
+    const [current_users_move, setCurrentUsersMove] = React.useState(false);
+    const [black_to_move_cls, setBlackToMoveCls] = React.useState("");
+    const [white_to_move_cls, setWhiteToMoveCls] = React.useState("");
+    const [in_stone_removal_phase, setInStoneRemovalPhase] = React.useState(false);
+    const [finished, setFinished] = React.useState(false);
+    const [game_name, setGameName] = React.useState("");
 
-    black_rank?: string;
-    white_rank?: string;
-}
-
-export class MiniGoban extends React.Component<MiniGobanProps, MiniGobanState> {
-    public goban_div: HTMLDivElement;
-    goban;
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            white_points: "",
-            black_points: "",
-        };
-
-        this.goban_div = document.createElement("div");
-        this.goban_div.className = "Goban";
-    }
-
-    componentDidMount() {
-        this.initialize();
-    }
-    componentWillUnmount() {
-        this.destroy();
-    }
-    componentDidUpdate(prev_props) {
-        if (prev_props.id !== this.props.id) {
-            this.destroy();
-            this.initialize();
-        }
-    }
-
-    initialize() {
-        this.goban = new Goban(
+    React.useEffect(() => {
+        goban.current = new Goban(
             {
-                board_div: this.goban_div,
+                board_div: goban_div.current,
                 draw_top_labels: false,
                 draw_bottom_labels: false,
                 draw_left_labels: false,
                 draw_right_labels: false,
-                game_id: this.props.id,
+                game_id: props.id,
                 display_width:
-                    this.props.displayWidth ||
-                    Math.min($("body").width() - 50, $("#em10").width() * 2),
+                    props.displayWidth || Math.min($("body").width() - 50, $("#em10").width() * 2),
                 square_size: "auto",
-                width: this.props.width || (this.props.json ? this.props.json.width : 19),
-                height: this.props.height || (this.props.json ? this.props.json.height : 19),
+                width: props.width || (props.json ? props.json.width : 19),
+                height: props.height || (props.json ? props.json.height : 19),
             },
-            this.props.json,
+            props.json,
         );
 
-        this.goban.on("update", () => {
-            this.sync_state();
-            if (this.props.onUpdate) {
-                this.props.onUpdate();
-            }
-        });
-    }
+        goban.current.on("update", () => {
+            const engine = goban.current.engine;
+            const score = engine.computeScore(true);
+            let black: string | PlayerCacheEntry = props.black || "";
+            let white: string | PlayerCacheEntry = props.white || "";
 
-    destroy() {
-        if (this.goban) {
-            this.goban.destroy();
-        }
-    }
-    sync_state() {
-        const engine = this.goban.engine;
-        const score = engine.computeScore(true);
-        let black: string | PlayerCacheEntry = this.props.black || "";
-        let white: string | PlayerCacheEntry = this.props.white || "";
-
-        if (!black) {
-            try {
-                // maybe the engine doesn't have players?
-                black = engine.players.black;
-                // the goban engine doesn't come with the full player rating structure
-                fetch(this.goban.engine.players.black.id)
-                    .then((player) => {
-                        this.setState({
-                            black_rank: preferences.get("hide-ranks")
-                                ? ""
-                                : " [" + getUserRating(player).bounded_rank_label + "]",
+            if (!black) {
+                try {
+                    // maybe the engine doesn't have players?
+                    black = engine.players.black;
+                    // the goban engine doesn't come with the full player rating structure
+                    fetch(goban.current.engine.players.black.id)
+                        .then((player) => {
+                            setBlackRank(
+                                preferences.get("hide-ranks")
+                                    ? ""
+                                    : " [" + getUserRating(player).bounded_rank_label + "]",
+                            );
+                        })
+                        .catch(() => {
+                            console.log("Couldn't work out black rank");
                         });
-                    })
-                    .catch(() => {
-                        console.log("Couldn't work out black rank");
-                    });
-            } catch (e) {
-                console.log("Couldn't work out who played black");
+                } catch (e) {
+                    console.log("Couldn't work out who played black");
+                }
             }
-        }
 
-        if (!white) {
-            try {
-                white = engine.players.white;
-                // the goban engine doesn't come with the full player rating structure
-                fetch(this.goban.engine.players.white.id)
-                    .then((player) => {
-                        this.setState({
-                            white_rank: preferences.get("hide-ranks")
-                                ? ""
-                                : " [" + getUserRating(player).bounded_rank_label + "]",
+            if (!white) {
+                try {
+                    white = engine.players.white;
+                    // the goban engine doesn't come with the full player rating structure
+                    fetch(goban.current.engine.players.white.id)
+                        .then((player) => {
+                            setWhiteRank(
+                                preferences.get("hide-ranks")
+                                    ? ""
+                                    : " [" + getUserRating(player).bounded_rank_label + "]",
+                            );
+                        })
+                        .catch(() => {
+                            console.log("Couldn't work out white rank");
                         });
-                    })
-                    .catch(() => {
-                        console.log("Couldn't work out white rank");
-                    });
-            } catch (e) {
-                console.log("Couldn't work out who played black");
+                } catch (e) {
+                    console.log("Couldn't work out who played black");
+                }
             }
-        }
 
-        if (this.props.title) {
-            const result_string = getGameResultText(
-                this.goban.engine.outcome,
-                this.goban.engine.winner !== this.goban.engine.white_player_id,
-                this.goban.engine.winner !== this.goban.engine.black_player_id,
+            if (props.title) {
+                const result_string = getGameResultText(
+                    goban.current.engine.outcome,
+                    goban.current.engine.winner !== (goban.current.engine as any).white_player_id,
+                    goban.current.engine.winner !== (goban.current.engine as any).black_player_id,
+                );
+
+                setGameName(goban.current.engine.config.game_name || "");
+                setGameDate(
+                    goban.current.config.end_time
+                        ? moment(new Date(goban.current.config.end_time * 1000)).format("LLL")
+                        : "",
+                );
+                setGameResult(result_string);
+            }
+
+            const player_to_move = (goban.current && goban.current.engine.playerToMove()) || 0;
+
+            const black_points = score.black.prisoners + score.black.komi;
+            const white_points = score.white.prisoners + score.white.komi;
+
+            setBlackPoints(
+                interpolate(
+                    npgettext(
+                        "Plural form 0 is the singular form, Plural form 1 is the plural form",
+                        "{{num}} point",
+                        "{{num}} points",
+                        black_points,
+                    ),
+                    { num: black_points },
+                ),
             );
-
-            this.setState({
-                game_name: this.goban.engine.game_name || "",
-                game_date: this.goban.config.end_time
-                    ? moment(new Date(this.goban.config.end_time * 1000)).format("LLL")
-                    : "",
-                game_result: result_string,
-            });
-        }
-
-        const player_to_move = (this.goban && this.goban.engine.playerToMove()) || 0;
-
-        const black_points = score.black.prisoners + score.black.komi;
-        const white_points = score.white.prisoners + score.white.komi;
-
-        // TODO something is telling me we should compute all this state into variables then do setState :)
-        // That will definitely be needed to get the rank on the name of the current rengo player, if we want that.
-
-        this.setState({
-            // note, we need to say {{num}} point here as the singular form is used for multiple values in some languages (such as french, they say 0 point, 1 point, 2 points)
-            black_points: interpolate(
-                npgettext(
-                    "Plural form 0 is the singular form, Plural form 1 is the plural form",
-                    "{{num}} point",
-                    "{{num}} points",
-                    black_points,
+            setWhitePoints(
+                interpolate(
+                    npgettext(
+                        "Plural form 0 is the singular form, Plural form 1 is the plural form",
+                        "{{num}} point",
+                        "{{num}} points",
+                        white_points,
+                    ),
+                    { num: white_points },
                 ),
-                { num: black_points },
-            ),
-            white_points: interpolate(
-                npgettext(
-                    "Plural form 0 is the singular form, Plural form 1 is the plural form",
-                    "{{num}} point",
-                    "{{num}} points",
-                    white_points,
-                ),
-                { num: white_points },
-            ),
+            );
+            if (typeof black === "string") {
+                setBlackName(black);
+            } else {
+                setBlackName(
+                    goban.current.engine.rengo
+                        ? goban.current.engine.rengo_teams.black[0].username +
+                              " +" +
+                              (goban.current.engine.rengo_teams.black.length - 1)
+                        : goban.current.engine.players.black.username,
+                );
+            }
+            if (typeof white === "string") {
+                setWhiteName(white);
+            } else {
+                setWhiteName(
+                    goban.current.engine.rengo
+                        ? goban.current.engine.rengo_teams.white[0].username +
+                              " +" +
+                              (goban.current.engine.rengo_teams.white.length - 1)
+                        : goban.current.engine.players.white.username,
+                );
+            }
 
-            ...(typeof black === "string"
-                ? //honour the string that they provided: they must really want it!
-                  { black_name: black }
-                : // otherwise get the player name/team from the engine
-                  {
-                      black_name: this.goban.engine.rengo
-                          ? this.goban.engine.rengo_teams.black[0].username +
-                            " +" +
-                            (this.goban.engine.rengo_teams.black.length - 1)
-                          : this.goban.engine.players.black.username,
-                  }),
+            setCurrentUsersMove(player_to_move === data.get("config.user").id);
 
-            ...(typeof white === "string"
-                ? //honour the string that they provided: they must really want it!
-                  { white_name: white }
-                : // otherwise get the player name/team from the engine
-                  {
-                      white_name: this.goban.engine.rengo
-                          ? this.goban.engine.rengo_teams.white[0].username +
-                            " +" +
-                            (this.goban.engine.rengo_teams.white.length - 1)
-                          : this.goban.engine.players.white.username,
-                  }),
-
-            current_users_move: player_to_move === data.get("config.user").id,
-            black_to_move_cls:
-                typeof black === "object" && this.goban && black.id === player_to_move
+            setBlackToMoveCls(
+                typeof black === "object" && goban.current && black.id === player_to_move
                     ? "to-move"
                     : "",
-            white_to_move_cls:
-                typeof white === "object" && this.goban && white.id === player_to_move
+            );
+            setWhiteToMoveCls(
+                typeof white === "object" && goban.current && white.id === player_to_move
                     ? "to-move"
                     : "",
-
-            in_stone_removal_phase: this.goban && this.goban.engine.phase === "stone removal",
-            finished: this.goban && this.goban.engine.phase === "finished",
-        });
-    }
-
-    render() {
-        if (this.props.noLink) {
-            return <div className="MiniGoban nolink">{this.inner()}</div>;
-        } else {
-            return (
-                <Link to={`/game/${this.props.id}`} className="MiniGoban link">
-                    {this.inner()}
-                </Link>
             );
-        }
-    }
 
-    inner() {
-        return (
-            <React.Fragment>
-                {this.props.title && (
-                    <div className={"minigoban-title"}>
-                        <div>{this.state.game_name}</div>
-                        <div className="game-date">{this.state.game_date}</div>
-                        <div className="game-result">{this.state.game_result}</div>
+            setInStoneRemovalPhase(goban.current && goban.current.engine.phase === "stone removal");
+            setFinished(goban.current && goban.current.engine.phase === "finished");
+
+            if (props.onUpdate) {
+                props.onUpdate();
+            }
+        });
+
+        return () => {
+            goban.current.destroy();
+            goban_div.current.childNodes.forEach((node) => node.remove());
+        };
+    }, [props.id]);
+
+    const inner = (
+        <React.Fragment>
+            {props.title && (
+                <div className={"minigoban-title"}>
+                    <div>{game_name}</div>
+                    <div className="game-date">{game_date}</div>
+                    <div className="game-result">{game_result}</div>
+                </div>
+            )}
+            <div className="inner-container">
+                <PersistentElement
+                    className={
+                        "small board" +
+                        (current_users_move ? " current-users-move" : "") +
+                        (in_stone_removal_phase ? " in-stone-removal-phase" : "") +
+                        (finished ? " finished" : "")
+                    }
+                    elt={goban_div.current}
+                />
+                {!props.noText && (
+                    <div className={`title-black ${black_to_move_cls}`}>
+                        <span className={`player-name`}>{black_name}</span>
+                        <span className={`player-rank`}>{black_rank}</span>
+                        {finished || (
+                            <Clock
+                                compact
+                                goban={goban.current}
+                                color="black"
+                                className="mini-goban"
+                            />
+                        )}
+                        {finished || <span className="score">{black_points}</span>}
                     </div>
                 )}
-                <div className="inner-container">
-                    <PersistentElement
-                        className={
-                            "small board" +
-                            (this.state.current_users_move ? " current-users-move" : "") +
-                            (this.state.in_stone_removal_phase ? " in-stone-removal-phase" : "") +
-                            (this.state.finished ? " finished" : "")
-                        }
-                        elt={this.goban_div}
-                    />
-                    {!this.props.noText && (
-                        <div className={`title-black ${this.state.black_to_move_cls}`}>
-                            <span className={`player-name`}>{this.state.black_name}</span>
-                            <span className={`player-rank`}>{this.state.black_rank}</span>
-                            {this.state.finished || (
-                                <Clock
-                                    compact
-                                    goban={this.goban}
-                                    color="black"
-                                    className="mini-goban"
-                                />
-                            )}
-                            {this.state.finished || (
-                                <span className="score">{this.state.black_points}</span>
-                            )}
-                        </div>
-                    )}
-                    {!this.props.noText && (
-                        <div className={`title-white ${this.state.white_to_move_cls}`}>
-                            <span className={`player-name`}>{this.state.white_name}</span>
-                            <span className={`player-rank`}>{this.state.white_rank}</span>
-                            {this.state.finished || (
-                                <Clock
-                                    compact
-                                    goban={this.goban}
-                                    color="white"
-                                    className="mini-goban"
-                                />
-                            )}
-                            {this.state.finished || (
-                                <span className="score">{this.state.white_points}</span>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </React.Fragment>
+                {!props.noText && (
+                    <div className={`title-white ${white_to_move_cls}`}>
+                        <span className={`player-name`}>{white_name}</span>
+                        <span className={`player-rank`}>{white_rank}</span>
+                        {finished || (
+                            <Clock
+                                compact
+                                goban={goban.current}
+                                color="white"
+                                className="mini-goban"
+                            />
+                        )}
+                        {finished || <span className="score">{white_points}</span>}
+                    </div>
+                )}
+            </div>
+        </React.Fragment>
+    );
+
+    if (props.noLink) {
+        return <div className="MiniGoban nolink">{inner}</div>;
+    } else {
+        return (
+            <Link to={`/game/${props.id}`} className="MiniGoban link">
+                {inner}
+            </Link>
         );
     }
 }

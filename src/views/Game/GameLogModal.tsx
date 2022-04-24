@@ -60,7 +60,7 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
 
     render() {
         return (
-            <div className="Modal GameLogModal" ref="modal">
+            <div className="Modal GameLogModal">
                 <div className="header">
                     <div>
                         <h2>{this.props.config.game_name}</h2>

@@ -29,7 +29,7 @@ export class BecomeASiteSupporterModal extends Modal<{}, {}, any> {
 
     render() {
         return (
-            <div className="Modal BecomeASiteSupporterModal" ref="modal">
+            <div className="Modal BecomeASiteSupporterModal">
                 <div className="header">
                     <h2>{_("Become a site supporter today!")}</h2>
                 </div>

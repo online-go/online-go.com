@@ -66,7 +66,7 @@ export class ForkModal extends Modal<Events, ForkModalProperties, any> {
 
     render() {
         return (
-            <div className="Modal ForkModal" ref="modal">
+            <div className="Modal ForkModal">
                 <div className="header space-around">
                     <h2>{_("Player to challenge")}:</h2>{" "}
                     <PlayerAutocomplete onComplete={this.setPlayer} />

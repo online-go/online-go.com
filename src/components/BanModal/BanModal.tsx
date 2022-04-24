@@ -26,7 +26,7 @@ import { Player } from "Player";
 interface Events {}
 
 interface BanModalProperties {
-    player_id: string | number;
+    player_id: number;
 }
 
 export class BanModal extends Modal<Events, BanModalProperties, any> {
@@ -63,7 +63,7 @@ export class BanModal extends Modal<Events, BanModalProperties, any> {
         };
 
         return (
-            <div className="Modal BanModal" ref="modal">
+            <div className="Modal BanModal">
                 <div className="Modal-content">
                     <Player user={this.props.player_id} />
                     <BanDetails onChange={(details) => this.setState({ details: details })} />

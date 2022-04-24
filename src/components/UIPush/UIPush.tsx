@@ -103,68 +103,24 @@ class UIPushManager {
 
 export const push_manager = new UIPushManager();
 
-export class UIPush extends React.Component<UIPushProperties> {
-    handler: Handler = null;
-    channel: string = null; // I'm here
-
-    constructor(props) {
-        super(props);
-    }
-
-    shouldComponentUpdate(next) {
-        if (
-            this.props.event === next.event &&
-            this.props.action === next.action &&
-            this.props.channel === next.channel
-        ) {
-            return false;
+export function UIPush({ event, channel, action }: UIPushProperties): JSX.Element {
+    React.useEffect(() => {
+        if (event && action) {
+            const handler = push_manager.on(event, action);
+            return () => {
+                push_manager.off(handler);
+            };
         }
-        return true;
-    }
+    }, [event, action]);
 
-    removeHandler() {
-        if (this.handler) {
-            push_manager.off(this.handler);
-            this.handler = null;
+    React.useEffect(() => {
+        if (channel) {
+            push_manager.subscribe(channel);
+            return () => {
+                push_manager.unsubscribe(channel);
+            };
         }
-    }
-    unsubscribe() {
-        if (this.channel && this.channel !== "undefined") {
-            push_manager.unsubscribe(this.channel);
-            this.channel = null;
-        }
-    }
+    }, [channel]);
 
-    sync() {
-        if (this.handler) {
-            this.removeHandler();
-        }
-        if (this.props.event) {
-            this.handler = push_manager.on(this.props.event, this.props.action);
-        }
-
-        if (this.props.channel !== this.channel) {
-            this.unsubscribe();
-            this.channel = this.props.channel;
-
-            if (this.channel && this.channel !== "undefined") {
-                push_manager.subscribe(this.channel);
-            }
-        }
-    }
-
-    componentDidUpdate() {
-        this.sync();
-    }
-    componentDidMount() {
-        this.sync();
-    }
-    componentWillUnmount() {
-        this.removeHandler();
-        this.unsubscribe();
-    }
-
-    render() {
-        return null;
-    }
+    return null;
 }

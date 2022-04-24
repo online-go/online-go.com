@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as data from "data";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { CardLink } from "material";
 import { _, pgettext } from "translate";
 import { sections, allsections } from "./sections";
@@ -28,71 +28,66 @@ import { browserHistory } from "ogsHistory";
 import { MiniGoban } from "MiniGoban";
 import swal from "sweetalert2";
 
-type LearningHubProperties = RouteComponentProps<{
+interface LearningHubParams {
     section: string;
     page: string;
-}>;
+}
 
-export class LearningHub extends React.PureComponent<LearningHubProperties> {
-    constructor(props) {
-        super(props);
-    }
+export function LearningHub(): JSX.Element {
+    const params = useParams<keyof LearningHubParams>();
 
-    componentDidMount() {
+    React.useEffect(() => {
+        const oldTitle = window.document.title;
         window.document.title = _("Learn to play Go");
-    }
+        return () => {
+            window.document.title = oldTitle;
+        };
+    }, [params.section, params.page]);
 
-    render() {
-        const section = this._render();
+    const section_name = (params.section || "index").toLowerCase();
+    let section = null;
+    let next_section_name = "";
 
-        if (section) {
-            return (
-                <div id="LearningHub-container">
-                    <div id="LearningHub">
-                        {section}
-                        <SectionNav />
-                    </div>
-                </div>
-            );
-        } else {
-            return (
-                <div id="LearningHub-container">
-                    <div id="LearningHub">
-                        {" "}
-                        <Index />{" "}
-                    </div>
-                </div>
-            );
-        }
-    }
-    _render() {
-        const section_name = (this.props.match.params.section || "index").toLowerCase();
-        let section;
-        let next_section_name = "";
-
-        for (let i = 0; i < allsections.length; ++i) {
-            if (allsections[i].section() === section_name) {
-                section = allsections[i];
-                if (i + 1 < allsections.length) {
-                    next_section_name = allsections[i + 1].section();
-                }
+    for (let i = 0; i < allsections.length; ++i) {
+        if (allsections[i].section() === section_name) {
+            section = allsections[i];
+            if (i + 1 < allsections.length) {
+                next_section_name = allsections[i + 1].section();
             }
         }
+    }
 
-        if (section) {
-            const S = section;
-            return (
-                <S
-                    page={this.props.match.params.page}
-                    nextSection={next_section_name}
-                    section={S.section()}
-                    title={S.title()}
-                    pages={S.pages()}
-                />
-            );
-        }
+    if (section) {
+        const S = section;
+        section = (
+            <S
+                page={params.page}
+                nextSection={next_section_name}
+                section={S.section()}
+                title={S.title()}
+                pages={S.pages()}
+            />
+        );
+    }
 
-        return null;
+    if (section) {
+        return (
+            <div id="LearningHub-container">
+                <div id="LearningHub">
+                    {section}
+                    <SectionNav />
+                </div>
+            </div>
+        );
+    } else {
+        return (
+            <div id="LearningHub-container">
+                <div id="LearningHub">
+                    {" "}
+                    <Index />{" "}
+                </div>
+            </div>
+        );
     }
 }
 

@@ -67,7 +67,7 @@ export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, 
 
     render() {
         return (
-            <div className="Modal PlayerNotesModal" ref="modal">
+            <div className="Modal PlayerNotesModal">
                 <div className="body">
                     <textarea
                         placeholder={_("(no notes yet)")}

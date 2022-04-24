@@ -22,12 +22,10 @@ import { Card } from "material";
 import { post, get, patch } from "requests";
 import { _, pgettext, interpolate } from "translate";
 import { errorAlerter } from "misc";
-import { RouteComponentProps } from "react-router";
+import { useParams } from "react-router";
 import { Player } from "Player";
 import { AutoTranslate } from "AutoTranslate";
 import { UIPush } from "UIPush";
-
-type AppealProperties = RouteComponentProps<{ player_id?: string }>;
 
 interface AppealMessage {
     id: number;
@@ -40,11 +38,13 @@ interface AppealMessage {
     hidden?: boolean;
 }
 
-export function Appeal(props: AppealProperties): JSX.Element {
+export function Appeal(): JSX.Element {
+    const params = useParams<{ player_id?: string }>();
+
     const banned_user_id: number = data.get("appeals.banned_user_id");
     const jwt_key: string = data.get("appeals.jwt");
 
-    const player_id = props.match.params.player_id || banned_user_id;
+    const player_id = params.player_id || banned_user_id;
     const user = data.get("user");
     const [messages, setMessages] = React.useState<AppealMessage[]>([]);
     const [messageText, setMessageText] = React.useState("");

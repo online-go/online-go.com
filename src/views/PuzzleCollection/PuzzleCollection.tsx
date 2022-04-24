@@ -23,15 +23,11 @@ import { get, del, put, abort_requests_in_flight } from "requests";
 import { SortablePuzzleList } from "./SortablePuzzleList";
 import { openACLModal } from "ACLModal";
 import swal from "sweetalert2";
-import { RouteComponentProps } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
-export function PuzzleCollection({
-    match: {
-        params: { collection_id },
-    },
-}: RouteComponentProps<{
-    collection_id: string;
-}>): JSX.Element {
+export function PuzzleCollection(): JSX.Element {
+    const { collection_id } = useParams();
+
     const [collection, setCollection] = React.useState(null);
     const [name, setName] = React.useState(null);
     const [puzzle_is_private, setPrivate] = React.useState(false);
@@ -119,19 +115,22 @@ export function PuzzleCollection({
                     </dd>
 
                     {puzzle_is_private && (
-                        <dd>
-                            <button
-                                className="success"
-                                onClick={() =>
-                                    openACLModal({ puzzle_collection_id: collection_id })
-                                }
-                            >
-                                {pgettext(
-                                    "Control who can access the game or review",
-                                    "Access settings",
-                                )}
-                            </button>
-                        </dd>
+                        <React.Fragment>
+                            <dt></dt>
+                            <dd>
+                                <button
+                                    className="success"
+                                    onClick={() =>
+                                        openACLModal({ puzzle_collection_id: collection_id })
+                                    }
+                                >
+                                    {pgettext(
+                                        "Control who can access the game or review",
+                                        "Access settings",
+                                    )}
+                                </button>
+                            </dd>
+                        </React.Fragment>
                     )}
                 </dl>
 

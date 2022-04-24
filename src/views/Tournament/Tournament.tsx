@@ -16,9 +16,10 @@
  */
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import * as ReactDOM from "react-dom/client";
 import { LoadingPage } from "Loading";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext, interpolate } from "translate";
 import { abort_requests_in_flight, del, put, post, get } from "requests";
@@ -44,7 +45,7 @@ import { close_all_popovers } from "popover";
 import { computeAverageMoveTime, GoEngineRules } from "goban";
 import { openMergeReportModal } from "MergeReportModal";
 import * as d3 from "d3";
-import * as Dropzone from "react-dropzone";
+import Dropzone from "react-dropzone";
 import swal from "sweetalert2";
 
 let logspam_debounce: any;
@@ -139,15 +140,10 @@ function sortDropoutsToBottom(player_a, player_b) {
 
 /* TODO: Implement me TD Options */
 
-export class Tournament extends React.PureComponent<TournamentProperties, TournamentState> {
-    refs: {
-        player_list;
-        time_control_picker;
-        tournament_name;
-        description;
-        players_start;
-        max_players;
-    };
+class _Tournament extends React.PureComponent<TournamentProperties, TournamentState> {
+    ref_tournament_name = React.createRef<HTMLInputElement>();
+    ref_description = React.createRef<HTMLTextAreaElement>();
+    ref_max_players = React.createRef<HTMLInputElement>();
 
     elimination_tree_container = $(`<div class="tournament-elimination-container">`);
     elimination_tree = $(`<svg xmlns="http://www.w3.org/2000/svg">`);
@@ -250,10 +246,10 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
         this.abort_requests();
         setExtraActionCallback(null);
     }
-    UNSAFE_componentWillReceiveProps(next_props) {
-        if (next_props.match.params.tournament_id !== this.props.match.params.tournament_id) {
-            this.setState({ tournament_id: parseInt(next_props.match.params.tournament_id) });
-            this.resolve(parseInt(next_props.match.params.tournament_id));
+    componentDidUpdate() {
+        if (this.state.tournament_id !== (parseInt(this.props.match.params.tournament_id) || 0)) {
+            this.setState({ tournament_id: parseInt(this.props.match.params.tournament_id) || 0 });
+            this.resolve(parseInt(this.props.match.params.tournament_id) || 0);
         }
     }
     abort_requests() {
@@ -594,8 +590,18 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                     const white = $("<div>")
                         .addClass("white")
                         .addClass("elimination-player-" + match.white);
-                    ReactDOM.render(<Player user={players[match.black]} icon rank />, black[0]);
-                    ReactDOM.render(<Player user={players[match.white]} icon rank />, white[0]);
+                    const black_root = ReactDOM.createRoot(black[0]);
+                    black_root.render(
+                        <React.StrictMode>
+                            <Player user={players[match.black]} icon rank />
+                        </React.StrictMode>,
+                    );
+                    const white_root = ReactDOM.createRoot(white[0]);
+                    white_root.render(
+                        <React.StrictMode>
+                            <Player user={players[match.white]} icon rank />
+                        </React.StrictMode>,
+                    );
 
                     black.prepend(
                         $("<a class='elimination-game'><i class='ogs-goban'></i> </a>").attr(
@@ -654,7 +660,12 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                     const byee = $("<div>")
                         .addClass("bye")
                         .addClass("elimination-player-" + bye);
-                    ReactDOM.render(<Player user={players[bye]} icon rank />, byee[0]);
+                    const root = ReactDOM.createRoot(byee[0]);
+                    root.render(
+                        <React.StrictMode>
+                            <Player user={players[bye]} icon rank />
+                        </React.StrictMode>,
+                    );
                     bindHovers(byee, bye);
                     byediv.append(byee);
                     const obj = {
@@ -1206,27 +1217,27 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
         tournament.description = tournament.description.trim();
 
         if (tournament.name.length < 5) {
-            this.refs.tournament_name.focus();
+            this.ref_tournament_name.current.focus();
             swal(_("Please provide a name for the tournament")).catch(swal.noop);
             return;
         }
 
         if (tournament.description.length < 5) {
-            this.refs.description.focus();
+            this.ref_description.current.focus();
             swal(_("Please provide a description for the tournament")).catch(swal.noop);
             return;
         }
 
         const max_players = parseInt(tournament.settings.maximum_players);
         if (max_players > 10 && tournament.tournament_type === "roundrobin") {
-            this.refs.max_players.focus();
+            this.ref_max_players.current.focus();
             swal(_("Round Robin tournaments are limited to a maximum of 10 players")).catch(
                 swal.noop,
             );
             return;
         }
         if (max_players < 2) {
-            this.refs.max_players.focus();
+            this.ref_max_players.current.focus();
             swal(_("You need at least two players in a tournament")).catch(swal.noop);
             return;
         }
@@ -1629,7 +1640,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                 </h2>
                             ) : (
                                 <input
-                                    ref="tournament_name"
+                                    ref={this.ref_tournament_name}
                                     className="fill big"
                                     value={tournament.name}
                                     placeholder={_("Tournament Name")}
@@ -1751,7 +1762,6 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                             )}
                             {editing && (
                                 <TimeControlPicker
-                                    ref="time_control_picker"
                                     value={tournament.time_control_parameters}
                                     onChange={this.setTimeControl}
                                 />
@@ -1760,7 +1770,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                 <Markdown source={tournament.description} />
                             ) : (
                                 <textarea
-                                    ref="description"
+                                    ref={this.ref_description}
                                     rows={7}
                                     className="fill"
                                     value={tournament.description}
@@ -1908,14 +1918,13 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                 {editing ? (
                                                     <span>
                                                         <input
-                                                            ref="players_start"
                                                             type="number"
                                                             value={tournament.players_start}
                                                             onChange={this.setPlayersStart}
                                                         />
                                                         -
                                                         <input
-                                                            ref="max_players"
+                                                            ref={this.ref_max_players}
                                                             type="number"
                                                             value={
                                                                 tournament.settings.maximum_players
@@ -2347,7 +2356,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                 .filter((p) => p.rank > 0 && p.rank <= 3)
                                 .sort((a, b) => (a.rank > b.rank ? 1 : -1))
                                 .map((player) => (
-                                    <div>
+                                    <div key={player.id}>
                                         <span className="final-results-place">
                                             <img
                                                 className="trophy"
@@ -2402,7 +2411,7 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
                                                 </button>
                                             )}
                                             {((!this.state.is_joined && !can_join) || null) && (
-                                                <div>{cant_join_reason}</div>
+                                                <span>{cant_join_reason}</span>
                                             )}
                                             {(this.state.is_joined || null) && (
                                                 <button
@@ -3227,6 +3236,8 @@ export class Tournament extends React.PureComponent<TournamentProperties, Tourna
     };
 }
 
+export const Tournament = rr6ClassShim(_Tournament);
+
 function OpenGothaRoster({ players }: { tournament: any; players: Array<any> }): JSX.Element {
     window["players"] = players;
     players.sort((a, b) => a.username.localeCompare(b.username));
@@ -3539,14 +3550,21 @@ function OpenGothaTournamentUploadDownload({
                 </a>
             </h3>
             <div className="OpenGothaUploadDownload">
-                <Dropzone className="Dropzone" onDrop={uploadFile} multiple={false}>
-                    <i className="fa fa-upload" />
-                    {pgettext(
-                        "Upload a file from OpenGotha to update an OpenGotha tournament on online-go.com",
-                        "Upload to Online-Go.com ",
+                <Dropzone onDrop={uploadFile} multiple={false}>
+                    {({ getRootProps, getInputProps }) => (
+                        <section className="Dropzone">
+                            <div {...getRootProps()}>
+                                <input {...getInputProps()} />
+                                <i className="fa fa-upload" />
+                                {pgettext(
+                                    "Upload a file from OpenGotha to update an OpenGotha tournament on online-go.com",
+                                    "Upload to Online-Go.com ",
+                                )}
+                            </div>
+                        </section>
                     )}
                 </Dropzone>
-                <div onClick={download}>
+                <div className="download" onClick={download}>
                     <i className="fa fa-download" />
                     {pgettext(
                         "Download an updated XML file for use with OpenGotha",

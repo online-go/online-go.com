@@ -39,7 +39,7 @@ export class MergeReportModal extends Modal<Events, MergeReportModalProperties, 
 
     render() {
         return (
-            <div className="Modal MergeReportModal" ref="modal">
+            <div className="Modal MergeReportModal">
                 <div className="body">
                     {this.props.error && <h3>{this.props.error}</h3>}
                     <div className="lines">

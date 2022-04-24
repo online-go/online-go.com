@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import * as ReactDOM from "react-dom/client";
 import { TypedEventEmitter } from "TypedEventEmitter";
 
 interface Events {
@@ -31,7 +31,7 @@ interface PopupCoordinates {
 interface PopoverConfig {
     elt: React.ReactElement<any>;
     at?: PopupCoordinates; // Relative to window origin
-    below?: React.ReactInstance;
+    below?: HTMLElement;
     minWidth?: number;
     minHeight?: number;
     //above?:HTMLElement;;
@@ -62,7 +62,7 @@ export class PopOver extends TypedEventEmitter<Events> {
 
     close = (ev) => {
         if (!ev || ev.target === this.backdrop || ev.target === this.container) {
-            ReactDOM.unmountComponentAtNode(this.container);
+            //ReactDOM.unmountComponentAtNode(this.container);
             $(this.container).remove();
             $(this.backdrop).remove();
             delete open_popovers[this.id];
@@ -107,7 +107,7 @@ export function popover(config: PopoverConfig): PopOver {
             container.css({ minWidth: minWidth, bottom: $(window).height() - y, left: x });
         }
     } else if (config.below) {
-        const rectangle = (ReactDOM.findDOMNode(config.below) as Element).getBoundingClientRect();
+        const rectangle = config.below.getBoundingClientRect();
         x = rectangle.left + window.scrollX;
         x = Math.min(x, bounds.x - minWidth);
 
@@ -129,6 +129,8 @@ export function popover(config: PopoverConfig): PopOver {
     $(document.body).append(backdrop);
     $(document.body).append(container);
 
-    ReactDOM.render(config.elt, container[0]);
+    const root = ReactDOM.createRoot(container[0]);
+    root.render(<React.StrictMode>{config.elt}</React.StrictMode>);
+
     return new PopOver(config, backdrop[0] as HTMLElement, container[0] as HTMLElement);
 }

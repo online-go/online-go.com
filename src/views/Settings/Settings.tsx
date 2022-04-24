@@ -21,9 +21,8 @@ import * as data from "data";
 import * as moment from "moment";
 
 import Select from "react-select";
-import ITC from "ITC";
 import { ValidPreference } from "preferences";
-import { Link, RouteComponentProps } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { _, pgettext, interpolate } from "translate";
 import { post, get, put, del, abort_requests_in_flight, getCookie } from "requests";
 import { errorAlerter, errorLogger, ignore, Timeout, dup } from "misc";
@@ -35,7 +34,7 @@ import { SpritePack } from "sfx_sprites";
 import { current_language, setCurrentLanguage, languages } from "translate";
 import { toast } from "toast";
 import { profanity_regex } from "profanity_filter";
-import { logout } from "NavBar";
+import { logout, logoutOtherDevices, logoutAndClearLocalData } from "auth";
 import { Flag } from "Flag";
 import { EventEmitter } from "eventemitter3";
 import { LineText } from "misc-ui";
@@ -50,56 +49,6 @@ import { SocialLoginButtons } from "SignIn";
 import swal from "sweetalert2";
 
 export const MAX_DOCK_DELAY = 3.0;
-
-ITC.register("logout", (device_uuid) => {
-    if (device_uuid !== data.get("device.uuid", "")) {
-        swal("This device has been logged out remotely").then(logout).catch(logout);
-    }
-});
-
-function logoutOtherDevices() {
-    swal({
-        text: "Logout of other devices you are logged in to?",
-        showCancelButton: true,
-    })
-        .then(() => {
-            ITC.send("logout", data.get("device.uuid"));
-            swal("Other devices have been logged out").then(ignore).catch(ignore);
-        })
-        .catch(ignore);
-    //get("/api/v0/logout?everywhere=1").then(console.log).catch(errorAlerter);
-}
-
-function logoutAndClearLocalData() {
-    try {
-        get("/api/v0/logout")
-            .then(() => {
-                window.location.href = "/";
-            })
-            .catch(errorLogger);
-    } catch (e) {
-        console.warn(e);
-    }
-
-    try {
-        const cookies = document.cookie.split(";");
-
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i];
-            const eqPos = cookie.indexOf("=");
-            const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
-        }
-    } catch (e) {
-        console.warn(e);
-    }
-
-    try {
-        localStorage.clear();
-    } catch (e) {
-        console.warn(e);
-    }
-}
 
 interface SettingsState {
     profile?: any;
@@ -116,13 +65,8 @@ interface SettingGroupProps {
     updateSelfReportedAccountLinkages: (link: any) => void;
 }
 
-type SettingsProperties = RouteComponentProps<{ category: string }>;
-
-export function Settings({
-    match: {
-        params: { category },
-    },
-}: SettingsProperties): JSX.Element {
+export function Settings(): JSX.Element {
+    const { category } = useParams();
     const [settings_state, setSettingsState]: [SettingsState, (s: SettingsState) => void] =
         React.useState({});
     const [vacation_base_time, set_vacation_base_time]: [number, (s: number) => void] =
@@ -2125,7 +2069,7 @@ function SoundPreferences(): JSX.Element {
                             className="sound-option-select"
                             classNamePrefix="ogs-react-select"
                             value={start_options.filter((opt) => opt.value === tick_tock_start)[0]}
-                            getOptionValue={(data) => data.value}
+                            getOptionValue={(data) => data.value.toString()}
                             onChange={setTickTockStart}
                             options={start_options}
                             isClearable={false}
@@ -2189,7 +2133,7 @@ function SoundPreferences(): JSX.Element {
                                     (opt) => opt.value === ten_seconds_start,
                                 )[0]
                             }
-                            getOptionValue={(data) => data.value}
+                            getOptionValue={(data) => data.value.toString()}
                             onChange={setTenSecondsStart}
                             options={start_options_tens}
                             isClearable={false}
@@ -2242,7 +2186,7 @@ function SoundPreferences(): JSX.Element {
                                     (opt) => opt.value === five_seconds_start,
                                 )[0]
                             }
-                            getOptionValue={(data) => data.value}
+                            getOptionValue={(data) => data.value.toString()}
                             onChange={setFiveSecondsStart}
                             options={start_options_fives}
                             isClearable={false}
@@ -2294,7 +2238,7 @@ function SoundPreferences(): JSX.Element {
                             value={
                                 start_options.filter((opt) => opt.value === every_second_start)[0]
                             }
-                            getOptionValue={(data) => data.value}
+                            getOptionValue={(data) => data.value.toString()}
                             onChange={setEverySecondStart}
                             options={start_options}
                             isClearable={false}
@@ -2813,7 +2757,6 @@ function SoundPackSelect(props: {
             isClearable={false}
             isSearchable={false}
             blurInputOnSelect={true}
-            noResultsText={_("No results found")}
             filterOption={filter}
             getOptionLabel={(pack) => pack.pack_id}
             getOptionValue={(pack) => pack.pack_id}

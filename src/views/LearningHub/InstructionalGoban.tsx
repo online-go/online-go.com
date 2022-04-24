@@ -31,7 +31,7 @@ interface InstructionalGobanProps {
 
 export class InstructionalGoban extends React.Component<InstructionalGobanProps> {
     goban_div: HTMLDivElement;
-    goban;
+    goban: Goban;
 
     constructor(props) {
         super(props);
@@ -88,7 +88,6 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps>
             this.props.config,
         );
         window["goban"] = this.goban;
-        this.goban.play_movement_sounds = true;
 
         this.goban.setMode(this.props.config.mode || "puzzle");
         if (this.props.config.engine_phase) {
@@ -135,7 +134,7 @@ export class InstructionalGoban extends React.Component<InstructionalGobanProps>
     render() {
         return (
             <div className="InstructionalGoban">
-                <div ref="goban_container" className="goban-container">
+                <div className="goban-container">
                     <PersistentElement elt={this.goban_div} />
                 </div>
             </div>

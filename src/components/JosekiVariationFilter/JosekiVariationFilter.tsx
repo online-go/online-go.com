@@ -19,7 +19,7 @@ import * as React from "react";
 import { _ } from "translate";
 
 import * as player_cache from "player_cache";
-import { JosekiTagSelector } from "../JosekiTagSelector";
+import { JosekiTagSelector, JosekiTag } from "../JosekiTagSelector";
 import { PlayerCacheEntry } from "player_cache";
 
 interface JosekiVariationFilterProps {
@@ -28,7 +28,7 @@ interface JosekiVariationFilterProps {
     tag_list_url: string;
     source_list_url: string;
     set_variation_filter: any;
-    current_filter: { contributor: number; tags: number[]; source: number };
+    current_filter: { contributor: number; tags: JosekiTag[]; source: number };
 }
 
 type ResolvedContributor = { resolved: true; player: PlayerCacheEntry };
@@ -36,10 +36,10 @@ type UnresolvedContributor = { resolved: false; player: number };
 
 interface JosekiVariationFilterState {
     contributor_list: (ResolvedContributor | UnresolvedContributor)[];
-    tag_list: [];
+    tag_list: JosekiTag[];
     source_list: { id: string; description: string }[];
     selected_filter: {
-        tags: number[];
+        tags: JosekiTag[];
         contributor: number;
         source: number;
     };

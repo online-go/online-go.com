@@ -65,7 +65,7 @@ interface PlayerDetailsState {
     resolved: boolean;
     username: string | PlayerCacheEntry["username"];
     icon: PlayerCacheEntry["icon"];
-    ranking: string | PlayerCacheEntry["ranking"];
+    ranking: PlayerCacheEntry["ranking"];
     rating: string | PlayerCacheEntry["rating"];
     ratings?: PlayerCacheEntry["ratings"];
     ui_class: string | PlayerCacheEntry["ui_class"];
@@ -86,7 +86,7 @@ export class PlayerDetails extends React.PureComponent<
         }
     }
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         this.resolve(this.props.playerId);
     }
 
@@ -96,7 +96,7 @@ export class PlayerDetails extends React.PureComponent<
             username: "...",
             //icon: data.get('config.cdn_release') + '/img/default-user.svg',
             icon: "",
-            ranking: "...",
+            ranking: 0,
             rating: "...",
             ui_class: "...",
             country: "un",
@@ -127,16 +127,16 @@ export class PlayerDetails extends React.PureComponent<
                 }
             });
     }
-    UNSAFE_componentWillReceiveProps(new_props: PlayerDetailsProperties) {
-        if (new_props.playerId !== this.props.playerId) {
-            const player = player_cache.lookup(new_props.playerId);
+    componentDidUpdate(prev_props: PlayerDetailsProperties) {
+        if (prev_props.playerId !== this.props.playerId) {
+            const player = player_cache.lookup(this.props.playerId);
             let new_state = this.blankState();
             if (player) {
                 new_state = Object.assign(new_state, this.state, player);
             }
             this.setState(new_state);
             setTimeout(() => {
-                this.resolve(new_props.playerId);
+                this.resolve(this.props.playerId);
             }, 1);
         }
     }
