@@ -247,9 +247,9 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
         setExtraActionCallback(null);
     }
     componentDidUpdate() {
-        if (this.state.tournament_id !== parseInt(this.props.match.params.tournament_id)) {
-            this.setState({ tournament_id: parseInt(this.props.match.params.tournament_id) });
-            this.resolve(parseInt(this.props.match.params.tournament_id));
+        if (this.state.tournament_id !== (parseInt(this.props.match.params.tournament_id) || 0)) {
+            this.setState({ tournament_id: parseInt(this.props.match.params.tournament_id) || 0 });
+            this.resolve(parseInt(this.props.match.params.tournament_id) || 0);
         }
     }
     abort_requests() {
