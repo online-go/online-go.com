@@ -135,7 +135,7 @@ export class RengoTeamManagementPane extends React.PureComponent<
                             {(this.props.moderator || null) && (
                                 <React.Fragment>
                                     <i
-                                        className="fa fa-user-times unassign"
+                                        className="fa fa-user-times kick"
                                         onClick={this._kickRengoUser.bind(self, n)}
                                     />
                                 </React.Fragment>
@@ -175,7 +175,7 @@ export class RengoTeamManagementPane extends React.PureComponent<
                             {(this.props.moderator || null) && (
                                 <React.Fragment>
                                     <i
-                                        className="fa fa-user-times unassign"
+                                        className="fa fa-user-times kick"
                                         onClick={this._kickRengoUser.bind(self, n)}
                                     />
                                 </React.Fragment>
@@ -215,7 +215,7 @@ export class RengoTeamManagementPane extends React.PureComponent<
                             {(this.props.moderator || null) && (
                                 <React.Fragment>
                                     <i
-                                        className="fa fa-user-times unassign"
+                                        className="fa fa-user-times kick"
                                         onClick={this._kickRengoUser.bind(self, n)}
                                     />
                                 </React.Fragment>
