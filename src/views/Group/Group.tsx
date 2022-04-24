@@ -231,8 +231,8 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
     };
     saveEditChanges() {
         put(`groups/${this.state.group_id}`, this.state.group)
-            .then((res) => {
-                console.log(res);
+            .then(() => {
+                this.refreshGroup();
             })
             .catch(errorAlerter);
     }
@@ -358,6 +358,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             content: this.state.new_news_body,
         })
             .then(() => {
+                this.refreshGroup();
                 this.news_ref.current?.refresh();
                 /* Since the removal of the refs I don't think we need to worry about this? - anoek 2021-12-23
             if (this.refs.news) {
