@@ -31,6 +31,7 @@ interface RengoTeamManagementPaneProps {
     moderator: boolean;
     show_chat: boolean;
     assignToTeam: (player_id: number, team: string, challenge: Challenge, done: () => void) => void;
+    kickRengoUser: (player_id: number, done: () => void) => void;
 }
 
 interface RengoTeamManagementPaneState {
@@ -56,6 +57,11 @@ export class RengoTeamManagementPane extends React.PureComponent<
     _assignToTeam = (player_id: number, team: string, challenge: Challenge) => {
         this.setState({ assignment_pending: true });
         this.props.assignToTeam(player_id, team, challenge, this.done.bind(self));
+    };
+
+    _kickRengoUser = (player_id: number) => {
+        this.setState({ assignment_pending: true });
+        this.props.kickRengoUser(player_id, this.done.bind(self));
     };
 
     render = () => {
@@ -126,6 +132,14 @@ export class RengoTeamManagementPane extends React.PureComponent<
                                     />
                                 </React.Fragment>
                             )}
+                            {(this.props.moderator || null) && (
+                                <React.Fragment>
+                                    <i
+                                        className="fa fa-user-times unassign"
+                                        onClick={this._kickRengoUser.bind(self, n)}
+                                    />
+                                </React.Fragment>
+                            )}
                             <Player user={n} rank={true} key={i} />
                         </div>
                     ))}
@@ -158,6 +172,14 @@ export class RengoTeamManagementPane extends React.PureComponent<
                                     />
                                 </React.Fragment>
                             )}
+                            {(this.props.moderator || null) && (
+                                <React.Fragment>
+                                    <i
+                                        className="fa fa-user-times unassign"
+                                        onClick={this._kickRengoUser.bind(self, n)}
+                                    />
+                                </React.Fragment>
+                            )}
                             <Player user={n} rank={true} key={i} />
                         </div>
                     ))}
@@ -187,6 +209,14 @@ export class RengoTeamManagementPane extends React.PureComponent<
                                             "rengo_white_team",
                                             the_challenge,
                                         )}
+                                    />
+                                </React.Fragment>
+                            )}
+                            {(this.props.moderator || null) && (
+                                <React.Fragment>
+                                    <i
+                                        className="fa fa-user-times unassign"
+                                        onClick={this._kickRengoUser.bind(self, n)}
                                     />
                                 </React.Fragment>
                             )}
