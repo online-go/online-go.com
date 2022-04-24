@@ -747,6 +747,7 @@ export class Play extends React.Component<{}, PlayState> {
                             moderator={user.is_moderator}
                             show_chat={false}
                             assignToTeam={this.assignToTeam}
+                            kickRengoUser={this.kickRengoUser}
                         />
                     </RengoManagementPane>
                 </div>
@@ -1239,6 +1240,7 @@ export class Play extends React.Component<{}, PlayState> {
                                 moderator={user.is_moderator}
                                 show_chat={true}
                                 assignToTeam={this.assignToTeam}
+                                kickRengoUser={this.kickRengoUser}
                             />
                         </RengoManagementPane>
                     </Card>
@@ -1354,6 +1356,16 @@ export class Play extends React.Component<{}, PlayState> {
             [assignment]: [player_id], // back end expects an array of changes, but we only ever send one at a time.
         })
             .then(signal_done) // tell caller that we got the response from the server now.
+            .catch((err) => {
+                errorAlerter(err);
+            });
+    };
+
+    kickRengoUser = (player_id: number, signal_done?: () => void) => {
+        put("challenges", {
+            rengo_kick: player_id,
+        })
+            .then(signal_done)
             .catch((err) => {
                 errorAlerter(err);
             });
