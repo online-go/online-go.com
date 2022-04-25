@@ -339,10 +339,7 @@ export function Game(): JSX.Element {
                 stopAutoplay();
             }
         };
-        autoplay_timer.current = setTimeout(
-            step,
-            Math.min(1000, preferences.get("autoplay-delay")),
-        );
+        step();
 
         set_autoplaying(true);
     };
