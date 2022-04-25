@@ -3248,6 +3248,7 @@ export function Game(): JSX.Element {
         goban.current.on("mode", sync_stone_removal);
         goban.current.on("outcome", sync_stone_removal);
         goban.current.on("stone-removal.accepted", sync_stone_removal);
+        goban.current.on("stone-removal.updated", sync_stone_removal);
         goban.current.on("mode", sync_conditional_tree);
         goban.current.on("conditional-moves.updated", sync_conditional_tree);
         goban.current.on("cur_move", sync_review_out_of_sync);
