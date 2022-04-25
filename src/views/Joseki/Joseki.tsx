@@ -29,6 +29,7 @@ import { _, interpolate, npgettext } from "translate";
 import { KBShortcut } from "KBShortcut";
 import { PersistentElement } from "PersistentElement";
 import { Goban, GoMath, GobanConfig } from "goban";
+import { AutoTranslate } from "AutoTranslate";
 import { Markdown } from "Markdown";
 
 import { Player } from "Player";
@@ -1770,7 +1771,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
                 <div className="description-column">
                     {this.props.position_type !== "new" ? (
                         <div className="position-description">
-                            <Markdown source={description} />
+                            <AutoTranslate source={description} markdown />
                         </div>
                     ) : (
                         "" // "(new)"
@@ -1842,7 +1843,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
                                                 {comment.date.toDateString()}
                                             </div>
                                         </div>
-                                        <Markdown
+                                        <AutoTranslate
                                             className="comment-text"
                                             source={applyJosekiMarkdown(comment.comment)}
                                         />
