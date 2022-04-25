@@ -19,7 +19,7 @@ import * as React from "react";
 import swal from "sweetalert2";
 
 import { balanceTeams, unassignPlayers } from "rengo_balancer";
-import { _ } from "translate";
+import { _, pgettext } from "translate";
 
 import { Player } from "Player";
 import { EmbeddedChatCard } from "Chat";
@@ -63,7 +63,10 @@ export class RengoTeamManagementPane extends React.PureComponent<
 
     _kickRengoUser = (player_id: number) => {
         swal({
-            text: _("This will kick the person from all rengo challenges..."),
+            text: pgettext(
+                "Confirmation text to remove the selected player from all rengo challenges",
+                "This will kick the person from all rengo challenges, are you sure you want to do this?",
+            ),
             showCancelButton: true,
         })
             .then(() => {
@@ -82,9 +85,9 @@ export class RengoTeamManagementPane extends React.PureComponent<
         if (the_challenge === undefined) {
             return (
                 <div>
-                    {_(
-                        "(oops - if you had a rengo challenge open, the details would be showing here!)",
-                    )}
+                    {
+                        "(oops - if you had a rengo challenge open, the details would be showing here!)"
+                    }
                 </div>
             );
         }
