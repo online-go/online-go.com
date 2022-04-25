@@ -63,7 +63,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
         this.state = {
             player_id: parseInt(this.props.match.params.player_id),
-            collection_id: this.props.match.params.collection_id || "",
+            collection_id: this.props.match.params.collection_id || "0",
             collections: null,
             games_checked: {},
             new_collection_name: "",
@@ -89,7 +89,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
             if (this.props.match.params.collection_id) {
                 update.collection_id = parseInt(this.props.match.params.collection_id);
             } else {
-                update.collection_id = "";
+                update.collection_id = "0";
             }
             update.games_checked = {};
             updated = true;
