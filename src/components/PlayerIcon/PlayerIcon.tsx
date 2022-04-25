@@ -38,9 +38,9 @@ export function PlayerIcon(props: PlayerIconProps): JSX.Element {
     const [url, setUrl] = React.useState<string | null>(null);
 
     const subscriber = React.useRef<player_cache.Subscriber>();
+    const id = getId(props);
 
     React.useEffect(() => {
-        const id = getId(props);
         if (!id) {
             setUrl(null);
             return;
@@ -75,7 +75,7 @@ export function PlayerIcon(props: PlayerIconProps): JSX.Element {
                 })
                 .catch(errorLogger);
         }
-    }, [props.id, props.size]);
+    }, [id, props.size]);
 
     if (url) {
         return (
