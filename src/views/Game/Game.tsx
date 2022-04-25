@@ -3517,7 +3517,7 @@ export function Game(): JSX.Element {
         return null;
     }
 
-    const CHAT = (
+    const CHAT = zen_mode ? null : (
         <GameChat
             selected_chat_log={selected_chat_log}
             onSelectedChatModeChange={set_selected_chat_log}
@@ -3598,7 +3598,11 @@ export function Game(): JSX.Element {
                             show_game_timing &&
                             frag_timings()}
 
-                        {review ? frag_review_controls() : frag_play_controls(true)}
+                        {review
+                            ? frag_review_controls()
+                            : zen_mode
+                            ? null
+                            : frag_play_controls(true)}
 
                         {(view_mode === "wide" || null) && CHAT}
                         {((view_mode === "square" && squashed) || null) && CHAT}
