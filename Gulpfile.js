@@ -397,7 +397,7 @@ function getPreferredLanguage(req, supported_languages) {
     try {
         languages = req.headers['accept-language'].split(',').map(s => s.replace(/;q=.*/, '').trim().toLowerCase());
     } catch (e) {
-        trace.error(e);
+        console.trace(e);
     }
 
     try {
