@@ -42,6 +42,7 @@ import { notification_manager } from "Notifications";
 import { one_bot, bot_count, bots_list } from "bots";
 import { openForkModal } from "./ForkModal";
 import { goban_view_mode } from "Game";
+import { Goban } from "goban";
 
 import swal from "sweetalert2";
 
@@ -1717,7 +1718,7 @@ export function challengeFromBoardPosition(goban) {
     challenge(null, state);
     */
 }
-export function challengeRematch(goban, player, original_game_meta) {
+export function challengeRematch(goban: Goban, player, original_game_meta) {
     /* TODO: Fix up challengeRematch time control stuff */
     const conf = goban.engine;
     const config: any = {
@@ -1738,7 +1739,7 @@ export function challengeRematch(goban, player, original_game_meta) {
     config.challenge.game.challenger_color =
         conf.players.black.id === player.id ? "white" : "black";
     config.challenge.game.rules = conf.rules;
-    config.challenge.game.ranked = conf.ranked;
+    config.challenge.game.ranked = conf.config.ranked;
     config.challenge.game.width = conf.width;
     config.challenge.game.height = conf.height;
     if (`${conf.width}x${conf.height}` in standard_board_sizes) {

@@ -1240,7 +1240,7 @@ export function Game(): JSX.Element {
         }
 
         challengeRematch(
-            goban,
+            goban.current,
             data.get("user").id === goban.current.engine.players.black.id
                 ? goban.current.engine.players.white
                 : goban.current.engine.players.black,
