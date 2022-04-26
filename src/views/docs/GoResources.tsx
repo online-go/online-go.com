@@ -1532,6 +1532,12 @@ export const GoResources = () => {
                                 </a>
                             </span>,
                             <span>
+                                <Flag country={au} />{" "}
+                                <a rel="noopener" href="https://institute361.com/">
+                                    Institute 361
+                                </a>
+                            </span>,
+                            <span>
                                 <Flag country={gb} />{" "}
                                 <a
                                     rel="noopener"
