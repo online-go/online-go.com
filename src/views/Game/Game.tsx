@@ -3599,11 +3599,7 @@ export function Game(): JSX.Element {
                             show_game_timing &&
                             frag_timings()}
 
-                        {review
-                            ? frag_review_controls()
-                            : zen_mode
-                            ? null
-                            : frag_play_controls(true)}
+                        {review ? frag_review_controls() : frag_play_controls(true)}
 
                         {(view_mode === "wide" || null) && CHAT}
                         {((view_mode === "square" && squashed) || null) && CHAT}
