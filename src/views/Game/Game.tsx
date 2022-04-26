@@ -2220,11 +2220,11 @@ export function Game(): JSX.Element {
                                     null) && (
                                     <div className={`${color} player-name-container`}>
                                         <Player
-                                            user={
+                                            user={goban.current.engine.players[color].id}
+                                            historical={
                                                 (!engine.rengo && historical) ||
                                                 goban.current.engine.players[color]
                                             }
-                                            disableCacheUpdate
                                         />
                                     </div>
                                 )}

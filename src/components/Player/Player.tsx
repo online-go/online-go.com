@@ -59,6 +59,7 @@ interface PlayerProperties {
     icon?: boolean;
     iconSize?: number;
     user: number | PlayerObjectType;
+    historical?: PlayerObjectType;
     flag?: boolean;
     rank?: boolean;
     flare?: boolean;
@@ -77,6 +78,7 @@ export function Player(props: PlayerProperties): JSX.Element {
     const user = data.get("user");
     const player_id =
         typeof props.user !== "object" ? props.user : props.user.id || props.user.player_id;
+    const historical = props.historical;
 
     const [is_online, set_is_online] = React.useState<boolean>(false);
     const [player, set_player] = React.useState<PlayerObjectType>(
@@ -92,6 +94,9 @@ export function Player(props: PlayerProperties): JSX.Element {
 
     player_id_ref.current = player_id;
     username_ref.current = typeof props.user !== "object" ? null : props.user.username;
+
+    const base = player || historical;
+    const combined = base ? Object.assign({}, base, historical ? historical : {}) : null;
 
     React.useEffect(() => {
         if (!props.disableCacheUpdate) {
@@ -252,7 +257,7 @@ export function Player(props: PlayerProperties): JSX.Element {
     /** Render **/
     /************/
 
-    if (!player) {
+    if (!combined) {
         if (typeof props.user === "number") {
             return (
                 <span className="Player" data-player-id={0}>
@@ -280,8 +285,8 @@ export function Player(props: PlayerProperties): JSX.Element {
         main_attrs.className += " Player-with-icon";
     }
 
-    if (player.ui_class) {
-        main_attrs.className += " " + player.ui_class;
+    if (combined.ui_class) {
+        main_attrs.className += " " + combined.ui_class;
     }
 
     if (player_id < 0) {
@@ -301,14 +306,14 @@ export function Player(props: PlayerProperties): JSX.Element {
     }
 
     if (props.rank !== false) {
-        const rating = getUserRating(player, "overall", 0);
+        const rating = getUserRating(combined, "overall", 0);
         let rank_text = "E";
 
-        if (player.pro || player.professional) {
-            rank_text = rankString(player);
-        } else if (rating.unset && (player.rank > 0 || player.ranking > 0)) {
+        if (combined.pro || combined.professional) {
+            rank_text = rankString(combined);
+        } else if (rating.unset && (combined.rank > 0 || combined.ranking > 0)) {
             /* This is to support displaying archived chat lines */
-            rank_text = rankString(player);
+            rank_text = rankString(combined);
         } else if (rating.deviation >= PROVISIONAL_RATING_CUTOFF) {
             rank_text = "?";
         } else {
@@ -328,7 +333,7 @@ export function Player(props: PlayerProperties): JSX.Element {
         main_attrs.className += is_online ? " online" : " offline";
     }
 
-    const username_string = unicodeFilter(player.username || player.name);
+    const username_string = unicodeFilter(combined.username || combined.name);
     const username = <span className="Player-username">{username_string}</span>;
 
     const player_note_indicator =
@@ -339,18 +344,18 @@ export function Player(props: PlayerProperties): JSX.Element {
             />
         ) : null;
 
-    if (props.nolink || props.fakelink || !player_id || player.anonymous || player_id < 0) {
+    if (props.nolink || props.fakelink || !player_id || combined.anonymous || player_id < 0) {
         return (
             <span ref={elt_ref} {...main_attrs} onMouseDown={display_details}>
-                {(props.icon || null) && <PlayerIcon user={player} size={props.iconSize || 16} />}
-                {(props.flag || null) && <Flag country={player.country} />}
+                {(props.icon || null) && <PlayerIcon user={combined} size={props.iconSize || 16} />}
+                {(props.flag || null) && <Flag country={combined.country} />}
                 {username}
                 {rank}
                 {player_note_indicator}
             </span>
         );
     } else {
-        const player_id = player.id || player.player_id;
+        const player_id = combined.id || combined.player_id;
         const uri = `/player/${player_id}/${encodeURIComponent(username_string)}`;
 
         return (
@@ -364,9 +369,9 @@ export function Player(props: PlayerProperties): JSX.Element {
                     router={routes}
                 >
                     {(props.icon || null) && (
-                        <PlayerIcon user={player} size={props.iconSize || 16} />
+                        <PlayerIcon user={combined} size={props.iconSize || 16} />
                     )}
-                    {(props.flag || null) && <Flag country={player.country} />}
+                    {(props.flag || null) && <Flag country={combined.country} />}
                     {username}
                     {rank}
                 </a>
