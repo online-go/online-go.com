@@ -3213,6 +3213,7 @@ export function Game(): JSX.Element {
         goban.current.on("mode", set_mode);
         goban.current.on("phase", set_phase);
         goban.current.on("title", set_title);
+        goban.current.on("cur_move", () => set_score(goban.current.engine.computeScore(true)));
         goban.current.on("cur_move", (move) => set_cur_move_number(move.move_number));
         goban.current.on("last_official_move", (move) =>
             set_official_move_number(move.move_number),
