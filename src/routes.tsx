@@ -198,6 +198,7 @@ export const routes = (
                 <Route path="/u/:username" element={<UserByName />} />
                 <Route path="/user/:username" element={<UserByName />} />
                 <Route path="/supporter/:account_id" element={<Supporter />} />
+                <Route path="/supporter/:account_id/*" element={<Supporter />} />
                 <Route path="/supporter" element={<Supporter />} />
                 <Route path="/support" element={<Supporter />} />
                 <Route path="/donate" element={<Supporter />} />
