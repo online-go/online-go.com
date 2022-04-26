@@ -22,85 +22,77 @@ import { FriendList } from "./FriendList";
 import { KBShortcut } from "KBShortcut";
 import cached from "cached";
 
-let friend_indicator_singleton: FriendIndicator;
+const online_subscriptions = {};
+let ext_setShowFriendList = (_tf: boolean) => {
+    /* noop */
+};
 
-export class FriendIndicator extends React.PureComponent<{}, any> {
-    update_interval = null;
-    friend_list = [];
-    online_subscriptions = {};
+export function FriendIndicator(): JSX.Element {
+    const user = data.get("user");
+    const [show_friend_list, setShowFriendList] = React.useState(false);
+    const [online_ct, setOnlineCt] = React.useState(0);
+    const [, refresh] = React.useState(0);
+    const friend_list = React.useRef([]);
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            friends: [],
-            online_ct: 0,
-            show_friend_list: false,
-        };
-        friend_indicator_singleton = this;
-    }
+    ext_setShowFriendList = setShowFriendList;
 
-    componentDidMount() {
-        data.watch(cached.friends, this.updateFriends);
-        online_status.event_emitter.on("users-online-updated", this.updateFriendCount);
-    }
+    React.useEffect(() => {
+        if (user.id) {
+            const updateFriendCount = () => {
+                let ct = 0;
+                for (const friend of friend_list.current) {
+                    if (!(friend.id in online_subscriptions)) {
+                        online_subscriptions[friend.id] = true;
+                        setTimeout(() => {
+                            online_status.subscribe(friend.id, updateFriendCount);
+                        }, 1);
+                    }
 
-    updateFriendCount = () => {
-        let ct = 0;
-        for (const friend of this.friend_list) {
-            if (!(friend.id in this.online_subscriptions)) {
-                this.online_subscriptions[friend.id] = true;
-                setTimeout(() => {
-                    online_status.subscribe(friend.id, this.updateFriendCount);
-                }, 1);
-            }
+                    if (online_status.is_player_online(friend.id)) {
+                        ++ct;
+                    }
+                }
 
-            if (online_status.is_player_online(friend.id)) {
-                ++ct;
-            }
+                setOnlineCt(ct);
+            };
+
+            const updateFriends = (friends: any[]) => {
+                friend_list.current = friends;
+                updateFriendCount();
+                refresh(Math.random());
+            };
+
+            data.watch(cached.friends, updateFriends);
+            online_status.event_emitter.on("users-online-updated", updateFriendCount);
         }
+    }, [user.id]);
 
-        this.setState({
-            online_ct: ct,
-        });
+    const toggleFriendList = () => {
+        setShowFriendList(!show_friend_list);
     };
 
-    updateFriends = (friends) => {
-        this.friend_list = friends;
-        this.updateFriendCount();
-    };
-
-    toggleFriendList = () => {
-        this.setState({
-            show_friend_list: !this.state.show_friend_list,
-        });
-    };
-
-    render() {
-        if (this.friend_list.length === 0) {
-            return null;
-        }
-
-        return (
-            <span
-                className={"FriendIndicator" + (this.state.online_ct ? " online" : "")}
-                onClick={this.toggleFriendList}
-            >
-                <i className="fa fa-users" />
-                <span className="count">{this.state.online_ct}</span>
-                {(this.state.show_friend_list || null) && (
-                    <div>
-                        <KBShortcut shortcut="escape" action={this.toggleFriendList} />
-                        <div className="FriendListBackdrop" onClick={this.toggleFriendList} />
-                        <FriendList />
-                    </div>
-                )}
-            </span>
-        );
+    if (friend_list.current.length === 0) {
+        return null;
     }
+
+    return (
+        <span
+            className={"FriendIndicator" + (online_ct ? " online" : "")}
+            onClick={toggleFriendList}
+        >
+            <i className="fa fa-users" />
+            <span className="count">{online_ct}</span>
+            {(show_friend_list || null) && (
+                <div>
+                    <KBShortcut shortcut="escape" action={toggleFriendList} />
+                    <div className="FriendListBackdrop" onClick={toggleFriendList} />
+                    <FriendList />
+                </div>
+            )}
+        </span>
+    );
 }
 
 export function close_friend_list() {
-    if (friend_indicator_singleton && friend_indicator_singleton.state.show_friend_list) {
-        friend_indicator_singleton.setState({ show_friend_list: false });
-    }
+    ext_setShowFriendList(false);
 }
