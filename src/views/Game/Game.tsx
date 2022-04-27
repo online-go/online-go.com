@@ -2083,6 +2083,7 @@ export function Game(): JSX.Element {
             goban &&
             goban.current.engine &&
             goban.current.engine.phase === "finished" &&
+            goban.current.engine.game_id === game_id &&
             ((goban.current.engine.width === 19 && goban.current.engine.height === 19) ||
                 (goban.current.engine.width === 13 && goban.current.engine.height === 13) ||
                 (goban.current.engine.width === 9 && goban.current.engine.height === 9))
