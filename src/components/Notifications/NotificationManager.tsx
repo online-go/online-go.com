@@ -200,14 +200,21 @@ export class NotificationManager {
         this.connect();
     }
 
-    advanceToNextBoard(ev?) {
+    // This function supports the idea of advancing to the next most relevant board either because the
+    // user requested it directly with a mouse-click in the UI (in which case we support open on same or new tab options)
+    // or because the user played a move and they have auto-advance turned on.  In the latter case, click_event must not be provided.
+    advanceToNextBoard(click_event?: React.MouseEvent) {
         ++this.advances;
 
-        const looking_at_game = getCurrentGameId() || 0;
+        const looking_at_game_id = getCurrentGameId() || 0;
+        const looking_at_game_details = { ...this.boards_to_move_on, ...this.active_boards }[
+            looking_at_game_id
+        ];
+
         const target_boards = [];
         let we_have_moves_to_play = false;
 
-        // If there are boards where we have a move, then we'll chose on of these.
+        // If there are boards where we have a move, then we'll chose one of these.
         for (const k in this.boards_to_move_on) {
             const board = this.boards_to_move_on[k];
             target_boards.push({
@@ -229,45 +236,55 @@ export class NotificationManager {
             we_have_moves_to_play = true;
         }
 
+        // Don't try too hard if there is obviously nothing to do
         if (
             target_boards.length === 0 ||
-            (target_boards.length === 1 && target_boards[0].id === looking_at_game)
+            (target_boards.length === 1 && target_boards[0].id === looking_at_game_id)
         ) {
             return;
         }
 
-        // If we are looking at a board with our move, we want to chose the next lowest-expiration board
-        // from the one we chose last time.
-
-        // If we're not looking at a board with move of ours, and we have a move to play, then we want to chose the
-        // most urgent move to jump to.
+        // Depending what we're looking at right now, want either want to chose the next lowest-expiration board
+        // from the one we chose last time, or we want to chose the most urgent board.
 
         // So whatever happens, we have to sort the games by expiration:
         target_boards.sort((a, b) => {
             return a.expiration - b.expiration;
         });
 
+        // A twist in the logic here is that if we just played a move, the board we played the move on might or might not
+        // be in this.boards_to_move_on right now.  That's because there's potentially a race between this routine being called
+        // and the back-end updating us with the new status of the game - depending on how the Game page decides do to things.
+
+        // So we will determine whether we got called as a result of playing a move by whether or not we have the parameter `click_event`.
+        // If we have `click_event` then we were invoked by clicking on the notification circle, so obviously we did not just play a move
+        // on the board we are looking at (if we happen to be looking at one).
+
+        // If we do not have `click_event` then we just got called by the Game page as a result of playing a move, so the game
+        // that we are looking at (as we surely must be in this case) is the one we just played a move on.
+
+        // The effect that we want is that we cycle through the boards_to_move_on each time they click to advance,
+        // and each time they play a correspondence move, but if they play a live move, or if they aren't on a game at all
+        // the we go to the most urgent.
         if (
             we_have_moves_to_play &&
-            (!looking_at_game ||
-                !this.boards_to_move_on[looking_at_game] ||
-                this.boards_to_move_on[looking_at_game].player_to_move !== this.user.id)
+            (!looking_at_game_id || (!click_event && looking_at_game_details.time_to_move < 3600))
         ) {
-            this.advances = 1; // reset to the most urgent board: the first one we would pick
+            this.advances = 1; // reset to the most urgent board
         }
 
         let target_board = (this.advances - 1) % target_boards.length;
 
-        if (target_boards[target_board].id === looking_at_game) {
+        if (target_boards[target_board].id === looking_at_game_id) {
             // if somehow we're targetting the board we're looking at, then just go to the next one
-            // (can happen as the number of boards available changes while we are clicking around)
+            // (might happen as the number of boards available changes while we are clicking around)
             ++this.advances;
             target_board = (this.advances - 1) % target_boards.length;
         }
 
         // open a new tab if the user `asked for it`, or if we must protect against disconnection from a live game
 
-        if ((ev && shouldOpenNewTab(ev)) || lookingAtOurLiveGame()) {
+        if ((click_event && shouldOpenNewTab(click_event)) || lookingAtOurLiveGame()) {
             window.open("/game/" + target_boards[target_board].id, "_blank");
         } else {
             browserHistory.push("/game/" + target_boards[target_board].id);
