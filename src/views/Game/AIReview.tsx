@@ -1659,8 +1659,11 @@ function engineName(engine: string) {
         case "leela_zero":
             return "Leela Zero";
         case "katago":
+        case "katago:fast":
+        case "katago:meijin":
             return "KataGo";
     }
+    console.warn("Unknown engine name", engine);
     return "AI";
 }
 function extractShortNetworkVersion(network: string): string {
