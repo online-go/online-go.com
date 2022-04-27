@@ -531,6 +531,15 @@ export const GoResources = () => {
                                     Twitch Live Streams for Go
                                 </a>
                             </span>,
+                            <span>
+                                <Flag country={eu} />{" "}
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/watch?v=wQuh9YI8rn0"
+                                >
+                                    TED talk - How the ancient game of Go is a guide to modern life
+                                </a>
+                            </span>,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
                         ))}
@@ -1529,6 +1538,12 @@ export const GoResources = () => {
                                 <Flag country={us} />{" "}
                                 <a rel="noopener" href="http://www.ymimports.com/">
                                     Yellow Mountain Imports
+                                </a>
+                            </span>,
+                            <span>
+                                <Flag country={au} />{" "}
+                                <a rel="noopener" href="https://institute361.com/">
+                                    Institute 361
                                 </a>
                             </span>,
                             <span>

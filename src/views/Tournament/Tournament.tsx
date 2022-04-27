@@ -593,27 +593,20 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
                     const black_root = ReactDOM.createRoot(black[0]);
                     black_root.render(
                         <React.StrictMode>
+                            <a className="elimination-game" href={`/game/view/${match.gameid}`}>
+                                <i className="ogs-goban"></i>
+                            </a>
                             <Player user={players[match.black]} icon rank />
                         </React.StrictMode>,
                     );
                     const white_root = ReactDOM.createRoot(white[0]);
                     white_root.render(
                         <React.StrictMode>
+                            <a className="elimination-game" href={`/game/view/${match.gameid}`}>
+                                <i className="ogs-goban"></i>
+                            </a>
                             <Player user={players[match.white]} icon rank />
                         </React.StrictMode>,
-                    );
-
-                    black.prepend(
-                        $("<a class='elimination-game'><i class='ogs-goban'></i> </a>").attr(
-                            "href",
-                            "/game/view/" + match.gameid,
-                        ),
-                    );
-                    white.prepend(
-                        $("<a class='elimination-game'><i class='ogs-goban'></i> </a>").attr(
-                            "href",
-                            "/game/view/" + match.gameid,
-                        ),
                     );
 
                     bindHovers(black, match.black);

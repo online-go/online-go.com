@@ -2220,11 +2220,11 @@ export function Game(): JSX.Element {
                                     null) && (
                                     <div className={`${color} player-name-container`}>
                                         <Player
-                                            user={
+                                            user={goban.current.engine.players[color].id}
+                                            historical={
                                                 (!engine.rengo && historical) ||
                                                 goban.current.engine.players[color]
                                             }
-                                            disableCacheUpdate
                                         />
                                     </div>
                                 )}
@@ -3213,6 +3213,7 @@ export function Game(): JSX.Element {
         goban.current.on("mode", set_mode);
         goban.current.on("phase", set_phase);
         goban.current.on("title", set_title);
+        goban.current.on("cur_move", () => set_score(goban.current.engine.computeScore(true)));
         goban.current.on("cur_move", (move) => set_cur_move_number(move.move_number));
         goban.current.on("last_official_move", (move) =>
             set_official_move_number(move.move_number),
@@ -3598,11 +3599,7 @@ export function Game(): JSX.Element {
                             show_game_timing &&
                             frag_timings()}
 
-                        {review
-                            ? frag_review_controls()
-                            : zen_mode
-                            ? null
-                            : frag_play_controls(true)}
+                        {review ? frag_review_controls() : frag_play_controls(true)}
 
                         {(view_mode === "wide" || null) && CHAT}
                         {((view_mode === "square" && squashed) || null) && CHAT}
