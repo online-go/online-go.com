@@ -2905,10 +2905,7 @@ export function Game(): JSX.Element {
                 ) {
                     const channel = `game-${game_id}`;
                     if (!data.get(`moderator.join-game-publicly.${channel}`)) {
-                        console.log("Having to set anonymous override for", channel);
                         data.set(`moderator.join-game-publicly.${channel}`, true);
-                    } else {
-                        console.log("Already set anonymous override for", channel);
                     }
                 }
             } catch (e) {
