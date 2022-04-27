@@ -1771,7 +1771,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
                 <div className="description-column">
                     {this.props.position_type !== "new" ? (
                         <div className="position-description">
-                            <AutoTranslate source={description} markdown />
+                            <AutoTranslate source={description} source_language={"en"} markdown />
                         </div>
                     ) : (
                         "" // "(new)"
