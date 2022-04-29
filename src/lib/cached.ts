@@ -54,7 +54,9 @@ export const cached = {
                         data.set("appeals.banned_user_id", config.banned.banned_user_id);
                         data.set("appeals.jwt", config.banned.jwt);
                         data.set("appeals.ban-reason", config.banned.ban_reason);
-                        window.location.pathname = "/appeal";
+                        if (window.location.pathname !== "/appeal") {
+                            window.location.pathname = "/appeal";
+                        }
                         return;
                     } else if ("banned" in config && !config.banned) {
                         data.remove("appeals.banned_user_id");
