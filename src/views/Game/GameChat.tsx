@@ -82,6 +82,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
             return;
         }
 
+        scrolled_to_bottom.current = true;
         chat_log_hash.current = {};
         let chat_update_debounce: ReturnType<typeof setTimeout> | null = null;
         const debouncedChatUpdate = () => {
