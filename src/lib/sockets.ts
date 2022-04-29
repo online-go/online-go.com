@@ -151,3 +151,5 @@ export default {
     get_clock_drift: get_clock_drift,
     get_network_latency: get_network_latency,
 };
+
+(window as any)["socket"] = socket;
