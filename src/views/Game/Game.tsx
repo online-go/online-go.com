@@ -33,7 +33,6 @@ import {
     Goban,
     GobanCanvas,
     GobanCanvasConfig,
-    //GoEngine,
     GoMath,
     MoveTree,
     AudioClockEvent,
@@ -76,19 +75,10 @@ import { game_control } from "./game_control";
 
 import swal from "sweetalert2";
 
-/*
-interface GameParams {
-    game_id?: string;
-    review_id?: string;
-    move_number?: string;
-}
-*/
-
 const win = $(window);
 
 export function Game(): JSX.Element {
-    //const params = useParams<GameParams>();
-    const params = useParams();
+    const params = useParams<"game_id" | "review_id" | "move_number">();
 
     const game_id = params.game_id ? parseInt(params.game_id) : 0;
     const review_id = params.review_id ? parseInt(params.review_id) : 0;
@@ -117,7 +107,6 @@ export function Game(): JSX.Element {
     const white_username = React.useRef<string>("White");
     const black_username = React.useRef<string>("Black");
     const return_url = React.useRef<string>(); // url to return to after a game is over
-    //const return_url_debounce = React.useRef<boolean>(false);
     const goban = React.useRef<Goban>(null);
 
     /* State */
@@ -393,7 +382,6 @@ export function Game(): JSX.Element {
         }
     };
     const onResize = (no_debounce: boolean = false, skip_state_update: boolean = false) => {
-        //Math.min(ref_goban_container.current.offsetWidth, ref_goban_container.current.offsetHeight)
         if (!skip_state_update) {
             if (goban_view_mode() !== view_mode || goban_view_squashed() !== squashed) {
                 set_squashed(goban_view_squashed());
@@ -466,7 +454,6 @@ export function Game(): JSX.Element {
                     break;
                 case "stone":
                     if (subtool == null) {
-                        //subtool = goban.current.engine.colorToMove() === "black" ? "black-white" : "white-black"
                         subtool = "alternate";
                     }
                     goban.current.setAnalyzeTool(tool, subtool);
@@ -654,7 +641,6 @@ export function Game(): JSX.Element {
                 portrait_tab = "chat";
                 break;
             case "chat":
-                //portrait_tab = 'dock';
                 portrait_tab = "game";
                 break;
 
@@ -879,7 +865,6 @@ export function Game(): JSX.Element {
         goban.current.score_estimate = null;
     };
     const enterConditionalMovePlanner = () => {
-        //if (!auth) { return; }
         if (goban.current.isAnalysisDisabled() && goban.current.engine.phase !== "finished") {
             //swal(_("Conditional moves have been disabled for this game."));
         } else {
@@ -951,7 +936,6 @@ export function Game(): JSX.Element {
         const ret = goban.current.setScoringMode(false);
         goban.current.hideScores();
         goban.current.score_estimate = null;
-        //goban.current.engine.cur_move.clearMarks();
         return ret;
     };
     const alertModerator = () => {
@@ -1415,14 +1399,10 @@ export function Game(): JSX.Element {
         return (
             <div className="play-controls">
                 <div className="game-action-buttons">
-                    {/* { */}
                     {((mode === "play" && phase === "play") || null) &&
                         frag_play_buttons(show_cancel_button)}
-                    {/* (view_mode === 'portrait' || null) && <i onClick={togglePortraitTab} className={'tab-icon fa fa-commenting'}/> */}
                 </div>
-                {/* } */}
                 <div className="game-state">
-                    {/*{*/}
                     {((mode === "play" && phase === "play") || null) && (
                         <span>
                             {show_undo_requested ? (
@@ -1490,13 +1470,12 @@ export function Game(): JSX.Element {
                             "Game Annulled",
                         )}
                 </div>
-                {/* } */}
                 {((phase === "play" &&
                     mode === "play" &&
                     paused &&
                     goban.current.pause_control &&
                     goban.current.pause_control.paused) ||
-                    null) /* { */ && (
+                    null) && (
                     <div className="pause-controls">
                         <h3>{_("Game Paused")}</h3>
                         {(user_is_player || user.is_moderator || null) && (
@@ -1524,7 +1503,7 @@ export function Game(): JSX.Element {
                 {((goban.current.pause_control &&
                     goban.current.pause_control.moderator_paused &&
                     user.is_moderator) ||
-                    null) /* { */ && (
+                    null) && (
                     <div className="pause-controls">
                         <h3>{_("Paused by Moderator")}</h3>
                         <button className="info" onClick={goban_resumeGame}>
@@ -1532,7 +1511,7 @@ export function Game(): JSX.Element {
                         </button>
                     </div>
                 )}
-                {(phase === "finished" || null) /* { */ && (
+                {(phase === "finished" || null) && (
                     <div className="analyze-mode-buttons">
                         {" "}
                         {/* not really analyze mode, but equivalent button position and look*/}
@@ -1572,8 +1551,7 @@ export function Game(): JSX.Element {
                         )}
                     </div>
                 )}
-                {/* } */}
-                {(phase === "stone removal" || null) /* { */ && (
+                {(phase === "stone removal" || null) && (
                     <div className="stone-removal-controls">
                         <div>
                             {(user_is_active_player || user.is_moderator || null) && ( // moderators see the button, with its timer, but can't press it
@@ -1653,14 +1631,6 @@ export function Game(): JSX.Element {
                                 "In this phase, both players select and agree upon which groups should be considered captured and should be removed for the purposes of scoring.",
                             )}
                         </div>
-                        {/*
-                       <i id='scoring-help' className='fa fa-question-circle'
-                          popover='${_("Mark dead stones by clicking them. Mark dame by clicking the empty intersection. Holding down shift while selecting an intersection or stone will toggle only that selection.")|h}'
-                          popover-title='${_("Stone Removal")|h}'
-                          popover-trigger="mouseenter"
-                          popover-placement="left"
-                       ></i>
-                       */}
 
                         {null /* just going to disable this for now, no one cares I don't think */ &&
                             (rules === "japanese" || rules === "korean" || null) && (
@@ -1671,14 +1641,6 @@ export function Game(): JSX.Element {
                                         textAlign: "center",
                                     }}
                                 >
-                                    {/*
-                               <i id='strict-scoring-help' className='fa fa-question-circle'
-                                  popover="${_('Official Japanese and Korean rules do not count territory in seki, which means players need to fill out or mark dame for most territory to be counted correctly. Most of the time this rule doesn\'t affect the game and is just a nuisance, but you can enable being strict about this rule if it makes a difference in your game.')|h}"
-                                  popover-title='${pgettext("Enable Japanese territory in seki rule", "Strict Scoring")|h}'
-                                  popover-trigger="mouseenter"
-                                  popover-placement="left"
-                               ></i>
-                               */}
                                     <label
                                         style={{ display: "inline-block" }}
                                         htmlFor="strict-seki-mode"
@@ -1700,8 +1662,7 @@ export function Game(): JSX.Element {
                             )}
                     </div>
                 )}
-                {/* } */}
-                {(mode === "conditional" || null) /* { */ && (
+                {(mode === "conditional" || null) && (
                     <div className="conditional-move-planner">
                         <div className="buttons">
                             <button className="primary" onClick={acceptConditionalMoves}>
@@ -1718,8 +1679,7 @@ export function Game(): JSX.Element {
                         </div>
                     </div>
                 )}
-                {/* } */}
-                {(mode === "analyze" || null) /* { */ && (
+                {(mode === "analyze" || null) && (
                     <div>
                         {frag_analyze_button_bar()}
 
@@ -1766,7 +1726,6 @@ export function Game(): JSX.Element {
                         )}
                     </div>
                 )}
-                {/* } */}
                 {((mode === "play" &&
                     phase === "play" &&
                     goban.current.isAnalysisDisabled() &&
@@ -1902,12 +1861,6 @@ export function Game(): JSX.Element {
     const frag_analyze_button_bar = () => {
         return (
             <div className="game-analyze-button-bar">
-                {/*
-            {(review_id || null) &&
-                <i id='review-sync' className='fa fa-refresh {{goban.current.engine.cur_move.id !== goban.current.engine.cur_review_move.id ? "need-sync" : ""}}'
-                    onClick={syncToCurrentReviewMove()} title={_("Sync to where the reviewer is at")}></i>
-            }
-            */}
                 <div className="btn-group">
                     <button
                         onClick={() => setAnalyzeTool("stone", "alternate")}
@@ -2700,7 +2653,6 @@ export function Game(): JSX.Element {
                 <KBShortcut shortcut="escape" action={handleEscapeKey} />
                 <KBShortcut shortcut="f1" action={() => setAnalyzeTool("stone", null)} />
                 <KBShortcut shortcut="f2" action={() => setAnalyzeTool("stone", "black")} />
-                {/* <KBShortcut shortcut='f3' action='console.log("Should be entering scoring mode");'></KBShortcut> */}
                 <KBShortcut shortcut="f4" action={() => setAnalyzeTool("label", "triangle")} />
                 <KBShortcut shortcut="f5" action={() => setAnalyzeTool("label", "square")} />
                 <KBShortcut shortcut="f6" action={() => setAnalyzeTool("label", "circle")} />
@@ -2798,7 +2750,6 @@ export function Game(): JSX.Element {
         try {
             return_url.current =
                 new URLSearchParams(window.location.search).get("return") || undefined;
-            // console.log("Return url", return_url.current);
         } catch (e) {
             console.error(e);
         }
@@ -3257,8 +3208,6 @@ export function Game(): JSX.Element {
 
         goban.current.on("move-made", autoadvance);
         goban.current.on("player-update", processPlayerUpdate);
-        //goban.current.on("update", () => sync_state());
-        //goban.current.on("reset", () => sync_state());
         goban.current.on("gamedata", onResize);
 
         goban.current.on("gamedata", (gamedata) => {
@@ -3570,12 +3519,10 @@ export function Game(): JSX.Element {
                     {(view_mode === "portrait" || null) &&
                         (review ? frag_review_controls() : frag_play_controls(false))}
 
-                    {((view_mode === "portrait" && !zen_mode) /* && portrait_tab === 'chat' */ ||
-                        null) &&
-                        CHAT}
+                    {((view_mode === "portrait" && !zen_mode) || null) && CHAT}
 
                     {((view_mode === "portrait" &&
-                        !zen_mode /* && portrait_tab === 'chat' */ &&
+                        !zen_mode &&
                         user_is_player &&
                         phase !== "finished") ||
                         null) &&
@@ -3618,13 +3565,11 @@ export function Game(): JSX.Element {
 function bindAudioEvents(goban: Goban): void {
     // called by init
     const user = data.get("user");
-    //goban.on('audio-game-started', (obj:{ player_id: number }) => sfx.play("game_started"));
 
     goban.on("audio-enter-stone-removal", () => {
         sfx.stop();
         sfx.play("remove_the_dead_stones");
     });
-    //goban.on('audio-enter-stone-removal', () => sfx.play('stone_removal'));
     goban.on("audio-resume-game-from-stone-removal", () => {
         sfx.stop();
         sfx.play("game_resumed");
@@ -3817,12 +3762,9 @@ function bindAudioEvents(goban: Goban): void {
                     sfx.play("white_wins");
                 }
             } else {
-                //console.log("winner: ", winner, " color ", color);
                 if (winner === color) {
                     sfx.play("you_have_won");
                 } else {
-                    //sfx.play('you_have_lost');
-
                     if (winner === "black") {
                         sfx.play("black_wins");
                     }
@@ -3848,17 +3790,14 @@ function bindAudioEvents(goban: Goban): void {
     goban.on("audio-clock", (audio_clock_event: AudioClockEvent) => {
         const user = data.get("user");
         if (user.anonymous) {
-            //console.log("anon");
             return;
         }
 
         if (paused) {
-            //console.log("paused");
             return;
         }
 
         if (user.id.toString() !== audio_clock_event.player_id.toString()) {
-            //console.log("not user");
             return;
         }
 
@@ -3888,7 +3827,6 @@ function bindAudioEvents(goban: Goban): void {
                     !(time_control.system === "byoyomi" && time_control.periods === 0)
                 ) {
                     // Don't count down main time for byoyomi and canadian clocks
-                    //console.log("not doing announcement");
                     return;
                 }
 
@@ -3988,8 +3926,6 @@ function bindAudioEvents(goban: Goban): void {
                 if (seconds_left > 60) {
                     audio_to_play = undefined;
                 } else {
-                    //let period_time = Math.min(60, time_control.period_time);
-
                     // handle counting up
 
                     if (seconds_left < every_second_start) {
@@ -4005,7 +3941,6 @@ function bindAudioEvents(goban: Goban): void {
                             seconds_left % 10 === 0 &&
                             seconds_left !== every_second_start
                         ) {
-                            //audio_to_play = (period_time - parseInt(audio_to_play)).toString() as ValidSound;
                             audio_to_play = (
                                 count_from - parseInt(audio_to_play)
                             ).toString() as ValidSound;
