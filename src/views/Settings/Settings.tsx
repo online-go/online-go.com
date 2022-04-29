@@ -47,6 +47,7 @@ import { BlockPlayerModal, getAllBlocksWithUsernames } from "BlockPlayer";
 import { Player } from "Player";
 import { PaginatedTable } from "PaginatedTable";
 import { SocialLoginButtons } from "SignIn";
+import { Experiment, Variant, Default } from "Experiment";
 import swal from "sweetalert2";
 
 export const MAX_DOCK_DELAY = 3.0;
@@ -121,6 +122,13 @@ export function Settings(): JSX.Element {
         { key: "blocked_players", label: _("Blocked Players") },
         { key: "account", label: _("Account Settings") },
         { key: "link", label: _("Account Linking") },
+        {
+            key: "experiments",
+            label: pgettext(
+                "Optional user interface experiments for user testing and feedback",
+                "Experiments",
+            ),
+        },
         { key: "logout", label: _("Logout") },
     ];
 
@@ -162,6 +170,9 @@ export function Settings(): JSX.Element {
             break;
         case "chat":
             SelectedPage = ChatPreferences;
+            break;
+        case "experiments":
+            SelectedPage = Experiments;
             break;
     }
 
@@ -1723,6 +1734,33 @@ function AssociationSelect({
                 </option>
             ))}
         </select>
+    );
+}
+
+export function Experiments(): JSX.Element {
+    const [test, setTest] = React.useState<boolean>(data.get("experiments.test") === "a");
+
+    return (
+        <div className="Experiments">
+            Experiments
+            <PreferenceLine title={"Test experiment"}>
+                <Toggle
+                    checked={test}
+                    onChange={(tf) => {
+                        data.set("experiments.test", tf ? "a" : undefined);
+                        setTest(tf);
+                    }}
+                />
+            </PreferenceLine>
+            <Experiment name="test">
+                <Variant value="a">
+                    <div>Variant div</div>
+                </Variant>
+                <Default>
+                    <div>Default div</div>
+                </Default>
+            </Experiment>
+        </div>
     );
 }
 
