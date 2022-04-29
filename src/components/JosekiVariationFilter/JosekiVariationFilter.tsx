@@ -151,7 +151,7 @@ export class JosekiVariationFilter extends React.PureComponent<
         // console.log("sources", this.state.source_list);
         // console.log(" filter", this.state.selected_filter);
 
-        console.log(this.state.contributor_list);
+        // console.log(this.state.contributor_list);
 
         const contributors = this.state.contributor_list.map((c, i) => {
             if (c.resolved === true) {
