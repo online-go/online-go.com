@@ -2263,7 +2263,7 @@ class EditPane extends React.Component<EditProps, EditState> {
     };
 
     addJosekiSource = (description, url) => {
-        fetch(server_url + "josekisources/", {
+        fetch(server_url + "josekisources", {
             method: "post",
             mode: "cors",
             headers: oje_headers(),
@@ -2273,7 +2273,7 @@ class EditPane extends React.Component<EditProps, EditState> {
         })
             .then((res) => res.json())
             .then((body) => {
-                // console.log("Server response to joseki POST:", body);
+                // console.log("Server response to joseki Sources POST:", body);
                 const new_source = { id: body.source.id, description: body.source.description };
                 // console.log(new_source);
                 this.setState({
@@ -2282,7 +2282,7 @@ class EditPane extends React.Component<EditProps, EditState> {
                 });
             })
             .catch((r) => {
-                console.log("Sources PUT failed:", r);
+                console.log("Sources POST failed:", r);
             });
     };
 
