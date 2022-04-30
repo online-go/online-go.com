@@ -17,7 +17,7 @@
 
 import * as React from "react";
 
-import Select from "react-select";
+import Select, { MultiValue } from "react-select";
 
 export interface JosekiTag {
     value: string;
@@ -27,11 +27,11 @@ export interface JosekiTag {
 interface JosekiTagSelectorProps {
     available_tags: JosekiTag[];
     selected_tags: JosekiTag[];
-    on_tag_update: (newvalue: any) => void;
+    on_tag_update: (newvalue: MultiValue<JosekiTag>) => void;
 }
 
 export function JosekiTagSelector(props: JosekiTagSelectorProps) {
-    const onTagChange = (e) => {
+    const onTagChange = (e: MultiValue<JosekiTag>) => {
         props.on_tag_update(e);
     };
 
