@@ -5,6 +5,7 @@ VERSION=$(shell git describe --long)
 OGS_HASH=$(shell md5sum dist/ogs.min.js | awk '{print $$1}')
 VENDOR_HASH=$(shell md5sum dist/vendor.min.js | awk '{print $$1}')
 OGS_VERSION_HASH=$(VERSION)-$(OGS_HASH)
+SLACK_WEBHOOK=$(shell cat ../ogs/.slack-webhook)
 
 
 stats:
@@ -53,13 +54,13 @@ beta-notify-slack:
 	MSG=`git log -1 --pretty="%an - %B" | sed s/\"//g | sed s/\'//g `; \
 	VERSION=`git describe --long`; \
 	echo $$VERSION $$MSG; \
-	curl -X POST -H 'Content-type: application/json' --data '{"text":"'"[BETA UI] $$VERSION $$MSG"'"}' https://hooks.slack.com/services/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
+	curl -X POST -H 'Content-type: application/json' --data '{"text":"'"[BETA UI] $$VERSION $$MSG"'"}' $(SLACK_WEBHOOK)
 
 live-notify-slack:
 	MSG=`git log -1 --pretty="%an - %B" | sed s/\"//g | sed s/\'//g `; \
 	VERSION=`git describe --long`; \
 	echo $$VERSION $$MSG; \
-	curl -X POST -H 'Content-type: application/json' --data '{"text":"'"[PRODUCTION UI] $$VERSION $$MSG"'"}' https://hooks.slack.com/services/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
+	curl -X POST -H 'Content-type: application/json' --data '{"text":"'"[PRODUCTION UI] $$VERSION $$MSG"'"}' $(SLACK_WEBHOOK)
 
 confirm-go-live:
 	@read -p "Go live? " yesno; \
