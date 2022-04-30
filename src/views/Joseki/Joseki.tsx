@@ -1167,7 +1167,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
     };
 
     render() {
-        console.log("Joseki app rendering ", this.state.variation_filter);
+        //console.log("Joseki app rendering ", this.state.variation_filter);
 
         const tenuki_type =
             this.state.pass_available &&
@@ -1772,7 +1772,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
 
         const description = applyJosekiMarkdown(this.props.description);
 
-        console.log("Explore Pane rendering", this.props.current_filter);
+        //console.log("Explore Pane rendering", this.props.current_filter);
 
         return (
             <div className="explore-pane">

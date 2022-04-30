@@ -49,7 +49,7 @@ export function JosekiVariationFilter(props: JosekiVariationFilterProps) {
         })
             .then((res) => res.json())
             .then((body) => {
-                console.log("Server response to contributors GET:", body);
+                //console.log("Server response to contributors GET:", body);
                 const new_contributor_list: ContributorList = [];
                 body.forEach((id, idx) => {
                     //console.log("Looking up player", id, idx);
