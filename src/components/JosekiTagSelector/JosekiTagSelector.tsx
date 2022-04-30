@@ -17,7 +17,7 @@
 
 import * as React from "react";
 
-import Select from "react-select";
+import Select, { MultiValue } from "react-select";
 
 export interface JosekiTag {
     value: string;
@@ -25,89 +25,37 @@ export interface JosekiTag {
 }
 
 interface JosekiTagSelectorProps {
-    oje_headers: HeadersInit;
-    tag_list_url: string;
+    available_tags: JosekiTag[];
     selected_tags: JosekiTag[];
-    on_tag_update: any;
+    on_tag_update: (newvalue: MultiValue<JosekiTag>) => void;
 }
 
-interface JosekiTagSelectorState {
-    tag_list: JosekiTag[];
-    tag_map: {};
-}
-
-export class JosekiTagSelector extends React.PureComponent<
-    JosekiTagSelectorProps,
-    JosekiTagSelectorState
-> {
-    constructor(props) {
-        super(props);
-        this.state = {
-            tag_list: [],
-            tag_map: {},
-        };
-    }
-
-    componentDidMount = () => {
-        fetch(this.props.tag_list_url, {
-            mode: "cors",
-            headers: this.props.oje_headers,
-        })
-            .then((res) => res.json())
-            .then((body) => {
-                // console.log("Server response to tag GET:", body);
-                const available_tags = body.tags.map((tag) => ({
-                    label: tag.description,
-                    value: tag.id,
-                }));
-                const tag_map = {};
-                for (const tag of available_tags) {
-                    tag_map[tag.value] = tag;
-                }
-                this.setState({
-                    tag_list: available_tags,
-                    tag_map: tag_map,
-                });
-            })
-            .catch((r) => {
-                console.log("Tags GET failed:", r);
-            });
+export function JosekiTagSelector(props: JosekiTagSelectorProps) {
+    const onTagChange = (e: MultiValue<JosekiTag>) => {
+        props.on_tag_update(e);
     };
 
-    onTagChange = (e) => {
-        this.props.on_tag_update(e);
-    };
-
-    render() {
-        // console.log("Tag selector render");
-        // console.log("tags", this.state.tag_list);
-        // console.log("Selected tags: ", this.props.selected_tags);
-        // console.log("Tags list: ", this.state.tag_list);
-
-        return (
-            <Select
-                className="joseki-tag-selector"
-                classNamePrefix="ogs-react-select"
-                value={this.props.selected_tags}
-                options={this.state.tag_list}
-                isMulti={true}
-                onChange={this.onTagChange}
-                getOptionLabel={(o) => o.label}
-                getOptionValue={(o) => o.value}
-                components={{
-                    Option: ({ innerRef, innerProps, isFocused, isSelected, data }) => (
-                        <div
-                            ref={innerRef}
-                            {...innerProps}
-                            className={
-                                (isFocused ? "focused " : "") + (isSelected ? "selected" : "")
-                            }
-                        >
-                            {data.label}
-                        </div>
-                    ),
-                }}
-            />
-        );
-    }
+    return (
+        <Select
+            className="joseki-tag-selector"
+            classNamePrefix="ogs-react-select"
+            value={props.selected_tags}
+            options={props.available_tags}
+            isMulti={true}
+            onChange={onTagChange}
+            getOptionLabel={(o) => o.label}
+            getOptionValue={(o) => o.value}
+            components={{
+                Option: ({ innerRef, innerProps, isFocused, isSelected, data }) => (
+                    <div
+                        ref={innerRef}
+                        {...innerProps}
+                        className={(isFocused ? "focused " : "") + (isSelected ? "selected" : "")}
+                    >
+                        {data.label}
+                    </div>
+                ),
+            }}
+        />
+    );
 }
