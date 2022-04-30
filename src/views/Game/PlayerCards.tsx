@@ -64,7 +64,7 @@ export function PlayerCards({
     }
     const engine = goban.engine;
 
-    const orig_marks = React.useRef<string>(null);
+    const orig_marks = React.useRef<string | null>(null);
     const showing_scores = React.useRef<boolean>(false);
 
     const [show_score_breakdown, set_show_score_breakdown] = React.useState(false);
@@ -80,7 +80,7 @@ export function PlayerCards({
         _popupScores("black");
         _popupScores("white");
     };
-    const _popupScores = (color) => {
+    const _popupScores = (color: "black" | "white") => {
         const only_prisoners = false;
         const scores = goban.engine.computeScore(only_prisoners);
         showing_scores.current = goban.showing_scores;
@@ -122,7 +122,7 @@ export function PlayerCards({
                 html += "<div><span>" + _("Komi") + "</span><div>" + score.komi + "</div></div>";
             }
 
-            if (!score.stones && !score.territory && !parseInt(score.prisoners) && !score.komi) {
+            if (!score.stones && !score.territory && !score.prisoners && !score.komi) {
                 html += "<div><span>" + _("No score yet") + "</span>";
             }
 
@@ -144,7 +144,7 @@ export function PlayerCards({
         if (!showing_scores.current) {
             goban.hideScores();
         }
-        if (goban.engine.cur_move) {
+        if (goban.engine.cur_move && orig_marks.current) {
             goban.engine.cur_move.setAllMarks(JSON.parse(orig_marks.current));
         }
         goban.redraw();
@@ -270,8 +270,9 @@ function PlayerCard({
     // In rengo we always will have a player icon to show (after initialisation).
     // In other cases, we only have one if `historical` is set
     const player_bg: React.CSSProperties = {};
-    if (engine.rengo && player && player["icon-url"]) {
-        const icon = icon_size_url(player["icon-url"], 64);
+    if (engine.rengo && player && (player as any)["icon-url"]) {
+        // Does icon-url need to be added to GoEnginePlayerEntry? -BPJ
+        const icon = icon_size_url((player as any)["icon-url"], 64);
         player_bg.backgroundImage = `url("${icon}")`;
     } else if (historical) {
         const icon = icon_size_url(historical["icon"], 64);
@@ -300,7 +301,7 @@ function PlayerCard({
                             </div>
                         )}
                         <div className="player-flag">
-                            <Flag country={player.country} />
+                            <Flag country={player.country ?? "un"} />
                         </div>
                         <ChatPresenceIndicator channel={chat_channel} userId={player.id} />
                     </div>
@@ -352,7 +353,7 @@ function PlayerCard({
                 )}
                 <div id={`${color}-score-details`} className="score-details" />
             </div>
-            {(engine.rengo || null) && (
+            {!!(engine.rengo && engine.rengo_teams) && (
                 <div className={"rengo-team-members player-name-container " + color}>
                     {engine.rengo_teams[color].slice(1).map((player) => (
                         <div className={"rengo-team-member"} key={player.id}>
