@@ -281,6 +281,13 @@ function PlayerCard({
     const their_turn = player_to_move === player.id;
     const highlight_their_turn = their_turn ? `their-turn` : "";
 
+    const show_points =
+        (engine.phase === "finished" || engine.phase === "stone removal") &&
+        goban.mode !== "analyze" &&
+        engine.outcome !== "Timeout" &&
+        engine.outcome !== "Resignation" &&
+        engine.outcome !== "Cancellation";
+
     return (
         <div className={`${color} ${highlight_their_turn} player-container`}>
             <div className="player-icon-clock-row">
@@ -322,24 +329,15 @@ function PlayerCard({
                 }
                 onClick={onClick}
             >
-                {(engine.phase === "finished" || engine.phase === "stone removal" || null) &&
-                    goban.mode !== "analyze" &&
-                    engine.outcome !== "Timeout" &&
-                    engine.outcome !== "Resignation" &&
-                    engine.outcome !== "Cancellation" && (
-                        <div className={"points" + (estimating_score ? " hidden" : "")}>
-                            {interpolate(_("{{total}} {{unit}}"), {
-                                total: score[color].total,
-                                unit: ngettext("point", "points", score[color].total),
-                            })}
-                        </div>
-                    )}
-                {((engine.phase !== "finished" && engine.phase !== "stone removal") ||
-                    null ||
-                    goban.mode === "analyze" ||
-                    engine.outcome === "Timeout" ||
-                    engine.outcome === "Resignation" ||
-                    engine.outcome === "Cancellation") && (
+                {show_points && (
+                    <div className={"points" + (estimating_score ? " hidden" : "")}>
+                        {interpolate(_("{{total}} {{unit}}"), {
+                            total: score.total,
+                            unit: ngettext("point", "points", score.total),
+                        })}
+                    </div>
+                )}
+                {!show_points && (
                     <NumCapturesText
                         score={score}
                         color={color}
@@ -347,16 +345,9 @@ function PlayerCard({
                         estimating_score={estimating_score}
                     />
                 )}
-                {((engine.phase !== "finished" && engine.phase !== "stone removal") ||
-                    null ||
-                    goban.mode === "analyze" ||
-                    engine.outcome === "Timeout" ||
-                    engine.outcome === "Resignation" ||
-                    engine.outcome === "Cancellation") && (
+                {!show_points && (
                     <div className="komi">
-                        {score[color].komi === 0
-                            ? ""
-                            : `+ ${parseFloat(score[color].komi as any).toFixed(1)}`}
+                        {score.komi === 0 ? "" : `+ ${score.komi.toFixed(1)}`}
                     </div>
                 )}
                 <div id={`${color}-score-details`} className="score-details" />
