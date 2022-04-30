@@ -30,48 +30,32 @@ interface JosekiTagSelectorProps {
     on_tag_update: (newvalue: any) => void;
 }
 
-interface JosekiTagSelectorState {}
-
-export class JosekiTagSelector extends React.PureComponent<
-    JosekiTagSelectorProps,
-    JosekiTagSelectorState
-> {
-    constructor(props) {
-        super(props);
-    }
-
-    onTagChange = (e) => {
-        this.props.on_tag_update(e);
+export function JosekiTagSelector(props: JosekiTagSelectorProps) {
+    const onTagChange = (e) => {
+        props.on_tag_update(e);
     };
 
-    render() {
-        // console.log("Tag selector render");
-        // console.log("tags", this.state.tag_list);
-        console.log("Selected tags: ", this.props.selected_tags);
-        return (
-            <Select
-                className="joseki-tag-selector"
-                classNamePrefix="ogs-react-select"
-                value={this.props.selected_tags}
-                options={this.props.available_tags}
-                isMulti={true}
-                onChange={this.onTagChange}
-                getOptionLabel={(o) => o.label}
-                getOptionValue={(o) => o.value}
-                components={{
-                    Option: ({ innerRef, innerProps, isFocused, isSelected, data }) => (
-                        <div
-                            ref={innerRef}
-                            {...innerProps}
-                            className={
-                                (isFocused ? "focused " : "") + (isSelected ? "selected" : "")
-                            }
-                        >
-                            {data.label}
-                        </div>
-                    ),
-                }}
-            />
-        );
-    }
+    return (
+        <Select
+            className="joseki-tag-selector"
+            classNamePrefix="ogs-react-select"
+            value={props.selected_tags}
+            options={props.available_tags}
+            isMulti={true}
+            onChange={onTagChange}
+            getOptionLabel={(o) => o.label}
+            getOptionValue={(o) => o.value}
+            components={{
+                Option: ({ innerRef, innerProps, isFocused, isSelected, data }) => (
+                    <div
+                        ref={innerRef}
+                        {...innerProps}
+                        className={(isFocused ? "focused " : "") + (isSelected ? "selected" : "")}
+                    >
+                        {data.label}
+                    </div>
+                ),
+            }}
+        />
+    );
 }
