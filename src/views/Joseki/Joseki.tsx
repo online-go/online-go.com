@@ -235,7 +235,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
         // console.log(props);
         this.state = {
             move_string: "", // This is used for making sure we know what the current move is. It is the display value also.
-            current_node_id: undefined as string, // The server's ID for this node, so we can uniquely identify it and create our own route for it,
+            current_node_id: this.props.match.params.pos || ("root" as string), // The server's ID for this node, so we can uniquely identify it and create our own route for it,
             most_recent_known_node: undefined as string, // the value of current_node_id when the person clicked on a node not in the db
             position_description: "",
             variation_label: "_",
@@ -320,14 +320,11 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                 this.joseki_tag_id = body.tags[0].id;
 
                 // Make the filter initialize to "Joseki"
-                this.setState({
-                    variation_filter: {
-                        tags: [this.joseki_tags[0]],
-                        contributor: null,
-                        source: null,
-                    },
+                this.updateVariationFilter({
+                    tags: [this.joseki_tags[0]],
+                    contributor: null,
+                    source: null,
                 });
-                console.log("set filter to ", this.joseki_tags[0]);
             })
             .catch((r) => {
                 console.log("Tags GET failed:", r);
@@ -396,7 +393,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
 
     resetJosekiSequence = (pos: string) => {
         // ask the server for the moves from postion pos
-        this.fetchNextMovesFor(pos);
+        this.fetchNextFilteredMovesFor(pos, this.state.variation_filter);
     };
 
     onResize = () => {
@@ -468,6 +465,9 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
     // in the processing of the result of the fectch for that position.
 
     private fetchNextFilteredMovesFor = (node_id: string, variation_filter) => {
+        if (!this.joseki_tag_id) {
+            return; // there is no point fetching anything until we've finished getting the intial stuff from the server.
+        }
         /* TBD: error handling, cancel on new route */
         /* Note that this routine is responsible for enabling stone placement when it has finished the fetch */
         this.waiting_for = node_id; // keep track of which position is the latest one that we're interested in
@@ -1105,6 +1105,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             variation_filter: filter,
         });
         this.cached_positions = {}; // dump cache because the filter changed, and the cache holds filtered results
+        this.prefetching = false; // and ignore any results already in flight
         this.fetchNextFilteredMovesFor(this.state.current_node_id, filter);
     };
 
