@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { Goban, Score } from "goban";
+import { Goban, Score, PlayerScore } from "goban";
 import { icon_size_url } from "PlayerIcon";
 import { CountDown } from "./CountDown";
 import { Flag } from "Flag";
@@ -155,164 +155,38 @@ export function PlayerCards({
         set_show_score_breakdown(false);
     };
 
+    const onClick = () => (show_score_breakdown ? hideScores() : popupScores());
+    const chat_channel = game_id ? `game-${game_id}` : `review-${review_id}`;
+
     return (
         <div className="players">
             <div className="player-icons">
-                {["black", "white"].map((color: "black" | "white", idx) => {
-                    const player_bg: React.CSSProperties = {};
-                    const historical = color === "black" ? historical_black : historical_white;
-                    const auto_resign_expiration =
-                        color === "black"
-                            ? black_auto_resign_expiration
-                            : white_auto_resign_expiration;
-
-                    // In rengo we always will have a player icon to show (after initialisation).
-                    // In other cases, we only have one if `historical` is set
-                    if (
-                        engine.rengo &&
-                        engine.players[color] &&
-                        engine.players[color]["icon-url"]
-                    ) {
-                        const icon = icon_size_url(engine.players[color]["icon-url"], 64);
-                        player_bg.backgroundImage = `url("${icon}")`;
-                    } else if (historical) {
-                        const icon = icon_size_url(historical["icon"], 64);
-                        player_bg.backgroundImage = `url("${icon}")`;
-                    }
-
-                    const their_turn = player_to_move === engine.players[color].id;
-
-                    const highlight_their_turn = their_turn ? `their-turn` : "";
-
-                    return (
-                        <div
-                            key={idx}
-                            className={`${color} ${highlight_their_turn} player-container`}
-                        >
-                            <div className="player-icon-clock-row">
-                                {((engine.players[color] && engine.players[color].id) || null) && (
-                                    <div className="player-icon-container" style={player_bg}>
-                                        {auto_resign_expiration && (
-                                            <div className={`auto-resign-overlay`}>
-                                                <i className="fa fa-bolt" />
-                                                <CountDown to={auto_resign_expiration} />
-                                            </div>
-                                        )}
-                                        <div className="player-flag">
-                                            <Flag country={engine.players[color].country} />
-                                        </div>
-                                        <ChatPresenceIndicator
-                                            channel={
-                                                game_id ? `game-${game_id}` : `review-${review_id}`
-                                            }
-                                            userId={engine.players[color].id}
-                                        />
-                                    </div>
-                                )}
-
-                                {((goban.engine.phase !== "finished" && !goban.review_id) ||
-                                    null) && (
-                                    <Clock goban={goban} color={color} className="in-game-clock" />
-                                )}
-                            </div>
-
-                            {((goban.engine.players[color] &&
-                                goban.engine.players[color].rank !== -1) ||
-                                null) && (
-                                <div className={`${color} player-name-container`}>
-                                    <Player
-                                        user={goban.engine.players[color].id}
-                                        historical={
-                                            (!engine.rengo && historical) ||
-                                            goban.engine.players[color]
-                                        }
-                                    />
-                                </div>
-                            )}
-
-                            {(!goban.engine.players[color] || null) && (
-                                <span className="player-name-plain">
-                                    {color === "black" ? _("Black") : _("White")}
-                                </span>
-                            )}
-
-                            <div
-                                className={
-                                    "score-container " +
-                                    (show_score_breakdown ? "show-score-breakdown" : "")
-                                }
-                                onClick={() =>
-                                    show_score_breakdown ? hideScores() : popupScores()
-                                }
-                            >
-                                {(goban.engine.phase === "finished" ||
-                                    goban.engine.phase === "stone removal" ||
-                                    null) &&
-                                    goban.mode !== "analyze" &&
-                                    goban.engine.outcome !== "Timeout" &&
-                                    goban.engine.outcome !== "Resignation" &&
-                                    goban.engine.outcome !== "Cancellation" && (
-                                        <div
-                                            className={
-                                                "points" + (estimating_score ? " hidden" : "")
-                                            }
-                                        >
-                                            {interpolate(_("{{total}} {{unit}}"), {
-                                                total: score[color].total,
-                                                unit: ngettext(
-                                                    "point",
-                                                    "points",
-                                                    score[color].total,
-                                                ),
-                                            })}
-                                        </div>
-                                    )}
-                                {((goban.engine.phase !== "finished" &&
-                                    goban.engine.phase !== "stone removal") ||
-                                    null ||
-                                    goban.mode === "analyze" ||
-                                    goban.engine.outcome === "Timeout" ||
-                                    goban.engine.outcome === "Resignation" ||
-                                    goban.engine.outcome === "Cancellation") && (
-                                    <NumCapturesText
-                                        score={score}
-                                        color={color}
-                                        zen_mode={zen_mode}
-                                        estimating_score={estimating_score}
-                                    />
-                                )}
-                                {((goban.engine.phase !== "finished" &&
-                                    goban.engine.phase !== "stone removal") ||
-                                    null ||
-                                    goban.mode === "analyze" ||
-                                    goban.engine.outcome === "Timeout" ||
-                                    goban.engine.outcome === "Resignation" ||
-                                    goban.engine.outcome === "Cancellation") && (
-                                    <div className="komi">
-                                        {score[color].komi === 0
-                                            ? ""
-                                            : `+ ${parseFloat(score[color].komi as any).toFixed(
-                                                  1,
-                                              )}`}
-                                    </div>
-                                )}
-                                <div id={`${color}-score-details`} className="score-details" />
-                            </div>
-                            {(engine.rengo || null) && (
-                                <div
-                                    className={"rengo-team-members player-name-container " + color}
-                                    key={idx}
-                                >
-                                    {engine.rengo_teams[color].slice(1).map((player, idx) => (
-                                        <div className={"rengo-team-member"} key={idx}>
-                                            {<Player user={player} icon rank />}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
+                <PlayerCard
+                    historical={historical_black}
+                    auto_resign_expiration={black_auto_resign_expiration}
+                    color="black"
+                    score={score["black"]}
+                    goban={goban}
+                    player_to_move={player_to_move}
+                    estimating_score={estimating_score}
+                    show_score_breakdown={show_score_breakdown}
+                    onClick={onClick}
+                    chat_channel={chat_channel}
+                    zen_mode={zen_mode}
+                />
+                <PlayerCard
+                    historical={historical_white}
+                    auto_resign_expiration={white_auto_resign_expiration}
+                    color="white"
+                    score={score["white"]}
+                    goban={goban}
+                    player_to_move={player_to_move}
+                    estimating_score={estimating_score}
+                    show_score_breakdown={show_score_breakdown}
+                    onClick={onClick}
+                    chat_channel={chat_channel}
+                    zen_mode={zen_mode}
+                />
             </div>
             {(engine.rengo || null) && (
                 <div className="rengo-header-block">
@@ -334,13 +208,13 @@ export function PlayerCards({
 }
 
 interface NumCapturesProps {
-    score: Score;
+    score: PlayerScore;
     color: "black" | "white";
     zen_mode: boolean;
     estimating_score: boolean;
 }
 function NumCapturesText({ color, score, zen_mode, estimating_score }: NumCapturesProps) {
-    const num_prisoners = score[color].prisoners;
+    const num_prisoners = score.prisoners;
     const prisoner_color = color === "black" ? "white" : "black";
     const prisoner_img_src = data.get("config.cdn_release") + "/img/" + prisoner_color + ".png";
     return (
@@ -359,6 +233,143 @@ function NumCapturesText({ color, score, zen_mode, estimating_score }: NumCaptur
                     </span>
                 )}
             </span>
+        </div>
+    );
+}
+
+interface PlayerCardProps {
+    score: PlayerScore;
+    color: "black" | "white";
+    goban: Goban;
+    auto_resign_expiration: Date;
+    historical: PlayerType;
+    player_to_move: number;
+    estimating_score: boolean;
+    show_score_breakdown: boolean;
+    onClick: () => void;
+    chat_channel: string;
+    zen_mode: boolean;
+}
+
+function PlayerCard({
+    score,
+    color,
+    goban,
+    auto_resign_expiration,
+    historical,
+    player_to_move,
+    estimating_score,
+    show_score_breakdown,
+    onClick,
+    chat_channel,
+    zen_mode,
+}: PlayerCardProps) {
+    const engine = goban.engine;
+    const player = engine.players[color];
+
+    // In rengo we always will have a player icon to show (after initialisation).
+    // In other cases, we only have one if `historical` is set
+    const player_bg: React.CSSProperties = {};
+    if (engine.rengo && player && player["icon-url"]) {
+        const icon = icon_size_url(player["icon-url"], 64);
+        player_bg.backgroundImage = `url("${icon}")`;
+    } else if (historical) {
+        const icon = icon_size_url(historical["icon"], 64);
+        player_bg.backgroundImage = `url("${icon}")`;
+    }
+
+    const their_turn = player_to_move === player.id;
+    const highlight_their_turn = their_turn ? `their-turn` : "";
+
+    return (
+        <div className={`${color} ${highlight_their_turn} player-container`}>
+            <div className="player-icon-clock-row">
+                {((player && player.id) || null) && (
+                    <div className="player-icon-container" style={player_bg}>
+                        {auto_resign_expiration && (
+                            <div className={`auto-resign-overlay`}>
+                                <i className="fa fa-bolt" />
+                                <CountDown to={auto_resign_expiration} />
+                            </div>
+                        )}
+                        <div className="player-flag">
+                            <Flag country={player.country} />
+                        </div>
+                        <ChatPresenceIndicator channel={chat_channel} userId={player.id} />
+                    </div>
+                )}
+
+                {((engine.phase !== "finished" && !goban.review_id) || null) && (
+                    <Clock goban={goban} color={color} className="in-game-clock" />
+                )}
+            </div>
+
+            {((player && player.rank !== -1) || null) && (
+                <div className={`${color} player-name-container`}>
+                    <Player user={player.id} historical={(!engine.rengo && historical) || player} />
+                </div>
+            )}
+
+            {(!player || null) && (
+                <span className="player-name-plain">
+                    {color === "black" ? _("Black") : _("White")}
+                </span>
+            )}
+
+            <div
+                className={
+                    "score-container " + (show_score_breakdown ? "show-score-breakdown" : "")
+                }
+                onClick={onClick}
+            >
+                {(engine.phase === "finished" || engine.phase === "stone removal" || null) &&
+                    goban.mode !== "analyze" &&
+                    engine.outcome !== "Timeout" &&
+                    engine.outcome !== "Resignation" &&
+                    engine.outcome !== "Cancellation" && (
+                        <div className={"points" + (estimating_score ? " hidden" : "")}>
+                            {interpolate(_("{{total}} {{unit}}"), {
+                                total: score[color].total,
+                                unit: ngettext("point", "points", score[color].total),
+                            })}
+                        </div>
+                    )}
+                {((engine.phase !== "finished" && engine.phase !== "stone removal") ||
+                    null ||
+                    goban.mode === "analyze" ||
+                    engine.outcome === "Timeout" ||
+                    engine.outcome === "Resignation" ||
+                    engine.outcome === "Cancellation") && (
+                    <NumCapturesText
+                        score={score}
+                        color={color}
+                        zen_mode={zen_mode}
+                        estimating_score={estimating_score}
+                    />
+                )}
+                {((engine.phase !== "finished" && engine.phase !== "stone removal") ||
+                    null ||
+                    goban.mode === "analyze" ||
+                    engine.outcome === "Timeout" ||
+                    engine.outcome === "Resignation" ||
+                    engine.outcome === "Cancellation") && (
+                    <div className="komi">
+                        {score[color].komi === 0
+                            ? ""
+                            : `+ ${parseFloat(score[color].komi as any).toFixed(1)}`}
+                    </div>
+                )}
+                <div id={`${color}-score-details`} className="score-details" />
+            </div>
+            {(engine.rengo || null) && (
+                <div className={"rengo-team-members player-name-container " + color}>
+                    {engine.rengo_teams[color].slice(1).map((player) => (
+                        <div className={"rengo-team-member"} key={player.id}>
+                            {<Player user={player} icon rank />}
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
