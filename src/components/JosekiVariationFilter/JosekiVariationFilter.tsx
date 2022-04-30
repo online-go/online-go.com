@@ -22,13 +22,15 @@ import * as player_cache from "player_cache";
 import { JosekiTagSelector, JosekiTag } from "../JosekiTagSelector";
 import { PlayerCacheEntry } from "player_cache";
 
+export type JosekiFilter = { contributor: number; tags: JosekiTag[]; source: number };
+
 interface JosekiVariationFilterProps {
     oje_headers: HeadersInit;
     contributor_list_url: string;
     source_list_url: string;
     set_variation_filter: any;
     joseki_tags: JosekiTag[];
-    current_filter: { contributor: number; tags: JosekiTag[]; source: number };
+    current_filter: JosekiFilter;
 }
 
 type ResolvedContributor = { resolved: true; player: PlayerCacheEntry };
