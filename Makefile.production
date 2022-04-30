@@ -51,13 +51,13 @@ live-maint: confirm-go-live
 	curl -X PUT $(INDEX_HEADERS) -T src/maint.html  https://online-go.com/_index
 
 beta-notify-slack:
-	MSG=`git log -1 --pretty="%an - %B" | sed s/\"//g | sed s/\'//g `; \
+	MSG=`git log -1 --pretty="%B" | sed s/\"//g | sed s/\'//g `; \
 	VERSION=`git describe --long`; \
 	echo $$VERSION $$MSG; \
 	curl -X POST -H 'Content-type: application/json' --data '{"text":"'"[BETA UI] $$VERSION $$MSG"'"}' $(SLACK_WEBHOOK)
 
 live-notify-slack:
-	MSG=`git log -1 --pretty="%an - %B" | sed s/\"//g | sed s/\'//g `; \
+	MSG=`git log -1 --pretty="%B" | sed s/\"//g | sed s/\'//g `; \
 	VERSION=`git describe --long`; \
 	echo $$VERSION $$MSG; \
 	curl -X POST -H 'Content-type: application/json' --data '{"text":"'"[PRODUCTION UI] $$VERSION $$MSG"'"}' $(SLACK_WEBHOOK)
