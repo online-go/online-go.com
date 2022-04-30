@@ -32,7 +32,7 @@ import {
     rankList,
     bounded_rank,
 } from "rank_utils";
-import { CreatedChallengeInfo } from "types";
+import { CreatedChallengeInfo, RuleSet } from "types";
 import { errorLogger, errorAlerter, rulesText, dup, ignore } from "misc";
 import { PlayerIcon } from "PlayerIcon";
 import { timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker } from "TimeControl";
@@ -42,7 +42,15 @@ import { notification_manager } from "Notifications";
 import { one_bot, bot_count, bots_list } from "bots";
 import { openForkModal } from "./ForkModal";
 import { goban_view_mode } from "Game";
-import { Goban } from "goban";
+import {
+    Goban,
+    GoEngineConfig,
+    GoEngineInitialState,
+    GoEnginePlayerEntry,
+    JGOFTimeControl,
+    JGOFTimeControlSpeed,
+    JGOFTimeControlSystem,
+} from "goban";
 
 import swal from "sweetalert2";
 
@@ -56,7 +64,7 @@ interface ChallengeModalProperties {
     mode: ChallengeModes;
     playerId?: number;
     initialState?: any;
-    config?: any;
+    config?: ChallengeModalConfig;
     autoCreate?: boolean;
     playersList?: Array<{ name: string; rank: number }>;
     tournamentRecordId?: number;
@@ -1641,7 +1649,7 @@ export function challenge(
     player_id?: number,
     initial_state?: any,
     computer?: boolean,
-    config?: any,
+    config?: ChallengeModalConfig,
     created?: (c: CreatedChallengeInfo) => void,
 ) {
     // TODO: Support challenge by player, w/ initial state, or computer
@@ -1718,51 +1726,48 @@ export function challengeFromBoardPosition(goban) {
     challenge(null, state);
     */
 }
-export function challengeRematch(goban: Goban, player, original_game_meta) {
+export function challengeRematch(
+    goban: Goban,
+    opponent: GoEnginePlayerEntry,
+    original_game_meta: GoEngineConfig & { pause_on_weekends?: boolean },
+) {
     /* TODO: Fix up challengeRematch time control stuff */
     const conf = goban.engine;
-    const config: any = {
-        conf: {},
-        challenge: {
-            game: {},
-        },
-    };
+
+    const board_size = `${conf.width}x${conf.height}`;
 
     console.log(original_game_meta);
-
-    config.challenge.game.handicap = conf.handicap;
-
-    config.time_control = dup(conf.time_control);
-
-    config.challenge.game.time_control = conf.time_control["time_control"];
-
-    config.challenge.game.challenger_color =
-        conf.players.black.id === player.id ? "white" : "black";
-    config.challenge.game.rules = conf.rules;
-    config.challenge.game.ranked = conf.config.ranked;
-    config.challenge.game.width = conf.width;
-    config.challenge.game.height = conf.height;
-    if (`${conf.width}x${conf.height}` in standard_board_sizes) {
-        config.conf.selected_board_size = conf.width + "x" + conf.height;
-    } else {
-        config.conf.selected_board_size = "custom";
-    }
-
-    config.challenge.game.komi_auto = "custom";
-    config.challenge.game.komi = conf.komi;
-    config.challenge.game.disable_analysis = conf.disable_analysis;
-    config.challenge.game.pause_on_weekends = false;
-    if (original_game_meta && original_game_meta.pause_on_weekends) {
-        console.log("orgs", original_game_meta);
-        config.challenge.game.pause_on_weekends = true;
-    }
-    config.challenge.game.initial_state = null;
-    config.challenge.game["private"] = conf["private"];
 
     //config.syncBoardSize();
     //config.syncTimeControl();
 
-    challenge(player.id, null, false, config);
+    const config: ChallengeModalConfig = {
+        conf: {
+            selected_board_size: isStandardBoardSize(board_size) ? board_size : "custom",
+            restrict_rank: false,
+        },
+        challenge: {
+            challenger_color:
+                conf.players.black.id === opponent.id ? ("white" as const) : ("black" as const),
+            game: {
+                handicap: conf.handicap,
+                time_control: conf.time_control["time_control"],
+                rules: conf.rules,
+                ranked: conf.config.ranked,
+                width: conf.width,
+                height: conf.height,
+                komi_auto: "custom",
+                komi: conf.komi,
+                disable_analysis: conf.disable_analysis,
+                pause_on_weekends: original_game_meta.pause_on_weekends ?? false,
+                initial_state: null,
+                private: conf["private"],
+            },
+        },
+        time_control: dup(conf.time_control),
+    };
+
+    challenge(opponent.id, null, false, config);
 }
 export function createBlitz() {
     const user = data.get("user");
@@ -1864,11 +1869,43 @@ export function challenge_text_description(challenge) {
     return details_html;
 }
 
+export function isStandardBoardSize(board_size: string): boolean {
+    return board_size in standard_board_sizes;
+}
+
+interface ChallengeModalConfig {
+    challenge: {
+        min_ranking?: number;
+        max_ranking?: number;
+        challenger_color: rest_api.ColorSelectionOptions;
+        game: {
+            name?: string;
+            rules: RuleSet;
+            ranked: boolean;
+            handicap: number;
+            komi_auto: string;
+            disable_analysis: boolean;
+            initial_state: GoEngineInitialState | null;
+            private: boolean;
+            time_control?: JGOFTimeControl;
+            width?: number;
+            height?: number;
+            komi?: number;
+            pause_on_weekends?: boolean;
+        };
+    };
+    conf: {
+        restrict_rank: boolean;
+        selected_board_size?: string;
+    };
+    time_control: TimeControlConfig;
+}
+
 interface ChallengeConfig {
-    challenger_color: string;
+    challenger_color: rest_api.ColorSelectionOptions;
     game: {
         name: string;
-        rules: string;
+        rules: RuleSet;
         ranked: boolean;
         handicap: number;
         komi_auto: string;
@@ -1883,8 +1920,8 @@ interface ChallengeConfig {
 }
 
 interface TimeControlConfig {
-    system: "fischer" | "byoyomi";
-    speed: "blitz" | "live" | "correspondence";
+    system: JGOFTimeControlSystem;
+    speed: JGOFTimeControlSpeed;
     initial_time?: number;
     main_time?: number;
     time_increment?: number;
