@@ -38,11 +38,6 @@ interface JosekiVariationFilterState {
     contributor_list: (ResolvedContributor | UnresolvedContributor)[];
     tag_list: JosekiTag[];
     source_list: { id: string; description: string }[];
-    selected_filter: {
-        tags: JosekiTag[];
-        contributor: number;
-        source: number;
-    };
 }
 
 export class JosekiVariationFilter extends React.PureComponent<
@@ -55,11 +50,6 @@ export class JosekiVariationFilter extends React.PureComponent<
             contributor_list: [],
             tag_list: [],
             source_list: [],
-            selected_filter: {
-                tags: this.props.current_filter["tags"],
-                contributor: this.props.current_filter["contributor"],
-                source: this.props.current_filter["source"],
-            },
         };
     }
 
@@ -124,7 +114,7 @@ export class JosekiVariationFilter extends React.PureComponent<
     onTagChange = (tags: JosekiTag[]) => {
         console.log("Variation filter update:", tags);
         //const tags = (e === null || e.length === 0) ? null : e.map(t => typeof(t) === 'number' ? t : t.value);
-        const new_filter = { ...this.state.selected_filter, tags };
+        const new_filter = { ...this.props.current_filter, tags };
 
         // console.log("new tag filter", new_filter);
         this.props.set_variation_filter(new_filter); // tell parent the fiter changed, so the view needs to change
@@ -132,13 +122,13 @@ export class JosekiVariationFilter extends React.PureComponent<
 
     onContributorChange = (e) => {
         const val = e.target.value === "none" ? null : parseInt(e.target.value);
-        const new_filter = { ...this.state.selected_filter, contributor: val };
+        const new_filter = { ...this.props.current_filter, contributor: val };
         this.props.set_variation_filter(new_filter);
     };
 
     onSourceChange = (e) => {
         const val = e.target.value === "none" ? null : parseInt(e.target.value);
-        const new_filter = { ...this.state.selected_filter, source: val };
+        const new_filter = { ...this.props.current_filter, source: val };
         this.props.set_variation_filter(new_filter);
     };
 
@@ -184,12 +174,12 @@ export class JosekiVariationFilter extends React.PureComponent<
         );
 
         const current_contributor =
-            this.state.selected_filter.contributor === null
+            this.props.current_filter.contributor === null
                 ? "none"
-                : this.state.selected_filter.contributor;
+                : this.props.current_filter.contributor;
 
         const current_source =
-            this.state.selected_filter.source === null ? "none" : this.state.selected_filter.source;
+            this.props.current_filter.source === null ? "none" : this.props.current_filter.source;
 
         return (
             <div className="joseki-variation-filter">
