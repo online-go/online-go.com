@@ -175,14 +175,13 @@ interface JosekiState {
     josekis_completed?: number;
     joseki_successes?: number;
     joseki_best_attempt?: number;
-    joseki_tag_id?: number;
 
     joseki_source?: {
         url: string;
         description: string;
         id?: IdType;
     };
-    tags: any[];
+    tags: any[]; // the tags that are on the current position
 
     variation_filter: { contributor: number; tags: JosekiTag[]; source: number }; // start with no filter defined
 
@@ -207,6 +206,8 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
     goban_opts: any = {};
     goban_container: HTMLDivElement;
 
+    joseki_tags: JosekiTag[]; // the list of valid tags, collected from the server
+    joseki_tag_id: number; // the id of the tag that represents "Joseki Done"
     last_server_position = ""; // the most recent position that the server returned to us, used in backstepping
     last_placement = "";
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
@@ -257,7 +258,6 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             josekis_completed: undefined as number,
             joseki_successes: undefined as number,
             joseki_best_attempt: undefined as number,
-            joseki_tag_id: undefined as number, // the id of the "This is Joseki" tag, for use in setting default
 
             joseki_source: undefined as { url: string; description: string }, // the source of the current position
             tags: [], // the tags that are on the current position
@@ -303,9 +303,35 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
     componentDidMount = () => {
         this.getUserJosekiPermissions();
 
-        // When we go into Play mode we need to know what tag is the Joseki one
-        // We ask the server about that now so we have it handy
-        this.getJosekiTag();
+        // we get the tags here because they are needed for selector components, initial settings for those,
+        // and also for Play mode
+        fetch(server_url + "tags", {
+            mode: "cors",
+            headers: oje_headers(),
+        })
+            .then((res) => res.json())
+            .then((body) => {
+                // console.log("Server response to tag GET:", body);
+                this.joseki_tags = body.tags.map((tag) => ({
+                    label: tag.description,
+                    value: tag.id,
+                }));
+                // By agreement and definition, the first tag in the list from the server must be the Joseki tag
+                this.joseki_tag_id = body.tags[0].id;
+
+                // Make the filter initialize to "Joseki"
+                this.setState({
+                    variation_filter: {
+                        tags: [this.joseki_tags[0]],
+                        contributor: null,
+                        source: null,
+                    },
+                });
+                console.log("set filter to ", this.joseki_tags[0]);
+            })
+            .catch((r) => {
+                console.log("Tags GET failed:", r);
+            });
 
         const target_position = this.props.match.params.pos || "root";
 
@@ -365,26 +391,6 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             })
             .catch((r) => {
                 console.log("Permissions GET failed:", r);
-            });
-    };
-
-    getJosekiTag = () => {
-        // The "Joseki Tag" has to be the one at group 0 seq 0.  That's the deal.
-        // We need it because we want to offer it as the default, during editing.
-        fetch(server_url + "tag?group=0&seq=0", {
-            mode: "cors",
-            headers: oje_headers(),
-        })
-            .then((response) => response.json()) // wait for the body of the response
-            .then((body) => {
-                //console.log("Server response:", body);
-
-                this.setState({
-                    joseki_tag_id: body.tags[0].id,
-                });
-            })
-            .catch((r) => {
-                console.log("Joseki tag GET failed:", r);
             });
     };
 
@@ -1160,11 +1166,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
     };
 
     render() {
-        /* console.log(
-            "Joseki app rendering ",
-            this.state.move_string,
-            this.state.position_description,
-        );  */
+        console.log("Joseki app rendering ", this.state.variation_filter);
 
         const tenuki_type =
             this.state.pass_available &&
@@ -1450,6 +1452,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                     can_comment={this.state.user_can_comment}
                     joseki_source={this.state.joseki_source}
                     tags={this.state.tags}
+                    joseki_tags={this.joseki_tags}
                     set_variation_filter={this.updateVariationFilter}
                     current_filter={this.state.variation_filter}
                     child_count={this.state.child_count}
@@ -1459,15 +1462,16 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
         } else if (this.state.mode === PageMode.Edit) {
             return (
                 <EditPane
-                    node_id={this.state.current_node_id as any} // node_id appears to be unused inside EditPane
+                    node_id={this.state.current_node_id as any} // initial value of component node_id state
                     category={this.state.current_move_category}
                     description={this.state.position_description}
                     variation_label={this.state.variation_label}
                     joseki_source_id={
                         (this.state.joseki_source ? this.state.joseki_source.id : "none") as number
-                    } // joseki_source_id appears to be unused within EditPane
+                    } // this is copied into the initial value of joseki_source state in the component
                     tags={this.state.tags}
                     contributor={this.state.contributor_id}
+                    available_tags={this.joseki_tags}
                     save_new_info={this.saveNewPositionInfo}
                     update_marks={this.updateMarks}
                 />
@@ -1481,7 +1485,8 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                     josekis_completed={this.state.josekis_completed}
                     joseki_best_attempt={this.state.joseki_best_attempt}
                     joseki_successes={this.state.joseki_successes}
-                    joseki_tag_id={this.state.joseki_tag_id}
+                    joseki_tag_id={this.joseki_tag_id}
+                    joseki_tags={this.joseki_tags}
                     set_variation_filter={this.updateVariationFilter}
                     current_filter={this.state.variation_filter}
                 />
@@ -1584,6 +1589,7 @@ interface ExploreProps {
     comment_count: number;
     can_comment: boolean;
     joseki_source: { url: string; description: string };
+    joseki_tags: JosekiTag[];
     tags: Array<any>;
     set_variation_filter(filter: any): void;
     current_filter: { contributor: number; tags: JosekiTag[]; source: number };
@@ -1618,16 +1624,20 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
             next_comment: "",
             extra_throb: false,
         };
+        console.log("Explore pane constructor");
     }
 
     componentDidMount = () => {
         if (this.props.show_comments) {
+            console.log("comments forced");
             this.showComments();
+        } else {
+            this.showFilterSelector();
         }
     };
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        // Detect position id changes, so we can close the extra_info pane
+        // Detect position id changes, so we can manage the extra_info pane based on this
         if (nextProps.position_id !== prevState.current_position) {
             return { current_position: nextProps.position_id };
         } else {
@@ -1637,10 +1647,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
 
     componentDidUpdate = (prevProps) => {
         if (prevProps.position_id !== this.props.position_id) {
-            this.setState({
-                extra_info_selected: "none",
-                commentary: [],
-            });
+            this.showFilterSelector();
         } else {
             if (
                 this.props.position_id &&
@@ -1764,7 +1771,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
 
         const description = applyJosekiMarkdown(this.props.description);
 
-        // console.log("Explore Pane rendering", description, this.props.position_type);
+        console.log("Explore Pane rendering", this.props.current_filter);
 
         return (
             <div className="explore-pane">
@@ -1881,11 +1888,11 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
                         <div className="filter-container">
                             <JosekiVariationFilter
                                 contributor_list_url={server_url + "contributors"}
-                                tag_list_url={server_url + "tags"}
                                 source_list_url={server_url + "josekisources"}
                                 current_filter={this.props.current_filter}
                                 oje_headers={oje_headers()}
                                 set_variation_filter={this.props.set_variation_filter}
+                                joseki_tags={this.props.joseki_tags}
                             />
                         </div>
                     )}
@@ -1904,6 +1911,7 @@ interface PlayProps {
     joseki_best_attempt: number;
     joseki_successes: number;
     joseki_tag_id: number;
+    joseki_tags: JosekiTag[];
     set_variation_filter(filter: any): void;
     current_filter: { contributor: number; tags: JosekiTag[]; source: number };
 }
@@ -2086,11 +2094,11 @@ class PlayPane extends React.Component<PlayProps, PlayState> {
                         <div className="filter-container">
                             <JosekiVariationFilter
                                 contributor_list_url={server_url + "contributors"}
-                                tag_list_url={server_url + "tags"}
                                 source_list_url={server_url + "josekisources"}
                                 current_filter={this.props.current_filter}
                                 oje_headers={oje_headers()}
                                 set_variation_filter={this.props.set_variation_filter}
+                                joseki_tags={this.props.joseki_tags}
                             />
                         </div>
                     )}
@@ -2109,7 +2117,8 @@ interface EditProps {
     category: string;
     variation_label: string;
     joseki_source_id: number;
-    tags: Array<any>;
+    available_tags: JosekiTag[];
+    tags: Array<any>; // TBD yuk what is this `any`
     contributor: number;
     save_new_info: (move_type, variation_label, tags, description, joseki_source, marks) => void;
     update_marks: ({}) => void;
@@ -2358,8 +2367,7 @@ class EditPane extends React.Component<EditProps, EditState> {
                     <div className="tag-edit">
                         <div>{_("Tags")}:</div>
                         <JosekiTagSelector
-                            oje_headers={oje_headers()}
-                            tag_list_url={server_url + "tags"}
+                            available_tags={this.props.available_tags}
                             selected_tags={this.state.tags as any}
                             on_tag_update={this.onTagChange}
                         />

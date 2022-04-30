@@ -25,9 +25,9 @@ import { PlayerCacheEntry } from "player_cache";
 interface JosekiVariationFilterProps {
     oje_headers: HeadersInit;
     contributor_list_url: string;
-    tag_list_url: string;
     source_list_url: string;
     set_variation_filter: any;
+    joseki_tags: JosekiTag[];
     current_filter: { contributor: number; tags: JosekiTag[]; source: number };
 }
 
@@ -121,35 +121,32 @@ export class JosekiVariationFilter extends React.PureComponent<
             });
     };
 
-    onTagChange = (tags) => {
-        // console.log("Variation filter update:", e);
+    onTagChange = (tags: JosekiTag[]) => {
+        console.log("Variation filter update:", tags);
         //const tags = (e === null || e.length === 0) ? null : e.map(t => typeof(t) === 'number' ? t : t.value);
         const new_filter = { ...this.state.selected_filter, tags };
 
         // console.log("new tag filter", new_filter);
-        this.props.set_variation_filter(new_filter);
-        this.setState({ selected_filter: new_filter });
+        this.props.set_variation_filter(new_filter); // tell parent the fiter changed, so the view needs to change
     };
 
     onContributorChange = (e) => {
         const val = e.target.value === "none" ? null : parseInt(e.target.value);
         const new_filter = { ...this.state.selected_filter, contributor: val };
         this.props.set_variation_filter(new_filter);
-        this.setState({ selected_filter: new_filter });
     };
 
     onSourceChange = (e) => {
         const val = e.target.value === "none" ? null : parseInt(e.target.value);
         const new_filter = { ...this.state.selected_filter, source: val };
         this.props.set_variation_filter(new_filter);
-        this.setState({ selected_filter: new_filter });
     };
 
     render() {
         // console.log("Variation filter render");
         // console.log("contributors", this.state.contributor_list);
         // console.log("sources", this.state.source_list);
-        // console.log(" filter", this.state.selected_filter);
+        console.log("on render, filter", this.props.current_filter);
 
         // console.log(this.state.contributor_list);
 
@@ -199,9 +196,8 @@ export class JosekiVariationFilter extends React.PureComponent<
                 <div className="filter-set">
                     <div className="filter-label">{_("Filter by Tag")}</div>
                     <JosekiTagSelector
-                        oje_headers={this.props.oje_headers}
-                        tag_list_url={this.props.tag_list_url}
-                        selected_tags={this.state.selected_filter.tags}
+                        available_tags={this.props.joseki_tags}
+                        selected_tags={this.props.current_filter?.tags || []}
                         on_tag_update={this.onTagChange}
                     />
                 </div>
