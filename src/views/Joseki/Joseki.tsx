@@ -561,10 +561,10 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                         this.setState({ throb: false });
                     });
             } else {
-                console.log("(not prefetching, we already did this one)");
+                // console.log("(not prefetching, we already did this one)");
             }
         } else {
-            console.log("(not prefetching here, we have one already in flight)");
+            // console.log("(not prefetching here, we have one already in flight)");
         }
     };
 
@@ -585,9 +585,9 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
 
         this.processNewJosekiPosition(dto);
 
-        const elapsed = new Date().valueOf() - this.last_click;
+        // const elapsed = new Date().valueOf() - this.last_click;
 
-        console.log("displayed result in", elapsed / 1000);
+        // console.log("displayed result in", elapsed / 1000);
 
         if (this.state.count_details_open) {
             this.showVariationCounts(node_id);
@@ -1540,12 +1540,12 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             })
                 .then((res) => res.json())
                 .then((body) => {
-                    // console.log("Server response to sequence POST:", body);
-                    this.processNewJosekiPosition(body);
+                    //console.log("Server response to sequence POST:", body);
 
                     // Now we can save the fields that apply only to the final position
 
-                    fetch(position_url(this.state.current_node_id), {
+                    console.log("resulting node_id:", body.node_id);
+                    fetch(position_url(body.node_id), {
                         method: "put",
                         mode: "cors",
                         headers: oje_headers(),
@@ -2263,7 +2263,7 @@ class EditPane extends React.Component<EditProps, EditState> {
     };
 
     addJosekiSource = (description, url) => {
-        fetch(server_url + "josekisources/", {
+        fetch(server_url + "josekisources", {
             method: "post",
             mode: "cors",
             headers: oje_headers(),
@@ -2273,7 +2273,7 @@ class EditPane extends React.Component<EditProps, EditState> {
         })
             .then((res) => res.json())
             .then((body) => {
-                // console.log("Server response to joseki POST:", body);
+                // console.log("Server response to joseki Sources POST:", body);
                 const new_source = { id: body.source.id, description: body.source.description };
                 // console.log(new_source);
                 this.setState({
@@ -2282,7 +2282,7 @@ class EditPane extends React.Component<EditProps, EditState> {
                 });
             })
             .catch((r) => {
-                console.log("Sources PUT failed:", r);
+                console.log("Sources POST failed:", r);
             });
     };
 

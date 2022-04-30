@@ -237,7 +237,6 @@ export function NavBar(): JSX.Element {
                 <Link to="/tournaments">{_("Tournaments")}</Link>
                 <Link to="/ladders">{_("Ladders")}</Link>
                 <Link to="/groups">{_("Groups")}</Link>
-                <Link to="/leaderboards">{_("Leaderboards")}</Link>
                 <a target="_blank" href="https://forums.online-go.com/" rel="noopener">
                     {_("Forums")}
                 </a>
@@ -375,12 +374,6 @@ export function NavBar(): JSX.Element {
                             <Link to="/observe-games">
                                 <i className="fa fa-eye"></i>
                                 {_("Games")}
-                            </Link>
-                        </li>
-                        <li>
-                            <Link to="/leaderboards">
-                                <i className="fa fa-list-ol"></i>
-                                {_("Leaderboards")}
                             </Link>
                         </li>
                         <li>

@@ -38,7 +38,6 @@ import { GroupCreate } from "GroupCreate";
 import { GroupList } from "GroupList";
 import { Ladder } from "Ladder";
 import { LadderList } from "LadderList";
-import { LeaderBoard } from "LeaderBoard";
 import { LibraryPlayer } from "LibraryPlayer";
 import { Play } from "Play";
 import { Moderator } from "Moderator";
@@ -242,8 +241,6 @@ export const routes = (
                 <Route path="/puzzle/:puzzle_id" element={<Puzzle />} />
                 <Route path="/puzzle-collections/:player_id" element={<PuzzleCollectionList />} />
                 <Route path="/puzzle-collection/:collection_id" element={<PuzzleCollection />} />
-                <Route path="/leaderboards" element={<LeaderBoard />} />
-                <Route path="/leaderboard" element={<LeaderBoard />} />
                 <Route path="/developer" element={<Developer />} />
                 <Route path="/admin/merchant_log" element={<MerchantLog />} />
                 <Route path="/admin/firewall" element={<Firewall />} />

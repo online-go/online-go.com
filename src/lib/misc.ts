@@ -1233,3 +1233,9 @@ export function insert_into_sorted_list<T>(
 export function yesno(tf: boolean) {
     return tf ? _("Yes") : _("No");
 }
+
+const real_now = Date.now;
+export function skew_clock(ms: number): void {
+    Date.now = () => real_now() + ms;
+}
+(window as any).skew_clock = skew_clock;

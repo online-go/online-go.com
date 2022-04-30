@@ -189,7 +189,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
         scrolled_to_bottom.current =
             chat_log.scrollHeight - chat_log.scrollTop - 10 < chat_log.offsetHeight;
     };
-    /*
+
     const autoscroll = () => {
         const chat_log = ref_chat_log.current;
 
@@ -202,7 +202,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
             }, 100);
         }
     };
-    */
+
     const toggleChatLog = () => {
         const new_chat_log = selected_chat_log === "main" ? "malkovich" : "main";
         setSelectedChatLog(new_chat_log);
@@ -225,6 +225,8 @@ export function GameChat(props: GameChatProperties): JSX.Element {
     const togglePlayerList = () => {
         setShowPlayerList(!show_player_list);
     };
+
+    requestAnimationFrame(autoscroll);
 
     let last_line: ChatLine = null;
     return (
