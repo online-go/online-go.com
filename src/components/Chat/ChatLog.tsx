@@ -362,7 +362,6 @@ function ChannelTopic({
     );
 }
 
-let scrolled_to_bottom = true;
 function ChatLines({
     channel,
     updateTitle,
@@ -380,12 +379,9 @@ function ChatLines({
         setProxy(proxy);
         proxy.on("chat", onChatMessage);
         proxy.on("chat-removed", onChatMessageRemoved);
-        //chan.on("join", onChatJoin);
-        //chan.on("part", onChatPart);
         syncStateSoon();
 
         return () => {
-            //console.log("parting", channel);
             proxy.part();
             if (deferred_chat_update) {
                 clearTimeout(deferred_chat_update);
@@ -429,7 +425,6 @@ function ChatLines({
             // don't focus input if we're selecting text
             return;
         }
-        //input.current.focus();
         document.getElementById("chat-input")?.focus();
         if (onShowChannels) {
             onShowChannels(false);
@@ -440,58 +435,34 @@ function ChatLines({
     }, [channel]);
 
     useEffect(() => {
-        scrolled_to_bottom = true;
-    }, [channel]);
-
-    const onScroll = useCallback((): void => {
         const div = chat_log_div.current;
-        if (!div) {
-            return;
+        if (div) {
+            div.scrollTop = 0;
         }
-
-        const tf = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
-        if (tf !== scrolled_to_bottom) {
-            scrolled_to_bottom = tf;
-            div.className =
-                (rtl_mode ? "rtl chat-lines " : "chat-lines ") + (tf ? "autoscrolling" : "");
-        }
-        scrolled_to_bottom = div.scrollHeight - div.scrollTop - 10 < div.offsetHeight;
     }, [channel]);
-
-    window.requestAnimationFrame(() => {
-        const div = chat_log_div.current;
-        if (!div) {
-            return;
-        }
-
-        if (scrolled_to_bottom) {
-            div.scrollTop = div.scrollHeight;
-            setTimeout(() => {
-                try {
-                    div.scrollTop = div.scrollHeight;
-                } catch (e) {
-                    // ignore error
-                }
-            }, 100);
-        }
-    });
 
     let last_line: ChatMessage;
 
     return (
         <div
-            className={rtl_mode ? "rtl chat-lines" : "chat-lines"}
             ref={chat_log_div}
-            onScroll={onScroll}
+            className={rtl_mode ? "rtl chat-lines" : "chat-lines"}
             onClick={focusInput}
         >
-            {proxy?.channel.chat_log.slice(-500).map((line, idx) => {
-                const ll = last_line;
-                last_line = line;
-                return (
-                    <ChatLine key={line.message.i || `system-${idx}`} line={line} lastline={ll} />
-                );
-            })}
+            <div className="bottom-padding" />
+            <div>
+                {proxy?.channel.chat_log.slice(-500).map((line, idx) => {
+                    const ll = last_line;
+                    last_line = line;
+                    return (
+                        <ChatLine
+                            key={line.message.i || `system-${idx}`}
+                            line={line}
+                            lastline={ll}
+                        />
+                    );
+                })}
+            </div>
         </div>
     );
 }
