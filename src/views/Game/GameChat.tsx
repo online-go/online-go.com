@@ -171,6 +171,10 @@ export function GameChat(props: GameChatProperties): JSX.Element {
                 //saveEdit();
                 console.warn("Quick chat editing not implemented");
                 event.preventDefault();
+            } else if (selected_chat_log === "personal") {
+                savePersonalGameNote(input.value);
+                input.value = "";
+                return false;
             } else {
                 props.goban.sendChat(input.value, selected_chat_log);
                 input.value = "";
@@ -795,4 +799,8 @@ function ChatLogToggleButton(props: ChatLogToggleButtonProperties): JSX.Element 
             />
         </button>
     );
+}
+
+function savePersonalGameNote(note: string) {
+    console.log(note);
 }
