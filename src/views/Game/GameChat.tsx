@@ -73,6 +73,8 @@ export function GameChat(props: GameChatProperties): JSX.Element {
     );
     const [show_player_list, setShowPlayerList] = React.useState(false);
 
+    const [personal_game_notes, setPersonalGameNotes] = React.useState<ChatLine[]>([]);
+
     const chat_log_hash = React.useRef<{ [k: string]: boolean }>({});
     const chat_lines = React.useRef<ChatLine[]>([]);
     const [, refresh] = React.useState<number>();
@@ -173,7 +175,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
                 event.preventDefault();
             } else if (selected_chat_log === "personal") {
                 const move_number = props.goban.engine.getMoveNumber();
-                savePersonalGameNote(chat_lines.current, move_number, input.value);
+                savePersonalGameNote(setPersonalGameNotes, move_number, input.value);
                 input.value = "";
                 return false;
             } else {
@@ -232,19 +234,21 @@ export function GameChat(props: GameChatProperties): JSX.Element {
                         className="chat-log autoscrolling"
                         onScroll={updateScrollPosition}
                     >
-                        {chat_lines.current.map((line: ChatLine) => {
-                            const ll = last_line;
-                            last_line = line;
-                            return (
-                                <GameChatLine
-                                    key={line.chat_id}
-                                    line={line}
-                                    lastline={ll}
-                                    game_id={props.game_id}
-                                    review_id={props.review_id}
-                                />
-                            );
-                        })}
+                        {mergedChatLines(personal_game_notes, chat_lines.current).map(
+                            (line: ChatLine) => {
+                                const ll = last_line;
+                                last_line = line;
+                                return (
+                                    <GameChatLine
+                                        key={line.chat_id}
+                                        line={line}
+                                        lastline={ll}
+                                        game_id={props.game_id}
+                                        review_id={props.review_id}
+                                    />
+                                );
+                            },
+                        )}
                     </div>
                 </div>
                 {(show_player_list || null) && <ChatUserList channel={channel} />}
@@ -802,14 +806,23 @@ function ChatLogToggleButton(props: ChatLogToggleButtonProperties): JSX.Element 
     );
 }
 
-function savePersonalGameNote(chatLines: ChatLine[], move_number: number, note: string) {
-    const chatLine = {
-        chat_id: `personal-${chatLines.length}`,
-        body: note,
-        date: Math.floor(new Date().getTime() / 1000),
-        move_number: move_number,
-        channel: "personal",
-        player_id: data.get("user").id,
-    };
-    console.log(chatLine);
+function savePersonalGameNote(setPersonalGameNotes, move_number: number, note: string) {
+    setPersonalGameNotes((gameNotes) => {
+        const chatLine = {
+            chat_id: `personal-${gameNotes.length}`,
+            body: note,
+            date: Math.floor(new Date().getTime() / 1000),
+            move_number: move_number,
+            channel: "personal",
+            player_id: data.get("user").id,
+        };
+        console.log(chatLine);
+        return [...gameNotes, chatLine];
+    });
+}
+
+// Returns array that contains merged chat lines, sorted by date.
+function mergedChatLines(first: ChatLine[], second: ChatLine[]): ChatLine[] {
+    const merged = [...first, ...second];
+    return merged.sort((a, b) => a.date - b.date);
 }
