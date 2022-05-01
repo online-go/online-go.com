@@ -18,6 +18,7 @@
 import * as React from "react";
 import * as data from "data";
 import * as moment from "moment";
+import { useParams } from "react-router-dom";
 import { get, post, put } from "requests";
 import { _, pgettext, interpolate, sorted_locale_countries } from "translate";
 import swal from "sweetalert2";
@@ -27,11 +28,6 @@ import { Toggle } from "Toggle";
 import { LoadingPage } from "Loading";
 
 interface SupporterProperties {
-    match?: {
-        params?: {
-            account_id?: string;
-        };
-    };
     inline?: boolean;
 }
 
@@ -191,9 +187,10 @@ function guessCurrency(config: Config, country: string): string {
 }
 
 export function Supporter(props: SupporterProperties): JSX.Element {
+    const params = useParams();
     const user = data.get("user");
     const inline = props?.inline;
-    const account_id = parseInt((props?.match?.params?.account_id || user?.id || "0") as string);
+    const account_id = parseInt((params?.account_id || user?.id || "0") as string);
     const [loading, setLoading] = React.useState(true);
     const [config, setConfig]: [Config, (h: Config) => void] = React.useState({
         loading: true,
