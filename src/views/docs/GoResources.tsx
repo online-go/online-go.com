@@ -960,12 +960,6 @@ export const GoResources = () => {
                             </span>,
                             <span>
                                 <Flag country={es} />{" "}
-                                <a rel="noopener" href="http://badukaires.com/">
-                                    Badukaires
-                                </a>
-                            </span>,
-                            <span>
-                                <Flag country={es} />{" "}
                                 <a rel="noopener" href="http://canbaduk.wordpress.com/">
                                     Canbaduk
                                 </a>
