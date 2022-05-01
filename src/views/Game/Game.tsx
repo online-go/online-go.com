@@ -745,7 +745,7 @@ export function Game(): JSX.Element {
 
         if (!data.get("user").anonymous) {
             goban.current.sendChat(analysis, selected_chat_log);
-            las.current = analysis;
+            last_analysis_sent.current = analysis;
         } else {
             goban.current.message("Can't send to the " + selected_chat_log + " chat_log");
         }
