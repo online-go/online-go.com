@@ -70,16 +70,14 @@ export interface Report {
 export function IncidentReportTracker(): JSX.Element {
     const active_incident_reports_ref = React.useRef({});
     const [show_incident_list, setShowIncidentList] = React.useState(false);
-    const [reports, setReports] = React.useState([]);
+    const [reports, setReports] = React.useState<Report[]>([]);
     const [normal_ct, setNormalCt] = React.useState(0);
-
-    const active_incident_reports = active_incident_reports_ref.current;
 
     React.useEffect(() => {
         const connect_fn = () => {
             const user = data.get("user");
             active_incident_reports_ref.current = {};
-            setReports([]);
+            setReports(new Array<Report>());
 
             if (!user.anonymous) {
                 socket.send("incident/connect", {
@@ -103,7 +101,7 @@ export function IncidentReportTracker(): JSX.Element {
 
         function handleReport(report: Report) {
             if (report.state === "resolved") {
-                delete active_incident_reports[report.id];
+                delete active_incident_reports_ref.current[report.id];
             } else {
                 report.unclaim = () => {
                     post("moderation/incident/%%", report.id, { id: report.id, action: "unclaim" })
@@ -161,7 +159,7 @@ export function IncidentReportTracker(): JSX.Element {
                         .catch(ignore);
                 };
 
-                if (!(report.id in active_incident_reports)) {
+                if (!(report.id in active_incident_reports_ref.current)) {
                     if (
                         data.get("user").is_moderator &&
                         preferences.get("notify-on-incident-report")
@@ -181,14 +179,14 @@ export function IncidentReportTracker(): JSX.Element {
                         );
                     }
                 }
-                active_incident_reports[report.id] = report;
+                active_incident_reports_ref.current[report.id] = report;
             }
 
             const user = data.get("user");
             const reports = [];
             let normal_ct = 0;
-            for (const id in active_incident_reports) {
-                const report = active_incident_reports[id];
+            for (const id in active_incident_reports_ref.current) {
+                const report = active_incident_reports_ref.current[id];
                 reports.push(report);
                 if (report.moderator === null || report.moderator.id === user.id) {
                     normal_ct++;
@@ -254,7 +252,7 @@ export function IncidentReportTracker(): JSX.Element {
                             <div className="incident" key={report.id}>
                                 <div className="report-header">
                                     <div className="report-id">
-                                        {"R" + report.id.substr(-3.3) + ": "}
+                                        {"R" + `${report.id}`.substring(-3, 3) + ": "}
                                         {getReportType(report)}
                                     </div>
                                     {((!report.moderator && user.is_moderator) || null) && (
@@ -354,7 +352,6 @@ export function IncidentReportTracker(): JSX.Element {
                                     <div
                                         className="spread"
                                         onClick={() => {
-                                            console.log(report);
                                             openReportedConversationModal(
                                                 report.reported_user?.id,
                                                 report.reported_conversation,
