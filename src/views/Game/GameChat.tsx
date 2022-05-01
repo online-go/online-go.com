@@ -172,7 +172,8 @@ export function GameChat(props: GameChatProperties): JSX.Element {
                 console.warn("Quick chat editing not implemented");
                 event.preventDefault();
             } else if (selected_chat_log === "personal") {
-                savePersonalGameNote(input.value);
+                const move_number = props.goban.engine.getMoveNumber();
+                savePersonalGameNote(chat_lines.current, move_number, input.value);
                 input.value = "";
                 return false;
             } else {
@@ -801,6 +802,14 @@ function ChatLogToggleButton(props: ChatLogToggleButtonProperties): JSX.Element 
     );
 }
 
-function savePersonalGameNote(note: string) {
-    console.log(note);
+function savePersonalGameNote(chatLines: ChatLine[], move_number: number, note: string) {
+    const chatLine = {
+        chat_id: `personal-${chatLines.length}`,
+        body: note,
+        date: Math.floor(new Date().getTime() / 1000),
+        move_number: move_number,
+        channel: "personal",
+        player_id: data.get("user").id,
+    };
+    console.log(chatLine);
 }
