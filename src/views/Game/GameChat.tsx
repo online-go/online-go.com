@@ -73,7 +73,16 @@ export function GameChat(props: GameChatProperties): JSX.Element {
     );
     const [show_player_list, setShowPlayerList] = React.useState(false);
 
-    const [personal_game_notes, setPersonalGameNotes] = React.useState<ChatLine[]>([]);
+    const [personal_game_notes, setPersonalGameNotes] = React.useState<ChatLine[]>(
+        data.get(`chat.personal.${props.game_id}`, []),
+    );
+    React.useEffect(() => {
+        data.set(
+            `chat.personal.${props.game_id}`,
+            personal_game_notes,
+            data.Replication.REMOTE_OVERWRITES_LOCAL,
+        );
+    }, [personal_game_notes]);
 
     const chat_log_hash = React.useRef<{ [k: string]: boolean }>({});
     const chat_lines = React.useRef<ChatLine[]>([]);
