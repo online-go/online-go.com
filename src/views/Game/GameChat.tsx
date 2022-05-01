@@ -807,6 +807,7 @@ function ChatLogToggleButton(props: ChatLogToggleButtonProperties): JSX.Element 
 }
 
 function savePersonalGameNote(setPersonalGameNotes, move_number: number, note: string) {
+    const user = data.get("user");
     setPersonalGameNotes((gameNotes) => {
         const chatLine = {
             chat_id: `personal-${gameNotes.length}`,
@@ -814,9 +815,9 @@ function savePersonalGameNote(setPersonalGameNotes, move_number: number, note: s
             date: Math.floor(new Date().getTime() / 1000),
             move_number: move_number,
             channel: "personal",
-            player_id: data.get("user").id,
+            player_id: user.id,
+            username: user.username,
         };
-        console.log(chatLine);
         return [...gameNotes, chatLine];
     });
 }
