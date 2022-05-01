@@ -816,7 +816,11 @@ function ChatLogToggleButton(props: ChatLogToggleButtonProperties): JSX.Element 
     );
 }
 
-function savePersonalGameNote(setPersonalGameNotes, move_number: number, note: string) {
+export function savePersonalGameNote(
+    setPersonalGameNotes,
+    move_number: number,
+    note: string | AnalysisComment | ReviewComment,
+) {
     const user = data.get("user");
     setPersonalGameNotes((gameNotes) => {
         const chatLine = {
