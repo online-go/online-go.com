@@ -76,6 +76,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
     const [personal_game_notes, setPersonalGameNotes] = React.useState<ChatLine[]>(
         data.get(`chat.personal.${props.game_id}`, []),
     );
+    data.watch(`chat.personal.${props.game_id}`, setPersonalGameNotes, false, true);
     React.useEffect(() => {
         data.set(
             `chat.personal.${props.game_id}`,
