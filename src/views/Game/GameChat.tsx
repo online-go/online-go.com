@@ -44,12 +44,12 @@ interface GameChatProperties {
 }
 
 interface ChatLine {
-    chat_id: number;
+    chat_id: string;
     body: string | AnalysisComment | ReviewComment;
     date: number;
     move_number: number;
-    from: number;
-    moves: string;
+    from?: number;
+    moves?: string;
     channel: string;
     player_id: number;
 }
@@ -817,7 +817,7 @@ function ChatLogToggleButton(props: ChatLogToggleButtonProperties): JSX.Element 
 }
 
 export function savePersonalGameNote(
-    setPersonalGameNotes,
+    setPersonalGameNotes: React.Dispatch<React.SetStateAction<ChatLine[]>>,
     move_number: number,
     note: string | AnalysisComment | ReviewComment,
 ) {
