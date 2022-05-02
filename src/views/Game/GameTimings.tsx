@@ -48,7 +48,7 @@ export class GameTimings extends React.Component<GameTimingProperties> {
     // needed because end_time and start_time are only to the nearest second
     show_seconds_resolution = (duration: moment.Duration) => {
         if (duration < moment.duration(1000)) {
-            return ">1s"; // we don't have better resolution than this.
+            return `${moment.duration(duration).asSeconds().toFixed(2)}s`;
         } else if (duration < moment.duration(60000)) {
             return `${moment.duration(duration).asSeconds().toFixed(0)}s`;
         } else {
