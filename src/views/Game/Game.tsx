@@ -1338,6 +1338,7 @@ export function Game(): JSX.Element {
             <span className="play-buttons">
                 <span>
                     {((cur_move_number >= 1 &&
+                        !goban?.current?.engine.rengo &&
                         player_not_to_move === data.get("user").id &&
                         !(
                             goban.current.engine.undo_requested >=
