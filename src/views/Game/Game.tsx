@@ -414,7 +414,9 @@ export function Game(): JSX.Element {
         // could have been replaced
         // TODO: When we are revamping this view we should see if we can either remove this
         // or move it into a clock component or something.
-        goban.current.setGameClock(goban.current.last_clock);
+        if (goban.current) {
+            goban.current.setGameClock(goban.current.last_clock);
+        }
 
         if (!ref_goban_container.current) {
             return;
@@ -441,12 +443,14 @@ export function Game(): JSX.Element {
             return;
         }
 
-        goban.current.setSquareSizeBasedOnDisplayWidth(
-            Math.min(
-                ref_goban_container.current.offsetWidth,
-                ref_goban_container.current.offsetHeight,
-            ),
-        );
+        if (goban.current) {
+            goban.current.setSquareSizeBasedOnDisplayWidth(
+                Math.min(
+                    ref_goban_container.current.offsetWidth,
+                    ref_goban_container.current.offsetHeight,
+                ),
+            );
+        }
 
         recenterGoban();
     };
@@ -741,7 +745,7 @@ export function Game(): JSX.Element {
 
         if (!data.get("user").anonymous) {
             goban.current.sendChat(analysis, selected_chat_log);
-            las.current = analysis;
+            last_analysis_sent.current = analysis;
         } else {
             goban.current.message("Can't send to the " + selected_chat_log + " chat_log");
         }
