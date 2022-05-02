@@ -4140,7 +4140,7 @@ function ShareAnalysisButton(props: ShareAnalysisButtonProperties): JSX.Element 
     const { selected_chat_log, isUserAnonymous, shareAnalysis } = props;
     switch (selected_chat_log) {
         case "malkovich":
-        case "personal":
+        case "private":
             return (
                 <button
                     className="sm {selected_chat_log}"

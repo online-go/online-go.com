@@ -32,7 +32,7 @@ import { inGameModChannel } from "chat_manager";
 import { MoveTree } from "goban";
 import { game_control } from "./game_control";
 
-export type ChatMode = "main" | "malkovich" | "moderator" | "hidden" | "personal";
+export type ChatMode = "main" | "malkovich" | "moderator" | "hidden" | "private";
 interface GameChatProperties {
     goban: Goban;
     userIsPlayer: boolean;
@@ -280,7 +280,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
                                   "Malkovich logs are only visible after the game has ended",
                                   "Visible after the game",
                               )
-                            : selected_chat_log === "personal"
+                            : selected_chat_log === "private"
                             ? _("Visible only to you")
                             : selected_chat_log === "moderator"
                             ? "Message players as a moderator"
@@ -737,7 +737,7 @@ function nextChatMode(current: ChatMode, isModerator: boolean): ChatMode {
             case "main":
                 return "malkovich";
             case "malkovich":
-                return "personal";
+                return "private";
             default:
                 return "main";
         }
@@ -760,8 +760,8 @@ function chatModeTranslation(chatMode: ChatMode, isModerator: boolean): string {
                 return _("Malkovich");
             case "hidden":
                 return _("Hidden");
-            case "personal":
-                return _("Personal");
+            case "private":
+                return _("Private");
             default:
                 return _("Chat");
         }
