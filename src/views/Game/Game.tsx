@@ -22,7 +22,7 @@ import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 import { Link, useParams } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
-import { _, ngettext, pgettext, interpolate, current_language } from "translate";
+import { _, pgettext, interpolate, current_language } from "translate";
 import { popover } from "popover";
 import { post, get, api1, del } from "requests";
 import { KBShortcut } from "KBShortcut";
@@ -33,7 +33,6 @@ import {
     Goban,
     GobanCanvas,
     GobanCanvasConfig,
-    //GoEngine,
     GoMath,
     MoveTree,
     AudioClockEvent,
@@ -49,14 +48,11 @@ import { isLiveGame } from "TimeControl";
 import { get_network_latency, get_clock_drift } from "sockets";
 import { Dock } from "Dock";
 import { Player, setExtraActionCallback, PlayerDetails } from "Player";
-import { Flag } from "Flag";
 import * as player_cache from "player_cache";
-import { icon_size_url } from "PlayerIcon";
 import { notification_manager } from "Notifications";
 import { PersistentElement } from "PersistentElement";
 import { close_all_popovers } from "popover";
 import { Resizable } from "Resizable";
-import { ChatPresenceIndicator } from "ChatPresenceIndicator";
 import { chat_manager, ChatChannelProxy } from "chat_manager";
 import { openGameInfoModal } from "./GameInfoModal";
 import { openGameLinkModal } from "./GameLinkModal";
@@ -65,7 +61,6 @@ import { openACLModal } from "ACLModal";
 import { sfx, SFXSprite, ValidSound } from "sfx";
 import { AIReview } from "./AIReview";
 import { GameChat, ChatMode } from "./GameChat";
-import { CountDown } from "./CountDown";
 import { toast } from "toast";
 import { Clock } from "Clock";
 import { JGOFClock } from "goban";
@@ -73,22 +68,14 @@ import { GameTimings } from "./GameTimings";
 import { openReport } from "Report";
 import { goban_view_mode, goban_view_squashed, ViewMode, shared_ip_with_player_map } from "./util";
 import { game_control } from "./game_control";
+import { PlayerCards } from "./PlayerCards";
 
 import swal from "sweetalert2";
-
-/*
-interface GameParams {
-    game_id?: string;
-    review_id?: string;
-    move_number?: string;
-}
-*/
 
 const win = $(window);
 
 export function Game(): JSX.Element {
-    //const params = useParams<GameParams>();
-    const params = useParams();
+    const params = useParams<"game_id" | "review_id" | "move_number">();
 
     const game_id = params.game_id ? parseInt(params.game_id) : 0;
     const review_id = params.review_id ? parseInt(params.review_id) : 0;
@@ -106,8 +93,6 @@ export function Game(): JSX.Element {
     const selected_conditional_move = React.useRef<any>();
     const chat_proxy = React.useRef<ChatChannelProxy>();
     const last_analysis_sent = React.useRef<any>();
-    const orig_marks = React.useRef<any>(null);
-    const showing_scores = React.useRef<boolean>(false);
     const on_refocus_title = React.useRef<string>("OGS");
     const last_move_viewed = React.useRef<number>(0);
     const conditional_move_tree = React.useRef<any>();
@@ -117,7 +102,6 @@ export function Game(): JSX.Element {
     const white_username = React.useRef<string>("White");
     const black_username = React.useRef<string>("Black");
     const return_url = React.useRef<string>(); // url to return to after a game is over
-    //const return_url_debounce = React.useRef<boolean>(false);
     const goban = React.useRef<Goban>(null);
 
     /* State */
@@ -138,13 +122,14 @@ export function Game(): JSX.Element {
     const [historical_black, set_historical_black] = React.useState(null);
     const [historical_white, set_historical_white] = React.useState(null);
     const [annulled, set_annulled] = React.useState(false);
-    const [black_auto_resign_expiration, set_black_auto_resign_expiration] = React.useState(null);
-    const [white_auto_resign_expiration, set_white_auto_resign_expiration] = React.useState(null);
+    const [black_auto_resign_expiration, set_black_auto_resign_expiration] =
+        React.useState<Date>(null);
+    const [white_auto_resign_expiration, set_white_auto_resign_expiration] =
+        React.useState<Date>(null);
     const [ai_review_enabled, set_ai_review_enabled] = React.useState(
         preferences.get("ai-review-enabled"),
     );
     const [phase, set_phase] = React.useState<GoEnginePhase>();
-    const [show_score_breakdown, set_show_score_breakdown] = React.useState(false);
     const [selected_ai_review_uuid, set_selected_ai_review_uuid] = React.useState(null);
     const [show_game_timing, set_show_game_timing] = React.useState(false);
     const [submitting_move, set_submitting_move] = React.useState(false);
@@ -393,7 +378,6 @@ export function Game(): JSX.Element {
         }
     };
     const onResize = (no_debounce: boolean = false, skip_state_update: boolean = false) => {
-        //Math.min(ref_goban_container.current.offsetWidth, ref_goban_container.current.offsetHeight)
         if (!skip_state_update) {
             if (goban_view_mode() !== view_mode || goban_view_squashed() !== squashed) {
                 set_squashed(goban_view_squashed());
@@ -470,7 +454,6 @@ export function Game(): JSX.Element {
                     break;
                 case "stone":
                     if (subtool == null) {
-                        //subtool = goban.current.engine.colorToMove() === "black" ? "black-white" : "white-black"
                         subtool = "alternate";
                     }
                     goban.current.setAnalyzeTool(tool, subtool);
@@ -658,7 +641,6 @@ export function Game(): JSX.Element {
                 portrait_tab = "chat";
                 break;
             case "chat":
-                //portrait_tab = 'dock';
                 portrait_tab = "game";
                 break;
 
@@ -758,92 +740,6 @@ export function Game(): JSX.Element {
         }
     };
 
-    const popupScores = () => {
-        if (goban.current.engine.cur_move) {
-            orig_marks.current = JSON.stringify(goban.current.engine.cur_move.getAllMarks());
-            goban.current.engine.cur_move.clearMarks();
-        } else {
-            orig_marks.current = null;
-        }
-
-        _popupScores("black");
-        _popupScores("white");
-    };
-    const _popupScores = (color) => {
-        const only_prisoners = false;
-        const scores = goban.current.engine.computeScore(only_prisoners);
-        showing_scores.current = goban.current.showing_scores;
-        goban.current.showScores(scores);
-
-        const score = scores[color];
-        let html = "";
-        if (!only_prisoners) {
-            html += "<div class='score_breakdown'>";
-            if (score.stones) {
-                html +=
-                    "<div><span>" + _("Stones") + "</span><div>" + score.stones + "</div></div>";
-            }
-            if (score.territory) {
-                html +=
-                    "<div><span>" +
-                    _("Territory") +
-                    "</span><div>" +
-                    score.territory +
-                    "</div></div>";
-            }
-            if (score.prisoners) {
-                html +=
-                    "<div><span>" +
-                    _("Prisoners") +
-                    "</span><div>" +
-                    score.prisoners +
-                    "</div></div>";
-            }
-            if (score.handicap) {
-                html +=
-                    "<div><span>" +
-                    _("Handicap") +
-                    "</span><div>" +
-                    score.handicap +
-                    "</div></div>";
-            }
-            if (score.komi) {
-                html += "<div><span>" + _("Komi") + "</span><div>" + score.komi + "</div></div>";
-            }
-
-            if (!score.stones && !score.territory && !parseInt(score.prisoners) && !score.komi) {
-                html += "<div><span>" + _("No score yet") + "</span>";
-            }
-
-            html += "<div>";
-        } else {
-            html += "<div class='score_breakdown'>";
-            if (score.komi) {
-                html += "<div><span>" + _("Komi") + "</span><div>" + score.komi + "</div></div>";
-            }
-            html +=
-                "<div><span>" + _("Prisoners") + "</span><div>" + score.prisoners + "</div></div>";
-            html += "<div>";
-        }
-
-        $("#" + color + "-score-details").html(html);
-        set_show_score_breakdown(true);
-    };
-    const hideScores = () => {
-        if (!showing_scores.current) {
-            goban.current.hideScores();
-        }
-        if (goban.current.engine.cur_move) {
-            goban.current.engine.cur_move.setAllMarks(JSON.parse(orig_marks.current));
-        }
-        goban.current.redraw();
-
-        $("#black-score-details").children().remove();
-        $("#white-score-details").children().remove();
-
-        set_show_score_breakdown(false);
-    };
-
     /*** Game stuff ***/
     const reviewAdded = (review) => {
         const review_list = [];
@@ -883,7 +779,6 @@ export function Game(): JSX.Element {
         goban.current.score_estimate = null;
     };
     const enterConditionalMovePlanner = () => {
-        //if (!auth) { return; }
         if (goban.current.isAnalysisDisabled() && goban.current.engine.phase !== "finished") {
             //swal(_("Conditional moves have been disabled for this game."));
         } else {
@@ -955,7 +850,6 @@ export function Game(): JSX.Element {
         const ret = goban.current.setScoringMode(false);
         goban.current.hideScores();
         goban.current.score_estimate = null;
-        //goban.current.engine.cur_move.clearMarks();
         return ret;
     };
     const alertModerator = () => {
@@ -1420,14 +1314,10 @@ export function Game(): JSX.Element {
         return (
             <div className="play-controls">
                 <div className="game-action-buttons">
-                    {/* { */}
                     {((mode === "play" && phase === "play") || null) &&
                         frag_play_buttons(show_cancel_button)}
-                    {/* (view_mode === 'portrait' || null) && <i onClick={togglePortraitTab} className={'tab-icon fa fa-commenting'}/> */}
                 </div>
-                {/* } */}
                 <div className="game-state">
-                    {/*{*/}
                     {((mode === "play" && phase === "play") || null) && (
                         <span>
                             {show_undo_requested ? (
@@ -1495,13 +1385,12 @@ export function Game(): JSX.Element {
                             "Game Annulled",
                         )}
                 </div>
-                {/* } */}
                 {((phase === "play" &&
                     mode === "play" &&
                     paused &&
                     goban.current.pause_control &&
                     goban.current.pause_control.paused) ||
-                    null) /* { */ && (
+                    null) && (
                     <div className="pause-controls">
                         <h3>{_("Game Paused")}</h3>
                         {(user_is_player || user.is_moderator || null) && (
@@ -1529,7 +1418,7 @@ export function Game(): JSX.Element {
                 {((goban.current.pause_control &&
                     goban.current.pause_control.moderator_paused &&
                     user.is_moderator) ||
-                    null) /* { */ && (
+                    null) && (
                     <div className="pause-controls">
                         <h3>{_("Paused by Moderator")}</h3>
                         <button className="info" onClick={goban_resumeGame}>
@@ -1537,7 +1426,7 @@ export function Game(): JSX.Element {
                         </button>
                     </div>
                 )}
-                {(phase === "finished" || null) /* { */ && (
+                {(phase === "finished" || null) && (
                     <div className="analyze-mode-buttons">
                         {" "}
                         {/* not really analyze mode, but equivalent button position and look*/}
@@ -1577,8 +1466,7 @@ export function Game(): JSX.Element {
                         )}
                     </div>
                 )}
-                {/* } */}
-                {(phase === "stone removal" || null) /* { */ && (
+                {(phase === "stone removal" || null) && (
                     <div className="stone-removal-controls">
                         <div>
                             {(user_is_active_player || user.is_moderator || null) && ( // moderators see the button, with its timer, but can't press it
@@ -1658,14 +1546,6 @@ export function Game(): JSX.Element {
                                 "In this phase, both players select and agree upon which groups should be considered captured and should be removed for the purposes of scoring.",
                             )}
                         </div>
-                        {/*
-                       <i id='scoring-help' className='fa fa-question-circle'
-                          popover='${_("Mark dead stones by clicking them. Mark dame by clicking the empty intersection. Holding down shift while selecting an intersection or stone will toggle only that selection.")|h}'
-                          popover-title='${_("Stone Removal")|h}'
-                          popover-trigger="mouseenter"
-                          popover-placement="left"
-                       ></i>
-                       */}
 
                         {null /* just going to disable this for now, no one cares I don't think */ &&
                             (rules === "japanese" || rules === "korean" || null) && (
@@ -1676,14 +1556,6 @@ export function Game(): JSX.Element {
                                         textAlign: "center",
                                     }}
                                 >
-                                    {/*
-                               <i id='strict-scoring-help' className='fa fa-question-circle'
-                                  popover="${_('Official Japanese and Korean rules do not count territory in seki, which means players need to fill out or mark dame for most territory to be counted correctly. Most of the time this rule doesn\'t affect the game and is just a nuisance, but you can enable being strict about this rule if it makes a difference in your game.')|h}"
-                                  popover-title='${pgettext("Enable Japanese territory in seki rule", "Strict Scoring")|h}'
-                                  popover-trigger="mouseenter"
-                                  popover-placement="left"
-                               ></i>
-                               */}
                                     <label
                                         style={{ display: "inline-block" }}
                                         htmlFor="strict-seki-mode"
@@ -1705,8 +1577,7 @@ export function Game(): JSX.Element {
                             )}
                     </div>
                 )}
-                {/* } */}
-                {(mode === "conditional" || null) /* { */ && (
+                {(mode === "conditional" || null) && (
                     <div className="conditional-move-planner">
                         <div className="buttons">
                             <button className="primary" onClick={acceptConditionalMoves}>
@@ -1723,8 +1594,7 @@ export function Game(): JSX.Element {
                         </div>
                     </div>
                 )}
-                {/* } */}
-                {(mode === "analyze" || null) /* { */ && (
+                {(mode === "analyze" || null) && (
                     <div>
                         {frag_analyze_button_bar()}
 
@@ -1771,7 +1641,6 @@ export function Game(): JSX.Element {
                         )}
                     </div>
                 )}
-                {/* } */}
                 {((mode === "play" &&
                     phase === "play" &&
                     goban.current.isAnalysisDisabled() &&
@@ -1907,12 +1776,6 @@ export function Game(): JSX.Element {
     const frag_analyze_button_bar = () => {
         return (
             <div className="game-analyze-button-bar">
-                {/*
-            {(review_id || null) &&
-                <i id='review-sync' className='fa fa-refresh {{goban.current.engine.cur_move.id !== goban.current.engine.cur_review_move.id ? "need-sync" : ""}}'
-                    onClick={syncToCurrentReviewMove()} title={_("Sync to where the reviewer is at")}></i>
-            }
-            */}
                 <div className="btn-group">
                     <button
                         onClick={() => setAnalyzeTool("stone", "alternate")}
@@ -2120,210 +1983,6 @@ export function Game(): JSX.Element {
             );
         }
         return null;
-    };
-
-    const frag_num_captures_text = (color) => {
-        const num_prisoners = score[color].prisoners;
-        const prisoner_color = color === "black" ? "white" : "black";
-        const prisoner_img_src = data.get("config.cdn_release") + "/img/" + prisoner_color + ".png";
-        return (
-            <div className={"captures" + (estimating_score ? " hidden" : "")}>
-                <span className="num-captures-container">
-                    <span className="num-captures-count">{num_prisoners}</span>
-                    {(!zen_mode || null) && (
-                        <span className="num-captures-units">
-                            {` ${ngettext("capture", "captures", num_prisoners)}`}
-                        </span>
-                    )}
-                    {(zen_mode || null) && (
-                        <span className="num-captures-stone">
-                            {" "}
-                            <img className="stone-image" src={prisoner_img_src} />
-                        </span>
-                    )}
-                </span>
-            </div>
-        );
-    };
-
-    const frag_players = () => {
-        if (!goban) {
-            return null;
-        }
-        const engine = goban.current.engine;
-
-        return (
-            <div className="players">
-                <div className="player-icons">
-                    {["black", "white"].map((color: "black" | "white", idx) => {
-                        const player_bg: any = {};
-                        const historical = color === "black" ? historical_black : historical_white;
-                        const auto_resign_expiration =
-                            color === "black"
-                                ? black_auto_resign_expiration
-                                : white_auto_resign_expiration;
-
-                        // In rengo we always will have a player icon to show (after initialisation).
-                        // In other cases, we only have one if `historical` is set
-                        if (
-                            engine.rengo &&
-                            engine.players[color] &&
-                            engine.players[color]["icon-url"]
-                        ) {
-                            const icon = icon_size_url(engine.players[color]["icon-url"], 64);
-                            player_bg.backgroundImage = `url("${icon}")`;
-                        } else if (historical) {
-                            const icon = icon_size_url(historical["icon"], 64);
-                            player_bg.backgroundImage = `url("${icon}")`;
-                        }
-
-                        const their_turn = player_to_move === engine.players[color].id;
-
-                        const highlight_their_turn = their_turn ? `their-turn` : "";
-
-                        return (
-                            <div
-                                key={idx}
-                                className={`${color} ${highlight_their_turn} player-container`}
-                            >
-                                <div className="player-icon-clock-row">
-                                    {((engine.players[color] && engine.players[color].id) ||
-                                        null) && (
-                                        <div className="player-icon-container" style={player_bg}>
-                                            {auto_resign_expiration && (
-                                                <div className={`auto-resign-overlay`}>
-                                                    <i className="fa fa-bolt" />
-                                                    <CountDown to={auto_resign_expiration} />
-                                                </div>
-                                            )}
-                                            <div className="player-flag">
-                                                <Flag country={engine.players[color].country} />
-                                            </div>
-                                            <ChatPresenceIndicator
-                                                channel={
-                                                    game_id
-                                                        ? `game-${game_id}`
-                                                        : `review-${review_id}`
-                                                }
-                                                userId={engine.players[color].id}
-                                            />
-                                        </div>
-                                    )}
-
-                                    {((goban.current.engine.phase !== "finished" &&
-                                        !goban.current.review_id) ||
-                                        null) && (
-                                        <Clock
-                                            goban={goban.current}
-                                            color={color}
-                                            className="in-game-clock"
-                                        />
-                                    )}
-                                </div>
-
-                                {((goban.current.engine.players[color] &&
-                                    goban.current.engine.players[color].rank !== -1) ||
-                                    null) && (
-                                    <div className={`${color} player-name-container`}>
-                                        <Player
-                                            user={goban.current.engine.players[color].id}
-                                            historical={
-                                                (!engine.rengo && historical) ||
-                                                goban.current.engine.players[color]
-                                            }
-                                        />
-                                    </div>
-                                )}
-
-                                {(!goban.current.engine.players[color] || null) && (
-                                    <span className="player-name-plain">
-                                        {color === "black" ? _("Black") : _("White")}
-                                    </span>
-                                )}
-
-                                <div
-                                    className={
-                                        "score-container " +
-                                        (show_score_breakdown ? "show-score-breakdown" : "")
-                                    }
-                                    onClick={() =>
-                                        show_score_breakdown ? hideScores() : popupScores()
-                                    }
-                                >
-                                    {(goban.current.engine.phase === "finished" ||
-                                        goban.current.engine.phase === "stone removal" ||
-                                        null) &&
-                                        goban.current.mode !== "analyze" &&
-                                        goban.current.engine.outcome !== "Timeout" &&
-                                        goban.current.engine.outcome !== "Resignation" &&
-                                        goban.current.engine.outcome !== "Cancellation" && (
-                                            <div
-                                                className={
-                                                    "points" + (estimating_score ? " hidden" : "")
-                                                }
-                                            >
-                                                {interpolate(_("{{total}} {{unit}}"), {
-                                                    total: score[color].total,
-                                                    unit: ngettext(
-                                                        "point",
-                                                        "points",
-                                                        score[color].total,
-                                                    ),
-                                                })}
-                                            </div>
-                                        )}
-                                    {((goban.current.engine.phase !== "finished" &&
-                                        goban.current.engine.phase !== "stone removal") ||
-                                        null ||
-                                        goban.current.mode === "analyze" ||
-                                        goban.current.engine.outcome === "Timeout" ||
-                                        goban.current.engine.outcome === "Resignation" ||
-                                        goban.current.engine.outcome === "Cancellation") &&
-                                        frag_num_captures_text(color)}
-                                    {((goban.current.engine.phase !== "finished" &&
-                                        goban.current.engine.phase !== "stone removal") ||
-                                        null ||
-                                        goban.current.mode === "analyze" ||
-                                        goban.current.engine.outcome === "Timeout" ||
-                                        goban.current.engine.outcome === "Resignation" ||
-                                        goban.current.engine.outcome === "Cancellation") && (
-                                        <div className="komi">
-                                            {score[color].komi === 0
-                                                ? ""
-                                                : `+ ${parseFloat(score[color].komi as any).toFixed(
-                                                      1,
-                                                  )}`}
-                                        </div>
-                                    )}
-                                    <div id={`${color}-score-details`} className="score-details" />
-                                </div>
-                                {(engine.rengo || null) && (
-                                    <div
-                                        className={
-                                            "rengo-team-members player-name-container " + color
-                                        }
-                                        key={idx}
-                                    >
-                                        {engine.rengo_teams[color].slice(1).map((player, idx) => (
-                                            <div className={"rengo-team-member"} key={idx}>
-                                                {<Player user={player} icon rank />}
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
-                {(engine.rengo || null) && (
-                    <div className="rengo-header-block">
-                        {((!review_id && show_title && goban.current?.engine?.rengo) || null) && (
-                            <div className="game-state">{title}</div>
-                        )}
-                    </div>
-                )}
-            </div>
-        );
     };
 
     const frag_below_board_controls = () => {
@@ -2705,7 +2364,6 @@ export function Game(): JSX.Element {
                 <KBShortcut shortcut="escape" action={handleEscapeKey} />
                 <KBShortcut shortcut="f1" action={() => setAnalyzeTool("stone", null)} />
                 <KBShortcut shortcut="f2" action={() => setAnalyzeTool("stone", "black")} />
-                {/* <KBShortcut shortcut='f3' action='console.log("Should be entering scoring mode");'></KBShortcut> */}
                 <KBShortcut shortcut="f4" action={() => setAnalyzeTool("label", "triangle")} />
                 <KBShortcut shortcut="f5" action={() => setAnalyzeTool("label", "square")} />
                 <KBShortcut shortcut="f6" action={() => setAnalyzeTool("label", "circle")} />
@@ -2803,7 +2461,6 @@ export function Game(): JSX.Element {
         try {
             return_url.current =
                 new URLSearchParams(window.location.search).get("return") || undefined;
-            // console.log("Return url", return_url.current);
         } catch (e) {
             console.error(e);
         }
@@ -3262,8 +2919,6 @@ export function Game(): JSX.Element {
 
         goban.current.on("move-made", autoadvance);
         goban.current.on("player-update", processPlayerUpdate);
-        //goban.current.on("update", () => sync_state());
-        //goban.current.on("reset", () => sync_state());
         goban.current.on("gamedata", onResize);
 
         goban.current.on("gamedata", (gamedata) => {
@@ -3553,7 +3208,23 @@ export function Game(): JSX.Element {
                 <div className="left-col"></div>
 
                 <div className="center-col">
-                    {(view_mode === "portrait" || null) && frag_players()}
+                    {(view_mode === "portrait" || null) && (
+                        <PlayerCards
+                            goban={goban.current}
+                            historical_black={historical_black}
+                            historical_white={historical_white}
+                            black_auto_resign_expiration={black_auto_resign_expiration}
+                            white_auto_resign_expiration={white_auto_resign_expiration}
+                            player_to_move={player_to_move}
+                            game_id={game_id}
+                            review_id={review_id}
+                            estimating_score={estimating_score}
+                            zen_mode={zen_mode}
+                            score={score}
+                            show_title={show_title}
+                            title={title}
+                        />
+                    )}
 
                     {(view_mode !== "portrait" || portrait_tab === "game" || null) && (
                         <div ref={ref_goban_container} className="goban-container">
@@ -3575,12 +3246,10 @@ export function Game(): JSX.Element {
                     {(view_mode === "portrait" || null) &&
                         (review ? frag_review_controls() : frag_play_controls(false))}
 
-                    {((view_mode === "portrait" && !zen_mode) /* && portrait_tab === 'chat' */ ||
-                        null) &&
-                        CHAT}
+                    {((view_mode === "portrait" && !zen_mode) || null) && CHAT}
 
                     {((view_mode === "portrait" &&
-                        !zen_mode /* && portrait_tab === 'chat' */ &&
+                        !zen_mode &&
                         user_is_player &&
                         phase !== "finished") ||
                         null) &&
@@ -3593,7 +3262,23 @@ export function Game(): JSX.Element {
                 {(view_mode !== "portrait" || null) && (
                     <div className="right-col">
                         {(zen_mode || null) && <div className="align-col-start"></div>}
-                        {(view_mode === "square" || view_mode === "wide" || null) && frag_players()}
+                        {(view_mode === "square" || view_mode === "wide" || null) && (
+                            <PlayerCards
+                                goban={goban.current}
+                                historical_black={historical_black}
+                                historical_white={historical_white}
+                                black_auto_resign_expiration={black_auto_resign_expiration}
+                                white_auto_resign_expiration={white_auto_resign_expiration}
+                                player_to_move={player_to_move}
+                                game_id={game_id}
+                                review_id={review_id}
+                                estimating_score={estimating_score}
+                                zen_mode={zen_mode}
+                                score={score}
+                                show_title={show_title}
+                                title={title}
+                            />
+                        )}
 
                         {(view_mode === "square" || view_mode === "wide" || null) &&
                             !zen_mode &&
@@ -3623,13 +3308,11 @@ export function Game(): JSX.Element {
 function bindAudioEvents(goban: Goban): void {
     // called by init
     const user = data.get("user");
-    //goban.on('audio-game-started', (obj:{ player_id: number }) => sfx.play("game_started"));
 
     goban.on("audio-enter-stone-removal", () => {
         sfx.stop();
         sfx.play("remove_the_dead_stones");
     });
-    //goban.on('audio-enter-stone-removal', () => sfx.play('stone_removal'));
     goban.on("audio-resume-game-from-stone-removal", () => {
         sfx.stop();
         sfx.play("game_resumed");
@@ -3822,12 +3505,9 @@ function bindAudioEvents(goban: Goban): void {
                     sfx.play("white_wins");
                 }
             } else {
-                //console.log("winner: ", winner, " color ", color);
                 if (winner === color) {
                     sfx.play("you_have_won");
                 } else {
-                    //sfx.play('you_have_lost');
-
                     if (winner === "black") {
                         sfx.play("black_wins");
                     }
@@ -3853,17 +3533,14 @@ function bindAudioEvents(goban: Goban): void {
     goban.on("audio-clock", (audio_clock_event: AudioClockEvent) => {
         const user = data.get("user");
         if (user.anonymous) {
-            //console.log("anon");
             return;
         }
 
         if (paused) {
-            //console.log("paused");
             return;
         }
 
         if (user.id.toString() !== audio_clock_event.player_id.toString()) {
-            //console.log("not user");
             return;
         }
 
@@ -3893,7 +3570,6 @@ function bindAudioEvents(goban: Goban): void {
                     !(time_control.system === "byoyomi" && time_control.periods === 0)
                 ) {
                     // Don't count down main time for byoyomi and canadian clocks
-                    //console.log("not doing announcement");
                     return;
                 }
 
@@ -3993,8 +3669,6 @@ function bindAudioEvents(goban: Goban): void {
                 if (seconds_left > 60) {
                     audio_to_play = undefined;
                 } else {
-                    //let period_time = Math.min(60, time_control.period_time);
-
                     // handle counting up
 
                     if (seconds_left < every_second_start) {
@@ -4010,7 +3684,6 @@ function bindAudioEvents(goban: Goban): void {
                             seconds_left % 10 === 0 &&
                             seconds_left !== every_second_start
                         ) {
-                            //audio_to_play = (period_time - parseInt(audio_to_play)).toString() as ValidSound;
                             audio_to_play = (
                                 count_from - parseInt(audio_to_play)
                             ).toString() as ValidSound;
