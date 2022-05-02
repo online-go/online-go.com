@@ -223,9 +223,6 @@ export interface DataSchema
 
     "preferred-game-settings": rest_api.ChallengeDetails[];
 
-    // TODO any -> ChatLine? (see src/views/Games/GameChat.tsx)
-    [personal_game_notes_key: `chat.personal.${number}`]: any[];
-
     [player_notes_key: `player-notes.${number}.${number}`]: string;
     [learning_hub_key: `learning-hub.${string}`]: { [page_number: number]: true };
     [moderator_join_game_publicly_key: `moderator.join-game-publicly.${string}`]: boolean;
