@@ -21,13 +21,7 @@ import { Flag } from "Flag";
 import * as data from "data";
 import { Markdown } from "Markdown";
 
-/*
-                    <div className='about-links'>
-                        <Link to='/docs/go-rules-comparison-matrix'>Go Rules Comparision Matrix</Link>
-                    </div>
-                    */
-
-function shuffleArray(array) {
+function shuffleArray<T>(array: T[]) {
     for (let i = array.length - 1; i >= 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         const temp = array[i];
@@ -37,7 +31,7 @@ function shuffleArray(array) {
     return array;
 }
 
-function scramble(...args) {
+function scramble<T>(...args: T[]) {
     return shuffleArray(args);
 }
 
@@ -89,218 +83,108 @@ export const GoResources = () => {
                         <dt>{_("Books")}</dt>
 
                         {scramble(
-                            <span>
-                                <Flag country={kr} />
-                                <Flag country={en} />{" "}
-                                <a
-                                    rel="noopener"
-                                    href="https://cdn.online-go.com/Falling-in-love-with-Baduk.pdf"
-                                >
-                                    Falling in love with Baduk
-                                </a>
-                                <br />
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
-                                    {" "}
-                                    Korea Baduk Association
-                                </span>
-                            </span>,
-                            <span>
-                                <Flag country={en} />{" "}
-                                <a rel="noopener" href="https://cdn.online-go.com/relentless.pdf">
-                                    Relentless (2016)
-                                </a>
-                                <br />{" "}
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
-                                    Younggil An
-                                </span>
-                                <br />{" "}
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
-                                    Josh Hoak
-                                </span>
-                                <br />{" "}
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
-                                    David Ormerod
-                                </span>
-                                <br />{" "}
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
+                            <Book
+                                countries={[kr, en]}
+                                title="Falling in love with Baduk"
+                                href="https://cdn.online-go.com/Falling-in-love-with-Baduk.pdf"
+                                authors={["Korea Baduk Association"]}
+                            />,
+                            <Book
+                                countries={[en]}
+                                title="Relentless (2016)"
+                                href="https://cdn.online-go.com/relentless.pdf"
+                                authors={[
+                                    "Younggil An",
+                                    "Josh Hoak",
+                                    "David Ormerod",
                                     <a rel="noopener" href="http://gogameguru.com/relentless/">
                                         Go Game Guru
-                                    </a>
-                                </span>
-                            </span>,
-                            <span>
-                                <Flag country={en} />{" "}
-                                <a
-                                    rel="noopener"
-                                    href="https://www.usgo.org/sites/default/files/pdf/go-seigen-book.pdf"
-                                >
-                                    Go on Go: The Analyzed Games of Go Seigen
-                                </a>
-                                <br />{" "}
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
-                                    Go Seigen
-                                </span>
-                                <br />{" "}
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
-                                    Translation by Jim Z. Yu
-                                </span>
-                            </span>,
-
-                            <span>
-                                <Flag country={en} />{" "}
-                                <a
-                                    rel="noopener"
-                                    href="https://archive.org/details/gameofgonational00smitrich/page/n9"
-                                >
-                                    The Game of Go
-                                </a>
-                                <br />{" "}
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
-                                    Arthur Smith (1908)
-                                </span>
-                            </span>,
-                            <span>
-                                <Flag country={en} />{" "}
-                                <a
-                                    rel="noopener"
-                                    href="http://tigersmouth.org/downloads/RiverMtnGo-30k-20k.pdf"
-                                >
-                                    River Mountain Go 1 (30k-20k)
-                                </a>
-                                <br />{" "}
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
-                                    Oliver Richman
-                                </span>
-                            </span>,
-                            <span>
-                                <Flag country={en} />{" "}
-                                <a
-                                    rel="noopener"
-                                    href="http://tigersmouth.org/downloads/RiverMtnGo-20k-8k.pdf"
-                                >
-                                    River Mountain Go 2 (20k-8k)
-                                </a>
-                                <br />{" "}
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
-                                    Oliver Richman
-                                </span>
-                            </span>,
-                            <span>
-                                <Flag country={es} />{" "}
-                                <a
-                                    rel="noopener"
-                                    href="https://cdn.online-go.com/Introduccion-al-juego-de-Go.pdf"
-                                >
-                                    Introducción al juego de Go
-                                </a>
-                                <br />{" "}
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
-                                    Mariano López Minnucci
-                                </span>
-                            </span>,
-
-                            <span>
-                                {" "}
-                                <Flag country={en} /> <Flag country={ru} /> 81 Little Lions (9x9
-                                intro)
-                                <br />
-                                <span style={{ marginLeft: "1.7em" }}>
-                                    <Flag country={en} />
-                                    <a
-                                        rel="noopener"
-                                        href="https://cdn.online-go.com/81_little_lions/Immanuel%20deVillers%20-%2081%20Little%20Lions%20-%20An%20Introduction%20to%20the%209x9%20Board%20for%20Advanced%20Beginners%20-%20Revised%20Edition%20(2019).pdf"
-                                    >
-                                        2019 Edition (pdf)
-                                    </a>
-                                </span>
-                                <br />
-                                <span style={{ marginLeft: "1.7em" }}>
-                                    <Flag country={en} />
-                                    <a
-                                        rel="noopener"
-                                        href="https://cdn.online-go.com/81_little_lions/Immanuel%20deVillers%20-%2081%20Little%20Lions%20-%20An%20Introduction%20to%20the%209x9%20Board%20for%20Advanced%20Beginners%20-%20Revised%20Edition%20(2019).azw3"
-                                    >
-                                        2019 Edition (azw3)
-                                    </a>
-                                </span>
-                                <br />
-                                <span style={{ marginLeft: "1.7em" }}>
-                                    <Flag country={en} />
-                                    <a
-                                        rel="noopener"
-                                        href="https://cdn.online-go.com/81_little_lions/Immanuel%20deVillers%20-%2081%20Little%20Lions%20-%20An%20Introduction%20to%20the%209x9%20Board%20for%20Advanced%20Beginners%20-%20Revised%20Edition%20(2019).epub"
-                                    >
-                                        2019 Edition (epub)
-                                    </a>
-                                </span>
-                                <br />
-                                <span style={{ marginLeft: "1.7em" }}>
-                                    <Flag country={ru} />
-                                    <a
-                                        rel="noopener"
-                                        href="https://cdn.online-go.com/81_little_lions_ru.pdf"
-                                    >
-                                        81 львёнок (pdf)
-                                    </a>
-                                </span>
-                                <br />
-                                <span style={{ marginLeft: "1.7em" }}>
-                                    <Flag country={en} />
-                                    <a
-                                        rel="noopener"
-                                        href="https://cdn.online-go.com/81_little_lions.pdf"
-                                    >
-                                        2015 Edition (pdf)
-                                    </a>
-                                </span>
-                                <br />{" "}
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
-                                    Immanuel deVillers
-                                </span>
-                                <br />{" "}
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
-                                    Lucas Félix de Oliveira Santana
-                                </span>
-                                <br />{" "}
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
-                                    Рочев Антон
-                                </span>
-                            </span>,
-
-                            <span>
-                                <div style={{ display: "flex", alignItems: "center" }}>
-                                    <span style={{ display: "inline-block", width: "2.5rem" }}>
-                                        <Flag country={en} /> <Flag country={gr} />
-                                        <Flag country={fr} /> <Flag country={br} />
-                                    </span>{" "}
-                                    <a rel="noopener" href="https://www.gobook.eu/">
+                                    </a>,
+                                ]}
+                            />,
+                            <Book
+                                countries={[en]}
+                                title="Go on Go: The Analyzed Games of Go Seigen"
+                                href="https://www.usgo.org/sites/default/files/pdf/go-seigen-book.pdf"
+                                authors={["Go Seigen", "Translation by Jim Z. Yu"]}
+                            />,
+                            <Book
+                                countries={[en]}
+                                title="The Game of Go"
+                                href="https://archive.org/details/gameofgonational00smitrich/page/n9"
+                                authors={["Arthur Smith (1908)"]}
+                            />,
+                            <Book
+                                countries={[en]}
+                                title="River Mountain Go 1 (30k-20k)"
+                                href="http://tigersmouth.org/downloads/RiverMtnGo-30k-20k.pdf"
+                                authors={["Oliver Richman"]}
+                            />,
+                            <Book
+                                countries={[en]}
+                                title="River Mountain Go 2 (20k-8k)"
+                                href="http://tigersmouth.org/downloads/RiverMtnGo-20k-8k.pdf"
+                                authors={["Oliver Richman"]}
+                            />,
+                            <Book
+                                countries={[es]}
+                                title="Introducción al juego de Go"
+                                href="https://cdn.online-go.com/Introduccion-al-juego-de-Go.pdf"
+                                authors={["Mariano López Minnucci"]}
+                            />,
+                            <Book
+                                countries={[en, ru]}
+                                title="81 Little Lions (9x9 intro)"
+                                authors={[
+                                    "Immanuel deVillers",
+                                    "Lucas Félix de Oliveira Santana",
+                                    "Рочев Антон",
+                                ]}
+                                editions={[
+                                    {
+                                        title: "2019 Edition (pdf)",
+                                        country: en,
+                                        href: "https://cdn.online-go.com/81_little_lions/Immanuel%20deVillers%20-%2081%20Little%20Lions%20-%20An%20Introduction%20to%20the%209x9%20Board%20for%20Advanced%20Beginners%20-%20Revised%20Edition%20(2019).pdf",
+                                    },
+                                    {
+                                        title: "2019 Edition (azw3)",
+                                        country: en,
+                                        href: "https://cdn.online-go.com/81_little_lions/Immanuel%20deVillers%20-%2081%20Little%20Lions%20-%20An%20Introduction%20to%20the%209x9%20Board%20for%20Advanced%20Beginners%20-%20Revised%20Edition%20(2019).azw3",
+                                    },
+                                    {
+                                        title: "2019 Edition (epub)",
+                                        country: en,
+                                        href: "https://cdn.online-go.com/81_little_lions/Immanuel%20deVillers%20-%2081%20Little%20Lions%20-%20An%20Introduction%20to%20the%209x9%20Board%20for%20Advanced%20Beginners%20-%20Revised%20Edition%20(2019).epub",
+                                    },
+                                    {
+                                        title: "81 львёнок (pdf)",
+                                        country: ru,
+                                        href: "https://cdn.online-go.com/81_little_lions_ru.pdf",
+                                    },
+                                    {
+                                        title: "2015 Edition (pdf)",
+                                        country: en,
+                                        href: "https://cdn.online-go.com/81_little_lions.pdf",
+                                    },
+                                ]}
+                            />,
+                            <Book
+                                countries={[en, gr, fr, br]}
+                                title={
+                                    <>
                                         A Go Guide{" "}
                                         <span style={{ fontSize: "0.9em" }}>From a Beginner</span>
-                                    </a>
-                                </div>
-
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
-                                    Charalampos (Haris) Kapolos
-                                </span>
-                            </span>,
-
-                            <span>
-                                <Flag country={en} />{" "}
-                                <a
-                                    rel="noopener"
-                                    href="https://cdn.online-go.com/shape_up_v1.2.pdf"
-                                >
-                                    Shape Up!
-                                </a>
-                                <br />{" "}
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
-                                    Charles Matthews
-                                </span>
-                                <br />{" "}
-                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
-                                    Seong-June Kim
-                                </span>
-                            </span>,
+                                    </>
+                                }
+                                href="https://www.gobook.eu/"
+                                authors={["Charalampos (Haris) Kapolos"]}
+                            />,
+                            <Book
+                                countries={[en]}
+                                title="Shape Up!"
+                                href="https://cdn.online-go.com/shape_up_v1.2.pdf"
+                                authors={["Charles Matthews", "Seong-June Kim"]}
+                            />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
                         ))}
@@ -1869,3 +1753,46 @@ export const GoResources = () => {
         </div>
     );
 };
+
+interface BookProps {
+    countries: string[];
+    title: string | JSX.Element;
+    href?: string;
+    authors: (string | JSX.Element)[];
+    editions?: Array<{ country: string; title: string; href: string }>;
+}
+
+function Book({ countries, title, href, authors, editions }: BookProps) {
+    return (
+        <span>
+            {countries.map((cc) => (
+                <Flag key={cc} country={cc} />
+            ))}{" "}
+            {href ? (
+                <a rel="noopener" href={href}>
+                    {title}
+                </a>
+            ) : (
+                <>{title}</>
+            )}
+            {editions &&
+                editions.map((edition, idx) => (
+                    <React.Fragment key={idx}>
+                        {" "}
+                        <br />
+                        <span style={{ marginLeft: "1.7em" }}>
+                            <Flag country={edition.country} />
+                            <a rel="noopener" href={edition.href}>
+                                {edition.title}
+                            </a>
+                        </span>
+                    </React.Fragment>
+                ))}
+            {authors.map((author, idx) => (
+                <React.Fragment key={idx}>
+                    <br /> <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>{author}</span>
+                </React.Fragment>
+            ))}
+        </span>
+    );
+}
