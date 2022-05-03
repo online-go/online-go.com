@@ -1529,7 +1529,7 @@ function BasicResourceInner({ countries, title, href }: BasicResourceProps) {
         <>
             {countries.map((cc) => (
                 <Flag key={cc} country={cc} />
-            ))}
+            ))}{" "}
             {href ? (
                 <a rel="noopener" href={href}>
                     {title}
