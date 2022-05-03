@@ -168,17 +168,22 @@ export const GoResources = () => {
                                     },
                                 ]}
                             />,
-                            <Book
-                                countries={[en, gr, fr, br]}
-                                title={
-                                    <>
+                            <span>
+                                <div style={{ display: "flex", alignItems: "center" }}>
+                                    <span style={{ display: "inline-block", width: "2.5rem" }}>
+                                        <Flag country={en} /> <Flag country={gr} />
+                                        <Flag country={fr} /> <Flag country={br} />
+                                    </span>{" "}
+                                    <a rel="noopener" href="https://www.gobook.eu/">
                                         A Go Guide{" "}
                                         <span style={{ fontSize: "0.9em" }}>From a Beginner</span>
-                                    </>
-                                }
-                                href="https://www.gobook.eu/"
-                                authors={["Charalampos (Haris) Kapolos"]}
-                            />,
+                                    </a>
+                                </div>
+
+                                <span style={{ marginLeft: "1.7em", fontSize: "0.9em" }}>
+                                    Charalampos (Haris) Kapolos
+                                </span>
+                            </span>,
                             <Book
                                 countries={[en]}
                                 title="Shape Up!"
