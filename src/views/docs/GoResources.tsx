@@ -252,35 +252,33 @@ export const GoResources = () => {
                         {scramble(
                             <BasicResource
                                 countries={[en]}
-                                title={"Josekipedia"}
-                                href={"http://www.josekipedia.com/"}
+                                title="Josekipedia"
+                                href="http://www.josekipedia.com/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Eidogo's Pattern Search"}
-                                href={"http://eidogo.com/#search"}
+                                title="Eidogo's Pattern Search"
+                                href="http://eidogo.com/#search"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Waltheri's Pattern Search"}
-                                href={"http://ps.waltheri.net/"}
+                                title="Waltheri's Pattern Search"
+                                href="http://ps.waltheri.net/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"AlphaGo Teaching Tool"}
-                                href={"https://alphagoteach.deepmind.com/"}
+                                title="AlphaGo Teaching Tool"
+                                href="https://alphagoteach.deepmind.com/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Interactive Tutorial for Beginners"}
-                                href={"https://learn-go.net"}
+                                title="Interactive Tutorial for Beginners"
+                                href="https://learn-go.net"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"A Kid's Guide to Playing Go"}
-                                href={
-                                    "https://www.playgroundequipment.com/a-kids-guide-to-playing-go/"
-                                }
+                                title="A Kid's Guide to Playing Go"
+                                href="https://www.playgroundequipment.com/a-kids-guide-to-playing-go/"
                             />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
@@ -292,13 +290,13 @@ export const GoResources = () => {
                         {scramble(
                             <BasicResource
                                 countries={[en]}
-                                title={"Guo Juans Internet Go School"}
-                                href={"https://internetgoschool.com/index.vhtml.com"}
+                                title="Guo Juans Internet Go School"
+                                href="https://internetgoschool.com/index.vhtml.com"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Yunguseng Dojang's Online Go School"}
-                                href={"https://www.yunguseng.com/"}
+                                title="Yunguseng Dojang's Online Go School"
+                                href="https://www.yunguseng.com/"
                             />,
                             <span>
                                 <Flag country={en} />
@@ -309,8 +307,8 @@ export const GoResources = () => {
                             </span>,
                             <BasicResource
                                 countries={["jp"]}
-                                title={"Hoenkikaku Co, Ltd."}
-                                href={"https://www.hoenkikaku.co.jp/"}
+                                title="Hoenkikaku Co, Ltd."
+                                href="https://www.hoenkikaku.co.jp/"
                             />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
@@ -322,28 +320,28 @@ export const GoResources = () => {
                         {scramble(
                             <BasicResource
                                 countries={[en]}
-                                title={"GoProblems.com"}
-                                href={"http://www.goproblems.com"}
+                                title="GoProblems.com"
+                                href="http://www.goproblems.com"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"[PDF] Tsumego Collection"}
-                                href={"http://tsumego.tasuki.org/"}
+                                title="[PDF] Tsumego Collection"
+                                href="http://tsumego.tasuki.org/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Sahwal.com"}
-                                href={"http://sahwal.com"}
+                                title="Sahwal.com"
+                                href="http://sahwal.com"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Black To Play"}
-                                href={"https://blacktoplay.com/"}
+                                title="Black To Play"
+                                href="https://blacktoplay.com/"
                             />,
                             <BasicResource
                                 countries={[un]}
-                                title={"GoChild"}
-                                href={"http://gochild2009.appspot.com/?locale=en_US"}
+                                title="GoChild"
+                                href="http://gochild2009.appspot.com/?locale=en_US"
                             />,
                             <span>
                                 <Flag country={"cn"} />
@@ -354,13 +352,13 @@ export const GoResources = () => {
                             </span>,
                             <BasicResource
                                 countries={[un]}
-                                title={"3-2-1 Go"}
-                                href={"http://321go.org/"}
+                                title="3-2-1 Go"
+                                href="http://321go.org/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Ghost Go"}
-                                href={"https://www.ghost-go.com/"}
+                                title="Ghost Go"
+                                href="https://www.ghost-go.com/"
                             />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
@@ -372,30 +370,28 @@ export const GoResources = () => {
                         {scramble(
                             <BasicResource
                                 countries={[en]}
-                                title={"Go Commentary Videos"}
-                                href={"http://www.gocommentary.com/free-tutorial-videos.html"}
+                                title="Go Commentary Videos"
+                                href="http://www.gocommentary.com/free-tutorial-videos.html"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Baduk Movies"}
-                                href={"https://badukmovies.com/"}
+                                title="Baduk Movies"
+                                href="https://badukmovies.com/"
                             />,
                             <BasicResource
                                 countries={[eu]}
-                                title={"EuroGoTV Go Broadcasts"}
-                                href={"http://eurogotv.com/"}
+                                title="EuroGoTV Go Broadcasts"
+                                href="http://eurogotv.com/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Twitch Live Streams for Go"}
-                                href={"https://go.twitch.tv/directory/game/Go"}
+                                title="Twitch Live Streams for Go"
+                                href="https://go.twitch.tv/directory/game/Go"
                             />,
                             <BasicResource
                                 countries={[eu]}
-                                title={
-                                    "TED talk - How the ancient game of Go is a guide to modern life"
-                                }
-                                href={"https://www.youtube.com/watch?v=wQuh9YI8rn0"}
+                                title="TED talk - How the ancient game of Go is a guide to modern life"
+                                href="https://www.youtube.com/watch?v=wQuh9YI8rn0"
                             />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
@@ -428,8 +424,8 @@ export const GoResources = () => {
                             </span>,
                             <BasicResource
                                 countries={[en]}
-                                title={"Jonathan Markowitz"}
-                                href={"https://www.youtube.com/user/KNMeepsie"}
+                                title="Jonathan Markowitz"
+                                href="https://www.youtube.com/user/KNMeepsie"
                             />,
                             <span>
                                 <Flag country={en} /> <Flag country={ru} />{" "}
@@ -443,13 +439,13 @@ export const GoResources = () => {
                             </span>,
                             <BasicResource
                                 countries={[en]}
-                                title={"Nick Sibicky"}
-                                href={"https://www.youtube.com/user/nicksibicky/"}
+                                title="Nick Sibicky"
+                                href="https://www.youtube.com/user/nicksibicky/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Andrew Jackson"}
-                                href={"https://www.youtube.com/channel/UCGAASXnrt4FtYfFZ608PqHA"}
+                                title="Andrew Jackson"
+                                href="https://www.youtube.com/channel/UCGAASXnrt4FtYfFZ608PqHA"
                             />,
                             <span>
                                 <Flag country={en} />{" "}
@@ -463,75 +459,73 @@ export const GoResources = () => {
                             </span>,
                             <BasicResource
                                 countries={[en]}
-                                title={"Shusaku Games"}
-                                href={"https://www.youtube.com/user/tokinonagare27/"}
+                                title="Shusaku Games"
+                                href="https://www.youtube.com/user/tokinonagare27/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Haylee"}
-                                href={"https://www.youtube.com/channel/UCTji1kQNoWIH85dB_Vxka9g"}
+                                title="Haylee"
+                                href="https://www.youtube.com/channel/UCTji1kQNoWIH85dB_Vxka9g"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Littlelambgo"}
-                                href={"https://www.youtube.com/user/littlelambgo"}
+                                title="Littlelambgo"
+                                href="https://www.youtube.com/user/littlelambgo"
                             />,
                             <BasicResource
                                 countries={[eu]}
-                                title={"Murugandi"}
-                                href={
-                                    "http://www.eurogotv.com/index.php?menu=Video&log=trefwoordzoeken&trefwoord1=murugandi&pagina=5%20Murugandi"
-                                }
+                                title="Murugandi"
+                                href="http://www.eurogotv.com/index.php?menu=Video&log=trefwoordzoeken&trefwoord1=murugandi&pagina=5%20Murugandi"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Adrian Petrescu"}
-                                href={"https://www.youtube.com/user/apetresc"}
+                                title="Adrian Petrescu"
+                                href="https://www.youtube.com/user/apetresc"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"LongstrideBaduk"}
-                                href={"https://www.youtube.com/user/longstridebaduk"}
+                                title="LongstrideBaduk"
+                                href="https://www.youtube.com/user/longstridebaduk"
                             />,
                             <BasicResource
                                 countries={[it]}
-                                title={"Alessandro Pace"}
-                                href={"https://www.youtube.com/user/PaceAlessandro"}
+                                title="Alessandro Pace"
+                                href="https://www.youtube.com/user/PaceAlessandro"
                             />,
                             <BasicResource
                                 countries={[es]}
-                                title={"Escuela de Go en Bilbao"}
-                                href={"https://www.youtube.com/goenbilbao"}
+                                title="Escuela de Go en Bilbao"
+                                href="https://www.youtube.com/goenbilbao"
                             />,
                             <BasicResource
                                 countries={[es]}
-                                title={"Gogoratu Go"}
-                                href={"https://www.youtube.com/gogoratugo"}
+                                title="Gogoratu Go"
+                                href="https://www.youtube.com/gogoratugo"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"In Sente"}
-                                href={"https://www.youtube.com/channel/UCP14BOcc0Rg9-TXXv2I4AkA"}
+                                title="In Sente"
+                                href="https://www.youtube.com/channel/UCP14BOcc0Rg9-TXXv2I4AkA"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"BenKyo"}
-                                href={"https://www.youtube.com/channel/UCsH0N8Hc4e4AXTnZt8Hg6fQ"}
+                                title="BenKyo"
+                                href="https://www.youtube.com/channel/UCsH0N8Hc4e4AXTnZt8Hg6fQ"
                             />,
                             <BasicResource
                                 countries={[ar]}
-                                title={"Luciano Zinni"}
-                                href={"https://www.youtube.com/user/lucho4668 "}
+                                title="Luciano Zinni"
+                                href="https://www.youtube.com/user/lucho4668 "
                             />,
                             <BasicResource
                                 countries={[it]}
-                                title={"Diego Laurenti"}
-                                href={"https://www.youtube.com/user/jejosamurai "}
+                                title="Diego Laurenti"
+                                href="https://www.youtube.com/user/jejosamurai "
                             />,
                             <BasicResource
                                 countries={[es]}
-                                title={"Estudiando Go con Ini"}
-                                href={"https://www.youtube.com/EstudiandoGoconIni"}
+                                title="Estudiando Go con Ini"
+                                href="https://www.youtube.com/EstudiandoGoconIni"
                             />,
                             <span>
                                 <Flag country={en} />{" "}
@@ -568,15 +562,13 @@ export const GoResources = () => {
                             </span>,
                             <BasicResource
                                 countries={[en]}
-                                title={"New York Institute of Go"}
-                                href={
-                                    "https://www.youtube.com/channel/UCMp-4uv1jfVa0dXkZv3qQYA/videos"
-                                }
+                                title="New York Institute of Go"
+                                href="https://www.youtube.com/channel/UCMp-4uv1jfVa0dXkZv3qQYA/videos"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Yoon's Baduk Cafe"}
-                                href={"https://www.youtube.com/channel/UCQ7fRyWobKv_FejtqwUVImA"}
+                                title="Yoon's Baduk Cafe"
+                                href="https://www.youtube.com/channel/UCQ7fRyWobKv_FejtqwUVImA"
                             />,
                             <span>
                                 <Flag country={en} />{" "}
@@ -596,50 +588,50 @@ export const GoResources = () => {
                             </span>,
                             <BasicResource
                                 countries={[cn]}
-                                title={"围棋TV"}
-                                href={"https://www.youtube.com/channel/UC9BYxg8ZakiOvbDyO2eGLZw"}
+                                title="围棋TV"
+                                href="https://www.youtube.com/channel/UC9BYxg8ZakiOvbDyO2eGLZw"
                             />,
                             <BasicResource
                                 countries={[au]}
-                                title={"Lumbertruck Twitch"}
-                                href={"https://www.twitch.tv/lumbertruck"}
+                                title="Lumbertruck Twitch"
+                                href="https://www.twitch.tv/lumbertruck"
                             />,
                             <BasicResource
                                 countries={[ru]}
-                                title={"Alone Go"}
-                                href={"https://www.twitch.tv/alone_go"}
+                                title="Alone Go"
+                                href="https://www.twitch.tv/alone_go"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Gooplet"}
-                                href={"https://www.twitch.tv/gogogooplet"}
+                                title="Gooplet"
+                                href="https://www.twitch.tv/gogogooplet"
                             />,
                             <BasicResource
                                 countries={["tr"]}
-                                title={"Şibumi Go Okulu"}
-                                href={"https://www.youtube.com/channel/UCwTy0RGxDD2ZkQv-qCuWrAQ"}
+                                title="Şibumi Go Okulu"
+                                href="https://www.youtube.com/channel/UCwTy0RGxDD2ZkQv-qCuWrAQ"
                             />,
                             <BasicResource
                                 countries={["tr"]}
-                                title={"Istanbul Go Association"}
-                                href={"https://www.youtube.com/channel/UCzxYMKMGX_ZXXzBiLE9FVfw"}
+                                title="Istanbul Go Association"
+                                href="https://www.youtube.com/channel/UCzxYMKMGX_ZXXzBiLE9FVfw"
                             />,
 
                             <BasicResource
                                 countries={[jp]}
-                                title={"The Nihon Ki-in Youtube Channel (日本棋院囲碁チャンネル)"}
-                                href={"https://www.youtube.com/channel/UCl4UWklKYTaUOZAhSJAprWQ"}
+                                title="The Nihon Ki-in Youtube Channel (日本棋院囲碁チャンネル)"
+                                href="https://www.youtube.com/channel/UCl4UWklKYTaUOZAhSJAprWQ"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"Igo & Shogi"}
-                                href={"https://www.youtube.com/user/igoshogich"}
+                                title="Igo & Shogi"
+                                href="https://www.youtube.com/user/igoshogich"
                             />,
 
                             <BasicResource
                                 countries={["br"]}
-                                title={"Nihon Kiin do Brasil"}
-                                href={"https://www.twitch.tv/brasilnihonkiin"}
+                                title="Nihon Kiin do Brasil"
+                                href="https://www.twitch.tv/brasilnihonkiin"
                             />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
@@ -651,54 +643,54 @@ export const GoResources = () => {
                         {scramble(
                             <BasicResource
                                 countries={[en]}
-                                title={"Open Study Room"}
-                                href={"https://openstudyroom.org"}
+                                title="Open Study Room"
+                                href="https://openstudyroom.org"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"GoBase.org"}
-                                href={"http://gobase.org/"}
+                                title="GoBase.org"
+                                href="http://gobase.org/"
                             />,
                             <BasicResource
                                 countries={[fr]}
-                                title={"Revue Française de Go"}
-                                href={"http://rfg.jeudego.org/"}
+                                title="Revue Française de Go"
+                                href="http://rfg.jeudego.org/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Go4Go"}
-                                href={"http://www.go4go.net/"}
+                                title="Go4Go"
+                                href="http://www.go4go.net/"
                             />,
                             <BasicResource
                                 countries={["ro"]}
-                                title={"Despre GO"}
-                                href={"https://desprego.ro/"}
+                                title="Despre GO"
+                                href="https://desprego.ro/"
                             />,
 
                             <BasicResource
                                 countries={[en]}
-                                title={"Fuseki Database"}
-                                href={"http://www.fuseki.info"}
+                                title="Fuseki Database"
+                                href="http://www.fuseki.info"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Daily Joseki"}
-                                href={"http://www.dailyjoseki.com/"}
+                                title="Daily Joseki"
+                                href="http://www.dailyjoseki.com/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Sensei's Library"}
-                                href={"http://senseis.xmp.net/"}
+                                title="Sensei's Library"
+                                href="http://senseis.xmp.net/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"GoGameGuru"}
-                                href={"https://gogameguru.com/"}
+                                title="GoGameGuru"
+                                href="https://gogameguru.com/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Got Stats? - OGS Statistics"}
-                                href={"https://avavt.github.io/gotstats/"}
+                                title="Got Stats? - OGS Statistics"
+                                href="https://avavt.github.io/gotstats/"
                             />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
@@ -710,8 +702,8 @@ export const GoResources = () => {
                         {scramble(
                             <BasicResource
                                 countries={[en]}
-                                title={"Seferi's Blog"}
-                                href={"https://blog.seferi.org/"}
+                                title="Seferi's Blog"
+                                href="https://blog.seferi.org/"
                             />,
                             <span>
                                 <Flag country={en} />
@@ -722,185 +714,185 @@ export const GoResources = () => {
                             </span>,
                             <BasicResource
                                 countries={[en]}
-                                title={"A Baduk Blog"}
-                                href={"https://write.as/fraze/"}
+                                title="A Baduk Blog"
+                                href="https://write.as/fraze/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Yike Weiqi"}
-                                href={"https://twitter.com/yikego_en"}
+                                title="Yike Weiqi"
+                                href="https://twitter.com/yikego_en"
                             />,
                             <BasicResource
                                 countries={[fr]}
-                                title={"Art du Go"}
-                                href={"https://artdugo.fr"}
+                                title="Art du Go"
+                                href="https://artdugo.fr"
                             />,
                             <BasicResource
                                 countries={[es]}
-                                title={"Canbaduk"}
-                                href={"http://canbaduk.wordpress.com/"}
+                                title="Canbaduk"
+                                href="http://canbaduk.wordpress.com/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Weiqi to go!"}
-                                href={"http://weiqitogo.blogspot.com/"}
+                                title="Weiqi to go!"
+                                href="http://weiqitogo.blogspot.com/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"My Sanransei"}
-                                href={"http://mysanrensei.wordpress.com/"}
+                                title="My Sanransei"
+                                href="http://mysanrensei.wordpress.com/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"One Liberty Short"}
-                                href={"http://onelibertyshort.wordpress.com/"}
+                                title="One Liberty Short"
+                                href="http://onelibertyshort.wordpress.com/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Go of Ten"}
-                                href={"http://gooften.net/"}
+                                title="Go of Ten"
+                                href="http://gooften.net/"
                             />,
 
                             <BasicResource
                                 countries={[jp]}
-                                title={"週刊碁ブログ"}
-                                href={"https://blog.goo.ne.jp/shukango"}
+                                title="週刊碁ブログ"
+                                href="https://blog.goo.ne.jp/shukango"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"棋院海外室Go日記"}
-                                href={"https://blog.goo.ne.jp/kiin5"}
+                                title="棋院海外室Go日記"
+                                href="https://blog.goo.ne.jp/kiin5"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"囲碁ナショナルチーム「GO・碁・ジャパン」"}
-                                href={"http://blog.goo.ne.jp/nationalgo/"}
+                                title="囲碁ナショナルチーム「GO・碁・ジャパン」"
+                                href="http://blog.goo.ne.jp/nationalgo/"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"日本棋院市ヶ谷本院事業部イベントブログ"}
-                                href={"http://blog.goo.ne.jp/nihonkiin_event/"}
+                                title="日本棋院市ヶ谷本院事業部イベントブログ"
+                                href="http://blog.goo.ne.jp/nihonkiin_event/"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"有楽町囲碁センター"}
-                                href={"http://blog.goo.ne.jp/yurakuchoigo/"}
+                                title="有楽町囲碁センター"
+                                href="http://blog.goo.ne.jp/yurakuchoigo/"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"日本棋院関西総本部"}
-                                href={"https://blog.goo.ne.jp/osakaigo"}
+                                title="日本棋院関西総本部"
+                                href="https://blog.goo.ne.jp/osakaigo"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"囲碁ステーション (Go Station)"}
-                                href={"https://blog.goo.ne.jp/igo-station"}
+                                title="囲碁ステーション (Go Station)"
+                                href="https://blog.goo.ne.jp/igo-station"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"囲碁日記 (Go Diary)"}
-                                href={"http://blog.goo.ne.jp/igo_nikki"}
+                                title="囲碁日記 (Go Diary)"
+                                href="http://blog.goo.ne.jp/igo_nikki"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"尾越一郎九段囲碁普及活動"}
-                                href={"https://blog.goo.ne.jp/ogoshi-igo"}
+                                title="尾越一郎九段囲碁普及活動"
+                                href="https://blog.goo.ne.jp/ogoshi-igo"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"関西棋士会"}
-                                href={"http://blog.goo.ne.jp/kansaikishikai/"}
+                                title="関西棋士会"
+                                href="http://blog.goo.ne.jp/kansaikishikai/"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"このごろの下島八段と大表二段"}
-                                href={"http://blog.goo.ne.jp/15toyama/"}
+                                title="このごろの下島八段と大表二段"
+                                href="http://blog.goo.ne.jp/15toyama/"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"白石勇一の囲碁日記"}
-                                href={"http://blog.goo.ne.jp/igoshiraishi"}
+                                title="白石勇一の囲碁日記"
+                                href="http://blog.goo.ne.jp/igoshiraishi"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"鈴木伊佐男七段の風来日記"}
-                                href={"http://ichao1515.jugem.jp/"}
+                                title="鈴木伊佐男七段の風来日記"
+                                href="http://ichao1515.jugem.jp/"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"そらちで囲碁"}
-                                href={"https://blog.goo.ne.jp/ye_igo"}
+                                title="そらちで囲碁"
+                                href="https://blog.goo.ne.jp/ye_igo"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"たかお日記"}
-                                href={"http://blog.goo.ne.jp/s-takao-san/"}
+                                title="たかお日記"
+                                href="http://blog.goo.ne.jp/s-takao-san/"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"竹清勇の囲碁の宝石箱"}
-                                href={"http://blog.goo.ne.jp/starnine"}
+                                title="竹清勇の囲碁の宝石箱"
+                                href="http://blog.goo.ne.jp/starnine"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"千寿の碁紀行"}
-                                href={"http://blog.goo.ne.jp/33612534201"}
+                                title="千寿の碁紀行"
+                                href="http://blog.goo.ne.jp/33612534201"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"時々囲碁日誌+"}
-                                href={"http://blog.goo.ne.jp/kodomoigo111"}
+                                title="時々囲碁日誌+"
+                                href="http://blog.goo.ne.jp/kodomoigo111"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"なかねっと"}
-                                href={"http://blog.goo.ne.jp/nakanet_2009/"}
+                                title="なかねっと"
+                                href="http://blog.goo.ne.jp/nakanet_2009/"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"nagoya amigo"}
-                                href={"http://ameblo.jp/nagoyaamigo/"}
+                                title="nagoya amigo"
+                                href="http://ameblo.jp/nagoyaamigo/"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"名古屋棋士会"}
-                                href={"http://blog.goo.ne.jp/nagoyakishikai/"}
+                                title="名古屋棋士会"
+                                href="http://blog.goo.ne.jp/nagoyakishikai/"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"ひろふみのブログ☆"}
-                                href={"https://blog.goo.ne.jp/minamijyuujisei_1984"}
+                                title="ひろふみのブログ☆"
+                                href="https://blog.goo.ne.jp/minamijyuujisei_1984"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"三谷哲也の囲碁日記"}
-                                href={"http://blog.goo.ne.jp/yamaneko1985/"}
+                                title="三谷哲也の囲碁日記"
+                                href="http://blog.goo.ne.jp/yamaneko1985/"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"三村囲碁jp"}
-                                href={"http://mimura15.jp/"}
+                                title="三村囲碁jp"
+                                href="http://mimura15.jp/"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"向井3姉妹のGO！GO！Diary☆"}
-                                href={"http://blog.goo.ne.jp/mukai3shimai"}
+                                title="向井3姉妹のGO！GO！Diary☆"
+                                href="http://blog.goo.ne.jp/mukai3shimai"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"吉原由香里のつれづれ日記"}
-                                href={"http://yukarigo.at.webry.info/"}
+                                title="吉原由香里のつれづれ日記"
+                                href="http://yukarigo.at.webry.info/"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"ヨダログ"}
-                                href={"http://blog.goo.ne.jp/yoda_norimoto"}
+                                title="ヨダログ"
+                                href="http://blog.goo.ne.jp/yoda_norimoto"
                             />,
 
                             <BasicResource
                                 countries={[es]}
-                                title={"361 Puntos"}
-                                href={"http://361puntos.blogspot.com/"}
+                                title="361 Puntos"
+                                href="http://361puntos.blogspot.com/"
                             />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
@@ -912,44 +904,44 @@ export const GoResources = () => {
                         {scramble(
                             <BasicResource
                                 countries={[en]}
-                                title={"Life in 19x19"}
-                                href={"http://www.lifein19x19.com/forum/"}
+                                title="Life in 19x19"
+                                href="http://www.lifein19x19.com/forum/"
                             />,
                             <BasicResource
                                 countries={[fr]}
-                                title={"GO.ON"}
-                                href={"http://go-on.forumactif.com/"}
+                                title="GO.ON"
+                                href="http://go-on.forumactif.com/"
                             />,
                             <BasicResource
                                 countries={[fr]}
-                                title={"FFG"}
-                                href={"http://forum.jeudego.org/"}
+                                title="FFG"
+                                href="http://forum.jeudego.org/"
                             />,
 
                             <BasicResource
                                 countries={[en]}
-                                title={"Reddit"}
-                                href={"http://www.reddit.com/r/baduk/"}
+                                title="Reddit"
+                                href="http://www.reddit.com/r/baduk/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"OGS Forums"}
-                                href={"https://forums.online-go.com/"}
+                                title="OGS Forums"
+                                href="https://forums.online-go.com/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Go4Go Forums"}
-                                href={"http://www.go4go.net/go/forum"}
+                                title="Go4Go Forums"
+                                href="http://www.go4go.net/go/forum"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Tiger's Mouth"}
-                                href={"http://tigersmouth.org/"}
+                                title="Tiger's Mouth"
+                                href="http://tigersmouth.org/"
                             />,
                             <BasicResource
                                 countries={[de]}
-                                title={"DGoB"}
-                                href={"http://www.dgob.de/yabbse/index.php"}
+                                title="DGoB"
+                                href="http://www.dgob.de/yabbse/index.php"
                             />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
@@ -961,53 +953,53 @@ export const GoResources = () => {
                         {scramble(
                             <BasicResource
                                 countries={[un]}
-                                title={"[KGS] KGS Go Server"}
-                                href={"http://www.gokgs.com/"}
+                                title="[KGS] KGS Go Server"
+                                href="http://www.gokgs.com/"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"[IGS] Internet Go Server"}
-                                href={"http://pandanet-igs.com/"}
+                                title="[IGS] Internet Go Server"
+                                href="http://pandanet-igs.com/"
                             />,
                             <BasicResource
                                 countries={[kr]}
-                                title={"Tygem"}
-                                href={"http://www.tygem.com/"}
+                                title="Tygem"
+                                href="http://www.tygem.com/"
                             />,
                             <BasicResource
                                 countries={[kr]}
-                                title={"WBaduk"}
-                                href={"http://www.wbaduk.com/"}
+                                title="WBaduk"
+                                href="http://www.wbaduk.com/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Go Shrine"}
-                                href={"http://goshrine.com/"}
+                                title="Go Shrine"
+                                href="http://goshrine.com/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Fly or Die"}
-                                href={"http://www.flyordie.com/go/"}
+                                title="Fly or Die"
+                                href="http://www.flyordie.com/go/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Fun Node"}
-                                href={"http://www.funnode.com/games/go"}
+                                title="Fun Node"
+                                href="http://www.funnode.com/games/go"
                             />,
                             <BasicResource
                                 countries={[un]}
-                                title={"[DGS] Dragon Go Server"}
-                                href={"http://www.dragongoserver.net/"}
+                                title="[DGS] Dragon Go Server"
+                                href="http://www.dragongoserver.net/"
                             />,
                             <BasicResource
                                 countries={[un]}
-                                title={"[OGS] Online-Go.com"}
-                                href={"https://www.online-go.com/"}
+                                title="[OGS] Online-Go.com"
+                                href="https://www.online-go.com/"
                             />,
                             <BasicResource
                                 countries={[cn]}
-                                title={"[LKGS] Lanke Go Server"}
-                                href={"http://lanke.cc/"}
+                                title="[LKGS] Lanke Go Server"
+                                href="http://lanke.cc/"
                             />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
@@ -1019,113 +1011,113 @@ export const GoResources = () => {
                         {scramble(
                             <BasicResource
                                 countries={[us]}
-                                title={"American Go Association"}
-                                href={"http://www.usgo.org/"}
+                                title="American Go Association"
+                                href="http://www.usgo.org/"
                             />,
                             <BasicResource
                                 countries={["gb"]}
-                                title={"British Go Association"}
-                                href={"http://britgo.org/"}
+                                title="British Go Association"
+                                href="http://britgo.org/"
                             />,
                             <BasicResource
                                 countries={["ie"]}
-                                title={"Irish Go Association"}
-                                href={"https://www.irish-go.org"}
+                                title="Irish Go Association"
+                                href="https://www.irish-go.org"
                             />,
                             <BasicResource
                                 countries={[ca]}
-                                title={"Canadian Go Association"}
-                                href={"http://go-canada.org/"}
+                                title="Canadian Go Association"
+                                href="http://go-canada.org/"
                             />,
                             <BasicResource
                                 countries={[de]}
-                                title={"Deutscher Go-Bund"}
-                                href={"http://dgob.de/"}
+                                title="Deutscher Go-Bund"
+                                href="http://dgob.de/"
                             />,
                             <BasicResource
                                 countries={[au]}
-                                title={"Australian Go Association"}
-                                href={"http://www.australiango.asn.au/"}
+                                title="Australian Go Association"
+                                href="http://www.australiango.asn.au/"
                             />,
                             <BasicResource
                                 countries={[un]}
-                                title={"International Go Federation"}
-                                href={"http://intergofed.org/"}
+                                title="International Go Federation"
+                                href="http://intergofed.org/"
                             />,
                             <BasicResource
                                 countries={["rs"]}
-                                title={"Go Savez Srbije"}
-                                href={"http://goss.rs/"}
+                                title="Go Savez Srbije"
+                                href="http://goss.rs/"
                             />,
                             <BasicResource
                                 countries={[eu]}
-                                title={"European Go Federation"}
-                                href={"http://www.eurogofed.org/"}
+                                title="European Go Federation"
+                                href="http://www.eurogofed.org/"
                             />,
                             <BasicResource
                                 countries={["cy"]}
-                                title={"Cyprus Go Association"}
-                                href={"http://www.cyprus-go.org/"}
+                                title="Cyprus Go Association"
+                                href="http://www.cyprus-go.org/"
                             />,
                             <BasicResource
                                 countries={["ar"]}
-                                title={"Asociación Argentina de Go"}
-                                href={"http://www.go.org.ar/"}
+                                title="Asociación Argentina de Go"
+                                href="http://www.go.org.ar/"
                             />,
                             <BasicResource
                                 countries={["us"]}
-                                title={"American Go Foundation"}
-                                href={"http://agfgo.org/"}
+                                title="American Go Foundation"
+                                href="http://agfgo.org/"
                             />,
                             <BasicResource
                                 countries={["es"]}
-                                title={"Asociación Española de GO"}
-                                href={"http://aego.biz/"}
+                                title="Asociación Española de GO"
+                                href="http://aego.biz/"
                             />,
                             <BasicResource
                                 countries={["se"]}
-                                title={"Svenska Goförbundet"}
-                                href={"http://goforbundet.se"}
+                                title="Svenska Goförbundet"
+                                href="http://goforbundet.se"
                             />,
                             <BasicResource
                                 countries={[it]}
-                                title={"Italian Federation of Go"}
-                                href={"https://figg.org"}
+                                title="Italian Federation of Go"
+                                href="https://figg.org"
                             />,
                             <BasicResource
                                 countries={[nl]}
-                                title={"Dutch Go Association"}
-                                href={"https://www.gobond.nl"}
+                                title="Dutch Go Association"
+                                href="https://www.gobond.nl"
                             />,
                             <BasicResource
                                 countries={["ru"]}
-                                title={"Russian Go Federation"}
-                                href={"http://gofederation.ru"}
+                                title="Russian Go Federation"
+                                href="http://gofederation.ru"
                             />,
                             <BasicResource
                                 countries={["pt"]}
-                                title={"Associação Portuguesa de Go"}
-                                href={"http://www.go-portugal.org"}
+                                title="Associação Portuguesa de Go"
+                                href="http://www.go-portugal.org"
                             />,
                             <BasicResource
                                 countries={["cl"]}
-                                title={"Chilean Go Federation"}
-                                href={"http://www.igochile.cl/"}
+                                title="Chilean Go Federation"
+                                href="http://www.igochile.cl/"
                             />,
                             <BasicResource
                                 countries={["mx"]}
-                                title={"Mexican Association of Go"}
-                                href={"http://go.org.mx/ "}
+                                title="Mexican Association of Go"
+                                href="http://go.org.mx/ "
                             />,
                             <BasicResource
                                 countries={["tr"]}
-                                title={"Istanbul Go Association"}
-                                href={"https://www.istanbulgo.org/"}
+                                title="Istanbul Go Association"
+                                href="https://www.istanbulgo.org/"
                             />,
                             <BasicResource
                                 countries={["br"]}
-                                title={"Nihon Kiin do Brasil"}
-                                href={"http://www.nihonkiin.com.br/"}
+                                title="Nihon Kiin do Brasil"
+                                href="http://www.nihonkiin.com.br/"
                             />,
 
                             <span>
@@ -1153,23 +1145,23 @@ export const GoResources = () => {
 
                             <BasicResource
                                 countries={[jp]}
-                                title={"Japan Go Federation"}
-                                href={"https://jgof.or.jp/"}
+                                title="Japan Go Federation"
+                                href="https://jgof.or.jp/"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"Igo & Shogi Channel Inc."}
-                                href={"https://www.igoshogi.net/"}
+                                title="Igo & Shogi Channel Inc."
+                                href="https://www.igoshogi.net/"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"関西棋院 (Kansai Ki-in), Osaka Japan"}
-                                href={"https://kansaikiin.jp/"}
+                                title="関西棋院 (Kansai Ki-in), Osaka Japan"
+                                href="https://kansaikiin.jp/"
                             />,
                             <BasicResource
                                 countries={["il"]}
-                                title={"Israeli Go Association"}
-                                href={"https://igo.org.il/"}
+                                title="Israeli Go Association"
+                                href="https://igo.org.il/"
                             />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
@@ -1181,13 +1173,13 @@ export const GoResources = () => {
                         {scramble(
                             <BasicResource
                                 countries={[us]}
-                                title={"Baduk Club"}
-                                href={"https://baduk.club/"}
+                                title="Baduk Club"
+                                href="https://baduk.club/"
                             />,
                             <BasicResource
                                 countries={[us]}
-                                title={"GoClubsOnline"}
-                                href={"https://www.goclubs.org/"}
+                                title="GoClubsOnline"
+                                href="https://www.goclubs.org/"
                             />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
@@ -1199,18 +1191,18 @@ export const GoResources = () => {
                         {scramble(
                             <BasicResource
                                 countries={[en]}
-                                title={"AGF Lesson Plan Cooperative"}
-                                href={"http://agfgo.org/pages/lessonplancoop.php"}
+                                title="AGF Lesson Plan Cooperative"
+                                href="http://agfgo.org/pages/lessonplancoop.php"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"AGF Teaching Programs Grants"}
-                                href={"http://agfgo.org/pages/grants.php"}
+                                title="AGF Teaching Programs Grants"
+                                href="http://agfgo.org/pages/grants.php"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"AGF Scholarship Programs"}
-                                href={"http://agfgo.org/pages/scholarships.php"}
+                                title="AGF Scholarship Programs"
+                                href="http://agfgo.org/pages/scholarships.php"
                             />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
@@ -1222,48 +1214,48 @@ export const GoResources = () => {
                         {scramble(
                             <BasicResource
                                 countries={[us]}
-                                title={"Yellow Mountain Imports"}
-                                href={"http://www.ymimports.com/"}
+                                title="Yellow Mountain Imports"
+                                href="http://www.ymimports.com/"
                             />,
                             <BasicResource
                                 countries={[au]}
-                                title={"Institute 361"}
-                                href={"https://institute361.com/"}
+                                title="Institute 361"
+                                href="https://institute361.com/"
                             />,
                             <BasicResource
                                 countries={[gb]}
-                                title={"Masters of Games"}
-                                href={"https://www.mastersofgames.com/cat/board/go.htm"}
+                                title="Masters of Games"
+                                href="https://www.mastersofgames.com/cat/board/go.htm"
                             />,
                             <BasicResource
                                 countries={[de]}
-                                title={"Hebsacker Verlag"}
-                                href={"http://www.hebsacker-verlag.de/index.php"}
+                                title="Hebsacker Verlag"
+                                href="http://www.hebsacker-verlag.de/index.php"
                             />,
                             <BasicResource
                                 countries={[nl]}
-                                title={"Goshop Keima"}
-                                href={"http://www.goshop-keima.com/"}
+                                title="Goshop Keima"
+                                href="http://www.goshop-keima.com/"
                             />,
                             <BasicResource
                                 countries={[us]}
-                                title={"AGF Store"}
-                                href={"http://agfgo.org/pages/store-playing.php"}
+                                title="AGF Store"
+                                href="http://agfgo.org/pages/store-playing.php"
                             />,
                             <BasicResource
                                 countries={[us]}
-                                title={"Exotic Go Stones"}
-                                href={"http://www.algorithmicartisan.com/gostones/"}
+                                title="Exotic Go Stones"
+                                href="http://www.algorithmicartisan.com/gostones/"
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"Kurokigoishi"}
-                                href={"http://www.kurokigoishi.co.jp/english/"}
+                                title="Kurokigoishi"
+                                href="http://www.kurokigoishi.co.jp/english/"
                             />,
                             <BasicResource
                                 countries={["se"]}
-                                title={"Gobutiken"}
-                                href={"http://gobutiken.se"}
+                                title="Gobutiken"
+                                href="http://gobutiken.se"
                             />,
                             <span>
                                 <Flag country={"au"} />{" "}
@@ -1285,28 +1277,28 @@ export const GoResources = () => {
                         {scramble(
                             <BasicResource
                                 countries={[en]}
-                                title={"Empty Triangle"}
-                                href={"http://www.emptytriangle.com/"}
+                                title="Empty Triangle"
+                                href="http://www.emptytriangle.com/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Aji's Quest"}
-                                href={"http://home.earthlink.net/~inkwolf/Inkwolf/Ajis_Quest.html"}
+                                title="Aji's Quest"
+                                href="http://home.earthlink.net/~inkwolf/Inkwolf/Ajis_Quest.html"
                             />,
                             <BasicResource
                                 countries={[de]}
-                                title={"Aji's Quest (German)"}
-                                href={"http://www.rwro.de/"}
+                                title="Aji's Quest (German)"
+                                href="http://www.rwro.de/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"Almost Sente"}
-                                href={"http://almostsente.tumblr.com/"}
+                                title="Almost Sente"
+                                href="http://almostsente.tumblr.com/"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"The Better move"}
-                                href={"http://tigersmouth.org/articles.php?article_id=49"}
+                                title="The Better move"
+                                href="http://tigersmouth.org/articles.php?article_id=49"
                             />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
@@ -1318,13 +1310,13 @@ export const GoResources = () => {
                         {scramble(
                             <BasicResource
                                 countries={[en]}
-                                title={"Playing A game of Go"}
-                                href={"https://www.youtube.com/watch?v=dVd959KJWEI"}
+                                title="Playing A game of Go"
+                                href="https://www.youtube.com/watch?v=dVd959KJWEI"
                             />,
                             <BasicResource
                                 countries={[en]}
-                                title={"The Game of Go - Chris Linn [1981 Swedish New-Wave]"}
-                                href={"https://www.youtube.com/watch?v=-EwuqJfwOU4"}
+                                title="The Game of Go - Chris Linn [1981 Swedish New-Wave]"
+                                href="https://www.youtube.com/watch?v=-EwuqJfwOU4"
                             />,
                             <span>
                                 <Flag country={en} />{" "}
@@ -1343,8 +1335,8 @@ export const GoResources = () => {
                             </span>,
                             <BasicResource
                                 countries={[en]}
-                                title={"Tesuji"}
-                                href={"https://www.youtube.com/watch?v=quEN6FE90bM"}
+                                title="Tesuji"
+                                href="https://www.youtube.com/watch?v=quEN6FE90bM"
                             />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
