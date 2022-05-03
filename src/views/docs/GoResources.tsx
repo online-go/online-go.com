@@ -632,7 +632,7 @@ export const GoResources = () => {
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"Igo &amp; Shogi"}
+                                title={"Igo & Shogi"}
                                 href={"https://www.youtube.com/user/igoshogich"}
                             />,
 
@@ -1158,7 +1158,7 @@ export const GoResources = () => {
                             />,
                             <BasicResource
                                 countries={[jp]}
-                                title={"Igo &amp; Shogi Channel Inc."}
+                                title={"Igo & Shogi Channel Inc."}
                                 href={"https://www.igoshogi.net/"}
                             />,
                             <BasicResource
