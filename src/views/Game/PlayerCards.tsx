@@ -19,7 +19,6 @@ import * as React from "react";
 import { Goban, Score, PlayerScore } from "goban";
 import { icon_size_url } from "PlayerIcon";
 import { CountDown } from "./CountDown";
-import { Flag } from "Flag";
 import { ChatPresenceIndicator } from "ChatPresenceIndicator";
 import { Clock } from "Clock";
 import { Player } from "Player";
@@ -300,9 +299,6 @@ function PlayerCard({
                                 <CountDown to={auto_resign_expiration} />
                             </div>
                         )}
-                        <div className="player-flag">
-                            <Flag country={player.country ?? "un"} />
-                        </div>
                         <ChatPresenceIndicator channel={chat_channel} userId={player.id} />
                     </div>
                 )}
