@@ -43,7 +43,6 @@ import {
     AnalysisTool,
     JGOFPlayerSummary,
     JGOFNumericPlayerColor,
-    GoEnginePlayerEntry,
 } from "goban";
 import { isLiveGame } from "TimeControl";
 import { get_network_latency, get_clock_drift } from "sockets";
@@ -112,10 +111,10 @@ export function Game(): JSX.Element {
     const [selected_chat_log, set_selected_chat_log] = React.useState<ChatMode>("main");
     const [variation_name, set_variation_name] = React.useState("");
     const [strict_seki_mode, set_strict_seki_mode] = React.useState(false);
-    const [historical_black, set_historical_black] = React.useState<GoEnginePlayerEntry | null>(
+    const [historical_black, set_historical_black] = React.useState<rest_api.games.Player | null>(
         null,
     );
-    const [historical_white, set_historical_white] = React.useState<GoEnginePlayerEntry | null>(
+    const [historical_white, set_historical_white] = React.useState<rest_api.games.Player | null>(
         null,
     );
     const [annulled, set_annulled] = React.useState(false);

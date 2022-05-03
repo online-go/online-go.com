@@ -18,7 +18,7 @@
 import * as React from "react";
 import * as data from "data";
 import * as preferences from "preferences";
-import { Goban, GoEnginePlayerEntry } from "goban";
+import { Goban } from "goban";
 import { api1, post, del } from "requests";
 import { Dock } from "Dock";
 import { Link } from "react-router-dom";
@@ -43,8 +43,8 @@ interface DockProps {
     tournament_id?: number;
     ladder_id?: number;
     ai_review_enabled: boolean;
-    historical_black: GoEnginePlayerEntry | null;
-    historical_white: GoEnginePlayerEntry | null;
+    historical_black: rest_api.games.Player | null;
+    historical_white: rest_api.games.Player | null;
     onZenClicked: () => void;
     onCoordinatesClicked: () => void;
     onAIReviewClicked: () => void;
@@ -94,8 +94,8 @@ export function GameDock({
     const unannulable = annulled && engine.config.ranked;
     const user_is_player = engine.isParticipant(user.id);
 
-    const review = !!review_id || null;
-    const game = !!game_id || null;
+    const review = !!review_id;
+    const game = !!game_id;
     if (review) {
         superuser_ai_review_ready = false;
         mod = false;
@@ -199,9 +199,7 @@ export function GameDock({
                 _(
                     'Please report the player that is a problem by clicking on their name and selecting "Report".',
                 ),
-            )
-                .then(() => 0)
-                .catch(ignore);
+            ).catch(swal.noop);
         } else {
             openReport(obj);
         }
@@ -210,9 +208,7 @@ export function GameDock({
     // Mod Functions
     const decide = (winner: string): void => {
         if (!game_id) {
-            swal("Game ID missing", "You cannot make a decision without a game ID!").catch(
-                swal.noop,
-            );
+            swal(_("Game ID missing")).catch(swal.noop);
             return;
         }
 
@@ -235,7 +231,7 @@ export function GameDock({
     const decide_tie = () => decide("tie");
     const force_autoscore = () => {
         if (!game_id) {
-            swal("Game ID missing", "You cannot autoscore without a game ID!").catch(swal.noop);
+            swal(_("Game ID missing")).catch(swal.noop);
             return;
         }
 
@@ -255,7 +251,7 @@ export function GameDock({
     };
     const do_annul = (tf: boolean): void => {
         if (!game_id) {
-            swal("Game ID missing", "You cannot annul without a game ID!").catch(swal.noop);
+            swal(_("Game ID missing")).catch(swal.noop);
             return;
         }
 
