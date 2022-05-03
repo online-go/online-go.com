@@ -39,12 +39,12 @@ interface DockProps {
     annulled: boolean;
     review_id?: number;
     game_id?: number;
-    selected_ai_review_uuid: number;
+    selected_ai_review_uuid: string | null;
     tournament_id?: number;
     ladder_id?: number;
     ai_review_enabled: boolean;
-    historical_black?: GoEnginePlayerEntry;
-    historical_white?: GoEnginePlayerEntry;
+    historical_black: GoEnginePlayerEntry | null;
+    historical_white: GoEnginePlayerEntry | null;
     onZenClicked: () => void;
     onCoordinatesClicked: () => void;
     onAIReviewClicked: () => void;
@@ -109,18 +109,18 @@ export function GameDock({
         // ignore error
     }
 
-    let sgf_url = null;
+    const sgf_url = game_id
+        ? api1(`games/${game_id}/sgf`)
+        : api1(`reviews/${review_id}/sgf?without-comments=1`);
     let sgf_with_comments_url = null;
     let sgf_with_ai_review_url = null;
     if (game_id) {
-        sgf_url = api1(`games/${game_id}/sgf`);
         if (selected_ai_review_uuid) {
             sgf_with_ai_review_url = api1(
                 `games/${game_id}/sgf?ai_review=${selected_ai_review_uuid}`,
             );
         }
     } else {
-        sgf_url = api1(`reviews/${review_id}/sgf?without-comments=1`);
         sgf_with_comments_url = api1(`reviews/${review_id}/sgf`);
     }
 
@@ -216,7 +216,7 @@ export function GameDock({
             return;
         }
 
-        let moderation_note = null;
+        let moderation_note: string | null = null;
         do {
             moderation_note = prompt("Deciding for " + winner.toUpperCase() + " - Moderator note:");
             if (moderation_note == null) {
@@ -239,7 +239,7 @@ export function GameDock({
             return;
         }
 
-        let moderation_note = null;
+        let moderation_note: string | null = null;
         do {
             moderation_note = prompt("Autoscoring game - Moderator note:");
             if (moderation_note == null) {
@@ -259,7 +259,7 @@ export function GameDock({
             return;
         }
 
-        let moderation_note = null;
+        let moderation_note: string | null = null;
         do {
             moderation_note = tf
                 ? prompt(_("ANNULMENT - Moderator note:"))

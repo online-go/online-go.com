@@ -43,6 +43,7 @@ import {
     AnalysisTool,
     JGOFPlayerSummary,
     JGOFNumericPlayerColor,
+    GoEnginePlayerEntry,
 } from "goban";
 import { isLiveGame } from "TimeControl";
 import { get_network_latency, get_clock_drift } from "sockets";
@@ -111,8 +112,12 @@ export function Game(): JSX.Element {
     const [selected_chat_log, set_selected_chat_log] = React.useState<ChatMode>("main");
     const [variation_name, set_variation_name] = React.useState("");
     const [strict_seki_mode, set_strict_seki_mode] = React.useState(false);
-    const [historical_black, set_historical_black] = React.useState(null);
-    const [historical_white, set_historical_white] = React.useState(null);
+    const [historical_black, set_historical_black] = React.useState<GoEnginePlayerEntry | null>(
+        null,
+    );
+    const [historical_white, set_historical_white] = React.useState<GoEnginePlayerEntry | null>(
+        null,
+    );
     const [annulled, set_annulled] = React.useState(false);
     const [black_auto_resign_expiration, set_black_auto_resign_expiration] =
         React.useState<Date>(null);
@@ -122,7 +127,9 @@ export function Game(): JSX.Element {
         preferences.get("ai-review-enabled"),
     );
     const [phase, set_phase] = React.useState<GoEnginePhase>();
-    const [selected_ai_review_uuid, set_selected_ai_review_uuid] = React.useState(null);
+    const [selected_ai_review_uuid, set_selected_ai_review_uuid] = React.useState<string | null>(
+        null,
+    );
     const [show_game_timing, set_show_game_timing] = React.useState(false);
     const [submitting_move, set_submitting_move] = React.useState(false);
     const [score, set_score] = React.useState<Score>();
