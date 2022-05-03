@@ -301,7 +301,7 @@ function PlayerCard({
                             </div>
                         )}
                         <div className="player-flag">
-                            <Flag country={player.country ?? "un"} />
+                            <Flag country={player.country} />
                         </div>
                         <ChatPresenceIndicator channel={chat_channel} userId={player.id} />
                     </div>
