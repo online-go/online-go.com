@@ -38,7 +38,7 @@ function scramble<T>(...args: T[]) {
 export const GoResources = () => {
     window.document.title = _("Other Go Resources");
 
-    const country = data.get("user").country || "us";
+    const country = data.get("user")?.country || "us";
     const fr = getLanguageFlag("french", country, "fr");
     const en = getLanguageFlag("english", country, "us");
     const es = getLanguageFlag("spanish", country, "es");
