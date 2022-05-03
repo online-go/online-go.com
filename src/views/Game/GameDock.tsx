@@ -83,19 +83,23 @@ export function GameDock({
     const engine = goban.engine;
     const phase = engine.phase;
 
-    let superuser_ai_review_ready = (data.get("user").is_superuser && phase === "finished") || null;
-    let mod = (goban && data.get("user").is_moderator && phase !== "finished") || null;
-    let annul = (goban && data.get("user").is_moderator && phase === "finished") || null;
-    const annulable = (goban && !annulled && engine.config.ranked) || null;
-    const unannulable = (goban && annulled && engine.config.ranked) || null;
-    const user_is_player = engine.isParticipant(data.get("user").id);
+    const user = data.get("user");
+    if (!user) {
+        return <React.Fragment />;
+    }
+    let superuser_ai_review_ready = user.is_superuser && phase === "finished";
+    let mod = user.is_moderator && phase !== "finished";
+    let annul = user.is_moderator && phase === "finished";
+    const annulable = !annulled && engine.config.ranked;
+    const unannulable = annulled && engine.config.ranked;
+    const user_is_player = engine.isParticipant(user.id);
 
     const review = !!review_id || null;
     const game = !!game_id || null;
     if (review) {
-        superuser_ai_review_ready = null;
-        mod = null;
-        annul = null;
+        superuser_ai_review_ready = false;
+        mod = false;
+        annul = false;
     }
 
     let sgf_download_enabled = false;
@@ -138,15 +142,15 @@ export function GameDock({
     };
 
     const showGameInfo = () => {
-        for (const k of ["komi", "rules", "handicap", "rengo", "rengo_teams"]) {
-            goban.config[k] = goban.engine.config[k];
+        for (const k of ["komi", "rules", "handicap", "rengo", "rengo_teams"] as const) {
+            (goban.config as any)[k] = goban.engine.config[k];
         }
         openGameInfoModal(
             goban.config,
             historical_black || goban.engine.players.black,
             historical_white || goban.engine.players.white,
             annulled,
-            game_control.creator_id || goban.review_owner_id,
+            game_control.creator_id || goban.review_owner_id || 0,
         );
     };
 
@@ -156,11 +160,11 @@ export function GameDock({
     const toggleVolume = () => {
         _setVolume(volume > 0 ? 0 : 0.5);
     };
-    const setVolume = (ev) => {
+    const setVolume = (ev: { target: { value: string } }) => {
         const new_volume = parseFloat(ev.target.value);
         _setVolume(new_volume);
     };
-    const _setVolume = (volume) => {
+    const _setVolume = (volume: number) => {
         sfx.setVolume("master", volume);
         set_volume(volume);
 
@@ -176,6 +180,9 @@ export function GameDock({
 
     const alertModerator = () => {
         const user = data.get("user");
+        if (!user) {
+            return;
+        }
         const obj: any = game_id
             ? { reported_game_id: game_id }
             : { reported_review_id: review_id };
@@ -201,7 +208,14 @@ export function GameDock({
     };
 
     // Mod Functions
-    const decide = (winner): void => {
+    const decide = (winner: string): void => {
+        if (!game_id) {
+            swal("Game ID missing", "You cannot make a decision without a game ID!").catch(
+                swal.noop,
+            );
+            return;
+        }
+
         let moderation_note = null;
         do {
             moderation_note = prompt("Deciding for " + winner.toUpperCase() + " - Moderator note:");
@@ -220,6 +234,11 @@ export function GameDock({
     const decide_black = () => decide("black");
     const decide_tie = () => decide("tie");
     const force_autoscore = () => {
+        if (!game_id) {
+            swal("Game ID missing", "You cannot autoscore without a game ID!").catch(swal.noop);
+            return;
+        }
+
         let moderation_note = null;
         do {
             moderation_note = prompt("Autoscoring game - Moderator note:");
@@ -235,6 +254,11 @@ export function GameDock({
         }).catch(errorAlerter);
     };
     const do_annul = (tf: boolean): void => {
+        if (!game_id) {
+            swal("Game ID missing", "You cannot annul without a game ID!").catch(swal.noop);
+            return;
+        }
+
         let moderation_note = null;
         do {
             moderation_note = tf
@@ -316,7 +340,7 @@ export function GameDock({
                     <i className="fa fa-trophy" title={_("This is a ladder game")} /> {_("Ladder")}
                 </Link>
             )}
-            {((goban && engine.config["private"]) || null) && (
+            {((engine.config as any)["private"] || null) && (
                 <a onClick={openACL}>
                     <i className="fa fa-lock" />{" "}
                     {pgettext("Control who can access the game or review", "Access settings")}
@@ -364,22 +388,16 @@ export function GameDock({
             {game && (
                 <a
                     onClick={onAnalyzeClicked}
-                    className={
-                        goban && phase !== "finished" && goban.isAnalysisDisabled()
-                            ? "disabled"
-                            : ""
-                    }
+                    className={phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""}
                 >
                     <i className="fa fa-sitemap"></i> {_("Analyze game")}
                 </a>
             )}
-            {((goban && !review_id && user_is_player && phase !== "finished") || null) && (
+            {((!review_id && user_is_player && phase !== "finished") || null) && (
                 <a
                     style={{
                         visibility:
-                            goban.mode === "play" &&
-                            goban &&
-                            engine.playerToMove() !== data.get("user").id
+                            goban.mode === "play" && engine.playerToMove() !== user.id
                                 ? "visible"
                                 : "hidden",
                     }}
