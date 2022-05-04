@@ -45,7 +45,7 @@ interface GameType {
 
 interface GameListProps {
     list: Array<GameType>;
-    player?: any;
+    player?: { id: number };
     emptyMessage?: string;
     disableSort?: boolean;
     miniGobanProps?: any;

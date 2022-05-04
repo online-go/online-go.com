@@ -50,6 +50,24 @@ const MAX_RATING = 6000;
 const A = 525;
 const C = 23.15;
 
+interface CompactRatingType {
+    rating: number;
+    deviation: number;
+    volatility: number;
+}
+interface RatingsType {
+    overall: CompactRatingType;
+}
+
+interface UserType {
+    ranking?: number;
+    rank?: number;
+    pro?: boolean;
+    professional?: boolean;
+    ratings?: RatingsType;
+}
+type UserOrRank = UserType | number;
+
 export function rank_to_rating(rank: number) {
     return A * Math.exp(rank / C);
 }
@@ -65,7 +83,7 @@ export function rank_deviation(rating: number, deviation: number) {
 export function get_handicap_adjustment(rating: number, handicap: number): number {
     return rank_to_rating(rating_to_rank(rating) + handicap) - rating;
 }
-function overall_rank(user_or_rank: any): number {
+function overall_rank(user_or_rank: UserOrRank): number {
     let rank = null;
     if (typeof user_or_rank === "number") {
         rank = user_or_rank;
@@ -74,18 +92,19 @@ function overall_rank(user_or_rank: any): number {
     }
     return rank;
 }
-export function is_novice(user_or_rank: any): boolean {
+export function is_novice(user_or_rank: UserOrRank): boolean {
     return overall_rank(user_or_rank) < MinRank;
 }
-export function is_rank_bounded(user_or_rank: any): boolean {
+export function is_rank_bounded(user_or_rank: UserOrRank): boolean {
     const rank = overall_rank(user_or_rank);
     return rank < MinRank || rank > MaxRank;
 }
-export function bounded_rank(user_or_rank: any): number {
+export function bounded_rank(user_or_rank: UserOrRank): number {
     const rank = overall_rank(user_or_rank);
     return Math.min(MaxRank, Math.max(MinRank, rank));
 }
-export function is_provisional(user: any): boolean {
+
+export function is_provisional(user: { ratings?: RatingsType }): boolean {
     const ratings = user.ratings || {};
 
     const rating = ratings["overall"] || {
@@ -98,7 +117,7 @@ export function is_provisional(user: any): boolean {
 }
 
 export function getUserRating(
-    user: any,
+    user: UserType,
     speed: "overall" | "blitz" | "live" | "correspondence" = "overall",
     size: 0 | 9 | 13 | 19 = 0,
 ) {
@@ -158,11 +177,11 @@ export function getUserRating(
     return ret;
 }
 
-export function boundedRankString(r, with_tenths?: boolean) {
+export function boundedRankString(r: UserOrRank, with_tenths?: boolean) {
     return rankString(bounded_rank(r), with_tenths);
 }
 
-export function rankString(r, with_tenths?: boolean) {
+export function rankString(r: UserOrRank, with_tenths?: boolean): string {
     let provisional = false;
 
     if (typeof r === "object") {
@@ -196,7 +215,7 @@ export function rankString(r, with_tenths?: boolean) {
 
     if (r < 30) {
         if (with_tenths) {
-            r = (Math.ceil((30 - r) * 10) / 10).toFixed(1);
+            (r as any) = (Math.ceil((30 - r) * 10) / 10).toFixed(1);
         } else {
             r = Math.ceil(30 - r);
         }
@@ -204,14 +223,14 @@ export function rankString(r, with_tenths?: boolean) {
     }
 
     if (with_tenths) {
-        r = (Math.floor((r - 29) * 10) / 10).toFixed(1);
+        (r as any) = (Math.floor((r - 29) * 10) / 10).toFixed(1);
     } else {
         r = Math.floor(r - 29);
     }
     return interpolate(pgettext("Dan", "%sd"), [r]);
 }
 
-export function longRankString(r) {
+export function longRankString(r: UserOrRank) {
     let provisional = false;
 
     if (typeof r === "object") {
@@ -316,7 +335,6 @@ export function effective_outcome(
     white_rating: number,
     handicap: number,
 ): EffectiveOutcome {
-    //let res: EffectiveOutcome = new EffectiveOutcome;
     const black_effective_rating: number =
         black_rating + get_handicap_adjustment(black_rating, handicap);
     const white_effective_rating: number = white_rating;

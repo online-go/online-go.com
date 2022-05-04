@@ -611,7 +611,7 @@ function AssociationLink({
 }: {
     country?: string;
     id?: string;
-    rank?: string;
+    rank?: number;
 }): JSX.Element | null {
     try {
         if (!country) {
@@ -660,7 +660,7 @@ function ServerLink({
 }: {
     name: string;
     id?: string;
-    rank?: string;
+    rank?: number;
 }): JSX.Element | null {
     if (!id && !rank) {
         return null;
