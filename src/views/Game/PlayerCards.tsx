@@ -23,6 +23,7 @@ import { Flag } from "Flag";
 import { ChatPresenceIndicator } from "ChatPresenceIndicator";
 import { Clock } from "Clock";
 import { Player } from "Player";
+import { lookup, fetch } from "player_cache";
 import { _, interpolate, ngettext } from "translate";
 import * as data from "data";
 
@@ -301,7 +302,7 @@ function PlayerCard({
                             </div>
                         )}
                         <div className="player-flag">
-                            <Flag country={player.country ?? "un"} />
+                            <PlayerFlag player_id={player.id} />
                         </div>
                         <ChatPresenceIndicator channel={chat_channel} userId={player.id} />
                     </div>
@@ -364,4 +365,30 @@ function PlayerCard({
             )}
         </div>
     );
+}
+
+function PlayerFlag({ player_id }: { player_id: number }): JSX.Element {
+    const [country, setCountry] = React.useState<string>(lookup(player_id)?.country);
+
+    React.useEffect(() => {
+        let cancelled = false;
+        fetch(player_id, ["country"])
+            .then((e) => {
+                if (!cancelled) {
+                    setCountry(e.country);
+                }
+            })
+            .catch(() => {
+                console.error("Error resolving player country", player_id);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [player_id]);
+
+    if (country) {
+        return <Flag country={country} />;
+    }
+    return null;
 }

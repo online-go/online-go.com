@@ -352,10 +352,14 @@
     .player-icon-container {
         flex-basis: 1.5rem;
         min-height: 1.5rem;
-        min-width: 4rem; // need this width to accomodate diconnect timer
+        min-width: 4rem; // need this width to accomodate disconnect timer
+        position: relative;
         .player-flag {
-            top: 0.5rem;
-            left: 1rem;
+            position: absolute;
+            left: unset;
+            top: unset;
+            right: 0.1rem;
+            bottom: -0.2rem;
         }
         .auto-resign-overlay {
             flex-direction: row;
