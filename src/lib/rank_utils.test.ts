@@ -23,6 +23,9 @@ import {
     is_rank_bounded,
     bounded_rank,
     is_provisional,
+    getUserRating,
+    rankString,
+    longRankString,
 } from "./rank_utils";
 
 // workaround for setGobanTranslations not found error
@@ -98,4 +101,189 @@ test("is_provisional", () => {
     expect(is_provisional(new_user)).toBe(true);
     expect(is_provisional(seasoned_user)).toBe(false);
     expect(is_provisional(user_without_ratings)).toBe(true);
+});
+
+test("is_provisional", () => {
+    const makeUserWithDeviation = (deviation: number) => {
+        return {
+            ratings: {
+                overall: {
+                    rating: 1500,
+                    deviation: deviation,
+                    volatility: 0.06,
+                },
+            },
+        };
+    };
+    const new_user = makeUserWithDeviation(350);
+    const seasoned_user = makeUserWithDeviation(62);
+    const user_without_ratings = {};
+
+    expect(is_provisional(new_user)).toBe(true);
+    expect(is_provisional(seasoned_user)).toBe(false);
+    expect(is_provisional(user_without_ratings)).toBe(true);
+});
+
+test("getUserRating", () => {
+    const user = {
+        pro: false,
+        ratings: {
+            overall: {
+                rating: 1465,
+                deviation: 62,
+                volatility: 0.0625,
+            },
+            "correspondence-19x19": {
+                rating: 1480,
+                deviation: 64,
+                volatility: 0.0625,
+            },
+        },
+    };
+
+    // Overall
+    expect(getUserRating(user)).toEqual(
+        expect.objectContaining({
+            bounded_rank: 23,
+            bounded_rank_label: "7k",
+            deviation: 62,
+            partial_bounded_rank_label: "6.3k",
+            partial_rank_label: "6.3k",
+            professional: undefined,
+            provisional: false,
+            rank: 23,
+            rank_deviation_labels: ["7.3k", "5.3k"],
+            rank_label: "7k",
+            rating: 1465,
+            unset: false,
+            volatility: 0.0625,
+        }),
+    );
+
+    // With size and speed specified
+    expect(getUserRating(user, "correspondence", 19)).toEqual(
+        expect.objectContaining({
+            bounded_rank: 23,
+            bounded_rank_label: "7k",
+            deviation: 64,
+            partial_bounded_rank_label: "6.1k",
+            partial_rank_label: "6.1k",
+            professional: undefined,
+            provisional: false,
+            rank: 23,
+            rank_deviation_labels: ["7.1k", "5.1k"],
+            rank_label: "7k",
+            rating: 1480,
+            unset: false,
+            volatility: 0.0625,
+        }),
+    );
+
+    // With a size/speed that does not exist on the user's rating
+    expect(getUserRating(user, "blitz", 9)).toEqual(
+        expect.objectContaining({
+            bounded_rank: 24,
+            bounded_rank_label: "6k",
+            deviation: 350,
+            partial_bounded_rank_label: "5.7k",
+            partial_rank_label: "5.7k",
+            professional: undefined,
+            provisional: true,
+            rank: 24,
+            rank_deviation_labels: ["11.9k", "0.9k"],
+            rank_label: "6k",
+            rating: 1500,
+            unset: true,
+            volatility: 0.06,
+        }),
+    );
+});
+
+test("rankString", () => {
+    const user = {
+        pro: false,
+        ranking: 23.7,
+        ratings: {
+            overall: {
+                rating: 1465,
+                deviation: 62,
+                volatility: 0.0625,
+            },
+        },
+    };
+
+    const provisional_user = {
+        pro: false,
+        ranking: 24.303382182144386,
+        ratings: {
+            overall: {
+                rating: 1500,
+                deviation: 350,
+                volatility: 0.06,
+            },
+        },
+    };
+
+    const pro = {
+        pro: true,
+        ranking: 45,
+    };
+
+    // User passed in
+    expect(rankString(user)).toBe("7k");
+    expect(rankString(user, true)).toBe("7.0k"); // bug? I would expect this to be "6.3k"
+    expect(rankString(provisional_user)).toBe("?");
+
+    // Professional user
+    expect(rankString(pro)).toBe("9p");
+    // Pro rank
+    expect(rankString(1039)).toBe("3p");
+
+    // Rank passed in
+    expect(rankString(32.5)).toBe("3d");
+    expect(rankString(32.5, true)).toBe("3.5d");
+});
+
+test("rankString", () => {
+    const user = {
+        pro: false,
+        ranking: 23.7,
+        ratings: {
+            overall: {
+                rating: 1465,
+                deviation: 62,
+                volatility: 0.0625,
+            },
+        },
+    };
+
+    const provisional_user = {
+        pro: false,
+        ranking: 24.303382182144386,
+        ratings: {
+            overall: {
+                rating: 1500,
+                deviation: 350,
+                volatility: 0.06,
+            },
+        },
+    };
+
+    const pro = {
+        pro: true,
+        ranking: 45,
+    };
+
+    // User passed in
+    expect(longRankString(user)).toBe("7 Kyu");
+    expect(longRankString(provisional_user)).toBe("?");
+
+    // Professional user
+    expect(longRankString(pro)).toBe("9 Pro");
+
+    // Pro rank
+    expect(longRankString(1039)).toBe("3 Pro");
+
+    // Rank passed in
+    expect(longRankString(32.5)).toBe("3.5 Dan");
 });

@@ -131,6 +131,9 @@ export function is_provisional(user: { ratings?: RatingsType }): boolean {
     return rating.deviation >= PROVISIONAL_RATING_CUTOFF;
 }
 
+/**
+ * Computes ratings data for a user for a given size and speed.
+ */
 export function getUserRating(
     user: UserType,
     speed: "overall" | "blitz" | "live" | "correspondence" = "overall",
@@ -192,10 +195,19 @@ export function getUserRating(
     return ret;
 }
 
+/** Like rankString, but clamped to the range [25k, 9d] */
 export function boundedRankString(r: UserOrRank, with_tenths?: boolean) {
     return rankString(bounded_rank(r), with_tenths);
 }
 
+/**
+ * Returns a concise, localized string representing a user's kyu/dan rank
+ *
+ * @param r If a user type, the users overall rating will be pulled off the user.
+ *          If a number, it will be treated as the OGS rank.
+ * @param with_tenths If true, 1 decimal of precision will be added to the output.
+ * @returns a string representing the rank (e.g. "7.1k", "4d", "9p")
+ */
 export function rankString(r: UserOrRank, with_tenths?: boolean): string {
     let provisional = false;
 
@@ -245,6 +257,13 @@ export function rankString(r: UserOrRank, with_tenths?: boolean): string {
     return interpolate(pgettext("Dan", "%sd"), [r]);
 }
 
+/**
+ * Returns a localized string representing a user's kyu/dan rank
+ *
+ * @param r If a user type, the users overall rating will be pulled off the user.
+ *          If a number, it will be treated as the OGS rank.
+ * @returns a string representing the rank (e.g. "7.1 Kyu", "4.36 Dan", "9 Pro")
+ */
 export function longRankString(r: UserOrRank) {
     let provisional = false;
 
