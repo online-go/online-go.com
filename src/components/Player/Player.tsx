@@ -178,7 +178,7 @@ export function Player(props: PlayerProperties): JSX.Element {
                 online_status.subscribe(player_id, set_online);
             }
         };
-    }, [player_id]);
+    }, [player_id, typeof props.user === "object" && props.user.username]);
 
     const display_details = (event: React.MouseEvent) => {
         if (

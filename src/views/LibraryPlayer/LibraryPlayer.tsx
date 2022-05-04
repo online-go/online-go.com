@@ -450,8 +450,8 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                                 </span>
                                             </div>
                                         )}
-                                        {collection.games.map((game, idx) => (
-                                            <div key={idx} className="game-entry">
+                                        {collection.games.map((game) => (
+                                            <div key={game.game_id} className="game-entry">
                                                 {owner && (
                                                     <span className="select">
                                                         <input
