@@ -42,11 +42,9 @@
     }
 
     .chat-lines {
+        flex-basis: 100%;
         flex-grow: 1;
         flex-shrink: 1;
-        display: flex;
-        flex-direction: column-reverse;
-        overflow: auto;
         overflow-y: scroll;
         border-bottom: 1px solid transparent;
         themed border-bottom-color shade3
@@ -54,12 +52,6 @@
             themed color fg
         }
         word-wrap: break-word;
-        .chat-line {
-            flex-shrink: 0;
-        }
-        .bottom-padding {
-            flex-grow: 1;
-        }
     }
 
     .timestamp {
