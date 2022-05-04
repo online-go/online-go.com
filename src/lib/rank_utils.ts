@@ -68,19 +68,25 @@ interface UserType {
 }
 type UserOrRank = UserType | number;
 
+/** Returns the Glicko2 rating corresponding to OGS rank. */
 export function rank_to_rating(rank: number) {
     return A * Math.exp(rank / C);
 }
 
+/** Returns the OGS rank corresponding to the Glicko2 rating */
 export function rating_to_rank(rating: number) {
     return Math.log(Math.min(MAX_RATING, Math.max(MIN_RATING, rating)) / A) * C;
 }
 
+/** Calculates OGS rank deviation from the Glicko2 rating and deviation */
 export function rank_deviation(rating: number, deviation: number) {
+    // Suggestion: use the uncertainty propagation formula for log transforms:
+    // https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Example_formulae
+    //     - bpj
     return rating_to_rank(rating + deviation) - rating_to_rank(rating);
 }
 
-export function get_handicap_adjustment(rating: number, handicap: number): number {
+function get_handicap_adjustment(rating: number, handicap: number): number {
     return rank_to_rating(rating_to_rank(rating) + handicap) - rating;
 }
 function overall_rank(user_or_rank: UserOrRank): number {
@@ -92,18 +98,27 @@ function overall_rank(user_or_rank: UserOrRank): number {
     }
     return rank;
 }
+
+/** Returns true if user is below 25k */
 export function is_novice(user_or_rank: UserOrRank): boolean {
     return overall_rank(user_or_rank) < MinRank;
 }
+/** Returns true if user is below 25k or above 9d */
 export function is_rank_bounded(user_or_rank: UserOrRank): boolean {
     const rank = overall_rank(user_or_rank);
     return rank < MinRank || rank > MaxRank;
 }
+/** Returns rank clamped to the bounds [25k, 9d] */
 export function bounded_rank(user_or_rank: UserOrRank): number {
     const rank = overall_rank(user_or_rank);
     return Math.min(MaxRank, Math.max(MinRank, rank));
 }
 
+/**
+ * Returns true if the user's rank deviation is too large.
+ *
+ * This determines whether rank shows up as [?] around OGS
+ */
 export function is_provisional(user: { ratings?: RatingsType }): boolean {
     const ratings = user.ratings || {};
 
