@@ -194,7 +194,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
     const autoscroll = () => {
         const chat_log = ref_chat_log.current;
 
-        if (scrolled_to_bottom.current) {
+        if (chat_log && scrolled_to_bottom.current) {
             chat_log.scrollTop = chat_log.scrollHeight;
             setTimeout(() => {
                 if (chat_log) {
