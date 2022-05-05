@@ -37,9 +37,9 @@ import {
     Score,
     GoEnginePhase,
     GobanModes,
-    AnalysisTool,
     JGOFPlayerSummary,
     GoConditionalMove,
+    AnalysisTool,
 } from "goban";
 import { isLiveGame } from "TimeControl";
 import { get_network_latency, get_clock_drift } from "sockets";
@@ -53,13 +53,20 @@ import { chat_manager, ChatChannelProxy } from "chat_manager";
 import { sfx, SFXSprite, ValidSound } from "sfx";
 import { AIReview } from "./AIReview";
 import { GameChat, ChatMode } from "./GameChat";
-import { toast } from "toast";
 import { JGOFClock } from "goban";
 import { GameTimings } from "./GameTimings";
 import { goban_view_mode, goban_view_squashed, ViewMode, shared_ip_with_player_map } from "./util";
 import { game_control } from "./game_control";
 import { PlayerCards } from "./PlayerCards";
-import { CancelButton, EstimateScore, PlayControls } from "./PlayControls";
+import {
+    CancelButton,
+    EstimateScore,
+    PlayControls,
+    AnalyzeButtonBar,
+    copyBranch,
+    pasteBranch,
+    deleteBranch,
+} from "./PlayControls";
 import { GameDock } from "./GameDock";
 import swal from "sweetalert2";
 
@@ -132,8 +139,6 @@ export function Game(): JSX.Element {
     const [score_estimate_amount, set_score_estimate_amount] = React.useState<number>();
     const [show_title, set_show_title] = React.useState<boolean>();
     const [player_to_move, set_player_to_move] = React.useState<number>();
-    const [analyze_tool, set_analyze_tool] = React.useState<AnalysisTool>();
-    const [analyze_subtool, set_analyze_subtool] = React.useState<string>();
     const [review_owner_id, set_review_owner_id] = React.useState<number>();
     const [review_controller_id, set_review_controller_id] = React.useState<number>();
     const [review_out_of_sync, set_review_out_of_sync] = React.useState<boolean>();
@@ -415,7 +420,7 @@ export function Game(): JSX.Element {
 
         recenterGoban();
     };
-    const setAnalyzeTool = (tool, subtool) => {
+    const setAnalyzeTool = (tool: AnalysisTool | "erase", subtool: string) => {
         if (checkAndEnterAnalysis()) {
             $("#game-analyze-button-bar .active").removeClass("active");
             $("#game-analyze-" + tool + "-tool").addClass("active");
@@ -583,13 +588,6 @@ export function Game(): JSX.Element {
 
         set_portrait_tab(portrait_tab);
         onResize();
-    };
-    const setPencilColor = (ev) => {
-        const color = (ev.target as HTMLInputElement).value;
-        if (goban.current.analyze_tool === "draw") {
-            goban.current.analyze_subtool = color;
-        }
-        set_analyze_pencil_color(color);
     };
     const updateVariationName = (ev) => {
         set_variation_name((ev.target as HTMLInputElement).value);
@@ -814,117 +812,12 @@ export function Game(): JSX.Element {
                 .catch(() => 0);
         }
     };
-    const analysis_pass = () => {
-        goban.current.pass();
-        forceUpdate(Math.random());
-    };
     const goban_setModeDeferredPlay = () => {
         goban.current.setModeDeferred("play");
     };
-    const goban_deleteBranch = () => {
-        if (mode !== "analyze") {
-            return;
-        }
-
-        try {
-            /* Don't try to delete branches when the user is selecting stuff somewhere on the page */
-            if (!window.getSelection().isCollapsed) {
-                return;
-            }
-        } catch (e) {
-            // ignore error
-        }
-
-        if (goban.current.engine.cur_move.trunk) {
-            swal({
-                text: _(
-                    "The current position is not an explored branch, so there is nothing to delete",
-                ),
-            }).catch(swal.noop);
-        } else {
-            swal({
-                text: _("Are you sure you wish to remove this move branch?"),
-                showCancelButton: true,
-            })
-                .then(() => {
-                    goban.current.deleteBranch();
-                    goban.current.syncReviewMove();
-                })
-                .catch(() => 0);
-        }
-    };
-    const goban_copyBranch = () => {
-        if (mode !== "analyze") {
-            return;
-        }
-
-        try {
-            /* Don't try to copy branches when the user is selecting stuff somewhere on the page */
-            if (!window.getSelection().isCollapsed) {
-                return;
-            }
-        } catch (e) {
-            // ignore error
-        }
-
-        copied_node.current = goban.current.engine.cur_move;
-        toast(<div>{_("Branch copied")}</div>, 1000);
-    };
-    const goban_pasteBranch = () => {
-        if (mode !== "analyze") {
-            return;
-        }
-
-        try {
-            /* Don't try to paste branches when the user is selecting stuff somewhere on the page */
-            if (!window.getSelection().isCollapsed) {
-                return;
-            }
-        } catch (e) {
-            // ignore error
-        }
-
-        if (copied_node.current) {
-            const paste = (base: MoveTree, source: MoveTree) => {
-                goban.current.engine.jumpTo(base);
-                if (source.edited) {
-                    goban.current.engine.editPlace(source.x, source.y, source.player, false);
-                } else {
-                    goban.current.engine.place(
-                        source.x,
-                        source.y,
-                        false,
-                        false,
-                        true,
-                        false,
-                        false,
-                    );
-                }
-                const cur = goban.current.engine.cur_move;
-
-                if (source.trunk_next) {
-                    paste(cur, source.trunk_next);
-                }
-                for (const branch of source.branches) {
-                    paste(cur, branch);
-                }
-            };
-
-            try {
-                paste(goban.current.engine.cur_move, copied_node.current);
-            } catch (e) {
-                errorAlerter(_("A move conflict has been detected"));
-            }
-            goban.current.syncReviewMove();
-        } else {
-            console.log("Nothing copied or cut to paste");
-        }
-    };
-
-    const clearAnalysisDrawing = () => {
-        goban.current.syncReviewMove({ clearpen: true });
-        goban.current.clearAnalysisDrawing();
-    };
+    const goban_deleteBranch = () => deleteBranch(goban.current, mode);
+    const goban_copyBranch = () => copyBranch(goban.current, copied_node, mode);
+    const goban_pasteBranch = () => pasteBranch(goban.current, copied_node, mode);
 
     /* Review stuff */
 
@@ -1043,174 +936,16 @@ export function Game(): JSX.Element {
     };
     const frag_analyze_button_bar = () => {
         return (
-            <div className="game-analyze-button-bar">
-                <div className="btn-group">
-                    <button
-                        onClick={() => setAnalyzeTool("stone", "alternate")}
-                        title={_("Place alternating stones")}
-                        className={
-                            "stone-button " +
-                            (analyze_tool === "stone" &&
-                            analyze_subtool !== "black" &&
-                            analyze_subtool !== "white"
-                                ? "active"
-                                : "")
-                        }
-                    >
-                        <img
-                            alt="alternate"
-                            src={data.get("config.cdn_release") + "/img/black-white.png"}
-                        />
-                    </button>
-
-                    <button
-                        onClick={() => setAnalyzeTool("stone", "black")}
-                        title={_("Place black stones")}
-                        className={
-                            "stone-button " +
-                            (analyze_tool === "stone" && analyze_subtool === "black"
-                                ? "active"
-                                : "")
-                        }
-                    >
-                        <img
-                            alt="alternate"
-                            src={data.get("config.cdn_release") + "/img/black.png"}
-                        />
-                    </button>
-
-                    <button
-                        onClick={() => setAnalyzeTool("stone", "white")}
-                        title={_("Place white stones")}
-                        className={
-                            "stone-button " +
-                            (analyze_tool === "stone" && analyze_subtool === "white"
-                                ? "active"
-                                : "")
-                        }
-                    >
-                        <img
-                            alt="alternate"
-                            src={data.get("config.cdn_release") + "/img/white.png"}
-                        />
-                    </button>
-                </div>
-
-                <div className="btn-group">
-                    <button
-                        onClick={() => setAnalyzeTool("draw", analyze_pencil_color)}
-                        title={_("Draw on the board with a pen")}
-                        className={analyze_tool === "draw" ? "active" : ""}
-                    >
-                        <i className="fa fa-pencil"></i>
-                    </button>
-                    <button onClick={clearAnalysisDrawing} title={_("Clear pen marks")}>
-                        <i className="fa fa-eraser"></i>
-                    </button>
-                </div>
-                <input
-                    type="color"
-                    value={analyze_pencil_color}
-                    title={_("Select pen color")}
-                    onChange={setPencilColor}
-                />
-
-                <div className="btn-group">
-                    <button onClick={goban_copyBranch} title={_("Copy this branch")}>
-                        <i className="fa fa-clone"></i>
-                    </button>
-                    <button
-                        disabled={copied_node.current === null}
-                        onClick={goban_pasteBranch}
-                        title={_("Paste branch")}
-                    >
-                        <i className="fa fa-clipboard"></i>
-                    </button>
-                    <button onClick={goban_deleteBranch} title={_("Delete branch")}>
-                        <i className="fa fa-trash"></i>
-                    </button>
-                </div>
-
-                <div className="btn-group">
-                    <button
-                        onClick={() => setAnalyzeTool("label", "letters")}
-                        title={_("Place alphabetical labels")}
-                        className={
-                            analyze_tool === "label" && analyze_subtool === "letters"
-                                ? "active"
-                                : ""
-                        }
-                    >
-                        <i className="fa fa-font"></i>
-                    </button>
-                    <button
-                        onClick={() => setAnalyzeTool("label", "numbers")}
-                        title={_("Place numeric labels")}
-                        className={
-                            analyze_tool === "label" && analyze_subtool === "numbers"
-                                ? "active"
-                                : ""
-                        }
-                    >
-                        <i className="ogs-label-number"></i>
-                    </button>
-                    <button
-                        onClick={() => setAnalyzeTool("label", "triangle")}
-                        title={_("Place triangle marks")}
-                        className={
-                            analyze_tool === "label" && analyze_subtool === "triangle"
-                                ? "active"
-                                : ""
-                        }
-                    >
-                        <i className="ogs-label-triangle"></i>
-                    </button>
-                    <button
-                        onClick={() => setAnalyzeTool("label", "square")}
-                        title={_("Place square marks")}
-                        className={
-                            analyze_tool === "label" && analyze_subtool === "square" ? "active" : ""
-                        }
-                    >
-                        <i className="ogs-label-square"></i>
-                    </button>
-                    <button
-                        onClick={() => setAnalyzeTool("label", "circle")}
-                        title={_("Place circle marks")}
-                        className={
-                            analyze_tool === "label" && analyze_subtool === "circle" ? "active" : ""
-                        }
-                    >
-                        <i className="ogs-label-circle"></i>
-                    </button>
-                    <button
-                        onClick={() => setAnalyzeTool("label", "cross")}
-                        title={_("Place X marks")}
-                        className={
-                            analyze_tool === "label" && analyze_subtool === "cross" ? "active" : ""
-                        }
-                    >
-                        <i className="ogs-label-x"></i>
-                    </button>
-                </div>
-                <div className="analyze-mode-buttons">
-                    {(mode === "analyze" || null) && (
-                        <span>
-                            {(!review_id || null) && (
-                                <button
-                                    className="sm primary bold"
-                                    onClick={goban_setModeDeferredPlay}
-                                >
-                                    {_("Back to Game")}
-                                </button>
-                            )}
-                            <button className="sm primary bold pass-button" onClick={analysis_pass}>
-                                {_("Pass")}
-                            </button>
-                        </span>
-                    )}
-                </div>
-            </div>
+            <AnalyzeButtonBar
+                setAnalyzePencilColor={set_analyze_pencil_color}
+                analyze_pencil_color={analyze_pencil_color}
+                setAnalyzeTool={setAnalyzeTool}
+                goban={goban.current}
+                forceUpdate={forceUpdate}
+                is_review={!!review_id}
+                mode={mode}
+                copied_node={copied_node}
+            />
         );
     };
 
@@ -1687,8 +1422,6 @@ export function Game(): JSX.Element {
             set_phase(engine.phase);
             set_title(goban.current.title);
 
-            set_analyze_tool(goban.current.analyze_tool);
-            set_analyze_subtool(goban.current.analyze_subtool);
             set_review_owner_id(goban.current.review_owner_id);
             set_review_controller_id(goban.current.review_controller_id);
 
@@ -1738,8 +1471,6 @@ export function Game(): JSX.Element {
         goban.current.on("phase", () => goban.current.engine.cur_move.clearMarks());
         goban.current.on("title", set_title);
         goban.current.on("cur_move", () => set_score(goban.current.engine.computeScore(true)));
-        goban.current.on("analyze_tool", set_analyze_tool);
-        goban.current.on("analyze_subtool", set_analyze_subtool);
         goban.current.on("score_estimate", (est) => {
             set_score_estimate_winner(est?.winner || "");
             set_score_estimate_amount(est?.amount || "");

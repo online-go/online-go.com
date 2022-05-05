@@ -25,6 +25,8 @@ import {
     GoConditionalMove,
     GobanModes,
     GoEnginePhase,
+    AnalysisTool,
+    MoveTree,
 } from "goban";
 import { game_control } from "./game_control";
 import { isLiveGame } from "TimeControl";
@@ -40,6 +42,8 @@ import { Resizable } from "src/components/Resizable";
 import { ChatMode } from "./GameChat";
 import { PersistentElement } from "PersistentElement";
 import { Player } from "Player";
+import { toast } from "toast";
+import { errorAlerter } from "misc";
 
 interface PlayControlsProps {
     goban: Goban;
@@ -944,4 +948,317 @@ export function EstimateScore({
             {(!score_estimate_winner || null) && <span>{_("Estimating...")}</span>}
         </span>
     );
+}
+
+interface AnalyzeButtonBarProps {
+    goban: Goban;
+    setAnalyzeTool: (tool: AnalysisTool, subtool: string) => boolean;
+    setAnalyzePencilColor: (color: string) => void;
+    analyze_pencil_color: string;
+    is_review: boolean;
+    mode: GobanModes;
+    copied_node: React.MutableRefObject<MoveTree>;
+
+    // called when user passes in analysis
+    // Is this still needed? I think an event could be emitted to similar effect... -BPJ
+    forceUpdate: (nonce: number) => void;
+}
+export function AnalyzeButtonBar({
+    goban,
+    setAnalyzeTool,
+    setAnalyzePencilColor,
+    analyze_pencil_color,
+    forceUpdate,
+    is_review,
+    mode,
+    copied_node,
+}: AnalyzeButtonBarProps) {
+    const [analyze_tool, set_analyze_tool] = React.useState<AnalysisTool>();
+    const [analyze_subtool, set_analyze_subtool] = React.useState<string>();
+    React.useEffect(() => {
+        goban.on("load", () => {
+            set_analyze_tool(goban.analyze_tool);
+            set_analyze_subtool(goban.analyze_subtool);
+        });
+        goban.on("analyze_tool", set_analyze_tool);
+        goban.on("analyze_subtool", set_analyze_subtool);
+    });
+
+    const setPencilColor = (ev) => {
+        const color = (ev.target as HTMLInputElement).value;
+        if (goban.analyze_tool === "draw") {
+            goban.analyze_subtool = color;
+        }
+        setAnalyzePencilColor(color);
+    };
+    const analysis_pass = () => {
+        goban.pass();
+        // Do we really need to forceUpdate here?
+        forceUpdate(Math.random());
+    };
+
+    const goban_setModeDeferredPlay = () => {
+        goban.setModeDeferred("play");
+    };
+
+    const clearAnalysisDrawing = () => {
+        goban.syncReviewMove({ clearpen: true });
+        goban.clearAnalysisDrawing();
+    };
+
+    return (
+        <div className="game-analyze-button-bar">
+            <div className="btn-group">
+                <button
+                    onClick={() => setAnalyzeTool("stone", "alternate")}
+                    title={_("Place alternating stones")}
+                    className={
+                        "stone-button " +
+                        (analyze_tool === "stone" &&
+                        analyze_subtool !== "black" &&
+                        analyze_subtool !== "white"
+                            ? "active"
+                            : "")
+                    }
+                >
+                    <img
+                        alt="alternate"
+                        src={data.get("config.cdn_release") + "/img/black-white.png"}
+                    />
+                </button>
+
+                <button
+                    onClick={() => setAnalyzeTool("stone", "black")}
+                    title={_("Place black stones")}
+                    className={
+                        "stone-button " +
+                        (analyze_tool === "stone" && analyze_subtool === "black" ? "active" : "")
+                    }
+                >
+                    <img alt="alternate" src={data.get("config.cdn_release") + "/img/black.png"} />
+                </button>
+
+                <button
+                    onClick={() => setAnalyzeTool("stone", "white")}
+                    title={_("Place white stones")}
+                    className={
+                        "stone-button " +
+                        (analyze_tool === "stone" && analyze_subtool === "white" ? "active" : "")
+                    }
+                >
+                    <img alt="alternate" src={data.get("config.cdn_release") + "/img/white.png"} />
+                </button>
+            </div>
+
+            <div className="btn-group">
+                <button
+                    onClick={() => setAnalyzeTool("draw", analyze_pencil_color)}
+                    title={_("Draw on the board with a pen")}
+                    className={analyze_tool === "draw" ? "active" : ""}
+                >
+                    <i className="fa fa-pencil"></i>
+                </button>
+                <button onClick={clearAnalysisDrawing} title={_("Clear pen marks")}>
+                    <i className="fa fa-eraser"></i>
+                </button>
+            </div>
+            <input
+                type="color"
+                value={analyze_pencil_color}
+                title={_("Select pen color")}
+                onChange={setPencilColor}
+            />
+
+            <div className="btn-group">
+                <button
+                    onClick={() => copyBranch(goban, copied_node, mode)}
+                    title={_("Copy this branch")}
+                >
+                    <i className="fa fa-clone"></i>
+                </button>
+                <button
+                    disabled={copied_node.current === null}
+                    onClick={() => copyBranch(goban, copied_node, mode)}
+                    title={_("Paste branch")}
+                >
+                    <i className="fa fa-clipboard"></i>
+                </button>
+                <button onClick={() => deleteBranch(goban, mode)} title={_("Delete branch")}>
+                    <i className="fa fa-trash"></i>
+                </button>
+            </div>
+
+            <div className="btn-group">
+                <button
+                    onClick={() => setAnalyzeTool("label", "letters")}
+                    title={_("Place alphabetical labels")}
+                    className={
+                        analyze_tool === "label" && analyze_subtool === "letters" ? "active" : ""
+                    }
+                >
+                    <i className="fa fa-font"></i>
+                </button>
+                <button
+                    onClick={() => setAnalyzeTool("label", "numbers")}
+                    title={_("Place numeric labels")}
+                    className={
+                        analyze_tool === "label" && analyze_subtool === "numbers" ? "active" : ""
+                    }
+                >
+                    <i className="ogs-label-number"></i>
+                </button>
+                <button
+                    onClick={() => setAnalyzeTool("label", "triangle")}
+                    title={_("Place triangle marks")}
+                    className={
+                        analyze_tool === "label" && analyze_subtool === "triangle" ? "active" : ""
+                    }
+                >
+                    <i className="ogs-label-triangle"></i>
+                </button>
+                <button
+                    onClick={() => setAnalyzeTool("label", "square")}
+                    title={_("Place square marks")}
+                    className={
+                        analyze_tool === "label" && analyze_subtool === "square" ? "active" : ""
+                    }
+                >
+                    <i className="ogs-label-square"></i>
+                </button>
+                <button
+                    onClick={() => setAnalyzeTool("label", "circle")}
+                    title={_("Place circle marks")}
+                    className={
+                        analyze_tool === "label" && analyze_subtool === "circle" ? "active" : ""
+                    }
+                >
+                    <i className="ogs-label-circle"></i>
+                </button>
+                <button
+                    onClick={() => setAnalyzeTool("label", "cross")}
+                    title={_("Place X marks")}
+                    className={
+                        analyze_tool === "label" && analyze_subtool === "cross" ? "active" : ""
+                    }
+                >
+                    <i className="ogs-label-x"></i>
+                </button>
+            </div>
+            <div className="analyze-mode-buttons">
+                {(mode === "analyze" || null) && (
+                    <span>
+                        {(!is_review || null) && (
+                            <button className="sm primary bold" onClick={goban_setModeDeferredPlay}>
+                                {_("Back to Game")}
+                            </button>
+                        )}
+                        <button className="sm primary bold pass-button" onClick={analysis_pass}>
+                            {_("Pass")}
+                        </button>
+                    </span>
+                )}
+            </div>
+        </div>
+    );
+}
+
+export function copyBranch(
+    goban: Goban,
+    copied_node: React.MutableRefObject<MoveTree>,
+    mode: GobanModes,
+) {
+    if (mode !== "analyze") {
+        return;
+    }
+
+    try {
+        /* Don't try to copy branches when the user is selecting stuff somewhere on the page */
+        if (!window.getSelection().isCollapsed) {
+            return;
+        }
+    } catch (e) {
+        // ignore error
+    }
+
+    copied_node.current = goban.engine.cur_move;
+    toast(<div>{_("Branch copied")}</div>, 1000);
+}
+export function pasteBranch(
+    goban: Goban,
+    copied_node: React.MutableRefObject<MoveTree>,
+    mode: GobanModes,
+) {
+    if (mode !== "analyze") {
+        return;
+    }
+
+    try {
+        /* Don't try to paste branches when the user is selecting stuff somewhere on the page */
+        if (!window.getSelection().isCollapsed) {
+            return;
+        }
+    } catch (e) {
+        // ignore error
+    }
+
+    if (copied_node.current) {
+        const paste = (base: MoveTree, source: MoveTree) => {
+            goban.engine.jumpTo(base);
+            if (source.edited) {
+                goban.engine.editPlace(source.x, source.y, source.player, false);
+            } else {
+                goban.engine.place(source.x, source.y, false, false, true, false, false);
+            }
+            const cur = goban.engine.cur_move;
+
+            if (source.trunk_next) {
+                paste(cur, source.trunk_next);
+            }
+            for (const branch of source.branches) {
+                paste(cur, branch);
+            }
+        };
+
+        try {
+            paste(goban.engine.cur_move, copied_node.current);
+        } catch (e) {
+            errorAlerter(_("A move conflict has been detected"));
+        }
+        goban.syncReviewMove();
+    } else {
+        console.log("Nothing copied or cut to paste");
+    }
+}
+
+export function deleteBranch(goban: Goban, mode: GobanModes) {
+    if (mode !== "analyze") {
+        return;
+    }
+
+    try {
+        /* Don't try to delete branches when the user is selecting stuff somewhere on the page */
+        if (!window.getSelection().isCollapsed) {
+            return;
+        }
+    } catch (e) {
+        // ignore error
+    }
+
+    if (goban.engine.cur_move.trunk) {
+        swal({
+            text: _(
+                "The current position is not an explored branch, so there is nothing to delete",
+            ),
+        }).catch(swal.noop);
+    } else {
+        swal({
+            text: _("Are you sure you wish to remove this move branch?"),
+            showCancelButton: true,
+        })
+            .then(() => {
+                goban.deleteBranch();
+                goban.syncReviewMove();
+            })
+            .catch(() => 0);
+    }
 }
