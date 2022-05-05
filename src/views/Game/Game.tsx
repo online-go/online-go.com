@@ -42,7 +42,6 @@ import {
     GoEngineRules,
     AnalysisTool,
     JGOFPlayerSummary,
-    JGOFNumericPlayerColor,
 } from "goban";
 import { isLiveGame } from "TimeControl";
 import { get_network_latency, get_clock_drift } from "sockets";
@@ -63,6 +62,7 @@ import { GameTimings } from "./GameTimings";
 import { goban_view_mode, goban_view_squashed, ViewMode, shared_ip_with_player_map } from "./util";
 import { game_control } from "./game_control";
 import { PlayerCards } from "./PlayerCards";
+import { CancelButton, PlayButtons } from "./PlayControls";
 import { GameDock } from "./GameDock";
 import swal from "sweetalert2";
 
@@ -102,7 +102,6 @@ export function Game(): JSX.Element {
     const [squashed, set_squashed] = React.useState<boolean>(goban_view_squashed());
     const [estimating_score, set_estimating_score] = React.useState<boolean>(false);
     const [analyze_pencil_color, set_analyze_pencil_color] = React.useState<string>("#004cff");
-    const [show_submit, set_show_submit] = React.useState(false);
     const [user_is_player, set_user_is_player] = React.useState(false);
     const [zen_mode, set_zen_mode] = React.useState(false);
     const [autoplaying, set_autoplaying] = React.useState(false);
@@ -130,7 +129,6 @@ export function Game(): JSX.Element {
         null,
     );
     const [show_game_timing, set_show_game_timing] = React.useState(false);
-    const [submitting_move, set_submitting_move] = React.useState(false);
     const [score, set_score] = React.useState<Score>();
 
     const [title, set_title] = React.useState<string>();
@@ -143,11 +141,8 @@ export function Game(): JSX.Element {
     const [score_estimate_winner, set_score_estimate_winner] = React.useState<string>();
     const [score_estimate_amount, set_score_estimate_amount] = React.useState<number>();
     const [show_undo_requested, set_show_undo_requested] = React.useState<boolean>();
-    const [show_accept_undo, set_show_accept_undo] = React.useState<boolean>();
     const [show_title, set_show_title] = React.useState<boolean>();
     const [player_to_move, set_player_to_move] = React.useState<number>();
-    const [player_not_to_move, set_player_not_to_move] = React.useState<number>();
-    const [is_my_move, set_is_my_move] = React.useState<boolean>();
     const [winner, set_winner] = React.useState<"black" | "white">();
     const [official_move_number, set_official_move_number] = React.useState<number>();
     const [rules, set_rules] = React.useState<GoEngineRules>();
@@ -835,12 +830,6 @@ export function Game(): JSX.Element {
                 .catch(() => 0);
         }
     };
-    const goban_acceptUndo = () => {
-        goban.current.acceptUndo();
-    };
-    const goban_submit_move = () => {
-        goban.current.submit_move();
-    };
     const goban_setMode_play = () => {
         goban.current.setMode("play");
         if (stashed_conditional_moves.current) {
@@ -859,29 +848,9 @@ export function Game(): JSX.Element {
         goban.current.saveConditionalMoves();
         goban.current.setMode("play");
     };
-    const pass = () => {
-        if (
-            !isLiveGame(goban.current.engine.time_control) ||
-            !preferences.get("one-click-submit-live")
-        ) {
-            swal({ text: _("Are you sure you want to pass?"), showCancelButton: true })
-                .then(() => goban.current.pass())
-                .catch(() => 0);
-        } else {
-            goban.current.pass();
-        }
-    };
     const analysis_pass = () => {
         goban.current.pass();
         forceUpdate(Math.random());
-    };
-    const undo = () => {
-        if (
-            data.get("user").id === goban.current.engine.playerNotToMove() &&
-            goban.current.engine.undo_requested !== goban.current.engine.getMoveNumber()
-        ) {
-            goban.current.requestUndo();
-        }
     };
     const goban_setModeDeferredPlay = () => {
         goban.current.setModeDeferred("play");
@@ -1032,82 +1001,6 @@ export function Game(): JSX.Element {
         }
     };
 
-    const frag_cancel_button = () => {
-        if (view_mode === "portrait") {
-            return (
-                <button className="bold cancel-button reject" onClick={cancelOrResign}>
-                    {resign_text}
-                </button>
-            );
-        } else {
-            return (
-                <button className="xs bold cancel-button" onClick={cancelOrResign}>
-                    {resign_text}
-                </button>
-            );
-        }
-    };
-    const frag_play_buttons = (show_cancel_button) => {
-        return (
-            <span className="play-buttons">
-                <span>
-                    {((cur_move_number >= 1 &&
-                        !goban?.current?.engine.rengo &&
-                        player_not_to_move === data.get("user").id &&
-                        !(
-                            goban.current.engine.undo_requested >=
-                            goban.current.engine.getMoveNumber()
-                        ) &&
-                        goban.current.submit_move == null) ||
-                        null) && (
-                        <button className="bold undo-button xs" onClick={undo}>
-                            {_("Undo")}
-                        </button>
-                    )}
-                    {show_undo_requested && (
-                        <span>
-                            {show_accept_undo && (
-                                <button
-                                    className="sm primary bold accept-undo-button"
-                                    onClick={goban_acceptUndo}
-                                >
-                                    {_("Accept Undo")}
-                                </button>
-                            )}
-                        </span>
-                    )}
-                </span>
-                <span>
-                    {((!show_submit &&
-                        is_my_move &&
-                        goban.current.engine.handicapMovesLeft() === 0) ||
-                        null) && (
-                        <button className="sm primary bold pass-button" onClick={pass}>
-                            {_("Pass")}
-                        </button>
-                    )}
-                    {((show_submit &&
-                        goban.current.engine.undo_requested !==
-                            goban.current.engine.getMoveNumber()) ||
-                        null) && (
-                        <button
-                            className="sm primary bold submit-button"
-                            id="game-submit-move"
-                            disabled={submitting_move}
-                            onClick={goban_submit_move}
-                        >
-                            {_("Submit Move")}
-                        </button>
-                    )}
-                </span>
-                <span>
-                    {((show_cancel_button && user_is_player && phase !== "finished") || null) &&
-                        frag_cancel_button()}
-                </span>
-            </span>
-        );
-    };
-
     const variationKeyPress = (ev) => {
         if (ev.keyCode === 13) {
             shareAnalysis();
@@ -1130,8 +1023,19 @@ export function Game(): JSX.Element {
         return (
             <div className="play-controls">
                 <div className="game-action-buttons">
-                    {((mode === "play" && phase === "play") || null) &&
-                        frag_play_buttons(show_cancel_button)}
+                    {((mode === "play" && phase === "play") || null) && (
+                        <PlayButtons
+                            resign_text={resign_text}
+                            show_undo_requested={show_undo_requested}
+                            cur_move_number={cur_move_number}
+                            player_to_move={player_to_move}
+                            onCancel={cancelOrResign}
+                            goban={goban.current}
+                            show_cancel={show_cancel_button}
+                            view_mode={view_mode}
+                            user_is_player={user_is_player}
+                        />
+                    )}
                 </div>
                 <div className="game-state">
                     {((mode === "play" && phase === "play") || null) && (
@@ -1985,7 +1889,6 @@ export function Game(): JSX.Element {
 
         set_portrait_tab("game");
         set_estimating_score(false);
-        set_show_submit(false);
         set_autoplaying(false);
         set_review_list([]);
         set_historical_black(null);
@@ -2067,9 +1970,6 @@ export function Game(): JSX.Element {
             goban.current.setMode("analyze");
         }
 
-        goban.current.on("submitting-move", (tf) => {
-            set_submitting_move(tf);
-        });
         goban.current.on("gamedata", () => {
             const user = data.get("user");
             try {
@@ -2188,16 +2088,6 @@ export function Game(): JSX.Element {
         });
 
         /* Ensure our state is kept up to date */
-        const sync_show_submit = () => {
-            set_show_submit(
-                !!goban.current.submit_move &&
-                    goban.current.engine.cur_move &&
-                    goban.current.engine.cur_move.parent &&
-                    goban.current.engine.last_official_move &&
-                    goban.current.engine.cur_move.parent.id ===
-                        goban.current.engine.last_official_move.id,
-            );
-        };
 
         const sync_resign_text = () => {
             if (goban.current.engine.gameCanBeCanceled()) {
@@ -2222,18 +2112,6 @@ export function Game(): JSX.Element {
             );
         };
 
-        const sync_show_accept_undo = () => {
-            if (game_control.in_pushed_analysis) {
-                return;
-            }
-
-            set_show_accept_undo(
-                goban.current.engine.playerToMove() === data.get("user").id ||
-                    (goban.current.submit_move != null &&
-                        goban.current.engine.playerNotToMove() === data.get("user").id) ||
-                    null,
-            );
-        };
         const sync_show_title = () =>
             set_show_title(
                 !goban.current.submit_move ||
@@ -2243,13 +2121,6 @@ export function Game(): JSX.Element {
 
         const sync_move_info = () => {
             set_player_to_move(goban.current.engine.playerToMove());
-            set_player_not_to_move(goban.current.engine.playerNotToMove());
-
-            const real_player_to_move =
-                goban.current.engine.last_official_move?.player === JGOFNumericPlayerColor.BLACK
-                    ? goban.current.engine.players.white.id
-                    : goban.current.engine.players.black.id;
-            set_is_my_move(real_player_to_move === data.get("user").id);
         };
 
         const sync_stone_removal = () => {
@@ -2341,11 +2212,9 @@ export function Game(): JSX.Element {
             set_undo_requested(engine.undo_requested);
             set_paused(goban.current.pause_control && !!goban.current.pause_control.paused);
 
-            sync_show_submit();
             sync_resign_text();
             sync_move_text();
             sync_show_undo_requested();
-            sync_show_accept_undo();
             sync_show_title();
             sync_move_info();
             sync_stone_removal();
@@ -2402,17 +2271,12 @@ export function Game(): JSX.Element {
             set_score_estimate_amount(est?.amount || "");
         });
         goban.current.on("undo_requested", set_undo_requested);
-        goban.current.on("submit_move", sync_show_submit);
-        goban.current.on("last_official_move", sync_show_submit);
-        goban.current.on("cur_move", sync_show_submit);
         goban.current.on("cur_move", sync_resign_text);
         goban.current.on("cur_move", sync_move_text);
         goban.current.on("undo_requested", sync_show_undo_requested);
         goban.current.on("last_official_move", sync_show_undo_requested);
         goban.current.on("cur_move", sync_show_title);
-        goban.current.on("cur_move", sync_show_accept_undo);
         goban.current.on("submit_move", sync_show_title);
-        goban.current.on("submit_move", sync_show_accept_undo);
         goban.current.on("cur_move", sync_move_info);
         goban.current.on("last_official_move", sync_move_info);
         goban.current.on("paused", set_paused);
@@ -2765,8 +2629,11 @@ export function Game(): JSX.Element {
                         !zen_mode &&
                         user_is_player &&
                         phase !== "finished") ||
-                        null) &&
-                        frag_cancel_button()}
+                        null) && (
+                        <CancelButton view_mode={view_mode} onClick={cancelOrResign}>
+                            {resign_text}
+                        </CancelButton>
+                    )}
 
                     {((view_mode === "portrait" && !zen_mode && portrait_tab === "game") ||
                         null) && (
