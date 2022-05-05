@@ -27,10 +27,10 @@ declare namespace socket_api {
             user_id: number;
             username: string;
             rank: number;
-            pro: number;
-            min_rank: 19;
-            max_rank: 27;
-            game_id: 40220391;
+            pro: 0 | 1;
+            min_rank: number;
+            max_rank: number;
+            game_id: number;
             name: string;
             ranked: boolean;
             handicap: number;

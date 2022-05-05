@@ -252,7 +252,7 @@ export function IncidentReportTracker(): JSX.Element {
                             <div className="incident" key={report.id}>
                                 <div className="report-header">
                                     <div className="report-id">
-                                        {"R" + `${report.id}`.substring(-3, 3) + ": "}
+                                        {"R" + `${report.id}`.slice(-3) + ": "}
                                         {getReportType(report)}
                                     </div>
                                     {((!report.moderator && user.is_moderator) || null) && (

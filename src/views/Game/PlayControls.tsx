@@ -606,26 +606,11 @@ export function PlayControls({
                                     onKeyDown={variationKeyPress}
                                     disabled={user.anonymous}
                                 />
-                                {(selected_chat_log !== "malkovich" || null) && (
-                                    <button
-                                        className="sm"
-                                        type="button"
-                                        disabled={user.anonymous}
-                                        onClick={onShareAnalysis}
-                                    >
-                                        {_("Share")}
-                                    </button>
-                                )}
-                                {(selected_chat_log === "malkovich" || null) && (
-                                    <button
-                                        className="sm malkovich"
-                                        type="button"
-                                        disabled={user.anonymous}
-                                        onClick={onShareAnalysis}
-                                    >
-                                        {_("Record")}
-                                    </button>
-                                )}
+                                <ShareAnalysisButton
+                                    selected_chat_log={selected_chat_log}
+                                    isUserAnonymous={user.anonymous}
+                                    shareAnalysis={onShareAnalysis}
+                                />
                             </div>
                         </div>
                     )}
@@ -1494,4 +1479,39 @@ export function ReviewControls({
             )}
         </div>
     );
+}
+
+interface ShareAnalysisButtonProperties {
+    selected_chat_log: ChatMode;
+    shareAnalysis: () => void;
+    isUserAnonymous: boolean;
+}
+
+function ShareAnalysisButton(props: ShareAnalysisButtonProperties): JSX.Element {
+    const { selected_chat_log, isUserAnonymous, shareAnalysis } = props;
+    switch (selected_chat_log) {
+        case "malkovich":
+        case "personal":
+            return (
+                <button
+                    className="sm {selected_chat_log}"
+                    type="button"
+                    disabled={isUserAnonymous}
+                    onClick={shareAnalysis}
+                >
+                    {_("Record")}
+                </button>
+            );
+        default:
+            return (
+                <button
+                    className="sm"
+                    type="button"
+                    disabled={isUserAnonymous}
+                    onClick={shareAnalysis}
+                >
+                    {_("Share")}
+                </button>
+            );
+    }
 }

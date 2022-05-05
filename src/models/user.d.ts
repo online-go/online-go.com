@@ -65,11 +65,11 @@ declare namespace rest_api {
     } & {
         [org_id in `org${1 | 2 | 3}_id`]?: string;
     } & {
-        [org_rank in `org${1 | 2 | 3}_rank`]?: string;
+        [org_rank in `org${1 | 2 | 3}_rank`]?: number;
     } & {
         [server_username in `${Server}_username`]?: string;
     } & {
-        [server_rank in `${Server}_rank`]?: string;
+        [server_rank in `${Server}_rank`]?: number;
     } & {
         hidden: boolean;
         hidden_ids: boolean;

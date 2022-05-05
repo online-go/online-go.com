@@ -32,7 +32,7 @@ import { inGameModChannel } from "chat_manager";
 import { MoveTree } from "goban";
 import { game_control } from "./game_control";
 
-export type ChatMode = "main" | "malkovich" | "moderator" | "hidden";
+export type ChatMode = "main" | "malkovich" | "moderator" | "hidden" | "personal";
 interface GameChatProperties {
     goban: Goban;
     userIsPlayer: boolean;
@@ -44,14 +44,15 @@ interface GameChatProperties {
 }
 
 interface ChatLine {
-    chat_id: number;
+    chat_id: string;
     body: string | AnalysisComment | ReviewComment;
     date: number;
     move_number: number;
-    from: number;
-    moves: string;
+    from?: number;
+    moves?: string;
     channel: string;
     player_id: number;
+    username?: string;
 }
 
 interface GameChatLineProperties {
@@ -204,20 +205,8 @@ export function GameChat(props: GameChatProperties): JSX.Element {
         }
     };
 
-    const toggleChatLog = () => {
-        const new_chat_log = selected_chat_log === "main" ? "malkovich" : "main";
-        setSelectedChatLog(new_chat_log);
-        setShowQuickChat(false);
-        props.onSelectedChatModeChange(new_chat_log);
-    };
-
-    const toggleModeratorChatLog = () => {
-        const new_chat_log =
-            selected_chat_log === "main"
-                ? "moderator"
-                : selected_chat_log === "hidden"
-                ? "main"
-                : "hidden";
+    const toggleChatLog = (isModerator: boolean) => {
+        const new_chat_log = nextChatMode(selected_chat_log, isModerator);
         setSelectedChatLog(new_chat_log);
         setShowQuickChat(false);
         props.onSelectedChatModeChange(new_chat_log);
@@ -265,40 +254,18 @@ export function GameChat(props: GameChatProperties): JSX.Element {
             )}
             <div className="chat-input-container input-group">
                 {((props.userIsPlayer && data.get("user").email_validated) || null) && (
-                    <button
-                        className={`chat-input-chat-log-toggle sm ${selected_chat_log}`}
-                        onClick={toggleChatLog}
-                    >
-                        {selected_chat_log === "malkovich"
-                            ? _("Malkovich")
-                            : selected_chat_log === "hidden"
-                            ? _("Hidden")
-                            : _("Chat")}{" "}
-                        <i
-                            className={
-                                "fa " +
-                                (selected_chat_log === "main" ? "fa-caret-down" : "fa-caret-up")
-                            }
-                        />
-                    </button>
+                    <ChatLogToggleButton
+                        selected_chat_log={selected_chat_log}
+                        toggleChatLog={toggleChatLog}
+                        isUserModerator={false}
+                    />
                 )}
                 {((!props.userIsPlayer && data.get("user").is_moderator) || null) && (
-                    <button
-                        className={`chat-input-chat-log-toggle sm ${selected_chat_log}`}
-                        onClick={toggleModeratorChatLog}
-                    >
-                        {selected_chat_log === "moderator"
-                            ? _("Moderator")
-                            : selected_chat_log === "hidden"
-                            ? _("Hidden")
-                            : _("Chat")}{" "}
-                        <i
-                            className={
-                                "fa " +
-                                (selected_chat_log === "main" ? "fa-caret-down" : "fa-caret-up")
-                            }
-                        />
-                    </button>
+                    <ChatLogToggleButton
+                        selected_chat_log={selected_chat_log}
+                        toggleChatLog={toggleChatLog}
+                        isUserModerator={true}
+                    />
                 )}
                 <TabCompleteInput
                     ref={() => 0}
@@ -314,6 +281,8 @@ export function GameChat(props: GameChatProperties): JSX.Element {
                                   "Malkovich logs are only visible after the game has ended",
                                   "Visible after the game",
                               )
+                            : selected_chat_log === "personal"
+                            ? _("Visible only to you")
                             : selected_chat_log === "moderator"
                             ? "Message players as a moderator"
                             : selected_chat_log === "hidden"
@@ -760,4 +729,71 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
             return <span>[error loading chat line]</span>;
         }
     }
+}
+
+// Returns next chat mode if user clicks on chat-input-chat-log-toggle button.
+function nextChatMode(current: ChatMode, isModerator: boolean): ChatMode {
+    if (!isModerator) {
+        switch (current) {
+            case "main":
+                return "malkovich";
+            case "malkovich":
+                return "personal";
+            default:
+                return "main";
+        }
+    }
+    switch (current) {
+        case "main":
+            return "moderator";
+        case "hidden":
+            return "main";
+        default:
+            return "hidden";
+    }
+}
+
+// Returns text that appears in chat-input-chat-log-toggle button.
+function chatModeTranslation(chatMode: ChatMode, isModerator: boolean): string {
+    if (!isModerator) {
+        switch (chatMode) {
+            case "malkovich":
+                return _("Malkovich");
+            case "hidden":
+                return _("Hidden");
+            case "personal":
+                return _("Personal");
+            default:
+                return _("Chat");
+        }
+    }
+    switch (chatMode) {
+        case "moderator":
+            return _("Moderator");
+        case "hidden":
+            return _("Hidden");
+        default:
+            return _("Chat");
+    }
+}
+
+interface ChatLogToggleButtonProperties {
+    selected_chat_log: ChatMode;
+    toggleChatLog: (isModerator: boolean) => void;
+    isUserModerator: boolean; // NOTE Should be false if moderator is playing
+}
+
+function ChatLogToggleButton(props: ChatLogToggleButtonProperties): JSX.Element {
+    const { selected_chat_log, toggleChatLog, isUserModerator } = props;
+    return (
+        <button
+            className={`chat-input-chat-log-toggle sm ${selected_chat_log}`}
+            onClick={() => toggleChatLog(isUserModerator)}
+        >
+            {chatModeTranslation(selected_chat_log, isUserModerator)}{" "}
+            <i
+                className={"fa " + (selected_chat_log === "main" ? "fa-caret-down" : "fa-caret-up")}
+            />
+        </button>
+    );
 }
