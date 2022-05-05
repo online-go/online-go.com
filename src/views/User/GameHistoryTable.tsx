@@ -63,6 +63,37 @@ interface GroomedGame {
 
 export function GameHistoryTable(props: GameHistoryProps) {
     const [player_filter, setPlayerFilter] = React.useState<number>(null);
+    const [game_history_board_size_filter, setGameHistoryBoardSizeFilter] = React.useState<string>(
+        preferences.get("game-history-size-filter"),
+    );
+    const [game_history_ranked_filter, setGameHistoryRankedFilter] = React.useState<string>(
+        preferences.get("game-history-ranked-filter"),
+    );
+
+    function getBoardSize(size_filter: string): number {
+        switch (size_filter) {
+            case "9x9":
+                return 9;
+            case "13x13":
+                return 13;
+            case "19x19":
+                return 19;
+        }
+    }
+
+    function toggleBoardSizeFilter(size_filter: string) {
+        const new_size_filter =
+            game_history_board_size_filter === size_filter ? "all" : size_filter;
+        setGameHistoryBoardSizeFilter(new_size_filter);
+        preferences.set("game-history-size-filter", new_size_filter);
+    }
+
+    function toggleRankedFilter(ranked_filter: string) {
+        const new_ranked_filter =
+            game_history_ranked_filter === ranked_filter ? "all" : ranked_filter;
+        setGameHistoryRankedFilter(new_ranked_filter);
+        preferences.set("game-history-ranked-filter", new_ranked_filter);
+    }
 
     function game_history_groomer(results: rest_api.Game[]): GroomedGame[] {
         const ret = [];
@@ -136,6 +167,62 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                 }}
                             />
                         </div>
+                        <div>
+                            <div className="btn-group">
+                                <button
+                                    className={
+                                        game_history_board_size_filter === "9x9"
+                                            ? "primary sm"
+                                            : "sm"
+                                    }
+                                    onClick={() => toggleBoardSizeFilter("9x9")}
+                                >
+                                    {_("9x9")}
+                                </button>
+                                <button
+                                    className={
+                                        game_history_board_size_filter === "13x13"
+                                            ? "primary sm"
+                                            : "sm"
+                                    }
+                                    onClick={() => toggleBoardSizeFilter("13x13")}
+                                >
+                                    {_("13x13")}
+                                </button>
+                                <button
+                                    className={
+                                        game_history_board_size_filter === "19x19"
+                                            ? "primary sm"
+                                            : "sm"
+                                    }
+                                    onClick={() => toggleBoardSizeFilter("19x19")}
+                                >
+                                    {_("19x19")}
+                                </button>
+                            </div>
+                            <div className="btn-group">
+                                <button
+                                    className={
+                                        game_history_ranked_filter === "ranked"
+                                            ? "primary sm"
+                                            : "sm"
+                                    }
+                                    onClick={() => toggleRankedFilter("ranked")}
+                                >
+                                    {_("Ranked")}
+                                </button>
+                                <button
+                                    className={
+                                        game_history_ranked_filter === "unranked"
+                                            ? "primary sm"
+                                            : "sm"
+                                    }
+                                    onClick={() => toggleRankedFilter("unranked")}
+                                >
+                                    {_("Unranked")}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     <PaginatedTable
                         className="game-history-table"
@@ -147,6 +234,14 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             ended__isnull: false,
                             ...(player_filter !== null && {
                                 alt_player: player_filter,
+                            }),
+                            ...(game_history_board_size_filter !== "all" && {
+                                height: getBoardSize(game_history_board_size_filter),
+                                width: getBoardSize(game_history_board_size_filter),
+                            }),
+                            ...(game_history_ranked_filter !== "all" && {
+                                ranked: game_history_ranked_filter === "ranked",
+                                annulled: false, // Assume the user wants to filter annulled games
                             }),
                         }}
                         orderBy={["-ended"]}
