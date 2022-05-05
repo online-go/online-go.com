@@ -297,6 +297,12 @@ export function longRankString(r: UserOrRank) {
     return interpolate(_("%s Dan"), [r - 30 + 1]);
 }
 
+/**
+ * Returns a list of OGS ranks and labels in the range [minRank, maxRank]
+ * @param minRank the first rank in the list
+ * @param maxRank the last rank in the list
+ * @param usePlusOnLast if true, the last entry will have a plus (e.g. "1d+")
+ */
 export function rankList(
     minRank: number = 0,
     maxRank: number = MaxRank,
@@ -316,6 +322,10 @@ export function rankList(
     return result;
 }
 
+/**
+ * Returns a list of all possible pro ranks and their labels.
+ * @param bigranknums if true, ranks will start at 1037
+ */
 export function proRankList(bigranknums: boolean = true): Array<IRankInfo> {
     const result = [];
     for (let i = 37; i <= 45; ++i) {
@@ -327,9 +337,11 @@ export function proRankList(bigranknums: boolean = true): Array<IRankInfo> {
     return result;
 }
 
+/** Returns all ranks with labels in the range [25k, 9d] */
 export function amateurRanks() {
     return rankList(MinRank, MaxRank, true);
 }
+/** Returns all available ranks on OGS */
 export function allRanks() {
     return rankList().concat(proRankList());
 }

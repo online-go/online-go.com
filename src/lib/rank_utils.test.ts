@@ -26,6 +26,10 @@ import {
     getUserRating,
     rankString,
     longRankString,
+    rankList,
+    proRankList,
+    amateurRanks,
+    allRanks,
 } from "./rank_utils";
 
 // workaround for setGobanTranslations not found error
@@ -244,7 +248,7 @@ test("rankString", () => {
     expect(rankString(32.5, true)).toBe("3.5d");
 });
 
-test("rankString", () => {
+test("longRankString", () => {
     const user = {
         pro: false,
         ranking: 23.7,
@@ -286,4 +290,52 @@ test("rankString", () => {
 
     // Rank passed in
     expect(longRankString(32.5)).toBe("3.5 Dan");
+});
+
+test("rankList", () => {
+    expect(rankList(27, 31)).toEqual([
+        { rank: 27, label: "3 Kyu" },
+        { rank: 28, label: "2 Kyu" },
+        { rank: 29, label: "1 Kyu" },
+        { rank: 30, label: "1 Dan" },
+        { rank: 31, label: "2 Dan" },
+    ]);
+    expect(rankList().length).toEqual(39 /* 30 kyus + 9 dans */);
+    expect(rankList(27, 31, true)).toEqual([
+        { rank: 27, label: "3 Kyu" },
+        { rank: 28, label: "2 Kyu" },
+        { rank: 29, label: "1 Kyu" },
+        { rank: 30, label: "1 Dan" },
+        { rank: 31, label: "2 Dan+" },
+    ]);
+});
+
+test("proRankList", () => {
+    const pro_list = proRankList(false);
+    const big_ranks = proRankList();
+
+    expect(pro_list.length).toEqual(9);
+    expect(pro_list[0]).toEqual({ rank: 37, label: "1 Pro" });
+    expect(pro_list[8]).toEqual({ rank: 45, label: "9 Pro" });
+
+    expect(big_ranks.length).toEqual(9);
+    expect(big_ranks[0]).toEqual({ rank: 1037, label: "1 Pro" });
+    expect(big_ranks[8]).toEqual({ rank: 1045, label: "9 Pro" });
+});
+
+test("amateurRanks", () => {
+    const amateur_ranks = amateurRanks();
+
+    expect(amateur_ranks.length).toEqual(34);
+    expect(amateur_ranks[0].label).toBe("25 Kyu");
+    expect(amateur_ranks[33].label).toBe("9 Dan+");
+});
+
+test("allRanks", () => {
+    const all_ranks = allRanks();
+
+    expect(all_ranks.length).toEqual(48);
+    expect(all_ranks[0].label).toBe("30 Kyu");
+    expect(all_ranks[30].label).toBe("1 Dan");
+    expect(all_ranks[47].label).toBe("9 Pro");
 });
