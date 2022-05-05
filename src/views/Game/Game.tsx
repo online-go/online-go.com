@@ -21,7 +21,7 @@ import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 import { useParams } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
-import { _, pgettext, interpolate, current_language } from "translate";
+import { _, interpolate, current_language } from "translate";
 import { popover } from "popover";
 import { post, get } from "requests";
 import { KBShortcut } from "KBShortcut";
@@ -43,11 +43,10 @@ import {
 } from "goban";
 import { isLiveGame } from "TimeControl";
 import { get_network_latency, get_clock_drift } from "sockets";
-import { Player, setExtraActionCallback, PlayerDetails } from "Player";
+import { setExtraActionCallback, PlayerDetails } from "Player";
 import * as player_cache from "player_cache";
 import { notification_manager } from "Notifications";
 import { PersistentElement } from "PersistentElement";
-import { close_all_popovers } from "popover";
 import { Resizable } from "Resizable";
 import { chat_manager, ChatChannelProxy } from "chat_manager";
 import { sfx, SFXSprite, ValidSound } from "sfx";
@@ -66,6 +65,7 @@ import {
     copyBranch,
     pasteBranch,
     deleteBranch,
+    ReviewControls,
 } from "./PlayControls";
 import { GameDock } from "./GameDock";
 import swal from "sweetalert2";
@@ -132,16 +132,12 @@ export function Game(): JSX.Element {
     const [title, set_title] = React.useState<string>();
 
     const [mode, set_mode] = React.useState<GobanModes>("play");
-    const [move_text, set_move_text] = React.useState<string>();
     const [resign_mode, set_resign_mode] = React.useState<"cancel" | "resign">();
     const [resign_text, set_resign_text] = React.useState<string>();
     const [score_estimate_winner, set_score_estimate_winner] = React.useState<string>();
     const [score_estimate_amount, set_score_estimate_amount] = React.useState<number>();
     const [show_title, set_show_title] = React.useState<boolean>();
     const [player_to_move, set_player_to_move] = React.useState<number>();
-    const [review_owner_id, set_review_owner_id] = React.useState<number>();
-    const [review_controller_id, set_review_controller_id] = React.useState<number>();
-    const [review_out_of_sync, set_review_out_of_sync] = React.useState<boolean>();
     const [, set_undo_requested] = React.useState<number | undefined>();
     const [, forceUpdate] = React.useState<number>();
 
@@ -592,10 +588,6 @@ export function Game(): JSX.Element {
     const updateVariationName = (ev) => {
         set_variation_name((ev.target as HTMLInputElement).value);
     };
-    const updateMoveText = (ev) => {
-        set_move_text(ev.target.value);
-        goban.current.syncReviewMove(null, ev.target.value);
-    };
     const shareAnalysis = () => {
         const diff = goban.current.engine.getMoveDiff();
         let name = variation_name;
@@ -821,119 +813,18 @@ export function Game(): JSX.Element {
 
     /* Review stuff */
 
-    const syncToCurrentReviewMove = () => {
-        if (goban.current.engine.cur_review_move) {
-            goban.current.engine.jumpTo(goban.current.engine.cur_review_move);
-        } else {
-            setTimeout(syncToCurrentReviewMove, 50);
-        }
-    };
-
     const variationKeyPress = (ev) => {
         if (ev.keyCode === 13) {
             shareAnalysis();
             return false;
         }
     };
-    const frag_review_controls = () => {
-        const user = data.get("user");
-
-        if (!goban) {
-            return null;
-        }
-
-        return (
-            <div className="play-controls">
-                <div className="game-state">
-                    {(mode === "analyze" || null) && (
-                        <div>
-                            {_("Review by")}: <Player user={review_owner_id} />
-                            {((review_controller_id && review_controller_id !== review_owner_id) ||
-                                null) && (
-                                <div>
-                                    {_("Review controller")}: <Player user={review_controller_id} />
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {(mode === "score estimation" || null) && (
-                        <div>
-                            <EstimateScore
-                                score_estimate_winner={score_estimate_winner}
-                                score_estimate_amount={score_estimate_amount}
-                            />
-                        </div>
-                    )}
-                </div>
-                {(mode === "analyze" || null) && (
-                    <div>
-                        {frag_analyze_button_bar()}
-
-                        <div className="space-around">
-                            {review_controller_id &&
-                                review_controller_id !== user.id &&
-                                review_out_of_sync && (
-                                    <button className="sm" onClick={syncToCurrentReviewMove}>
-                                        {pgettext("Synchronize to current review position", "Sync")}{" "}
-                                        <i className="fa fa-refresh" />
-                                    </button>
-                                )}
-                        </div>
-
-                        <Resizable
-                            id="move-tree-container"
-                            className="vertically-resizable"
-                            ref={setMoveTreeContainer}
-                        />
-
-                        <div style={{ paddingLeft: "0.5em", paddingRight: "0.5em" }}>
-                            <textarea
-                                id="game-move-node-text"
-                                placeholder={_("Move comments...")}
-                                rows={5}
-                                className="form-control"
-                                value={move_text}
-                                disabled={review_controller_id !== data.get("user").id}
-                                onChange={updateMoveText}
-                            ></textarea>
-                        </div>
-
-                        <div style={{ padding: "0.5em" }}>
-                            <div className="input-group">
-                                <input
-                                    type="text"
-                                    className={`form-control ${selected_chat_log}`}
-                                    placeholder={_("Variation name...")}
-                                    value={variation_name}
-                                    onChange={updateVariationName}
-                                    onKeyDown={variationKeyPress}
-                                    disabled={user.anonymous}
-                                />
-                                <button
-                                    className="sm"
-                                    type="button"
-                                    disabled={user.anonymous}
-                                    onClick={shareAnalysis}
-                                >
-                                    {_("Share")}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-                {(mode === "score estimation" || null) && (
-                    <div className="analyze-mode-buttons">
-                        <span>
-                            <button className="sm primary bold" onClick={stopEstimatingScore}>
-                                {_("Back to Review")}
-                            </button>
-                        </span>
-                    </div>
-                )}
-            </div>
-        );
-    };
+    const frag_estimate_score = () => (
+        <EstimateScore
+            score_estimate_winner={score_estimate_winner}
+            score_estimate_amount={score_estimate_amount}
+        />
+    );
     const frag_analyze_button_bar = () => {
         return (
             <AnalyzeButtonBar
@@ -948,6 +839,50 @@ export function Game(): JSX.Element {
             />
         );
     };
+    const frag_review_controls = () => (
+        <ReviewControls
+            mode={mode}
+            goban={goban.current}
+            review_id={review_id}
+            renderEstimateScore={frag_estimate_score}
+            renderAnalyzeButtonBar={frag_analyze_button_bar}
+            setMoveTreeContainer={setMoveTreeContainer}
+            onShareAnalysis={shareAnalysis}
+            variation_name={variation_name}
+            updateVariationName={updateVariationName}
+            variationKeyPress={variationKeyPress}
+            selected_chat_log={selected_chat_log}
+            stopEstimatingScore={stopEstimatingScore}
+        />
+    );
+    const frag_play_controls = (show_cancel: boolean) => (
+        <PlayControls
+            goban={goban.current}
+            show_cancel={show_cancel}
+            player_to_move={player_to_move}
+            onCancel={cancelOrResign}
+            resign_text={resign_text}
+            view_mode={view_mode}
+            user_is_player={user_is_player}
+            review_list={review_list}
+            stashed_conditional_moves={stashed_conditional_moves.current}
+            mode={mode}
+            phase={phase}
+            title={title}
+            show_title={show_title}
+            renderEstimateScore={frag_estimate_score}
+            renderAnalyzeButtonBar={frag_analyze_button_bar}
+            setMoveTreeContainer={setMoveTreeContainer}
+            onShareAnalysis={shareAnalysis}
+            variation_name={variation_name}
+            updateVariationName={updateVariationName}
+            variationKeyPress={variationKeyPress}
+            annulled={annulled}
+            zen_mode={zen_mode}
+            selected_chat_log={selected_chat_log}
+            stopEstimatingScore={stopEstimatingScore}
+        />
+    );
 
     const frag_ai_review = () => {
         if (
@@ -1090,63 +1025,6 @@ export function Game(): JSX.Element {
         );
     };
 
-    const renderExtraPlayerActions = (player_id: number) => {
-        const user = data.get("user");
-        if (
-            review_id &&
-            goban &&
-            (goban.current.review_controller_id === user.id ||
-                goban.current.review_owner_id === user.id)
-        ) {
-            let is_owner = null;
-            let is_controller = null;
-            if (goban.current.review_owner_id === player_id) {
-                is_owner = (
-                    <div style={{ fontStyle: "italic" }}>
-                        {_("Owner") /* translators: Review owner */}
-                    </div>
-                );
-            }
-            if (goban.current.review_controller_id === player_id) {
-                is_controller = (
-                    <div style={{ fontStyle: "italic" }}>
-                        {_("Controller") /* translators: Review controller */}
-                    </div>
-                );
-            }
-
-            const give_control = (
-                <button
-                    className="xs"
-                    onClick={() => {
-                        goban.current.giveReviewControl(player_id);
-                        close_all_popovers();
-                    }}
-                >
-                    {_("Give Control") /* translators: Give control in review or on a demo board */}
-                </button>
-            );
-
-            if (player_id === goban.current.review_owner_id) {
-                return (
-                    <div>
-                        {is_owner}
-                        {is_controller}
-                        <div className="actions">{give_control}</div>
-                    </div>
-                );
-            }
-
-            return (
-                <div>
-                    {is_owner}
-                    {is_controller}
-                    <div className="actions">{give_control}</div>
-                </div>
-            );
-        }
-        return null;
-    };
     const setMoveTreeContainer = (resizable: Resizable): void => {
         ref_move_tree_container.current = resizable ? resizable.div : null;
         if (goban.current) {
@@ -1172,7 +1050,6 @@ export function Game(): JSX.Element {
         game_control.on("stopEstimatingScore", stopEstimatingScore);
         game_control.on("gotoMove", nav_goto_move);
 
-        setExtraActionCallback(renderExtraPlayerActions);
         $(window).on("focus", onFocus);
 
         /*** BEGIN initialize ***/
@@ -1374,8 +1251,6 @@ export function Game(): JSX.Element {
             }
         };
 
-        const sync_move_text = () => set_move_text(goban.current.engine.cur_move?.text || "");
-
         const sync_show_title = () =>
             set_show_title(
                 !goban.current.submit_move ||
@@ -1407,33 +1282,19 @@ export function Game(): JSX.Element {
             }
         };
 
-        const sync_review_out_of_sync = () => {
-            const engine = goban.current.engine;
-            set_review_out_of_sync(
-                engine.cur_move &&
-                    engine.cur_review_move &&
-                    engine.cur_move.id !== engine.cur_review_move.id,
-            );
-        };
-
         const onLoad = () => {
             const engine = goban.current.engine;
             set_mode(goban.current.mode);
             set_phase(engine.phase);
             set_title(goban.current.title);
 
-            set_review_owner_id(goban.current.review_owner_id);
-            set_review_controller_id(goban.current.review_controller_id);
-
             set_score_estimate_winner(undefined);
             set_undo_requested(engine.undo_requested);
 
             sync_resign_text();
-            sync_move_text();
             sync_show_title();
             sync_move_info();
             sync_stone_removal();
-            sync_review_out_of_sync();
 
             // These are only updated on load events
             set_user_is_player(engine.isParticipant(data.get("user").id));
@@ -1477,20 +1338,16 @@ export function Game(): JSX.Element {
         });
         goban.current.on("undo_requested", set_undo_requested);
         goban.current.on("cur_move", sync_resign_text);
-        goban.current.on("cur_move", sync_move_text);
         goban.current.on("cur_move", sync_show_title);
         goban.current.on("submit_move", sync_show_title);
         goban.current.on("cur_move", sync_move_info);
         goban.current.on("last_official_move", sync_move_info);
-        goban.current.on("review_owner_id", set_review_owner_id);
-        goban.current.on("review_controller_id", set_review_controller_id);
 
         goban.current.on("phase", sync_stone_removal);
         goban.current.on("mode", sync_stone_removal);
         goban.current.on("outcome", sync_stone_removal);
         goban.current.on("stone-removal.accepted", sync_stone_removal);
         goban.current.on("stone-removal.updated", sync_stone_removal);
-        goban.current.on("cur_move", sync_review_out_of_sync);
 
         /* END sync_state port */
 
@@ -1560,10 +1417,6 @@ export function Game(): JSX.Element {
         });
 
         if (review_id) {
-            goban.current.on("review.sync-to-current-move", () => {
-                syncToCurrentReviewMove();
-            });
-
             let stashed_move_string = null;
             let stashed_review_id = null;
             /* If we lose connection, save our place when we reconnect so we can jump to it. */
@@ -1821,41 +1674,7 @@ export function Game(): JSX.Element {
                     {((view_mode === "portrait" && !zen_mode) || null) && frag_ai_review()}
 
                     {(view_mode === "portrait" || null) &&
-                        (review ? (
-                            frag_review_controls()
-                        ) : (
-                            <PlayControls
-                                goban={goban.current}
-                                show_cancel={false}
-                                player_to_move={player_to_move}
-                                onCancel={cancelOrResign}
-                                resign_text={resign_text}
-                                view_mode={view_mode}
-                                user_is_player={user_is_player}
-                                review_list={review_list}
-                                stashed_conditional_moves={stashed_conditional_moves.current}
-                                mode={mode}
-                                phase={phase}
-                                title={title}
-                                show_title={show_title}
-                                renderEstimateScore={() => (
-                                    <EstimateScore
-                                        score_estimate_winner={score_estimate_winner}
-                                        score_estimate_amount={score_estimate_amount}
-                                    />
-                                )}
-                                renderAnalyzeButtonBar={frag_analyze_button_bar}
-                                setMoveTreeContainer={setMoveTreeContainer}
-                                onShareAnalysis={shareAnalysis}
-                                variation_name={variation_name}
-                                updateVariationName={updateVariationName}
-                                variationKeyPress={variationKeyPress}
-                                annulled={annulled}
-                                zen_mode={zen_mode}
-                                selected_chat_log={selected_chat_log}
-                                stopEstimatingScore={stopEstimatingScore}
-                            />
-                        ))}
+                        (review ? frag_review_controls() : frag_play_controls(false))}
 
                     {((view_mode === "portrait" && !zen_mode) || null) && CHAT}
 
@@ -1926,41 +1745,7 @@ export function Game(): JSX.Element {
                             show_game_timing &&
                             frag_timings()}
 
-                        {review ? (
-                            frag_review_controls()
-                        ) : (
-                            <PlayControls
-                                goban={goban.current}
-                                show_cancel={true}
-                                player_to_move={player_to_move}
-                                onCancel={cancelOrResign}
-                                resign_text={resign_text}
-                                view_mode={view_mode}
-                                user_is_player={user_is_player}
-                                review_list={review_list}
-                                stashed_conditional_moves={stashed_conditional_moves.current}
-                                mode={mode}
-                                phase={phase}
-                                title={title}
-                                show_title={show_title}
-                                renderEstimateScore={() => (
-                                    <EstimateScore
-                                        score_estimate_winner={score_estimate_winner}
-                                        score_estimate_amount={score_estimate_amount}
-                                    />
-                                )}
-                                renderAnalyzeButtonBar={frag_analyze_button_bar}
-                                setMoveTreeContainer={setMoveTreeContainer}
-                                onShareAnalysis={shareAnalysis}
-                                variation_name={variation_name}
-                                updateVariationName={updateVariationName}
-                                variationKeyPress={variationKeyPress}
-                                annulled={annulled}
-                                zen_mode={zen_mode}
-                                selected_chat_log={selected_chat_log}
-                                stopEstimatingScore={stopEstimatingScore}
-                            />
-                        )}
+                        {review ? frag_review_controls() : frag_play_controls(true)}
 
                         {(view_mode === "wide" || null) && CHAT}
                         {((view_mode === "square" && squashed) || null) && CHAT}

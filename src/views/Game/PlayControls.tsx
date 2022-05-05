@@ -35,15 +35,16 @@ import device from "device";
 import swal from "sweetalert2";
 import { challengeRematch } from "ChallengeModal";
 import { Clock } from "Clock";
-import { getOutcomeTranslation } from "src/lib/misc";
+import { getOutcomeTranslation } from "misc";
 import { PlayerCacheEntry } from "player_cache";
 import { Link } from "react-router-dom";
-import { Resizable } from "src/components/Resizable";
+import { Resizable } from "Resizable";
 import { ChatMode } from "./GameChat";
 import { PersistentElement } from "PersistentElement";
-import { Player } from "Player";
 import { toast } from "toast";
 import { errorAlerter } from "misc";
+import { close_all_popovers } from "popover";
+import { setExtraActionCallback, Player } from "Player";
 
 interface PlayControlsProps {
     goban: Goban;
@@ -1078,7 +1079,7 @@ export function AnalyzeButtonBar({
                 </button>
                 <button
                     disabled={copied_node.current === null}
-                    onClick={() => copyBranch(goban, copied_node, mode)}
+                    onClick={() => pasteBranch(goban, copied_node, mode)}
                     title={_("Paste branch")}
                 >
                     <i className="fa fa-clipboard"></i>
@@ -1261,4 +1262,236 @@ export function deleteBranch(goban: Goban, mode: GobanModes) {
             })
             .catch(() => 0);
     }
+}
+
+interface ReviewControlsProps {
+    mode: GobanModes;
+    goban: Goban;
+    review_id: number;
+    renderEstimateScore: () => JSX.Element;
+    renderAnalyzeButtonBar: () => JSX.Element;
+    setMoveTreeContainer: (r: Resizable) => void;
+
+    // TODO: turn this into one render prop so that we don't have to pass these
+    // props to both PlayControls and ReviewControls
+    onShareAnalysis: () => void;
+    variation_name: string;
+    updateVariationName: React.ChangeEventHandler<HTMLInputElement>;
+    variationKeyPress: React.KeyboardEventHandler<HTMLInputElement>;
+
+    stopEstimatingScore: () => void;
+
+    selected_chat_log: ChatMode;
+}
+
+export function ReviewControls({
+    goban,
+    mode,
+    review_id,
+    renderAnalyzeButtonBar,
+    renderEstimateScore,
+    setMoveTreeContainer,
+    onShareAnalysis,
+    variation_name,
+    updateVariationName,
+    variationKeyPress,
+    stopEstimatingScore,
+    selected_chat_log,
+}: ReviewControlsProps) {
+    const user = data.get("user");
+
+    if (!goban) {
+        return null;
+    }
+
+    const [review_owner_id, set_review_owner_id] = React.useState<number>();
+    const [review_controller_id, set_review_controller_id] = React.useState<number>();
+    const [review_out_of_sync, set_review_out_of_sync] = React.useState<boolean>();
+    React.useEffect(() => {
+        const renderExtraPlayerActions = (player_id: number) => {
+            const user = data.get("user");
+            if (
+                review_id &&
+                goban &&
+                (goban.review_controller_id === user.id || goban.review_owner_id === user.id)
+            ) {
+                let is_owner = null;
+                let is_controller = null;
+                if (goban.review_owner_id === player_id) {
+                    is_owner = (
+                        <div style={{ fontStyle: "italic" }}>
+                            {_("Owner") /* translators: Review owner */}
+                        </div>
+                    );
+                }
+                if (goban.review_controller_id === player_id) {
+                    is_controller = (
+                        <div style={{ fontStyle: "italic" }}>
+                            {_("Controller") /* translators: Review controller */}
+                        </div>
+                    );
+                }
+
+                const give_control = (
+                    <button
+                        className="xs"
+                        onClick={() => {
+                            goban.giveReviewControl(player_id);
+                            close_all_popovers();
+                        }}
+                    >
+                        {
+                            _(
+                                "Give Control",
+                            ) /* translators: Give control in review or on a demo board */
+                        }
+                    </button>
+                );
+
+                if (player_id === goban.review_owner_id) {
+                    return (
+                        <div>
+                            {is_owner}
+                            {is_controller}
+                            <div className="actions">{give_control}</div>
+                        </div>
+                    );
+                }
+
+                return (
+                    <div>
+                        {is_owner}
+                        {is_controller}
+                        <div className="actions">{give_control}</div>
+                    </div>
+                );
+            }
+            return null;
+        };
+        setExtraActionCallback(renderExtraPlayerActions);
+        const sync_review_out_of_sync = () => {
+            const engine = goban.engine;
+            set_review_out_of_sync(
+                engine.cur_move &&
+                    engine.cur_review_move &&
+                    engine.cur_move.id !== engine.cur_review_move.id,
+            );
+        };
+
+        goban.on("load", () => {
+            set_review_owner_id(goban.review_owner_id);
+            set_review_controller_id(goban.review_controller_id);
+            sync_review_out_of_sync();
+        });
+        goban.on("review_owner_id", set_review_owner_id);
+        goban.on("review_controller_id", set_review_controller_id);
+        goban.on("cur_move", sync_review_out_of_sync);
+    }, [goban]);
+
+    const [move_text, set_move_text] = React.useState<string>();
+    const updateMoveText = (ev) => {
+        set_move_text(ev.target.value);
+        goban.syncReviewMove(null, ev.target.value);
+    };
+    React.useEffect(() => {
+        const sync_move_text = () => set_move_text(goban.engine.cur_move?.text || "");
+        goban.on("load", sync_move_text);
+        goban.on("cur_move", sync_move_text);
+    }, [goban]);
+
+    const syncToCurrentReviewMove = () => {
+        if (goban.engine.cur_review_move) {
+            goban.engine.jumpTo(goban.engine.cur_review_move);
+        } else {
+            setTimeout(syncToCurrentReviewMove, 50);
+        }
+    };
+    React.useEffect(() => {
+        goban.on("review.sync-to-current-move", syncToCurrentReviewMove);
+    }, [goban]);
+
+    return (
+        <div className="play-controls">
+            <div className="game-state">
+                {(mode === "analyze" || null) && (
+                    <div>
+                        {_("Review by")}: <Player user={review_owner_id} />
+                        {((review_controller_id && review_controller_id !== review_owner_id) ||
+                            null) && (
+                            <div>
+                                {_("Review controller")}: <Player user={review_controller_id} />
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {(mode === "score estimation" || null) && <div>{renderEstimateScore()}</div>}
+            </div>
+            {(mode === "analyze" || null) && (
+                <div>
+                    {renderAnalyzeButtonBar()}
+
+                    <div className="space-around">
+                        {review_controller_id &&
+                            review_controller_id !== user.id &&
+                            review_out_of_sync && (
+                                <button className="sm" onClick={syncToCurrentReviewMove}>
+                                    {pgettext("Synchronize to current review position", "Sync")}{" "}
+                                    <i className="fa fa-refresh" />
+                                </button>
+                            )}
+                    </div>
+
+                    <Resizable
+                        id="move-tree-container"
+                        className="vertically-resizable"
+                        ref={setMoveTreeContainer}
+                    />
+
+                    <div style={{ paddingLeft: "0.5em", paddingRight: "0.5em" }}>
+                        <textarea
+                            id="game-move-node-text"
+                            placeholder={_("Move comments...")}
+                            rows={5}
+                            className="form-control"
+                            value={move_text}
+                            disabled={review_controller_id !== data.get("user").id}
+                            onChange={updateMoveText}
+                        ></textarea>
+                    </div>
+
+                    <div style={{ padding: "0.5em" }}>
+                        <div className="input-group">
+                            <input
+                                type="text"
+                                className={`form-control ${selected_chat_log}`}
+                                placeholder={_("Variation name...")}
+                                value={variation_name}
+                                onChange={updateVariationName}
+                                onKeyDown={variationKeyPress}
+                                disabled={user.anonymous}
+                            />
+                            <button
+                                className="sm"
+                                type="button"
+                                disabled={user.anonymous}
+                                onClick={onShareAnalysis}
+                            >
+                                {_("Share")}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {(mode === "score estimation" || null) && (
+                <div className="analyze-mode-buttons">
+                    <span>
+                        <button className="sm primary bold" onClick={stopEstimatingScore}>
+                            {_("Back to Review")}
+                        </button>
+                    </span>
+                </div>
+            )}
+        </div>
+    );
 }
