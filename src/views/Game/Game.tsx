@@ -24,11 +24,11 @@ import { Link, useParams } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext, interpolate, current_language } from "translate";
 import { popover } from "popover";
-import { post, get, api1, del } from "requests";
+import { post, get } from "requests";
 import { KBShortcut } from "KBShortcut";
 import { UIPush } from "UIPush";
 import { errorAlerter, ignore, getOutcomeTranslation } from "misc";
-import { challengeFromBoardPosition, challengeRematch } from "ChallengeModal";
+import { challengeRematch } from "ChallengeModal";
 import {
     Goban,
     GobanCanvas,
@@ -46,7 +46,6 @@ import {
 } from "goban";
 import { isLiveGame } from "TimeControl";
 import { get_network_latency, get_clock_drift } from "sockets";
-import { Dock } from "Dock";
 import { Player, setExtraActionCallback, PlayerDetails } from "Player";
 import * as player_cache from "player_cache";
 import { notification_manager } from "Notifications";
@@ -54,10 +53,6 @@ import { PersistentElement } from "PersistentElement";
 import { close_all_popovers } from "popover";
 import { Resizable } from "Resizable";
 import { chat_manager, ChatChannelProxy } from "chat_manager";
-import { openGameInfoModal } from "./GameInfoModal";
-import { openGameLinkModal } from "./GameLinkModal";
-import { openGameLogModal } from "./GameLogModal";
-import { openACLModal } from "ACLModal";
 import { sfx, SFXSprite, ValidSound } from "sfx";
 import { AIReview } from "./AIReview";
 import { GameChat, ChatMode } from "./GameChat";
@@ -65,11 +60,10 @@ import { toast } from "toast";
 import { Clock } from "Clock";
 import { JGOFClock } from "goban";
 import { GameTimings } from "./GameTimings";
-import { openReport } from "Report";
 import { goban_view_mode, goban_view_squashed, ViewMode, shared_ip_with_player_map } from "./util";
 import { game_control } from "./game_control";
 import { PlayerCards } from "./PlayerCards";
-
+import { GameDock } from "./GameDock";
 import swal from "sweetalert2";
 
 const win = $(window);
@@ -97,7 +91,6 @@ export function Game(): JSX.Element {
     const last_move_viewed = React.useRef<number>(0);
     const conditional_move_tree = React.useRef<any>();
     const stashed_conditional_moves = React.useRef<any>();
-    const volume_sound_debounce = React.useRef<any>();
     const copied_node = React.useRef<MoveTree>();
     const white_username = React.useRef<string>("White");
     const black_username = React.useRef<string>("Black");
@@ -118,9 +111,12 @@ export function Game(): JSX.Element {
     const [selected_chat_log, set_selected_chat_log] = React.useState<ChatMode>("main");
     const [variation_name, set_variation_name] = React.useState("");
     const [strict_seki_mode, set_strict_seki_mode] = React.useState(false);
-    const [volume, set_volume] = React.useState(sfx.getVolume("master"));
-    const [historical_black, set_historical_black] = React.useState(null);
-    const [historical_white, set_historical_white] = React.useState(null);
+    const [historical_black, set_historical_black] = React.useState<rest_api.games.Player | null>(
+        null,
+    );
+    const [historical_white, set_historical_white] = React.useState<rest_api.games.Player | null>(
+        null,
+    );
     const [annulled, set_annulled] = React.useState(false);
     const [black_auto_resign_expiration, set_black_auto_resign_expiration] =
         React.useState<Date>(null);
@@ -130,7 +126,9 @@ export function Game(): JSX.Element {
         preferences.get("ai-review-enabled"),
     );
     const [phase, set_phase] = React.useState<GoEnginePhase>();
-    const [selected_ai_review_uuid, set_selected_ai_review_uuid] = React.useState(null);
+    const [selected_ai_review_uuid, set_selected_ai_review_uuid] = React.useState<string | null>(
+        null,
+    );
     const [show_game_timing, set_show_game_timing] = React.useState(false);
     const [submitting_move, set_submitting_move] = React.useState(false);
     const [score, set_score] = React.useState<Score>();
@@ -527,18 +525,6 @@ export function Game(): JSX.Element {
         onResize(true);
         goban.current.redraw(true);
     };
-    const showGameInfo = () => {
-        for (const k of ["komi", "rules", "handicap", "rengo", "rengo_teams"]) {
-            goban.current.config[k] = goban.current.engine.config[k];
-        }
-        openGameInfoModal(
-            goban.current.config,
-            historical_black || goban.current.engine.players.black,
-            historical_white || goban.current.engine.players.white,
-            annulled,
-            game_control.creator_id || goban.current.review_owner_id,
-        );
-    };
 
     const toggleShowTiming = () => {
         set_show_game_timing(!show_game_timing);
@@ -561,29 +547,6 @@ export function Game(): JSX.Element {
             goban.current.setMark(move.x, move.y, "triangle", false);
         }
     };
-
-    const showLogModal = () => {
-        openGameLogModal(
-            goban.current.config,
-            gameLogModalMarkCoords,
-            historical_black || goban.current.engine.players.black,
-            historical_white || goban.current.engine.players.white,
-        );
-    };
-
-    const toggleAnonymousModerator = () => {
-        const channel = `game-${game_id}`;
-        data.set(
-            `moderator.join-game-publicly.${channel}`,
-            !data.get(
-                `moderator.join-game-publicly.${channel}`,
-                !preferences.get("moderator.join-games-anonymously"),
-            ),
-        );
-    };
-    const showLinkModal = () => {
-        openGameLinkModal(goban.current);
-    };
     const gameAnalyze = () => {
         if (goban.current.isAnalysisDisabled() && goban.current.engine.phase !== "finished") {
             //swal(_("Analysis mode has been disabled for this game"));
@@ -594,16 +557,6 @@ export function Game(): JSX.Element {
             if (last_estimate_move) {
                 goban.current.engine.jumpTo(last_estimate_move);
             }
-        }
-    };
-    const fork = () => {
-        if (
-            goban.current?.engine.rengo ||
-            (goban.current.isAnalysisDisabled() && goban.current.engine.phase !== "finished")
-        ) {
-            //swal(_("Game forking has been disabled for this game since analysis mode has been disabled"));
-        } else {
-            challengeFromBoardPosition(goban.current);
         }
     };
     const toggleZenMode = () => {
@@ -732,13 +685,6 @@ export function Game(): JSX.Element {
             goban.current.message("Can't send to the " + selected_chat_log + " chat_log");
         }
     };
-    const openACL = () => {
-        if (game_id) {
-            openACLModal({ game_id: game_id });
-        } else if (review_id) {
-            openACLModal({ review_id: review_id });
-        }
-    };
 
     /*** Game stuff ***/
     const reviewAdded = (review) => {
@@ -851,94 +797,6 @@ export function Game(): JSX.Element {
         goban.current.hideScores();
         goban.current.score_estimate = null;
         return ret;
-    };
-    const alertModerator = () => {
-        const user = data.get("user");
-        const obj: any = game_id
-            ? { reported_game_id: game_id }
-            : { reported_review_id: review_id };
-
-        if (user.id === goban.current?.engine?.config?.white_player_id) {
-            obj.reported_user_id = goban.current.engine.config.black_player_id;
-        }
-        if (user.id === goban.current?.engine?.config?.black_player_id) {
-            obj.reported_user_id = goban.current.engine.config.white_player_id;
-        }
-
-        if (!obj.reported_user_id) {
-            swal(
-                _(
-                    'Please report the player that is a problem by clicking on their name and selecting "Report".',
-                ),
-            )
-                .then(() => 0)
-                .catch(ignore);
-        } else {
-            openReport(obj);
-        }
-    };
-
-    const decide = (winner): void => {
-        let moderation_note = null;
-        do {
-            moderation_note = prompt("Deciding for " + winner.toUpperCase() + " - Moderator note:");
-            if (moderation_note == null) {
-                return;
-            }
-            moderation_note = moderation_note.trim();
-        } while (moderation_note === "");
-
-        post("games/%%/moderate", game_id, {
-            decide: winner,
-            moderation_note: moderation_note,
-        }).catch(errorAlerter);
-    };
-    const decide_white = () => decide("white");
-    const decide_black = () => decide("black");
-    const decide_tie = () => decide("tie");
-    const force_autoscore = () => {
-        let moderation_note = null;
-        do {
-            moderation_note = prompt("Autoscoring game - Moderator note:");
-            if (moderation_note == null) {
-                return;
-            }
-            moderation_note = moderation_note.trim();
-        } while (moderation_note === "");
-
-        post("games/%%/moderate", game_id, {
-            autoscore: true,
-            moderation_note: moderation_note,
-        }).catch(errorAlerter);
-    };
-    const do_annul = (tf: boolean): void => {
-        let moderation_note = null;
-        do {
-            moderation_note = tf
-                ? prompt(_("ANNULMENT - Moderator note:"))
-                : prompt(_("Un-annulment - Moderator note:"));
-            if (moderation_note == null) {
-                return;
-            }
-            moderation_note = moderation_note
-                .trim()
-                .replace(/(black)\b/g, `player ${goban.current.engine.players.black.id}`)
-                .replace(/(white)\b/g, `player ${goban.current.engine.players.white.id}`);
-        } while (moderation_note === "");
-
-        post("games/%%/annul", game_id, {
-            annul: tf ? 1 : 0,
-            moderation_note: moderation_note,
-        })
-            .then(() => {
-                if (tf) {
-                    swal({ text: _("Game has been annulled") }).catch(swal.noop);
-                } else {
-                    swal({ text: _("Game ranking has been restored") }).catch(swal.noop);
-                }
-                set_annulled(tf);
-            })
-            .catch(errorAlerter);
     };
 
     const cancelOrResign = () => {
@@ -1164,49 +1022,7 @@ export function Game(): JSX.Element {
         goban.current.clearAnalysisDrawing();
     };
 
-    const toggleVolume = () => {
-        _setVolume(volume > 0 ? 0 : 0.5);
-    };
-    const setVolume = (ev) => {
-        const new_volume = parseFloat(ev.target.value);
-        _setVolume(new_volume);
-    };
-    const _setVolume = (volume) => {
-        sfx.setVolume("master", volume);
-        set_volume(volume);
-
-        if (volume_sound_debounce.current) {
-            clearTimeout(volume_sound_debounce.current);
-        }
-
-        volume_sound_debounce.current = setTimeout(
-            () => sfx.playStonePlacementSound(5, 5, 9, 9, "white"),
-            250,
-        );
-    };
-
     /* Review stuff */
-    const delete_ai_reviews = () => {
-        swal({
-            text: _("Really clear ALL AI reviews for this game?"),
-            showCancelButton: true,
-        })
-            .then(() => {
-                console.info(`Clearing AI reviews for ${game_id}`);
-                del(`games/${game_id}/ai_reviews`, {})
-                    .then(() => console.info("AI Reviews cleared"))
-                    .catch(errorAlerter);
-            })
-            .catch(ignore);
-    };
-    const force_ai_review = (analysis_type: "fast" | "full") => {
-        post(`games/${game_id}/ai_reviews`, {
-            engine: "katago",
-            type: analysis_type,
-        })
-            .then(() => swal(_("Analysis started")))
-            .catch(errorAlerter);
-    };
 
     const syncToCurrentReviewMove = () => {
         if (goban.current.engine.cur_review_move) {
@@ -2043,309 +1859,6 @@ export function Game(): JSX.Element {
         );
     };
 
-    const frag_dock = () => {
-        let superuser_ai_review_ready =
-            (goban && data.get("user").is_superuser && goban.current.engine.phase === "finished") ||
-            null;
-        let mod =
-            (goban && data.get("user").is_moderator && goban.current.engine.phase !== "finished") ||
-            null;
-        let annul =
-            (goban && data.get("user").is_moderator && goban.current.engine.phase === "finished") ||
-            null;
-        const annulable = (goban && !annulled && goban.current.engine.config.ranked) || null;
-        const unannulable = (goban && annulled && goban.current.engine.config.ranked) || null;
-
-        const review = !!review_id || null;
-        const game = !!game_id || null;
-        if (review) {
-            superuser_ai_review_ready = null;
-            mod = null;
-            annul = null;
-        }
-
-        let sgf_download_enabled = false;
-        try {
-            sgf_download_enabled =
-                goban.current.engine.phase === "finished" ||
-                !goban.current.isAnalysisDisabled(true);
-        } catch (e) {
-            // ignore error
-        }
-
-        let sgf_url = null;
-        let sgf_with_comments_url = null;
-        let sgf_with_ai_review_url = null;
-        if (game_id) {
-            sgf_url = api1(`games/${game_id}/sgf`);
-            if (selected_ai_review_uuid) {
-                sgf_with_ai_review_url = api1(
-                    `games/${game_id}/sgf?ai_review=${selected_ai_review_uuid}`,
-                );
-            }
-        } else {
-            sgf_url = api1(`reviews/${review_id}/sgf?without-comments=1`);
-            sgf_with_comments_url = api1(`reviews/${review_id}/sgf`);
-        }
-
-        return (
-            <Dock>
-                {(tournament_id.current || null) && (
-                    <Link className="plain" to={`/tournament/${tournament_id.current}`}>
-                        <i className="fa fa-trophy" title={_("This is a tournament game")} />{" "}
-                        {_("Tournament")}
-                    </Link>
-                )}
-                {(ladder_id.current || null) && (
-                    <Link className="plain" to={`/ladder/${ladder_id.current}`}>
-                        <i className="fa fa-trophy" title={_("This is a ladder game")} />{" "}
-                        {_("Ladder")}
-                    </Link>
-                )}
-                {((goban && goban.current.engine.config["private"]) || null) && (
-                    <a onClick={openACL}>
-                        <i className="fa fa-lock" />{" "}
-                        {pgettext("Control who can access the game or review", "Access settings")}
-                    </a>
-                )}
-
-                <a>
-                    <i
-                        className={
-                            "fa volume-icon " +
-                            (volume === 0
-                                ? "fa-volume-off"
-                                : volume > 0.5
-                                ? "fa-volume-up"
-                                : "fa-volume-down")
-                        }
-                        onClick={toggleVolume}
-                    />{" "}
-                    <input
-                        type="range"
-                        className="volume-slider"
-                        onChange={setVolume}
-                        value={volume}
-                        min={0}
-                        max={1.0}
-                        step={0.01}
-                    />
-                </a>
-
-                <a onClick={toggleZenMode}>
-                    <i className="ogs-zen-mode"></i> {_("Zen mode")}
-                </a>
-                <a onClick={toggleCoordinates}>
-                    <i className="ogs-coordinates"></i> {_("Toggle coordinates")}
-                </a>
-                {game && (
-                    <a onClick={toggleAIReview}>
-                        <i className="fa fa-desktop"></i>{" "}
-                        {ai_review_enabled ? _("Disable AI review") : _("Enable AI review")}
-                    </a>
-                )}
-                <a onClick={showGameInfo}>
-                    <i className="fa fa-info"></i> {_("Game information")}
-                </a>
-                {game && (
-                    <a
-                        onClick={gameAnalyze}
-                        className={
-                            goban &&
-                            goban.current.engine.phase !== "finished" &&
-                            goban.current.isAnalysisDisabled()
-                                ? "disabled"
-                                : ""
-                        }
-                    >
-                        <i className="fa fa-sitemap"></i> {_("Analyze game")}
-                    </a>
-                )}
-                {((goban &&
-                    !review_id &&
-                    user_is_player &&
-                    goban.current.engine.phase !== "finished") ||
-                    null) && (
-                    <a
-                        style={{
-                            visibility:
-                                goban.current.mode === "play" &&
-                                goban &&
-                                goban.current.engine.playerToMove() !== data.get("user").id
-                                    ? "visible"
-                                    : "hidden",
-                        }}
-                        className={
-                            goban &&
-                            goban.current.engine.phase !== "finished" &&
-                            (goban.current.isAnalysisDisabled() || goban.current.engine.rengo)
-                                ? "disabled"
-                                : ""
-                        }
-                        onClick={enterConditionalMovePlanner}
-                    >
-                        <i className="fa fa-exchange"></i> {_("Plan conditional moves")}
-                    </a>
-                )}
-                {((goban &&
-                    !review_id &&
-                    (user_is_player || mod) &&
-                    goban.current.engine.phase !== "finished") ||
-                    null) && (
-                    <a onClick={pauseGame}>
-                        <i className="fa fa-pause"></i> {_("Pause game")}
-                    </a>
-                )}
-                {game && (
-                    <a
-                        onClick={startReview}
-                        className={
-                            goban &&
-                            goban.current.engine.phase !== "finished" &&
-                            goban.current.isAnalysisDisabled()
-                                ? "disabled"
-                                : ""
-                        }
-                    >
-                        <i className="fa fa-refresh"></i> {_("Review this game")}
-                    </a>
-                )}
-                <a
-                    onClick={estimateScore}
-                    className={
-                        goban &&
-                        goban.current.engine.phase !== "finished" &&
-                        goban.current.isAnalysisDisabled()
-                            ? "disabled"
-                            : ""
-                    }
-                >
-                    <i className="fa fa-tachometer"></i> {_("Estimate score")}
-                </a>
-                <a onClick={fork} className={goban.current?.engine.rengo ? "disabled" : ""}>
-                    <i className="fa fa-code-fork"></i> {_("Fork game")}
-                </a>
-                <a onClick={alertModerator}>
-                    <i className="fa fa-exclamation-triangle"></i> {_("Call moderator")}
-                </a>
-                {((review && game_id) || null) && (
-                    <Link to={`/game/${game_id}`}>
-                        <i className="ogs-goban" /> {_("Original game")}
-                    </Link>
-                )}
-                <a onClick={showLinkModal}>
-                    <i className="fa fa-share-alt"></i>{" "}
-                    {review ? _("Link to review") : _("Link to game")}
-                </a>
-                {sgf_download_enabled ? (
-                    <a href={sgf_url} target="_blank">
-                        <i className="fa fa-download"></i> {_("Download SGF")}
-                    </a>
-                ) : (
-                    <a
-                        className="disabled"
-                        onClick={() =>
-                            swal(
-                                _(
-                                    "SGF downloading for this game is disabled until the game is complete.",
-                                ),
-                            )
-                        }
-                    >
-                        <i className="fa fa-download"></i> {_("Download SGF")}
-                    </a>
-                )}
-                {sgf_download_enabled && sgf_with_ai_review_url && (
-                    <a href={sgf_with_ai_review_url} target="_blank">
-                        <i className="fa fa-download"></i> {_("SGF with AI Review")}
-                    </a>
-                )}
-                {sgf_download_enabled && sgf_with_comments_url && (
-                    <a href={sgf_with_comments_url} target="_blank">
-                        <i className="fa fa-download"></i> {_("SGF with comments")}
-                    </a>
-                )}
-                {(mod || annul) && <hr />}
-                {mod && (
-                    <a onClick={decide_black}>
-                        <i className="fa fa-gavel"></i> {_("Black Wins")}
-                    </a>
-                )}
-                {mod && (
-                    <a onClick={decide_white}>
-                        <i className="fa fa-gavel"></i> {_("White Wins")}
-                    </a>
-                )}
-                {mod && (
-                    <a onClick={decide_tie}>
-                        <i className="fa fa-gavel"></i> {_("Tie")}
-                    </a>
-                )}
-                {mod && (
-                    <a onClick={force_autoscore}>
-                        <i className="fa fa-gavel"></i> {_("Auto-score")}
-                    </a>
-                )}
-
-                {
-                    annul && annulable && (
-                        <a onClick={() => do_annul(true)}>
-                            <i className="fa fa-gavel"></i> {_("Annul")}
-                        </a>
-                    ) /* mod can annul this game */
-                }
-                {
-                    annul &&
-                        unannulable && (
-                            <a onClick={() => do_annul(false)}>
-                                <i className="fa fa-gavel unannulable"></i> {"Remove annulment"}
-                            </a>
-                        ) /* mod can't annul, presumably because it's already annulled */
-                }
-                {
-                    annul && !annulable && !unannulable && (
-                        <div>
-                            <i className="fa fa-gavel greyed"></i> {_("Annul")}
-                        </div>
-                    ) /* What is this case?! */
-                }
-
-                {(mod || annul) && <hr />}
-                {(mod || annul) && (
-                    <a onClick={toggleShowTiming}>
-                        <i className="fa fa-clock-o"></i> {_("Timing")}
-                    </a>
-                )}
-                {(mod || annul) && (
-                    <a onClick={showLogModal}>
-                        <i className="fa fa-list-alt"></i> {"Log"}
-                    </a>
-                )}
-                {(mod || annul) && (
-                    <a onClick={toggleAnonymousModerator}>
-                        <i className="fa fa-user-secret"></i> {"Cloak of Invisibility"}
-                    </a>
-                )}
-
-                {superuser_ai_review_ready && <hr />}
-                {superuser_ai_review_ready && (
-                    <a onClick={() => force_ai_review("fast")}>
-                        <i className="fa fa-line-chart"></i> {"Fast AI Review"}
-                    </a>
-                )}
-                {superuser_ai_review_ready && (
-                    <a onClick={() => force_ai_review("full")}>
-                        <i className="fa fa-area-chart"></i> {_("Full AI Review")}
-                    </a>
-                )}
-                {superuser_ai_review_ready && (
-                    <a onClick={delete_ai_reviews}>
-                        <i className="fa fa-trash"></i> {"Delete AI reviews"}
-                    </a>
-                )}
-            </Dock>
-        );
-    };
     const frag_kb_shortcuts = () => {
         return (
             <div>
@@ -3255,8 +2768,32 @@ export function Game(): JSX.Element {
                         null) &&
                         frag_cancel_button()}
 
-                    {((view_mode === "portrait" && !zen_mode && portrait_tab === "game") || null) &&
-                        frag_dock()}
+                    {((view_mode === "portrait" && !zen_mode && portrait_tab === "game") ||
+                        null) && (
+                        <GameDock
+                            goban={goban.current}
+                            annulled={annulled}
+                            review_id={review_id}
+                            game_id={game_id}
+                            selected_ai_review_uuid={selected_ai_review_uuid}
+                            tournament_id={tournament_id.current}
+                            ladder_id={ladder_id.current}
+                            ai_review_enabled={ai_review_enabled}
+                            historical_black={historical_black}
+                            historical_white={historical_white}
+                            onZenClicked={toggleZenMode}
+                            onCoordinatesClicked={toggleCoordinates}
+                            onAIReviewClicked={toggleAIReview}
+                            onAnalyzeClicked={gameAnalyze}
+                            onConditionalMovesClicked={enterConditionalMovePlanner}
+                            onPauseClicked={pauseGame}
+                            onEstimateClicked={estimateScore}
+                            onGameAnnulled={set_annulled}
+                            onTimingClicked={toggleShowTiming}
+                            onCoordinatesMarked={gameLogModalMarkCoords}
+                            onReviewClicked={startReview}
+                        />
+                    )}
                 </div>
 
                 {(view_mode !== "portrait" || null) && (
@@ -3294,7 +2831,29 @@ export function Game(): JSX.Element {
                         {((view_mode === "square" && squashed) || null) && CHAT}
                         {((view_mode === "square" && squashed) || null) && CHAT}
 
-                        {frag_dock()}
+                        <GameDock
+                            goban={goban.current}
+                            annulled={annulled}
+                            review_id={review_id}
+                            game_id={game_id}
+                            selected_ai_review_uuid={selected_ai_review_uuid}
+                            tournament_id={tournament_id.current}
+                            ladder_id={ladder_id.current}
+                            ai_review_enabled={ai_review_enabled}
+                            historical_black={historical_black}
+                            historical_white={historical_white}
+                            onZenClicked={toggleZenMode}
+                            onCoordinatesClicked={toggleCoordinates}
+                            onAIReviewClicked={toggleAIReview}
+                            onAnalyzeClicked={gameAnalyze}
+                            onConditionalMovesClicked={enterConditionalMovePlanner}
+                            onPauseClicked={pauseGame}
+                            onEstimateClicked={estimateScore}
+                            onGameAnnulled={set_annulled}
+                            onTimingClicked={toggleShowTiming}
+                            onCoordinatesMarked={gameLogModalMarkCoords}
+                            onReviewClicked={startReview}
+                        />
                         {(zen_mode || null) && <div className="align-col-end"></div>}
                     </div>
                 )}
