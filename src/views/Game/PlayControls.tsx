@@ -922,3 +922,26 @@ function createConditionalMoveTreeDisplay(
     }
     return ret;
 }
+
+interface EstimateScoreProps {
+    score_estimate_winner: string;
+    score_estimate_amount?: number;
+}
+export function EstimateScore({
+    score_estimate_winner,
+    score_estimate_amount,
+}: EstimateScoreProps) {
+    return (
+        <span>
+            {(score_estimate_winner || null) && (
+                <span>
+                    {interpolate(_("{{winner}} by {{score}}"), {
+                        winner: score_estimate_winner,
+                        score: score_estimate_amount?.toFixed(1),
+                    })}
+                </span>
+            )}
+            {(!score_estimate_winner || null) && <span>{_("Estimating...")}</span>}
+        </span>
+    );
+}

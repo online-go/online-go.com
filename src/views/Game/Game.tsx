@@ -59,7 +59,7 @@ import { GameTimings } from "./GameTimings";
 import { goban_view_mode, goban_view_squashed, ViewMode, shared_ip_with_player_map } from "./util";
 import { game_control } from "./game_control";
 import { PlayerCards } from "./PlayerCards";
-import { CancelButton, PlayControls } from "./PlayControls";
+import { CancelButton, EstimateScore, PlayControls } from "./PlayControls";
 import { GameDock } from "./GameDock";
 import swal from "sweetalert2";
 
@@ -964,7 +964,14 @@ export function Game(): JSX.Element {
                         </div>
                     )}
 
-                    {(mode === "score estimation" || null) && <div>{frag_estimate_score()}</div>}
+                    {(mode === "score estimation" || null) && (
+                        <div>
+                            <EstimateScore
+                                score_estimate_winner={score_estimate_winner}
+                                score_estimate_amount={score_estimate_amount}
+                            />
+                        </div>
+                    )}
                 </div>
                 {(mode === "analyze" || null) && (
                     <div>
@@ -1032,21 +1039,6 @@ export function Game(): JSX.Element {
                     </div>
                 )}
             </div>
-        );
-    };
-    const frag_estimate_score = () => {
-        return (
-            <span>
-                {(score_estimate_winner || null) && (
-                    <span>
-                        {interpolate(_("{{winner}} by {{score}}"), {
-                            winner: score_estimate_winner,
-                            score: score_estimate_amount?.toFixed(1),
-                        })}
-                    </span>
-                )}
-                {(!score_estimate_winner || null) && <span>{_("Estimating...")}</span>}
-            </span>
         );
     };
     const frag_analyze_button_bar = () => {
@@ -2115,7 +2107,12 @@ export function Game(): JSX.Element {
                                 phase={phase}
                                 title={title}
                                 show_title={show_title}
-                                renderEstimateScore={frag_estimate_score}
+                                renderEstimateScore={() => (
+                                    <EstimateScore
+                                        score_estimate_winner={score_estimate_winner}
+                                        score_estimate_amount={score_estimate_amount}
+                                    />
+                                )}
                                 renderAnalyzeButtonBar={frag_analyze_button_bar}
                                 setMoveTreeContainer={setMoveTreeContainer}
                                 onShareAnalysis={shareAnalysis}
@@ -2215,7 +2212,12 @@ export function Game(): JSX.Element {
                                 phase={phase}
                                 title={title}
                                 show_title={show_title}
-                                renderEstimateScore={frag_estimate_score}
+                                renderEstimateScore={() => (
+                                    <EstimateScore
+                                        score_estimate_winner={score_estimate_winner}
+                                        score_estimate_amount={score_estimate_amount}
+                                    />
+                                )}
                                 renderAnalyzeButtonBar={frag_analyze_button_bar}
                                 setMoveTreeContainer={setMoveTreeContainer}
                                 onShareAnalysis={shareAnalysis}
