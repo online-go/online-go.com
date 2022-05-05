@@ -346,9 +346,10 @@ export function allRanks() {
     return rankList().concat(proRankList());
 }
 
-/* For new players we pretend their rating is lower than it actually is for the purposes of
+/**
+ * For new players we pretend their rating is lower than it actually is for the purposes of
  * matchmaking and the like. See:
- *  https://forums.online-go.com/t/i-think-the-13k-default-rank-is-doing-harm/13480/192
+ * https://forums.online-go.com/t/i-think-the-13k-default-rank-is-doing-harm/13480/192
  * for the history surounding that.
  */
 export function humble_rating(rating: number, deviation: number): number {
@@ -374,13 +375,18 @@ export interface EffectiveOutcome {
 }
 
 /**
- * @returns a ratings object containing ratings adjusted for the handicap.
+ * Returns a ratings object containing ratings adjusted for the handicap.
  */
 export function effective_outcome(
     black_rating: number,
     white_rating: number,
     handicap: number,
 ): EffectiveOutcome {
+    // Note: it seems like black_effective_stronger and white_effective_stronger
+    // are the only values that get used in the calling function.  Would it be
+    // appropriate to remove all the other stuff that gets added to this object?
+    //     - BPJ
+
     const black_effective_rating: number =
         black_rating + get_handicap_adjustment(black_rating, handicap);
     const white_effective_rating: number = white_rating;

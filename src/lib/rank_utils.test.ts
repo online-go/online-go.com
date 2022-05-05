@@ -30,6 +30,8 @@ import {
     proRankList,
     amateurRanks,
     allRanks,
+    humble_rating,
+    effective_outcome,
 } from "./rank_utils";
 
 // workaround for setGobanTranslations not found error
@@ -338,4 +340,31 @@ test("allRanks", () => {
     expect(all_ranks[0].label).toBe("30 Kyu");
     expect(all_ranks[30].label).toBe("1 Dan");
     expect(all_ranks[47].label).toBe("9 Pro");
+});
+
+test("humble_rating", () => {
+    expect(humble_rating(1500, 350)).toBe(1150);
+});
+
+test("effective_outcome", () => {
+    const rating_1d = rank_to_rating(30);
+    const rating_3k = rank_to_rating(27);
+
+    expect(effective_outcome(rating_3k, rating_1d, 1)).toEqual(
+        expect.objectContaining({
+            black_effective_stronger: false,
+            black_real_stronger: false,
+            white_effective_stronger: true,
+            white_real_stronger: true,
+        }),
+    );
+
+    expect(effective_outcome(rating_3k, rating_1d, 8)).toEqual(
+        expect.objectContaining({
+            black_effective_stronger: true,
+            black_real_stronger: false,
+            white_effective_stronger: false,
+            white_real_stronger: true,
+        }),
+    );
 });
