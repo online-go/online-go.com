@@ -15,7 +15,7 @@ module.exports = {
         // TODO: Fix these and re-enable them
 
         "@typescript-eslint/ban-types": "off", // 35 errors
-        "@typescript-eslint/explicit-module-boundary-types": "off", // 2074 warnings
+        "@typescript-eslint/explicit-module-boundary-types": "off", // 1242 warnings
         "@typescript-eslint/no-empty-interface": "off", // 45 errors
         "@typescript-eslint/no-explicit-any": "off", // 535 warnings
         "@typescript-eslint/no-namespace": "off", // 1 error

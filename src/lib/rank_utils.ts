@@ -69,17 +69,17 @@ interface UserType {
 type UserOrRank = UserType | number;
 
 /** Returns the Glicko2 rating corresponding to OGS rank. */
-export function rank_to_rating(rank: number) {
+export function rank_to_rating(rank: number): number {
     return A * Math.exp(rank / C);
 }
 
 /** Returns the OGS rank corresponding to the Glicko2 rating */
-export function rating_to_rank(rating: number) {
+export function rating_to_rank(rating: number): number {
     return Math.log(Math.min(MAX_RATING, Math.max(MIN_RATING, rating)) / A) * C;
 }
 
 /** Calculates OGS rank deviation from the Glicko2 rating and deviation */
-export function rank_deviation(rating: number, deviation: number) {
+export function rank_deviation(rating: number, deviation: number): number {
     // Suggestion: use the uncertainty propagation formula for log transforms:
     // https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Example_formulae
     //     - bpj
@@ -138,7 +138,7 @@ export function getUserRating(
     user: UserType,
     speed: "overall" | "blitz" | "live" | "correspondence" = "overall",
     size: 0 | 9 | 13 | 19 = 0,
-) {
+): Rating {
     const ret = new Rating();
     const ratings = user.ratings || {};
     ret.professional = user.pro || user.professional;
@@ -196,7 +196,7 @@ export function getUserRating(
 }
 
 /** Like rankString, but clamped to the range [25k, 9d] */
-export function boundedRankString(r: UserOrRank, with_tenths?: boolean) {
+export function boundedRankString(r: UserOrRank, with_tenths?: boolean): string {
     return rankString(bounded_rank(r), with_tenths);
 }
 
@@ -264,7 +264,7 @@ export function rankString(r: UserOrRank, with_tenths?: boolean): string {
  *          If a number, it will be treated as the OGS rank.
  * @returns a string representing the rank (e.g. "7.1 Kyu", "4.36 Dan", "9 Pro")
  */
-export function longRankString(r: UserOrRank) {
+export function longRankString(r: UserOrRank): string {
     let provisional = false;
 
     if (typeof r === "object") {
@@ -338,11 +338,11 @@ export function proRankList(bigranknums: boolean = true): Array<IRankInfo> {
 }
 
 /** Returns all ranks with labels in the range [25k, 9d] */
-export function amateurRanks() {
+export function amateurRanks(): IRankInfo[] {
     return rankList(MinRank, MaxRank, true);
 }
 /** Returns all available ranks on OGS */
-export function allRanks() {
+export function allRanks(): IRankInfo[] {
     return rankList().concat(proRankList());
 }
 
