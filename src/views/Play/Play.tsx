@@ -245,7 +245,7 @@ export class Play extends React.Component<{}, PlayState> {
             id: challenge.user_id,
             username: challenge.username,
             rank: challenge.rank,
-            professional: challenge.pro,
+            professional: !!challenge.pro,
         };
     }
 

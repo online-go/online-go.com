@@ -25,11 +25,20 @@ import { Player } from "Player";
 import { Clock } from "Clock";
 import { GobanInfoStateBase } from "src/lib/types";
 
+interface UserType {
+    id: number;
+    username: string;
+    rank?: number;
+    rating?: number;
+    pro?: boolean;
+    professional?: boolean;
+}
+
 interface GobanLineSummaryProps {
     id: number;
-    black: any;
-    white: any;
-    player?: any;
+    black: UserType;
+    white: UserType;
+    player?: { id: number };
     gobanref?: (goban: Goban) => void;
     width?: number;
     height?: number;
@@ -48,7 +57,7 @@ export class GobanLineSummary extends React.Component<
 > {
     goban: Goban;
 
-    constructor(props) {
+    constructor(props: GobanLineSummaryProps) {
         super(props);
         this.state = {
             white_score: "",

@@ -28,7 +28,6 @@ import { openPlayerNotesModal } from "PlayerNotesModal";
 import { Flag } from "Flag";
 import { PlayerIcon } from "PlayerIcon";
 import * as player_cache from "player_cache";
-//import { PlayerCacheEntry } from "player_cache";
 import * as preferences from "preferences";
 import online_status from "online_status";
 
@@ -40,7 +39,7 @@ interface PlayerObjectType {
     id?: number;
     player_id?: number; // alias for id, should be removed but here for backwards compatibility
 
-    professional?: boolean | number;
+    professional?: boolean;
     pro?: boolean;
 
     rank?: number;

@@ -50,22 +50,46 @@ const MAX_RATING = 6000;
 const A = 525;
 const C = 23.15;
 
-export function rank_to_rating(rank: number) {
+interface CompactRatingType {
+    rating: number;
+    deviation: number;
+    volatility: number;
+}
+interface RatingsType {
+    overall: CompactRatingType;
+}
+
+interface UserType {
+    ranking?: number;
+    rank?: number;
+    pro?: boolean;
+    professional?: boolean;
+    ratings?: RatingsType;
+}
+type UserOrRank = UserType | number;
+
+/** Returns the Glicko2 rating corresponding to OGS rank. */
+export function rank_to_rating(rank: number): number {
     return A * Math.exp(rank / C);
 }
 
-export function rating_to_rank(rating: number) {
+/** Returns the OGS rank corresponding to the Glicko2 rating */
+export function rating_to_rank(rating: number): number {
     return Math.log(Math.min(MAX_RATING, Math.max(MIN_RATING, rating)) / A) * C;
 }
 
-export function rank_deviation(rating: number, deviation: number) {
+/** Calculates OGS rank deviation from the Glicko2 rating and deviation */
+export function rank_deviation(rating: number, deviation: number): number {
+    // Suggestion: use the uncertainty propagation formula for log transforms:
+    // https://en.wikipedia.org/wiki/Propagation_of_uncertainty#Example_formulae
+    //     - bpj
     return rating_to_rank(rating + deviation) - rating_to_rank(rating);
 }
 
-export function get_handicap_adjustment(rating: number, handicap: number): number {
+function get_handicap_adjustment(rating: number, handicap: number): number {
     return rank_to_rating(rating_to_rank(rating) + handicap) - rating;
 }
-function overall_rank(user_or_rank: any): number {
+function overall_rank(user_or_rank: UserOrRank): number {
     let rank = null;
     if (typeof user_or_rank === "number") {
         rank = user_or_rank;
@@ -74,18 +98,28 @@ function overall_rank(user_or_rank: any): number {
     }
     return rank;
 }
-export function is_novice(user_or_rank: any): boolean {
+
+/** Returns true if user is below 25k */
+export function is_novice(user_or_rank: UserOrRank): boolean {
     return overall_rank(user_or_rank) < MinRank;
 }
-export function is_rank_bounded(user_or_rank: any): boolean {
+/** Returns true if user is below 25k or above 9d */
+export function is_rank_bounded(user_or_rank: UserOrRank): boolean {
     const rank = overall_rank(user_or_rank);
     return rank < MinRank || rank > MaxRank;
 }
-export function bounded_rank(user_or_rank: any): number {
+/** Returns rank clamped to the bounds [25k, 9d] */
+export function bounded_rank(user_or_rank: UserOrRank): number {
     const rank = overall_rank(user_or_rank);
     return Math.min(MaxRank, Math.max(MinRank, rank));
 }
-export function is_provisional(user: any): boolean {
+
+/**
+ * Returns true if the user's rank deviation is too large.
+ *
+ * This determines whether rank shows up as [?] around OGS
+ */
+export function is_provisional(user: { ratings?: RatingsType }): boolean {
     const ratings = user.ratings || {};
 
     const rating = ratings["overall"] || {
@@ -97,11 +131,14 @@ export function is_provisional(user: any): boolean {
     return rating.deviation >= PROVISIONAL_RATING_CUTOFF;
 }
 
+/**
+ * Computes ratings data for a user for a given size and speed.
+ */
 export function getUserRating(
-    user: any,
+    user: UserType,
     speed: "overall" | "blitz" | "live" | "correspondence" = "overall",
     size: 0 | 9 | 13 | 19 = 0,
-) {
+): Rating {
     const ret = new Rating();
     const ratings = user.ratings || {};
     ret.professional = user.pro || user.professional;
@@ -158,11 +195,20 @@ export function getUserRating(
     return ret;
 }
 
-export function boundedRankString(r, with_tenths?: boolean) {
+/** Like rankString, but clamped to the range [25k, 9d] */
+export function boundedRankString(r: UserOrRank, with_tenths?: boolean): string {
     return rankString(bounded_rank(r), with_tenths);
 }
 
-export function rankString(r, with_tenths?: boolean) {
+/**
+ * Returns a concise, localized string representing a user's kyu/dan rank
+ *
+ * @param r If a user type, the users overall rating will be pulled off the user.
+ *          If a number, it will be treated as the OGS rank.
+ * @param with_tenths If true, 1 decimal of precision will be added to the output.
+ * @returns a string representing the rank (e.g. "7.1k", "4d", "9p")
+ */
+export function rankString(r: UserOrRank, with_tenths?: boolean): string {
     let provisional = false;
 
     if (typeof r === "object") {
@@ -196,7 +242,7 @@ export function rankString(r, with_tenths?: boolean) {
 
     if (r < 30) {
         if (with_tenths) {
-            r = (Math.ceil((30 - r) * 10) / 10).toFixed(1);
+            (r as any) = (Math.ceil((30 - r) * 10) / 10).toFixed(1);
         } else {
             r = Math.ceil(30 - r);
         }
@@ -204,14 +250,21 @@ export function rankString(r, with_tenths?: boolean) {
     }
 
     if (with_tenths) {
-        r = (Math.floor((r - 29) * 10) / 10).toFixed(1);
+        (r as any) = (Math.floor((r - 29) * 10) / 10).toFixed(1);
     } else {
         r = Math.floor(r - 29);
     }
     return interpolate(pgettext("Dan", "%sd"), [r]);
 }
 
-export function longRankString(r) {
+/**
+ * Returns a localized string representing a user's kyu/dan rank
+ *
+ * @param r If a user type, the users overall rating will be pulled off the user.
+ *          If a number, it will be treated as the OGS rank.
+ * @returns a string representing the rank (e.g. "7.1 Kyu", "4.36 Dan", "9 Pro")
+ */
+export function longRankString(r: UserOrRank): string {
     let provisional = false;
 
     if (typeof r === "object") {
@@ -244,6 +297,12 @@ export function longRankString(r) {
     return interpolate(_("%s Dan"), [r - 30 + 1]);
 }
 
+/**
+ * Returns a list of OGS ranks and labels in the range [minRank, maxRank]
+ * @param minRank the first rank in the list
+ * @param maxRank the last rank in the list
+ * @param usePlusOnLast if true, the last entry will have a plus (e.g. "1d+")
+ */
 export function rankList(
     minRank: number = 0,
     maxRank: number = MaxRank,
@@ -263,6 +322,10 @@ export function rankList(
     return result;
 }
 
+/**
+ * Returns a list of all possible pro ranks and their labels.
+ * @param bigranknums if true, ranks will start at 1037
+ */
 export function proRankList(bigranknums: boolean = true): Array<IRankInfo> {
     const result = [];
     for (let i = 37; i <= 45; ++i) {
@@ -274,16 +337,19 @@ export function proRankList(bigranknums: boolean = true): Array<IRankInfo> {
     return result;
 }
 
-export function amateurRanks() {
+/** Returns all ranks with labels in the range [25k, 9d] */
+export function amateurRanks(): IRankInfo[] {
     return rankList(MinRank, MaxRank, true);
 }
-export function allRanks() {
+/** Returns all available ranks on OGS */
+export function allRanks(): IRankInfo[] {
     return rankList().concat(proRankList());
 }
 
-/* For new players we pretend their rating is lower than it actually is for the purposes of
+/**
+ * For new players we pretend their rating is lower than it actually is for the purposes of
  * matchmaking and the like. See:
- *  https://forums.online-go.com/t/i-think-the-13k-default-rank-is-doing-harm/13480/192
+ * https://forums.online-go.com/t/i-think-the-13k-default-rank-is-doing-harm/13480/192
  * for the history surounding that.
  */
 export function humble_rating(rating: number, deviation: number): number {
@@ -309,14 +375,18 @@ export interface EffectiveOutcome {
 }
 
 /**
- * @returns a ratings object containing ratings adjusted for the handicap.
+ * Returns a ratings object containing ratings adjusted for the handicap.
  */
 export function effective_outcome(
     black_rating: number,
     white_rating: number,
     handicap: number,
 ): EffectiveOutcome {
-    //let res: EffectiveOutcome = new EffectiveOutcome;
+    // Note: it seems like black_effective_stronger and white_effective_stronger
+    // are the only values that get used in the calling function.  Would it be
+    // appropriate to remove all the other stuff that gets added to this object?
+    //     - BPJ
+
     const black_effective_rating: number =
         black_rating + get_handicap_adjustment(black_rating, handicap);
     const white_effective_rating: number = white_rating;
