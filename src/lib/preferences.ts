@@ -16,8 +16,10 @@
  */
 
 import * as data from "data";
-import { GoThemes } from "goban";
+import { GobanSelectedThemes, GoThemes } from "goban";
+import React from "react";
 import { current_language } from "translate";
+import { DataSchema } from "./data_schema";
 
 export const defaults = {
     "ai-review-enabled": true,
@@ -48,7 +50,7 @@ export const defaults = {
     "label-positioning": "all",
     "label-positioning-puzzles": "all",
     language: "auto",
-    "move-tree-numbering": "move-number",
+    "move-tree-numbering": "move-number" as "none" | "move-coordinates" | "move-number",
     "new-game-board-size": 19,
     "notification-timeout": 10,
     "notify-on-incident-report": true,
@@ -59,7 +61,7 @@ export const defaults = {
     "observed-games-force-list": false,
     "one-click-submit-correspondence": false,
     "one-click-submit-live": true,
-    "profanity-filter": { en: true },
+    "profanity-filter": { en: true } as { [cc: string]: true },
     "puzzle.randomize.color": true,
     "puzzle.randomize.transform": true,
     "puzzle.zoom": true,
@@ -94,7 +96,7 @@ export const defaults = {
 
     "supporter.currency": "auto",
     "supporter.interval": "month",
-    "tournaments-tab": "schedule",
+    "tournaments-tab": "schedule" as "schedule" | "live" | "archive" | "correspondence",
     "tournaments-show-all": false,
     "translation-dialog-dismissed": 0,
     "translation-dialog-never-show": false,
@@ -124,34 +126,46 @@ for (const k in defaults) {
     data.setDefault(`preferences.${k as ValidPreference}`, defaults[k]);
 }
 
-export type ValidPreference = keyof typeof defaults | `goban-theme-${string}`;
+type PreferencesType = typeof defaults;
+export type ValidPreference = keyof typeof defaults;
 
-export function get(key: ValidPreference): any {
+export function get<KeyT extends ValidPreference>(key: KeyT): PreferencesType[KeyT] {
     if (!(key in defaults)) {
         if ((key as string) === "sound-volume") {
             console.error(
                 "You have an extension installed that is not using the newer sound system, volume will not be controllable",
             );
-            return 1.0;
+            // This should never happen according to the type system, so we have
+            // to type it as any in order to suppress an error.
+            return 1.0 as any;
         }
 
         throw new Error(`Undefined default: ${key}`);
     }
-    return data.get(`preferences.${key}`);
+    // I can't figure out why TypeScript doesn't like this, but I think it's better
+    // to define the type in terms of Preferences instead of DataSchema.
+    return data.get(`preferences.${key}`) as any;
 }
-export function set(key: ValidPreference, value: any, replication?: data.Replication): any {
-    return data.set(`preferences.${key}`, value, replication);
+export function set<KeyT extends ValidPreference>(
+    key: KeyT,
+    value: PreferencesType[KeyT],
+    replication?: data.Replication,
+): DataSchema[`preferences.${KeyT}`] {
+    return data.set(`preferences.${key}`, value as any, replication);
 }
-export function watch(
-    key: ValidPreference,
-    cb: (d: any) => void,
+export function watch<KeyT extends ValidPreference>(
+    key: KeyT,
+    cb: (d: PreferencesType[KeyT]) => void,
     call_on_undefined?: boolean,
     dont_call_immediately?: boolean,
 ): void {
-    data.watch(`preferences.${key}`, cb, call_on_undefined, dont_call_immediately);
+    data.watch(`preferences.${key}`, cb as any, call_on_undefined, dont_call_immediately);
 }
-export function unwatch(key: ValidPreference, cb: (d: any) => void): void {
-    data.unwatch(`preferences.${key}`, cb);
+export function unwatch<KeyT extends ValidPreference>(
+    key: KeyT,
+    cb: (d: PreferencesType[KeyT]) => void,
+): void {
+    data.unwatch(`preferences.${key}`, cb as any);
 }
 
 export function dump(): void {
@@ -183,7 +197,7 @@ export function getSelectedThemes(): { board: string; black: string; white: stri
     };
 }
 
-export function watchSelectedThemes(cb) {
+export function watchSelectedThemes(cb: (themes: GobanSelectedThemes) => void) {
     let dont_call_right_away = true;
     const call_cb = () => {
         if (dont_call_right_away) {
@@ -203,4 +217,30 @@ export function watchSelectedThemes(cb) {
             unwatch("goban-theme-white", call_cb);
         },
     };
+}
+
+/**
+ * A custom React hook that returns a state variable and a function that can be
+ * used to set both the state and the preference at the same time.
+ *
+ * @param key a preference (as one would use in `preferences.get(key)`)
+ */
+export function usePreference<KeyT extends ValidPreference>(
+    key: KeyT,
+): [PreferencesType[KeyT], (v: PreferencesType[KeyT]) => void] {
+    const [value, stateSetter] = React.useState(get(key));
+
+    const setStateAndPreference = (v: PreferencesType[KeyT]) => {
+        stateSetter(v);
+        set(key, v);
+    };
+
+    // TODO: maybe add a watcher here for if a different component updates the value?
+    // Something like...
+    //
+    // React.useEffect(() => {
+    //     watch(key, stateSetter);
+    // }
+
+    return [value, setStateAndPreference];
 }

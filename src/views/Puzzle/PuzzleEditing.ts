@@ -151,7 +151,7 @@ export class PuzzleEditor {
             get("puzzles/%%/collection_summary", puzzle_id),
             get("puzzles/%%/rate", puzzle_id),
         ])
-            .then((arr) => {
+            .then((arr: [rest_api.PuzzleDetail, any, any]) => {
                 const rating = arr[2];
                 const puzzle = arr[0].puzzle;
                 const collection = arr[0].collection;
@@ -164,8 +164,8 @@ export class PuzzleEditor {
                         "puzzle.randomize.color",
                     ); /* only randomize when we are getting a new puzzle */
 
-                randomize_transform &= collection.position_transform_enabled;
-                randomize_color &= collection.color_transform_enabled;
+                randomize_transform &&= collection.position_transform_enabled;
+                randomize_color &&= collection.color_transform_enabled;
 
                 this.transform.settings.zoom = preferences.get("puzzle.zoom");
 
