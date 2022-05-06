@@ -67,7 +67,6 @@ export class Team extends React.PureComponent<{}, any> {
         const jp = getLanguageFlag("japan", country, "jp");
         const fi = getLanguageFlag("finnish", country, "fi");
         const it = getLanguageFlag("italian", country, "it");
-        const un = getLanguageFlag("un", country, "un");
         const eng = "_England";
 
         const moderators = [
