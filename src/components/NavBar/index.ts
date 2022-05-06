@@ -16,3 +16,4 @@
  */
 
 export * from "./NavBar";
+export * from "./EXV6NavBar";

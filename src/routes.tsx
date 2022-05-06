@@ -62,6 +62,7 @@ import { BlockedVPN } from "BlockedVPN";
 import { Firewall } from "Firewall";
 import { Appeal } from "Appeal";
 import { AppealsCenter } from "AppealsCenter";
+import { Experiment, Variant, Default as ExDefault } from "Experiment";
 
 import * as docs from "docs";
 
@@ -78,15 +79,27 @@ function Main(props): JSX.Element {
     }
 
     return (
-        <div>
-            <ErrorBoundary>
-                <NavBar />
-            </ErrorBoundary>
-            <ErrorBoundary>
-                <Announcements />
-            </ErrorBoundary>
-            <ErrorBoundary>{props.children}</ErrorBoundary>
-        </div>
+        <Experiment name="v6">
+            <Variant value="enabled">
+                <div>
+                    <ErrorBoundary>
+                        <NavBar />
+                    </ErrorBoundary>
+                    <ErrorBoundary>{props.children}</ErrorBoundary>
+                </div>
+            </Variant>
+            <ExDefault>
+                <div>
+                    <ErrorBoundary>
+                        <NavBar />
+                    </ErrorBoundary>
+                    <ErrorBoundary>
+                        <Announcements />
+                    </ErrorBoundary>
+                    <ErrorBoundary>{props.children}</ErrorBoundary>
+                </div>
+            </ExDefault>
+        </Experiment>
     );
 }
 const PageNotFound = () => (

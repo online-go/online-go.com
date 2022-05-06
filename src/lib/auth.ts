@@ -32,7 +32,7 @@ export function logout() {
     get("/api/v0/logout")
         .then((config) => {
             data.set(cached.config, config);
-            window.location.href = "/";
+            window.location.href = "/sign-in";
         })
         .catch(errorLogger);
 }

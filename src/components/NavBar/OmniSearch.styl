@@ -1,0 +1,54 @@
+.OmniSearch {
+    display: inline-block;
+    padding: 0.5rem;
+    themed background-color navbar-background-color
+
+    img {
+        width: 15px;
+        height: 15px;
+    }
+
+
+    .results {
+        margin: 0;
+        margin-bottom: 1rem;
+
+        h3 {
+            margin: 0;
+        }
+
+        .result {
+            display: block;
+            height: 1.4rem;
+            padding-left: 0.5rem;
+            overflow: hidden;
+            white-space: nowrap;
+
+            a {
+                line-height: 1rem;
+                padding: 0;
+            }
+            img {
+                width: 15px
+                height: 15px;
+                margin-right: 0.5rem;
+            }
+        }
+    }
+
+
+
+    .loading, .no-results {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        text-align: center;
+        themed color shade3;
+        padding-top: 5rem;
+    }
+    .no-results {
+        font-weight: bold;
+        themed color fg;
+    }
+}

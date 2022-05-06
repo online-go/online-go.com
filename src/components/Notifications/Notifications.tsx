@@ -25,40 +25,15 @@ import { browserHistory } from "ogsHistory";
 import { challenge_text_description } from "ChallengeModal";
 import { Player } from "Player";
 import { FabX, FabCheck } from "material";
-import { dup, deepEqual, formatTime } from "misc";
+import { deepEqual, formatTime } from "misc";
 import { isLiveGame } from "TimeControl";
 
 import { NotificationManager } from "./NotificationManager";
 
 export const notification_manager: NotificationManager = new NotificationManager();
 
-export function TurnIndicator(): JSX.Element {
-    const [count, setCount] = React.useState(0);
-    const [total, setTotal] = React.useState(0);
-
-    React.useEffect(() => {
-        notification_manager.event_emitter.on("turn-count", (ct) => {
-            setCount(ct);
-        });
-
-        notification_manager.event_emitter.on("total-count", (tt) => {
-            setTotal(tt);
-        });
-    }, []);
-
-    return (
-        <span
-            className="turn-indicator"
-            onAuxClick={(e) => notification_manager.advanceToNextBoard(e)}
-            onClick={(e) => notification_manager.advanceToNextBoard(e)}
-        >
-            <span className={total > 0 ? (count > 0 ? "active count" : "inactive count") : "count"}>
-                <span>{count}</span>
-            </span>
-        </span>
-    );
-}
-
+/* TODO: This should be removed once we are happy with the new nav bar style,
+ * as we use the NotificationIndicator component for that system */
 export class NotificationIndicator extends React.Component<{}, any> {
     constructor(props) {
         super(props);
@@ -93,61 +68,38 @@ export class NotificationIndicator extends React.Component<{}, any> {
     }
 }
 
-export class NotificationList extends React.Component<{}, any> {
-    constructor(props) {
-        super(props);
-        this.state = {
-            list: dup(notification_manager.ordered_notifications),
+export function NotificationList(): JSX.Element {
+    const [, setCount] = React.useState(notification_manager.ordered_notifications.length);
+
+    React.useEffect(() => {
+        notification_manager.event_emitter.on("notification-count", setCount);
+        return () => {
+            notification_manager.event_emitter.off("notification-count", setCount);
         };
+    }, []);
 
-        let update_debounce = null;
-        notification_manager.event_emitter.on("notification-list-updated", () => {
-            if (update_debounce) {
-                return;
-            }
+    const list = notification_manager.ordered_notifications;
 
-            update_debounce = setTimeout(() => {
-                update_debounce = null;
-                this.setState({ list: dup(notification_manager.ordered_notifications) });
-            }, 10);
-        });
-
-        this.markAllAsRead = this.markAllAsRead.bind(this);
-        this.clearNotifications = this.clearNotifications.bind(this);
-    }
-
-    markAllAsRead() {
-        notification_manager.event_emitter.emit("notification-count", 0);
-    }
-
-    clearNotifications() {
-        notification_manager.clearAllNonActionableNotifications();
-    }
-
-    render() {
-        return (
-            <div className="NotificationList">
-                {this.state.list.length === 0 && (
-                    <div className="no-notifications">{_("No notifications")}</div>
-                )}
-                {this.state.list.length !== 0 && (
-                    <div className="contents">
-                        <div className="list">
-                            {this.state.list.map((notification) => (
-                                <NotificationEntry
-                                    key={notification.id}
-                                    notification={notification}
-                                />
-                            ))}
-                        </div>
-                        <div className="clear clickable" onClick={this.clearNotifications}>
-                            {pgettext("Clear notifications", "Clear Notifications")}
-                        </div>
+    return (
+        <div className="NotificationList">
+            {list.length === 0 && <div className="no-notifications">{_("No notifications")}</div>}
+            {list.length !== 0 && (
+                <div className="contents">
+                    <div className="list">
+                        {list.map((notification) => (
+                            <NotificationEntry key={notification.id} notification={notification} />
+                        ))}
                     </div>
-                )}
-            </div>
-        );
-    }
+                    <div
+                        className="clear clickable"
+                        onClick={() => notification_manager.clearAllNonActionableNotifications()}
+                    >
+                        {pgettext("Clear notifications", "Clear Notifications")}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 }
 
 class NotificationEntry extends React.Component<{ notification }, any> {

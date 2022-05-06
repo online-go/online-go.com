@@ -1,0 +1,329 @@
+/*
+ * Copyright (C) 2012-2022  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+v6-navbar-width= 17rem;
+v6-navbar-height = 3rem;
+v6-submenu-min-height = 9rem;
+
+header.NavBar {
+    display: flex;
+    margin-bottom: 0.2rem;
+    height: v6-navbar-height;
+    user-select: none;
+    themed background-color navbar-background-color
+    box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.16);
+    justify-content: space-between;
+
+    .fa-star {
+        themed color supporter
+    }
+
+    .menu {
+        display: block;
+        margin-left: 0.5rem;
+        position: relative;
+        height: v6-navbar-height;
+        //border-left: 0.2rem solid transparent;
+        img {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 0.5rem;
+        }
+
+        .menu-children {
+            display: none;
+            position: absolute;
+            left: 0;
+            top: v6-navbar-height;
+            min-width: v6-navbar-width;
+            themed background-color navbar-background-color
+            //border-left: 0.2rem solid transparent;
+            box-shadow: 2px 4px 3px 0px rgba(0, 0, 0, 0.16);
+            z-index: z.nav-menu.menu;
+
+            .fa, .ogs-goban {
+                width: 16px;
+                max-width: 16px;
+                height: 16px;
+                text-align: center;
+                font-weight: 400;
+                margin-left: 0.5rem;
+                margin-right: 0.5rem;
+                &.fa-graduation-cap {
+                    font-size: 14px;
+                }
+            }
+        }
+
+        *:hover {
+            themed background-color shade4
+        }
+        
+        &:hover, &.active {
+            themed background-color navbar-highlight-background-color
+            themed border-color primary
+            .menu-children {
+                display: inline-flex;
+                flex-direction: column;
+                themed border-color primary
+                themed background-color navbar-highlight-background-color
+            }
+        }
+
+        .submenu {
+            display: none;
+        }
+        .submenu-container:hover .submenu {
+            display: inline-flex;
+            flex-direction: column;
+            position: absolute;
+            top: 0;
+            min-height: v6-submenu-min-height;
+            left: v6-navbar-width;
+            themed background-color shade4
+            min-width: v6-navbar-width;
+            box-shadow: 2px 4px 3px 0px rgba(0, 0, 0, 0.16);
+            > a {
+                display: inline-flex;
+                align-items: center;
+            }
+        }
+    }
+
+    a, .clickable, .fakelink {
+        themed color text-color
+    }
+
+
+    a:active, a:hover, .clickable:hover, .fakelink:hover  {
+        themed color text-color-active
+    }
+
+    .left {
+        display: flex;
+        align-items: center;
+        a, .fakelink {
+            display: inline-block;
+            line-height: v6-navbar-height;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+    }
+
+    .right {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+
+        .icon-container {
+            display: flex;
+
+            position: relative;
+            padding-left: 0.5rem;
+            padding-right: 0.7rem;
+            cursor: pointer;
+            align-items: center;
+
+
+            .notification-indicator {
+                left: 0.5rem;
+                width: v6-navbar-height;
+            }
+
+            img.PlayerIcon {
+                height: v6-navbar-height;
+                width: v6-navbar-height;
+                pointer-events: none;
+            }
+
+            .fa, .ogs-goban {
+                font-size: 1.0rem;
+                font-weight: 400;
+                margin-left: 0.5rem;
+                themed color shade1
+            }
+            &:hover .fa {
+                themed color fg
+            }
+        }
+    }
+
+    .fa-adjust {
+        padding: 0.6rem;
+        margin-bottom: -0.1rem;
+        cursor: pointer;
+    }
+
+    /body.dark .fa-adjust {
+        transform: rotate(180deg);
+    }
+
+    // Since accessible is based on dark, I assume it needs this (not clear what this is specifically for, though the general idea is clear)
+    /body.accessible .fa-adjust {
+        transform: rotate(180deg);
+    }
+
+    .sign-in {
+        padding-right: 1.0rem;
+    }
+
+
+    .nav-menu-modal-backdrop {
+        display: none;
+        position: fixed;
+        z-index: z.nav-menu.backdrop;
+        top: v6-navbar-height;
+        bottom: 0;
+        left: 0;
+        right: 0;
+
+        //transition: background-color 0.4s ease;
+        //background-color: transparent;
+
+        &.active {
+            display: inline-block;
+            //background-color: rgba(128,128,128,0.2);
+        }
+    }
+
+    .RightNav {
+        display: inline-flex;
+        flex-direction: column;
+        position: absolute;
+        right: 0;
+        top: v6-navbar-height;
+        width: v6-navbar-width;
+        max-width: 100vw;
+        max-height: "calc(100vh - %s)" % v6-navbar-height;
+        themed background-color navbar-background-color;
+        overflow-y: auto;
+        user-select: none;
+        z-index: z.nav-menu.menu;
+        box-shadow: -2px 2px 1px 0px rgba(0, 0, 0, 0.16);
+
+        .NotificationList {
+            margin-bottom: 1rem;
+        }
+
+        .theme-selectors {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-around;
+        }
+        .settings-and-logout {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            margin-top: 1rem;
+            display: flex;
+            justify-content: space-around;
+        }
+        .center {
+        }
+
+        a, .fakelink {
+            margin: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            img, i {
+                margin: 0.2rem;
+                margin-right: 0.5rem;
+            }
+        }
+    }
+
+
+    .NotificationList {
+        position: absolute;
+        right: 0;
+        top: v6-navbar-height;
+        width: v6-navbar-width;
+        themed background-color navbar-background-color
+        max-height: "calc(100vh - %s)" % v6-navbar-height;
+        overflow-y: auto;
+        padding: 0.5rem;
+        z-index: z.nav-menu.menu;
+        box-shadow: -2px 2px 1px 0px rgba(0, 0, 0, 0.16);
+    }
+    .OmniSearch-container {
+        position: relative;
+        height: v6-navbar-height;
+        display: inline-flex;
+        align-items: center;
+        padding-left: 0.5rem;
+
+        .fa-search {
+            margin-right: 0.3rem;
+        }
+
+        .OmniSearch-input {
+            width: (v6-navbar-width - 3rem);
+        }
+
+        .OmniSearch {
+            position: absolute;
+            //top: v6-navbar-height;
+            //top: -0.15rem;
+            top: 0;
+            left: v6-navbar-width;
+            width: v6-navbar-width;
+            themed background-color navbar-highlight-background-color
+            box-shadow: 2px 2px 1px 0px rgba(0, 0, 0, 0.16);
+            z-index: z.nav-menu.menu;
+            max-height: "calc(100vh - %s)" % v6-navbar-height;
+        }
+    }
+}
+
+
+
+button.theme-button {
+    cursor: pointer;
+    inactive-button()
+    border: 1px solid transparent;
+    padding: 0.3rem;
+    padding-right: 1.0rem;
+    padding-left: 1.0rem;
+    font-size: 1.2rem;
+}
+
+body.light header.NavBar button.theme-button.light {
+    background-color: light.primary
+    border-color: darken(light.primary, 8%)
+    i.fa.fa-sun-o {
+        color: #fff;
+    }
+}
+body.dark header.NavBar button.theme-button.dark {
+    background-color: dark.primary
+    border-color: darken(dark.primary, 8%)
+    i.fa.fa-moon-o {
+        color: #fff;
+    }
+}
+
+// do for accessible what we do for dark...
+body.accessible header.NavBar button.theme-button.accessible {
+    background-color: accessible.primary
+    border-color: darken(accessible.primary, 8%)
+    i.fa.fa-eye {
+        color: #fff;
+    }
+}
+
+
