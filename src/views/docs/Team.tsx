@@ -87,7 +87,7 @@ export class Team extends React.PureComponent<{}, any> {
             { id: 449941, country: ["eu"], languages: [de, en] }, //flovo
             { id: 209826, country: ["nl"], languages: [nl, gb, jp] }, //Vsotvep
             { id: 683917, country: ["us"], languages: [en, cn] }, //RubyMineshaft
-            { id: 497519, country: ["au"], languages: [eng] }, //Kosh
+            { id: 497519, country: ["un"], languages: [eng] }, //Kosh
             { id: 427361, country: ["ie"], languages: [en] }, //shinuito
             { id: 85719, country: ["fi"], languages: [fi, gb] }, //KoBa
             { id: 695886, country: ["de"], languages: [de, en] }, //KAOSkonfused
