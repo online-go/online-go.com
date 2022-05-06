@@ -60,7 +60,7 @@ export const defaults = {
     "observed-games-force-list": false,
     "one-click-submit-correspondence": false,
     "one-click-submit-live": true,
-    "profanity-filter": { en: true },
+    "profanity-filter": { en: true } as { [cc: string]: true },
     "puzzle.randomize.color": true,
     "puzzle.randomize.transform": true,
     "puzzle.zoom": true,
@@ -124,7 +124,7 @@ for (const k in defaults) {
 
 export type ValidPreference = keyof typeof defaults;
 
-export function get<T extends keyof typeof defaults>(key: T): DataSchema[`preferences.${T}`] {
+export function get<KeyT extends ValidPreference>(key: KeyT): DataSchema[`preferences.${KeyT}`] {
     if (!(key in defaults)) {
         if ((key as string) === "sound-volume") {
             console.error(
@@ -139,7 +139,11 @@ export function get<T extends keyof typeof defaults>(key: T): DataSchema[`prefer
     }
     return data.get(`preferences.${key}`);
 }
-export function set(key: ValidPreference, value: any, replication?: data.Replication): any {
+export function set<KeyT extends ValidPreference>(
+    key: KeyT,
+    value: DataSchema[`preferences.${KeyT}`],
+    replication?: data.Replication,
+): DataSchema[`preferences.${KeyT}`] {
     return data.set(`preferences.${key}`, value, replication);
 }
 export function watch(

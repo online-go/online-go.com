@@ -1324,7 +1324,7 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
             langs = [];
         }
 
-        const new_profanity_settings = {};
+        const new_profanity_settings: { [cc: string]: true } = {};
 
         langs.forEach((lang) => {
             new_profanity_settings[lang.value] = true;
