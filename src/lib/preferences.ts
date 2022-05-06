@@ -17,6 +17,7 @@
 
 import * as data from "data";
 import { GobanSelectedThemes, GoThemes } from "goban";
+import React from "react";
 import { current_language } from "translate";
 import { DataSchema } from "./data_schema";
 
@@ -213,4 +214,24 @@ export function watchSelectedThemes(cb: (themes: GobanSelectedThemes) => void) {
             unwatch("goban-theme-white", call_cb);
         },
     };
+}
+
+export function usePreference<KeyT extends ValidPreference>(
+    key: KeyT,
+): [PreferencesType[KeyT], (v: PreferencesType[KeyT]) => void] {
+    const [value, stateSetter] = React.useState(get(key));
+
+    const setStateAndPreference = (v: PreferencesType[KeyT]) => {
+        stateSetter(v);
+        set(key, v);
+    };
+
+    // TODO: maybe add a watcher here for if a different component updates the value?
+    // Something like...
+    //
+    // React.useEffect(() => {
+    //     watch(key, stateSetter);
+    // }
+
+    return [value, setStateAndPreference];
 }

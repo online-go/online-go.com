@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import * as preferences from "preferences";
+import { usePreference } from "preferences";
 import * as data from "data";
 import * as moment from "moment";
 
@@ -732,43 +733,21 @@ function GitHubUsername({ uid }: { uid: string }): JSX.Element {
 }
 
 function ChatPreferences(): JSX.Element {
-    const [show_empty_chat_notification, _setEmptyChatNotification]: [
-        boolean,
-        (x: boolean) => void,
-    ] = React.useState(preferences.get("show-empty-chat-notification"));
-    const [group_chat_unread, _setGroupChatUnread]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("chat-subscribe-group-chat-unread"));
-    const [group_chat_mentions, _setGroupChatMentions]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("chat-subscribe-group-mentions"));
-    const [tournament_chat_unread, _setTournamentChatUnread]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("chat-subscribe-tournament-chat-unread"));
-    const [tournament_chat_mentions, _setTournamentChatMentions]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("chat-subscribe-tournament-mentions"));
-
-    function toggleEmptyChatNotification(checked) {
-        preferences.set("show-empty-chat-notification", checked);
-        _setEmptyChatNotification(checked);
-    }
-
-    function toggleGroupChatMentions(checked) {
-        preferences.set("chat-subscribe-group-mentions", checked);
-        _setGroupChatMentions(checked);
-    }
-
-    function toggleGroupChatUnread(checked) {
-        preferences.set("chat-subscribe-group-chat-unread", checked);
-        _setGroupChatUnread(checked);
-    }
-
-    function toggleTournamentChatMentions(checked) {
-        preferences.set("chat-subscribe-tournament-mentions", checked);
-        _setTournamentChatMentions(checked);
-    }
-
-    function toggleTournamentChatUnread(checked) {
-        preferences.set("chat-subscribe-tournament-chat-unread", checked);
-        _setTournamentChatUnread(checked);
-    }
+    const [show_empty_chat_notification, toggleEmptyChatNotification] = usePreference(
+        "show-empty-chat-notification",
+    );
+    const [group_chat_unread, toggleGroupChatUnread] = usePreference(
+        "chat-subscribe-group-chat-unread",
+    );
+    const [group_chat_mentions, toggleGroupChatMentions] = usePreference(
+        "chat-subscribe-group-mentions",
+    );
+    const [tournament_chat_unread, toggleTournamentChatUnread] = usePreference(
+        "chat-subscribe-tournament-chat-unread",
+    );
+    const [tournament_chat_mentions, toggleTournamentChatMentions] = usePreference(
+        "chat-subscribe-tournament-mentions",
+    );
 
     return (
         <div>
@@ -896,20 +875,12 @@ function AnnouncementPreferences(): JSX.Element {
             .catch(errorAlerter);
     }, []);
 
-    const [mute_stream_announcements, _muteStreamAnnouncements]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("mute-stream-announcements"));
-    const [mute_event_announcements, _muteEventAnnouncements]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("mute-event-announcements"));
-
-    function toggleMuteStreamAnnouncements(checked) {
-        preferences.set("mute-stream-announcements", checked);
-        _muteStreamAnnouncements(checked);
-    }
-
-    function toggleMuteEventAnnouncements(checked) {
-        preferences.set("mute-event-announcements", checked);
-        _muteEventAnnouncements(checked);
-    }
+    const [mute_stream_announcements, toggleMuteStreamAnnouncements] = usePreference(
+        "mute-stream-announcements",
+    );
+    const [mute_event_announcements, toggleMuteEventAnnouncements] = usePreference(
+        "mute-event-announcements",
+    );
 
     return (
         <div id="AnnouncementPreferences">
@@ -1006,41 +977,30 @@ function GamePreferences(): JSX.Element {
     const [dock_delay, _setDockDelay]: [number, (x: number) => void] = React.useState(
         preferences.get("dock-delay"),
     );
-    const [ai_review_enabled, _setAiReviewEnabled]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("ai-review-enabled"));
-    const [variations_in_chat, _setVariationsInChat]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("variations-in-chat-enabled"));
+    const [ai_review_enabled, _setAiReviewEnabled] = usePreference("ai-review-enabled");
+    const [variations_in_chat, _setVariationsInChat] = usePreference("variations-in-chat-enabled");
     const [_live_submit_mode, _setLiveSubmitMode]: [string, (x: string) => void] = React.useState(
         getSubmitMode("live"),
     );
     const [_corr_submit_mode, _setCorrSubmitMode]: [string, (x: string) => void] = React.useState(
         getSubmitMode("correspondence"),
     );
-    const [board_labeling, _setBoardLabeling]: [string, (x: string) => void] = React.useState(
-        preferences.get("board-labeling"),
-    );
+    const [board_labeling, setBoardLabeling] = usePreference("board-labeling");
 
-    const [autoadvance, _setAutoAdvance]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("auto-advance-after-submit"),
-    );
-    const [always_disable_analysis, _setAlwaysDisableAnalysis]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("always-disable-analysis"));
-    const [dynamic_title, _setDynamicTitle]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("dynamic-title"),
-    );
-    const [function_keys_enabled, _setFunctionKeysEnabled]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("function-keys-enabled"));
+    const [autoadvance, setAutoAdvance] = usePreference("auto-advance-after-submit");
+    const [always_disable_analysis, setAlwaysDisableAnalysis] =
+        usePreference("always-disable-analysis");
+    const [dynamic_title, setDynamicTitle] = usePreference("dynamic-title");
+    const [function_keys_enabled, setFunctionKeysEnabled] = usePreference("function-keys-enabled");
     const [autoplay_delay, _setAutoplayDelay]: [number, (x: number) => void] = React.useState(
         preferences.get("autoplay-delay") / 1000,
     );
-    const [variation_stone_transparency, _setVariationStoneTransparency]: [
-        number,
-        (x: number) => void,
-    ] = React.useState(preferences.get("variation-stone-transparency"));
-    const [visual_undo_request_indicator, _setVisualUndoRequestIndicator]: [
-        boolean,
-        (x: boolean) => void,
-    ] = React.useState(preferences.get("visual-undo-request-indicator"));
+    const [variation_stone_transparency, _setVariationStoneTransparency] = usePreference(
+        "variation-stone-transparency",
+    );
+    const [visual_undo_request_indicator, setVisualUndoRequestIndicator] = usePreference(
+        "visual-undo-request-indicator",
+    );
 
     function setDockDelay(ev) {
         const new_delay = parseFloat(ev.target.value);
@@ -1048,29 +1008,10 @@ function GamePreferences(): JSX.Element {
         _setDockDelay(new_delay);
     }
     function toggleAIReview(checked) {
-        preferences.set("ai-review-enabled", !checked);
         _setAiReviewEnabled(!checked);
     }
     function toggleVariationsInChat(checked) {
-        preferences.set("variations-in-chat-enabled", !checked);
         _setVariationsInChat(!checked);
-    }
-
-    function setAutoAdvance(checked) {
-        preferences.set("auto-advance-after-submit", checked),
-            _setAutoAdvance(preferences.get("auto-advance-after-submit"));
-    }
-    function setAlwaysDisableAnalysis(checked) {
-        preferences.set("always-disable-analysis", checked),
-            _setAlwaysDisableAnalysis(preferences.get("always-disable-analysis"));
-    }
-    function setDynamicTitle(checked) {
-        preferences.set("dynamic-title", checked),
-            _setDynamicTitle(preferences.get("dynamic-title"));
-    }
-    function setFunctionKeysEnabled(checked) {
-        preferences.set("function-keys-enabled", checked),
-            _setFunctionKeysEnabled(preferences.get("function-keys-enabled"));
     }
 
     function getSubmitMode(speed) {
@@ -1111,16 +1052,7 @@ function GamePreferences(): JSX.Element {
 
         if (value >= 0.0 && value <= 1.0) {
             _setVariationStoneTransparency(value);
-            preferences.set("variation-stone-transparency", value);
         }
-    }
-    function setVisualUndoRequestIndicator(checked) {
-        preferences.set("visual-undo-request-indicator", checked);
-        _setVisualUndoRequestIndicator(checked);
-    }
-    function setBoardLabeling(value) {
-        preferences.set("board-labeling", value);
-        _setBoardLabeling(value);
     }
     function updateAutoplayDelay(ev) {
         const delay = parseFloat(ev.target.value);
@@ -1280,32 +1212,27 @@ function GamePreferences(): JSX.Element {
 function GeneralPreferences(props: SettingGroupProps): JSX.Element {
     const [profanity_filter, _setProfanityFilter]: [Array<string>, (x: Array<string>) => void] =
         React.useState(Object.keys(preferences.get("profanity-filter")));
+
     const [game_list_threshold, _setGameListThreshold]: [number, (x: number) => void] =
         React.useState(preferences.get("game-list-threshold"));
-    const [_desktop_notifications, _setDesktopNotifications]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("desktop-notifications"));
-    const [show_offline_friends, _setShowOfflineFriends]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("show-offline-friends"));
-    const [unicode_filter_usernames, _setUnicodeFilterUsernames]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("unicode-filter"));
-    const [translation_dialog_never_show, _setTranslationDialogNeverShow]: [
-        boolean,
-        (x: boolean) => void,
-    ] = React.useState(preferences.get("translation-dialog-never-show"));
+    const [_desktop_notifications, setDesktopNotifications] =
+        usePreference("desktop-notifications");
+    const [show_offline_friends, setShowOfflineFriends] = usePreference("show-offline-friends");
+    const [unicode_filter_usernames, setUnicodeFilterUsernames] = usePreference("unicode-filter");
+    const [translation_dialog_never_show, setTranslationDialogNeverShow] = usePreference(
+        "translation-dialog-never-show",
+    );
     const [hide_ui_class, setHideUiClass]: [boolean, (x: boolean) => void] = React.useState(
         props.state.hide_ui_class,
     );
-    const [show_tournament_indicator, _setShowTournamentIndicator]: [
-        boolean,
-        (x: boolean) => void,
-    ] = React.useState(preferences.get("show-tournament-indicator"));
-    const [hide_ranks, _setHideRanks]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get("hide-ranks"),
+    const [show_tournament_indicator, setShowTournamentIndicator] = usePreference(
+        "show-tournament-indicator",
     );
-    const [rating_graph_always_use, _setAlwaysUse]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("rating-graph-always-use"));
-    const [rating_graph_plot_by_games, _setUseGames]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("rating-graph-plot-by-games"));
+    const [hide_ranks, setHideRanks] = usePreference("hide-ranks");
+    const [rating_graph_always_use, setAlwaysUse] = usePreference("rating-graph-always-use");
+    const [rating_graph_plot_by_games, setPlotByGames] = usePreference(
+        "rating-graph-plot-by-games",
+    );
 
     const user = data.get("user");
     const desktop_notifications_enableable: boolean = typeof Notification !== "undefined";
@@ -1345,29 +1272,13 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
         }
     }
 
-    function setShowOfflineFriends(checked) {
-        preferences.set("show-offline-friends", checked);
-        _setShowOfflineFriends(preferences.get("show-offline-friends"));
-    }
-
-    function setUnicodeFilterUsernames(checked) {
-        preferences.set("unicode-filter", checked);
-        _setUnicodeFilterUsernames(preferences.get("unicode-filter"));
-    }
-
-    function setTranslationDialogNeverShow(checked) {
-        preferences.set("translation-dialog-never-show", checked);
-        _setTranslationDialogNeverShow(preferences.get("translation-dialog-never-show"));
-    }
-
     function updateDesktopNotifications(enabled) {
         if (!enabled) {
             //this.setState({'desktop_notifications_enabled': false});
         }
 
         try {
-            preferences.set("desktop-notifications", enabled);
-            _setDesktopNotifications(enabled);
+            setDesktopNotifications(enabled);
 
             if (enabled) {
                 if ((Notification as any).permission === "denied") {
@@ -1423,25 +1334,6 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
                 hide_ui_class: !checked,
             },
         }).catch(errorAlerter);
-    }
-
-    function setShowTournamentIndicator(checked) {
-        preferences.set("show-tournament-indicator", checked),
-            _setShowTournamentIndicator(preferences.get("show-tournament-indicator"));
-    }
-
-    function setAlwaysUse(checked) {
-        preferences.set("rating-graph-always-use", checked),
-            _setAlwaysUse(preferences.get("rating-graph-always-use"));
-    }
-
-    function setPlotByGames(checked) {
-        preferences.set("rating-graph-plot-by-games", checked),
-            _setUseGames(preferences.get("rating-graph-plot-by-games"));
-    }
-
-    function setHideRanks(checked) {
-        preferences.set("hide-ranks", checked), _setHideRanks(preferences.get("hide-ranks"));
     }
 
     const language_options = Object.entries(languages).map((lang_entry) => ({
@@ -1558,14 +1450,13 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
 }
 
 function ModeratorPreferences(_props: SettingGroupProps): JSX.Element {
-    const [incident_report_notifications, setIncidentReportNotifications]: [
-        boolean,
-        (x: boolean) => void,
-    ] = React.useState(preferences.get("notify-on-incident-report"));
-    const [hide_incident_reports, setHideIncidentReports]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("hide-incident-reports"));
-    const [join_games_anonymously, setJoinGamesAnonymously]: [boolean, (x: boolean) => void] =
-        React.useState(preferences.get("moderator.join-games-anonymously"));
+    const [incident_report_notifications, setIncidentReportNotifications] = usePreference(
+        "notify-on-incident-report",
+    );
+    const [hide_incident_reports, setHideIncidentReports] = usePreference("hide-incident-reports");
+    const [join_games_anonymously, setJoinGamesAnonymously] = usePreference(
+        "moderator.join-games-anonymously",
+    );
 
     const user = data.get("user");
 
@@ -1573,34 +1464,19 @@ function ModeratorPreferences(_props: SettingGroupProps): JSX.Element {
         return null;
     }
 
-    function updateIncidentReportNotifications(checked: boolean) {
-        preferences.set("notify-on-incident-report", checked);
-        setIncidentReportNotifications(checked);
-    }
-
-    function updateHideIncidentReports(checked: boolean) {
-        preferences.set("hide-incident-reports", checked);
-        setHideIncidentReports(checked);
-    }
-
-    function updateJoinGamesAnonymously(checked: boolean) {
-        preferences.set("moderator.join-games-anonymously", checked);
-        setJoinGamesAnonymously(checked);
-    }
-
     return (
         <div>
             <PreferenceLine title={_("Notify me when an incident is submitted for moderation")}>
                 <Toggle
                     checked={incident_report_notifications}
-                    onChange={updateIncidentReportNotifications}
+                    onChange={setIncidentReportNotifications}
                 />
             </PreferenceLine>
             <PreferenceLine title="Hide incident reports">
-                <Toggle checked={hide_incident_reports} onChange={updateHideIncidentReports} />
+                <Toggle checked={hide_incident_reports} onChange={setHideIncidentReports} />
             </PreferenceLine>
             <PreferenceLine title="Join games anonymously">
-                <Toggle checked={join_games_anonymously} onChange={updateJoinGamesAnonymously} />
+                <Toggle checked={join_games_anonymously} onChange={setJoinGamesAnonymously} />
             </PreferenceLine>
         </div>
     );
@@ -1851,18 +1727,18 @@ function AssociationSelect({
 }
 
 function SoundPreferences(): JSX.Element {
-    const [tick_tock_start, __setTickTockStart]: [number, (x: number) => void] = React.useState(
-        preferences.get("sound.countdown.tick-tock.start"),
+    const [tick_tock_start, __setTickTockStart] = usePreference("sound.countdown.tick-tock.start");
+    const [ten_seconds_start, __setTenSecondsStart] = usePreference(
+        "sound.countdown.ten-seconds.start",
     );
-    const [ten_seconds_start, __setTenSecondsStart]: [number, (x: number) => void] = React.useState(
-        preferences.get("sound.countdown.ten-seconds.start"),
+    const [five_seconds_start, __setFiveSecondsStart] = usePreference(
+        "sound.countdown.five-seconds.start",
     );
-    const [five_seconds_start, __setFiveSecondsStart]: [number, (x: number) => void] =
-        React.useState(preferences.get("sound.countdown.five-seconds.start"));
-    const [every_second_start, __setEverySecondStart]: [number, (x: number) => void] =
-        React.useState(preferences.get("sound.countdown.every-second.start"));
-    const [count_direction, __setCountDirection]: [string, (x: string) => void] = React.useState(
-        preferences.get("sound.countdown.byoyomi-direction"),
+    const [every_second_start, __setEverySecondStart] = usePreference(
+        "sound.countdown.every-second.start",
+    );
+    const [count_direction, __setCountDirection] = usePreference(
+        "sound.countdown.byoyomi-direction",
     );
     let count_direction_auto = "down";
 
@@ -1875,23 +1751,18 @@ function SoundPreferences(): JSX.Element {
         count_direction !== "auto" ? count_direction : count_direction_auto;
 
     function setTickTockStart(opt): void {
-        preferences.set("sound.countdown.tick-tock.start", opt.value);
         __setTickTockStart(opt.value);
     }
     function setTenSecondsStart(opt): void {
-        preferences.set("sound.countdown.ten-seconds.start", opt.value);
         __setTenSecondsStart(opt.value);
     }
     function setFiveSecondsStart(opt): void {
-        preferences.set("sound.countdown.five-seconds.start", opt.value);
         __setFiveSecondsStart(opt.value);
     }
     function setEverySecondStart(opt): void {
-        preferences.set("sound.countdown.every-second.start", opt.value);
         __setEverySecondStart(opt.value);
     }
     function setCountDirection(opt): void {
-        preferences.set("sound.countdown.byoyomi-direction", opt.value);
         __setCountDirection(opt.value);
     }
 
@@ -2695,14 +2566,7 @@ function EmailNotificationToggle(props: {
 }
 
 function PreferenceToggle(props: { name: string; preference: ValidPreference }): JSX.Element {
-    const [on, __set]: [boolean, (x: boolean) => void] = React.useState(
-        preferences.get(props.preference),
-    );
-
-    function setPreference(on: boolean): void {
-        preferences.set(props.preference, on);
-        __set(on);
-    }
+    const [on, setPreference] = usePreference(props.preference);
 
     return (
         <div className="PreferenceToggle">
