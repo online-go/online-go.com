@@ -216,6 +216,12 @@ export function watchSelectedThemes(cb: (themes: GobanSelectedThemes) => void) {
     };
 }
 
+/**
+ * A custom React hook that returns a state variable and a function that can be
+ * used to set both the state and the preference at the same time.
+ *
+ * @param key a preference (as one would use in `preferences.get(key)`)
+ */
 export function usePreference<KeyT extends ValidPreference>(
     key: KeyT,
 ): [PreferencesType[KeyT], (v: PreferencesType[KeyT]) => void] {
