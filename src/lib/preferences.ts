@@ -16,7 +16,7 @@
  */
 
 import * as data from "data";
-import { GoThemes } from "goban";
+import { GobanSelectedThemes, GoThemes } from "goban";
 import { current_language } from "translate";
 import { DataSchema } from "./data_schema";
 
@@ -146,9 +146,9 @@ export function set<KeyT extends ValidPreference>(
 ): DataSchema[`preferences.${KeyT}`] {
     return data.set(`preferences.${key}`, value, replication);
 }
-export function watch(
-    key: ValidPreference,
-    cb: (d: any) => void,
+export function watch<KeyT extends ValidPreference>(
+    key: KeyT,
+    cb: (d: DataSchema[`preferences.${KeyT}`]) => void,
     call_on_undefined?: boolean,
     dont_call_immediately?: boolean,
 ): void {
@@ -187,7 +187,7 @@ export function getSelectedThemes(): { board: string; black: string; white: stri
     };
 }
 
-export function watchSelectedThemes(cb) {
+export function watchSelectedThemes(cb: (themes: GobanSelectedThemes) => void) {
     let dont_call_right_away = true;
     const call_cb = () => {
         if (dont_call_right_away) {
