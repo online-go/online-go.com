@@ -79,7 +79,10 @@ export class GobanThemePicker extends React.PureComponent<
                 ) as unknown as { [style_name: string]: string };
 
                 this.selectTheme[k][theme.theme_name] = () => {
-                    preferences.set(`goban-theme-${k}`, theme.theme_name);
+                    preferences.set(
+                        `goban-theme-${k}` as preferences.ValidPreference,
+                        theme.theme_name,
+                    );
                     const up = {};
                     up[k] = theme.theme_name;
                     this.setState(up);

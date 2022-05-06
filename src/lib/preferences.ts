@@ -18,6 +18,7 @@
 import * as data from "data";
 import { GoThemes } from "goban";
 import { current_language } from "translate";
+import { DataSchema } from "./data_schema";
 
 export const defaults = {
     "ai-review-enabled": true,
@@ -48,7 +49,7 @@ export const defaults = {
     "label-positioning": "all",
     "label-positioning-puzzles": "all",
     language: "auto",
-    "move-tree-numbering": "move-number",
+    "move-tree-numbering": "move-number" as "none" | "move-coordinates" | "move-number",
     "new-game-board-size": 19,
     "notification-timeout": 10,
     "notify-on-incident-report": true,
@@ -94,7 +95,7 @@ export const defaults = {
 
     "supporter.currency": "auto",
     "supporter.interval": "month",
-    "tournaments-tab": "schedule",
+    "tournaments-tab": "schedule" as "schedule" | "live" | "archive" | "correspondence",
     "tournaments-show-all": false,
     "translation-dialog-dismissed": 0,
     "translation-dialog-never-show": false,
@@ -121,15 +122,17 @@ for (const k in defaults) {
     data.setDefault(`preferences.${k as ValidPreference}`, defaults[k]);
 }
 
-export type ValidPreference = keyof typeof defaults | `goban-theme-${string}`;
+export type ValidPreference = keyof typeof defaults;
 
-export function get(key: ValidPreference): any {
+export function get<T extends keyof typeof defaults>(key: T): DataSchema[`preferences.${T}`] {
     if (!(key in defaults)) {
         if ((key as string) === "sound-volume") {
             console.error(
                 "You have an extension installed that is not using the newer sound system, volume will not be controllable",
             );
-            return 1.0;
+            // This should never happen according to the type system, so we have
+            // to type it as any in order to suppress an error.
+            return 1.0 as any;
         }
 
         throw new Error(`Undefined default: ${key}`);
