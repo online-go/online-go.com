@@ -18,7 +18,6 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { _ } from "translate";
-import { Card } from "material";
 import { GameList } from "GameList";
 import { post, get, abort_requests_in_flight } from "requests";
 import * as data from "data";
@@ -26,36 +25,17 @@ import cached from "cached";
 import * as preferences from "preferences";
 import { errorAlerter, ignore } from "misc";
 import { DismissableNotification } from "DismissableNotification";
-import { FriendList } from "FriendList";
 import { ChallengesList } from "./ChallengesList";
 import { EmailBanner } from "EmailBanner";
-import { SupporterGoals } from "SupporterGoals";
-import { ProfileCard } from "ProfileCard";
 import { notification_manager } from "Notifications";
 import { ActiveAnnouncements } from "Announcements";
-import { FabX } from "material";
 import { ActiveTournamentList, Group } from "src/lib/types";
 import { DismissableMessages } from "DismissableMessages";
-import { Experiment, Variant, Default } from "Experiment";
-import { EXV6Overview } from "./EXV6Overview";
 
 declare let ogs_missing_translation_count: number;
 
 type UserType = rest_api.UserConfig;
 type ActiveGameType = rest_api.players.full.Game;
-
-export function Overview(): JSX.Element {
-    return (
-        <Experiment name="v6">
-            <Variant value="enabled" bodyclass="v6">
-                <EXV6Overview />
-            </Variant>
-            <Default>
-                <OldOverview />
-            </Default>
-        </Experiment>
-    );
-}
 
 interface OverviewState {
     boards_to_move_on?: number;
@@ -64,9 +44,7 @@ interface OverviewState {
     overview: { active_games: Array<ActiveGameType> };
     show_translation_dialog: boolean;
 }
-export class OldOverview extends React.Component<{}, OverviewState> {
-    private static defaultTitle = "OGS";
-
+export class EXV6Overview extends React.Component<{}, OverviewState> {
     constructor(props: {}) {
         super(props);
 
@@ -142,7 +120,6 @@ export class OldOverview extends React.Component<{}, OverviewState> {
 
         return (
             <div id="Overview-Container">
-                <SupporterGoals />
                 <div id="Overview">
                     <div className="left">
                         <DismissableMessages />
@@ -187,65 +164,6 @@ export class OldOverview extends React.Component<{}, OverviewState> {
                                 </Link>
                             </div>
                         )}
-                    </div>
-                    <div className="right">
-                        <ProfileCard user={user} />
-
-                        <div className="overview-categories">
-                            {this.state.show_translation_dialog && (
-                                <Card className="translation-dialog">
-                                    <FabX onClick={this.dismissTranslationDialog} />
-
-                                    <div>
-                                        {_(
-                                            "Hello! Did you know that online-go.com is translated entirely volunteers in the Go community? Because of that, sometimes our translations get behind, like right now. In this language there are some missing translation strings. If you would like to help fix this, click the green button below, and thanks in advance!",
-                                        )}
-                                    </div>
-
-                                    <a
-                                        className="btn success"
-                                        href="https://translate.online-go.com/"
-                                    >
-                                        {_("I'll help translate!")}
-                                    </a>
-
-                                    <button
-                                        className="btn xs never-show-this-message-button"
-                                        onClick={this.neverShowTranslationDialog}
-                                    >
-                                        {_("Never show this message")}
-                                    </button>
-                                </Card>
-                            )}
-
-                            <h3>
-                                <Link to="/tournaments">
-                                    <i className="fa fa-trophy"></i> {_("Tournaments")}
-                                </Link>
-                            </h3>
-                            <TournamentList />
-
-                            <h3>
-                                <Link to="/ladders">
-                                    <i className="fa fa-list-ol"></i> {_("Ladders")}
-                                </Link>
-                            </h3>
-                            <LadderList />
-
-                            <h3>
-                                <Link to="/groups">
-                                    <i className="fa fa-users"></i> {_("Groups")}
-                                </Link>
-                            </h3>
-                            <GroupList />
-
-                            <h3>
-                                <Link to="/chat">
-                                    <i className="fa fa-comment-o"></i> {_("Chat with friends")}
-                                </Link>
-                            </h3>
-                            <FriendList />
-                        </div>
                     </div>
                 </div>
             </div>
