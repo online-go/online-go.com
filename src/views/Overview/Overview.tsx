@@ -96,7 +96,7 @@ export class OldOverview extends React.Component<{}, OverviewState> {
 
     setTitle() {
         const count = this.state.boards_to_move_on ? `(${this.state.boards_to_move_on}) ` : "";
-        window.document.title = `${count}${Overview.defaultTitle}`;
+        window.document.title = `${count}${OldOverview.defaultTitle}`;
     }
 
     setBoardsToMoveOn = (boardsToMoveOn?: number) => {
@@ -133,7 +133,7 @@ export class OldOverview extends React.Component<{}, OverviewState> {
     componentWillUnmount() {
         abort_requests_in_flight("ui/overview");
         notification_manager.event_emitter.off("turn-count", this.setBoardsToMoveOn);
-        window.document.title = Overview.defaultTitle;
+        window.document.title = OldOverview.defaultTitle;
         data.unwatch("config.user", this.updateUser);
     }
 

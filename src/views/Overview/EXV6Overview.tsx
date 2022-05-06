@@ -45,6 +45,8 @@ interface OverviewState {
     show_translation_dialog: boolean;
 }
 export class EXV6Overview extends React.Component<{}, OverviewState> {
+    private static defaultTitle = "OGS";
+
     constructor(props: {}) {
         super(props);
 
@@ -74,7 +76,7 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
 
     setTitle() {
         const count = this.state.boards_to_move_on ? `(${this.state.boards_to_move_on}) ` : "";
-        window.document.title = `${count}${Overview.defaultTitle}`;
+        window.document.title = `${count}${EXV6Overview.defaultTitle}`;
     }
 
     setBoardsToMoveOn = (boardsToMoveOn?: number) => {
@@ -111,7 +113,7 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
     componentWillUnmount() {
         abort_requests_in_flight("ui/overview");
         notification_manager.event_emitter.off("turn-count", this.setBoardsToMoveOn);
-        window.document.title = Overview.defaultTitle;
+        window.document.title = EXV6Overview.defaultTitle;
         data.unwatch("config.user", this.updateUser);
     }
 
