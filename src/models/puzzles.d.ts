@@ -53,9 +53,9 @@ declare namespace rest_api {
             };
             puzzle_opponent_move_mode: import("goban").PuzzleOpponentMoveMode;
             puzzle_player_move_mode: import("goban").PuzzlePlayerMoveMode;
-            puzzle_rank: string; // number
+            puzzle_rank: number; // this is actually passed as a string, but need consistency with Goban.PuzzleConfig
             puzzle_description: string;
-            puzzle_collection: string; // number
+            puzzle_collection: number; // this is actually passed as a string, but need consistency with Goban.PuzzleConfig
             initial_player: "black" | "white";
             move_tree: import("goban").MoveTreeJson;
         };
