@@ -122,9 +122,10 @@ for (const k in defaults) {
     data.setDefault(`preferences.${k as ValidPreference}`, defaults[k]);
 }
 
+type PreferencesType = typeof defaults;
 export type ValidPreference = keyof typeof defaults;
 
-export function get<KeyT extends ValidPreference>(key: KeyT): DataSchema[`preferences.${KeyT}`] {
+export function get<KeyT extends ValidPreference>(key: KeyT): PreferencesType[KeyT] {
     if (!(key in defaults)) {
         if ((key as string) === "sound-volume") {
             console.error(
@@ -137,25 +138,30 @@ export function get<KeyT extends ValidPreference>(key: KeyT): DataSchema[`prefer
 
         throw new Error(`Undefined default: ${key}`);
     }
-    return data.get(`preferences.${key}`);
+    // I can't figure out why TypeScript doesn't like this, but I think it's better
+    // to define the type in terms of Preferences instead of DataSchema.
+    return data.get(`preferences.${key}`) as any;
 }
 export function set<KeyT extends ValidPreference>(
     key: KeyT,
-    value: DataSchema[`preferences.${KeyT}`],
+    value: PreferencesType[KeyT],
     replication?: data.Replication,
 ): DataSchema[`preferences.${KeyT}`] {
-    return data.set(`preferences.${key}`, value, replication);
+    return data.set(`preferences.${key}`, value as any, replication);
 }
 export function watch<KeyT extends ValidPreference>(
     key: KeyT,
-    cb: (d: DataSchema[`preferences.${KeyT}`]) => void,
+    cb: (d: PreferencesType[KeyT]) => void,
     call_on_undefined?: boolean,
     dont_call_immediately?: boolean,
 ): void {
-    data.watch(`preferences.${key}`, cb, call_on_undefined, dont_call_immediately);
+    data.watch(`preferences.${key}`, cb as any, call_on_undefined, dont_call_immediately);
 }
-export function unwatch(key: ValidPreference, cb: (d: any) => void): void {
-    data.unwatch(`preferences.${key}`, cb);
+export function unwatch<KeyT extends ValidPreference>(
+    key: KeyT,
+    cb: (d: PreferencesType[KeyT]) => void,
+): void {
+    data.unwatch(`preferences.${key}`, cb as any);
 }
 
 export function dump(): void {
