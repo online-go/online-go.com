@@ -32,7 +32,7 @@ import { NotificationList, notification_manager } from "Notifications";
 import { TurnIndicator } from "TurnIndicator";
 import { NotificationIndicator } from "NotificationIndicator";
 import { TournamentIndicator } from "Announcements";
-//import { FriendIndicator } from "FriendList";
+import { FriendIndicator } from "FriendList";
 import * as preferences from "preferences";
 //import { ChatIndicator } from "Chat";
 import { logout } from "auth";
@@ -307,6 +307,7 @@ export function EXV6NavBar(): JSX.Element {
                     {!preferences.get("hide-incident-reports") && <IncidentReportTracker />}
                     {preferences.get("show-tournament-indicator") && <TournamentIndicator />}
                     <TurnIndicator />
+                    <FriendIndicator />
                     <NotificationIndicator onClick={toggleNotifications} />
                     <span className="icon-container" onClick={toggleRightNav}>
                         {user.username}
