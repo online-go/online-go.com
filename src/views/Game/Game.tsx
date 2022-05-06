@@ -16,19 +16,17 @@
  */
 
 import * as data from "data";
-import device from "device";
 import * as preferences from "preferences";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
-import { _, pgettext, interpolate, current_language } from "translate";
+import { _, interpolate, current_language } from "translate";
 import { popover } from "popover";
 import { post, get } from "requests";
 import { KBShortcut } from "KBShortcut";
 import { UIPush } from "UIPush";
-import { errorAlerter, ignore, getOutcomeTranslation } from "misc";
-import { challengeRematch } from "ChallengeModal";
+import { errorAlerter, ignore } from "misc";
 import {
     Goban,
     GobanCanvas,
@@ -39,30 +37,36 @@ import {
     Score,
     GoEnginePhase,
     GobanModes,
-    GoEngineRules,
-    AnalysisTool,
     JGOFPlayerSummary,
-    JGOFNumericPlayerColor,
+    GoConditionalMove,
+    AnalysisTool,
 } from "goban";
 import { isLiveGame } from "TimeControl";
 import { get_network_latency, get_clock_drift } from "sockets";
-import { Player, setExtraActionCallback, PlayerDetails } from "Player";
+import { setExtraActionCallback, PlayerDetails } from "Player";
 import * as player_cache from "player_cache";
 import { notification_manager } from "Notifications";
 import { PersistentElement } from "PersistentElement";
-import { close_all_popovers } from "popover";
 import { Resizable } from "Resizable";
 import { chat_manager, ChatChannelProxy } from "chat_manager";
 import { sfx, SFXSprite, ValidSound } from "sfx";
 import { AIReview } from "./AIReview";
 import { GameChat, ChatMode } from "./GameChat";
-import { toast } from "toast";
-import { Clock } from "Clock";
 import { JGOFClock } from "goban";
 import { GameTimings } from "./GameTimings";
 import { goban_view_mode, goban_view_squashed, ViewMode, shared_ip_with_player_map } from "./util";
 import { game_control } from "./game_control";
 import { PlayerCards } from "./PlayerCards";
+import {
+    CancelButton,
+    EstimateScore,
+    PlayControls,
+    AnalyzeButtonBar,
+    copyBranch,
+    pasteBranch,
+    deleteBranch,
+    ReviewControls,
+} from "./PlayControls";
 import { GameDock } from "./GameDock";
 import swal from "sweetalert2";
 
@@ -81,20 +85,15 @@ export function Game(): JSX.Element {
     const tournament_id = React.useRef<number>();
     const goban_div = React.useRef<HTMLDivElement | null>();
     const resize_debounce = React.useRef<any>();
-    const stone_removal_accept_timeout = React.useRef<any>();
     const autoplay_timer = React.useRef<any>();
-    const conditional_move_list = React.useRef<any[]>([]);
-    const selected_conditional_move = React.useRef<any>();
     const chat_proxy = React.useRef<ChatChannelProxy>();
     const last_analysis_sent = React.useRef<any>();
     const on_refocus_title = React.useRef<string>("OGS");
     const last_move_viewed = React.useRef<number>(0);
-    const conditional_move_tree = React.useRef<any>();
-    const stashed_conditional_moves = React.useRef<any>();
+    const stashed_conditional_moves = React.useRef<GoConditionalMove>();
     const copied_node = React.useRef<MoveTree>();
     const white_username = React.useRef<string>("White");
     const black_username = React.useRef<string>("Black");
-    const return_url = React.useRef<string>(); // url to return to after a game is over
     const goban = React.useRef<Goban>(null);
 
     /* State */
@@ -102,7 +101,6 @@ export function Game(): JSX.Element {
     const [squashed, set_squashed] = React.useState<boolean>(goban_view_squashed());
     const [estimating_score, set_estimating_score] = React.useState<boolean>(false);
     const [analyze_pencil_color, set_analyze_pencil_color] = React.useState<string>("#004cff");
-    const [show_submit, set_show_submit] = React.useState(false);
     const [user_is_player, set_user_is_player] = React.useState(false);
     const [zen_mode, set_zen_mode] = React.useState(false);
     const [autoplaying, set_autoplaying] = React.useState(false);
@@ -110,7 +108,6 @@ export function Game(): JSX.Element {
     const [review_list, set_review_list] = React.useState([]);
     const [selected_chat_log, set_selected_chat_log] = React.useState<ChatMode>("main");
     const [variation_name, set_variation_name] = React.useState("");
-    const [strict_seki_mode, set_strict_seki_mode] = React.useState(false);
     const [historical_black, set_historical_black] = React.useState<rest_api.games.Player | null>(
         null,
     );
@@ -130,34 +127,17 @@ export function Game(): JSX.Element {
         null,
     );
     const [show_game_timing, set_show_game_timing] = React.useState(false);
-    const [submitting_move, set_submitting_move] = React.useState(false);
     const [score, set_score] = React.useState<Score>();
 
     const [title, set_title] = React.useState<string>();
-    const [paused, set_paused] = React.useState<boolean>();
+
     const [mode, set_mode] = React.useState<GobanModes>("play");
-    const [move_text, set_move_text] = React.useState<string>();
     const [resign_mode, set_resign_mode] = React.useState<"cancel" | "resign">();
     const [resign_text, set_resign_text] = React.useState<string>();
-    const [cur_move_number, set_cur_move_number] = React.useState<number>();
     const [score_estimate_winner, set_score_estimate_winner] = React.useState<string>();
     const [score_estimate_amount, set_score_estimate_amount] = React.useState<number>();
-    const [show_undo_requested, set_show_undo_requested] = React.useState<boolean>();
-    const [show_accept_undo, set_show_accept_undo] = React.useState<boolean>();
     const [show_title, set_show_title] = React.useState<boolean>();
     const [player_to_move, set_player_to_move] = React.useState<number>();
-    const [player_not_to_move, set_player_not_to_move] = React.useState<number>();
-    const [is_my_move, set_is_my_move] = React.useState<boolean>();
-    const [winner, set_winner] = React.useState<"black" | "white">();
-    const [official_move_number, set_official_move_number] = React.useState<number>();
-    const [rules, set_rules] = React.useState<GoEngineRules>();
-    const [analyze_tool, set_analyze_tool] = React.useState<AnalysisTool>();
-    const [analyze_subtool, set_analyze_subtool] = React.useState<string>();
-    const [black_accepted, set_black_accepted] = React.useState<boolean>();
-    const [white_accepted, set_white_accepted] = React.useState<boolean>();
-    const [review_owner_id, set_review_owner_id] = React.useState<number>();
-    const [review_controller_id, set_review_controller_id] = React.useState<number>();
-    const [review_out_of_sync, set_review_out_of_sync] = React.useState<boolean>();
     const [, set_undo_requested] = React.useState<number | undefined>();
     const [, forceUpdate] = React.useState<number>();
 
@@ -436,7 +416,7 @@ export function Game(): JSX.Element {
 
         recenterGoban();
     };
-    const setAnalyzeTool = (tool, subtool) => {
+    const setAnalyzeTool = (tool: AnalysisTool | "erase", subtool: string) => {
         if (checkAndEnterAnalysis()) {
             $("#game-analyze-button-bar .active").removeClass("active");
             $("#game-analyze-" + tool + "-tool").addClass("active");
@@ -605,19 +585,8 @@ export function Game(): JSX.Element {
         set_portrait_tab(portrait_tab);
         onResize();
     };
-    const setPencilColor = (ev) => {
-        const color = (ev.target as HTMLInputElement).value;
-        if (goban.current.analyze_tool === "draw") {
-            goban.current.analyze_subtool = color;
-        }
-        set_analyze_pencil_color(color);
-    };
     const updateVariationName = (ev) => {
         set_variation_name((ev.target as HTMLInputElement).value);
-    };
-    const updateMoveText = (ev) => {
-        set_move_text(ev.target.value);
-        goban.current.syncReviewMove(null, ev.target.value);
     };
     const shareAnalysis = () => {
         const diff = goban.current.engine.getMoveDiff();
@@ -835,278 +804,14 @@ export function Game(): JSX.Element {
                 .catch(() => 0);
         }
     };
-    const goban_acceptUndo = () => {
-        goban.current.acceptUndo();
-    };
-    const goban_submit_move = () => {
-        goban.current.submit_move();
-    };
-    const goban_setMode_play = () => {
-        goban.current.setMode("play");
-        if (stashed_conditional_moves.current) {
-            goban.current.setConditionalTree(stashed_conditional_moves.current);
-            stashed_conditional_moves.current = null;
-        }
-    };
-    const goban_resumeGame = () => {
-        goban.current.resumeGame();
-    };
-    const goban_jumpToLastOfficialMove = () => {
-        goban.current.jumpToLastOfficialMove();
-    };
-    const acceptConditionalMoves = () => {
-        stashed_conditional_moves.current = null;
-        goban.current.saveConditionalMoves();
-        goban.current.setMode("play");
-    };
-    const pass = () => {
-        if (
-            !isLiveGame(goban.current.engine.time_control) ||
-            !preferences.get("one-click-submit-live")
-        ) {
-            swal({ text: _("Are you sure you want to pass?"), showCancelButton: true })
-                .then(() => goban.current.pass())
-                .catch(() => 0);
-        } else {
-            goban.current.pass();
-        }
-    };
-    const analysis_pass = () => {
-        goban.current.pass();
-        forceUpdate(Math.random());
-    };
-    const undo = () => {
-        if (
-            data.get("user").id === goban.current.engine.playerNotToMove() &&
-            goban.current.engine.undo_requested !== goban.current.engine.getMoveNumber()
-        ) {
-            goban.current.requestUndo();
-        }
-    };
     const goban_setModeDeferredPlay = () => {
         goban.current.setModeDeferred("play");
     };
-    const goban_deleteBranch = () => {
-        if (mode !== "analyze") {
-            return;
-        }
-
-        try {
-            /* Don't try to delete branches when the user is selecting stuff somewhere on the page */
-            if (!window.getSelection().isCollapsed) {
-                return;
-            }
-        } catch (e) {
-            // ignore error
-        }
-
-        if (goban.current.engine.cur_move.trunk) {
-            swal({
-                text: _(
-                    "The current position is not an explored branch, so there is nothing to delete",
-                ),
-            }).catch(swal.noop);
-        } else {
-            swal({
-                text: _("Are you sure you wish to remove this move branch?"),
-                showCancelButton: true,
-            })
-                .then(() => {
-                    goban.current.deleteBranch();
-                    goban.current.syncReviewMove();
-                })
-                .catch(() => 0);
-        }
-    };
-    const goban_copyBranch = () => {
-        if (mode !== "analyze") {
-            return;
-        }
-
-        try {
-            /* Don't try to copy branches when the user is selecting stuff somewhere on the page */
-            if (!window.getSelection().isCollapsed) {
-                return;
-            }
-        } catch (e) {
-            // ignore error
-        }
-
-        copied_node.current = goban.current.engine.cur_move;
-        toast(<div>{_("Branch copied")}</div>, 1000);
-    };
-    const goban_pasteBranch = () => {
-        if (mode !== "analyze") {
-            return;
-        }
-
-        try {
-            /* Don't try to paste branches when the user is selecting stuff somewhere on the page */
-            if (!window.getSelection().isCollapsed) {
-                return;
-            }
-        } catch (e) {
-            // ignore error
-        }
-
-        if (copied_node.current) {
-            const paste = (base: MoveTree, source: MoveTree) => {
-                goban.current.engine.jumpTo(base);
-                if (source.edited) {
-                    goban.current.engine.editPlace(source.x, source.y, source.player, false);
-                } else {
-                    goban.current.engine.place(
-                        source.x,
-                        source.y,
-                        false,
-                        false,
-                        true,
-                        false,
-                        false,
-                    );
-                }
-                const cur = goban.current.engine.cur_move;
-
-                if (source.trunk_next) {
-                    paste(cur, source.trunk_next);
-                }
-                for (const branch of source.branches) {
-                    paste(cur, branch);
-                }
-            };
-
-            try {
-                paste(goban.current.engine.cur_move, copied_node.current);
-            } catch (e) {
-                errorAlerter(_("A move conflict has been detected"));
-            }
-            goban.current.syncReviewMove();
-        } else {
-            console.log("Nothing copied or cut to paste");
-        }
-    };
-    const setStrictSekiMode = (ev) => {
-        goban.current.setStrictSekiMode((ev.target as HTMLInputElement).checked);
-    };
-    const rematch = () => {
-        try {
-            $(document.activeElement).blur();
-        } catch (e) {
-            console.error(e);
-        }
-
-        challengeRematch(
-            goban.current,
-            data.get("user").id === goban.current.engine.players.black.id
-                ? goban.current.engine.players.white
-                : goban.current.engine.players.black,
-            goban.current.engine.config,
-        );
-    };
-    const onStoneRemovalCancel = () => {
-        swal({ text: _("Are you sure you want to resume the game?"), showCancelButton: true })
-            .then(() => goban.current.rejectRemovedStones())
-            .catch(() => 0);
-        return false;
-    };
-    const onStoneRemovalAccept = () => {
-        goban.current.acceptRemovedStones();
-        return false;
-    };
-    const onStoneRemovalAutoScore = () => {
-        goban.current.autoScore();
-        return false;
-    };
-    const clearAnalysisDrawing = () => {
-        goban.current.syncReviewMove({ clearpen: true });
-        goban.current.clearAnalysisDrawing();
-    };
+    const goban_deleteBranch = () => deleteBranch(goban.current, mode);
+    const goban_copyBranch = () => copyBranch(goban.current, copied_node, mode);
+    const goban_pasteBranch = () => pasteBranch(goban.current, copied_node, mode);
 
     /* Review stuff */
-
-    const syncToCurrentReviewMove = () => {
-        if (goban.current.engine.cur_review_move) {
-            goban.current.engine.jumpTo(goban.current.engine.cur_review_move);
-        } else {
-            setTimeout(syncToCurrentReviewMove, 50);
-        }
-    };
-
-    const frag_cancel_button = () => {
-        if (view_mode === "portrait") {
-            return (
-                <button className="bold cancel-button reject" onClick={cancelOrResign}>
-                    {resign_text}
-                </button>
-            );
-        } else {
-            return (
-                <button className="xs bold cancel-button" onClick={cancelOrResign}>
-                    {resign_text}
-                </button>
-            );
-        }
-    };
-    const frag_play_buttons = (show_cancel_button) => {
-        return (
-            <span className="play-buttons">
-                <span>
-                    {((cur_move_number >= 1 &&
-                        !goban?.current?.engine.rengo &&
-                        player_not_to_move === data.get("user").id &&
-                        !(
-                            goban.current.engine.undo_requested >=
-                            goban.current.engine.getMoveNumber()
-                        ) &&
-                        goban.current.submit_move == null) ||
-                        null) && (
-                        <button className="bold undo-button xs" onClick={undo}>
-                            {_("Undo")}
-                        </button>
-                    )}
-                    {show_undo_requested && (
-                        <span>
-                            {show_accept_undo && (
-                                <button
-                                    className="sm primary bold accept-undo-button"
-                                    onClick={goban_acceptUndo}
-                                >
-                                    {_("Accept Undo")}
-                                </button>
-                            )}
-                        </span>
-                    )}
-                </span>
-                <span>
-                    {((!show_submit &&
-                        is_my_move &&
-                        goban.current.engine.handicapMovesLeft() === 0) ||
-                        null) && (
-                        <button className="sm primary bold pass-button" onClick={pass}>
-                            {_("Pass")}
-                        </button>
-                    )}
-                    {((show_submit &&
-                        goban.current.engine.undo_requested !==
-                            goban.current.engine.getMoveNumber()) ||
-                        null) && (
-                        <button
-                            className="sm primary bold submit-button"
-                            id="game-submit-move"
-                            disabled={submitting_move}
-                            onClick={goban_submit_move}
-                        >
-                            {_("Submit Move")}
-                        </button>
-                    )}
-                </span>
-                <span>
-                    {((show_cancel_button && user_is_player && phase !== "finished") || null) &&
-                        frag_cancel_button()}
-                </span>
-            </span>
-        );
-    };
 
     const variationKeyPress = (ev) => {
         if (ev.keyCode === 13) {
@@ -1114,638 +819,70 @@ export function Game(): JSX.Element {
             return false;
         }
     };
-
-    const frag_play_controls = (show_cancel_button) => {
-        const user = data.get("user");
-
-        if (!goban) {
-            return null;
-        }
-
-        const user_is_active_player = [
-            goban.current.engine.players.black.id,
-            goban.current.engine.players.white.id,
-        ].includes(user.id);
-
-        return (
-            <div className="play-controls">
-                <div className="game-action-buttons">
-                    {((mode === "play" && phase === "play") || null) &&
-                        frag_play_buttons(show_cancel_button)}
-                </div>
-                <div className="game-state">
-                    {((mode === "play" && phase === "play") || null) && (
-                        <span>
-                            {show_undo_requested ? (
-                                <span>{_("Undo Requested")}</span>
-                            ) : (
-                                <span>
-                                    {((show_title && !goban.current?.engine?.rengo) || null) && (
-                                        <span>{title}</span>
-                                    )}
-                                </span>
-                            )}
-                        </span>
-                    )}
-                    {((mode === "play" && phase === "stone removal") || null) && (
-                        <span>{_("Stone Removal Phase")}</span>
-                    )}
-
-                    {(mode === "analyze" || null) && (
-                        <span>
-                            {show_undo_requested ? (
-                                <span>{_("Undo Requested")}</span>
-                            ) : (
-                                <span>{_("Analyze Mode")}</span>
-                            )}
-                        </span>
-                    )}
-
-                    {(mode === "conditional" || null) && (
-                        <span>{_("Conditional Move Planner")}</span>
-                    )}
-
-                    {(mode === "score estimation" || null) && frag_estimate_score()}
-
-                    {((mode === "play" && phase === "finished") || null) && (
-                        <span style={{ textDecoration: annulled ? "line-through" : "none" }}>
-                            {winner
-                                ? interpolate(
-                                      pgettext("Game winner", "{{color}} wins by {{outcome}}"),
-                                      {
-                                          // When is winner an id?
-                                          color:
-                                              (winner as any) ===
-                                                  goban.current.engine.players.black.id ||
-                                              winner === "black"
-                                                  ? _("Black")
-                                                  : _("White"),
-                                          outcome: getOutcomeTranslation(
-                                              goban.current.engine.outcome,
-                                          ),
-                                      },
-                                  )
-                                : interpolate(pgettext("Game winner", "Tie by {{outcome}}"), {
-                                      outcome: pgettext(
-                                          "Game outcome",
-                                          goban.current.engine.outcome,
-                                      ),
-                                  })}
-                        </span>
-                    )}
-                </div>
-                <div className="annulled-indicator">
-                    {annulled &&
-                        pgettext(
-                            "Displayed to the user when the game is annulled",
-                            "Game Annulled",
-                        )}
-                </div>
-                {((phase === "play" &&
-                    mode === "play" &&
-                    paused &&
-                    goban.current.pause_control &&
-                    goban.current.pause_control.paused) ||
-                    null) && (
-                    <div className="pause-controls">
-                        <h3>{_("Game Paused")}</h3>
-                        {(user_is_player || user.is_moderator || null) && (
-                            <button className="info" onClick={goban_resumeGame}>
-                                {_("Resume")}
-                            </button>
-                        )}
-                        <div>
-                            {goban.current.engine.players.black.id ===
-                                goban.current.pause_control.paused.pausing_player_id ||
-                            (goban.current.engine.rengo &&
-                                goban.current.engine.rengo_teams.black
-                                    .map((p) => p.id)
-                                    .includes(goban.current.pause_control.paused.pausing_player_id))
-                                ? interpolate(_("{{pauses_left}} pauses left for Black"), {
-                                      pauses_left: goban.current.pause_control.paused.pauses_left,
-                                  })
-                                : interpolate(_("{{pauses_left}} pauses left for White"), {
-                                      pauses_left: goban.current.pause_control.paused.pauses_left,
-                                  })}
-                        </div>
-                    </div>
-                )}
-
-                {((goban.current.pause_control &&
-                    goban.current.pause_control.moderator_paused &&
-                    user.is_moderator) ||
-                    null) && (
-                    <div className="pause-controls">
-                        <h3>{_("Paused by Moderator")}</h3>
-                        <button className="info" onClick={goban_resumeGame}>
-                            {_("Resume")}
-                        </button>
-                    </div>
-                )}
-                {(phase === "finished" || null) && (
-                    <div className="analyze-mode-buttons">
-                        {" "}
-                        {/* not really analyze mode, but equivalent button position and look*/}
-                        {((user_is_player &&
-                            mode !== "score estimation" &&
-                            !goban.current.engine.rengo) ||
-                            null) && (
-                            <button onClick={rematch} className="primary">
-                                {_("Rematch")}
-                            </button>
-                        )}
-                        {(review_list.length > 0 || null) && (
-                            <div className="review-list">
-                                <h3>{_("Reviews")}</h3>
-                                {review_list.map((review, idx) => (
-                                    <div key={idx}>
-                                        <Player user={review.owner} icon></Player> -{" "}
-                                        <Link to={`/review/${review.id}`}>{_("view")}</Link>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                        {(return_url.current || null) && (
-                            <div className="return-url">
-                                <a href={return_url.current} rel="noopener">
-                                    {interpolate(
-                                        pgettext(
-                                            "Link to where the user came from",
-                                            "Return to {{url}}",
-                                        ),
-                                        {
-                                            url: return_url.current,
-                                        },
-                                    )}
-                                </a>
-                            </div>
-                        )}
-                    </div>
-                )}
-                {(phase === "stone removal" || null) && (
-                    <div className="stone-removal-controls">
-                        <div>
-                            {(user_is_active_player || user.is_moderator || null) && ( // moderators see the button, with its timer, but can't press it
-                                <button
-                                    id="game-stone-removal-accept"
-                                    className={
-                                        user.is_moderator && !user_is_active_player ? "" : "primary"
-                                    }
-                                    disabled={user.is_moderator && !user_is_active_player}
-                                    onClick={onStoneRemovalAccept}
-                                >
-                                    {_("Accept removed stones")}
-                                    <Clock goban={goban.current} color="stone-removal" />
-                                </button>
-                            )}
-                        </div>
-                        <br />
-                        <div style={{ textAlign: "center" }}>
-                            <div style={{ textAlign: "left", display: "inline-block" }}>
-                                <div>
-                                    {(black_accepted || null) && (
-                                        <i
-                                            className="fa fa-check"
-                                            style={{ color: "green", width: "1.5em" }}
-                                        ></i>
-                                    )}
-                                    {(!black_accepted || null) && (
-                                        <i
-                                            className="fa fa-times"
-                                            style={{ color: "red", width: "1.5em" }}
-                                        ></i>
-                                    )}
-                                    {goban.current.engine.players.black.username}
-                                </div>
-                                <div>
-                                    {(white_accepted || null) && (
-                                        <i
-                                            className="fa fa-check"
-                                            style={{ color: "green", width: "1.5em" }}
-                                        ></i>
-                                    )}
-                                    {(!white_accepted || null) && (
-                                        <i
-                                            className="fa fa-times"
-                                            style={{ color: "red", width: "1.5em" }}
-                                        ></i>
-                                    )}
-                                    {goban.current.engine.players.white.username}
-                                </div>
-                            </div>
-                        </div>
-                        <br />
-
-                        <div style={{ textAlign: "center" }}>
-                            {(user_is_player || null) && (
-                                <button
-                                    id="game-stone-removal-auto-score"
-                                    onClick={onStoneRemovalAutoScore}
-                                >
-                                    {_("Auto-score")}
-                                </button>
-                            )}
-                        </div>
-                        <div style={{ textAlign: "center" }}>
-                            {(user_is_player || null) && (
-                                <button
-                                    id="game-stone-removal-cancel"
-                                    onClick={onStoneRemovalCancel}
-                                >
-                                    {_("Cancel and resume game")}
-                                </button>
-                            )}
-                        </div>
-
-                        <div className="explanation">
-                            {_(
-                                "In this phase, both players select and agree upon which groups should be considered captured and should be removed for the purposes of scoring.",
-                            )}
-                        </div>
-
-                        {null /* just going to disable this for now, no one cares I don't think */ &&
-                            (rules === "japanese" || rules === "korean" || null) && (
-                                <div
-                                    style={{
-                                        paddingTop: "2rem",
-                                        paddingBottom: "2rem",
-                                        textAlign: "center",
-                                    }}
-                                >
-                                    <label
-                                        style={{ display: "inline-block" }}
-                                        htmlFor="strict-seki-mode"
-                                    >
-                                        {pgettext(
-                                            "Enable Japanese territory in seki rule",
-                                            "Strict Scoring",
-                                        )}
-                                    </label>
-                                    <input
-                                        style={{ marginTop: "-0.2em" }}
-                                        name="strict-seki-mode"
-                                        type="checkbox"
-                                        checked={strict_seki_mode}
-                                        disabled={!user_is_player}
-                                        onChange={setStrictSekiMode}
-                                    ></input>
-                                </div>
-                            )}
-                    </div>
-                )}
-                {(mode === "conditional" || null) && (
-                    <div className="conditional-move-planner">
-                        <div className="buttons">
-                            <button className="primary" onClick={acceptConditionalMoves}>
-                                {_("Accept Conditional moves")}
-                            </button>
-                            <button onClick={goban_setMode_play}>{_("Cancel")}</button>
-                        </div>
-                        <div className="ctrl-conditional-tree">
-                            <hr />
-                            <span className="move-current" onClick={goban_jumpToLastOfficialMove}>
-                                {_("Current Move")}
-                            </span>
-                            <PersistentElement elt={conditional_move_tree.current} />
-                        </div>
-                    </div>
-                )}
-                {(mode === "analyze" || null) && (
-                    <div>
-                        {frag_analyze_button_bar()}
-
-                        <Resizable
-                            id="move-tree-container"
-                            className="vertically-resizable"
-                            ref={setMoveTreeContainer}
-                        />
-
-                        {(!zen_mode || null) && (
-                            <div style={{ padding: "0.5em" }}>
-                                <div className="input-group">
-                                    <input
-                                        type="text"
-                                        className={`form-control ${selected_chat_log}`}
-                                        placeholder={_("Variation name...")}
-                                        value={variation_name}
-                                        onChange={updateVariationName}
-                                        onKeyDown={variationKeyPress}
-                                        disabled={user.anonymous}
-                                    />
-                                    <ShareAnalysisButton
-                                        selected_chat_log={selected_chat_log}
-                                        isUserAnonymous={user.anonymous}
-                                        shareAnalysis={shareAnalysis}
-                                    />
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
-                {((mode === "play" &&
-                    phase === "play" &&
-                    goban.current.isAnalysisDisabled() &&
-                    cur_move_number < official_move_number) ||
-                    null) && (
-                    <div className="analyze-mode-buttons">
-                        <span>
-                            <button className="sm primary bold" onClick={goban_setModeDeferredPlay}>
-                                {_("Back to Game")}
-                            </button>
-                        </span>
-                    </div>
-                )}
-                {(mode === "score estimation" || null) && (
-                    <div className="analyze-mode-buttons">
-                        <span>
-                            <button className="sm primary bold" onClick={stopEstimatingScore}>
-                                {_("Back to Board")}
-                            </button>
-                        </span>
-                    </div>
-                )}
-            </div>
-        );
-    };
-    const frag_review_controls = () => {
-        const user = data.get("user");
-
-        if (!goban) {
-            return null;
-        }
-
-        return (
-            <div className="play-controls">
-                <div className="game-state">
-                    {(mode === "analyze" || null) && (
-                        <div>
-                            {_("Review by")}: <Player user={review_owner_id} />
-                            {((review_controller_id && review_controller_id !== review_owner_id) ||
-                                null) && (
-                                <div>
-                                    {_("Review controller")}: <Player user={review_controller_id} />
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {(mode === "score estimation" || null) && <div>{frag_estimate_score()}</div>}
-                </div>
-                {(mode === "analyze" || null) && (
-                    <div>
-                        {frag_analyze_button_bar()}
-
-                        <div className="space-around">
-                            {review_controller_id &&
-                                review_controller_id !== user.id &&
-                                review_out_of_sync && (
-                                    <button className="sm" onClick={syncToCurrentReviewMove}>
-                                        {pgettext("Synchronize to current review position", "Sync")}{" "}
-                                        <i className="fa fa-refresh" />
-                                    </button>
-                                )}
-                        </div>
-
-                        <Resizable
-                            id="move-tree-container"
-                            className="vertically-resizable"
-                            ref={setMoveTreeContainer}
-                        />
-
-                        <div style={{ paddingLeft: "0.5em", paddingRight: "0.5em" }}>
-                            <textarea
-                                id="game-move-node-text"
-                                placeholder={_("Move comments...")}
-                                rows={5}
-                                className="form-control"
-                                value={move_text}
-                                disabled={review_controller_id !== data.get("user").id}
-                                onChange={updateMoveText}
-                            ></textarea>
-                        </div>
-
-                        <div style={{ padding: "0.5em" }}>
-                            <div className="input-group">
-                                <input
-                                    type="text"
-                                    className={`form-control ${selected_chat_log}`}
-                                    placeholder={_("Variation name...")}
-                                    value={variation_name}
-                                    onChange={updateVariationName}
-                                    onKeyDown={variationKeyPress}
-                                    disabled={user.anonymous}
-                                />
-                                <button
-                                    className="sm"
-                                    type="button"
-                                    disabled={user.anonymous}
-                                    onClick={shareAnalysis}
-                                >
-                                    {_("Share")}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-                {(mode === "score estimation" || null) && (
-                    <div className="analyze-mode-buttons">
-                        <span>
-                            <button className="sm primary bold" onClick={stopEstimatingScore}>
-                                {_("Back to Review")}
-                            </button>
-                        </span>
-                    </div>
-                )}
-            </div>
-        );
-    };
-    const frag_estimate_score = () => {
-        return (
-            <span>
-                {(score_estimate_winner || null) && (
-                    <span>
-                        {interpolate(_("{{winner}} by {{score}}"), {
-                            winner: score_estimate_winner,
-                            score: score_estimate_amount?.toFixed(1),
-                        })}
-                    </span>
-                )}
-                {(!score_estimate_winner || null) && <span>{_("Estimating...")}</span>}
-            </span>
-        );
-    };
+    const frag_estimate_score = () => (
+        <EstimateScore
+            score_estimate_winner={score_estimate_winner}
+            score_estimate_amount={score_estimate_amount}
+        />
+    );
     const frag_analyze_button_bar = () => {
         return (
-            <div className="game-analyze-button-bar">
-                <div className="btn-group">
-                    <button
-                        onClick={() => setAnalyzeTool("stone", "alternate")}
-                        title={_("Place alternating stones")}
-                        className={
-                            "stone-button " +
-                            (analyze_tool === "stone" &&
-                            analyze_subtool !== "black" &&
-                            analyze_subtool !== "white"
-                                ? "active"
-                                : "")
-                        }
-                    >
-                        <img
-                            alt="alternate"
-                            src={data.get("config.cdn_release") + "/img/black-white.png"}
-                        />
-                    </button>
-
-                    <button
-                        onClick={() => setAnalyzeTool("stone", "black")}
-                        title={_("Place black stones")}
-                        className={
-                            "stone-button " +
-                            (analyze_tool === "stone" && analyze_subtool === "black"
-                                ? "active"
-                                : "")
-                        }
-                    >
-                        <img
-                            alt="alternate"
-                            src={data.get("config.cdn_release") + "/img/black.png"}
-                        />
-                    </button>
-
-                    <button
-                        onClick={() => setAnalyzeTool("stone", "white")}
-                        title={_("Place white stones")}
-                        className={
-                            "stone-button " +
-                            (analyze_tool === "stone" && analyze_subtool === "white"
-                                ? "active"
-                                : "")
-                        }
-                    >
-                        <img
-                            alt="alternate"
-                            src={data.get("config.cdn_release") + "/img/white.png"}
-                        />
-                    </button>
-                </div>
-
-                <div className="btn-group">
-                    <button
-                        onClick={() => setAnalyzeTool("draw", analyze_pencil_color)}
-                        title={_("Draw on the board with a pen")}
-                        className={analyze_tool === "draw" ? "active" : ""}
-                    >
-                        <i className="fa fa-pencil"></i>
-                    </button>
-                    <button onClick={clearAnalysisDrawing} title={_("Clear pen marks")}>
-                        <i className="fa fa-eraser"></i>
-                    </button>
-                </div>
-                <input
-                    type="color"
-                    value={analyze_pencil_color}
-                    title={_("Select pen color")}
-                    onChange={setPencilColor}
-                />
-
-                <div className="btn-group">
-                    <button onClick={goban_copyBranch} title={_("Copy this branch")}>
-                        <i className="fa fa-clone"></i>
-                    </button>
-                    <button
-                        disabled={copied_node.current === null}
-                        onClick={goban_pasteBranch}
-                        title={_("Paste branch")}
-                    >
-                        <i className="fa fa-clipboard"></i>
-                    </button>
-                    <button onClick={goban_deleteBranch} title={_("Delete branch")}>
-                        <i className="fa fa-trash"></i>
-                    </button>
-                </div>
-
-                <div className="btn-group">
-                    <button
-                        onClick={() => setAnalyzeTool("label", "letters")}
-                        title={_("Place alphabetical labels")}
-                        className={
-                            analyze_tool === "label" && analyze_subtool === "letters"
-                                ? "active"
-                                : ""
-                        }
-                    >
-                        <i className="fa fa-font"></i>
-                    </button>
-                    <button
-                        onClick={() => setAnalyzeTool("label", "numbers")}
-                        title={_("Place numeric labels")}
-                        className={
-                            analyze_tool === "label" && analyze_subtool === "numbers"
-                                ? "active"
-                                : ""
-                        }
-                    >
-                        <i className="ogs-label-number"></i>
-                    </button>
-                    <button
-                        onClick={() => setAnalyzeTool("label", "triangle")}
-                        title={_("Place triangle marks")}
-                        className={
-                            analyze_tool === "label" && analyze_subtool === "triangle"
-                                ? "active"
-                                : ""
-                        }
-                    >
-                        <i className="ogs-label-triangle"></i>
-                    </button>
-                    <button
-                        onClick={() => setAnalyzeTool("label", "square")}
-                        title={_("Place square marks")}
-                        className={
-                            analyze_tool === "label" && analyze_subtool === "square" ? "active" : ""
-                        }
-                    >
-                        <i className="ogs-label-square"></i>
-                    </button>
-                    <button
-                        onClick={() => setAnalyzeTool("label", "circle")}
-                        title={_("Place circle marks")}
-                        className={
-                            analyze_tool === "label" && analyze_subtool === "circle" ? "active" : ""
-                        }
-                    >
-                        <i className="ogs-label-circle"></i>
-                    </button>
-                    <button
-                        onClick={() => setAnalyzeTool("label", "cross")}
-                        title={_("Place X marks")}
-                        className={
-                            analyze_tool === "label" && analyze_subtool === "cross" ? "active" : ""
-                        }
-                    >
-                        <i className="ogs-label-x"></i>
-                    </button>
-                </div>
-                <div className="analyze-mode-buttons">
-                    {(mode === "analyze" || null) && (
-                        <span>
-                            {(!review_id || null) && (
-                                <button
-                                    className="sm primary bold"
-                                    onClick={goban_setModeDeferredPlay}
-                                >
-                                    {_("Back to Game")}
-                                </button>
-                            )}
-                            <button className="sm primary bold pass-button" onClick={analysis_pass}>
-                                {_("Pass")}
-                            </button>
-                        </span>
-                    )}
-                </div>
-            </div>
+            <AnalyzeButtonBar
+                setAnalyzePencilColor={set_analyze_pencil_color}
+                analyze_pencil_color={analyze_pencil_color}
+                setAnalyzeTool={setAnalyzeTool}
+                goban={goban.current}
+                forceUpdate={forceUpdate}
+                is_review={!!review_id}
+                mode={mode}
+                copied_node={copied_node}
+            />
         );
     };
+    const frag_review_controls = () => (
+        <ReviewControls
+            mode={mode}
+            goban={goban.current}
+            review_id={review_id}
+            renderEstimateScore={frag_estimate_score}
+            renderAnalyzeButtonBar={frag_analyze_button_bar}
+            setMoveTreeContainer={setMoveTreeContainer}
+            onShareAnalysis={shareAnalysis}
+            variation_name={variation_name}
+            updateVariationName={updateVariationName}
+            variationKeyPress={variationKeyPress}
+            selected_chat_log={selected_chat_log}
+            stopEstimatingScore={stopEstimatingScore}
+        />
+    );
+    const frag_play_controls = (show_cancel: boolean) => (
+        <PlayControls
+            goban={goban.current}
+            show_cancel={show_cancel}
+            player_to_move={player_to_move}
+            onCancel={cancelOrResign}
+            resign_text={resign_text}
+            view_mode={view_mode}
+            user_is_player={user_is_player}
+            review_list={review_list}
+            stashed_conditional_moves={stashed_conditional_moves.current}
+            mode={mode}
+            phase={phase}
+            title={title}
+            show_title={show_title}
+            renderEstimateScore={frag_estimate_score}
+            renderAnalyzeButtonBar={frag_analyze_button_bar}
+            setMoveTreeContainer={setMoveTreeContainer}
+            onShareAnalysis={shareAnalysis}
+            variation_name={variation_name}
+            updateVariationName={updateVariationName}
+            variationKeyPress={variationKeyPress}
+            annulled={annulled}
+            zen_mode={zen_mode}
+            selected_chat_log={selected_chat_log}
+            stopEstimatingScore={stopEstimatingScore}
+        />
+    );
 
     const frag_ai_review = () => {
         if (
@@ -1888,63 +1025,6 @@ export function Game(): JSX.Element {
         );
     };
 
-    const renderExtraPlayerActions = (player_id: number) => {
-        const user = data.get("user");
-        if (
-            review_id &&
-            goban &&
-            (goban.current.review_controller_id === user.id ||
-                goban.current.review_owner_id === user.id)
-        ) {
-            let is_owner = null;
-            let is_controller = null;
-            if (goban.current.review_owner_id === player_id) {
-                is_owner = (
-                    <div style={{ fontStyle: "italic" }}>
-                        {_("Owner") /* translators: Review owner */}
-                    </div>
-                );
-            }
-            if (goban.current.review_controller_id === player_id) {
-                is_controller = (
-                    <div style={{ fontStyle: "italic" }}>
-                        {_("Controller") /* translators: Review controller */}
-                    </div>
-                );
-            }
-
-            const give_control = (
-                <button
-                    className="xs"
-                    onClick={() => {
-                        goban.current.giveReviewControl(player_id);
-                        close_all_popovers();
-                    }}
-                >
-                    {_("Give Control") /* translators: Give control in review or on a demo board */}
-                </button>
-            );
-
-            if (player_id === goban.current.review_owner_id) {
-                return (
-                    <div>
-                        {is_owner}
-                        {is_controller}
-                        <div className="actions">{give_control}</div>
-                    </div>
-                );
-            }
-
-            return (
-                <div>
-                    {is_owner}
-                    {is_controller}
-                    <div className="actions">{give_control}</div>
-                </div>
-            );
-        }
-        return null;
-    };
     const setMoveTreeContainer = (resizable: Resizable): void => {
         ref_move_tree_container.current = resizable ? resizable.div : null;
         if (goban.current) {
@@ -1956,21 +1036,12 @@ export function Game(): JSX.Element {
     React.useEffect(() => {
         game_control.last_variation_number = 0;
 
-        try {
-            return_url.current =
-                new URLSearchParams(window.location.search).get("return") || undefined;
-        } catch (e) {
-            console.error(e);
-        }
-
-        conditional_move_tree.current = $("<div class='conditional-move-tree-container'/>")[0];
         goban_div.current = document.createElement("div");
         goban_div.current.className = "Goban";
         /* end constructor */
 
         set_portrait_tab("game");
         set_estimating_score(false);
-        set_show_submit(false);
         set_autoplaying(false);
         set_review_list([]);
         set_historical_black(null);
@@ -1979,7 +1050,6 @@ export function Game(): JSX.Element {
         game_control.on("stopEstimatingScore", stopEstimatingScore);
         game_control.on("gotoMove", nav_goto_move);
 
-        setExtraActionCallback(renderExtraPlayerActions);
         $(window).on("focus", onFocus);
 
         /*** BEGIN initialize ***/
@@ -2052,9 +1122,6 @@ export function Game(): JSX.Element {
             goban.current.setMode("analyze");
         }
 
-        goban.current.on("submitting-move", (tf) => {
-            set_submitting_move(tf);
-        });
         goban.current.on("gamedata", () => {
             const user = data.get("user");
             try {
@@ -2173,16 +1240,6 @@ export function Game(): JSX.Element {
         });
 
         /* Ensure our state is kept up to date */
-        const sync_show_submit = () => {
-            set_show_submit(
-                !!goban.current.submit_move &&
-                    goban.current.engine.cur_move &&
-                    goban.current.engine.cur_move.parent &&
-                    goban.current.engine.last_official_move &&
-                    goban.current.engine.cur_move.parent.id ===
-                        goban.current.engine.last_official_move.id,
-            );
-        };
 
         const sync_resign_text = () => {
             if (goban.current.engine.gameCanBeCanceled()) {
@@ -2194,31 +1251,6 @@ export function Game(): JSX.Element {
             }
         };
 
-        const sync_move_text = () => set_move_text(goban.current.engine.cur_move?.text || "");
-
-        const sync_show_undo_requested = () => {
-            if (game_control.in_pushed_analysis) {
-                return;
-            }
-
-            set_show_undo_requested(
-                goban.current.engine.undo_requested ===
-                    goban.current.engine.last_official_move.move_number,
-            );
-        };
-
-        const sync_show_accept_undo = () => {
-            if (game_control.in_pushed_analysis) {
-                return;
-            }
-
-            set_show_accept_undo(
-                goban.current.engine.playerToMove() === data.get("user").id ||
-                    (goban.current.submit_move != null &&
-                        goban.current.engine.playerNotToMove() === data.get("user").id) ||
-                    null,
-            );
-        };
         const sync_show_title = () =>
             set_show_title(
                 !goban.current.submit_move ||
@@ -2228,38 +1260,10 @@ export function Game(): JSX.Element {
 
         const sync_move_info = () => {
             set_player_to_move(goban.current.engine.playerToMove());
-            set_player_not_to_move(goban.current.engine.playerNotToMove());
-
-            const real_player_to_move =
-                goban.current.engine.last_official_move?.player === JGOFNumericPlayerColor.BLACK
-                    ? goban.current.engine.players.white.id
-                    : goban.current.engine.players.black.id;
-            set_is_my_move(real_player_to_move === data.get("user").id);
         };
 
         const sync_stone_removal = () => {
             const engine = goban.current.engine;
-            if (engine.phase === "stone removal") {
-                const stone_removals = engine.getStoneRemovalString();
-
-                if (stone_removal_accept_timeout.current) {
-                    clearTimeout(stone_removal_accept_timeout.current);
-                }
-
-                // TODO: Convert this way old jquery crap to React
-                const gsra = $("#game-stone-removal-accept");
-                gsra.prop("disabled", true);
-                stone_removal_accept_timeout.current = setTimeout(
-                    () => {
-                        gsra.prop("disabled", false);
-                        stone_removal_accept_timeout.current = null;
-                    },
-                    device.is_mobile ? 3000 : 1500,
-                );
-
-                set_black_accepted(engine.players["black"].accepted_stones === stone_removals);
-                set_white_accepted(engine.players["white"].accepted_stones === stone_removals);
-            }
 
             if (
                 (engine.phase === "stone removal" || engine.phase === "finished") &&
@@ -2278,64 +1282,19 @@ export function Game(): JSX.Element {
             }
         };
 
-        const sync_conditional_tree = () => {
-            if (goban.current.mode === "conditional") {
-                const tree = $(conditional_move_tree.current);
-                tree.empty();
-                selected_conditional_move.current = null;
-                conditional_move_list.current = [];
-                const elts = createConditionalMoveTreeDisplay(
-                    goban.current,
-                    selected_conditional_move,
-                    conditional_move_list,
-                    goban.current.conditional_tree,
-                    "",
-                    goban.current.conditional_starting_color === "black",
-                );
-                for (let i = 0; i < elts.length; ++i) {
-                    tree.append(elts[i]);
-                }
-            }
-        };
-
-        const sync_review_out_of_sync = () => {
-            const engine = goban.current.engine;
-            set_review_out_of_sync(
-                engine.cur_move &&
-                    engine.cur_review_move &&
-                    engine.cur_move.id !== engine.cur_review_move.id,
-            );
-        };
-
         const onLoad = () => {
             const engine = goban.current.engine;
             set_mode(goban.current.mode);
             set_phase(engine.phase);
             set_title(goban.current.title);
-            set_cur_move_number(engine.cur_move?.move_number || -1);
-            set_official_move_number(engine.last_official_move?.move_number || -1);
-            set_analyze_tool(goban.current.analyze_tool);
-            set_analyze_subtool(goban.current.analyze_subtool);
-            set_review_owner_id(goban.current.review_owner_id);
-            set_review_controller_id(goban.current.review_controller_id);
 
-            set_strict_seki_mode(engine.strict_seki_mode);
-            set_rules(engine.rules);
-            set_winner(goban.current.engine.winner);
             set_score_estimate_winner(undefined);
             set_undo_requested(engine.undo_requested);
-            set_paused(goban.current.pause_control && !!goban.current.pause_control.paused);
 
-            sync_show_submit();
             sync_resign_text();
-            sync_move_text();
-            sync_show_undo_requested();
-            sync_show_accept_undo();
             sync_show_title();
             sync_move_info();
             sync_stone_removal();
-            sync_conditional_tree();
-            sync_review_out_of_sync();
 
             // These are only updated on load events
             set_user_is_player(engine.isParticipant(data.get("user").id));
@@ -2373,45 +1332,22 @@ export function Game(): JSX.Element {
         goban.current.on("phase", () => goban.current.engine.cur_move.clearMarks());
         goban.current.on("title", set_title);
         goban.current.on("cur_move", () => set_score(goban.current.engine.computeScore(true)));
-        goban.current.on("cur_move", (move) => set_cur_move_number(move.move_number));
-        goban.current.on("last_official_move", (move) =>
-            set_official_move_number(move.move_number),
-        );
-        goban.current.on("analyze_tool", set_analyze_tool);
-        goban.current.on("analyze_subtool", set_analyze_subtool);
-        goban.current.on("strict_seki_mode", set_strict_seki_mode);
-        goban.current.on("rules", set_rules);
-        goban.current.on("winner", set_winner);
         goban.current.on("score_estimate", (est) => {
             set_score_estimate_winner(est?.winner || "");
             set_score_estimate_amount(est?.amount || "");
         });
         goban.current.on("undo_requested", set_undo_requested);
-        goban.current.on("submit_move", sync_show_submit);
-        goban.current.on("last_official_move", sync_show_submit);
-        goban.current.on("cur_move", sync_show_submit);
         goban.current.on("cur_move", sync_resign_text);
-        goban.current.on("cur_move", sync_move_text);
-        goban.current.on("undo_requested", sync_show_undo_requested);
-        goban.current.on("last_official_move", sync_show_undo_requested);
         goban.current.on("cur_move", sync_show_title);
-        goban.current.on("cur_move", sync_show_accept_undo);
         goban.current.on("submit_move", sync_show_title);
-        goban.current.on("submit_move", sync_show_accept_undo);
         goban.current.on("cur_move", sync_move_info);
         goban.current.on("last_official_move", sync_move_info);
-        goban.current.on("paused", set_paused);
-        goban.current.on("review_owner_id", set_review_owner_id);
-        goban.current.on("review_controller_id", set_review_controller_id);
 
         goban.current.on("phase", sync_stone_removal);
         goban.current.on("mode", sync_stone_removal);
         goban.current.on("outcome", sync_stone_removal);
         goban.current.on("stone-removal.accepted", sync_stone_removal);
         goban.current.on("stone-removal.updated", sync_stone_removal);
-        goban.current.on("mode", sync_conditional_tree);
-        goban.current.on("conditional-moves.updated", sync_conditional_tree);
-        goban.current.on("cur_move", sync_review_out_of_sync);
 
         /* END sync_state port */
 
@@ -2481,10 +1417,6 @@ export function Game(): JSX.Element {
         });
 
         if (review_id) {
-            goban.current.on("review.sync-to-current-move", () => {
-                syncToCurrentReviewMove();
-            });
-
             let stashed_move_string = null;
             let stashed_review_id = null;
             /* If we lose connection, save our place when we reconnect so we can jump to it. */
@@ -2750,8 +1682,11 @@ export function Game(): JSX.Element {
                         !zen_mode &&
                         user_is_player &&
                         phase !== "finished") ||
-                        null) &&
-                        frag_cancel_button()}
+                        null) && (
+                        <CancelButton view_mode={view_mode} onClick={cancelOrResign}>
+                            {resign_text}
+                        </CancelButton>
+                    )}
 
                     {((view_mode === "portrait" && !zen_mode && portrait_tab === "game") ||
                         null) && (
@@ -3267,133 +2202,4 @@ function bindAudioEvents(goban: Goban): void {
             sfx.play(audio_to_play);
         }
     });
-}
-
-function createConditionalMoveTreeDisplay(
-    goban: Goban,
-    selected_conditional_move: React.MutableRefObject<any | undefined>,
-    conditional_move_list: React.MutableRefObject<any[]>,
-    root: any,
-    cpath: string,
-    blacks_move: boolean,
-) {
-    const mkcb = (path: string) => {
-        return () => {
-            goban.jumpToLastOfficialMove();
-            goban.followConditionalPath(path);
-            goban.redraw();
-        };
-    };
-    const mkdelcb = (path: string) => {
-        return () => {
-            goban.jumpToLastOfficialMove();
-            goban.deleteConditionalPath(path);
-            goban.redraw();
-        };
-    };
-
-    const color1 = blacks_move ? "black" : "white";
-    const color2 = blacks_move ? "white" : "black";
-
-    let ret = null;
-    const ul = $("<ul>").addClass("tree");
-    if (root.move) {
-        if (cpath + root.move === goban.getCurrentConditionalPath()) {
-            selected_conditional_move.current = cpath + root.move;
-        }
-        conditional_move_list.current.push(cpath + root.move);
-
-        const mv = goban.engine.decodeMoves(root.move)[0];
-
-        const delete_icon = $("<i>")
-            .addClass("fa fa-times")
-            .addClass("delete-move")
-            .click(mkdelcb(cpath + root.move));
-
-        ret = [
-            $("<span>")
-                .addClass("entry")
-                .append($("<span>").addClass("stone " + color2))
-                .append($("<span>").html(goban.engine.prettyCoords(mv.x, mv.y)))
-                .addClass(cpath + root.move === goban.getCurrentConditionalPath() ? "selected" : "")
-                .click(mkcb(cpath + root.move)),
-        ];
-
-        if (cpath + root.move === goban.getCurrentConditionalPath()) {
-            // selected move
-            ret.push(delete_icon);
-        }
-        ret.push(ul);
-
-        cpath += root.move;
-    } else {
-        ret = [ul];
-    }
-
-    for (const ch in root.children) {
-        if (cpath + ch === goban.getCurrentConditionalPath()) {
-            selected_conditional_move.current = cpath + ch;
-        }
-        conditional_move_list.current.push(cpath + ch);
-
-        const li = $("<li>").addClass("move-row");
-        const mv = goban.engine.decodeMoves(ch)[0];
-        const span = $("<span>")
-            .addClass("entry")
-            .append($("<span>").addClass("stone " + color1))
-            .append($("<span>").html(goban.engine.prettyCoords(mv.x, mv.y)))
-            .addClass(cpath + ch === goban.getCurrentConditionalPath() ? "selected" : "")
-            .click(mkcb(cpath + ch));
-        li.append(span);
-
-        const elts = createConditionalMoveTreeDisplay(
-            goban,
-            selected_conditional_move,
-            conditional_move_list,
-            root.children[ch],
-            cpath + ch,
-            blacks_move,
-        );
-        for (let i = 0; i < elts.length; ++i) {
-            li.append(elts[i]);
-        }
-
-        ul.append(li);
-    }
-    return ret;
-}
-
-interface ShareAnalysisButtonProperties {
-    selected_chat_log: ChatMode;
-    shareAnalysis: () => void;
-    isUserAnonymous: boolean;
-}
-
-function ShareAnalysisButton(props: ShareAnalysisButtonProperties): JSX.Element {
-    const { selected_chat_log, isUserAnonymous, shareAnalysis } = props;
-    switch (selected_chat_log) {
-        case "malkovich":
-        case "personal":
-            return (
-                <button
-                    className="sm {selected_chat_log}"
-                    type="button"
-                    disabled={isUserAnonymous}
-                    onClick={shareAnalysis}
-                >
-                    {_("Record")}
-                </button>
-            );
-        default:
-            return (
-                <button
-                    className="sm"
-                    type="button"
-                    disabled={isUserAnonymous}
-                    onClick={shareAnalysis}
-                >
-                    {_("Share")}
-                </button>
-            );
-    }
 }
