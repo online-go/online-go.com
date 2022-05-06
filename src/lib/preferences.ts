@@ -113,6 +113,9 @@ export const defaults = {
     "moderator.join-games-anonymously": true,
 
     "table-color-default-on": false,
+
+    "game-history-size-filter": "all",
+    "game-history-ranked-filter": "all",
 };
 
 defaults["profanity-filter"][current_language] = true;
