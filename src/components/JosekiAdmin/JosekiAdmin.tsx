@@ -139,7 +139,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
         // And if there was one, revert it then move on to the next after the previous is done.
         if (current_selections.get(next_selection)) {
             const target_id = next_selection.substring(7); //  get rid of the wierd "select-" from SelectTable
-            // console.log("Revert requested for ", target_id);
+
             fetch(this.props.server_url + "revert", {
                 method: "post",
                 mode: "cors",
@@ -149,7 +149,6 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                 .then((res) => res.json())
                 .then((body) => {
                     // Display the result of what happened
-                    // console.log("reversion result", body);
                     const next_selections = new Map(current_selections);
                     next_selections.set(next_selection, false);
                     const next_reversions = new Map(this.state.reversions);
@@ -282,8 +281,6 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
     };
 
     render = () => {
-        // console.log("Joseki Admin render");
-
         // Don't let the user select rows if they can't actually do anything with them.
         const AuditTable = this.props.user_can_administer ? SelectTable : ReactTable;
 

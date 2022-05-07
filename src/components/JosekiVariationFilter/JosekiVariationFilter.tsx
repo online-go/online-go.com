@@ -103,7 +103,6 @@ export function JosekiVariationFilter(props: JosekiVariationFilterProps) {
         //const tags = (e === null || e.length === 0) ? null : e.map(t => typeof(t) === 'number' ? t : t.value);
         const new_filter = { ...props.current_filter, tags };
 
-        // console.log("new tag filter", new_filter);
         props.set_variation_filter(new_filter); // tell parent the fiter changed, so the view needs to change
     };
 

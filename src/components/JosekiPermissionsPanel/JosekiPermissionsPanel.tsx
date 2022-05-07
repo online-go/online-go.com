@@ -64,8 +64,6 @@ export class JosekiPermissionsPanel extends React.PureComponent<
         })
             .then((response) => response.json()) // wait for the body of the response
             .then((body) => {
-                // console.log("Server response:", body);
-
                 this.setState({
                     can_comment: body.can_comment,
                     can_edit: body.can_edit,
