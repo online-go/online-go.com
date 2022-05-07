@@ -198,7 +198,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
     last_server_position = ""; // the most recent position that the server returned to us, used in backstepping
     last_placement = "";
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
-    current_marks: []; // the marks on the board - from the server, or from editing
+    current_marks: Array<{ label: string; position: string }>; // the marks on the board - from the server, or from editing
     load_sequence_to_board = false; // True if we need to load the stones from the whole sequence received from the server onto the board
     show_comments_requested = false; //  If there is a "show_comments" parameter in the URL
     previous_position = {} as any; // Saving the information of the node we have moved from, so we can get back to it
@@ -1018,7 +1018,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
         this.fetchNextFilteredMovesFor(this.state.current_node_id, filter);
     };
 
-    updateMarks = (marks) => {
+    updateMarks = (marks: Array<{ label: string; position: string }>) => {
         this.current_marks = marks;
         this.renderCurrentJosekiPosition();
     };
@@ -1978,7 +1978,7 @@ interface EditProps {
     tags: Array<any>; // TBD yuk what is this `any`
     contributor: number;
     save_new_info: (move_type, variation_label, tags, description, joseki_source, marks) => void;
-    update_marks: ({}) => void;
+    update_marks: (marks: Array<{ label: string; position: string }>) => void;
 }
 
 interface EditState {
