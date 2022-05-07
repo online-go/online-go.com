@@ -104,7 +104,6 @@ export function Game(): JSX.Element {
     const [user_is_player, set_user_is_player] = React.useState(false);
     const [zen_mode, set_zen_mode] = React.useState(false);
     const [autoplaying, set_autoplaying] = React.useState(false);
-    const [portrait_tab, set_portrait_tab] = React.useState<"game" | "chat" | "dock">("game");
     const [review_list, set_review_list] = React.useState([]);
     const [selected_chat_log, set_selected_chat_log] = React.useState<ChatMode>("main");
     const [variation_name, set_variation_name] = React.useState("");
@@ -567,24 +566,6 @@ export function Game(): JSX.Element {
         }
         set_ai_review_enabled(!ai_review_enabled);
     };
-    const togglePortraitTab = () => {
-        let portrait_tab = null;
-        switch (portrait_tab) {
-            case "game":
-                portrait_tab = "chat";
-                break;
-            case "chat":
-                portrait_tab = "game";
-                break;
-
-            case "dock":
-                portrait_tab = "game";
-                break;
-        }
-
-        set_portrait_tab(portrait_tab);
-        onResize();
-    };
     const updateVariationName = (ev) => {
         set_variation_name((ev.target as HTMLInputElement).value);
     };
@@ -924,25 +905,6 @@ export function Game(): JSX.Element {
     };
 
     const frag_below_board_controls = () => {
-        if (view_mode === "portrait" && portrait_tab === "dock") {
-            return (
-                <div className="action-bar">
-                    <span className="move-number">
-                        <i onClick={togglePortraitTab} className={"tab-icon ogs-goban"} />
-                    </span>
-                </div>
-            );
-        }
-
-        if (view_mode === "portrait" && portrait_tab === "chat") {
-            return (
-                <div className="action-bar">
-                    <span className="move-number">
-                        <i onClick={togglePortraitTab} className={"tab-icon ogs-goban"} />
-                    </span>
-                </div>
-            );
-        }
         return (
             <div className="action-bar">
                 <span className="icons" />
@@ -1040,7 +1002,6 @@ export function Game(): JSX.Element {
         goban_div.current.className = "Goban";
         /* end constructor */
 
-        set_portrait_tab("game");
         set_estimating_score(false);
         set_autoplaying(false);
         set_review_list([]);
@@ -1656,16 +1617,10 @@ export function Game(): JSX.Element {
                         />
                     )}
 
-                    {(view_mode !== "portrait" || portrait_tab === "game" || null) && (
-                        <div ref={ref_goban_container} className="goban-container">
-                            <ReactResizeDetector
-                                handleWidth
-                                handleHeight
-                                onResize={() => onResize()}
-                            />
-                            <PersistentElement className="Goban" elt={goban_div.current} />
-                        </div>
-                    )}
+                    <div ref={ref_goban_container} className="goban-container">
+                        <ReactResizeDetector handleWidth handleHeight onResize={() => onResize()} />
+                        <PersistentElement className="Goban" elt={goban_div.current} />
+                    </div>
 
                     {frag_below_board_controls()}
 
@@ -1688,8 +1643,7 @@ export function Game(): JSX.Element {
                         </CancelButton>
                     )}
 
-                    {((view_mode === "portrait" && !zen_mode && portrait_tab === "game") ||
-                        null) && (
+                    {((view_mode === "portrait" && !zen_mode) || null) && (
                         <GameDock
                             goban={goban.current}
                             annulled={annulled}
