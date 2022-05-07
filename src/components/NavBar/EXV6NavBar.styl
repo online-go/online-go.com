@@ -17,6 +17,7 @@
 
 v6-navbar-width= 17rem;
 v6-submenu-min-height = 9rem;
+hamburger-cutoff = 650px;
 
 header.NavBar {
     /body.zen & {
@@ -35,12 +36,139 @@ header.NavBar {
         themed color supporter
     }
 
+    /* desktop / wide screens */
+    @media (min-width: (hamburger-cutoff + 1px)) {
+        .menu {
+            display: block;
+            margin-left: 0.5rem;
+            position: relative;
+            height: v6-navbar-height;
+
+            .menu-children {
+                display: none;
+                position: absolute;
+                left: 0;
+                top: v6-navbar-height;
+                min-width: v6-navbar-width;
+                themed background-color navbar-background-color
+                //border-left: 0.2rem solid transparent;
+                box-shadow: 2px 4px 3px 0px rgba(0, 0, 0, 0.16);
+                z-index: z.nav-menu.menu;
+
+            }
+
+            *:hover {
+                themed background-color shade4
+            }
+            
+            &:hover, &.active {
+                themed background-color navbar-highlight-background-color
+                themed border-color primary
+                .menu-children {
+                    display: inline-flex;
+                    flex-direction: column;
+                    themed border-color primary
+                    themed background-color navbar-highlight-background-color
+                }
+            }
+
+            .submenu {
+                display: none;
+            }
+            .submenu-container:hover .submenu {
+                display: inline-flex;
+                flex-direction: column;
+                position: absolute;
+                top: 0;
+                min-height: v6-submenu-min-height;
+                left: v6-navbar-width;
+                themed background-color shade4
+                min-width: v6-navbar-width;
+                box-shadow: 2px 4px 3px 0px rgba(0, 0, 0, 0.16);
+                > a {
+                    display: inline-flex;
+                    align-items: center;
+                }
+            }
+        }
+    }
+
+    /* mobile */
+    @media only screen and (max-width: hamburger-cutoff) {
+        .left {
+            display: none !important;
+        }
+
+        &.hamburger-expanded .left {
+            display: inline-flex !important;
+            flex-direction: column;
+            themed background-color navbar-background-color
+            position: absolute;
+            top: v6-navbar-height
+            bottom: 0;
+            left: 0;
+            padding: 0;
+            align-items: flex-start;
+            max-height: "calc(100vh - %s)" % v6-navbar-height;
+            overflow-y: auto;
+            z-index: z.nav-menu.menu;
+
+            .menu {
+                width: 100vw;
+                display: flex;
+                flex-direction: column;
+                height: auto;
+                themed-important background-color navbar-background-color
+
+            }
+
+            .menutitle {
+                font-size: font-size-big
+            }
+
+            .menu-children {
+                display: inline-flex;
+                flex-direction: column;
+                position: static;
+                display: inline-flex;
+                flex-direction: column;
+                box-shadow: none;
+                flex-shrink: 0;
+                themed-important background-color navbar-background-color
+                padding-left: 2rem;
+
+            }
+
+            .submenu-container {
+                display: flex;
+                flex-direction: column;
+
+                .submenu {
+                    flex-shrink: 0;
+                    display: inline-flex;
+                    flex-direction: column;
+                    position: static;
+                    box-shadow: none;
+                    min-height: auto !important;
+                    themed-important background-color navbar-background-color
+                    padding-left: 2rem;
+                }
+            }
+        }
+    }
+
+    .hamburger {
+        display: none;
+        cursor: pointer;
+        @media only screen and (max-width: hamburger-cutoff) {
+            font-size: 1.7rem;
+            display: inline-flex;
+            align-items: center;
+            padding-left: 0.5rem;
+        }
+    }
+
     .menu {
-        display: block;
-        margin-left: 0.5rem;
-        position: relative;
-        height: v6-navbar-height;
-        //border-left: 0.2rem solid transparent;
         img {
             display: inline-block;
             width: 16px;
@@ -49,16 +177,6 @@ header.NavBar {
         }
 
         .menu-children {
-            display: none;
-            position: absolute;
-            left: 0;
-            top: v6-navbar-height;
-            min-width: v6-navbar-width;
-            themed background-color navbar-background-color
-            //border-left: 0.2rem solid transparent;
-            box-shadow: 2px 4px 3px 0px rgba(0, 0, 0, 0.16);
-            z-index: z.nav-menu.menu;
-
             .fa, .ogs-goban {
                 width: 16px;
                 max-width: 16px;
@@ -70,40 +188,6 @@ header.NavBar {
                 &.fa-graduation-cap {
                     font-size: 14px;
                 }
-            }
-        }
-
-        *:hover {
-            themed background-color shade4
-        }
-        
-        &:hover, &.active {
-            themed background-color navbar-highlight-background-color
-            themed border-color primary
-            .menu-children {
-                display: inline-flex;
-                flex-direction: column;
-                themed border-color primary
-                themed background-color navbar-highlight-background-color
-            }
-        }
-
-        .submenu {
-            display: none;
-        }
-        .submenu-container:hover .submenu {
-            display: inline-flex;
-            flex-direction: column;
-            position: absolute;
-            top: 0;
-            min-height: v6-submenu-min-height;
-            left: v6-navbar-width;
-            themed background-color shade4
-            min-width: v6-navbar-width;
-            box-shadow: 2px 4px 3px 0px rgba(0, 0, 0, 0.16);
-            > a {
-                display: inline-flex;
-                align-items: center;
             }
         }
     }
@@ -120,6 +204,14 @@ header.NavBar {
     .left {
         display: flex;
         align-items: center;
+        padding-left: 1rem;
+        .menutitle {
+            display: inline-block;
+            line-height: v6-navbar-height;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+
         a, .fakelink {
             display: inline-block;
             line-height: v6-navbar-height;
@@ -298,9 +390,10 @@ header.NavBar {
         max-height: "calc(100vh - %s)" % v6-navbar-height;
         themed background-color navbar-background-color
     }
+
+
+
 }
-
-
 
 button.theme-button {
     cursor: pointer;

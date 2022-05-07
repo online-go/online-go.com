@@ -16,8 +16,7 @@
  */
 
 import * as React from "react";
-import { Link } from "react-router-dom";
-import { browserHistory } from "ogsHistory";
+import { Link, useLocation } from "react-router-dom";
 
 import * as data from "data";
 
@@ -68,10 +67,11 @@ const setThemeAccessible = setTheme.bind(null, "accessible");
 
 export function EXV6NavBar(): JSX.Element {
     const user = useUser();
+    const location = useLocation();
     const [search, setSearch] = React.useState<string>("");
-    const [path, setPath] = React.useState(window.location.pathname);
     const [right_nav_active, setRightNavActive] = React.useState(false);
     const [notifications_active, setNotificationsActive] = React.useState(false);
+    const [hamburger_expanded, setHamburgerExpanded] = React.useState(false);
 
     const closeNavbar = () => {
         setRightNavActive(false);
@@ -89,20 +89,24 @@ export function EXV6NavBar(): JSX.Element {
         setRightNavActive(!right_nav_active);
     };
 
+    const toggleHamburgerExpanded = () => {
+        setHamburgerExpanded(!hamburger_expanded);
+    };
+
     const newDemo = () => {
         closeNavbar();
         createDemoBoard();
     };
 
     React.useEffect(() => {
+        setHamburgerExpanded(false);
+        closeNavbar();
+    }, [location.pathname]);
+
+    React.useEffect(() => {
         // here we are watching in case 'theme' is updated by the
         // remote-storage update mechanism, which doesn't call setTheme()
         data.watch("theme", _update_theme);
-
-        browserHistory.listen((update) => {
-            closeNavbar();
-            setPath(update.location.pathname);
-        });
     }, []);
 
     //const valid_user = user.anonymous ? null : user;
@@ -112,9 +116,15 @@ export function EXV6NavBar(): JSX.Element {
     const ladders = data.get("cached.ladders", []);
 
     return (
-        <header className="NavBar">
+        <header className={"NavBar" + (hamburger_expanded ? " hamburger-expanded" : "")}>
+            <span className="hamburger" onClick={toggleHamburgerExpanded}>
+                {hamburger_expanded ? <i className="fa fa-times" /> : <i className="fa fa-bars" />}
+            </span>
+
             <nav className="left">
-                <Link to="/">{_("Home")}</Link>
+                <Link to="/" className="menutitle">
+                    {_("Home")}
+                </Link>
                 <Menu title={_("Play")} to="/play">
                     <Link to="/play">
                         <i className="ogs-goban"></i> {_("Play")}
@@ -224,7 +234,7 @@ export function EXV6NavBar(): JSX.Element {
                     <section className="OmniSearch-container">
                         <i className="fa fa-search" />
                         <input
-                            type="text"
+                            type="search"
                             className="OmniSearch-input"
                             value={search}
                             onChange={(ev) => setSearch(ev.target.value)}
@@ -251,45 +261,34 @@ export function EXV6NavBar(): JSX.Element {
                         {_("SGF Library")}
                     </Link>
 
-                    {(user.is_moderator || user.is_announcer) && <li className="divider"></li>}
                     {user.is_moderator && (
-                        <li>
-                            <Link className="admin-link" to="/moderator">
-                                <i className="fa fa-gavel"></i>
-                                {_("Moderator Center")}
-                            </Link>
-                        </li>
+                        <Link className="admin-link" to="/moderator">
+                            <i className="fa fa-gavel"></i>
+                            {_("Moderator Center")}
+                        </Link>
                     )}
                     {user.is_moderator && (
-                        <li>
-                            <Link className="admin-link" to="/appeals-center">
-                                <i className="fa fa-gavel"></i>
-                                {_("Appeals Center")}
-                            </Link>
-                        </li>
+                        <Link className="admin-link" to="/appeals-center">
+                            <i className="fa fa-gavel"></i>
+                            {_("Appeals Center")}
+                        </Link>
                     )}
                     {user.is_moderator && (
-                        <li>
-                            <Link className="admin-link" to="/admin/firewall">
-                                <i className="fa fa-fire-extinguisher"></i>
-                                Firewall
-                            </Link>
-                        </li>
+                        <Link className="admin-link" to="/admin/firewall">
+                            <i className="fa fa-fire-extinguisher"></i>
+                            Firewall
+                        </Link>
                     )}
                     {(user.is_moderator || user.is_announcer) && (
-                        <li>
-                            <Link className="admin-link" to="/announcement-center">
-                                <i className="fa fa-bullhorn"></i>
-                                {_("Announcement Center")}
-                            </Link>
-                        </li>
+                        <Link className="admin-link" to="/announcement-center">
+                            <i className="fa fa-bullhorn"></i>
+                            {_("Announcement Center")}
+                        </Link>
                     )}
                     {user.is_superuser && (
-                        <li>
-                            <Link className="admin-link" to="/admin">
-                                <i className="fa fa-wrench"></i> Admin
-                            </Link>
-                        </li>
+                        <Link className="admin-link" to="/admin">
+                            <i className="fa fa-wrench"></i> Admin
+                        </Link>
                     )}
                 </Menu>
             </nav>
@@ -298,7 +297,7 @@ export function EXV6NavBar(): JSX.Element {
                 <section className="right">
                     <i className="fa fa-adjust" onClick={toggleTheme} />
                     <LanguagePicker />
-                    <Link className="sign-in" to={"/sign-in#" + path}>
+                    <Link className="sign-in" to={"/sign-in#" + location.pathname}>
                         {_("Sign In")}
                     </Link>
                 </section>
@@ -374,7 +373,13 @@ interface MenuProps {
 function Menu({ title, to, children }: MenuProps): JSX.Element {
     return (
         <section className="menu">
-            {to ? <Link to={to}>{title}</Link> : <span className="fakelink">{title}</span>}
+            {to ? (
+                <Link to={to} className="menutitle">
+                    {title}
+                </Link>
+            ) : (
+                <span className="menutitle">{title}</span>
+            )}
             <div className="menu-children">{children}</div>
         </section>
     );
