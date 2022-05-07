@@ -150,6 +150,7 @@ import cached from "cached";
 import * as moment from "moment";
 import swal from "sweetalert2";
 import { ConfigSchema } from "data_schema";
+import * as history from "history";
 
 import "debug";
 
@@ -291,7 +292,7 @@ init_score_estimator()
 /*** Generic error handling from the server ***/
 sockets.socket.on("ERROR", errorAlerter);
 
-browserHistory.listen((/* location */) => {
+browserHistory.listen(({ action /*, location */ }) => {
     try {
         // old google analytics history hook
         /*
@@ -317,7 +318,9 @@ browserHistory.listen((/* location */) => {
         }
         */
 
-        window.document.title = "OGS";
+        if (action !== history.Action.Replace) {
+            window.document.title = "OGS";
+        }
         close_all_popovers();
     } catch (e) {
         console.log(e);
