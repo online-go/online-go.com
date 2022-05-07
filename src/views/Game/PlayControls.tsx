@@ -121,6 +121,7 @@ export function PlayControls({
     if (!goban) {
         return null;
     }
+
     const engine = goban.engine;
 
     const user_is_active_player = [engine.players.black.id, engine.players.white.id].includes(
@@ -142,8 +143,8 @@ export function PlayControls({
     const [white_accepted, set_white_accepted] = React.useState<boolean>();
     React.useEffect(() => {
         const syncStoneRemovalAcceptance = () => {
-            if (engine.phase === "stone removal") {
-                const stone_removals = engine.getStoneRemovalString();
+            if (goban.engine.phase === "stone removal") {
+                const stone_removals = goban.engine.getStoneRemovalString();
 
                 if (stone_removal_accept_timeout.current) {
                     clearTimeout(stone_removal_accept_timeout.current);
@@ -160,8 +161,12 @@ export function PlayControls({
                     device.is_mobile ? 3000 : 1500,
                 );
 
-                set_black_accepted(engine.players["black"].accepted_stones === stone_removals);
-                set_white_accepted(engine.players["white"].accepted_stones === stone_removals);
+                set_black_accepted(
+                    goban.engine.players["black"].accepted_stones === stone_removals,
+                );
+                set_white_accepted(
+                    goban.engine.players["white"].accepted_stones === stone_removals,
+                );
             }
         };
         syncStoneRemovalAcceptance();
@@ -176,7 +181,7 @@ export function PlayControls({
 
     const [strict_seki_mode, set_strict_seki_mode] = React.useState(false);
     React.useEffect(() => {
-        goban.on("load", () => set_strict_seki_mode(engine.strict_seki_mode));
+        goban.on("load", () => set_strict_seki_mode(goban.engine.strict_seki_mode));
         goban.on("strict_seki_mode", set_strict_seki_mode);
     }, [goban]);
 
@@ -188,7 +193,7 @@ export function PlayControls({
 
     const [cur_move_number, setCurMoveNumber] = React.useState<number>();
     React.useEffect(() => {
-        goban.on("load", () => setCurMoveNumber(engine.cur_move?.move_number || -1));
+        goban.on("load", () => setCurMoveNumber(goban.engine.cur_move?.move_number || -1));
         goban.on("cur_move", (move) => setCurMoveNumber(move.move_number));
     }, [goban]);
 
@@ -199,7 +204,9 @@ export function PlayControls({
                 return;
             }
 
-            setShowUndoRequested(engine.undo_requested === engine.last_official_move.move_number);
+            setShowUndoRequested(
+                goban.engine.undo_requested === goban.engine.last_official_move.move_number,
+            );
         };
         syncShowUndoRequested();
 
@@ -209,22 +216,26 @@ export function PlayControls({
     });
 
     const [winner, set_winner] = React.useState<"black" | "white">();
+    console.log("winner", winner);
     React.useEffect(() => {
-        goban.on("load", () => set_winner(engine.winner));
+        goban.on("load", () => {
+            set_winner(goban.engine.winner);
+            console.log("loaded!!!", goban.engine.winner);
+        });
         goban.on("winner", set_winner);
     }, [goban]);
 
     const [official_move_number, set_official_move_number] = React.useState<number>();
     React.useEffect(() => {
         goban.on("load", () =>
-            set_official_move_number(engine.last_official_move?.move_number || -1),
+            set_official_move_number(goban.engine.last_official_move?.move_number || -1),
         );
         goban.on("last_official_move", (move) => set_official_move_number(move.move_number));
     }, [goban]);
 
     const [rules, set_rules] = React.useState<GoEngineRules>();
     React.useEffect(() => {
-        goban.on("load", () => set_rules(engine.rules));
+        goban.on("load", () => set_rules(goban.engine.rules));
         goban.on("rules", set_rules);
     }, [goban]);
 
@@ -289,9 +300,9 @@ export function PlayControls({
 
         challengeRematch(
             goban,
-            data.get("user").id === engine.players.black.id
-                ? engine.players.white
-                : engine.players.black,
+            data.get("user").id === goban.engine.players.black.id
+                ? goban.engine.players.white
+                : goban.engine.players.black,
             goban.engine.config,
         );
     };
