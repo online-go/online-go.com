@@ -21,10 +21,14 @@ channel-width=12rem;
 
 .ChatView {
     position: fixed;
-    top: navbar-height+0.2rem;
+    top: v5-navbar-height+0.2rem;
     bottom: 0;
     left: 0;
     right: 0;
+
+    /body.v6 & {
+        top: v6-navbar-height+0.2rem;
+    }
 
     display: flex;
     width: 100vw;

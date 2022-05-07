@@ -80,12 +80,15 @@ function Main(props): JSX.Element {
 
     return (
         <Experiment name="v6">
-            <Variant value="enabled">
+            <Variant value="enabled" bodyclass="v6">
                 <div>
                     <ErrorBoundary>
                         <NavBar />
                     </ErrorBoundary>
                     <ErrorBoundary>{props.children}</ErrorBoundary>
+                    <ErrorBoundary>
+                        <Announcements />
+                    </ErrorBoundary>
                 </div>
             </Variant>
             <ExDefault>

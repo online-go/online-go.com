@@ -73,7 +73,7 @@ const setThemeAccessible = setTheme.bind(null, "accessible");
 export function NavBar(): JSX.Element {
     return (
         <Experiment name="v6">
-            <Variant value="enabled" bodyclass="v6">
+            <Variant value="enabled">
                 <EXV6NavBar />
             </Variant>
             <Default>

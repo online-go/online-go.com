@@ -20,8 +20,13 @@
     display: flex;
     align-items: stretch;
     justify-content: center;
-    max-height: "calc(100vh - %s - 0.2rem)" % navbar-height;
-    height: "calc(100vh - %s - 0.2rem)" % navbar-height;
+    max-height: "calc(100vh - %s - 0.2rem)" % v5-navbar-height;
+    height: "calc(100vh - %s - 0.2rem)" % v5-navbar-height;
+
+    /body.v6 & {
+        max-height: "calc(100vh - %s - 0.2rem)" % v6-navbar-height;
+        height: "calc(100vh - %s - 0.2rem)" % v6-navbar-height;
+    }
 }
 
 .Ladder {

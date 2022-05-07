@@ -24,11 +24,13 @@ puzzle-controls-width=400px
     flex-direction: row;
     align-items: stretch;
     position: absolute;
-    top: below-navbar;
+    top: v5-below-navbar;
     bottom: 0;
     left: 0;
     right: 0;
-
+    /body.v6 & {
+        top: v6-below-navbar;
+    }
 
     &.portrait {
         flex-direction: column;

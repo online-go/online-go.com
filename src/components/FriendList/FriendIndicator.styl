@@ -43,11 +43,11 @@
     .FriendList {
         position: absolute;
         themed background-color bg
-        top: navbar-height;
+        top: v5-navbar-height;
         right: 0;
         width: 15rem;
         max-width: 100vw;
-        max-height: "calc(100vh - %s)" % navbar-height;
+        max-height: "calc(100vh - %s)" % v5-navbar-height;
         overflow-y: scroll;
         overflow-x: hidden;
         box-shadow: -2px 2px 1px 0px rgba(0, 0, 0, 0.16);
@@ -56,7 +56,13 @@
         padding-top: 0.5rem;
         padding-bottom: 0.5rem;
         z-index: z.friend-list.menu;
+
+        /body.v6 & {
+            top: v6-navbar-height;
+            max-height: "calc(100vh - %s)" % v6-navbar-height;
+        }
     }
+
 }
 .FriendIndicator:hover {
     text-decoration: none;

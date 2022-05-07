@@ -107,7 +107,7 @@
     //min-height: 100%;
     //height: 100%;
     max-height: 100vh;
-    top: navbar-height;
+    top: v5-navbar-height;
     left: 0;
     right: 0;
     bottom: 0;
@@ -116,6 +116,10 @@
     align-items: flex-start;
     align-content: stretch;
     justify-content: center;
+
+    /body.v6 & {
+        top: v6-navbar-height;
+    }
 }
 
 .IncidentReportList-results {
@@ -124,12 +128,17 @@
     padding: 0.5rem;
     width: 20rem;
     max-width: 100vw;
-    max-height: 100vh - navbar-height;
+    max-height: 100vh - v5-navbar-height;
     display: inline-block;
     z-index: z.incident-list;
     right: 0;
-    top: navbar-height;
+    top: v5-navbar-height;
     box-shadow: -2px 2px 1px 0px rgba(0, 0, 0, 0.16);
     themed background-color bg
     themed border-color shade2
+
+    /body.v6 & {
+        top: v6-navbar-height;
+        max-height: 100vh - v6-navbar-height;
+    }
 }

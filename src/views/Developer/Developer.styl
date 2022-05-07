@@ -32,7 +32,10 @@
 
     .github-link {
         position: absolute;
-        top: navbar-height;
+        top: v5-navbar-height;
+        /body.v6 & {
+            top: v6-navbar-height;
+        }
         right: 0;
         border: 0;
     }

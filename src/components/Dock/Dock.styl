@@ -21,7 +21,10 @@ dock-inline-height=500px
 .Dock {
     user-select: none;
     position: fixed;
-    top: navbar-height + 0.2rem;
+    top: v5-navbar-height + 0.2rem;
+    /body.v6 & {
+        top: v6-navbar-height + 0.2rem;
+    }
     right: dock-collapsed-width - dock-width;
     width: dock-width;
     themed background-color bg

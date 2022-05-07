@@ -17,7 +17,10 @@
 
 .Announcements {
     position: absolute;
-    top: navbar-height;
+    top: v5-navbar-height;
+    /body.v6 & {
+        top: v6-navbar-height;
+    }
     right: 0;
     z-index: z.announcements;
     display: inline-flex;

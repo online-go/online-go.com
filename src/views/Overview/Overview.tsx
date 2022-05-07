@@ -47,7 +47,7 @@ type ActiveGameType = rest_api.players.full.Game;
 export function Overview(): JSX.Element {
     return (
         <Experiment name="v6">
-            <Variant value="enabled" bodyclass="v6">
+            <Variant value="enabled">
                 <EXV6Overview />
             </Variant>
             <Default>
