@@ -24,7 +24,7 @@ import ReactResizeDetector from "react-resize-detector";
 import * as queryString from "query-string";
 
 import * as data from "data";
-import { getCookie } from "requests";
+import { get, put, post } from "requests";
 import { _, interpolate, npgettext } from "translate";
 import { KBShortcut } from "KBShortcut";
 import { PersistentElement } from "PersistentElement";
@@ -43,7 +43,7 @@ import { JosekiTagSelector, JosekiTag } from "JosekiTagSelector";
 import { Throbber } from "Throbber";
 import { IdType } from "src/lib/types";
 
-const server_url = data.get("oje-url", "/oje/");
+const server_url = "/oje/";
 
 const prefetch_url = (node_id: string, variation_filter?: JosekiFilter, mode?: string) => {
     let prefetch_url = server_url + "positions?id=" + node_id;
@@ -101,19 +101,6 @@ const applyJosekiMarkdown = (markdown: string): string => {
 
     return result;
 };
-
-const getOGSJWT = (): string => {
-    return data.get("config").user_jwt;
-};
-
-// Headers needed to talk to the godojo server.
-const oje_headers = (): {} => ({
-    Accept: "application/json",
-    "Content-Type": "application/json",
-    "X-Godojo-Auth-Token": "foofer",
-    "X-User-Info": getOGSJWT(), // old server uses this for id: re-load this every time, in case they change identity via login/logout
-    "X-CSRFToken": getCookie("csrftoken"),
-});
 
 enum MoveCategory {
     // needs to match definition in BoardPosition.java
@@ -304,11 +291,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
 
         // we get the tags here because they are needed for selector components, initial settings for those,
         // and also for Play mode
-        fetch(server_url + "tags", {
-            mode: "cors",
-            headers: oje_headers(),
-        })
-            .then((res) => res.json())
+        get(server_url + "tags")
             .then((body) => {
                 this.joseki_tags = body.tags.map((tag) => ({
                     label: tag.description,
@@ -369,11 +352,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
     };
 
     getUserJosekiPermissions = () => {
-        fetch(server_url + "user-permissions", {
-            mode: "cors",
-            headers: oje_headers(),
-        })
-            .then((response) => response.json()) // wait for the body of the response
+        get(server_url + "user-permissions")
             .then((body) => {
                 this.setState({
                     user_can_edit: body.can_edit,
@@ -429,16 +408,10 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
 
     updatePlayerJosekiRecord = (node_id) => {
         if (!data.get("user").anonymous) {
-            fetch(server_url + "playrecord", {
-                method: "put",
-                mode: "cors",
-                headers: oje_headers(),
-                body: JSON.stringify({
-                    position_id: node_id,
-                    errors: this.state.joseki_errors,
-                }),
+            put(server_url + "playrecord", {
+                position_id: node_id,
+                errors: this.state.joseki_errors,
             })
-                .then((res) => res.json())
                 .then((body) => {
                     this.extractPlayResults(body);
                 })
@@ -485,11 +458,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             this.prefetchFor(node_id, variation_filter);
         } else {
             // First, get the required position from the server as soon as possible
-            fetch(position_url(node_id, variation_filter, this.state.mode), {
-                mode: "cors",
-                headers: oje_headers(),
-            })
-                .then((response) => response.json()) // wait for the body of the response
+            get(position_url(node_id, variation_filter, this.state.mode))
                 .then((body) => {
                     const target_node = body; // the one we're after comes in the first slot of the array
 
@@ -531,11 +500,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
         if (!this.prefetching) {
             if (!this.prefetched[node_id]) {
                 this.prefetching = true;
-                fetch(prefetch_url(node_id, variation_filter, this.state.mode), {
-                    mode: "cors",
-                    headers: oje_headers(),
-                })
-                    .then((response) => response.json()) // wait for the body of the response
+                get(prefetch_url(node_id, variation_filter, this.state.mode))
                     .then((body) => {
                         this.prefetching = false;
                         this.prefetched[node_id] = true;
@@ -955,11 +920,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
         const results_url = server_url + "playrecord";
 
         this.setState({ extra_throb: true });
-        fetch(results_url, {
-            mode: "cors",
-            headers: oje_headers(),
-        })
-            .then((response) => response.json()) // wait for the body of the response
+        get(results_url)
             .then((body) => {
                 this.setState({ extra_throb: false });
                 this.extractPlayResults(body);
@@ -1077,11 +1038,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             counts_throb: true,
         });
 
-        fetch(tagscount_url(node_id), {
-            mode: "cors",
-            headers: oje_headers(),
-        })
-            .then((res) => res.json())
+        get(tagscount_url(node_id))
             .then((body) => {
                 let tags = [];
                 if (body.tags) {
@@ -1377,7 +1334,6 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
         if (this.state.mode === PageMode.Admin) {
             return (
                 <JosekiAdmin
-                    oje_headers={oje_headers()}
                     server_url={server_url}
                     user_can_administer={this.state.user_can_administer}
                     user_can_edit={this.state.user_can_edit}
@@ -1455,20 +1411,14 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
 
         if (this.state.current_move_category !== "new") {
             // they must have pressed save on a current position.
-            fetch(position_url(this.state.current_node_id), {
-                method: "put",
-                mode: "cors",
-                headers: oje_headers(),
-                body: JSON.stringify({
-                    description: description,
-                    variation_label: variation_label,
-                    tags: tags,
-                    category: move_type.toUpperCase(),
-                    joseki_source_id: joseki_source_id,
-                    marks: mark_string,
-                }),
+            put(position_url(this.state.current_node_id), {
+                description: description,
+                variation_label: variation_label,
+                tags: tags,
+                category: move_type.toUpperCase(),
+                joseki_source_id: joseki_source_id,
+                marks: mark_string,
             })
-                .then((res) => res.json())
                 .then((body) => {
                     this.processNewJosekiPosition(body);
                     this.setExploreMode();
@@ -1479,35 +1429,23 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
         } else {
             // Here the person has added one or more moves then clicked "save"
             // First we save the new position(s)
-            fetch(server_url + "positions", {
-                method: "post",
-                mode: "cors",
-                headers: oje_headers(),
-                body: JSON.stringify({
-                    sequence: this.state.move_string,
-                    category: move_type.toUpperCase(),
-                }),
+            post(server_url + "positions", {
+                sequence: this.state.move_string,
+                category: move_type.toUpperCase(),
             })
-                .then((res) => res.json())
                 .then((body) => {
                     //console.log("Server response to sequence POST:", body);
 
                     // Now we can save the fields that apply only to the final position
 
                     console.log("resulting node_id:", body.node_id);
-                    fetch(position_url(body.node_id), {
-                        method: "put",
-                        mode: "cors",
-                        headers: oje_headers(),
-                        body: JSON.stringify({
-                            description: description,
-                            variation_label: variation_label,
-                            tags: tags,
-                            joseki_source_id: joseki_source_id,
-                            marks: mark_string,
-                        }),
+                    put(position_url(body.node_id), {
+                        description: description,
+                        variation_label: variation_label,
+                        tags: tags,
+                        joseki_source_id: joseki_source_id,
+                        marks: mark_string,
                     })
-                        .then((res) => res.json())
                         .then((body) => {
                             this.processNewJosekiPosition(body);
                             this.setExploreMode();
@@ -1608,11 +1546,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
         const comments_url = server_url + "commentary?id=" + this.props.position_id;
         this.setState({ extra_throb: true });
 
-        fetch(comments_url, {
-            mode: "cors",
-            headers: oje_headers(),
-        })
-            .then((response) => response.json()) // wait for the body of the response
+        get(comments_url)
             .then((body) => {
                 this.setState({ extra_throb: false });
                 this.extractCommentary(body);
@@ -1647,11 +1581,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
     showAuditLog = () => {
         const audits_url = server_url + "audits?id=" + this.props.position_id;
         this.setState({ extra_throb: true });
-        fetch(audits_url, {
-            mode: "cors",
-            headers: oje_headers(),
-        })
-            .then((response) => response.json()) // wait for the body of the response
+        get(audits_url)
             .then((body) => {
                 this.extractAuditLog(body);
             })
@@ -1680,13 +1610,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
         // because \r or \n give it length=1, we can't just check falsey to prevent empty comments
         if (/\r|\n/.exec(e.target.value) && e.target.value.length > 1) {
             const comment_url = server_url + "comment?id=" + this.props.position_id;
-            fetch(comment_url, {
-                method: "post",
-                mode: "cors",
-                headers: oje_headers(),
-                body: JSON.stringify({ comment: this.state.next_comment }),
-            })
-                .then((res) => res.json())
+            post(comment_url, { comment: this.state.next_comment })
                 .then((body) => {
                     this.extractCommentary(body);
                 })
@@ -1827,7 +1751,6 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
                                 contributor_list_url={server_url + "contributors"}
                                 source_list_url={server_url + "josekisources"}
                                 current_filter={this.props.current_filter}
-                                oje_headers={oje_headers()}
                                 set_variation_filter={this.props.set_variation_filter}
                                 joseki_tags={this.props.joseki_tags}
                             />
@@ -2031,7 +1954,6 @@ class PlayPane extends React.Component<PlayProps, PlayState> {
                                 contributor_list_url={server_url + "contributors"}
                                 source_list_url={server_url + "josekisources"}
                                 current_filter={this.props.current_filter}
-                                oje_headers={oje_headers()}
                                 set_variation_filter={this.props.set_variation_filter}
                                 joseki_tags={this.props.joseki_tags}
                             />
@@ -2096,11 +2018,7 @@ class EditPane extends React.Component<EditProps, EditState> {
         };
 
         // Get the list of joseki sources
-        fetch(joseki_sources_url, {
-            mode: "cors",
-            headers: oje_headers(),
-        })
-            .then((res) => res.json())
+        get(joseki_sources_url)
             .then((body) => {
                 this.setState({
                     joseki_source_list: [{ id: "none", description: "(unknown)" }, ...body.sources],
@@ -2203,15 +2121,9 @@ class EditPane extends React.Component<EditProps, EditState> {
     };
 
     addJosekiSource = (description, url) => {
-        fetch(server_url + "josekisources", {
-            method: "post",
-            mode: "cors",
-            headers: oje_headers(),
-            body: JSON.stringify({
-                source: { description: description, url: url, contributor: this.props.contributor },
-            }),
+        post(server_url + "josekisources", {
+            source: { description: description, url: url, contributor: this.props.contributor },
         })
-            .then((res) => res.json())
             .then((body) => {
                 const new_source = { id: body.source.id, description: body.source.description };
                 this.setState({

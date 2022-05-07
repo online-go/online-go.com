@@ -18,11 +18,11 @@
 import * as React from "react";
 
 import * as data from "data";
+import { get, put } from "requests";
 
 import { Player } from "Player";
 
 interface JosekiAdminProps {
-    oje_headers: HeadersInit;
     server_url: string;
 }
 
@@ -58,11 +58,7 @@ export class JosekiPermissionsPanel extends React.PureComponent<
         }
 
         this.setState({ throb: true });
-        fetch(this.props.server_url + "permissions?id=" + e.target.value, {
-            mode: "cors",
-            headers: this.props.oje_headers,
-        })
-            .then((response) => response.json()) // wait for the body of the response
+        get(this.props.server_url + "permissions?id=" + e.target.value)
             .then((body) => {
                 this.setState({
                     can_comment: body.can_comment,
@@ -102,13 +98,7 @@ export class JosekiPermissionsPanel extends React.PureComponent<
 
         new_permissions[permission] = value;
 
-        fetch(this.props.server_url + "permissions?id=" + this.state.userid, {
-            method: "put",
-            mode: "cors",
-            headers: this.props.oje_headers,
-            body: JSON.stringify(new_permissions),
-        })
-            .then((res) => res.json())
+        put(this.props.server_url + "permissions?id=" + this.state.userid, new_permissions)
             .then((body) => {
                 // Display the result of what happened
                 console.log("permissions result", body);
