@@ -219,7 +219,6 @@ export function PlayControls({
 
     const [winner, set_winner] = React.useState(goban.engine.winner);
     React.useEffect(() => {
-        console.log("new goban");
         goban.on("load", () => set_winner(goban.engine.winner));
         goban.on("winner", set_winner);
     }, [goban]);
