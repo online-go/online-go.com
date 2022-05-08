@@ -325,7 +325,7 @@ export function PlayControls({
     return (
         <div className="play-controls">
             <div className="game-action-buttons">
-                {((mode === "play" && phase === "play") || null) && (
+                {mode === "play" && phase === "play" && user_is_player && (
                     <PlayButtons
                         resign_text={resign_text}
                         show_undo_requested={show_undo_requested}
@@ -335,7 +335,6 @@ export function PlayControls({
                         goban={goban}
                         show_cancel={show_cancel}
                         view_mode={view_mode}
-                        user_is_player={user_is_player}
                     />
                 )}
             </div>
@@ -671,7 +670,6 @@ interface PlayButtonsProps {
 
     view_mode: ViewMode;
     resign_text: string;
-    user_is_player: boolean;
 }
 
 function PlayButtons({
@@ -683,7 +681,6 @@ function PlayButtons({
     onCancel,
     view_mode,
     resign_text,
-    user_is_player,
 }: PlayButtonsProps) {
     const engine = goban.engine;
     const phase = engine.phase;
@@ -800,7 +797,7 @@ function PlayButtons({
                 )}
             </span>
             <span>
-                {((show_cancel && user_is_player && phase !== "finished") || null) && (
+                {show_cancel && phase !== "finished" && (
                     <CancelButton view_mode={view_mode} onClick={onCancel}>
                         {resign_text}
                     </CancelButton>
