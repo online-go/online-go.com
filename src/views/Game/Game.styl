@@ -18,33 +18,12 @@
 
 .Game {
     position: absolute;
-    top: v5-below-navbar;
+    top: below-navbar;
     bottom: 0;
     bottom: constant(safe-area-inset-bottom);
     bottom: env(safe-area-inset-bottom);
     right: 0;
     left: 0;
-    /body.v6 & {
-        top: v6-below-navbar;
-    }
-}
-
-.outer-banner {
-    .Game, .Dock {
-        top: v5-below-navbar + 5.4 !important;
-        /body.v6 & {
-            top: v6-below-navbar + 5.4 !important;
-        }
-    }
-}
-
-.mobile-banner {
-    .Game, .Dock {
-        top: v5-below-navbar + 2.9 !important;
-        /body.v6 & {
-            top: v6-below-navbar + 2.9 !important;
-        }
-    }
 }
 
 .Game.portrait.squashed {
@@ -54,9 +33,6 @@
 
 .Game.zen {
     top: 0;
-    /body.v6.zen & {
-        top: 0;
-    }
 }
 
 .submit-button {

@@ -20,13 +20,9 @@ channel-width=12rem;
 .ChatList {
     display: flex;
     flex-direction: column;
-    height: "calc(100vh - %s - %s)" % (v5-navbar-height channel-utils-height);
+    height: "calc(100vh - %s - %s)" % (navbar-height channel-utils-height);
     overflow-y: auto;
     width: channel-width;
-
-    /body.v6 & {
-        height: "calc(100vh - %s - %s)" % (v6-navbar-height channel-utils-height);
-    }
 
     .channel-container {
         flex-basis: channel-width;

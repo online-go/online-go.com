@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-v6-navbar-width= 17rem;
-v6-submenu-min-height = 9rem;
+navbar-width= 17rem;
+submenu-min-height = 9rem;
 hamburger-cutoff = 650px;
 
 header.NavBar {
@@ -26,7 +26,7 @@ header.NavBar {
 
     display: flex;
     margin-bottom: 0.2rem;
-    height: v6-navbar-height;
+    height: navbar-height;
     user-select: none;
     themed background-color navbar-background-color
     box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.16);
@@ -42,14 +42,14 @@ header.NavBar {
             display: block;
             margin-left: 0.5rem;
             position: relative;
-            height: v6-navbar-height;
+            height: navbar-height;
 
             .menu-children {
                 display: none;
                 position: absolute;
                 left: 0;
-                top: v6-navbar-height;
-                min-width: v6-navbar-width;
+                top: navbar-height;
+                min-width: navbar-width;
                 themed background-color navbar-background-color
                 //border-left: 0.2rem solid transparent;
                 box-shadow: 2px 4px 3px 0px rgba(0, 0, 0, 0.16);
@@ -80,10 +80,10 @@ header.NavBar {
                 flex-direction: column;
                 position: absolute;
                 top: 0;
-                min-height: v6-submenu-min-height;
-                left: v6-navbar-width;
+                min-height: submenu-min-height;
+                left: navbar-width;
                 themed background-color shade4
-                min-width: v6-navbar-width;
+                min-width: navbar-width;
                 box-shadow: 2px 4px 3px 0px rgba(0, 0, 0, 0.16);
                 > a {
                     display: inline-flex;
@@ -104,12 +104,12 @@ header.NavBar {
             flex-direction: column;
             themed background-color navbar-background-color
             position: absolute;
-            top: v6-navbar-height
+            top: navbar-height
             bottom: 0;
             left: 0;
             padding: 0;
             align-items: flex-start;
-            max-height: "calc(100vh - %s)" % v6-navbar-height;
+            max-height: "calc(100vh - %s)" % navbar-height;
             overflow-y: auto;
             z-index: z.nav-menu.menu;
 
@@ -207,14 +207,14 @@ header.NavBar {
         padding-left: 1rem;
         .menutitle {
             display: inline-block;
-            line-height: v6-navbar-height;
+            line-height: navbar-height;
             padding-left: 0.5rem;
             padding-right: 0.5rem;
         }
 
         a, .fakelink {
             display: inline-block;
-            line-height: v6-navbar-height;
+            line-height: navbar-height;
             padding-left: 0.5rem;
             padding-right: 0.5rem;
         }
@@ -237,12 +237,12 @@ header.NavBar {
 
             .notification-indicator {
                 left: 0.5rem;
-                width: v6-navbar-height;
+                width: navbar-height;
             }
 
             img.PlayerIcon {
-                height: v6-navbar-height;
-                width: v6-navbar-height;
+                height: navbar-height;
+                width: navbar-height;
                 pointer-events: none;
             }
 
@@ -282,7 +282,7 @@ header.NavBar {
         display: none;
         position: fixed;
         z-index: z.nav-menu.backdrop;
-        top: v6-navbar-height;
+        top: navbar-height;
         bottom: 0;
         left: 0;
         right: 0;
@@ -301,10 +301,10 @@ header.NavBar {
         flex-direction: column;
         position: absolute;
         right: 0;
-        top: v6-navbar-height;
-        width: v6-navbar-width;
+        top: navbar-height;
+        width: navbar-width;
         max-width: 100vw;
-        max-height: "calc(100vh - %s)" % v6-navbar-height;
+        max-height: "calc(100vh - %s)" % navbar-height;
         themed background-color navbar-background-color;
         overflow-y: auto;
         user-select: none;
@@ -346,10 +346,10 @@ header.NavBar {
     .NotificationList {
         position: absolute;
         right: 0;
-        top: v6-navbar-height;
-        width: v6-navbar-width;
+        top: navbar-height;
+        width: navbar-width;
         themed background-color navbar-background-color
-        max-height: "calc(100vh - %s)" % v6-navbar-height;
+        max-height: "calc(100vh - %s)" % navbar-height;
         overflow-y: auto;
         padding: 0.5rem;
         z-index: z.nav-menu.menu;
@@ -357,7 +357,7 @@ header.NavBar {
     }
     .OmniSearch-container {
         position: relative;
-        height: v6-navbar-height;
+        height: navbar-height;
         display: inline-flex;
         align-items: center;
         padding-left: 0.5rem;
@@ -367,27 +367,27 @@ header.NavBar {
         }
 
         .OmniSearch-input {
-            width: (v6-navbar-width - 3rem);
+            width: (navbar-width - 3rem);
         }
 
         .OmniSearch {
             position: absolute;
-            //top: v6-navbar-height;
+            //top: navbar-height;
             //top: -0.15rem;
             top: 0;
-            left: v6-navbar-width;
-            width: v6-navbar-width;
+            left: navbar-width;
+            width: navbar-width;
             themed background-color navbar-highlight-background-color
             box-shadow: 2px 2px 1px 0px rgba(0, 0, 0, 0.16);
             z-index: z.nav-menu.menu;
-            max-height: "calc(100vh - %s)" % v6-navbar-height;
+            max-height: "calc(100vh - %s)" % navbar-height;
         }
     }
 
 
     .FriendList {
-        top: v6-navbar-height;
-        max-height: "calc(100vh - %s)" % v6-navbar-height;
+        top: navbar-height;
+        max-height: "calc(100vh - %s)" % navbar-height;
         themed background-color navbar-background-color
     }
 

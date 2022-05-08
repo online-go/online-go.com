@@ -22,16 +22,33 @@ font-size-small = 10pt
 font-size-smaller = 8pt
 font-size-extra-small = font-size-smaller
 font-size-normal = 12pt
-v5-navbar-height = 2rem
-v5-below-navbar = v5-navbar-height + 0.3rem
-v6-navbar-height = 3rem
-v6-below-navbar = v6-navbar-height + 0.3rem
 dock-collapsed-width=2rem;
 dock-width=15rem;
 private-chat-width=20rem;
 
-navbar-height = v5-navbar-height
-below-navbar = v5-below-navbar
+navbar-height = var(--navbar-height)
+below-navbar = var(--below-navbar)
+
+:root {
+    --navbar-height: 2rem;
+    --below-navbar: 2.3rem;
+}
+body.v6 {
+    --navbar-height: 3rem;
+    --below-navbar: 3.3rem;
+}
+
+@media (max-height: 500px) {
+    :root {
+        --navbar-height: 1.5rem;
+        --below-navbar: 1.8rem;
+    }
+    body.v6 {
+        --navbar-height: 2.0rem;
+        --below-navbar: 2.3rem;
+    }
+}
+
 
 /* z indicies */
 z = {
