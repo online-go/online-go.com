@@ -26,6 +26,7 @@ import { ValidSound, ValidSoundGroup } from "./sfx";
 import { defaults as defaultPreferences, ValidPreference } from "./preferences";
 import { TimeControl, TimeControlTypes } from "src/components/TimeControl";
 import { AutomatchPreferences } from "src/components/AutomatchSettings";
+import { JosekiFilter } from "src/components/JosekiVariationFilter";
 
 interface CachedSchema {
     groups: GroupList;
@@ -210,6 +211,7 @@ export interface DataSchema
     "hours-visited-since-goals-shown": number;
     "table-color-default-on": boolean;
     "oje-url": string;
+    "oje-variation-filter": JosekiFilter;
     "ad-override": boolean;
     "email-banner-dismissed": boolean;
     "active-tournament": Announcement;
