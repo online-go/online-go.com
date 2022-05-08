@@ -319,12 +319,19 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                 // By agreement and definition, the first tag in the list from the server must be the Joseki tag
                 this.the_joseki_tag = body.tags[0].id;
 
-                // Make the filter initialize to "Joseki"
-                this.updateVariationFilter({
-                    tags: [this.joseki_tags[0]],
-                    contributor: null,
-                    source: null,
-                });
+                // Make the variation filter initialize to "Joseki" tag, if they
+                // didn't already set one
+                const saved_filter = data.get("oje-variation-filter", null);
+
+                this.updateVariationFilter(
+                    saved_filter
+                        ? saved_filter
+                        : {
+                              tags: [this.joseki_tags[0]],
+                              contributor: null,
+                              source: null,
+                          },
+                );
             })
             .catch((r) => {
                 console.log("Tags GET failed:", r);
@@ -1104,6 +1111,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
         this.setState({
             variation_filter: filter,
         });
+        data.set("oje-variation-filter", filter);
         this.cached_positions = {}; // dump cache because the filter changed, and the cache holds filtered results
         this.prefetching = false; // and ignore any results already in flight
         this.fetchNextFilteredMovesFor(this.state.current_node_id, filter);
