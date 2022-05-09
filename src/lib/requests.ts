@@ -18,7 +18,12 @@
 import { deepCompare } from "misc";
 import { IdType } from "./types";
 
-export function api1ify(path) {
+/**
+ * If a non-absolute path is provided, appends "/api/v1/" to the input.
+ *
+ * @param path a path or a URL
+ */
+export function api1ify(path: string) {
     if (path.indexOf("/api/v") === 0) {
         return path;
     }
@@ -32,6 +37,7 @@ export function api1ify(path) {
     return `/api/v1/${path}`;
 }
 
+/** alias for api1ify */
 export const api1 = api1ify;
 
 let initialized = false;
@@ -68,16 +74,16 @@ type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface RequestFunction {
     (url: string): Promise<any>;
-    (url: string, id_or_data: number | any): Promise<any>;
-    (url: string, id: IdType, data: any): Promise<any>;
+    (url: string, id_or_data: IdType | object): Promise<any>;
+    (url: string, id: IdType, data: object): Promise<any>;
 }
 
-export function request(method: Method): RequestFunction {
-    return (url, ...rest) => {
+function request(method: Method): RequestFunction {
+    return (url: string, ...rest: [] | [number | string | object] | [number | string, object]) => {
         initialize();
 
         let id: IdType | undefined;
-        let data: any;
+        let data: object;
         switch (typeof rest[0]) {
             case "number":
             case "string":
@@ -182,7 +188,8 @@ export function request(method: Method): RequestFunction {
     };
 }
 
-export function getCookie(name) {
+/** Returns the cookie value for a given key */
+export function getCookie(name: string) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== "") {
         const cookies = document.cookie.split(";");
@@ -197,13 +204,69 @@ export function getCookie(name) {
     return cookieValue;
 }
 
+/**
+ * Fetches data using the GET method.
+ * @param url the URL for the request. If a relative path is passed, /api/vi/
+ *     will be appended.
+ * @param [id] providing an id is optional.  It will be interpolated into the
+ *     URL where "%%" appears.
+ * @param [data] providing data is optional. This is used as the request payload
+ *     in JSON format.
+ * @returns a Promise that resolves with the response payload.
+ */
 export const get = request("GET");
+/**
+ * Fetches data using the POST method.
+ * @param url the URL for the request. If a relative path is passed, /api/vi/
+ *     will be appended.
+ * @param [id] providing an id is optional.  It will be interpolated into the
+ *     URL where "%%" appears.
+ * @param [data] providing data is optional. This is used as the request payload
+ *     in JSON format.
+ * @returns a Promise that resolves with the response payload.
+ */
 export const post = request("POST");
+/**
+ * Fetches data using the PUT method.
+ * @param url the URL for the request. If a relative path is passed, /api/vi/
+ *     will be appended.
+ * @param [id] providing an id is optional.  It will be interpolated into the
+ *     URL where "%%" appears.
+ * @param [data] providing data is optional. This is used as the request payload
+ *     in JSON format.
+ * @returns a Promise that resolves with the response payload.
+ */
 export const put = request("PUT");
+/**
+ * Fetches data using the PATCH method.
+ * @param url the URL for the request. If a relative path is passed, /api/vi/
+ *     will be appended.
+ * @param [id] providing an id is optional.  It will be interpolated into the
+ *     URL where "%%" appears.
+ * @param [data] providing data is optional. This is used as the request payload
+ *     in JSON format.
+ * @returns a Promise that resolves with the response payload.
+ */
 export const patch = request("PATCH");
+/**
+ * Fetches data using the DELETE method.
+ * @param url the URL for the request. If a relative path is passed, /api/vi/
+ *     will be appended.
+ * @param [id] providing an id is optional.  It will be interpolated into the
+ *     URL where "%%" appears.
+ * @param [data] providing data is optional. This is used as the request payload
+ *     in JSON format.
+ * @returns a Promise that resolves with the response payload.
+ */
 export const del = request("DELETE");
 
-export function abort_requests_in_flight(url, method?: Method) {
+/**
+ * Cancels any requests using the specified URL and method.
+ * @param url the URL for the request.
+ * @param [method] providing a method is optional.  If no method is provided,
+ *     all requests to the URL will be cancelled.
+ */
+export function abort_requests_in_flight(url: string, method?: Method): void {
     for (const id in requests_in_flight) {
         const req = requests_in_flight[id];
         if (req.url === url && (!method || method === req.type)) {

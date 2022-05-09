@@ -21,11 +21,11 @@ import { _ } from "translate";
 import * as player_cache from "player_cache";
 import { JosekiTagSelector, JosekiTag } from "../JosekiTagSelector";
 import { PlayerCacheEntry } from "player_cache";
+import { get } from "requests";
 
 export type JosekiFilter = { contributor: number; tags: JosekiTag[]; source: number };
 
 interface JosekiVariationFilterProps {
-    oje_headers: HeadersInit;
     contributor_list_url: string;
     source_list_url: string;
     set_variation_filter: any;
@@ -43,11 +43,7 @@ export function JosekiVariationFilter(props: JosekiVariationFilterProps) {
 
     React.useEffect(() => {
         // Get the list of contributors to chose from
-        fetch(props.contributor_list_url, {
-            mode: "cors",
-            headers: props.oje_headers,
-        })
-            .then((res) => res.json())
+        get(props.contributor_list_url)
             .then((body) => {
                 //console.log("Server response to contributors GET:", body);
                 const new_contributor_list: ContributorList = [];
@@ -79,16 +75,9 @@ export function JosekiVariationFilter(props: JosekiVariationFilterProps) {
                 console.log("Contributors GET failed:", r);
             });
 
-        fetch(props.source_list_url, {
-            mode: "cors",
-            headers: props.oje_headers,
-        })
-            .then((res) => res.json())
+        get(props.source_list_url)
             .then((body) => {
-                // This can possibly be changed to !== undefined or != null,
-                // But I don't want to touch this right now -BPJ
-                // eslint-disable-next-line eqeqeq
-                if (body.sources != undefined) {
+                if (body.sources != null) {
                     // Sentry reports that we somehow receive a body with undefined source_list!?
                     setSourceList(body.sources);
                 }
@@ -103,7 +92,6 @@ export function JosekiVariationFilter(props: JosekiVariationFilterProps) {
         //const tags = (e === null || e.length === 0) ? null : e.map(t => typeof(t) === 'number' ? t : t.value);
         const new_filter = { ...props.current_filter, tags };
 
-        // console.log("new tag filter", new_filter);
         props.set_variation_filter(new_filter); // tell parent the fiter changed, so the view needs to change
     };
 

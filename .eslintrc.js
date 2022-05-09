@@ -22,7 +22,6 @@ module.exports = {
         "@typescript-eslint/no-this-alias": "off", // 4 errors
         "@typescript-eslint/triple-slash-reference": "off", // 1 error
 
-        "no-empty-pattern": "off", // 1 error
         "no-misleading-character-class": "off", // 2 errors
         "no-prototype-builtins": "off", // 8 errors
         "no-self-assign": "off", // 2 errors

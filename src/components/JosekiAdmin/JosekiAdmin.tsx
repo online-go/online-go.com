@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { _ } from "translate";
+import { get, post, put } from "requests";
 
 import ReactTable from "react-table";
 
@@ -29,7 +30,6 @@ import { JosekiPermissionsPanel } from "JosekiPermissionsPanel";
 import { JosekiPageVisits, JosekiStatsModal } from "JosekiStatsModal";
 
 interface JosekiAdminProps {
-    oje_headers: HeadersInit;
     server_url: string;
     user_can_administer: boolean; // allows them to revert changes, give permissions etc
     user_can_edit: boolean; // allows them to filter
@@ -96,11 +96,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
     }
 
     componentDidMount = () => {
-        fetch(this.props.server_url + "appinfo", {
-            mode: "cors",
-            headers: this.props.oje_headers,
-        })
-            .then((res) => res.json())
+        get(this.props.server_url + "appinfo")
             .then((body) => {
                 console.log("App info", body);
                 this.setState({
@@ -139,17 +135,10 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
         // And if there was one, revert it then move on to the next after the previous is done.
         if (current_selections.get(next_selection)) {
             const target_id = next_selection.substring(7); //  get rid of the wierd "select-" from SelectTable
-            // console.log("Revert requested for ", target_id);
-            fetch(this.props.server_url + "revert", {
-                method: "post",
-                mode: "cors",
-                headers: this.props.oje_headers,
-                body: JSON.stringify({ audit_id: target_id }),
-            })
-                .then((res) => res.json())
+
+            post(this.props.server_url + "revert", { audit_id: target_id })
                 .then((body) => {
                     // Display the result of what happened
-                    // console.log("reversion result", body);
                     const next_selections = new Map(current_selections);
                     next_selections.set(next_selection, false);
                     const next_reversions = new Map(this.state.reversions);
@@ -195,11 +184,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
         //    audits_url += `&type=${this.state.filter_audit_type}`;
         //}
 
-        fetch(audits_url, {
-            mode: "cors",
-            headers: this.props.oje_headers,
-        })
-            .then((res) => res.json())
+        get(audits_url)
             .then((body) => {
                 // initialise selections, so we have the full list of them for select-all operations
                 const selections = new Map();
@@ -268,11 +253,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
         const lockdown_url =
             this.props.server_url + "lockdown?lockdown=" + !this.props.db_locked_down;
 
-        fetch(lockdown_url, {
-            method: "put",
-            mode: "cors",
-            headers: this.props.oje_headers,
-        })
+        put(lockdown_url)
             .then(() => {
                 this.props.updateDBLockStatus(!this.props.db_locked_down);
             })
@@ -282,8 +263,6 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
     };
 
     render = () => {
-        // console.log("Joseki Admin render");
-
         // Don't let the user select rows if they can't actually do anything with them.
         const AuditTable = this.props.user_can_administer ? SelectTable : ReactTable;
 
@@ -438,10 +417,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                     <div className="bottom-admin-stuff">
                         <div className="user-admin">
                             <div>{_("Permissions Admin")}</div>
-                            <JosekiPermissionsPanel
-                                oje_headers={this.props.oje_headers}
-                                server_url={this.props.server_url}
-                            />
+                            <JosekiPermissionsPanel server_url={this.props.server_url} />
                         </div>
                         <div className="misc-admin">
                             <button className={"btn"} onClick={this.toggleLockdown}>
