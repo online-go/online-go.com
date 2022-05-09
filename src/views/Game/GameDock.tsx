@@ -84,15 +84,13 @@ export function GameDock({
     const phase = engine.phase;
 
     const user = data.get("user");
-    if (!user) {
-        return <React.Fragment />;
-    }
-    let superuser_ai_review_ready = user.is_superuser && phase === "finished";
-    let mod = user.is_moderator && phase !== "finished";
-    let annul = user.is_moderator && phase === "finished";
+
+    let superuser_ai_review_ready = user?.is_superuser && phase === "finished";
+    let mod = user?.is_moderator && phase !== "finished";
+    let annul = user?.is_moderator && phase === "finished";
     const annulable = !annulled && engine.config.ranked;
     const unannulable = annulled && engine.config.ranked;
-    const user_is_player = engine.isParticipant(user.id);
+    const user_is_player = engine.isParticipant(user?.id || 0);
 
     const review = !!review_id;
     const game = !!game_id;
@@ -112,8 +110,8 @@ export function GameDock({
     const sgf_url = game_id
         ? api1(`games/${game_id}/sgf`)
         : api1(`reviews/${review_id}/sgf?without-comments=1`);
-    let sgf_with_comments_url = null;
-    let sgf_with_ai_review_url = null;
+    let sgf_with_comments_url: string | null = null;
+    let sgf_with_ai_review_url: string | null = null;
     if (game_id) {
         if (selected_ai_review_uuid) {
             sgf_with_ai_review_url = api1(
@@ -393,7 +391,7 @@ export function GameDock({
                 <a
                     style={{
                         visibility:
-                            goban.mode === "play" && engine.playerToMove() !== user.id
+                            goban.mode === "play" && engine.playerToMove() !== user?.id
                                 ? "visible"
                                 : "hidden",
                     }}
