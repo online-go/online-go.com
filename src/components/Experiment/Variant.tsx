@@ -15,22 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.ProfileCard {
-    display: flex;
-    align-items: bottom;
+import * as React from "react";
 
-    .view-and-edit-link {
-        text-align: right;
-    }
-    .profile-right {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        padding-left: 1rem;
-        justify-content: space-between;
-    }
-    .PlayerIcon{
-        width: 80px;
-        height: 80px;
-    }
+export interface VariantProps {
+    value: string; // Value the expiriment name should be set to to use this variant
+    bodyclass?: string; // class added to body tag when this variant is being used
+    children: React.ReactElement[] | React.ReactElement;
+}
+
+export function Variant({ children }: VariantProps): JSX.Element {
+    return <React.Fragment>{children}</React.Fragment>;
 }

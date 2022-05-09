@@ -15,33 +15,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+.IncidentReportIndicator {
+    display: inline-flex;
+    flex-direction: column;
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+    align-items: center;
+    font-size: 0.9rem;
+    cursor: pointer;
 
-.IncidentReportTracker {
-    .incident-icon-container {
-        display: inline-flex;
-        flex-direction: column;
-        padding-right: 0.5rem;
-        padding-left: 0.5rem;
-        align-items: center;
-        font-size: 0.9rem;
-        cursor: pointer;
-
-        // here
-        .fa-exclamation-triangle {
-            themed color reject
-        }
-        .sandbag {
-            themed color info
-        }
-        .count {
-            font-size: font-size-smaller;
-        }
+    // here
+    .fa-exclamation-triangle {
+        themed color reject
     }
-    .incident-icon-container:hover {
+    &:hover {
         .fa-exclamation-triangle {
             themed-lighten color reject 30%
         }
     }
+    .sandbag {
+        themed color info
+    }
+    .count {
+        font-size: font-size-smaller;
+    }
+}
+
+.IncidentReportTracker {
 
     .report-header {
         display: flex;
@@ -124,7 +124,7 @@
     padding: 0.5rem;
     width: 20rem;
     max-width: 100vw;
-    max-height: 100vh - navbar-height;
+    max-height: "calc(100vh - %s)" % navbar-height;
     display: inline-block;
     z-index: z.incident-list;
     right: 0;
@@ -132,4 +132,5 @@
     box-shadow: -2px 2px 1px 0px rgba(0, 0, 0, 0.16);
     themed background-color bg
     themed border-color shade2
+
 }

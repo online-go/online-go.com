@@ -121,6 +121,15 @@ export function Settings(): JSX.Element {
         { key: "blocked_players", label: _("Blocked Players") },
         { key: "account", label: _("Account Settings") },
         { key: "link", label: _("Account Linking") },
+        /*
+        {
+            key: "experiments",
+            label: pgettext(
+                "Optional user interface experiments for user testing and feedback",
+                "Experiments",
+            ),
+        },
+        */
         { key: "logout", label: _("Logout") },
     ];
 
@@ -163,6 +172,11 @@ export function Settings(): JSX.Element {
         case "chat":
             SelectedPage = ChatPreferences;
             break;
+        /*
+        case "experiments":
+            SelectedPage = Experiments;
+            break;
+            */
     }
 
     const props: SettingGroupProps = {
@@ -1233,9 +1247,14 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
     const [rating_graph_plot_by_games, setPlotByGames] = usePreference(
         "rating-graph-plot-by-games",
     );
+    const [enable_v6, setEnableV6]: [boolean, (x: boolean) => void] = React.useState(
+        data.get("experiments.v6") === "enabled",
+    );
 
     const user = data.get("user");
     const desktop_notifications_enableable: boolean = typeof Notification !== "undefined";
+    const v6_experiment_enabled: boolean =
+        window.location.hostname !== "online-go.com" || user.is_moderator;
 
     let desktop_notifications_enabled = false;
     try {
@@ -1432,6 +1451,18 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
             <PreferenceLine title={_("Hide ranks and ratings")}>
                 <Toggle checked={hide_ranks} onChange={setHideRanks} />
             </PreferenceLine>
+
+            {v6_experiment_enabled && (
+                <PreferenceLine title={"Enable experimental interface changes"}>
+                    <Toggle
+                        checked={enable_v6}
+                        onChange={(tf) => {
+                            data.set("experiments.v6", tf ? "enabled" : undefined);
+                            setEnableV6(tf);
+                        }}
+                    />
+                </PreferenceLine>
+            )}
 
             <PreferenceLine title={_("Plot rating graph by")}>
                 <span>{_("Ask me")}</span>
@@ -1725,6 +1756,34 @@ function AssociationSelect({
         </select>
     );
 }
+
+/*
+export function Experiments(): JSX.Element {
+    const [test, setTest] = React.useState<boolean>(data.get("experiments.test") === "a");
+
+    return (
+        <div className="Experiments">
+            <PreferenceLine title={"Enable Experimental Interface Changes"}>
+                <Toggle
+                    checked={test}
+                    onChange={(tf) => {
+                        data.set("experiments.test", tf ? "a" : undefined);
+                        setTest(tf);
+                    }}
+                />
+            </PreferenceLine>
+            <Experiment name="test">
+                <Variant value="a">
+                    <div>Variant div</div>
+                </Variant>
+                <Default>
+                    <div>Default div</div>
+                </Default>
+            </Experiment>
+        </div>
+    );
+}
+*/
 
 function SoundPreferences(): JSX.Element {
     const [tick_tock_start, __setTickTockStart] = usePreference("sound.countdown.tick-tock.start");

@@ -15,22 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.ProfileCard {
-    display: flex;
-    align-items: bottom;
+import * as React from "react";
 
-    .view-and-edit-link {
-        text-align: right;
-    }
-    .profile-right {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        padding-left: 1rem;
-        justify-content: space-between;
-    }
-    .PlayerIcon{
-        width: 80px;
-        height: 80px;
-    }
+interface DefaultProps {
+    children: React.ReactElement[] | React.ReactElement;
+}
+
+export function Default({ children }: DefaultProps): JSX.Element {
+    return <React.Fragment>{children}</React.Fragment>;
 }

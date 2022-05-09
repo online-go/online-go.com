@@ -231,6 +231,7 @@ export interface DataSchema
     [puzzle_last_visited_key: `puzzle.collection.${number}.last-visited`]: number;
     [paginated_table_page_size_key: `paginated-table.${string}.page_size`]: number;
     [dismissed_key: `dismissed.${string}`]: boolean;
+    [experiments_key: `experiments.${string}`]: string;
 
     // Using underscore prefixed keys suppresses type errors. This may be
     // be desired when prototyping a new feature and the structure of the data

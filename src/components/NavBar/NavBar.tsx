@@ -31,7 +31,8 @@ import { KBShortcut } from "KBShortcut";
 import { LanguagePicker } from "LanguagePicker";
 import { GobanThemePicker } from "GobanThemePicker";
 import { IncidentReportTracker } from "IncidentReportTracker";
-import { NotificationIndicator, TurnIndicator, NotificationList } from "Notifications";
+import { NotificationIndicator, NotificationList, notification_manager } from "Notifications";
+import { TurnIndicator } from "TurnIndicator";
 import { TournamentIndicator } from "Announcements";
 import { FriendIndicator } from "FriendList";
 import { Player } from "Player";
@@ -39,6 +40,8 @@ import * as player_cache from "player_cache";
 import * as preferences from "preferences";
 import { ChatIndicator } from "Chat";
 import { logout } from "auth";
+import { Experiment, Variant, Default } from "Experiment";
+import { EXV6NavBar } from "./EXV6NavBar";
 
 const body = $(document.body);
 
@@ -68,8 +71,20 @@ const setThemeDark = setTheme.bind(null, "dark");
 const setThemeAccessible = setTheme.bind(null, "accessible");
 
 export function NavBar(): JSX.Element {
+    return (
+        <Experiment name="v6">
+            <Variant value="enabled">
+                <EXV6NavBar />
+            </Variant>
+            <Default>
+                <OldNavBar />
+            </Default>
+        </Experiment>
+    );
+}
+
+function OldNavBar(): JSX.Element {
     const omnisearch_input_ref = React.useRef<HTMLInputElement>();
-    const notification_list = React.useRef<NotificationList>();
 
     const [user, setUser] = React.useState(data.get("config.user"));
     const [path, setPath] = React.useState(window.location.pathname);
@@ -114,7 +129,7 @@ export function NavBar(): JSX.Element {
     };
     const toggleRightNav = () => {
         if (right_nav_active === false) {
-            notification_list.current.markAllAsRead();
+            notification_manager.event_emitter.emit("notification-count", 0);
         }
         setRightNavActive(!right_nav_active);
     };
@@ -291,7 +306,7 @@ export function NavBar(): JSX.Element {
             {/* Right Nav */}
             {valid_user && (
                 <div className={"rightnav " + (right_nav_active ? "active" : "")}>
-                    <NotificationList ref={notification_list} />
+                    <NotificationList />
 
                     <LineText>{_("Theme")}</LineText>
 

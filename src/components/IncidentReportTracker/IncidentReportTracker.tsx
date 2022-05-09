@@ -237,15 +237,15 @@ export function IncidentReportTracker(): JSX.Element {
     }
 
     return (
-        <div className="IncidentReportTracker">
-            <div className="incident-icon-container" onClick={toggleList}>
+        <>
+            <div className="IncidentReportIndicator" onClick={toggleList}>
                 <i
                     className={`fa fa-exclamation-triangle ${normal_ct > 0 ? "active" : "sandbag"}`}
                 />
                 <span className="count">{normal_ct}</span>
             </div>
             {show_incident_list && (
-                <div>
+                <div className="IncidentReportTracker">
                     <div className="IncidentReportList-backdrop" onClick={toggleList}></div>
                     <div className="IncidentReportList-results">
                         {reports.map((report) => (
@@ -428,6 +428,6 @@ export function IncidentReportTracker(): JSX.Element {
                     </div>
                 </div>
             )}
-        </div>
+        </>
     );
 }

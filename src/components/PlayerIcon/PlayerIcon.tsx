@@ -24,6 +24,7 @@ interface PlayerIconProps {
     user?: any;
     size: number | string;
     className?: string;
+    style?: any;
 }
 
 export function icon_size_url(url: string, size: number): string {
@@ -82,11 +83,17 @@ export function PlayerIcon(props: PlayerIconProps): JSX.Element {
             <img
                 className={`PlayerIcon PlayerIcon-${props.size} ${props.className || ""}`}
                 src={url}
+                style={props.style}
             />
         );
     }
 
-    return <span className={`PlayerIcon PlayerIcon-${props.size} ${props.className || ""}`} />;
+    return (
+        <span
+            className={`PlayerIcon PlayerIcon-${props.size} ${props.className || ""}`}
+            style={props.style}
+        />
+    );
 }
 
 function getId(props: PlayerIconProps): number {

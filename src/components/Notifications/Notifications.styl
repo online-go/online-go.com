@@ -57,69 +57,7 @@ indiciator-size=1.5rem
     }
 }
 
-.turn-indicator {
-    width: 3rem;
 
-    flex: 1;
-    display: flex;
-    align-items: center;
-    align-content: center;
-    justify-content: center;
-    flex-basis: 3rem;
-    cursor: pointer;
-
-    .count {
-        visibility: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
-        width: indiciator-size;
-        height: indiciator-size;
-        border-radius: 50%;
-        text-align: center;
-        border: 2px transparent;
-        font-weight: 700;
-    }
-
-    .active.count {
-        visibility: visible;
-    }
-    .inactive.count {
-        visibility: visible;
-    }
-}
-
-body.light #NavBar .turn-indicator {
-    .count {
-        background-color: #101010;
-        color: #fff;
-    }
-    .inactive.count {
-        background-color: #d2d2d2;
-    }
-}
-
-body.dark #NavBar .turn-indicator {
-    .count {
-        background-color: #bbb;
-        color: #252525;
-    }
-    .inactive.count {
-        background-color: #535353;
-    }
-
-}
-
-body.accessible #NavBar .turn-indicator {
-    .count {
-        background-color: #bbb;
-        color: #252525;
-    }
-    .inactive.count {
-        background-color: #535353;
-    }
-}
 
 notification-list-height=14rem
 
