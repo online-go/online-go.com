@@ -117,11 +117,6 @@ export function PlayControls({
     stopEstimatingScore,
 }: PlayControlsProps): JSX.Element {
     const user = data.get("user");
-
-    if (!goban) {
-        return null;
-    }
-
     const engine = goban.engine;
 
     const user_is_active_player = [engine.players.black.id, engine.players.white.id].includes(
