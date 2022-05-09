@@ -43,7 +43,7 @@ import { JosekiTagSelector, JosekiTag } from "JosekiTagSelector";
 import { Throbber } from "Throbber";
 import { IdType } from "src/lib/types";
 
-const server_url = "/oje/";
+const server_url = data.get("oje-url", "/oje/");
 
 const prefetch_url = (node_id: string, variation_filter?: JosekiFilter, mode?: string) => {
     let prefetch_url = server_url + "positions?id=" + node_id;
