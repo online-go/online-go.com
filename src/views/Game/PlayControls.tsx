@@ -1288,10 +1288,6 @@ export function ReviewControls({
 }: ReviewControlsProps) {
     const user = data.get("user");
 
-    if (!goban) {
-        return null;
-    }
-
     const [review_owner_id, set_review_owner_id] = React.useState<number>();
     const [review_controller_id, set_review_controller_id] = React.useState<number>();
     const [review_out_of_sync, set_review_out_of_sync] = React.useState<boolean>();
