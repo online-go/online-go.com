@@ -202,7 +202,8 @@ export function PlayControls({
             }
 
             setShowUndoRequested(
-                goban.engine.undo_requested === goban.engine.last_official_move.move_number,
+                goban.engine.undo_requested === goban.engine.last_official_move.move_number &&
+                    goban.engine.undo_requested === goban.engine.cur_move.move_number,
             );
         };
         syncShowUndoRequested();
