@@ -142,7 +142,7 @@ import { routes } from "./routes";
 import { errorAlerter, uuid } from "misc";
 import { close_all_popovers } from "popover";
 import * as sockets from "sockets";
-import { _ } from "translate";
+import { _, setCurrentLanguage } from "translate";
 import { init_tabcomplete } from "tabcomplete";
 import * as player_cache from "player_cache";
 import { toast } from "toast";
@@ -151,12 +151,17 @@ import * as moment from "moment";
 import swal from "sweetalert2";
 import { ConfigSchema } from "data_schema";
 import * as history from "history";
-
 import "debug";
 
-/*** Initialize moment in our current language ***/
-declare function getPreferredLanguage();
+/**
+ * getPreferredLanguage() is defined in index.html. It gets the user's chosen
+ * language from preferences.
+ */
+declare function getPreferredLanguage(): string;
+
+// Initialize moment in our current language
 moment.locale(getPreferredLanguage());
+setCurrentLanguage(getPreferredLanguage());
 
 /*** Load our config ***/
 data.watch(cached.config, (config) => {

@@ -140,7 +140,6 @@ function setPluralIdx() {
             pluralidx = (count: number) => (count === 1 ? 0 : 1);
     }
 }
-setPluralIdx();
 
 const debug_wrap = current_language === "debug" ? (s: string) => `[${s}]` : (s: string) => s;
 
@@ -526,7 +525,6 @@ export function setCurrentLanguage(language_code: string) {
     });
     setPluralIdx();
 }
-setCurrentLanguage(current_language);
 
 export default {
     gettext: gettext,

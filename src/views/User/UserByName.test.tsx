@@ -6,12 +6,6 @@ import * as React from "react";
 //import * as requests from "../../lib/requests";
 import { User } from "./User";
 
-// workaround for setGobanTranslations not found error
-// This can probably be fixed by removing sideeffects from translate.ts
-jest.mock("goban", () => ({
-    setGobanTranslations: jest.fn(),
-}));
-
 let container: HTMLDivElement = null;
 beforeEach(() => {
     // setup a DOM element as a render target

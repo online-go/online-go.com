@@ -34,12 +34,6 @@ import {
     effective_outcome,
 } from "./rank_utils";
 
-// workaround for setGobanTranslations not found error
-// This can probably be fixed by removing sideeffects from translate.ts
-jest.mock("goban", () => ({
-    setGobanTranslations: jest.fn(),
-}));
-
 test("rank_to_rating", () => {
     // 30k
     expect(rank_to_rating(0)).toBeCloseTo(525);
