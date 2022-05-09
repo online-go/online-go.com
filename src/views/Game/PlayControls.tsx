@@ -21,12 +21,12 @@ import * as data from "data";
 import {
     Goban,
     JGOFNumericPlayerColor,
-    GoEngineRules,
     GoConditionalMove,
     GobanModes,
     GoEnginePhase,
     AnalysisTool,
     MoveTree,
+    PlayerColor,
 } from "goban";
 import { game_control } from "./game_control";
 import { isLiveGame } from "TimeControl";
@@ -139,13 +139,15 @@ export function PlayControls({
     }, [goban]);
 
     const stone_removal_accept_timeout = React.useRef<NodeJS.Timeout>();
-    const [black_accepted, set_black_accepted] = React.useState<boolean>();
-    const [white_accepted, set_white_accepted] = React.useState<boolean>();
+    const [black_accepted, set_black_accepted] = React.useState(
+        stoneRemovalAccepted(goban, "black"),
+    );
+    const [white_accepted, set_white_accepted] = React.useState(
+        stoneRemovalAccepted(goban, "white"),
+    );
     React.useEffect(() => {
         const syncStoneRemovalAcceptance = () => {
             if (goban.engine.phase === "stone removal") {
-                const stone_removals = goban.engine.getStoneRemovalString();
-
                 if (stone_removal_accept_timeout.current) {
                     clearTimeout(stone_removal_accept_timeout.current);
                 }
@@ -161,12 +163,8 @@ export function PlayControls({
                     device.is_mobile ? 3000 : 1500,
                 );
 
-                set_black_accepted(
-                    goban.engine.players["black"].accepted_stones === stone_removals,
-                );
-                set_white_accepted(
-                    goban.engine.players["white"].accepted_stones === stone_removals,
-                );
+                set_black_accepted(stoneRemovalAccepted(goban, "black"));
+                set_white_accepted(stoneRemovalAccepted(goban, "white"));
             }
         };
         syncStoneRemovalAcceptance();
@@ -179,25 +177,29 @@ export function PlayControls({
         goban.on("stone-removal.updated", syncStoneRemovalAcceptance);
     }, [goban]);
 
-    const [strict_seki_mode, set_strict_seki_mode] = React.useState(false);
+    const [strict_seki_mode, set_strict_seki_mode] = React.useState(goban.engine.strict_seki_mode);
     React.useEffect(() => {
         goban.on("load", () => set_strict_seki_mode(goban.engine.strict_seki_mode));
         goban.on("strict_seki_mode", set_strict_seki_mode);
     }, [goban]);
 
-    const [paused, setPaused] = React.useState<boolean>();
+    const [paused, setPaused] = React.useState(goban.pause_control && !!goban.pause_control.paused);
     React.useEffect(() => {
         goban.on("load", () => setPaused(goban.pause_control && !!goban.pause_control.paused));
         goban.on("paused", setPaused);
     }, [goban]);
 
-    const [cur_move_number, setCurMoveNumber] = React.useState<number>();
+    const [cur_move_number, setCurMoveNumber] = React.useState(
+        goban.engine.cur_move?.move_number || -1,
+    );
     React.useEffect(() => {
         goban.on("load", () => setCurMoveNumber(goban.engine.cur_move?.move_number || -1));
         goban.on("cur_move", (move) => setCurMoveNumber(move.move_number));
     }, [goban]);
 
-    const [show_undo_requested, setShowUndoRequested] = React.useState<boolean>();
+    const [show_undo_requested, setShowUndoRequested] = React.useState(
+        goban.engine.undo_requested === goban.engine.last_official_move.move_number,
+    );
     React.useEffect(() => {
         const syncShowUndoRequested = () => {
             if (game_control.in_pushed_analysis) {
@@ -215,17 +217,15 @@ export function PlayControls({
         goban.on("last_official_move", syncShowUndoRequested);
     });
 
-    const [winner, set_winner] = React.useState<"black" | "white">();
-    console.log("winner", winner);
+    const [winner, set_winner] = React.useState(goban.engine.winner);
     React.useEffect(() => {
-        goban.on("load", () => {
-            set_winner(goban.engine.winner);
-            console.log("loaded!!!", goban.engine.winner);
-        });
+        goban.on("load", () => set_winner(goban.engine.winner));
         goban.on("winner", set_winner);
     }, [goban]);
 
-    const [official_move_number, set_official_move_number] = React.useState<number>();
+    const [official_move_number, set_official_move_number] = React.useState(
+        goban.engine.last_official_move?.move_number || -1,
+    );
     React.useEffect(() => {
         goban.on("load", () =>
             set_official_move_number(goban.engine.last_official_move?.move_number || -1),
@@ -233,7 +233,7 @@ export function PlayControls({
         goban.on("last_official_move", (move) => set_official_move_number(move.move_number));
     }, [goban]);
 
-    const [rules, set_rules] = React.useState<GoEngineRules>();
+    const [rules, set_rules] = React.useState(goban.engine.rules);
     React.useEffect(() => {
         goban.on("load", () => set_rules(goban.engine.rules));
         goban.on("rules", set_rules);
@@ -324,7 +324,7 @@ export function PlayControls({
     return (
         <div className="play-controls">
             <div className="game-action-buttons">
-                {((mode === "play" && phase === "play") || null) && (
+                {mode === "play" && phase === "play" && user_is_player && (
                     <PlayButtons
                         resign_text={resign_text}
                         show_undo_requested={show_undo_requested}
@@ -334,7 +334,6 @@ export function PlayControls({
                         goban={goban}
                         show_cancel={show_cancel}
                         view_mode={view_mode}
-                        user_is_player={user_is_player}
                     />
                 )}
             </div>
@@ -670,7 +669,6 @@ interface PlayButtonsProps {
 
     view_mode: ViewMode;
     resign_text: string;
-    user_is_player: boolean;
 }
 
 function PlayButtons({
@@ -682,7 +680,6 @@ function PlayButtons({
     onCancel,
     view_mode,
     resign_text,
-    user_is_player,
 }: PlayButtonsProps) {
     const engine = goban.engine;
     const phase = engine.phase;
@@ -799,7 +796,7 @@ function PlayButtons({
                 )}
             </span>
             <span>
-                {((show_cancel && user_is_player && phase !== "finished") || null) && (
+                {show_cancel && phase !== "finished" && (
                     <CancelButton view_mode={view_mode} onClick={onCancel}>
                         {resign_text}
                     </CancelButton>
@@ -1525,4 +1522,13 @@ function ShareAnalysisButton(props: ShareAnalysisButtonProperties): JSX.Element 
                 </button>
             );
     }
+}
+
+function stoneRemovalAccepted(goban: Goban, color: PlayerColor) {
+    const engine = goban.engine;
+
+    if (engine.phase !== "stone removal") {
+        return undefined;
+    }
+    return engine.players[color].accepted_stones === engine.getStoneRemovalString();
 }
