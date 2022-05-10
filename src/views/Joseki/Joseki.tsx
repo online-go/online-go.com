@@ -1135,7 +1135,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                     .filter((t) => t.count > 0)
                     .map((t, idx) => (
                         <div className="variation-count-item" key={idx}>
-                            <span>{t.tagname}:</span>
+                            <span>{pgettext("This is a Joseki Tag", t.tagname)}:</span>
                             <span>{t.count}</span>
                         </div>
                     ))}
@@ -1150,7 +1150,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                   .sort((a, b) => Math.sign(a.group - b.group))
                   .map((tag, idx) => (
                       <div className="position-tag" key={idx}>
-                          <span>{tag["description"]}</span>
+                          <span>{pgettext("This is a Joseki Tag", tag["description"])}</span>
                       </div>
                   ));
 
