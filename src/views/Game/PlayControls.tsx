@@ -59,7 +59,7 @@ interface PlayControlsProps {
     view_mode: ViewMode;
     user_is_player: boolean;
 
-    review_list: Array<{ owner: PlayerCacheEntry; id: number }>;
+    readonly review_list: Array<{ owner: PlayerCacheEntry; id: number }>;
 
     stashed_conditional_moves: GoConditionalMove;
 
