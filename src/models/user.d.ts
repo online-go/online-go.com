@@ -90,7 +90,7 @@ declare namespace rest_api {
                 [game_type in
                     | import("../lib/types").Size
                     | import("../lib/types").Speed
-                    | `${import("../lib/types").Speed}-${import("../lib/types").Size}`]: RatingsConfig;
+                    | `${import("../lib/types").Speed}-${import("../lib/types").Size}`]?: RatingsConfig;
             };
             country: string; // country code
             language: string;
