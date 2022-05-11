@@ -222,7 +222,7 @@ export function IncidentReportTracker(): JSX.Element {
 
     const user = data.get("user");
 
-    if (reports.length === 0) {
+    if (reports.length === 0 && !user.is_moderator) {
         return null;
     }
 
