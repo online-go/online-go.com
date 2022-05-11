@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { pgettext } from "translate";
 
 import Select, { MultiValue } from "react-select";
 
@@ -52,7 +53,12 @@ export function JosekiTagSelector(props: JosekiTagSelectorProps) {
                         {...innerProps}
                         className={(isFocused ? "focused " : "") + (isSelected ? "selected" : "")}
                     >
-                        {data.label}
+                        {
+                            pgettext(
+                                "This is a Joseki Tag",
+                                data.label,
+                            ) /* translation of tag labels is forced in Joseki constructor */
+                        }
                     </div>
                 ),
             }}

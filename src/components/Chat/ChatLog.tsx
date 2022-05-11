@@ -172,10 +172,6 @@ function ChannelTopic({
     showingGames,
     canShowGames,
 }: InternalChatLogProperties): JSX.Element {
-    if (hideTopic) {
-        return null;
-    }
-
     const user = data.get("user");
 
     const [editing, set_editing]: [boolean, (tf: boolean) => void] = useState(false as boolean);
@@ -293,7 +289,9 @@ function ChannelTopic({
         [channel, partChannel],
     );
 
-    //const channel_leavable = global_channels.filter(chan => chan.id === channel && chan.primary_language).length === 0;
+    if (hideTopic) {
+        return null;
+    }
 
     return (
         <div className="ChatHeader" style={banner ? { backgroundImage: `url("${banner}")` } : {}}>

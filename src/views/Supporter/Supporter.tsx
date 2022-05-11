@@ -513,14 +513,6 @@ export function PriceBox({
     const paypal_amount = zero_decimal_to_paypal_amount_string(currency, amount);
     const cdn_release = data.get("config.cdn_release");
 
-    if (!config) {
-        return <div>{_("Loading")}</div>;
-    }
-
-    if (!price.active) {
-        return null;
-    }
-
     React.useEffect(() => {
         function updateMoreLocations() {
             setMorLocations(data.get("config.billing_mor_locations") || []);
@@ -528,6 +520,14 @@ export function PriceBox({
         data.watch("config.billing_mor_locations", updateMoreLocations);
         return () => data.unwatch("config.billing_mor_locations", updateMoreLocations);
     }, []);
+
+    if (!config) {
+        return <div>{_("Loading")}</div>;
+    }
+
+    if (!price.active) {
+        return null;
+    }
 
     function stripe_subscribe() {
         //this.setState({disable_payment_buttons: true});
