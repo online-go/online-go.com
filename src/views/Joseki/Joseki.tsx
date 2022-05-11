@@ -24,8 +24,8 @@ import ReactResizeDetector from "react-resize-detector";
 import * as queryString from "query-string";
 
 import * as data from "data";
+import { _, interpolate, pgettext, npgettext } from "translate";
 import { get, put, post } from "requests";
-import { _, interpolate, npgettext } from "translate";
 import { KBShortcut } from "KBShortcut";
 import { PersistentElement } from "PersistentElement";
 import { Goban, GoMath, GobanConfig } from "goban";
@@ -259,6 +259,47 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
 
         this.goban_div = document.createElement("div");
         this.goban_div.className = "Goban";
+
+        // arange translation of known joseki tags
+        // (these values come from the Joseki Tags table on the server)
+        try {
+            pgettext("This is a Joseki Tag", "Joseki: Done");
+            pgettext("This is a Joseki Tag", "Fuseki: Done");
+            pgettext("This is a Joseki Tag", "Current");
+            pgettext("This is a Joseki Tag", "Basic");
+            pgettext("This is a Joseki Tag", "Position is settled");
+            pgettext("This is a Joseki Tag", "Fighting pattern");
+            pgettext("This is a Joseki Tag", "Black gets the corner");
+            pgettext("This is a Joseki Tag", "Black gets the corner and top");
+            pgettext("This is a Joseki Tag", "Black gets the corner and center");
+            pgettext("This is a Joseki Tag", "Black gets the corner and right");
+            pgettext("This is a Joseki Tag", "Black gets the corner, top and center");
+            pgettext("This is a Joseki Tag", "Black gets the corner, top and right");
+            pgettext("This is a Joseki Tag", "Black gets the corner, center and right");
+            pgettext("This is a Joseki Tag", "Black gets the top");
+            pgettext("This is a Joseki Tag", "Black gets the centre");
+            pgettext("This is a Joseki Tag", "Black gets the right");
+            pgettext("This is a Joseki Tag", "Black gets the top and centre");
+            pgettext("This is a Joseki Tag", "Black gets the top and right");
+            pgettext("This is a Joseki Tag", "Black gets the centre and right");
+            pgettext("This is a Joseki Tag", "White gets the corner");
+            pgettext("This is a Joseki Tag", "White gets the corner and top");
+            pgettext("This is a Joseki Tag", "White gets the corner and center");
+            pgettext("This is a Joseki Tag", "White gets the corner and right");
+            pgettext("This is a Joseki Tag", "White gets the corner, top and center");
+            pgettext("This is a Joseki Tag", "White gets the corner, top and right");
+            pgettext("This is a Joseki Tag", "White gets the corner, center and right");
+            pgettext("This is a Joseki Tag", "White gets the top");
+            pgettext("This is a Joseki Tag", "White gets the centre");
+            pgettext("This is a Joseki Tag", "White gets the right");
+            pgettext("This is a Joseki Tag", "White gets the top and centre");
+            pgettext("This is a Joseki Tag", "White gets the top and right");
+            pgettext("This is a Joseki Tag", "White gets the centre and right");
+            pgettext("This is a Joseki Tag", "Black gets sente");
+            pgettext("This is a Joseki Tag", "White gets sente");
+        } catch (e) {
+            console.log(e);
+        }
     }
 
     initializeGoban = (initial_position?) => {
@@ -1094,7 +1135,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                     .filter((t) => t.count > 0)
                     .map((t, idx) => (
                         <div className="variation-count-item" key={idx}>
-                            <span>{t.tagname}:</span>
+                            <span>{pgettext("This is a Joseki Tag", t.tagname)}:</span>
                             <span>{t.count}</span>
                         </div>
                     ))}
@@ -1109,7 +1150,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                   .sort((a, b) => Math.sign(a.group - b.group))
                   .map((tag, idx) => (
                       <div className="position-tag" key={idx}>
-                          <span>{tag["description"]}</span>
+                          <span>{pgettext("This is a Joseki Tag", tag["description"])}</span>
                       </div>
                   ));
 

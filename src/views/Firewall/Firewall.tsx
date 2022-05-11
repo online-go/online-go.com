@@ -103,9 +103,6 @@ interface FirewallRule {
 
 export function Firewall(): JSX.Element {
     const user = data.get("user");
-    if (!user.is_moderator) {
-        return null;
-    }
 
     const table_ref = React.useRef(null);
 
@@ -131,6 +128,10 @@ export function Firewall(): JSX.Element {
     }
 
     const new_rule = React.useRef(new_rule_def);
+
+    if (!user.is_moderator) {
+        return null;
+    }
 
     return (
         <div className="Firewall">
@@ -360,10 +361,6 @@ interface RuleEditorProps {
 }
 
 function RuleEditor({ rule, parent, refresh }: RuleEditorProps): JSX.Element {
-    if (!rule) {
-        return null;
-    }
-
     const [field, setField] = React.useState(rule.field);
     const [value, setValue]: [string | number | boolean, (tf: string | number | boolean) => void] =
         React.useState(rule.value as string | number | boolean);
@@ -385,6 +382,10 @@ function RuleEditor({ rule, parent, refresh }: RuleEditorProps): JSX.Element {
         };
         rule.children.push(new_rule);
         refresh();
+    }
+
+    if (!rule) {
+        return null;
     }
 
     return (

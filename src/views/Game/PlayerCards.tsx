@@ -60,9 +60,6 @@ export function PlayerCards({
     show_title,
     title,
 }: PlayerCardsProps): JSX.Element {
-    if (!goban) {
-        return <React.Fragment />;
-    }
     const engine = goban.engine;
 
     const orig_marks = React.useRef<string | null>(null);
