@@ -8,7 +8,13 @@ module.exports = {
         project: "tsconfig.json",
         sourceType: "module",
     },
-    plugins: ["eslint-plugin-jsdoc", "@typescript-eslint", "@typescript-eslint/tslint", "prettier"],
+    plugins: [
+        "eslint-plugin-jsdoc",
+        "@typescript-eslint",
+        "@typescript-eslint/tslint",
+        "prettier",
+        "react-hooks",
+    ],
     extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
     rules: {
         // Recommended rules with errors
@@ -119,6 +125,7 @@ module.exports = {
                 },
             },
         ],
+        "react-hooks/rules-of-hooks": "error",
     },
     overrides: [
         {
