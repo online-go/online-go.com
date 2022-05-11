@@ -26,7 +26,7 @@ import { ValidPreference } from "preferences";
 import { Link, useParams } from "react-router-dom";
 import { _, pgettext, interpolate } from "translate";
 import { post, get, put, del, abort_requests_in_flight, getCookie } from "requests";
-import { errorAlerter, errorLogger, ignore, Timeout, dup } from "misc";
+import { errorAlerter, errorLogger, ignore, Timeout, dup, dev_site } from "misc";
 import { durationString } from "TimeControl";
 import { allRanks, IRankInfo } from "rank_utils";
 import { Card } from "material";
@@ -1355,10 +1355,13 @@ function GeneralPreferences(props: SettingGroupProps): JSX.Element {
         }).catch(errorAlerter);
     }
 
-    const language_options = Object.entries(languages).map((lang_entry) => ({
-        value: lang_entry[0],
-        label: lang_entry[1],
-    }));
+    const show_debug_language = dev_site();
+    const language_options = Object.entries(languages)
+        .filter((lang_entry) => show_debug_language || lang_entry[0] !== "debug")
+        .map((lang_entry) => ({
+            value: lang_entry[0],
+            label: lang_entry[1],
+        }));
 
     function setLanguage(language_code: string) {
         preferences.set("language", language_code);

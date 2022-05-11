@@ -1239,3 +1239,9 @@ export function skew_clock(ms: number): void {
     Date.now = () => real_now() + ms;
 }
 (window as any).skew_clock = skew_clock;
+
+/** Returns true if we are running in local development or on a beta site.
+ * False if we are running in production. */
+export function dev_site(): boolean {
+    return window.location.hostname !== "online-go.com" && window.location.hostname !== "baduk.com";
+}
