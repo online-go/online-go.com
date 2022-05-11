@@ -240,7 +240,7 @@ export function IncidentReportTracker(): JSX.Element {
         <>
             <div className="IncidentReportIndicator" onClick={toggleList}>
                 <i className={`fa fa-exclamation-triangle ${normal_ct > 0 ? "active" : ""}`} />
-                <span className="count">{normal_ct}</span>
+                <span className={`count ${normal_ct > 0 ? "active" : ""}`}>{normal_ct}</span>
             </div>
             {show_incident_list && (
                 <div className="IncidentReportTracker">

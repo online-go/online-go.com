@@ -25,19 +25,22 @@
     cursor: pointer;
     themed color shade3
 
-    .fa-exclamation-triangle.reject {
+    .fa-exclamation-triangle.active {
         themed color reject
     }
     &:hover {
         .fa-exclamation-triangle {
             themed color shade2
         }
-        .fa-exclamation-triangle.reject {
+        .fa-exclamation-triangle.active {
             themed-lighten color reject 30%
         }
     }
     .count {
         font-size: font-size-smaller;
+        &.active {
+            themed color fg
+        }
     }
 }
 
