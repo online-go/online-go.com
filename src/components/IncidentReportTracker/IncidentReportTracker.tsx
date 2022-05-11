@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { _ } from "translate";
+import { _, pgettext } from "translate";
 import { socket } from "sockets";
 import { post } from "requests";
 import * as data from "data";
@@ -239,15 +239,21 @@ export function IncidentReportTracker(): JSX.Element {
     return (
         <>
             <div className="IncidentReportIndicator" onClick={toggleList}>
-                <i
-                    className={`fa fa-exclamation-triangle ${normal_ct > 0 ? "active" : "sandbag"}`}
-                />
+                <i className={`fa fa-exclamation-triangle ${normal_ct > 0 ? "active" : ""}`} />
                 <span className="count">{normal_ct}</span>
             </div>
             {show_incident_list && (
                 <div className="IncidentReportTracker">
                     <div className="IncidentReportList-backdrop" onClick={toggleList}></div>
                     <div className="IncidentReportList-results">
+                        {reports.length === 0 && (
+                            <div>
+                                {pgettext(
+                                    "Shown to moderators when there are no active reports",
+                                    "No reports left, great job team!",
+                                )}
+                            </div>
+                        )}
                         {reports.map((report) => (
                             <div className="incident" key={report.id}>
                                 <div className="report-header">
