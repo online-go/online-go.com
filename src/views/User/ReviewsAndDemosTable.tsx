@@ -103,6 +103,7 @@ export function ReviewsAndDemosTable(props: ReviewsAndDemosProps): JSX.Element {
                         }}
                         orderBy={["-created"]}
                         groom={review_history_groomer}
+                        pageSizeOptions={[10, 15, 25]}
                         onRowClick={(ref, ev) => openUrlIfALinkWasNotClicked(ev, ref.href)}
                         columns={[
                             {
