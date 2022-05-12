@@ -670,6 +670,9 @@ export function Game(): JSX.Element {
 
     const leaveScoreEstimation = () => {
         set_estimating_score(false);
+        if (!goban.current) {
+            return;
+        }
         goban.current.setScoringMode(false);
         goban.current.hideScores();
         goban.current.score_estimate = null;
@@ -738,11 +741,14 @@ export function Game(): JSX.Element {
         goban.current.setScoringMode(true, use_ai_estimate);
         return true;
     };
-    const stopEstimatingScore = (): MoveTree => {
+    const stopEstimatingScore = (): MoveTree | null => {
         if (!estimating_score) {
             return null;
         }
         set_estimating_score(false);
+        if (!goban.current) {
+            return null;
+        }
         const ret = goban.current.setScoringMode(false);
         goban.current.hideScores();
         goban.current.score_estimate = null;
@@ -1295,7 +1301,7 @@ export function Game(): JSX.Element {
         goban.current.on("cur_move", () => set_score(goban.current.engine.computeScore(true)));
         goban.current.on("score_estimate", (est) => {
             set_score_estimate_winner(est?.winner || "");
-            set_score_estimate_amount(est?.amount || "");
+            set_score_estimate_amount(est?.amount);
         });
         goban.current.on("undo_requested", set_undo_requested);
         goban.current.on("cur_move", sync_resign_text);
