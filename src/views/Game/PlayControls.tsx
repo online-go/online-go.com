@@ -918,7 +918,7 @@ function createConditionalMoveTreeDisplay(
 }
 
 interface EstimateScoreProps {
-    score_estimate_winner: string;
+    score_estimate_winner?: string;
     score_estimate_amount?: number;
 }
 export function EstimateScore({
