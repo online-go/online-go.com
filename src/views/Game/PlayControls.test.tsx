@@ -73,22 +73,96 @@ const PLAY_CONTROLS_DEFAULTS = {
     },
 } as const;
 
-test("Renders play controls", () => {
-    const goban = new Goban({ game_id: 1234 });
+test("Show only cancel if no moves have been played", () => {
+    const goban = new Goban({
+        game_id: 1234,
+    });
     data.set("user", TEST_USER);
-    render(<PlayControls goban={goban} {...PLAY_CONTROLS_DEFAULTS} />);
 
-    // TODO: figure out how to play moves on Goban wihtout socket connection so
-    // that we can test existence of undo button
-    expect(screen.getByText("Resign")).toBeDefined();
+    render(<PlayControls goban={goban} {...PLAY_CONTROLS_DEFAULTS} resign_text="Cancel Game" />);
+
+    expect(screen.getByText("Cancel Game")).toBeDefined();
+    expect(screen.queryByText("Undo")).toBeNull();
+    expect(screen.queryByText("Accept Undo")).toBeNull();
+    expect(screen.queryByText("Submit")).toBeNull();
+    expect(screen.queryByText("Pass")).toBeNull();
 });
 
-test("Renders play controls", () => {
+test("Don't render play buttons if user is not a player", () => {
     const goban = new Goban({ game_id: 1234 });
     data.set("user", TEST_USER);
+
     render(<PlayControls goban={goban} {...PLAY_CONTROLS_DEFAULTS} user_is_player={false} />);
 
-    // TODO: figure out how to play moves on Goban wihtout socket connection so
-    // that we can test existence of undo button
     expect(screen.queryByText("Resign")).toBeNull();
+    expect(screen.queryByText("Undo")).toBeNull();
+    expect(screen.queryByText("Accept Undo")).toBeNull();
+    expect(screen.queryByText("Submit")).toBeNull();
+    expect(screen.queryByText("Pass")).toBeNull();
+});
+
+test("Renders undo if it is not the players turn", () => {
+    const goban = new Goban({
+        game_id: 1234,
+        // Need to play at least one move before Undo button shows up
+        moves: [
+            [15, 15, 5241],
+            [2, 2, 68110],
+            [16, 2, 53287],
+        ],
+    });
+    data.set("user", TEST_USER);
+
+    render(<PlayControls goban={goban} {...PLAY_CONTROLS_DEFAULTS} />);
+
+    expect(screen.getByText("Undo")).toBeDefined();
+    expect(screen.queryByText("Accept Undo")).toBeNull();
+});
+
+test("Renders accept undo if undo requested", () => {
+    const goban = new Goban({
+        game_id: 1234,
+        // Need to play at least one move before Undo button shows up
+        moves: [
+            [15, 15, 5241],
+            [2, 2, 68110],
+            [16, 2, 53287],
+        ],
+        players: {
+            // Since three moves have been played, it's white's turn
+            // That is one of the requirements for "accept undo" showing up.
+            white: { id: 123, username: "test_user" },
+            black: { id: 456, username: "test_user2" },
+        },
+    });
+    goban.engine.undo_requested = 3;
+    data.set("user", TEST_USER);
+
+    render(<PlayControls goban={goban} {...PLAY_CONTROLS_DEFAULTS} />);
+
+    expect(screen.queryByText("Undo")).toBeNull();
+    expect(screen.getByText("Accept Undo")).toBeDefined();
+    expect(screen.getByText("Undo Requested")).toBeDefined();
+});
+
+test("Renders Pass if it is the user's turn", () => {
+    const goban = new Goban({
+        game_id: 1234,
+        moves: [
+            [15, 15, 5241],
+            [2, 2, 68110],
+            [16, 2, 53287],
+        ],
+        players: {
+            // Since three moves have been played, it's white's turn
+            white: { id: 123, username: "test_user" },
+            black: { id: 456, username: "test_user2" },
+        },
+    });
+    goban.engine.undo_requested = 3;
+    data.set("user", TEST_USER);
+
+    render(<PlayControls goban={goban} {...PLAY_CONTROLS_DEFAULTS} />);
+
+    expect(screen.getByText("Pass")).toBeDefined();
 });
