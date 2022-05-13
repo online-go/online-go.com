@@ -407,9 +407,11 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                     ]}
                 />
                 <div className="explorer-stats">
-                    <span>Page visits: {this.state.page_visits || "..."}</span>
+                    <span>
+                        {_("Page visits")}: {this.state.page_visits || "..."}
+                    </span>
                     <button className="btn s" onClick={this.showVisitStats}>
-                        details
+                        {_("details")}
                     </button>
                 </div>
 
