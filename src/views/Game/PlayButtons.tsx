@@ -195,34 +195,26 @@ export function CancelButton({ className, goban }: CancelButtonProps) {
             dropping_from_casual_rengo = goban.engine.rengo_teams[team].length > 1;
         }
 
-        if (resign_mode === "cancel") {
-            swal({
-                text: _("Are you sure you wish to cancel this game?"),
-                confirmButtonText: _("Yes"),
-                cancelButtonText: _("No"),
-                showCancelButton: true,
-                focusCancel: true,
-            })
-                .then(() => goban.cancelGame())
-                .catch(() => 0);
-        } else {
-            swal({
-                text: dropping_from_casual_rengo
-                    ? _("Are you sure you want to abandon your team?")
-                    : _("Are you sure you wish to resign this game?"),
-                confirmButtonText: _("Yes"),
-                cancelButtonText: _("No"),
-                showCancelButton: true,
-                focusCancel: true,
-            })
-                .then(() => goban.resign())
-                .catch(() => 0);
-        }
+        const text =
+            resign_mode === "cancel"
+                ? _("Are you sure you wish to cancel this game?")
+                : dropping_from_casual_rengo
+                ? _("Are you sure you want to abandon your team?")
+                : _("Are you sure you wish to resign this game?");
+        const cb = resign_mode === "cancel" ? () => goban.cancelGame() : () => goban.resign();
+
+        swal({
+            text: text,
+            confirmButtonText: _("Yes"),
+            cancelButtonText: _("No"),
+            showCancelButton: true,
+            focusCancel: true,
+        })
+            .then(cb)
+            .catch(swal.noop);
     };
 
     return (
-        // portrait: bold reject
-        // otherwise: bold xs
         <button className={`cancel-button ${className}`} onClick={cancelOrResign}>
             {resign_mode === "cancel" ? _("Cancel Game") : _("Resign")}
         </button>
