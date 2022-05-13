@@ -23,13 +23,12 @@ import * as preferences from "preferences";
 import * as data from "data";
 import { game_control } from "./game_control";
 import swal from "sweetalert2";
+import { useUndoRequested } from "./GameHooks";
 
 interface PlayButtonsProps {
     cur_move_number: number;
     goban: Goban;
     player_to_move: number;
-    // Is this variable any different from show_accept_undo? -BPJ
-    show_undo_requested: boolean;
 
     // This option exists because Cancel Button is placed below
     // chat on mobile layouts.
@@ -40,7 +39,6 @@ export function PlayButtons({
     cur_move_number,
     goban,
     player_to_move,
-    show_undo_requested,
     show_cancel,
 }: PlayButtonsProps): JSX.Element {
     const engine = goban.engine;
@@ -89,6 +87,7 @@ export function PlayButtons({
         goban.on("cur_move", syncShowAcceptUndo);
         goban.on("submit_move", syncShowAcceptUndo);
     }, [goban]);
+    const show_undo_requested = useUndoRequested(goban);
 
     const onUndo = () => {
         if (

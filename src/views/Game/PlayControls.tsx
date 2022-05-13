@@ -26,7 +26,6 @@ import {
     MoveTree,
     PlayerColor,
 } from "goban";
-import { game_control } from "./game_control";
 import device from "device";
 import swal from "sweetalert2";
 import { challengeRematch } from "ChallengeModal";
@@ -42,6 +41,7 @@ import { errorAlerter } from "misc";
 import { close_all_popovers } from "popover";
 import { setExtraActionCallback, Player } from "Player";
 import { PlayButtons } from "./PlayButtons";
+import { useUndoRequested } from "./GameHooks";
 
 interface PlayControlsProps {
     goban: Goban;
@@ -183,26 +183,7 @@ export function PlayControls({
         goban.on("cur_move", (move) => setCurMoveNumber(move.move_number));
     }, [goban]);
 
-    const [show_undo_requested, setShowUndoRequested] = React.useState(
-        goban.engine.undo_requested === goban.engine.last_official_move.move_number,
-    );
-    React.useEffect(() => {
-        const syncShowUndoRequested = () => {
-            if (game_control.in_pushed_analysis) {
-                return;
-            }
-
-            setShowUndoRequested(
-                goban.engine.undo_requested === goban.engine.last_official_move.move_number &&
-                    goban.engine.undo_requested === goban.engine.cur_move.move_number,
-            );
-        };
-        syncShowUndoRequested();
-
-        goban.on("load", syncShowUndoRequested);
-        goban.on("undo_requested", syncShowUndoRequested);
-        goban.on("last_official_move", syncShowUndoRequested);
-    });
+    const show_undo_requested = useUndoRequested(goban);
 
     const [winner, set_winner] = React.useState(goban.engine.winner);
     React.useEffect(() => {
@@ -313,7 +294,6 @@ export function PlayControls({
             <div className="game-action-buttons">
                 {mode === "play" && phase === "play" && user_is_player && (
                     <PlayButtons
-                        show_undo_requested={show_undo_requested}
                         cur_move_number={cur_move_number}
                         player_to_move={player_to_move}
                         goban={goban}
