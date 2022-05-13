@@ -73,3 +73,26 @@ export function useCurrentMoveNumber(goban: GobanCore): number {
     }, [goban]);
     return cur_move_number;
 }
+
+/** React hook that returns the current player whose move it is.
+ *
+ * @returns the player ID of the player whose turn it is.
+ */
+export function usePlayerToMove(goban?: GobanCore): number {
+    const [player_to_move, set_player_to_move] = React.useState<number>();
+    React.useEffect(() => {
+        if (!goban) {
+            set_player_to_move(0);
+            return;
+        }
+        const sync_move_info = () => {
+            set_player_to_move(goban.engine.playerToMove());
+        };
+        sync_move_info();
+        goban.on("load", sync_move_info);
+        goban.on("cur_move", sync_move_info);
+        goban.on("last_official_move", sync_move_info);
+    }, [goban]);
+
+    return player_to_move;
+}

@@ -135,7 +135,6 @@ export function Game(): JSX.Element {
     const [score_estimate_winner, set_score_estimate_winner] = React.useState<string>();
     const [score_estimate_amount, set_score_estimate_amount] = React.useState<number>();
     const [show_title, set_show_title] = React.useState<boolean>();
-    const [player_to_move, set_player_to_move] = React.useState<number>();
     const [, set_undo_requested] = React.useState<number | undefined>();
     const [, forceUpdate] = React.useState<number>();
 
@@ -809,7 +808,6 @@ export function Game(): JSX.Element {
         <PlayControls
             goban={goban.current}
             show_cancel={show_cancel}
-            player_to_move={player_to_move}
             review_list={review_list}
             stashed_conditional_moves={stashed_conditional_moves.current}
             mode={mode}
@@ -1174,10 +1172,6 @@ export function Game(): JSX.Element {
                     null,
             );
 
-        const sync_move_info = () => {
-            set_player_to_move(goban.current.engine.playerToMove());
-        };
-
         const sync_stone_removal = () => {
             const engine = goban.current.engine;
 
@@ -1208,7 +1202,6 @@ export function Game(): JSX.Element {
             set_undo_requested(engine.undo_requested);
 
             sync_show_title();
-            sync_move_info();
             sync_stone_removal();
 
             // These are only updated on load events
@@ -1253,8 +1246,6 @@ export function Game(): JSX.Element {
         goban.current.on("undo_requested", set_undo_requested);
         goban.current.on("cur_move", sync_show_title);
         goban.current.on("submit_move", sync_show_title);
-        goban.current.on("cur_move", sync_move_info);
-        goban.current.on("last_official_move", sync_move_info);
 
         goban.current.on("phase", sync_stone_removal);
         goban.current.on("mode", sync_stone_removal);
@@ -1557,7 +1548,6 @@ export function Game(): JSX.Element {
                             historical_white={historical_white}
                             black_auto_resign_expiration={black_auto_resign_expiration}
                             white_auto_resign_expiration={white_auto_resign_expiration}
-                            player_to_move={player_to_move}
                             game_id={game_id}
                             review_id={review_id}
                             estimating_score={estimating_score}
@@ -1627,7 +1617,6 @@ export function Game(): JSX.Element {
                                 historical_white={historical_white}
                                 black_auto_resign_expiration={black_auto_resign_expiration}
                                 white_auto_resign_expiration={white_auto_resign_expiration}
-                                player_to_move={player_to_move}
                                 game_id={game_id}
                                 review_id={review_id}
                                 estimating_score={estimating_score}

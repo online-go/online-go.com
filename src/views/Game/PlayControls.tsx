@@ -45,7 +45,6 @@ import { useCurrentMoveNumber, useUndoRequested, useUserIsParticipant } from "./
 
 interface PlayControlsProps {
     goban: Goban;
-    player_to_move: number;
 
     // Cancel buttons are in props because the Cancel Button is placed below
     // chat on mobile.
@@ -98,7 +97,6 @@ export function PlayControls({
     zen_mode,
     selected_chat_log,
     onShareAnalysis,
-    player_to_move,
     variation_name,
     updateVariationName,
     variationKeyPress,
@@ -285,11 +283,7 @@ export function PlayControls({
         <div className="play-controls">
             <div className="game-action-buttons">
                 {mode === "play" && phase === "play" && user_is_player && (
-                    <PlayButtons
-                        player_to_move={player_to_move}
-                        goban={goban}
-                        show_cancel={show_cancel}
-                    />
+                    <PlayButtons goban={goban} show_cancel={show_cancel} />
                 )}
             </div>
             <div className="game-state">
