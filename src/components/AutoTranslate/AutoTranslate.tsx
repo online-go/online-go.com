@@ -89,9 +89,21 @@ export function AutoTranslate({
 }
 
 async function auto_translate(text: string): Promise<Translation> {
-    const res = await post("/termination-api/translate", {
-        source: text,
-        language: current_language,
-    });
+    let res: Promise<Translation>;
+
+    console.log(current_language);
+    if (current_language === "debug") {
+        res = Promise.resolve({
+            source_language: null,
+            source_text: text,
+            target_language: "debug",
+            target_text: `[${text}]`,
+        });
+    } else {
+        res = await post("/termination-api/translate", {
+            source: text,
+            language: current_language,
+        });
+    }
     return res;
 }
