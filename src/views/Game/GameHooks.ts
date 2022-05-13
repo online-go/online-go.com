@@ -61,3 +61,15 @@ export function useUserIsParticipant(goban?: GobanCore) {
     }, [goban]);
     return user_is_participant;
 }
+
+/** React hook that returns the current move number from goban */
+export function useCurrentMoveNumber(goban: GobanCore): number {
+    const [cur_move_number, setCurMoveNumber] = React.useState(
+        goban.engine.cur_move?.move_number || -1,
+    );
+    React.useEffect(() => {
+        goban.on("load", () => setCurMoveNumber(goban.engine.cur_move?.move_number || -1));
+        goban.on("cur_move", (move) => setCurMoveNumber(move.move_number));
+    }, [goban]);
+    return cur_move_number;
+}

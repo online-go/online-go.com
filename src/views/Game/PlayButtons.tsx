@@ -23,10 +23,9 @@ import * as preferences from "preferences";
 import * as data from "data";
 import { game_control } from "./game_control";
 import swal from "sweetalert2";
-import { useUndoRequested } from "./GameHooks";
+import { useCurrentMoveNumber, useUndoRequested } from "./GameHooks";
 
 interface PlayButtonsProps {
-    cur_move_number: number;
     goban: Goban;
     player_to_move: number;
 
@@ -35,12 +34,7 @@ interface PlayButtonsProps {
     show_cancel: boolean;
 }
 
-export function PlayButtons({
-    cur_move_number,
-    goban,
-    player_to_move,
-    show_cancel,
-}: PlayButtonsProps): JSX.Element {
+export function PlayButtons({ goban, player_to_move, show_cancel }: PlayButtonsProps): JSX.Element {
     const engine = goban.engine;
     const phase = engine.phase;
 
@@ -49,6 +43,7 @@ export function PlayButtons({
             ? engine.players.white.id
             : engine.players.black.id;
     const is_my_move = real_player_to_move === data.get("user").id;
+    const cur_move_number = useCurrentMoveNumber(goban);
 
     const [show_submit, setShowSubmit] = React.useState(false);
     React.useEffect(() => {

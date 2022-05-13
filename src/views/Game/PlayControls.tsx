@@ -41,7 +41,7 @@ import { errorAlerter } from "misc";
 import { close_all_popovers } from "popover";
 import { setExtraActionCallback, Player } from "Player";
 import { PlayButtons } from "./PlayButtons";
-import { useUndoRequested, useUserIsParticipant } from "./GameHooks";
+import { useCurrentMoveNumber, useUndoRequested, useUserIsParticipant } from "./GameHooks";
 
 interface PlayControlsProps {
     goban: Goban;
@@ -172,14 +172,6 @@ export function PlayControls({
         goban.on("paused", setPaused);
     }, [goban]);
 
-    const [cur_move_number, setCurMoveNumber] = React.useState(
-        goban.engine.cur_move?.move_number || -1,
-    );
-    React.useEffect(() => {
-        goban.on("load", () => setCurMoveNumber(goban.engine.cur_move?.move_number || -1));
-        goban.on("cur_move", (move) => setCurMoveNumber(move.move_number));
-    }, [goban]);
-
     const show_undo_requested = useUndoRequested(goban);
 
     const [winner, set_winner] = React.useState(goban.engine.winner);
@@ -287,13 +279,13 @@ export function PlayControls({
     };
 
     const user_is_player = useUserIsParticipant(goban);
+    const cur_move_number = useCurrentMoveNumber(goban);
 
     return (
         <div className="play-controls">
             <div className="game-action-buttons">
                 {mode === "play" && phase === "play" && user_is_player && (
                     <PlayButtons
-                        cur_move_number={cur_move_number}
                         player_to_move={player_to_move}
                         goban={goban}
                         show_cancel={show_cancel}
