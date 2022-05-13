@@ -79,7 +79,7 @@ test("Show only cancel if no moves have been played", () => {
     });
     data.set("user", TEST_USER);
 
-    render(<PlayControls goban={goban} {...PLAY_CONTROLS_DEFAULTS} resign_text="Cancel Game" />);
+    render(<PlayControls goban={goban} {...PLAY_CONTROLS_DEFAULTS} />);
 
     expect(screen.getByText("Cancel Game")).toBeDefined();
     expect(screen.queryByText("Undo")).toBeNull();

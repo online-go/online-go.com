@@ -17,8 +17,7 @@
 
 import * as React from "react";
 import { _ } from "translate";
-import { Goban, JGOFNumericPlayerColor } from "goban";
-import { ViewMode } from "./util";
+import { Goban, GobanCore, JGOFNumericPlayerColor } from "goban";
 import { isLiveGame } from "TimeControl";
 import * as preferences from "preferences";
 import * as data from "data";
@@ -32,13 +31,9 @@ interface PlayButtonsProps {
     // Is this variable any different from show_accept_undo? -BPJ
     show_undo_requested: boolean;
 
-    // Cancel buttons are in props because the Cancel Button is placed below
-    // chat on mobile.
+    // This option exists because Cancel Button is placed below
+    // chat on mobile layouts.
     show_cancel: boolean;
-    onCancel: () => void;
-
-    view_mode: ViewMode;
-    resign_text: string;
 }
 
 export function PlayButtons({
@@ -47,9 +42,6 @@ export function PlayButtons({
     player_to_move,
     show_undo_requested,
     show_cancel,
-    onCancel,
-    view_mode,
-    resign_text,
 }: PlayButtonsProps): JSX.Element {
     const engine = goban.engine;
     const phase = engine.phase;
@@ -167,9 +159,7 @@ export function PlayButtons({
             </span>
             <span>
                 {show_cancel && phase !== "finished" && (
-                    <CancelButton view_mode={view_mode} onClick={onCancel}>
-                        {resign_text}
-                    </CancelButton>
+                    <CancelButton goban={goban} className={"bold xs"} />
                 )}
             </span>
         </span>
@@ -177,22 +167,64 @@ export function PlayButtons({
 }
 
 interface CancelButtonProps {
-    view_mode: ViewMode;
-    onClick: React.MouseEventHandler<HTMLButtonElement>;
-    children: string;
+    className: string;
+    goban: GobanCore;
 }
-export function CancelButton({ view_mode, onClick, children }: CancelButtonProps) {
-    if (view_mode === "portrait") {
-        return (
-            <button className="bold cancel-button reject" onClick={onClick}>
-                {children}
-            </button>
-        );
-    } else {
-        return (
-            <button className="xs bold cancel-button" onClick={onClick}>
-                {children}
-            </button>
-        );
-    }
+export function CancelButton({ className, goban }: CancelButtonProps) {
+    const [resign_mode, set_resign_mode] = React.useState<"cancel" | "resign">();
+    React.useEffect(() => {
+        const sync_resign_mode = () => {
+            if (goban.engine.gameCanBeCanceled()) {
+                set_resign_mode("cancel");
+            } else {
+                set_resign_mode("resign");
+            }
+        };
+        sync_resign_mode();
+        goban.on("load", sync_resign_mode);
+        goban.on("mode", sync_resign_mode);
+    }, [goban]);
+
+    const cancelOrResign = () => {
+        let dropping_from_casual_rengo = false;
+
+        if (goban.engine.rengo && goban.engine.rengo_casual_mode) {
+            const team = goban.engine.rengo_teams.black.find((p) => p.id === data.get("user").id)
+                ? "black"
+                : "white";
+            dropping_from_casual_rengo = goban.engine.rengo_teams[team].length > 1;
+        }
+
+        if (resign_mode === "cancel") {
+            swal({
+                text: _("Are you sure you wish to cancel this game?"),
+                confirmButtonText: _("Yes"),
+                cancelButtonText: _("No"),
+                showCancelButton: true,
+                focusCancel: true,
+            })
+                .then(() => goban.cancelGame())
+                .catch(() => 0);
+        } else {
+            swal({
+                text: dropping_from_casual_rengo
+                    ? _("Are you sure you want to abandon your team?")
+                    : _("Are you sure you wish to resign this game?"),
+                confirmButtonText: _("Yes"),
+                cancelButtonText: _("No"),
+                showCancelButton: true,
+                focusCancel: true,
+            })
+                .then(() => goban.resign())
+                .catch(() => 0);
+        }
+    };
+
+    return (
+        // portrait: bold reject
+        // otherwise: bold xs
+        <button className={`cancel-button ${className}`} onClick={cancelOrResign}>
+            {resign_mode === "cancel" ? _("Cancel Game") : _("Resign")}
+        </button>
+    );
 }

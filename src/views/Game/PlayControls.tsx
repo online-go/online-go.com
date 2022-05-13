@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as React from "react";
-import { ViewMode } from "./util";
 import { _, interpolate, pgettext } from "translate";
 import * as data from "data";
 import {
@@ -51,10 +50,7 @@ interface PlayControlsProps {
     // Cancel buttons are in props because the Cancel Button is placed below
     // chat on mobile.
     show_cancel: boolean;
-    onCancel: () => void;
-    resign_text: string;
 
-    view_mode: ViewMode;
     user_is_player: boolean;
 
     readonly review_list: Array<{ owner: PlayerCacheEntry; id: number }>;
@@ -95,9 +91,6 @@ export function PlayControls({
     stashed_conditional_moves,
     mode,
     phase,
-    resign_text,
-    onCancel,
-    view_mode,
     title,
     show_title,
     renderEstimateScore,
@@ -320,14 +313,11 @@ export function PlayControls({
             <div className="game-action-buttons">
                 {mode === "play" && phase === "play" && user_is_player && (
                     <PlayButtons
-                        resign_text={resign_text}
                         show_undo_requested={show_undo_requested}
                         cur_move_number={cur_move_number}
                         player_to_move={player_to_move}
-                        onCancel={onCancel}
                         goban={goban}
                         show_cancel={show_cancel}
-                        view_mode={view_mode}
                     />
                 )}
             </div>
