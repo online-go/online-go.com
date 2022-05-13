@@ -91,7 +91,6 @@ export function AutoTranslate({
 async function auto_translate(text: string): Promise<Translation> {
     let res: Promise<Translation>;
 
-    console.log(current_language);
     if (current_language === "debug") {
         res = Promise.resolve({
             source_language: null,
