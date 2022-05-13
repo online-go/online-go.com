@@ -58,7 +58,6 @@ import { goban_view_mode, goban_view_squashed, ViewMode, shared_ip_with_player_m
 import { game_control } from "./game_control";
 import { PlayerCards } from "./PlayerCards";
 import {
-    CancelButton,
     EstimateScore,
     PlayControls,
     AnalyzeButtonBar,
@@ -67,6 +66,7 @@ import {
     deleteBranch,
     ReviewControls,
 } from "./PlayControls";
+import { CancelButton } from "./PlayButtons";
 import { GameDock } from "./GameDock";
 import swal from "sweetalert2";
 
