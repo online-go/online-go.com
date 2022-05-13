@@ -31,11 +31,11 @@ import { chat_markup } from "components/Chat";
 import { inGameModChannel } from "chat_manager";
 import { MoveTree } from "goban";
 import { game_control } from "./game_control";
+import { useUserIsParticipant } from "./GameHooks";
 
 export type ChatMode = "main" | "malkovich" | "moderator" | "hidden" | "personal";
 interface GameChatProperties {
     goban: Goban;
-    userIsPlayer: boolean;
     selected_chat_log: ChatMode;
     onSelectedChatModeChange: (c: ChatMode) => void;
     channel: string;
@@ -77,6 +77,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
     const chat_log_hash = React.useRef<{ [k: string]: boolean }>({});
     const chat_lines = React.useRef<ChatLine[]>([]);
     const [, refresh] = React.useState<number>();
+    const userIsPlayer = useUserIsParticipant(props.goban);
 
     React.useEffect(() => {
         if (!props.goban) {
@@ -253,14 +254,14 @@ export function GameChat(props: GameChatProperties): JSX.Element {
                 />
             )}
             <div className="chat-input-container input-group">
-                {((props.userIsPlayer && data.get("user").email_validated) || null) && (
+                {((userIsPlayer && data.get("user").email_validated) || null) && (
                     <ChatLogToggleButton
                         selected_chat_log={selected_chat_log}
                         toggleChatLog={toggleChatLog}
                         isUserModerator={false}
                     />
                 )}
-                {((!props.userIsPlayer && data.get("user").is_moderator) || null) && (
+                {((!userIsPlayer && data.get("user").is_moderator) || null) && (
                     <ChatLogToggleButton
                         selected_chat_log={selected_chat_log}
                         toggleChatLog={toggleChatLog}
@@ -295,7 +296,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
                     onKeyPress={onKeyPress}
                     onFocus={() => setShowQuickChat(false)}
                 />
-                {props.userIsPlayer &&
+                {userIsPlayer &&
                 user.email_validated &&
                 props.game_id &&
                 selected_chat_log === "main" ? (

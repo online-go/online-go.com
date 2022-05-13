@@ -18,6 +18,7 @@
 import * as React from "react";
 import { GobanCore } from "goban";
 import { game_control } from "./game_control";
+import * as data from "data";
 
 /** React hook that returns true if an undo was requested on the current move */
 export function useUndoRequested(goban: GobanCore): boolean {
@@ -40,7 +41,23 @@ export function useUndoRequested(goban: GobanCore): boolean {
         goban.on("load", syncShowUndoRequested);
         goban.on("undo_requested", syncShowUndoRequested);
         goban.on("last_official_move", syncShowUndoRequested);
-    });
+    }, [goban, game_control.in_pushed_analysis]);
 
     return show_undo_requested;
+}
+
+/** React hook that returns true if user is a participant in this game */
+export function useUserIsParticipant(goban?: GobanCore) {
+    const [user_is_participant, setUserIsParticipant] = React.useState(false);
+    React.useEffect(() => {
+        if (!goban) {
+            return;
+        }
+
+        setUserIsParticipant(goban.engine.isParticipant(data.get("user").id));
+        goban.on("load", () =>
+            setUserIsParticipant(goban.engine.isParticipant(data.get("user").id)),
+        );
+    }, [goban]);
+    return user_is_participant;
 }

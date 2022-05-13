@@ -41,7 +41,7 @@ import { errorAlerter } from "misc";
 import { close_all_popovers } from "popover";
 import { setExtraActionCallback, Player } from "Player";
 import { PlayButtons } from "./PlayButtons";
-import { useUndoRequested } from "./GameHooks";
+import { useUndoRequested, useUserIsParticipant } from "./GameHooks";
 
 interface PlayControlsProps {
     goban: Goban;
@@ -50,8 +50,6 @@ interface PlayControlsProps {
     // Cancel buttons are in props because the Cancel Button is placed below
     // chat on mobile.
     show_cancel: boolean;
-
-    user_is_player: boolean;
 
     readonly review_list: Array<{ owner: PlayerCacheEntry; id: number }>;
 
@@ -95,7 +93,6 @@ export function PlayControls({
     show_title,
     renderEstimateScore,
     annulled,
-    user_is_player,
     renderAnalyzeButtonBar,
     setMoveTreeContainer,
     zen_mode,
@@ -288,6 +285,8 @@ export function PlayControls({
         goban.autoScore();
         return false;
     };
+
+    const user_is_player = useUserIsParticipant(goban);
 
     return (
         <div className="play-controls">

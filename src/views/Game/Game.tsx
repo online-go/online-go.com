@@ -69,6 +69,7 @@ import {
 import { CancelButton } from "./PlayButtons";
 import { GameDock } from "./GameDock";
 import swal from "sweetalert2";
+import { useUserIsParticipant } from "./GameHooks";
 
 const win = $(window);
 
@@ -101,7 +102,7 @@ export function Game(): JSX.Element {
     const [squashed, set_squashed] = React.useState<boolean>(goban_view_squashed());
     const [estimating_score, set_estimating_score] = React.useState<boolean>(false);
     const [analyze_pencil_color, set_analyze_pencil_color] = React.useState<string>("#004cff");
-    const [user_is_player, set_user_is_player] = React.useState(false);
+    const user_is_player = useUserIsParticipant(goban.current);
     const [zen_mode, set_zen_mode] = React.useState(false);
     const [autoplaying, set_autoplaying] = React.useState(false);
     const [review_list, set_review_list] = React.useState([]);
@@ -809,7 +810,6 @@ export function Game(): JSX.Element {
             goban={goban.current}
             show_cancel={show_cancel}
             player_to_move={player_to_move}
-            user_is_player={user_is_player}
             review_list={review_list}
             stashed_conditional_moves={stashed_conditional_moves.current}
             mode={mode}
@@ -1212,7 +1212,6 @@ export function Game(): JSX.Element {
             sync_stone_removal();
 
             // These are only updated on load events
-            set_user_is_player(engine.isParticipant(data.get("user").id));
 
             // I have no recollection of this code and why I thought it was necessary. If you find
             // this code after 2022-06-01, feel free to remove it. - anoek 2022-04-19
@@ -1526,7 +1525,6 @@ export function Game(): JSX.Element {
             selected_chat_log={selected_chat_log}
             onSelectedChatModeChange={set_selected_chat_log}
             goban={goban.current}
-            userIsPlayer={user_is_player}
             channel={game_id ? `game-${game_id}` : `review-${review_id}`}
             game_id={game_id}
             review_id={review_id}
