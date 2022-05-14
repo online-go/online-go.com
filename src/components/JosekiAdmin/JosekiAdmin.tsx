@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
+import { _, interpolate, pgettext } from "translate";
 import { get, post, put } from "requests";
 
 import ReactTable from "react-table";
@@ -408,10 +408,15 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                 />
                 <div className="explorer-stats">
                     <span>
-                        {_("Page visits")}: {this.state.page_visits || "..."}
+                        {interpolate(_("Page visits: {{count}}"), {
+                            count: this.state.page_visits || "...",
+                        })}
                     </span>
                     <button className="btn s" onClick={this.showVisitStats}>
-                        {_("details")}
+                        {pgettext(
+                            "A button that shows details of joseki visit statistics",
+                            "details",
+                        )}
                     </button>
                 </div>
 

@@ -301,9 +301,11 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             pgettext("This is a Joseki Tag", "White gets sente");
 
             // and move categories
-            Object.keys(MoveCategory).forEach((category) => {
-                pgettext("Joseki move category", category);
-            });
+            pgettext("Joseki move category", "Ideal");
+            pgettext("Joseki move category", "Good");
+            pgettext("Joseki move category", "Mistake");
+            pgettext("Joseki move category", "Trick");
+            pgettext("Joseki move category", "Question");
         } catch (e) {
             console.log(e);
         }
