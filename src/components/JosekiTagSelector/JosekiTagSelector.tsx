@@ -44,7 +44,7 @@ export function JosekiTagSelector(props: JosekiTagSelectorProps) {
             options={props.available_tags}
             isMulti={true}
             onChange={onTagChange}
-            getOptionLabel={(o) => o.label}
+            getOptionLabel={(o) => pgettext("This is a Joseki Tag", o.label)}
             getOptionValue={(o) => o.value}
             components={{
                 Option: ({ innerRef, innerProps, isFocused, isSelected, data }) => (

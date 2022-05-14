@@ -103,8 +103,8 @@ const applyJosekiMarkdown = (markdown: string): string => {
 };
 
 enum MoveCategory {
-    // needs to match definition in BoardPosition.java
-    // conceivably, should fetch these from the back end?
+    // needs to match the definitions in the backend PlayCategory class
+    // conceivably, should fetch these from the backend - the string value is used in comparisons :(
     IDEAL = "Ideal",
     GOOD = "Good",
     MISTAKE = "Mistake",
@@ -112,7 +112,7 @@ enum MoveCategory {
     QUESTION = "Question",
 }
 
-const bad_moves = ["MISTAKE", "QUESTION"] as any; // moves the player is not allowed to play in Play mode
+const bad_moves = ["MISTAKE", "QUESTION"]; // moves the player is not allowed to play in Play mode
 
 enum PageMode {
     Explore = "0",
@@ -121,6 +121,7 @@ enum PageMode {
     Admin = "3",
 }
 
+// These are the colors painted onto moves of each category
 const ColorMap = {
     IDEAL: "#008300",
     GOOD: "#436600",
@@ -129,6 +130,7 @@ const ColorMap = {
     QUESTION: "#00ccff",
 };
 
+// Play mode move clasification
 type MoveType = "bad" | "good" | "computer" | "complete";
 
 type JosekiProps = RouteComponentProps<{ pos: string }>;
@@ -297,6 +299,13 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             pgettext("This is a Joseki Tag", "White gets the centre and right");
             pgettext("This is a Joseki Tag", "Black gets sente");
             pgettext("This is a Joseki Tag", "White gets sente");
+
+            // and move categories
+            pgettext("Joseki move category", "Ideal");
+            pgettext("Joseki move category", "Good");
+            pgettext("Joseki move category", "Mistake");
+            pgettext("Joseki move category", "Trick");
+            pgettext("Joseki move category", "Question");
         } catch (e) {
             console.log(e);
         }
@@ -876,7 +885,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                     ": " +
                     (chosen_move === undefined
                         ? _("That move isn't listed!")
-                        : MoveCategory[chosen_move.category]);
+                        : pgettext("Joseki move category", MoveCategory[chosen_move.category]));
 
                 this.setState({
                     move_type_sequence: [
@@ -1208,7 +1217,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                                 onClick={this.forwardOneMove}
                             ></i>
                             <button className={"pass-button " + tenuki_type} onClick={this.doPass}>
-                                Tenuki
+                                {_("Tenuki")}
                             </button>
                             <div className="throbber-spacer">
                                 <Throbber throb={this.state.throb} />
@@ -1263,7 +1272,10 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                                           ? this.state.mode === PageMode.Explore
                                               ? _("Experiment")
                                               : _("Proposed Move")
-                                          : this.state.current_move_category)}
+                                          : pgettext(
+                                                "Joseki move category",
+                                                this.state.current_move_category,
+                                            ))}
                             </div>
 
                             <div
@@ -2031,7 +2043,7 @@ interface EditProps {
 }
 
 interface EditState {
-    move_type: string;
+    move_category: string;
     new_description: string;
     preview: string;
     node_id: number;
@@ -2049,7 +2061,7 @@ class EditPane extends React.Component<EditProps, EditState> {
         super(props);
 
         this.state = {
-            move_type:
+            move_category:
                 this.props.category === "new" ? Object.keys(MoveCategory)[0] : this.props.category,
             new_description: this.props.description,
             preview: this.props.description,
@@ -2101,7 +2113,7 @@ class EditPane extends React.Component<EditProps, EditState> {
     };
 
     onTypeChange = (e) => {
-        this.setState({ move_type: e.target.value });
+        this.setState({ move_category: e.target.value });
     };
 
     onSourceChange = (e) => {
@@ -2123,7 +2135,7 @@ class EditPane extends React.Component<EditProps, EditState> {
 
     saveNewInfo = () => {
         this.props.save_new_info(
-            this.state.move_type,
+            this.state.move_category,
             this.state.variation_label,
             this.state.tags.map((t) => t.value),
             this.state.new_description,
@@ -2190,24 +2202,17 @@ class EditPane extends React.Component<EditProps, EditState> {
     };
 
     render = () => {
-        /*console.log(
-            "rendering EditPane with ",
-            this.state.move_type,
-            this.state.new_description,
-            this.state.variation_label,
-        );*/
-
         // create the set of select option elements from the valid MoveCategory items, with the current one at the top
         const selections = Object.keys(MoveCategory).map((selection, i) => (
             <option key={i} value={MoveCategory[selection]}>
-                {_(MoveCategory[selection])}
+                {pgettext("Joseki move category", MoveCategory[selection])}
             </option>
         ));
 
-        if (this.state.move_type !== "new") {
+        if (this.state.move_category !== "new") {
             selections.unshift(
-                <option key={-1} value={MoveCategory[this.state.move_type]}>
-                    {_(MoveCategory[this.state.move_type])}
+                <option key={-1} value={MoveCategory[this.state.move_category]}>
+                    {pgettext("Joseki move category", MoveCategory[this.state.move_category])}
                 </option>,
             );
         }
@@ -2232,7 +2237,7 @@ class EditPane extends React.Component<EditProps, EditState> {
                 <div className="move-attributes">
                     <div className="move-type-selection">
                         <span>{_("This sequence is")}:</span>
-                        <select value={this.state.move_type} onChange={this.onTypeChange}>
+                        <select value={this.state.move_category} onChange={this.onTypeChange}>
                             {selections}
                         </select>
                     </div>
