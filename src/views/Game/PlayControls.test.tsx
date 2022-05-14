@@ -83,7 +83,7 @@ test("No moves have been played", () => {
 
     render(<PlayControls goban={goban} {...PLAY_CONTROLS_DEFAULTS} />);
 
-    expect(screen.getByText("Cancel Game")).toBeDefined();
+    expect(screen.getByText("Cancel game")).toBeDefined();
     expect(screen.queryByText("Undo")).toBeNull();
     expect(screen.queryByText("Accept Undo")).toBeNull();
     expect(screen.queryByText("Submit")).toBeNull();
