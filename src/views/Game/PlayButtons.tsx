@@ -30,10 +30,10 @@ interface PlayButtonsProps {
 
     // This option exists because Cancel Button is placed below
     // chat on mobile layouts.
-    show_cancel: boolean;
+    show_cancel?: boolean;
 }
 
-export function PlayButtons({ goban, show_cancel }: PlayButtonsProps): JSX.Element {
+export function PlayButtons({ goban, show_cancel = true }: PlayButtonsProps): JSX.Element {
     const engine = goban.engine;
     const phase = engine.phase;
 
@@ -161,10 +161,10 @@ export function PlayButtons({ goban, show_cancel }: PlayButtonsProps): JSX.Eleme
 }
 
 interface CancelButtonProps {
-    className: string;
+    className?: string;
     goban: GobanCore;
 }
-export function CancelButton({ className, goban }: CancelButtonProps) {
+export function CancelButton({ className = "", goban }: CancelButtonProps) {
     const [resign_mode, set_resign_mode] = React.useState<"cancel" | "resign">();
     React.useEffect(() => {
         const sync_resign_mode = () => {
@@ -210,7 +210,7 @@ export function CancelButton({ className, goban }: CancelButtonProps) {
 
     return (
         <button className={`cancel-button ${className}`} onClick={cancelOrResign}>
-            {resign_mode === "cancel" ? _("Cancel Game") : _("Resign")}
+            {resign_mode === "cancel" ? _("Cancel game") : _("Resign")}
         </button>
     );
 }
