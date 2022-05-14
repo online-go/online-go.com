@@ -176,7 +176,7 @@ export function CancelButton({ className = "", goban }: CancelButtonProps) {
         };
         sync_resign_mode();
         goban.on("load", sync_resign_mode);
-        goban.on("mode", sync_resign_mode);
+        goban.on("cur_move", sync_resign_mode);
     }, [goban]);
 
     const cancelOrResign = () => {

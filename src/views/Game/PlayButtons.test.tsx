@@ -78,6 +78,32 @@ describe("CancelButton", () => {
         expect(screen.queryByText("Cancel game")).toBeNull();
     });
 
+    test('changes to "Resign" on the 6th move.', () => {
+        const goban = new Goban({
+            // 5 moves
+            moves: [
+                [16, 3, 9136.12],
+                [3, 2, 1897.853],
+                [15, 16, 4274.0],
+                [14, 2, 3816],
+                [2, 15, 6869],
+            ],
+            players: {
+                black: { id: LOGGED_IN_USER.id, username: LOGGED_IN_USER.username },
+                white: { id: 456, username: "test_user2" },
+            },
+        });
+
+        render(<CancelButton goban={goban} />);
+
+        act(() => {
+            goban.engine.place(10, 10);
+        });
+
+        expect(screen.getByText("Resign")).toBeDefined();
+        expect(screen.queryByText("Cancel game")).toBeNull();
+    });
+
     /*
     Most of these tests pass, but for some reason, the swal modal never closes.
     I found this issue: https://github.com/sweetalert2/sweetalert2/issues/1426
@@ -252,7 +278,6 @@ describe("PlayButtons", () => {
         });
         render(<PlayButtons goban={goban} />);
 
-        //
         act(() => {
             goban.engine.undo_requested = 4;
         });
