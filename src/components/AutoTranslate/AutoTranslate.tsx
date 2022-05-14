@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { post } from "requests";
-import { current_language } from "translate";
+import { current_language, pgettext } from "translate";
 import { Markdown } from "Markdown";
 
 interface AutoTranslateProps {
@@ -64,25 +64,36 @@ export function AutoTranslate({
         }
     }, [source]);
 
+    const show_translation =
+        translation &&
+        translation.target_language !== translation.source_language &&
+        translation.target_text !== translation.source_text;
+
+    // If we have a translation, then we show it in the primary formatting, followed by the original.
+    // If we don't have a translation, then we show the original in primary formatting.
     return (
         <div className={`AutoTranslate ${className || ""}`}>
-            {markdown ? <Markdown source={source} /> : source}
-            {((translation &&
-                translation.target_language !== translation.source_language &&
-                translation.target_text !== translation.source_text) ||
-                null) && (
+            {show_translation ? (
                 <>
+                    {markdown ? (
+                        <Markdown source={translation.target_text} />
+                    ) : (
+                        translation.target_text
+                    )}
                     <div className="language-map">
-                        {translation.source_language} =&gt; {translation.target_language}
-                    </div>
-                    <div className="translation">
-                        {markdown ? (
-                            <Markdown source={translation.target_text} />
-                        ) : (
-                            translation.target_text
+                        {pgettext(
+                            "This label is placed on the original text of something that has been translated",
+                            "(original text)",
                         )}
                     </div>
+                    <div className="translation-original">
+                        {markdown ? <Markdown source={source} /> : source}
+                    </div>
                 </>
+            ) : markdown ? (
+                <Markdown source={source} />
+            ) : (
+                source
             )}
         </div>
     );
@@ -96,7 +107,7 @@ async function auto_translate(text: string): Promise<Translation> {
             source_language: null,
             source_text: text,
             target_language: "debug",
-            target_text: `[${text}]`,
+            target_text: `${text} <<translated`,
         });
     } else {
         res = await post("/termination-api/translate", {
