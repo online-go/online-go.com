@@ -246,7 +246,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                         }}
                         orderBy={["-ended"]}
                         groom={game_history_groomer}
-                        pageSizeOptions={[10, 15, 25]}
+                        pageSizeOptions={[10, 15, 25, 50]}
                         onRowClick={(ref, ev) => openUrlIfALinkWasNotClicked(ev, ref.href)}
                         columns={[
                             {
