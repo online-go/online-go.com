@@ -58,7 +58,6 @@ import { goban_view_mode, goban_view_squashed, ViewMode, shared_ip_with_player_m
 import { game_control } from "./game_control";
 import { PlayerCards } from "./PlayerCards";
 import {
-    CancelButton,
     EstimateScore,
     PlayControls,
     AnalyzeButtonBar,
@@ -67,8 +66,10 @@ import {
     deleteBranch,
     ReviewControls,
 } from "./PlayControls";
+import { CancelButton } from "./PlayButtons";
 import { GameDock } from "./GameDock";
 import swal from "sweetalert2";
+import { useUserIsParticipant } from "./GameHooks";
 
 const win = $(window);
 
@@ -101,7 +102,7 @@ export function Game(): JSX.Element {
     const [squashed, set_squashed] = React.useState<boolean>(goban_view_squashed());
     const [estimating_score, set_estimating_score] = React.useState<boolean>(false);
     const [analyze_pencil_color, set_analyze_pencil_color] = React.useState<string>("#004cff");
-    const [user_is_player, set_user_is_player] = React.useState(false);
+    const user_is_player = useUserIsParticipant(goban.current);
     const [zen_mode, set_zen_mode] = React.useState(false);
     const [autoplaying, set_autoplaying] = React.useState(false);
     const [review_list, set_review_list] = React.useState([]);
@@ -131,12 +132,9 @@ export function Game(): JSX.Element {
     const [title, set_title] = React.useState<string>();
 
     const [mode, set_mode] = React.useState<GobanModes>("play");
-    const [resign_mode, set_resign_mode] = React.useState<"cancel" | "resign">();
-    const [resign_text, set_resign_text] = React.useState<string>();
     const [score_estimate_winner, set_score_estimate_winner] = React.useState<string>();
     const [score_estimate_amount, set_score_estimate_amount] = React.useState<number>();
     const [show_title, set_show_title] = React.useState<boolean>();
-    const [player_to_move, set_player_to_move] = React.useState<number>();
     const [, set_undo_requested] = React.useState<number | undefined>();
     const [, forceUpdate] = React.useState<number>();
 
@@ -755,42 +753,6 @@ export function Game(): JSX.Element {
         return ret;
     };
 
-    const cancelOrResign = () => {
-        let dropping_from_casual_rengo = false;
-
-        if (goban.current.engine.rengo && goban.current.engine.rengo_casual_mode) {
-            const team = goban.current.engine.rengo_teams.black.find(
-                (p) => p.id === data.get("user").id,
-            )
-                ? "black"
-                : "white";
-            dropping_from_casual_rengo = goban.current.engine.rengo_teams[team].length > 1;
-        }
-
-        if (resign_mode === "cancel") {
-            swal({
-                text: _("Are you sure you wish to cancel this game?"),
-                confirmButtonText: _("Yes"),
-                cancelButtonText: _("No"),
-                showCancelButton: true,
-                focusCancel: true,
-            })
-                .then(() => goban.current.cancelGame())
-                .catch(() => 0);
-        } else {
-            swal({
-                text: dropping_from_casual_rengo
-                    ? _("Are you sure you want to abandon your team?")
-                    : _("Are you sure you wish to resign this game?"),
-                confirmButtonText: _("Yes"),
-                cancelButtonText: _("No"),
-                showCancelButton: true,
-                focusCancel: true,
-            })
-                .then(() => goban.current.resign())
-                .catch(() => 0);
-        }
-    };
     const goban_setModeDeferredPlay = () => {
         goban.current.setModeDeferred("play");
     };
@@ -846,11 +808,6 @@ export function Game(): JSX.Element {
         <PlayControls
             goban={goban.current}
             show_cancel={show_cancel}
-            player_to_move={player_to_move}
-            onCancel={cancelOrResign}
-            resign_text={resign_text}
-            view_mode={view_mode}
-            user_is_player={user_is_player}
             review_list={review_list}
             stashed_conditional_moves={stashed_conditional_moves.current}
             mode={mode}
@@ -1208,26 +1165,12 @@ export function Game(): JSX.Element {
 
         /* Ensure our state is kept up to date */
 
-        const sync_resign_text = () => {
-            if (goban.current.engine.gameCanBeCanceled()) {
-                set_resign_text(_("Cancel game"));
-                set_resign_mode("cancel");
-            } else {
-                set_resign_text(_("Resign"));
-                set_resign_mode("resign");
-            }
-        };
-
         const sync_show_title = () =>
             set_show_title(
                 !goban.current.submit_move ||
                     goban.current.engine.playerToMove() !== data.get("user").id ||
                     null,
             );
-
-        const sync_move_info = () => {
-            set_player_to_move(goban.current.engine.playerToMove());
-        };
 
         const sync_stone_removal = () => {
             const engine = goban.current.engine;
@@ -1258,13 +1201,10 @@ export function Game(): JSX.Element {
             set_score_estimate_winner(undefined);
             set_undo_requested(engine.undo_requested);
 
-            sync_resign_text();
             sync_show_title();
-            sync_move_info();
             sync_stone_removal();
 
             // These are only updated on load events
-            set_user_is_player(engine.isParticipant(data.get("user").id));
 
             // I have no recollection of this code and why I thought it was necessary. If you find
             // this code after 2022-06-01, feel free to remove it. - anoek 2022-04-19
@@ -1304,11 +1244,8 @@ export function Game(): JSX.Element {
             set_score_estimate_amount(est?.amount);
         });
         goban.current.on("undo_requested", set_undo_requested);
-        goban.current.on("cur_move", sync_resign_text);
         goban.current.on("cur_move", sync_show_title);
         goban.current.on("submit_move", sync_show_title);
-        goban.current.on("cur_move", sync_move_info);
-        goban.current.on("last_official_move", sync_move_info);
 
         goban.current.on("phase", sync_stone_removal);
         goban.current.on("mode", sync_stone_removal);
@@ -1579,7 +1516,6 @@ export function Game(): JSX.Element {
             selected_chat_log={selected_chat_log}
             onSelectedChatModeChange={set_selected_chat_log}
             goban={goban.current}
-            userIsPlayer={user_is_player}
             channel={game_id ? `game-${game_id}` : `review-${review_id}`}
             game_id={game_id}
             review_id={review_id}
@@ -1612,7 +1548,6 @@ export function Game(): JSX.Element {
                             historical_white={historical_white}
                             black_auto_resign_expiration={black_auto_resign_expiration}
                             white_auto_resign_expiration={white_auto_resign_expiration}
-                            player_to_move={player_to_move}
                             game_id={game_id}
                             review_id={review_id}
                             estimating_score={estimating_score}
@@ -1643,11 +1578,7 @@ export function Game(): JSX.Element {
                         !zen_mode &&
                         user_is_player &&
                         phase !== "finished") ||
-                        null) && (
-                        <CancelButton view_mode={view_mode} onClick={cancelOrResign}>
-                            {resign_text}
-                        </CancelButton>
-                    )}
+                        null) && <CancelButton goban={goban.current} className="bold reject" />}
 
                     {((view_mode === "portrait" && !zen_mode) || null) && (
                         <GameDock
@@ -1686,7 +1617,6 @@ export function Game(): JSX.Element {
                                 historical_white={historical_white}
                                 black_auto_resign_expiration={black_auto_resign_expiration}
                                 white_auto_resign_expiration={white_auto_resign_expiration}
-                                player_to_move={player_to_move}
                                 game_id={game_id}
                                 review_id={review_id}
                                 estimating_score={estimating_score}

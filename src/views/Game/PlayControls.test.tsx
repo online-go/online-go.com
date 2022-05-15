@@ -37,9 +37,6 @@ const PLAY_CONTROLS_DEFAULTS = {
     onCancel: () => {
         return;
     },
-    resign_text: "Resign",
-    view_mode: "wide",
-    user_is_player: true,
     review_list: [] as any,
     stashed_conditional_moves: null,
     mode: "play",
@@ -73,26 +70,31 @@ const PLAY_CONTROLS_DEFAULTS = {
     },
 } as const;
 
-test("Show only cancel if no moves have been played", () => {
+test("No moves have been played", () => {
     const goban = new Goban({
         game_id: 1234,
+        // TEST_USER must be a member of the game in order for cancel to show up.
+        players: {
+            black: { id: 123, username: "test_user" },
+            white: { id: 456, username: "test_user2" },
+        },
     });
     data.set("user", TEST_USER);
 
-    render(<PlayControls goban={goban} {...PLAY_CONTROLS_DEFAULTS} resign_text="Cancel Game" />);
+    render(<PlayControls goban={goban} {...PLAY_CONTROLS_DEFAULTS} />);
 
-    expect(screen.getByText("Cancel Game")).toBeDefined();
+    expect(screen.getByText("Cancel game")).toBeDefined();
     expect(screen.queryByText("Undo")).toBeNull();
     expect(screen.queryByText("Accept Undo")).toBeNull();
     expect(screen.queryByText("Submit")).toBeNull();
-    expect(screen.queryByText("Pass")).toBeNull();
+    expect(screen.getByText("Pass")).toBeDefined();
 });
 
 test("Don't render play buttons if user is not a player", () => {
     const goban = new Goban({ game_id: 1234 });
     data.set("user", TEST_USER);
 
-    render(<PlayControls goban={goban} {...PLAY_CONTROLS_DEFAULTS} user_is_player={false} />);
+    render(<PlayControls goban={goban} {...PLAY_CONTROLS_DEFAULTS} />);
 
     expect(screen.queryByText("Resign")).toBeNull();
     expect(screen.queryByText("Undo")).toBeNull();
@@ -110,6 +112,12 @@ test("Renders undo if it is not the players turn", () => {
             [2, 2, 68110],
             [16, 2, 53287],
         ],
+        // Since three moves have been played, black must have had the last move
+        // That is one of the requirements for "undo" to show up.
+        players: {
+            black: { id: 123, username: "test_user" },
+            white: { id: 456, username: "test_user2" },
+        },
     });
     data.set("user", TEST_USER);
 

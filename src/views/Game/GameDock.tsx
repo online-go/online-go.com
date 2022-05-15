@@ -33,6 +33,7 @@ import { errorAlerter, ignore } from "misc";
 import { openReport } from "Report";
 import { game_control } from "./game_control";
 import { openGameInfoModal } from "./GameInfoModal";
+import { useUserIsParticipant } from "./GameHooks";
 
 interface DockProps {
     goban: Goban;
@@ -90,7 +91,7 @@ export function GameDock({
     let annul = user?.is_moderator && phase === "finished";
     const annulable = !annulled && engine.config.ranked;
     const unannulable = annulled && engine.config.ranked;
-    const user_is_player = engine.isParticipant(user?.id || 0);
+    const user_is_player = useUserIsParticipant(goban);
 
     const review = !!review_id;
     const game = !!game_id;

@@ -26,6 +26,7 @@ import { Player } from "Player";
 import { lookup, fetch } from "player_cache";
 import { _, interpolate, ngettext } from "translate";
 import * as data from "data";
+import { usePlayerToMove } from "./GameHooks";
 
 type PlayerType = rest_api.games.Player;
 
@@ -35,7 +36,6 @@ interface PlayerCardsProps {
     historical_white: PlayerType;
     black_auto_resign_expiration: Date;
     white_auto_resign_expiration: Date;
-    player_to_move: number;
     game_id: number;
     review_id: number;
     estimating_score: boolean;
@@ -51,7 +51,6 @@ export function PlayerCards({
     historical_white,
     black_auto_resign_expiration,
     white_auto_resign_expiration,
-    player_to_move,
     game_id,
     review_id,
     estimating_score,
@@ -66,6 +65,8 @@ export function PlayerCards({
     const showing_scores = React.useRef<boolean>(false);
 
     const [show_score_breakdown, set_show_score_breakdown] = React.useState(false);
+
+    const player_to_move = usePlayerToMove(goban);
 
     const popupScores = () => {
         if (goban.engine.cur_move) {
