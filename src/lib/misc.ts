@@ -27,42 +27,6 @@ import { isLiveGame } from "TimeControl";
 
 export type Timeout = ReturnType<typeof setTimeout>;
 
-export function formatTime(seconds) {
-    const days = Math.floor(seconds / 86400);
-    seconds -= days * 86400;
-    const hours = Math.floor(seconds / 3600);
-    seconds -= hours * 3600;
-    const minutes = Math.floor(seconds / 60);
-    seconds -= minutes * 60;
-
-    function plurality(num, single, plural) {
-        if (num > 0) {
-            if (num === 1) {
-                return num + " " + single;
-            }
-            return num + " " + plural;
-        }
-        return "";
-    }
-
-    if (days > 1) {
-        return plurality(days + 1, _("day"), _("days"));
-    }
-
-    if (hours > 4) {
-        return hours + 1 + " " + _("hours");
-    }
-
-    if (hours) {
-        return hours + ":" + (minutes < 10 ? "0" : "") + minutes;
-    }
-
-    if (minutes) {
-        return minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
-    }
-    return _("no time left");
-}
-
 export function updateDup(obj: any, field: string, value: any) {
     const ret = dup(obj);
     const arr = field.split(".");

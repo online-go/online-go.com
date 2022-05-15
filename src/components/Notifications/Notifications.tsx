@@ -25,8 +25,8 @@ import { browserHistory } from "ogsHistory";
 import { challenge_text_description } from "ChallengeModal";
 import { Player } from "Player";
 import { FabX, FabCheck } from "material";
-import { deepEqual, formatTime } from "misc";
-import { isLiveGame } from "TimeControl";
+import { deepEqual } from "misc";
+import { isLiveGame, durationString } from "TimeControl";
 
 import { NotificationManager } from "./NotificationManager";
 
@@ -546,3 +546,10 @@ class NotificationEntry extends React.Component<{ notification }, any> {
 }
 
 data.watch("config.user", (user) => notification_manager.setUser(user));
+
+function formatTime(seconds: number) {
+    if (seconds <= 0) {
+        return _("no time left");
+    }
+    return durationString(seconds);
+}
