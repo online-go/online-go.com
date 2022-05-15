@@ -370,4 +370,57 @@ describe("PlayButtons", () => {
         expect(screen.queryByText("Submit Move")).toBeNull();
         expect(screen.queryByText("Undo")).toBeNull();
     });
+
+    test("Don't show undo if analyzing the game", () => {
+        const goban = new Goban({
+            moves: [
+                [16, 3, 9136.12], // B
+                [3, 2, 1897.853], // W
+                [15, 16, 4274.0], // Black went last
+            ],
+            players: {
+                black: { id: LOGGED_IN_USER.id, username: LOGGED_IN_USER.username },
+                white: { id: 456, username: "test_user2" },
+            },
+        });
+
+        render(<PlayButtons goban={goban} />);
+
+        // go back two moves
+        act(() => {
+            goban.engine.showPrevious();
+            goban.engine.showPrevious();
+        });
+
+        expect(screen.queryByText("Undo")).toBeNull();
+    });
+
+    test("Don't show accept undo if analyzing the game", () => {
+        console.log("test started");
+        const goban = new Goban({
+            moves: [
+                [16, 3, 9136.12], // B
+                [3, 2, 1897.853], // W
+                [15, 16, 4274.0], // B
+                [14, 2, 3816], // White went last
+            ],
+            players: {
+                black: { id: LOGGED_IN_USER.id, username: LOGGED_IN_USER.username },
+                white: { id: 456, username: "test_user2" },
+            },
+        });
+
+        render(<PlayButtons goban={goban} />);
+        // opponent requests undo
+        act(() => {
+            goban.engine.undo_requested = 4;
+        });
+        // go back two moves
+        act(() => {
+            goban.engine.showPrevious();
+            goban.engine.showPrevious();
+        });
+
+        expect(screen.queryByText("Accept Undo")).toBeNull();
+    });
 });

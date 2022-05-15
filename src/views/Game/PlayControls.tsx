@@ -41,7 +41,7 @@ import { errorAlerter } from "misc";
 import { close_all_popovers } from "popover";
 import { setExtraActionCallback, Player } from "Player";
 import { PlayButtons } from "./PlayButtons";
-import { useCurrentMoveNumber, useUndoRequested, useUserIsParticipant } from "./GameHooks";
+import { useCurrentMoveNumber, useShowUndoRequested, useUserIsParticipant } from "./GameHooks";
 
 interface PlayControlsProps {
     goban: Goban;
@@ -170,7 +170,7 @@ export function PlayControls({
         goban.on("paused", setPaused);
     }, [goban]);
 
-    const show_undo_requested = useUndoRequested(goban);
+    const show_undo_requested = useShowUndoRequested(goban);
 
     const [winner, set_winner] = React.useState(goban.engine.winner);
     React.useEffect(() => {

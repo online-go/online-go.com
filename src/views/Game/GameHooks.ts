@@ -21,9 +21,10 @@ import { game_control } from "./game_control";
 import * as data from "data";
 
 /** React hook that returns true if an undo was requested on the current move */
-export function useUndoRequested(goban: GobanCore): boolean {
+export function useShowUndoRequested(goban: GobanCore): boolean {
     const [show_undo_requested, setShowUndoRequested] = React.useState(
-        goban.engine.undo_requested === goban.engine.last_official_move.move_number,
+        goban.engine.undo_requested === goban.engine.last_official_move.move_number &&
+            goban.engine.undo_requested === goban.engine.cur_move.move_number,
     );
     React.useEffect(() => {
         const syncShowUndoRequested = () => {
@@ -41,6 +42,7 @@ export function useUndoRequested(goban: GobanCore): boolean {
         goban.on("load", syncShowUndoRequested);
         goban.on("undo_requested", syncShowUndoRequested);
         goban.on("last_official_move", syncShowUndoRequested);
+        goban.on("cur_move", syncShowUndoRequested);
     }, [goban, game_control.in_pushed_analysis]);
 
     return show_undo_requested;

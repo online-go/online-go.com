@@ -23,7 +23,7 @@ import * as preferences from "preferences";
 import * as data from "data";
 import { game_control } from "./game_control";
 import swal from "sweetalert2";
-import { useCurrentMoveNumber, usePlayerToMove, useUndoRequested } from "./GameHooks";
+import { useCurrentMoveNumber, usePlayerToMove, useShowUndoRequested } from "./GameHooks";
 
 interface PlayButtonsProps {
     goban: Goban;
@@ -82,7 +82,7 @@ export function PlayButtons({ goban, show_cancel = true }: PlayButtonsProps): JS
         goban.on("cur_move", syncShowAcceptUndo);
         goban.on("submit_move", syncShowAcceptUndo);
     }, [goban]);
-    const show_undo_requested = useUndoRequested(goban);
+    const show_undo_requested = useShowUndoRequested(goban);
 
     const onUndo = () => {
         if (
@@ -111,27 +111,31 @@ export function PlayButtons({ goban, show_cancel = true }: PlayButtonsProps): JS
     return (
         <span className="play-buttons">
             <span>
-                {((cur_move_number >= 1 &&
-                    !engine.rengo &&
-                    player_to_move !== data.get("user").id &&
-                    !(engine.undo_requested >= engine.getMoveNumber()) &&
-                    goban.submit_move == null) ||
-                    null) && (
-                    <button className="bold undo-button xs" onClick={onUndo}>
-                        {_("Undo")}
-                    </button>
-                )}
-                {show_undo_requested && (
-                    <span>
-                        {show_accept_undo && (
-                            <button
-                                className="sm primary bold accept-undo-button"
-                                onClick={() => goban.acceptUndo()}
-                            >
-                                {_("Accept Undo")}
+                {cur_move_number === goban.engine.last_official_move.move_number && (
+                    <>
+                        {((cur_move_number >= 1 &&
+                            !engine.rengo &&
+                            player_to_move !== data.get("user").id &&
+                            !(engine.undo_requested >= engine.getMoveNumber()) &&
+                            goban.submit_move == null) ||
+                            null) && (
+                            <button className="bold undo-button xs" onClick={onUndo}>
+                                {_("Undo")}
                             </button>
                         )}
-                    </span>
+                        {show_undo_requested && (
+                            <span>
+                                {show_accept_undo && (
+                                    <button
+                                        className="sm primary bold accept-undo-button"
+                                        onClick={() => goban.acceptUndo()}
+                                    >
+                                        {_("Accept Undo")}
+                                    </button>
+                                )}
+                            </span>
+                        )}
+                    </>
                 )}
             </span>
             <span>
