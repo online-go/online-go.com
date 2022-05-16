@@ -23,7 +23,7 @@ import { useParams } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
 import { _, interpolate, current_language } from "translate";
 import { popover } from "popover";
-import { post, get } from "requests";
+import { post, get, abort_requests_in_flight } from "requests";
 import { KBShortcut } from "KBShortcut";
 import { UIPush } from "UIPush";
 import { errorAlerter, ignore } from "misc";
@@ -1463,6 +1463,12 @@ export function Game(): JSX.Element {
         onResize();
 
         return () => {
+            if (game_id) {
+                abort_requests_in_flight(`games/${game_id}`);
+            }
+            if (review_id) {
+                abort_requests_in_flight(`reviews/${review_id}`);
+            }
             console.log("unmounting, going to destroy", goban);
             chat_proxy.current.part();
             set_selected_chat_log("main");
