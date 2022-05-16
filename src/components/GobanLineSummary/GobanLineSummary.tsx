@@ -79,23 +79,38 @@ export class GobanLineSummary extends React.Component<
     }
 
     initialize() {
-        this.goban = new Goban({
-            board_div: null,
-            draw_top_labels: false,
-            draw_bottom_labels: false,
-            draw_left_labels: false,
-            draw_right_labels: false,
-            game_id: this.props.id,
-            square_size: "auto",
-        });
+        /* This requestAnimationFrame is a hack to work around an issue where
+         * when toggling between thumbnail and list view on the Observe Games
+         * page, the thumbnail would send a disconnect after this line summary
+         * sends a connect to each game, and since the server doesn't count it
+         * sees the disconnect and doesn't send anything else to this
+         * component. By doing this frame request, we just wait for a tick so
+         * react finishes calling goban.destroy from the MiniGoban. I don't
+         * know why the reverse isn't true.
+         *
+         * Ultimately we need to fix this properly by having a game connection
+         * manager.
+         */
 
-        this.goban.on("update", () => {
-            this.sync_state();
-        });
+        requestAnimationFrame(() => {
+            this.goban = new Goban({
+                board_div: null,
+                draw_top_labels: false,
+                draw_bottom_labels: false,
+                draw_left_labels: false,
+                draw_right_labels: false,
+                game_id: this.props.id,
+                square_size: "auto",
+            });
 
-        if (this.props.gobanref) {
-            this.props.gobanref(this.goban);
-        }
+            this.goban.on("update", () => {
+                this.sync_state();
+            });
+
+            if (this.props.gobanref) {
+                this.props.gobanref(this.goban);
+            }
+        });
     }
 
     destroy() {
