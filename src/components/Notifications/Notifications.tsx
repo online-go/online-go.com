@@ -295,7 +295,7 @@ class NotificationEntry extends React.Component<{ notification }, any> {
 
             case "timecop": {
                 const now = Date.now() / 1000;
-                const left = Math.floor(notification.time / 1000 - now);
+                const left = Math.floor(notification.expiration / 1000 - now);
                 return (
                     <div>
                         {interpolate(_("You have {{time_left}} to make your move!"), {
