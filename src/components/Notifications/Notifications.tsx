@@ -29,6 +29,7 @@ import { deepEqual } from "misc";
 import { isLiveGame, durationString } from "TimeControl";
 
 import { NotificationManager } from "./NotificationManager";
+import { guessResolution } from "./util";
 
 export const notification_manager: NotificationManager = new NotificationManager();
 
@@ -295,7 +296,9 @@ class NotificationEntry extends React.Component<{ notification }, any> {
 
             case "timecop": {
                 const now = Date.now() / 1000;
-                const left = Math.floor(notification.time / 1000 - now);
+                const expiration_s =
+                    (notification.expiration * guessResolution(notification.expiration)) / 1000;
+                const left = Math.floor(expiration_s - now);
                 return (
                     <div>
                         {interpolate(_("You have {{time_left}} to make your move!"), {
