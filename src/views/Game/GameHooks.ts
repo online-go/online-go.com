@@ -18,7 +18,42 @@
 import * as React from "react";
 import { GobanCore } from "goban";
 import { game_control } from "./game_control";
+import { Events as GobanEvents } from "goban";
 import * as data from "data";
+
+/**
+ * Generates a custom react hook that can return a prop that is derived from a
+ * goban object.  It trigger an update on any of the specified events, in
+ * addition to the first time it is called and when the goban first loads.
+ * @param deriveProp a function that takes in a GobanCore object and returns a value.
+ * @param events a list of events that should trigger a recalculation of this value.
+ * @returns a React Hook.
+ */
+export function generateGobanHook<T>(
+    deriveProp: (goban: GobanCore) => T,
+    events: Array<keyof GobanEvents>,
+): (goban: GobanCore) => T {
+    return (goban: GobanCore) => {
+        const [prop, setProp] = React.useState(deriveProp(goban));
+        React.useEffect(() => {
+            const syncProp = () => {
+                setProp(deriveProp(goban));
+            };
+            syncProp();
+
+            const events_with_load: Array<keyof GobanEvents> = ["load", ...events];
+            for (const e of events_with_load) {
+                goban.on(e, syncProp);
+            }
+            return () => {
+                for (const e of events_with_load) {
+                    goban.off(e, syncProp);
+                }
+            };
+        }, [goban]);
+        return prop;
+    };
+}
 
 /** React hook that returns true if an undo was requested on the current move */
 export function useShowUndoRequested(goban: GobanCore): boolean {
