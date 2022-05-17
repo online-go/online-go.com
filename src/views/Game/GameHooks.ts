@@ -25,21 +25,25 @@ import * as data from "data";
  * Generates a custom react hook that can return a prop that is derived from a
  * goban object.  It trigger an update on any of the specified events, in
  * addition to the first time it is called and when the goban first loads.
- * @param deriveProp a function that takes in a GobanCore object and returns a value.
+ * @param deriveProp a function that takes in a Goban-like object and returns a value.
  * @param events a list of events that should trigger a recalculation of this value.
  * @returns a React Hook.
  */
-export function generateGobanHook<T>(
-    deriveProp: (goban: GobanCore) => T,
-    events: Array<keyof GobanEvents>,
-): (goban: GobanCore) => T {
-    return (goban: GobanCore) => {
+export function generateGobanHook<T, G extends GobanCore | undefined>(
+    deriveProp: (goban: G) => T,
+    events: Array<keyof Omit<GobanEvents, "load">> = [],
+): (goban: G) => T {
+    return (goban: G) => {
         const [prop, setProp] = React.useState(deriveProp(goban));
         React.useEffect(() => {
             const syncProp = () => {
                 setProp(deriveProp(goban));
             };
             syncProp();
+
+            if (!goban) {
+                return;
+            }
 
             const events_with_load: Array<keyof GobanEvents> = ["load", ...events];
             for (const e of events_with_load) {
