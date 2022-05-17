@@ -700,8 +700,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         this.upstate("challenge.game.rengo_casual_mode", ev);
     };
     update_rengo_auto_start = (ev) => {
+        const new_val = parseInt(ev.target.value);
         // '0' means "none", but people may like to see it empty.
-        if (ev.target.value === "" || !isNaN(parseInt(ev.target.value))) {
+        if (ev.target.value === "" || (!isNaN(new_val) && new_val >= 0)) {
             this.upstate("challenge.rengo_auto_start", ev);
         }
     };
