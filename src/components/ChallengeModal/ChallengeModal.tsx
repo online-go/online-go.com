@@ -712,7 +712,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             new_val = 0;
         }
         if (new_val >= 0) {
-            this.upstate("challenge.rengo_auto_start", new_val);
+            // It's clearer to display blank ("") if there is no auto-start.  Blank means no autostart, the same as zero.
+            this.upstate("challenge.rengo_auto_start", new_val || "");
         }
     };
 
