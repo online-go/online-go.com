@@ -18,7 +18,7 @@
 import * as React from "react";
 import * as data from "data";
 import * as moment from "moment";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { get, post, put } from "requests";
 import { _, pgettext, interpolate, sorted_locale_countries } from "translate";
 import swal from "sweetalert2";
@@ -766,6 +766,18 @@ function Subscription({
     prices: Price[];
 }): JSX.Element {
     const user = data.get("user");
+    const already_showed_payment_updated_modal = React.useRef<boolean>(false);
+    const [search_params, setSearchParams] = useSearchParams();
+
+    if (search_params.get("payment_updated") === "true") {
+        if (!already_showed_payment_updated_modal.current) {
+            already_showed_payment_updated_modal.current = true;
+            swal(_("Payment method upated, thank you!"))
+                .then(() => 0)
+                .catch(() => 0);
+            setSearchParams({});
+        }
+    }
 
     let text: string;
     const period_duration_months = subscription.period_duration_months;
@@ -858,18 +870,22 @@ function Subscription({
 
         switch (subscription.payment_processor) {
             case "stripe":
-                promise = post("/billing/stripe/update_payment_method", {
-                    ref_id: subscription.ref_id,
-                    redirect_url: window.location.href,
-                });
+                {
+                    const base_url = `${window.location.protocol}//${window.location.hostname}`;
+                    promise = post("/billing/stripe/update_payment_method", {
+                        ref_id: subscription.ref_id,
+                        cancel_url: window.location.href,
+                        success_url: `${base_url}/billing/stripe/complete_update_payment_method?session_id={CHECKOUT_SESSION_ID}`,
+                    });
 
-                promise
-                    .then((session: any) => {
-                        stripe.redirectToCheckout({
-                            sessionId: session.session_id,
-                        });
-                    })
-                    .catch(errorAlerter);
+                    promise
+                        .then((session: any) => {
+                            stripe.redirectToCheckout({
+                                sessionId: session.session_id,
+                            });
+                        })
+                        .catch(errorAlerter);
+                }
                 break;
 
             case "paypal":

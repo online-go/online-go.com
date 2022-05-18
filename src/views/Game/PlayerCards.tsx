@@ -345,11 +345,7 @@ function PlayerCard({
                         estimating_score={estimating_score}
                     />
                 )}
-                {!show_points && (
-                    <div className="komi">
-                        {score.komi === 0 ? "" : `+ ${score.komi.toFixed(1)}`}
-                    </div>
-                )}
+                {!show_points && <div className="komi">{komiString(score.komi)}</div>}
                 <div id={`${color}-score-details`} className="score-details" />
             </div>
             {!!(engine.rengo && engine.rengo_teams) && (
@@ -389,4 +385,12 @@ function PlayerFlag({ player_id }: { player_id: number }): JSX.Element {
         return <Flag country={country} />;
     }
     return null;
+}
+
+function komiString(komi: number) {
+    if (!komi) {
+        return "";
+    }
+    const abs_komi = Math.abs(komi).toFixed(1);
+    return komi > 0 ? `+ ${abs_komi}` : `- ${abs_komi}`;
 }
