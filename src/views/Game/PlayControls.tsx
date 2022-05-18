@@ -158,12 +158,6 @@ export function PlayControls({
         goban.on("stone-removal.updated", syncStoneRemovalAcceptance);
     }, [goban]);
 
-    const [strict_seki_mode, set_strict_seki_mode] = React.useState(goban.engine.strict_seki_mode);
-    React.useEffect(() => {
-        goban.on("load", () => set_strict_seki_mode(goban.engine.strict_seki_mode));
-        goban.on("strict_seki_mode", set_strict_seki_mode);
-    }, [goban]);
-
     const [paused, setPaused] = React.useState(goban.pause_control && !!goban.pause_control.paused);
     React.useEffect(() => {
         goban.on("load", () => setPaused(goban.pause_control && !!goban.pause_control.paused));
@@ -186,12 +180,6 @@ export function PlayControls({
             set_official_move_number(goban.engine.last_official_move?.move_number || -1),
         );
         goban.on("last_official_move", (move) => set_official_move_number(move.move_number));
-    }, [goban]);
-
-    const [rules, set_rules] = React.useState(goban.engine.rules);
-    React.useEffect(() => {
-        goban.on("load", () => set_rules(goban.engine.rules));
-        goban.on("rules", set_rules);
     }, [goban]);
 
     const conditional_move_tree = React.useRef<Element>();
@@ -495,35 +483,6 @@ export function PlayControls({
                             "In this phase, both players select and agree upon which groups should be considered captured and should be removed for the purposes of scoring.",
                         )}
                     </div>
-
-                    {null /* just going to disable this for now, no one cares I don't think */ &&
-                        (rules === "japanese" || rules === "korean" || null) && (
-                            <div
-                                style={{
-                                    paddingTop: "2rem",
-                                    paddingBottom: "2rem",
-                                    textAlign: "center",
-                                }}
-                            >
-                                <label
-                                    style={{ display: "inline-block" }}
-                                    htmlFor="strict-seki-mode"
-                                >
-                                    {pgettext(
-                                        "Enable Japanese territory in seki rule",
-                                        "Strict Scoring",
-                                    )}
-                                </label>
-                                <input
-                                    style={{ marginTop: "-0.2em" }}
-                                    name="strict-seki-mode"
-                                    type="checkbox"
-                                    checked={strict_seki_mode}
-                                    disabled={!user_is_player}
-                                    onChange={(ev) => goban.setStrictSekiMode(ev.target.checked)}
-                                ></input>
-                            </div>
-                        )}
                 </div>
             )}
             {(mode === "conditional" || null) && (
