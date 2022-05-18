@@ -206,6 +206,18 @@ export function Supporter(props: SupporterProperties): JSX.Element {
     const [annualBilling, setAnnualBilling]: [boolean, (b: boolean) => void] = React.useState(
         false as boolean,
     );
+    const already_showed_payment_updated_modal = React.useRef<boolean>(false);
+    const [search_params, setSearchParams] = useSearchParams();
+
+    if (search_params.get("payment_updated") === "true") {
+        if (!already_showed_payment_updated_modal.current) {
+            already_showed_payment_updated_modal.current = true;
+            swal(_("Payment method upated, thank you!"))
+                .then(() => 0)
+                .catch(() => 0);
+            setSearchParams({});
+        }
+    }
 
     load_checkout_libraries();
 
@@ -766,18 +778,6 @@ function Subscription({
     prices: Price[];
 }): JSX.Element {
     const user = data.get("user");
-    const already_showed_payment_updated_modal = React.useRef<boolean>(false);
-    const [search_params, setSearchParams] = useSearchParams();
-
-    if (search_params.get("payment_updated") === "true") {
-        if (!already_showed_payment_updated_modal.current) {
-            already_showed_payment_updated_modal.current = true;
-            swal(_("Payment method upated, thank you!"))
-                .then(() => 0)
-                .catch(() => 0);
-            setSearchParams({});
-        }
-    }
 
     let text: string;
     const period_duration_months = subscription.period_duration_months;
