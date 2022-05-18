@@ -303,9 +303,22 @@ export class GobanThemePicker extends React.PureComponent<
             const canvas = this.canvases.white[i];
             const ctx = (canvas[0] as HTMLCanvasElement).getContext("2d");
             const radius = Math.round(square_size / 2.2);
-            const stones = theme.preRenderWhite(radius, 23434);
-            ctx.clearRect(0, 0, square_size, square_size);
-            theme.placeWhiteStone(ctx, ctx, stones[0], square_size / 2, square_size / 2, radius);
+            const draw = (tf) => {
+                if (!tf) {
+                    console.log("Should be rawing white");
+                }
+                ctx.clearRect(0, 0, square_size, square_size);
+                theme.placeWhiteStone(
+                    ctx,
+                    ctx,
+                    stones[0],
+                    square_size / 2,
+                    square_size / 2,
+                    radius,
+                );
+            };
+            const stones = theme.preRenderWhite(radius, 23434, () => draw(false));
+            draw(true);
         }
 
         for (let i = 0; i < GoThemesSorted.black.length; ++i) {
@@ -313,9 +326,19 @@ export class GobanThemePicker extends React.PureComponent<
             const canvas = this.canvases.black[i];
             const ctx = (canvas[0] as HTMLCanvasElement).getContext("2d");
             const radius = Math.round(square_size / 2.2);
-            const stones = theme.preRenderBlack(radius, 23434);
-            ctx.clearRect(0, 0, square_size, square_size);
-            theme.placeBlackStone(ctx, ctx, stones[0], square_size / 2, square_size / 2, radius);
+            const draw = () => {
+                ctx.clearRect(0, 0, square_size, square_size);
+                theme.placeBlackStone(
+                    ctx,
+                    ctx,
+                    stones[0],
+                    square_size / 2,
+                    square_size / 2,
+                    radius,
+                );
+            };
+            const stones = theme.preRenderBlack(radius, 23434, draw);
+            draw();
         }
     }
 }
