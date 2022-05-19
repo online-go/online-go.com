@@ -113,7 +113,7 @@ export const report_categories: Array<ReportDescription> = [
         ),
         game_id_required: true,
     },
-     {
+    {
         type: "escaping",
         title: pgettext("Report user for escaping", "Escaping"),
         description: pgettext(
