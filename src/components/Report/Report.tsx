@@ -31,6 +31,7 @@ type ReportType =
     | "harassment"
     | "ai_use"
     | "sandbagging"
+    | "escaping"
     | "appeal"
     | "other";
 
@@ -109,6 +110,15 @@ export const report_categories: Array<ReportDescription> = [
         description: pgettext(
             "Report user for sandbagging",
             "User is resigning won games to purposefully lower their rank",
+        ),
+        game_id_required: true,
+    },
+     {
+        type: "escaping",
+        title: pgettext("Report user for escaping", "Escaping"),
+        description: pgettext(
+            "Report user for escaping",
+            "User left the game without concluding it",
         ),
         game_id_required: true,
     },
@@ -274,7 +284,7 @@ export function Report(props: ReportProperties): JSX.Element {
                         value={note}
                         onChange={(ev) => set_note(ev.target.value)}
                         placeholder={_(
-                            "Please provide any relevant details pertaining to what you are reporting the user for",
+                            "Please provide any relevant details pertaining to what you are reporting the user for.",
                         )}
                     />
                 )}
