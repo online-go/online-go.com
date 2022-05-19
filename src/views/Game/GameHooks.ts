@@ -18,7 +18,46 @@
 import * as React from "react";
 import { GobanCore } from "goban";
 import { game_control } from "./game_control";
+import { Events as GobanEvents } from "goban";
 import * as data from "data";
+
+/**
+ * Generates a custom react hook that can return a prop that is derived from a
+ * goban object.  It trigger an update on any of the specified events, in
+ * addition to the first time it is called and when the goban first loads.
+ * @param deriveProp a function that takes in a Goban-like object and returns a value.
+ * @param events a list of events that should trigger a recalculation of this value.
+ * @returns a React Hook.
+ */
+export function generateGobanHook<T, G extends GobanCore | null>(
+    deriveProp: (goban: G) => T,
+    events: Array<keyof Omit<GobanEvents, "load">> = [],
+): (goban: G) => T {
+    return (goban: G) => {
+        const [prop, setProp] = React.useState(deriveProp(goban));
+        React.useEffect(() => {
+            const syncProp = () => {
+                setProp(deriveProp(goban));
+            };
+            syncProp();
+
+            if (!goban) {
+                return;
+            }
+
+            const events_with_load: Array<keyof GobanEvents> = ["load", ...events];
+            for (const e of events_with_load) {
+                goban.on(e, syncProp);
+            }
+            return () => {
+                for (const e of events_with_load) {
+                    goban.off(e, syncProp);
+                }
+            };
+        }, [goban]);
+        return prop;
+    };
+}
 
 /** React hook that returns true if an undo was requested on the current move */
 export function useShowUndoRequested(goban: GobanCore): boolean {
@@ -49,52 +88,25 @@ export function useShowUndoRequested(goban: GobanCore): boolean {
 }
 
 /** React hook that returns true if user is a participant in this game */
-export function useUserIsParticipant(goban?: GobanCore) {
-    const [user_is_participant, setUserIsParticipant] = React.useState(false);
-    React.useEffect(() => {
-        if (!goban) {
-            return;
-        }
-
-        setUserIsParticipant(goban.engine.isParticipant(data.get("user").id));
-        goban.on("load", () =>
-            setUserIsParticipant(goban.engine.isParticipant(data.get("user").id)),
-        );
-    }, [goban]);
-    return user_is_participant;
-}
+export const useUserIsParticipant = generateGobanHook((goban: GobanCore | null) => {
+    const user = data.get("user");
+    if (!goban || !user) {
+        return false;
+    }
+    return goban.engine.isParticipant(user.id);
+});
 
 /** React hook that returns the current move number from goban */
-export function useCurrentMoveNumber(goban: GobanCore): number {
-    const [cur_move_number, setCurMoveNumber] = React.useState(
-        goban.engine.cur_move?.move_number || -1,
-    );
-    React.useEffect(() => {
-        goban.on("load", () => setCurMoveNumber(goban.engine.cur_move?.move_number || -1));
-        goban.on("cur_move", (move) => setCurMoveNumber(move.move_number));
-    }, [goban]);
-    return cur_move_number;
-}
+export const useCurrentMoveNumber = generateGobanHook(
+    (goban: GobanCore | null) => goban?.engine.cur_move?.move_number || -1,
+    ["cur_move"],
+);
 
 /** React hook that returns the current player whose move it is.
  *
  * @returns the player ID of the player whose turn it is.
  */
-export function usePlayerToMove(goban?: GobanCore): number {
-    const [player_to_move, set_player_to_move] = React.useState<number>();
-    React.useEffect(() => {
-        if (!goban) {
-            set_player_to_move(0);
-            return;
-        }
-        const sync_move_info = () => {
-            set_player_to_move(goban.engine.playerToMove());
-        };
-        sync_move_info();
-        goban.on("load", sync_move_info);
-        goban.on("cur_move", sync_move_info);
-        goban.on("last_official_move", sync_move_info);
-    }, [goban]);
-
-    return player_to_move;
-}
+export const usePlayerToMove = generateGobanHook(
+    (goban: GobanCore | null) => goban?.engine.playerToMove() ?? 0,
+    ["cur_move", "last_official_move"],
+);
