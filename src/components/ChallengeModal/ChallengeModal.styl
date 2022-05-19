@@ -43,6 +43,20 @@
         input[type='checkbox'] {
             width: 1rem;
         }
+
+        // we ease this warning in after about a second, in case
+        // the user is in the middle of typing a valid number that
+        // starts with the invalid values '1' or '2'
+        .value-warning {
+            themed color danger
+            opacity: 1.0 !important;
+            transition: opacity 1s;
+            transition-timing-function: cubic-bezier(.67,-0.01,.99,0);
+        }
+        .fa-exclamation-circle {
+            padding-left: 1rem;
+            opacity: 0.0;
+        }
     }
 
     label {
