@@ -212,6 +212,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             preferred_settings: data.get("preferred-game-settings", []),
             view_mode: goban_view_mode(),
             hide_preferred_settings_on_portrait: true,
+            input_value_warning: false,
         };
 
         if (this.props.playersList && this.props.playersList.length > 0) {
@@ -699,18 +700,15 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     update_rengo_casual = (ev) => {
         this.upstate("challenge.game.rengo_casual_mode", ev);
     };
+
     update_rengo_auto_start = (ev) => {
         let new_val = parseInt(ev.target.value);
         if (isNaN(new_val)) {
             new_val = 0;
         }
-        // skip over illegal values 1 and 2
-        if (!this.state.challenge.rengo_auto_start && new_val && new_val < 3) {
-            new_val = 3;
-        }
-        if (this.state.challenge.rengo_auto_start && new_val && new_val < 3) {
-            new_val = 0;
-        }
+
+        this.upstate("input_value_warning", new_val === 1 || new_val === 2);
+
         if (new_val >= 0) {
             // It's clearer to display blank ("") if there is no auto-start.  Blank means no autostart, the same as zero.
             this.upstate("challenge.rengo_auto_start", new_val || "");
@@ -939,7 +937,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                 {_("Auto-start")}
                             </label>
                             <div className="controls">
-                                <div className="checkbox">
+                                <div className={"checkbox"}>
                                     <input
                                         type="number"
                                         value={this.state.challenge.rengo_auto_start}
@@ -950,6 +948,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                         min="0"
                                         max=""
                                     />
+                                    {(this.state.input_value_warning || null) && (
+                                        <i className="fa fa-exclamation-circle value-warning" />
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -1590,7 +1591,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         </button>
                     )}
                     {(mode === "open" || null) && (
-                        <button onClick={this.createChallenge} className="primary">
+                        <button
+                            onClick={this.createChallenge}
+                            className="primary"
+                            disabled={this.state.input_value_warning}
+                        >
                             {_("Create Challenge")}
                         </button>
                     )}
