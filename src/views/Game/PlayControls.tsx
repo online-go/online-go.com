@@ -19,6 +19,7 @@ import { _, interpolate, pgettext } from "translate";
 import * as data from "data";
 import {
     Goban,
+    GobanCore,
     GoConditionalMove,
     GobanModes,
     GoEnginePhase,
@@ -41,7 +42,12 @@ import { errorAlerter } from "misc";
 import { close_all_popovers } from "popover";
 import { setExtraActionCallback, Player } from "Player";
 import { PlayButtons } from "./PlayButtons";
-import { useCurrentMoveNumber, useShowUndoRequested, useUserIsParticipant } from "./GameHooks";
+import {
+    generateGobanHook,
+    useCurrentMoveNumber,
+    useShowUndoRequested,
+    useUserIsParticipant,
+} from "./GameHooks";
 
 interface PlayControlsProps {
     goban: Goban;
@@ -995,7 +1001,7 @@ export function deleteBranch(goban: Goban, mode: GobanModes) {
 
 interface ReviewControlsProps {
     mode: GobanModes;
-    goban: Goban;
+    goban: GobanCore;
     review_id: number;
     renderEstimateScore: () => JSX.Element;
     renderAnalyzeButtonBar: () => JSX.Element;
@@ -1013,6 +1019,26 @@ interface ReviewControlsProps {
     selected_chat_log: ChatMode;
 }
 
+const useReviewOwnerId = generateGobanHook(
+    (goban: GobanCore) => goban.review_owner_id,
+    ["review_owner_id"],
+);
+const useReviewControllerId = generateGobanHook(
+    (goban: GobanCore) => goban.review_controller_id,
+    ["review_controller_id"],
+);
+const useReviewOutOfSync = generateGobanHook(
+    (goban: GobanCore) => {
+        const engine = goban.engine;
+        return (
+            engine.cur_move &&
+            engine.cur_review_move &&
+            engine.cur_move.id !== engine.cur_review_move.id
+        );
+    },
+    ["cur_move"],
+);
+
 export function ReviewControls({
     goban,
     mode,
@@ -1029,9 +1055,9 @@ export function ReviewControls({
 }: ReviewControlsProps) {
     const user = data.get("user");
 
-    const [review_owner_id, set_review_owner_id] = React.useState<number>();
-    const [review_controller_id, set_review_controller_id] = React.useState<number>();
-    const [review_out_of_sync, set_review_out_of_sync] = React.useState<boolean>();
+    const review_owner_id = useReviewOwnerId(goban);
+    const review_controller_id = useReviewControllerId(goban);
+    const review_out_of_sync = useReviewOutOfSync(goban);
     React.useEffect(() => {
         const renderExtraPlayerActions = (player_id: number) => {
             const user = data.get("user");
@@ -1094,23 +1120,6 @@ export function ReviewControls({
             return null;
         };
         setExtraActionCallback(renderExtraPlayerActions);
-        const sync_review_out_of_sync = () => {
-            const engine = goban.engine;
-            set_review_out_of_sync(
-                engine.cur_move &&
-                    engine.cur_review_move &&
-                    engine.cur_move.id !== engine.cur_review_move.id,
-            );
-        };
-
-        goban.on("load", () => {
-            set_review_owner_id(goban.review_owner_id);
-            set_review_controller_id(goban.review_controller_id);
-            sync_review_out_of_sync();
-        });
-        goban.on("review_owner_id", set_review_owner_id);
-        goban.on("review_controller_id", set_review_controller_id);
-        goban.on("cur_move", sync_review_out_of_sync);
     }, [goban]);
 
     const [move_text, set_move_text] = React.useState<string>();
