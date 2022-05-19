@@ -948,9 +948,13 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                         min="0"
                                         max=""
                                     />
-                                    {(this.state.input_value_warning || null) && (
-                                        <i className="fa fa-exclamation-circle value-warning" />
-                                    )}
+
+                                    <i
+                                        className={
+                                            "fa fa-exclamation-circle " +
+                                            (this.state.input_value_warning ? "value-warning" : "")
+                                        }
+                                    />
                                 </div>
                             </div>
                         </div>
