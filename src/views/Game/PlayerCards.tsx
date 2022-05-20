@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { Goban, GobanCore, Score, PlayerScore, JGOFPlayerSummary } from "goban";
+import { Goban, GobanCore, PlayerScore, JGOFPlayerSummary } from "goban";
 import { icon_size_url } from "PlayerIcon";
 import { CountDown } from "./CountDown";
 import { Flag } from "Flag";
@@ -26,7 +26,7 @@ import { Player } from "Player";
 import { lookup, fetch } from "player_cache";
 import { _, interpolate, ngettext } from "translate";
 import * as data from "data";
-import { usePlayerToMove } from "./GameHooks";
+import { generateGobanHook, usePlayerToMove } from "./GameHooks";
 import { get_network_latency, get_clock_drift } from "sockets";
 
 type PlayerType = rest_api.games.Player;
@@ -39,7 +39,6 @@ interface PlayerCardsProps {
     review_id: number;
     estimating_score: boolean;
     zen_mode: boolean;
-    score: Score;
     show_title: boolean;
     title: string;
 }
@@ -52,7 +51,6 @@ export function PlayerCards({
     review_id,
     estimating_score,
     zen_mode,
-    score,
     show_title,
     title,
 }: PlayerCardsProps): JSX.Element {
@@ -160,7 +158,6 @@ export function PlayerCards({
                 <PlayerCard
                     historical={historical_black}
                     color="black"
-                    score={score["black"]}
                     goban={goban}
                     player_to_move={player_to_move}
                     estimating_score={estimating_score}
@@ -172,7 +169,6 @@ export function PlayerCards({
                 <PlayerCard
                     historical={historical_white}
                     color="white"
-                    score={score["white"]}
                     goban={goban}
                     player_to_move={player_to_move}
                     estimating_score={estimating_score}
@@ -231,8 +227,32 @@ function NumCapturesText({ color, score, zen_mode, estimating_score }: NumCaptur
     );
 }
 
+const useScore = generateGobanHook(
+    (goban: GobanCore) => {
+        const engine = goban.engine;
+
+        // TODO: decouple this from stone_removal
+        // The issue is that GoEngine.computeScore() will not return accurate
+        // prisoners and total at the same time.  One must choose using the
+        // boolean argument.
+        if (
+            (engine.phase === "stone removal" || engine.phase === "finished") &&
+            engine.outcome !== "Timeout" &&
+            engine.outcome !== "Disconnection" &&
+            engine.outcome !== "Resignation" &&
+            engine.outcome !== "Abandonment" &&
+            engine.outcome !== "Cancellation" &&
+            goban.mode === "play"
+        ) {
+            return engine.computeScore(false);
+        } else {
+            return engine.computeScore(true);
+        }
+    },
+    ["phase", "mode", "outcome", "stone-removal.accepted", "stone-removal.updated", "cur_move"],
+);
+
 interface PlayerCardProps {
-    score: PlayerScore;
     color: "black" | "white";
     goban: Goban;
     historical: PlayerType;
@@ -245,7 +265,6 @@ interface PlayerCardProps {
 }
 
 function PlayerCard({
-    score,
     color,
     goban,
     historical,
@@ -260,6 +279,7 @@ function PlayerCard({
     const player = engine.players[color];
 
     const auto_resign_expiration = useAutoResignExpiration(goban, color);
+    const score = useScore(goban)[color];
 
     // In rengo we always will have a player icon to show (after initialisation).
     // In other cases, we only have one if `historical` is set

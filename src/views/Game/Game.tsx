@@ -34,7 +34,6 @@ import {
     GoMath,
     MoveTree,
     AudioClockEvent,
-    Score,
     GoEnginePhase,
     GobanModes,
     GoConditionalMove,
@@ -121,7 +120,6 @@ export function Game(): JSX.Element {
         null,
     );
     const [show_game_timing, set_show_game_timing] = React.useState(false);
-    const [score, set_score] = React.useState<Score>();
 
     const [title, set_title] = React.useState<string>();
 
@@ -1046,10 +1044,6 @@ export function Game(): JSX.Element {
             }
         });
 
-        // We need an initial score for the first display rendering (which is not set in the constructor).
-        // Best to get this from the engine, so we know we have the right structure...
-        set_score(goban.current.engine.computeScore(true));
-
         if (preferences.get("dynamic-title")) {
             /* Title Updates { */
             const last_title = window.document.title;
@@ -1166,10 +1160,7 @@ export function Game(): JSX.Element {
                 goban.current.mode === "play"
             ) {
                 const s = engine.computeScore(false);
-                set_score(s);
                 goban.current.showScores(s);
-            } else {
-                set_score(engine.computeScore(true));
             }
         };
 
@@ -1219,7 +1210,6 @@ export function Game(): JSX.Element {
         goban.current.on("phase", set_phase);
         goban.current.on("phase", () => goban.current.engine.cur_move.clearMarks());
         goban.current.on("title", set_title);
-        goban.current.on("cur_move", () => set_score(goban.current.engine.computeScore(true)));
         goban.current.on("score_estimate", (est) => {
             set_score_estimate_winner(est?.winner || "");
             set_score_estimate_amount(est?.amount);
@@ -1513,7 +1503,6 @@ export function Game(): JSX.Element {
                             review_id={review_id}
                             estimating_score={estimating_score}
                             zen_mode={zen_mode}
-                            score={score}
                             show_title={show_title}
                             title={title}
                         />
@@ -1580,7 +1569,6 @@ export function Game(): JSX.Element {
                                 review_id={review_id}
                                 estimating_score={estimating_score}
                                 zen_mode={zen_mode}
-                                score={score}
                                 show_title={show_title}
                                 title={title}
                             />
