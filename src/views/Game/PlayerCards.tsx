@@ -65,67 +65,10 @@ export function PlayerCards({
             orig_marks.current = null;
         }
 
-        _popupScores("black");
-        _popupScores("white");
-    };
-    const _popupScores = (color: "black" | "white") => {
-        const only_prisoners = false;
-        const scores = goban.engine.computeScore(only_prisoners);
+        const scores = goban.engine.computeScore(false);
         showing_scores.current = goban.showing_scores;
         goban.showScores(scores);
 
-        const score = scores[color];
-        let html = "";
-        if (!only_prisoners) {
-            html += "<div class='score_breakdown'>";
-            if (score.stones) {
-                html +=
-                    "<div><span>" + _("Stones") + "</span><div>" + score.stones + "</div></div>";
-            }
-            if (score.territory) {
-                html +=
-                    "<div><span>" +
-                    _("Territory") +
-                    "</span><div>" +
-                    score.territory +
-                    "</div></div>";
-            }
-            if (score.prisoners) {
-                html +=
-                    "<div><span>" +
-                    _("Prisoners") +
-                    "</span><div>" +
-                    score.prisoners +
-                    "</div></div>";
-            }
-            if (score.handicap) {
-                html +=
-                    "<div><span>" +
-                    _("Handicap") +
-                    "</span><div>" +
-                    score.handicap +
-                    "</div></div>";
-            }
-            if (score.komi) {
-                html += "<div><span>" + _("Komi") + "</span><div>" + score.komi + "</div></div>";
-            }
-
-            if (!score.stones && !score.territory && !score.prisoners && !score.komi) {
-                html += "<div><span>" + _("No score yet") + "</span>";
-            }
-
-            html += "<div>";
-        } else {
-            html += "<div class='score_breakdown'>";
-            if (score.komi) {
-                html += "<div><span>" + _("Komi") + "</span><div>" + score.komi + "</div></div>";
-            }
-            html +=
-                "<div><span>" + _("Prisoners") + "</span><div>" + score.prisoners + "</div></div>";
-            html += "<div>";
-        }
-
-        $("#" + color + "-score-details").html(html);
         set_show_score_breakdown(true);
     };
     const hideScores = () => {
@@ -136,9 +79,6 @@ export function PlayerCards({
             goban.engine.cur_move.setAllMarks(JSON.parse(orig_marks.current));
         }
         goban.redraw();
-
-        $("#black-score-details").children().remove();
-        $("#white-score-details").children().remove();
 
         set_show_score_breakdown(false);
     };
@@ -352,7 +292,9 @@ function PlayerCard({
                     />
                 )}
                 {!show_points && <div className="komi">{komiString(score.komi)}</div>}
-                <div id={`${color}-score-details`} className="score-details" />
+                <div id={`${color}-score-details`} className="score-details">
+                    <ScorePopup goban={goban} color={color} show={show_score_breakdown} />
+                </div>
             </div>
             {!!(engine.rengo && engine.rengo_teams) && (
                 <div className={"rengo-team-members player-name-container " + color}>
@@ -436,4 +378,59 @@ function useAutoResignExpiration(goban: GobanCore, color: "black" | "white") {
         };
     }, [goban, color]);
     return auto_resign_expiration;
+}
+
+interface ScorePopupProps {
+    show: boolean;
+    goban: GobanCore;
+    color: "black" | "white";
+}
+
+function ScorePopup({ show, goban, color }: ScorePopupProps) {
+    if (!show) {
+        return <React.Fragment />;
+    }
+
+    const scores = goban.engine.computeScore(false);
+    const { stones, prisoners, handicap, komi, territory } = scores[color];
+
+    return (
+        <div className="score_breakdown">
+            {!!stones && (
+                <div>
+                    <span>{_("Stones")}</span>
+                    <div>{stones}</div>
+                </div>
+            )}
+            {!!territory && (
+                <div>
+                    <span>{_("Territory")}</span>
+                    <div>{territory}</div>
+                </div>
+            )}
+            {!!prisoners && (
+                <div>
+                    <span>{_("Prisoners")}</span>
+                    <div>{prisoners}</div>
+                </div>
+            )}
+            {!!handicap && (
+                <div>
+                    <span>{_("Handicap")}</span>
+                    <div>{handicap}</div>
+                </div>
+            )}
+            {!!komi && (
+                <div>
+                    <span>{_("Komi")}</span>
+                    <div>{komi}</div>
+                </div>
+            )}
+            {!stones && !territory && !handicap && !komi && (
+                <div>
+                    <span>{_("No score yet")}</span>
+                </div>
+            )}
+        </div>
+    );
 }
