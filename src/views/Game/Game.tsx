@@ -1499,8 +1499,6 @@ export function Game(): JSX.Element {
                             goban={goban.current}
                             historical_black={historical_black}
                             historical_white={historical_white}
-                            game_id={game_id}
-                            review_id={review_id}
                             estimating_score={estimating_score}
                             zen_mode={zen_mode}
                             show_title={show_title}
@@ -1565,8 +1563,6 @@ export function Game(): JSX.Element {
                                 goban={goban.current}
                                 historical_black={historical_black}
                                 historical_white={historical_white}
-                                game_id={game_id}
-                                review_id={review_id}
                                 estimating_score={estimating_score}
                                 zen_mode={zen_mode}
                                 show_title={show_title}

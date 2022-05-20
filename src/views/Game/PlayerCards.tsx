@@ -35,8 +35,6 @@ interface PlayerCardsProps {
     goban: Goban;
     historical_black: PlayerType;
     historical_white: PlayerType;
-    game_id: number;
-    review_id: number;
     estimating_score: boolean;
     zen_mode: boolean;
     show_title: boolean;
@@ -47,8 +45,6 @@ export function PlayerCards({
     goban,
     historical_black,
     historical_white,
-    game_id,
-    review_id,
     estimating_score,
     zen_mode,
     show_title,
@@ -150,7 +146,6 @@ export function PlayerCards({
     };
 
     const onClick = () => (show_score_breakdown ? hideScores() : popupScores());
-    const chat_channel = game_id ? `game-${game_id}` : `review-${review_id}`;
 
     return (
         <div className="players">
@@ -163,7 +158,6 @@ export function PlayerCards({
                     estimating_score={estimating_score}
                     show_score_breakdown={show_score_breakdown}
                     onClick={onClick}
-                    chat_channel={chat_channel}
                     zen_mode={zen_mode}
                 />
                 <PlayerCard
@@ -174,7 +168,6 @@ export function PlayerCards({
                     estimating_score={estimating_score}
                     show_score_breakdown={show_score_breakdown}
                     onClick={onClick}
-                    chat_channel={chat_channel}
                     zen_mode={zen_mode}
                 />
             </div>
@@ -187,7 +180,7 @@ export function PlayerCards({
 
                         TODO: move title logic out of this component.
                         */
-                        ((!review_id && show_title && goban?.engine?.rengo) || null) && (
+                        ((!goban.review_id && show_title && goban?.engine?.rengo) || null) && (
                             <div className="game-state">{title}</div>
                         )
                     }
@@ -260,7 +253,6 @@ interface PlayerCardProps {
     estimating_score: boolean;
     show_score_breakdown: boolean;
     onClick: () => void;
-    chat_channel: string;
     zen_mode: boolean;
 }
 
@@ -272,7 +264,6 @@ function PlayerCard({
     estimating_score,
     show_score_breakdown,
     onClick,
-    chat_channel,
     zen_mode,
 }: PlayerCardProps) {
     const engine = goban.engine;
@@ -280,6 +271,8 @@ function PlayerCard({
 
     const auto_resign_expiration = useAutoResignExpiration(goban, color);
     const score = useScore(goban)[color];
+    const { game_id, review_id } = goban;
+    const chat_channel = game_id ? `game-${game_id}` : `review-${review_id}`;
 
     // In rengo we always will have a player icon to show (after initialisation).
     // In other cases, we only have one if `historical` is set
