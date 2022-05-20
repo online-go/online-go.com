@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { Goban, Score, PlayerScore } from "goban";
+import { Goban, GobanCore, Score, PlayerScore, JGOFPlayerSummary } from "goban";
 import { icon_size_url } from "PlayerIcon";
 import { CountDown } from "./CountDown";
 import { Flag } from "Flag";
@@ -27,6 +27,7 @@ import { lookup, fetch } from "player_cache";
 import { _, interpolate, ngettext } from "translate";
 import * as data from "data";
 import { usePlayerToMove } from "./GameHooks";
+import { get_network_latency, get_clock_drift } from "sockets";
 
 type PlayerType = rest_api.games.Player;
 
@@ -34,8 +35,6 @@ interface PlayerCardsProps {
     goban: Goban;
     historical_black: PlayerType;
     historical_white: PlayerType;
-    black_auto_resign_expiration: Date;
-    white_auto_resign_expiration: Date;
     game_id: number;
     review_id: number;
     estimating_score: boolean;
@@ -49,8 +48,6 @@ export function PlayerCards({
     goban,
     historical_black,
     historical_white,
-    black_auto_resign_expiration,
-    white_auto_resign_expiration,
     game_id,
     review_id,
     estimating_score,
@@ -162,7 +159,6 @@ export function PlayerCards({
             <div className="player-icons">
                 <PlayerCard
                     historical={historical_black}
-                    auto_resign_expiration={black_auto_resign_expiration}
                     color="black"
                     score={score["black"]}
                     goban={goban}
@@ -175,7 +171,6 @@ export function PlayerCards({
                 />
                 <PlayerCard
                     historical={historical_white}
-                    auto_resign_expiration={white_auto_resign_expiration}
                     color="white"
                     score={score["white"]}
                     goban={goban}
@@ -240,7 +235,6 @@ interface PlayerCardProps {
     score: PlayerScore;
     color: "black" | "white";
     goban: Goban;
-    auto_resign_expiration: Date;
     historical: PlayerType;
     player_to_move: number;
     estimating_score: boolean;
@@ -254,7 +248,6 @@ function PlayerCard({
     score,
     color,
     goban,
-    auto_resign_expiration,
     historical,
     player_to_move,
     estimating_score,
@@ -265,6 +258,8 @@ function PlayerCard({
 }: PlayerCardProps) {
     const engine = goban.engine;
     const player = engine.players[color];
+
+    const auto_resign_expiration = useAutoResignExpiration(goban, color);
 
     // In rengo we always will have a player icon to show (after initialisation).
     // In other cases, we only have one if `historical` is set
@@ -393,4 +388,41 @@ function komiString(komi: number) {
     }
     const abs_komi = Math.abs(komi).toFixed(1);
     return komi > 0 ? `+ ${abs_komi}` : `- ${abs_komi}`;
+}
+
+function useAutoResignExpiration(goban: GobanCore, color: "black" | "white") {
+    const [auto_resign_expiration, setAutoResignExpiration] = React.useState<Date | null>(null);
+    React.useEffect(() => {
+        const handleAutoResign = (data?: { player_id: number; expiration: number }) => {
+            if (goban.engine && data?.player_id === goban.engine.players[color].id) {
+                setAutoResignExpiration(
+                    new Date(data?.expiration - get_network_latency() + get_clock_drift()),
+                );
+            }
+        };
+        const handleClearAutoResign = (data?: { player_id: number }) => {
+            if (goban.engine && data?.player_id === goban.engine.players[color].id) {
+                setAutoResignExpiration(null);
+            }
+        };
+        const processPlayerUpdate = (player_update: JGOFPlayerSummary) => {
+            if (player_update.dropped_players) {
+                if (player_update.dropped_players[color]) {
+                    setAutoResignExpiration(null);
+                }
+            }
+        };
+
+        goban.on("auto-resign", handleAutoResign);
+        goban.on("clear-auto-resign", handleClearAutoResign);
+        goban.on("player-update", processPlayerUpdate);
+
+        return () => {
+            setAutoResignExpiration(null);
+            goban.off("auto-resign", handleAutoResign);
+            goban.off("clear-auto-resign", handleClearAutoResign);
+            goban.off("player-update", processPlayerUpdate);
+        };
+    }, [goban, color]);
+    return auto_resign_expiration;
 }
