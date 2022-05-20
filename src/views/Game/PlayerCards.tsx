@@ -53,7 +53,6 @@ export function PlayerCards({
 
     const [show_score_breakdown, set_show_score_breakdown] = React.useState(false);
 
-    const player_to_move = usePlayerToMove(goban);
     const show_title = useShowTitle(goban);
     const title = useTitle(goban);
 
@@ -83,7 +82,7 @@ export function PlayerCards({
         set_show_score_breakdown(false);
     };
 
-    const onClick = () => (show_score_breakdown ? hideScores() : popupScores());
+    const toggleScorePopup = () => (show_score_breakdown ? hideScores() : popupScores());
 
     return (
         <div className="players">
@@ -92,20 +91,18 @@ export function PlayerCards({
                     historical={historical_black}
                     color="black"
                     goban={goban}
-                    player_to_move={player_to_move}
                     estimating_score={estimating_score}
                     show_score_breakdown={show_score_breakdown}
-                    onClick={onClick}
+                    onScoreClick={toggleScorePopup}
                     zen_mode={zen_mode}
                 />
                 <PlayerCard
                     historical={historical_white}
                     color="white"
                     goban={goban}
-                    player_to_move={player_to_move}
                     estimating_score={estimating_score}
                     show_score_breakdown={show_score_breakdown}
-                    onClick={onClick}
+                    onScoreClick={toggleScorePopup}
                     zen_mode={zen_mode}
                 />
             </div>
@@ -187,10 +184,9 @@ interface PlayerCardProps {
     color: "black" | "white";
     goban: Goban;
     historical: PlayerType;
-    player_to_move: number;
     estimating_score: boolean;
     show_score_breakdown: boolean;
-    onClick: () => void;
+    onScoreClick: () => void;
     zen_mode: boolean;
 }
 
@@ -198,14 +194,14 @@ function PlayerCard({
     color,
     goban,
     historical,
-    player_to_move,
     estimating_score,
     show_score_breakdown,
-    onClick,
+    onScoreClick,
     zen_mode,
 }: PlayerCardProps) {
     const engine = goban.engine;
     const player = engine.players[color];
+    const player_to_move = usePlayerToMove(goban);
 
     const auto_resign_expiration = useAutoResignExpiration(goban, color);
     const score = useScore(goban)[color];
@@ -273,7 +269,7 @@ function PlayerCard({
                 className={
                     "score-container " + (show_score_breakdown ? "show-score-breakdown" : "")
                 }
-                onClick={onClick}
+                onClick={onScoreClick}
             >
                 {show_points && (
                     <div className={"points" + (estimating_score ? " hidden" : "")}>
