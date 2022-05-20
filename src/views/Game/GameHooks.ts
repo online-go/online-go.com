@@ -110,3 +110,17 @@ export const usePlayerToMove = generateGobanHook(
     (goban: GobanCore | null) => goban?.engine.playerToMove() ?? 0,
     ["cur_move", "last_official_move"],
 );
+
+/** React hook that returns true if the title should be shown. */
+export const useShowTitle = generateGobanHook(
+    (goban: GobanCore | null) => {
+        if (!goban) {
+            return false;
+        }
+        return !goban.submit_move || goban.engine.playerToMove() !== data.get("user")?.id || null;
+    },
+    ["cur_move", "submit_move"],
+);
+
+/** React hook that returns the title text (e.g. "Black to move"). */
+export const useTitle = generateGobanHook((goban: GobanCore | null) => goban?.title, ["title"]);

@@ -26,7 +26,7 @@ import { Player } from "Player";
 import { lookup, fetch } from "player_cache";
 import { _, interpolate, ngettext } from "translate";
 import * as data from "data";
-import { generateGobanHook, usePlayerToMove } from "./GameHooks";
+import { generateGobanHook, usePlayerToMove, useShowTitle, useTitle } from "./GameHooks";
 import { get_network_latency, get_clock_drift } from "sockets";
 
 type PlayerType = rest_api.games.Player;
@@ -37,8 +37,6 @@ interface PlayerCardsProps {
     historical_white: PlayerType;
     estimating_score: boolean;
     zen_mode: boolean;
-    show_title: boolean;
-    title: string;
 }
 
 export function PlayerCards({
@@ -47,8 +45,6 @@ export function PlayerCards({
     historical_white,
     estimating_score,
     zen_mode,
-    show_title,
-    title,
 }: PlayerCardsProps): JSX.Element {
     const engine = goban.engine;
 
@@ -58,6 +54,8 @@ export function PlayerCards({
     const [show_score_breakdown, set_show_score_breakdown] = React.useState(false);
 
     const player_to_move = usePlayerToMove(goban);
+    const show_title = useShowTitle(goban);
+    const title = useTitle(goban);
 
     const popupScores = () => {
         if (goban.engine.cur_move) {

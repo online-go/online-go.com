@@ -66,7 +66,7 @@ import {
 import { CancelButton } from "./PlayButtons";
 import { GameDock } from "./GameDock";
 import swal from "sweetalert2";
-import { useUserIsParticipant } from "./GameHooks";
+import { useShowTitle, useTitle, useUserIsParticipant } from "./GameHooks";
 
 const win = $(window);
 
@@ -121,12 +121,12 @@ export function Game(): JSX.Element {
     );
     const [show_game_timing, set_show_game_timing] = React.useState(false);
 
-    const [title, set_title] = React.useState<string>();
+    const title = useTitle(goban.current);
 
     const [mode, set_mode] = React.useState<GobanModes>("play");
     const [score_estimate_winner, set_score_estimate_winner] = React.useState<string>();
     const [score_estimate_amount, set_score_estimate_amount] = React.useState<number>();
-    const [show_title, set_show_title] = React.useState<boolean>();
+    const show_title = useShowTitle(goban.current);
     const [, set_undo_requested] = React.useState<number | undefined>();
     const [, forceUpdate] = React.useState<number>();
 
@@ -1140,13 +1140,6 @@ export function Game(): JSX.Element {
 
         /* Ensure our state is kept up to date */
 
-        const sync_show_title = () =>
-            set_show_title(
-                !goban.current.submit_move ||
-                    goban.current.engine.playerToMove() !== data.get("user").id ||
-                    null,
-            );
-
         const sync_stone_removal = () => {
             const engine = goban.current.engine;
 
@@ -1168,12 +1161,10 @@ export function Game(): JSX.Element {
             const engine = goban.current.engine;
             set_mode(goban.current.mode);
             set_phase(engine.phase);
-            set_title(goban.current.title);
 
             set_score_estimate_winner(undefined);
             set_undo_requested(engine.undo_requested);
 
-            sync_show_title();
             sync_stone_removal();
 
             // These are only updated on load events
@@ -1209,14 +1200,11 @@ export function Game(): JSX.Element {
         goban.current.on("mode", set_mode);
         goban.current.on("phase", set_phase);
         goban.current.on("phase", () => goban.current.engine.cur_move.clearMarks());
-        goban.current.on("title", set_title);
         goban.current.on("score_estimate", (est) => {
             set_score_estimate_winner(est?.winner || "");
             set_score_estimate_amount(est?.amount);
         });
         goban.current.on("undo_requested", set_undo_requested);
-        goban.current.on("cur_move", sync_show_title);
-        goban.current.on("submit_move", sync_show_title);
 
         goban.current.on("phase", sync_stone_removal);
         goban.current.on("mode", sync_stone_removal);
@@ -1501,8 +1489,6 @@ export function Game(): JSX.Element {
                             historical_white={historical_white}
                             estimating_score={estimating_score}
                             zen_mode={zen_mode}
-                            show_title={show_title}
-                            title={title}
                         />
                     )}
 
@@ -1565,8 +1551,6 @@ export function Game(): JSX.Element {
                                 historical_white={historical_white}
                                 estimating_score={estimating_score}
                                 zen_mode={zen_mode}
-                                show_title={show_title}
-                                title={title}
                             />
                         )}
 
