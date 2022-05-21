@@ -180,20 +180,23 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
     onSeekgraphGlobal = (lst) => {
         const this_userid = data.get("user").id;
+        // lst contains entries that tell us what to do with our local challenge list.
         for (let i = 0; i < lst.length; ++i) {
-            const e = lst[i];
-            if ("game_started" in e) {
+            const entry = lst[i];
+            if ("game_started" in entry) {
                 // rengo "other players" on this page need to be sent to the game when it starts
                 // the creator already gets sent, by the normal challenge modal mechanism
-                if (e.rengo && e.creator !== this_userid) {
-                    if (e.rengo_black_team.concat(e.rengo_white_team).includes(this_userid)) {
-                        browserHistory.push(`/game/${e.game_id}`);
+                if (entry.rengo && entry.creator !== this_userid) {
+                    if (
+                        entry.rengo_black_team.concat(entry.rengo_white_team).includes(this_userid)
+                    ) {
+                        browserHistory.push(`/game/${entry.game_id}`);
                     }
                 }
-            } else if ("delete" in e) {
-                if (e.challenge_id in this.challenges) {
-                    const uid = this.challenges[e.challenge_id].system_message_id;
-                    delete this.challenges[e.challenge_id];
+            } else if ("delete" in entry) {
+                if (entry.challenge_id in this.challenges) {
+                    const uid = this.challenges[entry.challenge_id].system_message_id;
+                    delete this.challenges[entry.challenge_id];
                     if (uid) {
                         //console.log("#line-" + (uid.replace(".", "\\.")));
                         $("#line-" + uid.replace(".", "\\."))
@@ -202,38 +205,38 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                     }
                 }
             } else {
-                e.user_challenge = false;
-                e.joined_rengo = e.rengo && e.rengo_participants.includes(this_userid);
+                // the entry has details of a challenge we need to list
+                entry.user_challenge = false;
+                entry.joined_rengo = entry.rengo && entry.rengo_participants.includes(this_userid);
 
                 if (data.get("user").anonymous) {
-                    e.eligible = false;
-                    e.ineligible_reason = _("Not logged in");
-                } else if (e.user_id === data.get("user").id) {
-                    e.eligible = false;
-                    e.user_challenge = true;
-                    e.ineligible_reason = _("This is your challenge");
-                } else if (e.ranked && Math.abs(this.userRank() - e.rank) > 9) {
-                    e.eligible = false;
-                    e.ineligible_reason = _(
+                    entry.eligible = false;
+                    entry.ineligible_reason = _("Not logged in");
+                } else if (entry.user_id === data.get("user").id) {
+                    entry.eligible = false;
+                    entry.user_challenge = true;
+                    entry.ineligible_reason = _("This is your challenge");
+                } else if (entry.ranked && Math.abs(this.userRank() - entry.rank) > 9) {
+                    entry.eligible = false;
+                    entry.ineligible_reason = _(
                         "This is a ranked game and the rank difference is more than 9",
                     );
-                } else if (e.min_rank <= this.userRank() && e.max_rank >= this.userRank()) {
-                    e.eligible = true;
+                } else if (entry.min_rank <= this.userRank() && entry.max_rank >= this.userRank()) {
+                    entry.eligible = true;
                 } else {
-                    e.eligible = false;
+                    entry.eligible = false;
 
-                    if (e.min_rank > this.userRank()) {
-                        e.ineligible_reason = interpolate(_("min. rank: %s"), [
-                            rankString(e.min_rank),
+                    if (entry.min_rank > this.userRank()) {
+                        entry.ineligible_reason = interpolate(_("min. rank: %s"), [
+                            rankString(entry.min_rank),
                         ]);
-                    } else if (e.max_rank < this.userRank()) {
-                        e.ineligible_reason = interpolate(_("max. rank: %s"), [
-                            rankString(e.max_rank),
+                    } else if (entry.max_rank < this.userRank()) {
+                        entry.ineligible_reason = interpolate(_("max. rank: %s"), [
+                            rankString(entry.max_rank),
                         ]);
                     }
                 }
-
-                this.challenges[e.challenge_id] = e;
+                this.challenges[entry.challenge_id] = entry;
             }
         }
         this.redraw();
