@@ -99,6 +99,7 @@ export function GameDock({
         superuser_ai_review_ready = false;
         mod = false;
         annul = false;
+        game_id = Number(goban.config.game_id);
     }
 
     let sgf_download_enabled = false;
