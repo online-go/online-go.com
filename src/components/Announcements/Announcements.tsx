@@ -128,7 +128,9 @@ export class Announcements extends React.PureComponent<{}, AnnouncementsState> {
             }, moment(announcement.expiration).toDate().getTime() - Date.now());
         } else {
             const t = moment(announcement.expiration).toDate().getTime() - Date.now();
-            if (t > 0 && t < 30 * 60 * 1000) {
+            // Tournaments are announced 30 minutes prior, but allow
+            // up to 5 minutes of clock skew.
+            if (t > 0 && t < 35 * 60 * 1000) {
                 data.set("active-tournament", announcement);
             }
         }
