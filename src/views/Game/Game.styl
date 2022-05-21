@@ -416,7 +416,8 @@ goban-view-bar-width=400px
     .right-col {
         flex-basis: 25%;
         padding-left: 0.3rem;
-        padding-right: dock-collapsed-width + 0.3rem;
+        padding-right: 0.3rem;
+        margin-right: dock-collapsed-width;
         min-width: 340px;
     }
 
@@ -437,6 +438,7 @@ goban-view-bar-width=400px
     &.squashed {
         .right-col {
             padding-right: 0;
+            margin-right: 0;
         }
     }
     &.portrait {
