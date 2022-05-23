@@ -33,15 +33,12 @@ import {
     GoMath,
     MoveTree,
     AudioClockEvent,
-    Score,
     GoEnginePhase,
     GobanModes,
-    JGOFPlayerSummary,
     GoConditionalMove,
     AnalysisTool,
 } from "goban";
 import { isLiveGame } from "TimeControl";
-import { get_network_latency, get_clock_drift } from "sockets";
 import { setExtraActionCallback, PlayerDetails } from "Player";
 import * as player_cache from "player_cache";
 import { notification_manager } from "Notifications";
@@ -67,8 +64,14 @@ import {
 import { CancelButton } from "./PlayButtons";
 import { GameDock } from "./GameDock";
 import swal from "sweetalert2";
+<<<<<<< player-cards
+import { useShowTitle, useTitle, useUserIsParticipant } from "./GameHooks";
+
+const win = $(window);
+=======
 import { useUserIsParticipant } from "./GameHooks";
 import { GobanContainer } from "GobanContainer";
+>>>>>>> devel
 
 export function Game(): JSX.Element {
     const params = useParams<"game_id" | "review_id" | "move_number">();
@@ -111,10 +114,6 @@ export function Game(): JSX.Element {
         null,
     );
     const [annulled, set_annulled] = React.useState(false);
-    const [black_auto_resign_expiration, set_black_auto_resign_expiration] =
-        React.useState<Date>(null);
-    const [white_auto_resign_expiration, set_white_auto_resign_expiration] =
-        React.useState<Date>(null);
     const [ai_review_enabled, set_ai_review_enabled] = React.useState(
         preferences.get("ai-review-enabled"),
     );
@@ -123,14 +122,13 @@ export function Game(): JSX.Element {
         null,
     );
     const [show_game_timing, set_show_game_timing] = React.useState(false);
-    const [score, set_score] = React.useState<Score>();
 
-    const [title, set_title] = React.useState<string>();
+    const title = useTitle(goban.current);
 
     const [mode, set_mode] = React.useState<GobanModes>("play");
     const [score_estimate_winner, set_score_estimate_winner] = React.useState<string>();
     const [score_estimate_amount, set_score_estimate_amount] = React.useState<number>();
-    const [show_title, set_show_title] = React.useState<boolean>();
+    const show_title = useShowTitle(goban.current);
     const [, set_undo_requested] = React.useState<number | undefined>();
     const [, forceUpdate] = React.useState<number>();
 
@@ -298,19 +296,6 @@ export function Game(): JSX.Element {
         step();
 
         set_autoplaying(true);
-    };
-
-    const processPlayerUpdate = (player_update: JGOFPlayerSummary) => {
-        if (player_update.dropped_players) {
-            if (player_update.dropped_players.black) {
-                console.log("dropping black");
-                // we don't care who was dropped, we just have to clear the auto-resign-overlay!
-                set_black_auto_resign_expiration(null);
-            }
-            if (player_update.dropped_players.white) {
-                set_white_auto_resign_expiration(null);
-            }
-        }
     };
 
     const checkAndEnterAnalysis = (move?: MoveTree) => {
@@ -968,10 +953,6 @@ export function Game(): JSX.Element {
             }
         });
 
-        // We need an initial score for the first display rendering (which is not set in the constructor).
-        // Best to get this from the engine, so we know we have the right structure...
-        set_score(goban.current.engine.computeScore(true));
-
         if (preferences.get("dynamic-title")) {
             /* Title Updates { */
             const last_title = window.document.title;
@@ -1068,13 +1049,6 @@ export function Game(): JSX.Element {
 
         /* Ensure our state is kept up to date */
 
-        const sync_show_title = () =>
-            set_show_title(
-                !goban.current.submit_move ||
-                    goban.current.engine.playerToMove() !== data.get("user").id ||
-                    null,
-            );
-
         const sync_stone_removal = () => {
             const engine = goban.current.engine;
 
@@ -1088,10 +1062,7 @@ export function Game(): JSX.Element {
                 goban.current.mode === "play"
             ) {
                 const s = engine.computeScore(false);
-                set_score(s);
                 goban.current.showScores(s);
-            } else {
-                set_score(engine.computeScore(true));
             }
         };
 
@@ -1099,12 +1070,10 @@ export function Game(): JSX.Element {
             const engine = goban.current.engine;
             set_mode(goban.current.mode);
             set_phase(engine.phase);
-            set_title(goban.current.title);
 
             set_score_estimate_winner(undefined);
             set_undo_requested(engine.undo_requested);
 
-            sync_show_title();
             sync_stone_removal();
 
             // These are only updated on load events
@@ -1140,15 +1109,11 @@ export function Game(): JSX.Element {
         goban.current.on("mode", set_mode);
         goban.current.on("phase", set_phase);
         goban.current.on("phase", () => goban.current.engine.cur_move.clearMarks());
-        goban.current.on("title", set_title);
-        goban.current.on("cur_move", () => set_score(goban.current.engine.computeScore(true)));
         goban.current.on("score_estimate", (est) => {
             set_score_estimate_winner(est?.winner || "");
             set_score_estimate_amount(est?.amount);
         });
         goban.current.on("undo_requested", set_undo_requested);
-        goban.current.on("cur_move", sync_show_title);
-        goban.current.on("submit_move", sync_show_title);
 
         goban.current.on("phase", sync_stone_removal);
         goban.current.on("mode", sync_stone_removal);
@@ -1159,7 +1124,6 @@ export function Game(): JSX.Element {
         /* END sync_state port */
 
         goban.current.on("move-made", autoadvance);
-        goban.current.on("player-update", processPlayerUpdate);
         goban.current.on("gamedata", onResize);
 
         goban.current.on("gamedata", (gamedata) => {
@@ -1201,27 +1165,6 @@ export function Game(): JSX.Element {
                 nav_goto_move(parseInt(params.move_number));
             });
         }
-
-        goban.current.on("auto-resign", (data) => {
-            if (goban.current.engine && data.player_id === goban.current.engine.players.black.id) {
-                set_black_auto_resign_expiration(
-                    new Date(data.expiration - get_network_latency() + get_clock_drift()),
-                );
-            }
-            if (goban.current.engine && data.player_id === goban.current.engine.players.white.id) {
-                set_white_auto_resign_expiration(
-                    new Date(data.expiration - get_network_latency() + get_clock_drift()),
-                );
-            }
-        });
-        goban.current.on("clear-auto-resign", (data) => {
-            if (goban.current.engine && data.player_id === goban.current.engine.players.black.id) {
-                set_black_auto_resign_expiration(null);
-            }
-            if (goban.current.engine && data.player_id === goban.current.engine.players.white.id) {
-                set_white_auto_resign_expiration(null);
-            }
-        });
 
         if (review_id) {
             let stashed_move_string = null;
@@ -1388,8 +1331,6 @@ export function Game(): JSX.Element {
             }
             window["Game"] = null;
             window["global_goban"] = null;
-            set_black_auto_resign_expiration(null);
-            set_white_auto_resign_expiration(null);
 
             setExtraActionCallback(null);
             $(window).off("focus", onFocus);
@@ -1446,15 +1387,8 @@ export function Game(): JSX.Element {
                             goban={goban.current}
                             historical_black={historical_black}
                             historical_white={historical_white}
-                            black_auto_resign_expiration={black_auto_resign_expiration}
-                            white_auto_resign_expiration={white_auto_resign_expiration}
-                            game_id={game_id}
-                            review_id={review_id}
                             estimating_score={estimating_score}
                             zen_mode={zen_mode}
-                            score={score}
-                            show_title={show_title}
-                            title={title}
                         />
                     )}
 
@@ -1512,15 +1446,8 @@ export function Game(): JSX.Element {
                                 goban={goban.current}
                                 historical_black={historical_black}
                                 historical_white={historical_white}
-                                black_auto_resign_expiration={black_auto_resign_expiration}
-                                white_auto_resign_expiration={white_auto_resign_expiration}
-                                game_id={game_id}
-                                review_id={review_id}
                                 estimating_score={estimating_score}
                                 zen_mode={zen_mode}
-                                score={score}
-                                show_title={show_title}
-                                title={title}
                             />
                         )}
 
