@@ -64,14 +64,8 @@ import {
 import { CancelButton } from "./PlayButtons";
 import { GameDock } from "./GameDock";
 import swal from "sweetalert2";
-<<<<<<< player-cards
 import { useShowTitle, useTitle, useUserIsParticipant } from "./GameHooks";
-
-const win = $(window);
-=======
-import { useUserIsParticipant } from "./GameHooks";
 import { GobanContainer } from "GobanContainer";
->>>>>>> devel
 
 export function Game(): JSX.Element {
     const params = useParams<"game_id" | "review_id" | "move_number">();
