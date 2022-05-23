@@ -64,7 +64,7 @@ import {
 import { CancelButton } from "./PlayButtons";
 import { GameDock } from "./GameDock";
 import swal from "sweetalert2";
-import { useShowTitle, useTitle, useUserIsParticipant } from "./GameHooks";
+import { useScore, useShowTitle, useTitle, useUserIsParticipant } from "./GameHooks";
 import { GobanContainer } from "GobanContainer";
 
 export function Game(): JSX.Element {
@@ -118,6 +118,7 @@ export function Game(): JSX.Element {
     const [show_game_timing, set_show_game_timing] = React.useState(false);
 
     const title = useTitle(goban.current);
+    useScore(goban.current);
 
     const [mode, set_mode] = React.useState<GobanModes>("play");
     const [score_estimate_winner, set_score_estimate_winner] = React.useState<string>();
