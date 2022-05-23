@@ -124,3 +124,14 @@ export const useShowTitle = generateGobanHook(
 
 /** React hook that returns the title text (e.g. "Black to move"). */
 export const useTitle = generateGobanHook((goban: GobanCore | null) => goban?.title, ["title"]);
+
+export const useScore = generateGobanHook(
+    (goban: GobanCore) => {
+        if (!goban) {
+            return;
+        }
+        const engine = goban.engine;
+        return engine.computeScore(true);
+    },
+    ["cur_move"],
+);
