@@ -16,7 +16,7 @@
  */
 
 import * as data from "data";
-import { GobanSelectedThemes, GoThemes } from "goban";
+import { GobanSelectedThemes, GoThemes, LabelPosition } from "goban";
 import React from "react";
 import { current_language } from "translate";
 import { DataSchema } from "./data_schema";
@@ -47,8 +47,8 @@ export const defaults = {
     "goban-theme-board": null,
     "goban-theme-white": null,
     "hide-ranks": false,
-    "label-positioning": "all",
-    "label-positioning-puzzles": "all",
+    "label-positioning": "all" as LabelPosition,
+    "label-positioning-puzzles": "all" as LabelPosition,
     language: "auto",
     "move-tree-numbering": "move-number" as "none" | "move-coordinates" | "move-number",
     "new-game-board-size": 19,

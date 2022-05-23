@@ -20,14 +20,12 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
-import ReactResizeDetector from "react-resize-detector";
 import * as queryString from "query-string";
 
 import * as data from "data";
 import { _, interpolate, pgettext, npgettext } from "translate";
 import { get, put, post } from "requests";
 import { KBShortcut } from "KBShortcut";
-import { PersistentElement } from "PersistentElement";
 import { Goban, GoMath, GobanConfig } from "goban";
 import { AutoTranslate } from "AutoTranslate";
 import { Markdown } from "Markdown";
@@ -42,6 +40,7 @@ import { JosekiVariationFilter, JosekiFilter } from "JosekiVariationFilter";
 import { JosekiTagSelector, JosekiTag } from "JosekiTagSelector";
 import { Throbber } from "Throbber";
 import { IdType } from "src/lib/types";
+import { GobanContainer } from "GobanContainer";
 
 const server_url = data.get("oje-url", "/oje/");
 
@@ -399,7 +398,6 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             joseki_best_attempt: undefined,
         });
         this.initializeGoban();
-        this.onResize();
         this.resetJosekiSequence(target_position);
     };
 
@@ -426,34 +424,6 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
         // ask the server for the moves from postion pos
         this.fetchNextFilteredMovesFor(pos, this.state.variation_filter);
     };
-
-    onResize = () => {
-        this.goban.setSquareSizeBasedOnDisplayWidth(
-            Math.min(this.goban_container.offsetWidth, this.goban_container.offsetHeight),
-        );
-        this.goban.redraw();
-        this.recenterGoban();
-    };
-
-    recenterGoban() {
-        const m = this.goban.computeMetrics();
-        if (this.goban_container.offsetWidth > 0 && m.width > 0) {
-            if (
-                this.state.goban_container_left_padding !==
-                Math.round(Math.ceil(this.goban_container.offsetWidth - m.width) / 2)
-            ) {
-                this.setState({
-                    goban_container_left_padding: Math.round(
-                        Math.ceil(this.goban_container.offsetWidth - m.width) / 2,
-                    ),
-                });
-            }
-            /*
-            this.goban_persistent_element.container.style.left =
-                Math.round(Math.ceil(this.goban_container.offsetWidth - m.width) / 2) + "px";
-                */
-        }
-    }
 
     loadPosition = (node_id: string) => {
         //console.log("load position:", node_id);
@@ -934,9 +904,6 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
         if (prevProps.location !== this.props.location) {
             this.componentDidMount(); // force reload of position if they click a position link
         }
-
-        // try to persuade goban to render at the correct size all the time
-        this.onResize();
     }
 
     setAdminMode = () => {
@@ -1174,20 +1141,12 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                         "left-col" + (this.state.mode === PageMode.Admin ? " admin-mode" : "")
                     }
                 >
-                    <div ref={(e) => (this.goban_container = e)} className="goban-container">
-                        <ReactResizeDetector
-                            handleWidth
-                            handleHeight
-                            onResize={() => this.onResize()}
-                        />
-                        <PersistentElement
-                            className="Goban"
-                            extra_props={{
-                                style: { paddingLeft: this.state.goban_container_left_padding },
-                            }}
-                            elt={this.goban_div}
-                        />
-                    </div>
+                    <GobanContainer
+                        goban={this.goban}
+                        extra_props={{
+                            style: { paddingLeft: this.state.goban_container_left_padding },
+                        }}
+                    />
                 </div>
                 <div className="right-col">
                     <div className="top-bar">

@@ -20,7 +20,8 @@ import * as React from "react";
 interface PersistentElementProps {
     elt: HTMLElement | JQuery;
     className?: string;
-    extra_props?: object; // hash of new props to put on the element
+    /** hash of new props to put on the element */
+    extra_props?: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>;
 }
 
 export function PersistentElement(props: PersistentElementProps): JSX.Element {

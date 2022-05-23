@@ -18,7 +18,6 @@
 import * as data from "data";
 import * as preferences from "preferences";
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
 import { useParams } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
 import { _, interpolate, current_language } from "translate";
@@ -46,7 +45,6 @@ import { get_network_latency, get_clock_drift } from "sockets";
 import { setExtraActionCallback, PlayerDetails } from "Player";
 import * as player_cache from "player_cache";
 import { notification_manager } from "Notifications";
-import { PersistentElement } from "PersistentElement";
 import { Resizable } from "Resizable";
 import { chat_manager, ChatChannelProxy } from "chat_manager";
 import { sfx, SFXSprite, ValidSound } from "sfx";
@@ -70,8 +68,7 @@ import { CancelButton } from "./PlayButtons";
 import { GameDock } from "./GameDock";
 import swal from "sweetalert2";
 import { useUserIsParticipant } from "./GameHooks";
-
-const win = $(window);
+import { GobanContainer } from "GobanContainer";
 
 export function Game(): JSX.Element {
     const params = useParams<"game_id" | "review_id" | "move_number">();
@@ -80,7 +77,6 @@ export function Game(): JSX.Element {
     const review_id = params.review_id ? parseInt(params.review_id) : 0;
 
     /* Refs */
-    const ref_goban_container = React.useRef<HTMLDivElement>();
     const ref_move_tree_container = React.useRef<HTMLElement>();
     const ladder_id = React.useRef<number>();
     const tournament_id = React.useRef<number>();
@@ -343,75 +339,13 @@ export function Game(): JSX.Element {
         }
         return false;
     };
-    const recenterGoban = () => {
-        if (ref_goban_container.current && goban.current) {
-            const m = goban.current.computeMetrics();
-            $(goban_div.current).css({
-                top: Math.ceil(ref_goban_container.current.offsetHeight - m.height) / 2,
-                left: Math.ceil(ref_goban_container.current.offsetWidth - m.width) / 2,
-            });
-        }
-    };
-    const onResize = (no_debounce: boolean = false, skip_state_update: boolean = false) => {
+    const onResize = (_no_debounce: boolean = false, skip_state_update: boolean = false) => {
         if (!skip_state_update) {
             if (goban_view_mode() !== view_mode || goban_view_squashed() !== squashed) {
                 set_squashed(goban_view_squashed());
                 set_view_mode(goban_view_mode());
             }
         }
-
-        if (resize_debounce.current) {
-            clearTimeout(resize_debounce.current);
-            resize_debounce.current = null;
-        }
-
-        if (!goban) {
-            return;
-        }
-
-        // this forces a clock refresh, important after a layout when the dom
-        // could have been replaced
-        // TODO: When we are revamping this view we should see if we can either remove this
-        // or move it into a clock component or something.
-        if (goban.current) {
-            goban.current.setGameClock(goban.current.last_clock);
-        }
-
-        if (!ref_goban_container.current) {
-            return;
-        }
-
-        if (goban_view_mode() === "portrait") {
-            const w = win.width() + 10;
-            if (ref_goban_container.current.style.minHeight !== `${w}px`) {
-                ref_goban_container.current.style.minHeight = `${w}px`;
-            }
-        } else {
-            if (ref_goban_container.current.style.minHeight !== `initial`) {
-                ref_goban_container.current.style.minHeight = `initial`;
-            }
-            const w = ref_goban_container.current.offsetWidth;
-            if (ref_goban_container.current.style.flexBasis !== `${w}px`) {
-                ref_goban_container.current.style.flexBasis = `${w}px`;
-            }
-        }
-
-        if (!no_debounce) {
-            resize_debounce.current = setTimeout(() => onResize(true), 10);
-            recenterGoban();
-            return;
-        }
-
-        if (goban.current) {
-            goban.current.setSquareSizeBasedOnDisplayWidth(
-                Math.min(
-                    ref_goban_container.current.offsetWidth,
-                    ref_goban_container.current.offsetHeight,
-                ),
-            );
-        }
-
-        recenterGoban();
     };
     const setAnalyzeTool = (tool: AnalysisTool | "erase", subtool: string) => {
         if (checkAndEnterAnalysis()) {
@@ -491,16 +425,7 @@ export function Game(): JSX.Element {
         }
         preferences.set("label-positioning", label_position);
 
-        goban.current.draw_top_labels =
-            label_position === "all" || label_position.indexOf("top") >= 0;
-        goban.current.draw_left_labels =
-            label_position === "all" || label_position.indexOf("left") >= 0;
-        goban.current.draw_right_labels =
-            label_position === "all" || label_position.indexOf("right") >= 0;
-        goban.current.draw_bottom_labels =
-            label_position === "all" || label_position.indexOf("bottom") >= 0;
-        onResize(true);
-        goban.current.redraw(true);
+        goban.current.setCoordinates(label_position);
     };
 
     const toggleShowTiming = () => {
@@ -1000,33 +925,11 @@ export function Game(): JSX.Element {
             draw_left_labels: label_position === "all" || label_position.indexOf("left") >= 0,
             draw_right_labels: label_position === "all" || label_position.indexOf("right") >= 0,
             draw_bottom_labels: label_position === "all" || label_position.indexOf("bottom") >= 0,
-            display_width: Math.min(
-                ref_goban_container.current?.offsetWidth || 0,
-                ref_goban_container.current?.offsetHeight || 0,
-            ),
             visual_undo_request_indicator: preferences.get("visual-undo-request-indicator"),
             onScoreEstimationUpdated: () => {
                 goban.current.redraw(true);
             },
         };
-
-        if (opts.display_width <= 0) {
-            const I = setInterval(() => {
-                onResize(true);
-                setTimeout(() => {
-                    if (
-                        !goban ||
-                        (ref_goban_container.current &&
-                            Math.min(
-                                ref_goban_container.current.offsetWidth,
-                                ref_goban_container.current.offsetHeight,
-                            ) > 0)
-                    ) {
-                        clearInterval(I);
-                    }
-                }, 1);
-            }, 500);
-        }
 
         if (game_id) {
             opts.game_id = game_id;
@@ -1453,15 +1356,6 @@ export function Game(): JSX.Element {
         }
         /*** END initialize ***/
 
-        if (ref_goban_container.current) {
-            if (goban_view_mode() === "portrait") {
-                ref_goban_container.current.style.minHeight = `${screen.width}px`;
-            } else {
-                ref_goban_container.current.style.minHeight = `initial`;
-            }
-        }
-        onResize();
-
         return () => {
             if (game_id) {
                 abort_requests_in_flight(`games/${game_id}`);
@@ -1564,10 +1458,7 @@ export function Game(): JSX.Element {
                         />
                     )}
 
-                    <div ref={ref_goban_container} className="goban-container">
-                        <ReactResizeDetector handleWidth handleHeight onResize={() => onResize()} />
-                        <PersistentElement className="Goban" elt={goban_div.current} />
-                    </div>
+                    <GobanContainer goban={goban.current} onResize={onResize} />
 
                     {frag_below_board_controls()}
 
