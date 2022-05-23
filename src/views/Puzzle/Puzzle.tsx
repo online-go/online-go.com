@@ -16,7 +16,6 @@
  */
 
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
 import { Link } from "react-router-dom";
 import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
 import { browserHistory } from "ogsHistory";
@@ -24,7 +23,6 @@ import { _, pgettext, interpolate } from "translate";
 import { post, get, put, del } from "requests";
 import { KBShortcut } from "KBShortcut";
 import { goban_view_mode, goban_view_squashed } from "Game";
-import { PersistentElement } from "PersistentElement";
 import { errorAlerter, errorLogger, ignore } from "misc";
 import { longRankString, rankList } from "rank_utils";
 import { Goban, GobanCanvas, GobanCanvasConfig, PuzzlePlacementSetting } from "goban";
@@ -37,6 +35,7 @@ import * as data from "data";
 import { TransformSettings, PuzzleTransform } from "./PuzzleTransform";
 import { PuzzleNavigation } from "./PuzzleNavigation";
 import { PuzzleEditor } from "./PuzzleEditing";
+import { GobanContainer } from "GobanContainer";
 import swal from "sweetalert2";
 
 type PuzzleProperties = RouteComponentProps<{ puzzle_id: string }>;
@@ -182,7 +181,6 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     componentDidMount() {
         window.document.title = _("Puzzle");
         this.fetchPuzzle(parseInt(this.props.match.params.puzzle_id));
-        this.onResize();
     }
     componentDidUpdate(prev_props: PuzzleProperties) {
         if (this.props.match.params.puzzle_id !== prev_props.match.params.puzzle_id) {
@@ -196,42 +194,17 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             });
             this.fetchPuzzle(parseInt(this.props.match.params.puzzle_id));
         }
-
-        this.onResize();
     }
     onResize = () => {
-        if (!this.ref_goban_container.current) {
-            return;
-        }
-
-        if (
-            goban_view_mode() !== this.state.view_mode ||
-            goban_view_squashed() !== this.state.squashed
-        ) {
+        const squashed = goban_view_squashed();
+        const view_mode = goban_view_mode();
+        if (this.state.squashed !== squashed || this.state.view_mode !== view_mode) {
             this.setState({
                 squashed: goban_view_squashed(),
                 view_mode: goban_view_mode(),
             });
         }
-
-        if (this.goban) {
-            this.goban.setSquareSizeBasedOnDisplayWidth(
-                Math.min(
-                    this.ref_goban_container.current.offsetWidth,
-                    this.ref_goban_container.current.offsetHeight,
-                ),
-            );
-
-            this.recenterGoban();
-        }
     };
-    recenterGoban() {
-        const m = this.goban.computeMetrics();
-        $(this.ref_goban_container.current).css({
-            top: Math.ceil(this.ref_goban_container.current.offsetHeight - m.height) / 2,
-            left: Math.ceil(this.ref_goban_container.current.offsetWidth - m.width) / 2,
-        });
-    }
     reinitialize() {
         if (this.goban) {
             this.goban.destroy();
@@ -276,7 +249,6 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         this.editor.fetchPuzzle(puzzleId, (state, editing) => {
             this.reset(editing);
             this.setState(state);
-            this.onResize();
             window.document.title = state.collection.name + ": " + state.name;
             data.set(`puzzle.collection.${state.collection.id}.last-visited`, state.id);
             this.solve_time_start = Date.now();
@@ -389,8 +361,6 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         });
 
         this.goban.showPrevious();
-
-        this.onResize();
     };
     doReset = () => {
         this.reset();
@@ -398,7 +368,6 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             show_correct: false,
             show_wrong: false,
         });
-        this.onResize();
     };
 
     ratePuzzle = (value) => {
@@ -479,7 +448,6 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                     puzzle_collections: collections.results,
                 });
                 this.reset(true);
-                this.onResize();
             })
             .catch(errorAlerter);
     };
@@ -686,24 +654,13 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             case "all":
                 label_position = "none";
                 break;
-            //case "none": label_position = "top-left"; break;
-            //case "top-left": label_position = "top-right"; break;
-            //case "top-right": label_position = "bottom-right"; break;
-            //case "bottom-right": label_position = "bottom-left"; break;
-            //case "bottom-left": label_position = "all"; break;
             default:
                 label_position = "all";
         }
         preferences.set("label-positioning-puzzles", label_position);
 
-        goban.draw_top_labels = label_position === "all" || label_position.indexOf("top") >= 0;
-        goban.draw_left_labels = label_position === "all" || label_position.indexOf("left") >= 0;
-        goban.draw_right_labels = label_position === "all" || label_position.indexOf("right") >= 0;
-        goban.draw_bottom_labels =
-            label_position === "all" || label_position.indexOf("bottom") >= 0;
+        goban.setCoordinates(label_position);
         this.setState({ label_positioning: label_position });
-        this.onResize();
-        goban.redraw(true);
     };
 
     render() {
@@ -741,14 +698,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                 <KBShortcut shortcut="left" action={this.undo} />
 
                 <div className={"center-col"}>
-                    <div ref={this.ref_goban_container} className="goban-container">
-                        <ReactResizeDetector
-                            handleWidth
-                            handleHeight
-                            onResize={() => this.onResize()}
-                        />
-                        <PersistentElement className="Goban" elt={this.goban_div} />
-                    </div>
+                    <GobanContainer goban={goban} onResize={this.onResize} />
                 </div>
 
                 {(view_mode !== "portrait" || null) && (
@@ -1035,14 +985,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                 <KBShortcut shortcut="del" action={this.set_analyze_tool.delete_branch} />
 
                 <div className={"center-col"}>
-                    <div ref={this.ref_goban_container} className="goban-container">
-                        <ReactResizeDetector
-                            handleWidth
-                            handleHeight
-                            onResize={() => this.onResize()}
-                        />
-                        <PersistentElement className="Goban" elt={this.goban_div} />
-                    </div>
+                    <GobanContainer goban={this.goban} onResize={this.onResize} />
                 </div>
                 <div className={"right-col"}>
                     <div className="btn-group">
