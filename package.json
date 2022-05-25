@@ -111,7 +111,7 @@
         "react-dropzone": "^12.0.5",
         "react-linkify": "^1.0.0-alpha",
         "react-number-format": "^3.0.2",
-        "react-resize-detector": "^4.2.0",
+        "react-resize-detector": "^7.1.1",
         "react-router-dom": "^6.3.0",
         "react-select": "^5.0.1",
         "react-sortable-hoc": "^2.0.0",
