@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { Goban, Score, PlayerScore } from "goban";
+import { Goban, GobanCore, PlayerScore, JGOFPlayerSummary } from "goban";
 import { icon_size_url } from "PlayerIcon";
 import { CountDown } from "./CountDown";
 import { Flag } from "Flag";
@@ -26,7 +26,8 @@ import { Player } from "Player";
 import { lookup, fetch } from "player_cache";
 import { _, interpolate, ngettext } from "translate";
 import * as data from "data";
-import { usePlayerToMove } from "./GameHooks";
+import { generateGobanHook, usePlayerToMove, useShowTitle, useTitle } from "./GameHooks";
+import { get_network_latency, get_clock_drift } from "sockets";
 
 type PlayerType = rest_api.games.Player;
 
@@ -34,30 +35,16 @@ interface PlayerCardsProps {
     goban: Goban;
     historical_black: PlayerType;
     historical_white: PlayerType;
-    black_auto_resign_expiration: Date;
-    white_auto_resign_expiration: Date;
-    game_id: number;
-    review_id: number;
     estimating_score: boolean;
     zen_mode: boolean;
-    score: Score;
-    show_title: boolean;
-    title: string;
 }
 
 export function PlayerCards({
     goban,
     historical_black,
     historical_white,
-    black_auto_resign_expiration,
-    white_auto_resign_expiration,
-    game_id,
-    review_id,
     estimating_score,
     zen_mode,
-    score,
-    show_title,
-    title,
 }: PlayerCardsProps): JSX.Element {
     const engine = goban.engine;
 
@@ -66,7 +53,8 @@ export function PlayerCards({
 
     const [show_score_breakdown, set_show_score_breakdown] = React.useState(false);
 
-    const player_to_move = usePlayerToMove(goban);
+    const show_title = useShowTitle(goban);
+    const title = useTitle(goban);
 
     const popupScores = () => {
         if (goban.engine.cur_move) {
@@ -76,67 +64,10 @@ export function PlayerCards({
             orig_marks.current = null;
         }
 
-        _popupScores("black");
-        _popupScores("white");
-    };
-    const _popupScores = (color: "black" | "white") => {
-        const only_prisoners = false;
-        const scores = goban.engine.computeScore(only_prisoners);
+        const scores = goban.engine.computeScore(false);
         showing_scores.current = goban.showing_scores;
         goban.showScores(scores);
 
-        const score = scores[color];
-        let html = "";
-        if (!only_prisoners) {
-            html += "<div class='score_breakdown'>";
-            if (score.stones) {
-                html +=
-                    "<div><span>" + _("Stones") + "</span><div>" + score.stones + "</div></div>";
-            }
-            if (score.territory) {
-                html +=
-                    "<div><span>" +
-                    _("Territory") +
-                    "</span><div>" +
-                    score.territory +
-                    "</div></div>";
-            }
-            if (score.prisoners) {
-                html +=
-                    "<div><span>" +
-                    _("Prisoners") +
-                    "</span><div>" +
-                    score.prisoners +
-                    "</div></div>";
-            }
-            if (score.handicap) {
-                html +=
-                    "<div><span>" +
-                    _("Handicap") +
-                    "</span><div>" +
-                    score.handicap +
-                    "</div></div>";
-            }
-            if (score.komi) {
-                html += "<div><span>" + _("Komi") + "</span><div>" + score.komi + "</div></div>";
-            }
-
-            if (!score.stones && !score.territory && !score.prisoners && !score.komi) {
-                html += "<div><span>" + _("No score yet") + "</span>";
-            }
-
-            html += "<div>";
-        } else {
-            html += "<div class='score_breakdown'>";
-            if (score.komi) {
-                html += "<div><span>" + _("Komi") + "</span><div>" + score.komi + "</div></div>";
-            }
-            html +=
-                "<div><span>" + _("Prisoners") + "</span><div>" + score.prisoners + "</div></div>";
-            html += "<div>";
-        }
-
-        $("#" + color + "-score-details").html(html);
         set_show_score_breakdown(true);
     };
     const hideScores = () => {
@@ -148,42 +79,30 @@ export function PlayerCards({
         }
         goban.redraw();
 
-        $("#black-score-details").children().remove();
-        $("#white-score-details").children().remove();
-
         set_show_score_breakdown(false);
     };
 
-    const onClick = () => (show_score_breakdown ? hideScores() : popupScores());
-    const chat_channel = game_id ? `game-${game_id}` : `review-${review_id}`;
+    const toggleScorePopup = () => (show_score_breakdown ? hideScores() : popupScores());
 
     return (
         <div className="players">
             <div className="player-icons">
                 <PlayerCard
                     historical={historical_black}
-                    auto_resign_expiration={black_auto_resign_expiration}
                     color="black"
-                    score={score["black"]}
                     goban={goban}
-                    player_to_move={player_to_move}
                     estimating_score={estimating_score}
                     show_score_breakdown={show_score_breakdown}
-                    onClick={onClick}
-                    chat_channel={chat_channel}
+                    onScoreClick={toggleScorePopup}
                     zen_mode={zen_mode}
                 />
                 <PlayerCard
                     historical={historical_white}
-                    auto_resign_expiration={white_auto_resign_expiration}
                     color="white"
-                    score={score["white"]}
                     goban={goban}
-                    player_to_move={player_to_move}
                     estimating_score={estimating_score}
                     show_score_breakdown={show_score_breakdown}
-                    onClick={onClick}
-                    chat_channel={chat_channel}
+                    onScoreClick={toggleScorePopup}
                     zen_mode={zen_mode}
                 />
             </div>
@@ -196,7 +115,7 @@ export function PlayerCards({
 
                         TODO: move title logic out of this component.
                         */
-                        ((!review_id && show_title && goban?.engine?.rengo) || null) && (
+                        ((!goban.review_id && show_title && goban?.engine?.rengo) || null) && (
                             <div className="game-state">{title}</div>
                         )
                     }
@@ -236,35 +155,58 @@ function NumCapturesText({ color, score, zen_mode, estimating_score }: NumCaptur
     );
 }
 
+const useScore = generateGobanHook(
+    (goban: GobanCore) => {
+        const engine = goban.engine;
+
+        // TODO: decouple this from stone_removal
+        // The issue is that GoEngine.computeScore() will not return accurate
+        // prisoners and total at the same time.  One must choose using the
+        // boolean argument.
+        if (
+            (engine.phase === "stone removal" || engine.phase === "finished") &&
+            engine.outcome !== "Timeout" &&
+            engine.outcome !== "Disconnection" &&
+            engine.outcome !== "Resignation" &&
+            engine.outcome !== "Abandonment" &&
+            engine.outcome !== "Cancellation" &&
+            goban.mode === "play"
+        ) {
+            return engine.computeScore(false);
+        } else {
+            return engine.computeScore(true);
+        }
+    },
+    ["phase", "mode", "outcome", "stone-removal.accepted", "stone-removal.updated", "cur_move"],
+);
+
 interface PlayerCardProps {
-    score: PlayerScore;
     color: "black" | "white";
     goban: Goban;
-    auto_resign_expiration: Date;
     historical: PlayerType;
-    player_to_move: number;
     estimating_score: boolean;
     show_score_breakdown: boolean;
-    onClick: () => void;
-    chat_channel: string;
+    onScoreClick: () => void;
     zen_mode: boolean;
 }
 
 function PlayerCard({
-    score,
     color,
     goban,
-    auto_resign_expiration,
     historical,
-    player_to_move,
     estimating_score,
     show_score_breakdown,
-    onClick,
-    chat_channel,
+    onScoreClick,
     zen_mode,
 }: PlayerCardProps) {
     const engine = goban.engine;
     const player = engine.players[color];
+    const player_to_move = usePlayerToMove(goban);
+
+    const auto_resign_expiration = useAutoResignExpiration(goban, color);
+    const score = useScore(goban)[color];
+    const { game_id, review_id } = goban;
+    const chat_channel = game_id ? `game-${game_id}` : `review-${review_id}`;
 
     // In rengo we always will have a player icon to show (after initialisation).
     // In other cases, we only have one if `historical` is set
@@ -327,7 +269,7 @@ function PlayerCard({
                 className={
                     "score-container " + (show_score_breakdown ? "show-score-breakdown" : "")
                 }
-                onClick={onClick}
+                onClick={onScoreClick}
             >
                 {show_points && (
                     <div className={"points" + (estimating_score ? " hidden" : "")}>
@@ -346,7 +288,9 @@ function PlayerCard({
                     />
                 )}
                 {!show_points && <div className="komi">{komiString(score.komi)}</div>}
-                <div id={`${color}-score-details`} className="score-details" />
+                <div id={`${color}-score-details`} className="score-details">
+                    <ScorePopup goban={goban} color={color} show={show_score_breakdown} />
+                </div>
             </div>
             {!!(engine.rengo && engine.rengo_teams) && (
                 <div className={"rengo-team-members player-name-container " + color}>
@@ -393,4 +337,96 @@ function komiString(komi: number) {
     }
     const abs_komi = Math.abs(komi).toFixed(1);
     return komi > 0 ? `+ ${abs_komi}` : `- ${abs_komi}`;
+}
+
+function useAutoResignExpiration(goban: GobanCore, color: "black" | "white") {
+    const [auto_resign_expiration, setAutoResignExpiration] = React.useState<Date | null>(null);
+    React.useEffect(() => {
+        const handleAutoResign = (data?: { player_id: number; expiration: number }) => {
+            if (goban.engine && data?.player_id === goban.engine.players[color].id) {
+                setAutoResignExpiration(
+                    new Date(data?.expiration - get_network_latency() + get_clock_drift()),
+                );
+            }
+        };
+        const handleClearAutoResign = (data?: { player_id: number }) => {
+            if (goban.engine && data?.player_id === goban.engine.players[color].id) {
+                setAutoResignExpiration(null);
+            }
+        };
+        const processPlayerUpdate = (player_update: JGOFPlayerSummary) => {
+            if (player_update.dropped_players) {
+                if (player_update.dropped_players[color]) {
+                    setAutoResignExpiration(null);
+                }
+            }
+        };
+
+        goban.on("auto-resign", handleAutoResign);
+        goban.on("clear-auto-resign", handleClearAutoResign);
+        goban.on("player-update", processPlayerUpdate);
+
+        return () => {
+            setAutoResignExpiration(null);
+            goban.off("auto-resign", handleAutoResign);
+            goban.off("clear-auto-resign", handleClearAutoResign);
+            goban.off("player-update", processPlayerUpdate);
+        };
+    }, [goban, color]);
+    return auto_resign_expiration;
+}
+
+interface ScorePopupProps {
+    show: boolean;
+    goban: GobanCore;
+    color: "black" | "white";
+}
+
+function ScorePopup({ show, goban, color }: ScorePopupProps) {
+    if (!show) {
+        return <React.Fragment />;
+    }
+
+    const scores = goban.engine.computeScore(false);
+    const { stones, prisoners, handicap, komi, territory } = scores[color];
+
+    return (
+        <div className="score_breakdown">
+            {!!stones && (
+                <div>
+                    <span>{_("Stones")}</span>
+                    <div>{stones}</div>
+                </div>
+            )}
+            {!!territory && (
+                <div>
+                    <span>{_("Territory")}</span>
+                    <div>{territory}</div>
+                </div>
+            )}
+            {!!prisoners && (
+                <div>
+                    <span>{_("Prisoners")}</span>
+                    <div>{prisoners}</div>
+                </div>
+            )}
+            {!!handicap && (
+                <div>
+                    <span>{_("Handicap")}</span>
+                    <div>{handicap}</div>
+                </div>
+            )}
+            {!!komi && (
+                <div>
+                    <span>{_("Komi")}</span>
+                    <div>{komi}</div>
+                </div>
+            )}
+            {!stones && !territory && !handicap && !komi && (
+                <div>
+                    <span>{_("No score yet")}</span>
+                </div>
+            )}
+        </div>
+    );
 }

@@ -99,6 +99,7 @@ export function GameDock({
         superuser_ai_review_ready = false;
         mod = false;
         annul = false;
+        game_id = Number(goban.config.game_id);
     }
 
     let sgf_download_enabled = false;
@@ -332,7 +333,7 @@ export function GameDock({
             )}
             {(ladder_id || null) && (
                 <Link className="plain" to={`/ladder/${ladder_id}`}>
-                    <i className="fa fa-trophy" title={_("This is a ladder game")} /> {_("Ladder")}
+                    <i className="fa fa-list-ol" title={_("This is a ladder game")} /> {_("Ladder")}
                 </Link>
             )}
             {((engine.config as any)["private"] || null) && (

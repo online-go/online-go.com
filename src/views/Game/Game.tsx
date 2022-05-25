@@ -18,7 +18,6 @@
 import * as data from "data";
 import * as preferences from "preferences";
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
 import { useParams } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
 import { _, interpolate, current_language } from "translate";
@@ -34,19 +33,15 @@ import {
     GoMath,
     MoveTree,
     AudioClockEvent,
-    Score,
     GoEnginePhase,
     GobanModes,
-    JGOFPlayerSummary,
     GoConditionalMove,
     AnalysisTool,
 } from "goban";
 import { isLiveGame } from "TimeControl";
-import { get_network_latency, get_clock_drift } from "sockets";
 import { setExtraActionCallback, PlayerDetails } from "Player";
 import * as player_cache from "player_cache";
 import { notification_manager } from "Notifications";
-import { PersistentElement } from "PersistentElement";
 import { Resizable } from "Resizable";
 import { chat_manager, ChatChannelProxy } from "chat_manager";
 import { sfx, SFXSprite, ValidSound } from "sfx";
@@ -69,9 +64,8 @@ import {
 import { CancelButton } from "./PlayButtons";
 import { GameDock } from "./GameDock";
 import swal from "sweetalert2";
-import { useUserIsParticipant } from "./GameHooks";
-
-const win = $(window);
+import { useScore, useShowTitle, useTitle, useUserIsParticipant } from "./GameHooks";
+import { GobanContainer } from "GobanContainer";
 
 export function Game(): JSX.Element {
     const params = useParams<"game_id" | "review_id" | "move_number">();
@@ -80,7 +74,6 @@ export function Game(): JSX.Element {
     const review_id = params.review_id ? parseInt(params.review_id) : 0;
 
     /* Refs */
-    const ref_goban_container = React.useRef<HTMLDivElement>();
     const ref_move_tree_container = React.useRef<HTMLElement>();
     const ladder_id = React.useRef<number>();
     const tournament_id = React.useRef<number>();
@@ -115,10 +108,6 @@ export function Game(): JSX.Element {
         null,
     );
     const [annulled, set_annulled] = React.useState(false);
-    const [black_auto_resign_expiration, set_black_auto_resign_expiration] =
-        React.useState<Date>(null);
-    const [white_auto_resign_expiration, set_white_auto_resign_expiration] =
-        React.useState<Date>(null);
     const [ai_review_enabled, set_ai_review_enabled] = React.useState(
         preferences.get("ai-review-enabled"),
     );
@@ -127,14 +116,14 @@ export function Game(): JSX.Element {
         null,
     );
     const [show_game_timing, set_show_game_timing] = React.useState(false);
-    const [score, set_score] = React.useState<Score>();
 
-    const [title, set_title] = React.useState<string>();
+    const title = useTitle(goban.current);
+    useScore(goban.current);
 
     const [mode, set_mode] = React.useState<GobanModes>("play");
     const [score_estimate_winner, set_score_estimate_winner] = React.useState<string>();
     const [score_estimate_amount, set_score_estimate_amount] = React.useState<number>();
-    const [show_title, set_show_title] = React.useState<boolean>();
+    const show_title = useShowTitle(goban.current);
     const [, set_undo_requested] = React.useState<number | undefined>();
     const [, forceUpdate] = React.useState<number>();
 
@@ -304,19 +293,6 @@ export function Game(): JSX.Element {
         set_autoplaying(true);
     };
 
-    const processPlayerUpdate = (player_update: JGOFPlayerSummary) => {
-        if (player_update.dropped_players) {
-            if (player_update.dropped_players.black) {
-                console.log("dropping black");
-                // we don't care who was dropped, we just have to clear the auto-resign-overlay!
-                set_black_auto_resign_expiration(null);
-            }
-            if (player_update.dropped_players.white) {
-                set_white_auto_resign_expiration(null);
-            }
-        }
-    };
-
     const checkAndEnterAnalysis = (move?: MoveTree) => {
         if (!goban) {
             return false;
@@ -343,75 +319,13 @@ export function Game(): JSX.Element {
         }
         return false;
     };
-    const recenterGoban = () => {
-        if (ref_goban_container.current && goban.current) {
-            const m = goban.current.computeMetrics();
-            $(goban_div.current).css({
-                top: Math.ceil(ref_goban_container.current.offsetHeight - m.height) / 2,
-                left: Math.ceil(ref_goban_container.current.offsetWidth - m.width) / 2,
-            });
-        }
-    };
-    const onResize = (no_debounce: boolean = false, skip_state_update: boolean = false) => {
+    const onResize = (_no_debounce: boolean = false, skip_state_update: boolean = false) => {
         if (!skip_state_update) {
             if (goban_view_mode() !== view_mode || goban_view_squashed() !== squashed) {
                 set_squashed(goban_view_squashed());
                 set_view_mode(goban_view_mode());
             }
         }
-
-        if (resize_debounce.current) {
-            clearTimeout(resize_debounce.current);
-            resize_debounce.current = null;
-        }
-
-        if (!goban) {
-            return;
-        }
-
-        // this forces a clock refresh, important after a layout when the dom
-        // could have been replaced
-        // TODO: When we are revamping this view we should see if we can either remove this
-        // or move it into a clock component or something.
-        if (goban.current) {
-            goban.current.setGameClock(goban.current.last_clock);
-        }
-
-        if (!ref_goban_container.current) {
-            return;
-        }
-
-        if (goban_view_mode() === "portrait") {
-            const w = win.width() + 10;
-            if (ref_goban_container.current.style.minHeight !== `${w}px`) {
-                ref_goban_container.current.style.minHeight = `${w}px`;
-            }
-        } else {
-            if (ref_goban_container.current.style.minHeight !== `initial`) {
-                ref_goban_container.current.style.minHeight = `initial`;
-            }
-            const w = ref_goban_container.current.offsetWidth;
-            if (ref_goban_container.current.style.flexBasis !== `${w}px`) {
-                ref_goban_container.current.style.flexBasis = `${w}px`;
-            }
-        }
-
-        if (!no_debounce) {
-            resize_debounce.current = setTimeout(() => onResize(true), 10);
-            recenterGoban();
-            return;
-        }
-
-        if (goban.current) {
-            goban.current.setSquareSizeBasedOnDisplayWidth(
-                Math.min(
-                    ref_goban_container.current.offsetWidth,
-                    ref_goban_container.current.offsetHeight,
-                ),
-            );
-        }
-
-        recenterGoban();
     };
     const setAnalyzeTool = (tool: AnalysisTool | "erase", subtool: string) => {
         if (checkAndEnterAnalysis()) {
@@ -491,16 +405,7 @@ export function Game(): JSX.Element {
         }
         preferences.set("label-positioning", label_position);
 
-        goban.current.draw_top_labels =
-            label_position === "all" || label_position.indexOf("top") >= 0;
-        goban.current.draw_left_labels =
-            label_position === "all" || label_position.indexOf("left") >= 0;
-        goban.current.draw_right_labels =
-            label_position === "all" || label_position.indexOf("right") >= 0;
-        goban.current.draw_bottom_labels =
-            label_position === "all" || label_position.indexOf("bottom") >= 0;
-        onResize(true);
-        goban.current.redraw(true);
+        goban.current.setCoordinates(label_position);
     };
 
     const toggleShowTiming = () => {
@@ -1000,33 +905,11 @@ export function Game(): JSX.Element {
             draw_left_labels: label_position === "all" || label_position.indexOf("left") >= 0,
             draw_right_labels: label_position === "all" || label_position.indexOf("right") >= 0,
             draw_bottom_labels: label_position === "all" || label_position.indexOf("bottom") >= 0,
-            display_width: Math.min(
-                ref_goban_container.current?.offsetWidth || 0,
-                ref_goban_container.current?.offsetHeight || 0,
-            ),
             visual_undo_request_indicator: preferences.get("visual-undo-request-indicator"),
             onScoreEstimationUpdated: () => {
                 goban.current.redraw(true);
             },
         };
-
-        if (opts.display_width <= 0) {
-            const I = setInterval(() => {
-                onResize(true);
-                setTimeout(() => {
-                    if (
-                        !goban ||
-                        (ref_goban_container.current &&
-                            Math.min(
-                                ref_goban_container.current.offsetWidth,
-                                ref_goban_container.current.offsetHeight,
-                            ) > 0)
-                    ) {
-                        clearInterval(I);
-                    }
-                }, 1);
-            }, 500);
-        }
 
         if (game_id) {
             opts.game_id = game_id;
@@ -1064,10 +947,6 @@ export function Game(): JSX.Element {
                 console.error(e);
             }
         });
-
-        // We need an initial score for the first display rendering (which is not set in the constructor).
-        // Best to get this from the engine, so we know we have the right structure...
-        set_score(goban.current.engine.computeScore(true));
 
         if (preferences.get("dynamic-title")) {
             /* Title Updates { */
@@ -1165,13 +1044,6 @@ export function Game(): JSX.Element {
 
         /* Ensure our state is kept up to date */
 
-        const sync_show_title = () =>
-            set_show_title(
-                !goban.current.submit_move ||
-                    goban.current.engine.playerToMove() !== data.get("user").id ||
-                    null,
-            );
-
         const sync_stone_removal = () => {
             const engine = goban.current.engine;
 
@@ -1185,10 +1057,7 @@ export function Game(): JSX.Element {
                 goban.current.mode === "play"
             ) {
                 const s = engine.computeScore(false);
-                set_score(s);
                 goban.current.showScores(s);
-            } else {
-                set_score(engine.computeScore(true));
             }
         };
 
@@ -1196,12 +1065,10 @@ export function Game(): JSX.Element {
             const engine = goban.current.engine;
             set_mode(goban.current.mode);
             set_phase(engine.phase);
-            set_title(goban.current.title);
 
             set_score_estimate_winner(undefined);
             set_undo_requested(engine.undo_requested);
 
-            sync_show_title();
             sync_stone_removal();
 
             // These are only updated on load events
@@ -1237,15 +1104,11 @@ export function Game(): JSX.Element {
         goban.current.on("mode", set_mode);
         goban.current.on("phase", set_phase);
         goban.current.on("phase", () => goban.current.engine.cur_move.clearMarks());
-        goban.current.on("title", set_title);
-        goban.current.on("cur_move", () => set_score(goban.current.engine.computeScore(true)));
         goban.current.on("score_estimate", (est) => {
             set_score_estimate_winner(est?.winner || "");
             set_score_estimate_amount(est?.amount);
         });
         goban.current.on("undo_requested", set_undo_requested);
-        goban.current.on("cur_move", sync_show_title);
-        goban.current.on("submit_move", sync_show_title);
 
         goban.current.on("phase", sync_stone_removal);
         goban.current.on("mode", sync_stone_removal);
@@ -1256,7 +1119,6 @@ export function Game(): JSX.Element {
         /* END sync_state port */
 
         goban.current.on("move-made", autoadvance);
-        goban.current.on("player-update", processPlayerUpdate);
         goban.current.on("gamedata", onResize);
 
         goban.current.on("gamedata", (gamedata) => {
@@ -1298,27 +1160,6 @@ export function Game(): JSX.Element {
                 nav_goto_move(parseInt(params.move_number));
             });
         }
-
-        goban.current.on("auto-resign", (data) => {
-            if (goban.current.engine && data.player_id === goban.current.engine.players.black.id) {
-                set_black_auto_resign_expiration(
-                    new Date(data.expiration - get_network_latency() + get_clock_drift()),
-                );
-            }
-            if (goban.current.engine && data.player_id === goban.current.engine.players.white.id) {
-                set_white_auto_resign_expiration(
-                    new Date(data.expiration - get_network_latency() + get_clock_drift()),
-                );
-            }
-        });
-        goban.current.on("clear-auto-resign", (data) => {
-            if (goban.current.engine && data.player_id === goban.current.engine.players.black.id) {
-                set_black_auto_resign_expiration(null);
-            }
-            if (goban.current.engine && data.player_id === goban.current.engine.players.white.id) {
-                set_white_auto_resign_expiration(null);
-            }
-        });
 
         if (review_id) {
             let stashed_move_string = null;
@@ -1453,15 +1294,6 @@ export function Game(): JSX.Element {
         }
         /*** END initialize ***/
 
-        if (ref_goban_container.current) {
-            if (goban_view_mode() === "portrait") {
-                ref_goban_container.current.style.minHeight = `${screen.width}px`;
-            } else {
-                ref_goban_container.current.style.minHeight = `initial`;
-            }
-        }
-        onResize();
-
         return () => {
             if (game_id) {
                 abort_requests_in_flight(`games/${game_id}`);
@@ -1494,8 +1326,6 @@ export function Game(): JSX.Element {
             }
             window["Game"] = null;
             window["global_goban"] = null;
-            set_black_auto_resign_expiration(null);
-            set_white_auto_resign_expiration(null);
 
             setExtraActionCallback(null);
             $(window).off("focus", onFocus);
@@ -1552,22 +1382,12 @@ export function Game(): JSX.Element {
                             goban={goban.current}
                             historical_black={historical_black}
                             historical_white={historical_white}
-                            black_auto_resign_expiration={black_auto_resign_expiration}
-                            white_auto_resign_expiration={white_auto_resign_expiration}
-                            game_id={game_id}
-                            review_id={review_id}
                             estimating_score={estimating_score}
                             zen_mode={zen_mode}
-                            score={score}
-                            show_title={show_title}
-                            title={title}
                         />
                     )}
 
-                    <div ref={ref_goban_container} className="goban-container">
-                        <ReactResizeDetector handleWidth handleHeight onResize={() => onResize()} />
-                        <PersistentElement className="Goban" elt={goban_div.current} />
-                    </div>
+                    <GobanContainer goban={goban.current} onResize={onResize} />
 
                     {frag_below_board_controls()}
 
@@ -1621,15 +1441,8 @@ export function Game(): JSX.Element {
                                 goban={goban.current}
                                 historical_black={historical_black}
                                 historical_white={historical_white}
-                                black_auto_resign_expiration={black_auto_resign_expiration}
-                                white_auto_resign_expiration={white_auto_resign_expiration}
-                                game_id={game_id}
-                                review_id={review_id}
                                 estimating_score={estimating_score}
                                 zen_mode={zen_mode}
-                                score={score}
-                                show_title={show_title}
-                                title={title}
                             />
                         )}
 

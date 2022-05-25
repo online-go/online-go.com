@@ -70,11 +70,17 @@ export class NotificationIndicator extends React.Component<{}, any> {
 
 export function NotificationList(): JSX.Element {
     const [, setCount] = React.useState(notification_manager.ordered_notifications.length);
+    const [, refresh] = React.useState(0);
 
     React.useEffect(() => {
+        function _refresh() {
+            refresh(Math.random());
+        }
         notification_manager.event_emitter.on("notification-count", setCount);
+        notification_manager.event_emitter.on("notification-list-updated", _refresh);
         return () => {
             notification_manager.event_emitter.off("notification-count", setCount);
+            notification_manager.event_emitter.off("notification-list-updated", _refresh);
         };
     }, []);
 
