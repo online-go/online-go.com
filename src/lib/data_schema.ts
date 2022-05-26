@@ -66,7 +66,7 @@ export interface ConfigSchema {
     superchat_auth: string;
     notification_auth: string;
     incident_auth: string;
-    dismissiable_messages: DismissableMessagesSchema;
+    dismissable_messages: DismissableMessagesSchema;
     auth_host: string; // if set, will be used as the hostname for social login URLs - useful for devtest.
 }
 
