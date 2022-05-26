@@ -18,7 +18,7 @@ const autoprefixer = require('autoprefixer');
 const postcss      = require('gulp-postcss');
 const cssnano      = require('cssnano');
 const inline_svg   = require('postcss-inline-svg');
-const gulpEslint   = require('gulp-eslint7');
+const gulpEslint   = require('gulp-eslint-new');
 const html_minifier= require('html-minifier').minify;
 
 let ts_sources = [
@@ -207,7 +207,7 @@ function dev_server(done) {
     devserver.use(express.static('dist'))
     devserver.use(express.static('assets'))
 
-    let beta_proxy = (prefix) => proxy(server_url, {
+    let backend_proxy = (prefix) => proxy(server_url, {
         https: use_https,
         proxyReqPathResolver: function(req) {
             let path = prefix + require('url').parse(req.url).path;
@@ -216,17 +216,17 @@ function dev_server(done) {
         }
     });
 
-    devserver.use('/api', beta_proxy('/api'));
-    devserver.use('/termination-api', beta_proxy('/termination-api'));
-    devserver.use('/merchant', beta_proxy('/merchant'));
-    devserver.use('/billing', beta_proxy('/billing'));
-    devserver.use('/sso', beta_proxy('/sso'));
-    devserver.use('/oauth2', beta_proxy('/oauth2'));
-    devserver.use('/complete', beta_proxy('/complete'));
-    devserver.use('/disconnect', beta_proxy('/disconnect'));
-    devserver.use('/OGSScoreEstimator', beta_proxy('/OGSScoreEstimator'));
-    devserver.use('/godojo', beta_proxy('/godojo'));
-    devserver.use('/oje', beta_proxy('/oje'));
+    devserver.use('/api', backend_proxy('/api'));
+    devserver.use('/termination-api', backend_proxy('/termination-api'));
+    devserver.use('/merchant', backend_proxy('/merchant'));
+    devserver.use('/billing', backend_proxy('/billing'));
+    devserver.use('/sso', backend_proxy('/sso'));
+    devserver.use('/oauth2', backend_proxy('/oauth2'));
+    devserver.use('/complete', backend_proxy('/complete'));
+    devserver.use('/disconnect', backend_proxy('/disconnect'));
+    devserver.use('/OGSScoreEstimator', backend_proxy('/OGSScoreEstimator'));
+    devserver.use('/oje', backend_proxy('/oje'));
+
 
     devserver.get('/locale/*', (req, res) => {
         let options = {

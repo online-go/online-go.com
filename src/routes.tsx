@@ -191,7 +191,7 @@ export const routes = (
                 <Route path="/demo/view/:review_id" element={<Game />} />
                 <Route path="/demo/:review_id" element={<Game />} />
                 <Route path="/joseki/" element={<Joseki />} />{" "}
-                {/* this is equivalent to specifying pos = "root" */}
+                {/* ^^ this is equivalent to specifying pos = "root" */}
                 <Route path="/joseki/:pos" element={<Joseki />} />
                 <Route path="/settings/:category" element={<Settings />} />
                 <Route path="/settings/:category/*" element={<Settings />} />

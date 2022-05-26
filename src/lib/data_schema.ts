@@ -66,7 +66,7 @@ export interface ConfigSchema {
     superchat_auth: string;
     notification_auth: string;
     incident_auth: string;
-    dismissiable_messages: DismissableMessagesSchema;
+    dismissable_messages: DismissableMessagesSchema;
 }
 
 interface ChatSchema {
@@ -221,7 +221,6 @@ export interface DataSchema
     "settings.page-selected": string;
     "announcement.last-type": string;
     "demo.settings": DemoSettings;
-    "config.dismissable_messages": DismissableMessagesSchema;
 
     "preferred-game-settings": rest_api.ChallengeDetails[];
 
