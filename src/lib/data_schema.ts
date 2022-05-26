@@ -67,6 +67,7 @@ export interface ConfigSchema {
     notification_auth: string;
     incident_auth: string;
     dismissiable_messages: DismissableMessagesSchema;
+    auth_host: string; // if set, will be used as the hostname for social login URLs - useful for devtest.
 }
 
 interface ChatSchema {
@@ -221,7 +222,6 @@ export interface DataSchema
     "settings.page-selected": string;
     "announcement.last-type": string;
     "demo.settings": DemoSettings;
-    "config.dismissable_messages": DismissableMessagesSchema;
 
     "preferred-game-settings": rest_api.ChallengeDetails[];
 

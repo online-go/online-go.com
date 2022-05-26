@@ -95,6 +95,8 @@ export class SignIn extends React.PureComponent<{}, any> {
                     data.remove("appeals.jwt");
                     data.remove("appeals.ban-reason");
 
+                    // The server can detect that the person might have a valid SSO, in which case it
+                    // asks us to redirect to there for them to sign in.
                     if ("redirect" in config) {
                         window.location.pathname = config.redirect;
                         return;
@@ -240,24 +242,41 @@ export class SignIn extends React.PureComponent<{}, any> {
     }
 }
 
-export function SocialLoginButtons(): JSX.Element {
+type SocialLoginButtonsProps = {
+    next_url?: string;
+};
+
+export function SocialLoginButtons(props: SocialLoginButtonsProps): JSX.Element {
+    const next = props.next_url ? `?next=${props.next_url}` : "";
+
+    // handy for dev-test of Social login module - point to the OGS_BACKEND you are using
+    const auth_host = data.get("config.auth_host", "");
+
     return (
         <div className="social-buttons">
-            <a href="/login/google-oauth2/" className="s btn md-icon" target="_self">
+            <a
+                href={`${auth_host}/login/google-oauth2/${next}`}
+                className="s btn md-icon"
+                target="_self"
+            >
                 <span className="google google-oauth2-icon" /> {_("Sign in with Google")}
             </a>
-            <a href="/login/facebook/" className="s btn md-icon" target="_self">
+            <a
+                href={`${auth_host}/login/facebook/${next}`}
+                className="s btn md-icon"
+                target="_self"
+            >
                 <span className="facebook facebook-icon" /> {_("Sign in with Facebook")}
             </a>
-            <a href="/login/twitter/" className="s btn md-icon" target="_self">
+            <a href={`${auth_host}/login/twitter/${next}`} className="s btn md-icon" target="_self">
                 <i className="twitter twitter-icon fa fa-twitter" />
                 {_("Sign in with Twitter")}
             </a>
-            <a href="/login/apple-id/" className="s btn md-icon" target="_self">
+            <a href={`${auth_host}/login/apple/${next}`} className="s btn md-icon" target="_self">
                 <i className="apple apple-id-icon fa fa-apple" />
                 {_("Sign in with Apple")}
             </a>
-            <a href="/login/github/" className="s btn md-icon" target="_self">
+            <a href={`${auth_host}/login/github/${next}`} className="s btn md-icon" target="_self">
                 <i className="github github-icon fa fa-github" />
                 {_("Sign in with GitHub")}
             </a>
