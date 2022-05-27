@@ -6,6 +6,7 @@ var webpack = require('webpack');
 const pkg = require('./package.json');
 const TerserPlugin = require('terser-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const CircularDependencyPlugin = require("circular-dependency-plugin");
 
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
@@ -55,6 +56,15 @@ module.exports = (env, argv) => {
             'scheduler/tracing': 'scheduler/tracing-profiling',
         };
     }
+
+    plugins.push(
+        new CircularDependencyPlugin({
+            exclude: /node_modules/,
+            failOnError: false,
+            allowAsyncCycles: false,
+            cwd: process.cwd(),
+        }),
+    );
 
 
     plugins.push(new webpack.EnvironmentPlugin({
