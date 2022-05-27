@@ -35,7 +35,7 @@ import online_status from "online_status";
  * should probably start warning about remaining uses of these fields and then
  * clean/remove them when they pop up. */
 
-interface PlayerObjectType {
+export interface PlayerObjectType {
     id?: number;
     player_id?: number; // alias for id, should be removed but here for backwards compatibility
 
@@ -54,7 +54,7 @@ interface PlayerObjectType {
     ui_class?: string;
 }
 
-interface PlayerProperties {
+export interface PlayerProperties {
     icon?: boolean;
     iconSize?: number;
     user: number | PlayerObjectType;
