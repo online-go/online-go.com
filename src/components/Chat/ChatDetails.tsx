@@ -20,7 +20,7 @@ import { browserHistory } from "ogsHistory";
 import { _, pgettext } from "translate";
 import { shouldOpenNewTab } from "misc";
 import { close_all_popovers } from "popover";
-import { close_friend_list } from "FriendList/FriendIndicator";
+import { close_friend_list } from "FriendList/close_friend_list";
 import * as data from "data";
 import {
     getUnreadChatPreference,

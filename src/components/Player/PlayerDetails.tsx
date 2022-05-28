@@ -34,7 +34,7 @@ import { getPrivateChat } from "PrivateChat";
 import { openBlockPlayerControls } from "BlockPlayer";
 import { Player } from "./Player";
 import * as preferences from "preferences";
-import { close_friend_list } from "FriendList/FriendIndicator";
+import { close_friend_list } from "FriendList/close_friend_list";
 import cached from "cached";
 import { openPlayerNotesModal } from "PlayerNotesModal";
 import swal from "sweetalert2";

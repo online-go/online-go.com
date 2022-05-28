@@ -21,7 +21,7 @@ import * as data from "data";
 import { shouldOpenNewTab, errorLogger, unicodeFilter } from "misc";
 import { rankString, getUserRating, PROVISIONAL_RATING_CUTOFF } from "rank_utils";
 import { close_all_popovers, popover } from "popover";
-import { close_friend_list } from "FriendList/FriendIndicator";
+import { close_friend_list } from "FriendList/close_friend_list";
 import { PlayerDetails } from "./PlayerDetails";
 import { openPlayerNotesModal } from "PlayerNotesModal";
 import { Flag } from "Flag";

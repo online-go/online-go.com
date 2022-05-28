@@ -21,11 +21,9 @@ import * as data from "data";
 import { FriendList } from "./FriendList";
 import { KBShortcut } from "KBShortcut";
 import cached from "cached";
+import { setSetShowFriendList } from "./close_friend_list";
 
 const online_subscriptions = {};
-let ext_setShowFriendList = (_tf: boolean) => {
-    /* noop */
-};
 
 export function FriendIndicator(): JSX.Element {
     const user = data.get("user");
@@ -34,7 +32,7 @@ export function FriendIndicator(): JSX.Element {
     const [, refresh] = React.useState(0);
     const friend_list = React.useRef([]);
 
-    ext_setShowFriendList = setShowFriendList;
+    setSetShowFriendList(setShowFriendList);
 
     React.useEffect(() => {
         if (user.id) {
@@ -91,8 +89,4 @@ export function FriendIndicator(): JSX.Element {
             )}
         </span>
     );
-}
-
-export function close_friend_list() {
-    ext_setShowFriendList(false);
 }
