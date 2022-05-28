@@ -24,7 +24,7 @@ import { Link } from "react-router-dom";
 import { _, pgettext, interpolate } from "translate";
 import { Player } from "Player";
 import { profanity_filter } from "profanity_filter";
-import { Goban } from "goban";
+import { Goban, GobanCore } from "goban";
 import { ChatUserList, ChatUserCount } from "ChatUserList";
 import { TabCompleteInput } from "TabCompleteInput";
 import { chat_markup } from "components/Chat";
@@ -438,6 +438,7 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
     }
     let show_date: JSX.Element = null;
     let move_number: JSX.Element = null;
+    const goban = useGoban();
 
     if (!lastline || (line.date && lastline.date)) {
         if (line.date) {
@@ -462,7 +463,6 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
         const jumpToMove = () => {
             game_control.emit("stopEstimatingScore");
             const line = props.line;
-            const goban = game_control.goban;
 
             if ("move_number" in line) {
                 if (!goban.isAnalysisDisabled()) {
@@ -531,14 +531,13 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
     );
 }
 
-function parsePosition(position: string) {
-    if (!game_control.goban || !position) {
+function parsePosition(position: string, goban: GobanCore) {
+    if (!goban || !position) {
         return {
             i: -1,
             j: -1,
         };
     }
-    const goban = game_control.goban;
 
     let i = "abcdefghjklmnopqrstuvwxyz".indexOf(position[0].toLowerCase());
     let j = ((goban && goban.height) || 19) - parseInt(position.substring(1));
@@ -551,28 +550,6 @@ function parsePosition(position: string) {
         j = -1;
     }
     return { i: i, j: j };
-}
-function highlight_position(event: React.MouseEvent<HTMLSpanElement>) {
-    if (!game_control.goban) {
-        return;
-    }
-
-    const pos = parsePosition((event.target as HTMLSpanElement).innerText);
-    if (pos.i >= 0) {
-        game_control.goban.getMarks(pos.i, pos.j).chat_triangle = true;
-        game_control.goban.drawSquare(pos.i, pos.j);
-    }
-}
-function unhighlight_position(event: React.MouseEvent<HTMLSpanElement>) {
-    if (!game_control.goban) {
-        return;
-    }
-
-    const pos = parsePosition((event.target as HTMLSpanElement).innerText);
-    if (pos.i >= 0) {
-        game_control.goban.getMarks(pos.i, pos.j).chat_triangle = false;
-        game_control.goban.drawSquare(pos.i, pos.j);
-    }
 }
 
 interface AnalysisComment {
@@ -595,6 +572,22 @@ let orig_marks: unknown[] = null;
 
 function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
     const body = line.body;
+    const goban = useGoban();
+
+    const highlight_position = (event: React.MouseEvent<HTMLSpanElement>) => {
+        const pos = parsePosition((event.target as HTMLSpanElement).innerText, goban);
+        if (pos.i >= 0) {
+            goban.getMarks(pos.i, pos.j).chat_triangle = true;
+            goban.drawSquare(pos.i, pos.j);
+        }
+    };
+    function unhighlight_position(event: React.MouseEvent<HTMLSpanElement>) {
+        const pos = parsePosition((event.target as HTMLSpanElement).innerText, goban);
+        if (pos.i >= 0) {
+            goban.getMarks(pos.i, pos.j).chat_triangle = false;
+            goban.drawSquare(pos.i, pos.j);
+        }
+    }
 
     if (typeof body === "string") {
         return (
@@ -605,7 +598,7 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                         pattern: /\b([a-zA-Z][0-9]{1,2})\b/gm,
                         replacement: (m, idx) => {
                             const pos = m[1];
-                            if (parsePosition(pos).i < 0) {
+                            if (parsePosition(pos, goban).i < 0) {
                                 return <span key={idx}>{m[1]}</span>;
                             }
                             return (
@@ -646,7 +639,6 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                     }
 
                     const onLeave = () => {
-                        const goban = game_control.goban;
                         if (game_control.in_pushed_analysis) {
                             game_control.in_pushed_analysis = false;
                             delete game_control.onPushAnalysisLeft;
@@ -661,7 +653,6 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                     };
 
                     const onEnter = () => {
-                        const goban = game_control.goban;
                         game_control.in_pushed_analysis = true;
                         game_control.onPushAnalysisLeft = onLeave;
 
@@ -694,7 +685,6 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                     };
 
                     const onClick = () => {
-                        const goban = game_control.goban;
                         onLeave();
                         goban.setMode("analyze");
                         onEnter();
