@@ -41,7 +41,7 @@ import * as preferences from "preferences";
 import { notification_manager } from "Notifications";
 import { one_bot, bot_count, bots_list } from "bots";
 import { openForkModal } from "./ForkModal";
-import { goban_view_mode } from "Game";
+import { goban_view_mode } from "Game/util";
 import {
     Goban,
     GoEngineConfig,
