@@ -76,9 +76,10 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
         }
 
         const challenger_details: PlayerObjectType = {
+            id: challenge.user_id,
+            username: challenge.username,
             pro: challenge.pro,
             rank: challenge.rank,
-            username: challenge.username,
         };
 
         return (
