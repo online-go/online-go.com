@@ -38,12 +38,12 @@ import {
     cachedChannelInformation,
 } from "chat_manager";
 import { ChatLine } from "./ChatLine";
+import { ChatDetails } from "./ChatDetails";
 import { TabCompleteInput } from "TabCompleteInput";
 import { browserHistory } from "ogsHistory";
 import { ObserveGamesComponent } from "ObserveGamesComponent";
 import { profanity_filter } from "profanity_filter";
 import { popover } from "popover";
-import { ChatDetails } from "Chat";
 import swal from "sweetalert2";
 
 interface ChatLogProperties {

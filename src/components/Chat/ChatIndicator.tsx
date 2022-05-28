@@ -25,81 +25,15 @@ import {
 } from "chat_manager";
 import * as data from "data";
 import { KBShortcut } from "../KBShortcut";
-import { ChatList } from "Chat";
+import { ChatList } from "./ChatList";
 import * as preferences from "preferences";
-import { TypedEventEmitter } from "TypedEventEmitter";
-
-interface Events {
-    subscription_changed: void;
-}
-const event_emiter = new TypedEventEmitter<Events>();
-
-let chat_subscriptions = {};
-data.watch("chat-indicator.chat-subscriptions", onChatSubscriptionUpdate);
-function onChatSubscriptionUpdate(pref) {
-    chat_subscriptions = pref;
-    event_emiter.emit("subscription_changed");
-}
-let chat_subscribe_new_group_chat_messages = false;
-preferences.watch("chat-subscribe-group-chat-unread", onChatSubscribeGroupMessageChange);
-function onChatSubscribeGroupMessageChange(pref: boolean) {
-    chat_subscribe_new_group_chat_messages = pref;
-    event_emiter.emit("subscription_changed");
-}
-let chat_subscribe_new_group_chat_mentioned = false;
-preferences.watch("chat-subscribe-group-mentions", onChatSubscribeGroupMentionsChange);
-function onChatSubscribeGroupMentionsChange(pref: boolean) {
-    chat_subscribe_new_group_chat_mentioned = pref;
-    event_emiter.emit("subscription_changed");
-}
-let chat_subscribe_new_tournament_chat_messages = false;
-preferences.watch("chat-subscribe-tournament-chat-unread", onChatSubscribeTournamentMessageChange);
-function onChatSubscribeTournamentMessageChange(pref: boolean) {
-    chat_subscribe_new_tournament_chat_messages = pref;
-    event_emiter.emit("subscription_changed");
-}
-let chat_subscribe_new_tournament_chat_mentioned = false;
-preferences.watch("chat-subscribe-tournament-mentions", onChatSubscribeTournamentMentionsChange);
-function onChatSubscribeTournamentMentionsChange(pref: boolean) {
-    chat_subscribe_new_tournament_chat_mentioned = pref;
-    event_emiter.emit("subscription_changed");
-}
-
-export function getUnreadChatPreference(channel: string): boolean {
-    if (channel in chat_subscriptions && "unread" in chat_subscriptions[channel]) {
-        return chat_subscriptions[channel].unread;
-    }
-    if (channel.startsWith("group-")) {
-        return chat_subscribe_new_group_chat_messages;
-    }
-    if (channel.startsWith("tournament-")) {
-        return chat_subscribe_new_tournament_chat_messages;
-    }
-    return false;
-}
-export function getMentionedChatPreference(channel: string): boolean {
-    if (channel in chat_subscriptions && "mentioned" in chat_subscriptions[channel]) {
-        return chat_subscriptions[channel].mentioned;
-    }
-    if (channel.startsWith("group-")) {
-        return chat_subscribe_new_group_chat_mentioned;
-    }
-    if (channel.startsWith("tournament-")) {
-        return chat_subscribe_new_tournament_chat_mentioned;
-    }
-    return false;
-}
-
-export function watchChatSubscriptionChanged(cb: () => void, dont_call_imediately?: boolean): void {
-    // Give a single place to subscribe to setting changes
-    event_emiter.on("subscription_changed", cb);
-    if (!dont_call_imediately) {
-        cb();
-    }
-}
-export function unwatchChatSubscriptionChanged(cb: () => void): void {
-    event_emiter.off("subscription_changed", cb);
-}
+import {
+    chat_subscriptions,
+    getUnreadChatPreference,
+    getMentionedChatPreference,
+    watchChatSubscriptionChanged,
+    unwatchChatSubscriptionChanged,
+} from "./state";
 
 export class ChatIndicator extends React.PureComponent<{}, any> {
     channels: { [channel: string]: ChatChannelProxy } = {};

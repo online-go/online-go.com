@@ -27,7 +27,7 @@ import {
     getMentionedChatPreference,
     watchChatSubscriptionChanged,
     unwatchChatSubscriptionChanged,
-} from "Chat";
+} from "./state";
 
 interface ChatDetailsProperties {
     chatChannelId: string;
