@@ -16,7 +16,6 @@
  */
 
 import { TypedEventEmitter } from "TypedEventEmitter";
-import { Goban } from "goban";
 
 interface Events {
     stopEstimatingScore: void; // emitted when we want to stop estimating the score
@@ -28,7 +27,6 @@ interface Events {
  * passing a bunch of lambdas and state around. */
 
 class GameControl extends TypedEventEmitter<Events> {
-    public goban?: Goban;
     public in_pushed_analysis: boolean = false;
     public onPushAnalysisLeft?: () => void;
     public last_variation_number: number = 0;

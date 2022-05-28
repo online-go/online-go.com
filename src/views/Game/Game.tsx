@@ -920,7 +920,6 @@ export function Game(): JSX.Element {
         }
 
         goban.current = new Goban(opts);
-        game_control.goban = goban.current;
         onResize(true);
         window["global_goban"] = goban.current;
         if (review_id) {
@@ -1314,7 +1313,6 @@ export function Game(): JSX.Element {
                 console.error(e.stack);
             }
             goban.current = null;
-            game_control.goban = null;
             if (resize_debounce.current) {
                 clearTimeout(resize_debounce.current);
                 resize_debounce.current = null;
