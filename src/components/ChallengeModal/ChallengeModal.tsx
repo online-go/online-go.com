@@ -40,7 +40,6 @@ import { sfx } from "sfx";
 import * as preferences from "preferences";
 import { notification_manager } from "Notifications/NotificationManager";
 import { one_bot, bot_count, bots_list } from "bots";
-import { openForkModal } from "./ForkModal";
 import { goban_view_mode } from "Game/util";
 import {
     Goban,
@@ -1717,34 +1716,6 @@ export function createOpenChallenge() {
 }
 export function challengeComputer() {
     return challenge(null, null, true);
-}
-export function challengeFromBoardPosition(goban) {
-    if (!goban) {
-        return;
-    }
-
-    openForkModal(goban);
-
-    /*
-    var game_name = goban.engine.game_name;
-    if ((!game_name || game_name === "") && goban.engine.players) {
-        game_name = goban.engine.players.black.username +" " + _("vs.") + " " +  goban.engine.players.white.username;
-    }
-
-    var state = {
-        "moves": goban.engine.cur_move.getMoveStringToThisPoint(),
-        "initial_state": goban.engine.initial_state,
-        "initial_player": goban.engine.initial_player,
-        "width": goban.engine.width,
-        "height": goban.engine.height,
-        "rules": goban.engine.rules,
-        "handicap": goban.engine.handicap,
-        "move_number": goban.engine.getMoveNumber(),
-        "game_name": game_name,
-    };
-
-    challenge(null, state);
-    */
 }
 export function challengeRematch(
     goban: Goban,
