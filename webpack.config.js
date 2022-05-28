@@ -59,12 +59,15 @@ module.exports = (env, argv) => {
 
     plugins.push(
         new CircularDependencyPlugin({
+            // LearningHub is because it's all internal and fixing it would involve globbing a lot of the broken out pages together.
+            // Player is because PlayerDetails has the Player link in it. We should probably make a lighter weight Player
+            // that can be used there instead, but doesn't seem worth the trouble right now as it's an internal thing anyways.
             exclude: /node_modules|LearningHub|Player/,
             failOnError: true,
             allowAsyncCycles: false,
             cwd: process.cwd(),
             onDetected({ module: webpackModuleRecord, paths, compilation }) {
-                compilation.warnings.push(new Error("Circular dependency found:\n    " + paths.join("\n -> ")));
+                compilation.errors.push(new Error("Circular dependency found:\n    " + paths.join("\n -> ")));
             },
         }),
     );
