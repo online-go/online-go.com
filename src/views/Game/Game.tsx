@@ -686,7 +686,6 @@ export function Game(): JSX.Element {
                 setAnalyzePencilColor={set_analyze_pencil_color}
                 analyze_pencil_color={analyze_pencil_color}
                 setAnalyzeTool={setAnalyzeTool}
-                goban={goban.current}
                 forceUpdate={forceUpdate}
                 is_review={!!review_id}
                 mode={mode}
@@ -697,7 +696,6 @@ export function Game(): JSX.Element {
     const frag_review_controls = () => (
         <ReviewControls
             mode={mode}
-            goban={goban.current}
             review_id={review_id}
             renderEstimateScore={frag_estimate_score}
             renderAnalyzeButtonBar={frag_analyze_button_bar}
@@ -712,7 +710,6 @@ export function Game(): JSX.Element {
     );
     const frag_play_controls = (show_cancel: boolean) => (
         <PlayControls
-            goban={goban.current}
             show_cancel={show_cancel}
             review_list={review_list}
             stashed_conditional_moves={stashed_conditional_moves.current}
@@ -1352,7 +1349,6 @@ export function Game(): JSX.Element {
         <GameChat
             selected_chat_log={selected_chat_log}
             onSelectedChatModeChange={set_selected_chat_log}
-            goban={goban.current}
             channel={game_id ? `game-${game_id}` : `review-${review_id}`}
             game_id={game_id}
             review_id={review_id}
@@ -1381,7 +1377,6 @@ export function Game(): JSX.Element {
                     <div className="center-col">
                         {(view_mode === "portrait" || null) && (
                             <PlayerCards
-                                goban={goban.current}
                                 historical_black={historical_black}
                                 historical_white={historical_white}
                                 estimating_score={estimating_score}
@@ -1406,11 +1401,10 @@ export function Game(): JSX.Element {
                             !zen_mode &&
                             user_is_player &&
                             phase !== "finished") ||
-                            null) && <CancelButton goban={goban.current} className="bold reject" />}
+                            null) && <CancelButton className="bold reject" />}
 
                         {((view_mode === "portrait" && !zen_mode) || null) && (
                             <GameDock
-                                goban={goban.current}
                                 annulled={annulled}
                                 review_id={review_id}
                                 game_id={game_id}
@@ -1440,7 +1434,6 @@ export function Game(): JSX.Element {
                             {(zen_mode || null) && <div className="align-col-start"></div>}
                             {(view_mode === "square" || view_mode === "wide" || null) && (
                                 <PlayerCards
-                                    goban={goban.current}
                                     historical_black={historical_black}
                                     historical_white={historical_white}
                                     estimating_score={estimating_score}
@@ -1463,7 +1456,6 @@ export function Game(): JSX.Element {
                             {((view_mode === "square" && squashed) || null) && CHAT}
 
                             <GameDock
-                                goban={goban.current}
                                 annulled={annulled}
                                 review_id={review_id}
                                 game_id={game_id}

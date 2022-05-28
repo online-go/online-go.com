@@ -32,10 +32,10 @@ import { inGameModChannel } from "chat_manager";
 import { MoveTree } from "goban";
 import { game_control } from "./game_control";
 import { useUserIsParticipant } from "./GameHooks";
+import { useGoban } from "./goban_context";
 
 export type ChatMode = "main" | "malkovich" | "moderator" | "hidden" | "personal";
 interface GameChatProperties {
-    goban: Goban;
     selected_chat_log: ChatMode;
     onSelectedChatModeChange: (c: ChatMode) => void;
     channel: string;
@@ -64,6 +64,7 @@ interface GameChatLineProperties {
 
 export function GameChat(props: GameChatProperties): JSX.Element {
     const user = data.get("user");
+    const goban = useGoban();
     const in_game_mod_channel = !props.review_id && inGameModChannel(props.game_id);
 
     const ref_chat_log = React.useRef<HTMLDivElement>(null);
@@ -77,10 +78,10 @@ export function GameChat(props: GameChatProperties): JSX.Element {
     const chat_log_hash = React.useRef<{ [k: string]: boolean }>({});
     const chat_lines = React.useRef<ChatLine[]>([]);
     const [, refresh] = React.useState<number>();
-    const userIsPlayer = useUserIsParticipant(props.goban);
+    const userIsPlayer = useUserIsParticipant(goban);
 
     React.useEffect(() => {
-        if (!props.goban) {
+        if (!goban) {
             return;
         }
 
@@ -126,22 +127,22 @@ export function GameChat(props: GameChatProperties): JSX.Element {
             debouncedChatUpdate();
         };
 
-        for (const line of props.goban.chat_log) {
+        for (const line of goban.chat_log) {
             onChat(line);
         }
 
-        props.goban.on("chat", onChat);
-        props.goban.on("chat-remove", onChatRemove);
-        props.goban.on("chat-reset", onChatReset);
+        goban.on("chat", onChat);
+        goban.on("chat-remove", onChatRemove);
+        goban.on("chat-reset", onChatReset);
 
         return () => {
-            props.goban.off("chat", onChat);
-            props.goban.off("chat-remove", onChatRemove);
-            props.goban.off("chat-reset", onChatReset);
+            goban.off("chat", onChat);
+            goban.off("chat-remove", onChatRemove);
+            goban.off("chat-reset", onChatReset);
             chat_lines.current.length = 0;
             chat_log_hash.current = {};
         };
-    }, [props.goban]);
+    }, [goban]);
 
     const channel = props.game_id ? `game-${props.game_id}` : `review-${props.review_id}`;
 
@@ -174,7 +175,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
                 console.warn("Quick chat editing not implemented");
                 event.preventDefault();
             } else {
-                props.goban.sendChat(input.value, selected_chat_log);
+                goban.sendChat(input.value, selected_chat_log);
                 input.value = "";
                 return false;
             }
@@ -248,7 +249,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
             </div>
             {(show_quick_chat || null) && (
                 <QuickChat
-                    goban={props.goban}
+                    goban={goban}
                     selected_chat_log={selected_chat_log}
                     onSend={() => setShowQuickChat(false)}
                 />
