@@ -28,7 +28,7 @@ import { socket } from "sockets";
 import * as data from "data";
 import { close_all_popovers } from "popover";
 import { Flag } from "Flag";
-import { ban, shadowban, remove_shadowban, remove_ban } from "Moderator";
+import { ban, shadowban, remove_shadowban, remove_ban } from "Moderator/ban_functions";
 import { challenge } from "ChallengeModal";
 import { getPrivateChat } from "PrivateChat";
 import { openBlockPlayerControls } from "BlockPlayer";
