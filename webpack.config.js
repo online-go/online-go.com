@@ -59,7 +59,7 @@ module.exports = (env, argv) => {
 
     plugins.push(
         new CircularDependencyPlugin({
-            exclude: /node_modules/,
+            exclude: /node_modules|LearningHub/,
             failOnError: true,
             allowAsyncCycles: false,
             cwd: process.cwd(),
