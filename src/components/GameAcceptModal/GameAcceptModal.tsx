@@ -20,7 +20,7 @@ import { _ } from "translate";
 import { post } from "requests";
 import { openModal, Modal } from "Modal";
 import { timeControlDescription, usedForCheating } from "TimeControl";
-import { Player } from "Player";
+import { Player, PlayerObjectType } from "Player";
 import { errorAlerter, yesno } from "misc";
 import swal from "sweetalert2";
 
@@ -75,12 +75,19 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
             player_color = _("Random");
         }
 
+        const challenger_details: PlayerObjectType = {
+            id: challenge.user_id,
+            username: challenge.username,
+            pro: challenge.pro,
+            rank: challenge.rank,
+        };
+
         return (
             <div className="Modal GameAcceptModal">
                 <div className="header">
                     <div>
                         <h2>
-                            <Player icon iconSize={32} user={challenge} />
+                            <Player icon iconSize={32} user={challenger_details} />
                         </h2>
                         <h4>{challenge.name}</h4>
                     </div>
