@@ -38,7 +38,7 @@ import { PlayerIcon } from "PlayerIcon";
 import { timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker } from "TimeControl";
 import { sfx } from "sfx";
 import * as preferences from "preferences";
-import { notification_manager } from "Notifications";
+import { notification_manager } from "Notifications/NotificationManager";
 import { one_bot, bot_count, bots_list } from "bots";
 import { openForkModal } from "./ForkModal";
 import { goban_view_mode } from "Game/util";
