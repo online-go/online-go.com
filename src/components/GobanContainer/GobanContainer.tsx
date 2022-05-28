@@ -20,7 +20,7 @@ import { PersistentElement } from "PersistentElement";
 import ReactResizeDetector from "react-resize-detector";
 import { GobanCanvas, GobanCanvasConfig } from "goban";
 // Pull this out its own util
-import { goban_view_mode } from "Game";
+import { goban_view_mode } from "Game/util";
 
 interface GobanContainerProps {
     goban?: GobanCanvas;
