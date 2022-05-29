@@ -18,7 +18,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import * as data from "data";
-import { _ } from "translate";
+import { _, pgettext } from "translate";
 import { Card } from "material";
 import { errorAlerter } from "misc";
 import { post } from "requests";
@@ -195,10 +195,12 @@ export class Register extends React.PureComponent<{}, any> {
                             </button>
                         </div>
                     </form>
-
+                    <hr />
+                    <span>{pgettext("this word is between two options to sign up", "or...")}</span>
                     <div className="social-buttons">
                         <Link to="/sign-in" className="s btn md-icon">
-                            <i className="email-icon fa fa-envelope-o" /> {_("Sign in with Email")}
+                            <img src={data.get("config.cdn_release") + "/icons/smalltile.png"} />
+                            {_("Sign in direct")}
                         </Link>
                         <a href="/login/google-oauth2/" className="s btn md-icon" target="_self">
                             <span className="google google-oauth2-icon" />{" "}
