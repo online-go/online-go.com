@@ -1163,6 +1163,11 @@ export const GoResources = () => {
                                 title="Israeli Go Association"
                                 href="https://igo.org.il/"
                             />,
+                            <BasicResource
+                                countries={["ua"]}
+                                title="Ukrainian Go Federation"
+                                href="https://ufgo.org"
+                            />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
                         ))}
