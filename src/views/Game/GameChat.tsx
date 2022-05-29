@@ -24,7 +24,7 @@ import { Link } from "react-router-dom";
 import { _, pgettext, interpolate } from "translate";
 import { Player } from "Player";
 import { profanity_filter } from "profanity_filter";
-import { Goban } from "goban";
+import { Goban, GobanCore } from "goban";
 import { ChatUserList, ChatUserCount } from "ChatUserList";
 import { TabCompleteInput } from "TabCompleteInput";
 import { chat_markup } from "components/Chat";
@@ -32,10 +32,10 @@ import { inGameModChannel } from "chat_manager";
 import { MoveTree } from "goban";
 import { game_control } from "./game_control";
 import { useUserIsParticipant } from "./GameHooks";
+import { useGoban } from "./goban_context";
 
 export type ChatMode = "main" | "malkovich" | "moderator" | "hidden" | "personal";
 interface GameChatProperties {
-    goban: Goban;
     selected_chat_log: ChatMode;
     onSelectedChatModeChange: (c: ChatMode) => void;
     channel: string;
@@ -64,6 +64,7 @@ interface GameChatLineProperties {
 
 export function GameChat(props: GameChatProperties): JSX.Element {
     const user = data.get("user");
+    const goban = useGoban();
     const in_game_mod_channel = !props.review_id && inGameModChannel(props.game_id);
 
     const ref_chat_log = React.useRef<HTMLDivElement>(null);
@@ -77,10 +78,10 @@ export function GameChat(props: GameChatProperties): JSX.Element {
     const chat_log_hash = React.useRef<{ [k: string]: boolean }>({});
     const chat_lines = React.useRef<ChatLine[]>([]);
     const [, refresh] = React.useState<number>();
-    const userIsPlayer = useUserIsParticipant(props.goban);
+    const userIsPlayer = useUserIsParticipant(goban);
 
     React.useEffect(() => {
-        if (!props.goban) {
+        if (!goban) {
             return;
         }
 
@@ -126,22 +127,22 @@ export function GameChat(props: GameChatProperties): JSX.Element {
             debouncedChatUpdate();
         };
 
-        for (const line of props.goban.chat_log) {
+        for (const line of goban.chat_log) {
             onChat(line);
         }
 
-        props.goban.on("chat", onChat);
-        props.goban.on("chat-remove", onChatRemove);
-        props.goban.on("chat-reset", onChatReset);
+        goban.on("chat", onChat);
+        goban.on("chat-remove", onChatRemove);
+        goban.on("chat-reset", onChatReset);
 
         return () => {
-            props.goban.off("chat", onChat);
-            props.goban.off("chat-remove", onChatRemove);
-            props.goban.off("chat-reset", onChatReset);
+            goban.off("chat", onChat);
+            goban.off("chat-remove", onChatRemove);
+            goban.off("chat-reset", onChatReset);
             chat_lines.current.length = 0;
             chat_log_hash.current = {};
         };
-    }, [props.goban]);
+    }, [goban]);
 
     const channel = props.game_id ? `game-${props.game_id}` : `review-${props.review_id}`;
 
@@ -174,7 +175,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
                 console.warn("Quick chat editing not implemented");
                 event.preventDefault();
             } else {
-                props.goban.sendChat(input.value, selected_chat_log);
+                goban.sendChat(input.value, selected_chat_log);
                 input.value = "";
                 return false;
             }
@@ -248,7 +249,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
             </div>
             {(show_quick_chat || null) && (
                 <QuickChat
-                    goban={props.goban}
+                    goban={goban}
                     selected_chat_log={selected_chat_log}
                     onSend={() => setShowQuickChat(false)}
                 />
@@ -437,6 +438,7 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
     }
     let show_date: JSX.Element = null;
     let move_number: JSX.Element = null;
+    const goban = useGoban();
 
     if (!lastline || (line.date && lastline.date)) {
         if (line.date) {
@@ -461,7 +463,6 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
         const jumpToMove = () => {
             game_control.emit("stopEstimatingScore");
             const line = props.line;
-            const goban = game_control.goban;
 
             if ("move_number" in line) {
                 if (!goban.isAnalysisDisabled()) {
@@ -530,14 +531,13 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
     );
 }
 
-function parsePosition(position: string) {
-    if (!game_control.goban || !position) {
+function parsePosition(position: string, goban: GobanCore) {
+    if (!goban || !position) {
         return {
             i: -1,
             j: -1,
         };
     }
-    const goban = game_control.goban;
 
     let i = "abcdefghjklmnopqrstuvwxyz".indexOf(position[0].toLowerCase());
     let j = ((goban && goban.height) || 19) - parseInt(position.substring(1));
@@ -550,28 +550,6 @@ function parsePosition(position: string) {
         j = -1;
     }
     return { i: i, j: j };
-}
-function highlight_position(event: React.MouseEvent<HTMLSpanElement>) {
-    if (!game_control.goban) {
-        return;
-    }
-
-    const pos = parsePosition((event.target as HTMLSpanElement).innerText);
-    if (pos.i >= 0) {
-        game_control.goban.getMarks(pos.i, pos.j).chat_triangle = true;
-        game_control.goban.drawSquare(pos.i, pos.j);
-    }
-}
-function unhighlight_position(event: React.MouseEvent<HTMLSpanElement>) {
-    if (!game_control.goban) {
-        return;
-    }
-
-    const pos = parsePosition((event.target as HTMLSpanElement).innerText);
-    if (pos.i >= 0) {
-        game_control.goban.getMarks(pos.i, pos.j).chat_triangle = false;
-        game_control.goban.drawSquare(pos.i, pos.j);
-    }
 }
 
 interface AnalysisComment {
@@ -594,6 +572,22 @@ let orig_marks: unknown[] = null;
 
 function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
     const body = line.body;
+    const goban = useGoban();
+
+    const highlight_position = (event: React.MouseEvent<HTMLSpanElement>) => {
+        const pos = parsePosition((event.target as HTMLSpanElement).innerText, goban);
+        if (pos.i >= 0) {
+            goban.getMarks(pos.i, pos.j).chat_triangle = true;
+            goban.drawSquare(pos.i, pos.j);
+        }
+    };
+    function unhighlight_position(event: React.MouseEvent<HTMLSpanElement>) {
+        const pos = parsePosition((event.target as HTMLSpanElement).innerText, goban);
+        if (pos.i >= 0) {
+            goban.getMarks(pos.i, pos.j).chat_triangle = false;
+            goban.drawSquare(pos.i, pos.j);
+        }
+    }
 
     if (typeof body === "string") {
         return (
@@ -604,7 +598,7 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                         pattern: /\b([a-zA-Z][0-9]{1,2})\b/gm,
                         replacement: (m, idx) => {
                             const pos = m[1];
-                            if (parsePosition(pos).i < 0) {
+                            if (parsePosition(pos, goban).i < 0) {
                                 return <span key={idx}>{m[1]}</span>;
                             }
                             return (
@@ -645,7 +639,6 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                     }
 
                     const onLeave = () => {
-                        const goban = game_control.goban;
                         if (game_control.in_pushed_analysis) {
                             game_control.in_pushed_analysis = false;
                             delete game_control.onPushAnalysisLeft;
@@ -660,7 +653,6 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                     };
 
                     const onEnter = () => {
-                        const goban = game_control.goban;
                         game_control.in_pushed_analysis = true;
                         game_control.onPushAnalysisLeft = onLeave;
 
@@ -693,7 +685,6 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                     };
 
                     const onClick = () => {
-                        const goban = game_control.goban;
                         onLeave();
                         goban.setMode("analyze");
                         onEnter();

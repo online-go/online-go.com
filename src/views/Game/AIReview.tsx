@@ -40,9 +40,11 @@ import {
     ColoredCircle,
     getWorstMoves,
     AIReviewWorstMoveEntry,
+    GobanCore,
 } from "goban";
 import { game_control } from "./game_control";
 import swal from "sweetalert2";
+import { GobanContext } from "./goban_context";
 
 export interface AIReviewEntry {
     move_number: number;
@@ -80,6 +82,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     median_score_loss: number[];
     moves_pending: number;
     max_entries: number;
+
+    static contextType = GobanContext;
+    declare context: React.ContextType<typeof GobanContext>;
 
     constructor(props: AIReviewProperties) {
         super(props);
@@ -203,14 +208,14 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             .catch(errorLogger);
     }
 
-    handicapOffset(): number {
+    private static handicapOffset(goban: GobanCore): number {
         if (
-            game_control.goban &&
-            game_control.goban.engine &&
-            game_control.goban.engine.free_handicap_placement &&
-            game_control.goban.engine.handicap > 0
+            goban &&
+            goban.engine &&
+            goban.engine.free_handicap_placement &&
+            goban.engine.handicap > 0
         ) {
-            return game_control.goban.engine.handicap;
+            return goban.engine.handicap;
         }
         return 0;
     }
@@ -254,14 +259,6 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             //blunders: blunders,
             //queue_position: this.state.selected_ai_review.queue.position,
             //queue_pending: this.state.selected_ai_review.queue.pending,
-            updatecount: this.state.updatecount + 1,
-        });
-    }
-    clearAIReview() {
-        game_control.goban.setMode("play");
-        this.setState({
-            //full: null,
-            //fast: null,
             updatecount: this.state.updatecount + 1,
         });
     }
@@ -422,6 +419,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     }
 
     public updateHighlightsMarksAndHeatmaps() {
+        const goban = this.context;
         let ai_review_move: JGOFAIReviewMove;
         let next_ai_review_move: JGOFAIReviewMove;
         let win_rate: number;
@@ -521,9 +519,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 /* Generate the heatmap, blue move, and triangle move */
                 const strength = this.ai_review.strength;
                 heatmap = [];
-                for (let y = 0; y < game_control.goban.engine.height; y++) {
+                for (let y = 0; y < goban.engine.height; y++) {
                     const r = [];
-                    for (let x = 0; x < game_control.goban.engine.width; x++) {
+                    for (let x = 0; x < goban.engine.width; x++) {
                         r.push(0);
                     }
                     heatmap.push(r);
@@ -537,7 +535,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         continue;
                     }
 
-                    if (game_control.goban.engine.board[mv.y][mv.x]) {
+                    if (goban.engine.board[mv.y][mv.x]) {
                         console.error(
                             "ERROR: AI is suggesting moves on intersections that have already been played, this is likely a move indexing error.",
                         );
@@ -584,7 +582,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         if (parseFloat(key).toPrecision(2).length < key.length) {
                             key = parseFloat(key).toPrecision(2);
                         }
-                        game_control.goban.setSubscriptMark(mv.x, mv.y, key, true);
+                        goban.setSubscriptMark(mv.x, mv.y, key, true);
                     }
 
                     const circle: ColoredCircle = {
@@ -593,8 +591,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     };
 
                     if (next_move && isEqualMoveIntersection(branch.moves[0], next_move)) {
-                        game_control.goban.setMark(mv.x, mv.y, "sub_triangle", true);
-                        game_control.goban.setMark(mv.x, mv.y, "blue_move", true);
+                        goban.setMark(mv.x, mv.y, "sub_triangle", true);
+                        goban.setMark(mv.x, mv.y, "blue_move", true);
 
                         circle.border_width = 0.1;
                         circle.border_color = "rgb(0, 0, 0)";
@@ -606,7 +604,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         colored_circles.push(circle);
                     } else if (i === 0) {
                         // blue move, not what player made
-                        game_control.goban.setMark(mv.x, mv.y, "blue_move", true);
+                        goban.setMark(mv.x, mv.y, "blue_move", true);
                         circle.border_width = 0.2;
                         circle.border_color = "rgb(0, 130, 255)";
                         circle.color = "rgba(0, 130, 255, 0.7)";
@@ -618,46 +616,38 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 if (!cur_move.trunk) {
                     this.requestAnalysisOfVariation(cur_move, trunk_move);
                 }
-                this.fillAIMarksBacktracking(
-                    cur_move,
-                    trunk_move,
-                    marks,
-                ); /* fill marks object with AI ghost marks, if we are on a sequence the AI played out */
+                /* fill marks object with AI ghost marks, if we are on a sequence the AI played out */
+                this.fillAIMarksBacktracking(cur_move, trunk_move, marks);
             }
         } catch (e) {
             errorLogger(e);
         }
 
         try {
-            game_control.goban.setMarks(
-                marks,
-                true,
-            ); /* draw the remaining AI sequence as ghost marks, if any */
-            game_control.goban.setHeatmap(heatmap, true);
-            game_control.goban.setColoredCircles(colored_circles, false);
+            goban.setMarks(marks, true); /* draw the remaining AI sequence as ghost marks, if any */
+            goban.setHeatmap(heatmap, true);
+            goban.setColoredCircles(colored_circles, false);
         } catch (e) {
             errorLogger(e);
         }
 
         if (next_win_rate >= 0) {
             next_move_delta_win_rate = next_win_rate - win_rate;
-            if (game_control.goban.engine.colorToMove() === "white") {
+            if (goban.engine.colorToMove() === "white") {
                 next_move_delta_win_rate = -next_move_delta_win_rate;
             }
         }
 
         if (next_move) {
-            next_move_pretty_coords = game_control.goban.engine.prettyCoords(
-                next_move.x,
-                next_move.y,
-            );
+            next_move_pretty_coords = goban.engine.prettyCoords(next_move.x, next_move.y);
         }
 
         return [win_rate, score, next_move_delta_win_rate, next_move_pretty_coords];
     }
 
     private requestAnalysisOfVariation(cur_move: MoveTree, trunk_move: MoveTree): boolean {
-        if (!game_control.goban) {
+        const goban = this.context;
+        if (!goban) {
             return false;
         }
 
@@ -671,8 +661,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             return false;
         }
 
-        const black_id = game_control.goban?.engine?.config?.black_player_id;
-        const white_id = game_control.goban?.engine?.config?.white_player_id;
+        const black_id = goban?.engine?.config?.black_player_id;
+        const white_id = goban?.engine?.config?.white_player_id;
         const creator_id = game_control.creator_id;
 
         if (user.id !== black_id && user.id !== white_id && user.id !== creator_id) {
@@ -713,6 +703,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         trunk_move: MoveTree,
         marks: { [mark: string]: string },
     ): boolean {
+        const goban = this.context;
         for (let j = 0; j <= trunk_move.move_number; j++) {
             /* for each of the trunk moves starting from the nearest */
             const ai_review_move = this.ai_review.moves[trunk_move.move_number - j];
@@ -736,7 +727,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             }
 
             if (next_moves) {
-                const decoded_moves = game_control.goban.engine.decodeMoves(next_moves);
+                const decoded_moves = goban.engine.decodeMoves(next_moves);
                 let black = "";
                 let white = "";
 
@@ -744,7 +735,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                     const mv = decoded_moves[i];
                     const encoded_mv = GoMath.encodeMove(mv.x, mv.y);
                     marks[i + cur_move.getDistance(trunk_move) + 1] = encoded_mv;
-                    if ((game_control.goban.engine.player - 1 + i) % 2 === 1) {
+                    if ((goban.engine.player - 1 + i) % 2 === 1) {
                         white += encoded_mv;
                     } else {
                         black += encoded_mv;
@@ -763,8 +754,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         return false;
     }
 
-    private getPlayerColorsMoveList() {
-        const init_move = game_control.goban.engine.move_tree;
+    private static getPlayerColorsMoveList(goban: GobanCore) {
+        const init_move = goban.engine.move_tree;
         const move_list = [];
         let cur_move = init_move.trunk_next;
 
@@ -786,6 +777,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     }
 
     private AiSummaryTableRowList() {
+        const goban = this.context;
         const summary_moves_list = [
             ["", "", "", ""],
             ["", "", "", ""],
@@ -831,16 +823,16 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             };
         }
 
-        const handicap = game_control.goban.engine.handicap;
+        const handicap = goban.engine.handicap;
         //only useful when there's free placement, handicap = 1 no offset needed.
-        let hoffset = this.handicapOffset();
+        let hoffset = AIReview.handicapOffset(goban);
         hoffset = hoffset === 1 ? 0 : hoffset;
         const bplayer = hoffset > 0 || handicap > 1 ? 1 : 0;
-        const move_player_list = this.getPlayerColorsMoveList();
+        const move_player_list = AIReview.getPlayerColorsMoveList(goban);
 
         if (this.ai_review?.type === "fast") {
             const scores = this.ai_review?.scores;
-            const is_uploaded = game_control.goban.config.original_sgf !== undefined;
+            const is_uploaded = goban.config.original_sgf !== undefined;
             //one more ai review point than moves in the game, since initial board gets a score.
 
             if (scores === undefined) {
@@ -853,13 +845,12 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 };
             }
             const check1 =
-                !is_uploaded &&
-                game_control.goban.config.moves.length !== this.ai_review?.scores.length - 1;
+                !is_uploaded && goban.config.moves.length !== this.ai_review?.scores.length - 1;
             // extra initial ! in all_moves which matches extra empty board score, except in handicap games for some reason.
             // so subtract 1 if black goes second == bplayer
             const check2 =
                 is_uploaded &&
-                game_control.goban.config["all_moves"].split("!").length - bplayer !==
+                goban.config["all_moves"].split("!").length - bplayer !==
                     this.ai_review?.scores.length;
 
             // if there's less than 4 moves the worst moves doesn't seem to return 3 moves, otherwise look for these three moves.
@@ -968,16 +959,14 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         } else if (this.ai_review?.type === "full") {
             const num_rows = ai_table_rows.length;
             const movekeys = Object.keys(this.ai_review?.moves);
-            const is_uploaded = game_control.goban.config.original_sgf !== undefined;
+            const is_uploaded = goban.config.original_sgf !== undefined;
             // should be one more ai review score and move branches for empty board.
-            const check1 =
-                !is_uploaded && game_control.goban.config.moves.length !== movekeys.length - 1;
+            const check1 = !is_uploaded && goban.config.moves.length !== movekeys.length - 1;
             // extra initial ! in all_moves which matches extra empty board score, except in handicap games for some reason.
             // so subtract 1 if black goes second == bplayer
             const check2 =
                 is_uploaded &&
-                game_control.goban.config["all_moves"].split("!").length - bplayer !==
-                    movekeys.length;
+                goban.config["all_moves"].split("!").length - bplayer !== movekeys.length;
 
             if (this.state.loading || this.ai_review.scores === undefined) {
                 for (let j = 0; j < ai_table_rows.length; j++) {
@@ -1127,7 +1116,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             return null;
         }
 
-        if (!game_control.goban || !game_control.goban.engine) {
+        const goban = this.context;
+
+        if (!goban || !goban.engine) {
             return null;
         }
 
@@ -1168,8 +1159,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         try {
             if (
                 user.id === game_control.creator_id ||
-                user.id === game_control.goban.engine.players.black.id ||
-                user.id === game_control.goban.engine.players.white.id
+                user.id === goban.engine.players.black.id ||
+                user.id === goban.engine.players.white.id
             ) {
                 show_full_ai_review_button = true;
             } else if (user.is_moderator) {
@@ -1210,11 +1201,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         let black_moves = 0;
         let white_moves = 0;
 
-        let worst_move_list = getWorstMoves(
-            game_control.goban.engine.move_tree,
-            this.ai_review,
-            100,
-        );
+        let worst_move_list = getWorstMoves(goban.engine.move_tree, this.ai_review, 100);
         worst_move_list = worst_move_list.filter(
             (move) =>
                 (move.player === 1 && black_moves++ < 3) ||
@@ -1347,7 +1334,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 <div className="ai-review-win-rate-container">{children}</div>
                             ),
                             MenuList: (props) => {
-                                const goban = game_control.goban;
+                                const goban = this.context;
 
                                 return (
                                     <components.MenuList {...props}>
@@ -1498,7 +1485,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                         <span
                             className={
                                 "next-move-coordinates " +
-                                (game_control.goban.engine.colorToMove() === "white"
+                                (goban.engine.colorToMove() === "white"
                                     ? "white-background"
                                     : "black-background")
                             }
@@ -1545,7 +1532,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     }
 
     public renderWorstMoveList(lst: AIReviewWorstMoveEntry[]): JSX.Element {
-        if (!game_control.goban.engine.move_tree || !this.ai_review) {
+        const goban = this.context;
+        if (!goban.engine.move_tree || !this.ai_review) {
             return null;
         }
 
@@ -1557,10 +1545,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             <div className="worst-move-list-container">
                 <div className="move-list">
                     {lst.slice(0, this.state.worst_moves_shown).map((de, idx) => {
-                        const pretty_coords = game_control.goban.engine.prettyCoords(
-                            de.move.x,
-                            de.move.y,
-                        );
+                        const pretty_coords = goban.engine.prettyCoords(de.move.x, de.move.y);
                         return (
                             <span
                                 key={`${idx}-${de.move_number}`}
