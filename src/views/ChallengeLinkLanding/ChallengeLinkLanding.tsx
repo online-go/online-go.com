@@ -19,12 +19,13 @@ import * as React from "react";
 import * as data from "data";
 import { get } from "requests";
 import { SvgBouncer } from "SvgBouncer";
+import { Card } from "material";
 
 import { ChallengeDetailsReviewPane } from "ChallengeDetailsReviewPane";
 
-/*
 import { _ } from "translate";
-import { Card } from "material";
+
+/*import { Card } from "material";
 import { LineText } from "misc-ui";
 import { errorAlerter, ignore } from "misc";
 */
@@ -53,10 +54,14 @@ export function ChallengeLinkLanding(): JSX.Element {
     /* Render */
     return (
         <div id="ChallengeLinkLanding">
-            {logged_in ? "" : "Welcome to OGS!"}
+            {logged_in ? "" : <h2>{_("Welcome to OGS!")}</h2>}
+
             {(linked_challenge || null) && (
-                <ChallengeDetailsReviewPane challenge={linked_challenge} />
+                <Card>
+                    <ChallengeDetailsReviewPane challenge={linked_challenge} />
+                </Card>
             )}
+
             {(!linked_challenge || null) && <SvgBouncer />}
         </div>
     );
