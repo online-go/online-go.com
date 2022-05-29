@@ -27,7 +27,7 @@ import { openGameLinkModal } from "./GameLinkModal";
 import { openGameLogModal } from "./GameLogModal";
 import { sfx } from "sfx";
 import swal from "sweetalert2";
-import { challengeFromBoardPosition } from "ChallengeModal";
+import { challengeFromBoardPosition } from "ChallengeModal/ForkModal";
 import { errorAlerter, ignore } from "misc";
 import { openReport } from "Report";
 import { game_control } from "./game_control";

@@ -522,3 +522,5 @@ export class NotificationManager {
         return true;
     }
 }
+
+export const notification_manager: NotificationManager = new NotificationManager();

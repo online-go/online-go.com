@@ -16,13 +16,12 @@
  */
 
 import * as React from "react";
-import { routes } from "routes";
 import { browserHistory } from "ogsHistory";
 import * as data from "data";
 import { shouldOpenNewTab, errorLogger, unicodeFilter } from "misc";
 import { rankString, getUserRating, PROVISIONAL_RATING_CUTOFF } from "rank_utils";
 import { close_all_popovers, popover } from "popover";
-import { close_friend_list } from "FriendList/FriendIndicator";
+import { close_friend_list } from "FriendList/close_friend_list";
 import { PlayerDetails } from "./PlayerDetails";
 import { openPlayerNotesModal } from "PlayerNotesModal";
 import { Flag } from "Flag";
@@ -360,13 +359,7 @@ export function Player(props: PlayerProperties): JSX.Element {
         return (
             // if only we could put {...main_attrs} on the span, we could put the styles in .Player.  But router seems to hate that.
             <span>
-                <a
-                    href={uri}
-                    ref={elt_ref}
-                    {...main_attrs}
-                    onMouseDown={display_details}
-                    router={routes}
-                >
+                <a href={uri} ref={elt_ref} {...main_attrs} onMouseDown={display_details}>
                     {(props.icon || null) && (
                         <PlayerIcon user={combined} size={props.iconSize || 16} />
                     )}

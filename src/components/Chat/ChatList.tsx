@@ -30,12 +30,12 @@ import { shouldOpenNewTab } from "misc";
 import { browserHistory } from "ogsHistory";
 import { popover } from "popover";
 import {
-    ChatDetails,
     getUnreadChatPreference,
     getMentionedChatPreference,
     watchChatSubscriptionChanged,
     unwatchChatSubscriptionChanged,
-} from "Chat";
+} from "./state";
+import { ChatDetails } from "./ChatDetails";
 import { DataSchema } from "data_schema";
 
 interface ChatListProperties {

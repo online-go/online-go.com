@@ -32,6 +32,7 @@
         "@typescript-eslint/parser": "^5.26.0",
         "autoprefixer": "^10.4.2",
         "body-parser": "^1.16.1",
+        "circular-dependency-plugin": "^5.2.2",
         "cssnano": "^5.0.8",
         "eslint": "^8.16.0",
         "eslint-config-prettier": "^8.5.0",

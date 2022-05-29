@@ -21,7 +21,7 @@ import { put } from "requests";
 import { _ } from "translate";
 import { errorAlerter } from "misc";
 import { Modal } from "Modal";
-import { Player } from "Player";
+import * as player_cache from "player_cache";
 
 interface Events {}
 
@@ -42,6 +42,8 @@ export class BanModal extends Modal<Events, BanModalProperties, any> {
     }
 
     render() {
+        const player = player_cache.lookup(this.props.player_id);
+
         const ban = () => {
             const player_id = this.props.player_id;
             console.log("Banning player", this.props.player_id);
@@ -65,7 +67,9 @@ export class BanModal extends Modal<Events, BanModalProperties, any> {
         return (
             <div className="Modal BanModal">
                 <div className="Modal-content">
-                    <Player user={this.props.player_id} />
+                    <span className="player-name">
+                        {player ? player.username : `Player ${this.props.player_id}`}
+                    </span>
                     <BanDetails onChange={(details) => this.setState({ details: details })} />
                 </div>
                 <div className="buttons">

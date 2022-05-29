@@ -15,25 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.BanModal {
-    width: 30rem;
-    height: 30rem
-    max-height: 90vh;
-    max-width: 90vw;
-    text-align: center;
+let ext_setShowFriendList = (_tf: boolean) => {
+    /* noop */
+};
 
-    .player-name {
-        font-size: 1.5rem;
-        margin: auto;
-        padding-bottom: 1rem;
-    }
+export function setSetShowFriendList(cb: (tf: boolean) => void) {
+    ext_setShowFriendList = cb;
+}
 
-    .Modal-content {
-        textarea {
-            width: 100%;
-        }
-    }
-    .rdt { // react date time
-        margin-bottom: 0.5rem;
-    }
+export function close_friend_list() {
+    ext_setShowFriendList(false);
 }

@@ -19,7 +19,7 @@ import * as React from "react";
 import { browserHistory } from "ogsHistory";
 import { put } from "requests";
 import { errorAlerter } from "misc";
-import { Player } from "Player";
+import * as player_cache from "player_cache";
 import { _ } from "translate";
 
 import { Modal, openModal } from "Modal";
@@ -61,11 +61,12 @@ export class ModNoteModal extends Modal<Events, ModNoteModalProperties, any> {
     };
 
     render() {
+        const player = player_cache.lookup(this.props.player_id);
         return (
             <div className="Modal ModNoteModal">
                 <div className="header">
                     <h2>
-                        {_("Add moderator note for: ")} <Player user={this.props.player_id} />
+                        {_("Add moderator note for: ")} {player?.username}
                     </h2>
                 </div>
                 <textarea
