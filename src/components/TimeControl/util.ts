@@ -391,7 +391,7 @@ export function timeControlDescription(time_control) {
     }
 
     if (time_control && time_control.pause_on_weekends) {
-        ret += " " + _("Pauses on weekends");
+        ret += " " + _("Pauses on weekends.");
     }
 
     return ret;
