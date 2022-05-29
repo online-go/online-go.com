@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
+import { pgettext, _ } from "translate";
 
 import { timeControlDescription, usedForCheating } from "TimeControl";
 import { yesno } from "misc";
@@ -45,7 +45,13 @@ export function ChallengeDetailsReviewPane(
     }
 
     return (
-        <>
+        <div className="ChallengeDetailsReviewPane">
+            <h4>
+                {pgettext(
+                    "The header for the timing details section of challenge details",
+                    "Game Timing",
+                )}
+            </h4>
             <p>{time_control_description}</p>
             {usedForCheating(challenge.time_control_parameters) ? (
                 <p className="cheat-warning">
@@ -95,7 +101,7 @@ export function ChallengeDetailsReviewPane(
                     <dd>{yesno(challenge.time_control_parameters.pause_on_weekends)}</dd>
                 )}
             </dl>
-        </>
+        </div>
     );
 }
 

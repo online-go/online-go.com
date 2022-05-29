@@ -17,20 +17,23 @@
 
 import * as React from "react";
 import * as data from "data";
+import { _, pgettext } from "translate";
 import { get } from "requests";
+
 import { SvgBouncer } from "SvgBouncer";
 import { Card } from "material";
 
 import { ChallengeDetailsReviewPane } from "ChallengeDetailsReviewPane";
 
-import { _ } from "translate";
-
-/*import { Card } from "material";
+import { Player } from "Player";
+/*
 import { LineText } from "misc-ui";
 import { errorAlerter, ignore } from "misc";
 */
 
 type Challenge = socket_api.seekgraph_global.Challenge;
+
+// Users are intended to arrive here via a challenge-link URL - those point here.
 
 export function ChallengeLinkLanding(): JSX.Element {
     const user = data.get("user");
@@ -58,6 +61,16 @@ export function ChallengeLinkLanding(): JSX.Element {
 
             {(linked_challenge || null) && (
                 <Card>
+                    <div className="invitation">
+                        <span className="invite-text">
+                            {pgettext(
+                                "The challenger's name and avatar appear on the next line after this",
+                                "You have been invited to a game of Go, by",
+                            )}
+                        </span>
+                        <Player icon iconSize={32} user={linked_challenge.user_id} />
+                    </div>
+                    <hr />
                     <ChallengeDetailsReviewPane challenge={linked_challenge} />
                 </Card>
             )}
