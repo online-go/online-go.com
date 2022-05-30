@@ -64,7 +64,7 @@ import {
 import { CancelButton } from "./PlayButtons";
 import { GameDock } from "./GameDock";
 import swal from "sweetalert2";
-import { useScore, useShowTitle, useTitle, useUserIsParticipant } from "./GameHooks";
+import { useCurrentMove, useShowTitle, useTitle, useUserIsParticipant } from "./GameHooks";
 import { GobanContainer } from "GobanContainer";
 import { GobanContext } from "./goban_context";
 
@@ -119,7 +119,7 @@ export function Game(): JSX.Element {
     const [show_game_timing, set_show_game_timing] = React.useState(false);
 
     const title = useTitle(goban.current);
-    useScore(goban.current);
+    const cur_move = useCurrentMove(goban.current);
 
     const [mode, set_mode] = React.useState<GobanModes>("play");
     const [score_estimate_winner, set_score_estimate_winner] = React.useState<string>();
@@ -745,7 +745,7 @@ export function Game(): JSX.Element {
                 <AIReview
                     onAIReviewSelected={(r) => set_selected_ai_review_uuid(r?.uuid)}
                     game_id={game_id}
-                    move={goban.current.engine.cur_move}
+                    move={cur_move}
                     hidden={!ai_review_enabled}
                 />
             );
