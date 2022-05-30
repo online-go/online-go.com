@@ -72,6 +72,12 @@ export function ChallengeDetailsReviewPane(
                 ""
             )}
             <hr />
+            <h4>
+                {pgettext(
+                    "The header for the full details section of challenge details pane",
+                    "Details",
+                )}
+            </h4>
             <dl className="horizontal">
                 <dt>{_("Your color")}</dt>
                 <dd>{player_color}</dd>

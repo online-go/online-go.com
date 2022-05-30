@@ -16,24 +16,26 @@
  */
 
 import * as React from "react";
+import swal from "sweetalert2";
 import * as data from "data";
 import { _, pgettext } from "translate";
-import { get } from "requests";
+import { get, post } from "requests";
+import { errorAlerter } from "misc";
+import { browserHistory } from "ogsHistory";
 
 import { SvgBouncer } from "SvgBouncer";
 import { Card } from "material";
 
-import { ChallengeDetailsReviewPane } from "ChallengeDetailsReviewPane";
-
+import { Register } from "Register";
 import { Player } from "Player";
-/*
-import { LineText } from "misc-ui";
-import { errorAlerter, ignore } from "misc";
-*/
+
+import { ChallengeDetailsReviewPane } from "ChallengeDetailsReviewPane";
 
 type Challenge = socket_api.seekgraph_global.Challenge;
 
 // Users are intended to arrive here via a challenge-link URL - those point here.
+// This page will display a bouncing OGS logo until the challenge given in search param is loaded.
+// From there, the user can accept the game - going via login or registration if necessary.
 
 export function ChallengeLinkLanding(): JSX.Element {
     const user = data.get("user");
@@ -41,6 +43,42 @@ export function ChallengeLinkLanding(): JSX.Element {
 
     /* State */
     const [linked_challenge, set_linked_challenge] = React.useState<Challenge>(null);
+    const [ask_to_login, set_ask_to_login] = React.useState<boolean>(false);
+
+    /* Actions */
+
+    const doAcceptance = () => {
+        swal({
+            text: "Accepting game...",
+            type: "info",
+            showCancelButton: false,
+            showConfirmButton: false,
+            allowEscapeKey: false,
+        }).catch(swal.noop);
+
+        post("challenges/%%/accept", linked_challenge.challenge_id, {})
+            .then(() => {
+                swal.close();
+                browserHistory.push(`/game/${linked_challenge.game_id}`);
+            })
+            .catch((err) => {
+                swal.close();
+                errorAlerter(err);
+            });
+    };
+
+    const accept = () => {
+        if (logged_in) {
+            doAcceptance();
+        } else {
+            set_ask_to_login(true);
+        }
+    };
+
+    /* Display Logic */
+
+    // ... we need to get the linked challenge, then display it, then have them accept it,
+    // possibly logging in or registering along the way...
 
     const linked_challenge_uuid = new URLSearchParams(location.search).get("linked-challenge");
 
@@ -57,9 +95,15 @@ export function ChallengeLinkLanding(): JSX.Element {
     /* Render */
     return (
         <div id="ChallengeLinkLanding">
-            {logged_in ? "" : <h2>{_("Welcome to OGS!")}</h2>}
+            <h2>
+                {logged_in || ask_to_login
+                    ? "" /* this vertical space intentionally left blank! */
+                    : _("Welcome to OGS!")}
+            </h2>
 
-            {(linked_challenge || null) && (
+            {(!linked_challenge || null) && <SvgBouncer />}
+
+            {((linked_challenge && !ask_to_login) || null) && (
                 <Card>
                     <div className="invitation">
                         <span className="invite-text">
@@ -72,10 +116,26 @@ export function ChallengeLinkLanding(): JSX.Element {
                     </div>
                     <hr />
                     <ChallengeDetailsReviewPane challenge={linked_challenge} />
+                    <hr />
+                    <div className="buttons">
+                        <button onClick={accept} className="primary">
+                            {_("Accept Game")}
+                        </button>
+                    </div>
                 </Card>
             )}
 
-            {(!linked_challenge || null) && <SvgBouncer />}
+            {(ask_to_login || null) && (
+                <>
+                    <span>
+                        {pgettext(
+                            "The person has to chose to register or log in before commencing a game they just accepted",
+                            "Please register or sign in, to commence your game!",
+                        )}
+                    </span>
+                    <Register no_header after_registration={doAcceptance} />
+                </>
+            )}
         </div>
     );
 }
