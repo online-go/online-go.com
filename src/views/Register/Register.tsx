@@ -17,13 +17,17 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
+
 import * as data from "data";
-import { _ } from "translate";
+import { _, pgettext } from "translate";
 import { Card } from "material";
 import { errorAlerter } from "misc";
 import { post } from "requests";
 import { get_ebi } from "SignIn";
 import cached from "cached";
+
+import { LineText } from "misc-ui";
+import { SocialLoginButtons } from "SocialLoginButtons";
 
 export class Register extends React.PureComponent<{}, any> {
     ref_username = React.createRef<HTMLInputElement>();
@@ -37,8 +41,6 @@ export class Register extends React.PureComponent<{}, any> {
 
     register = (event) => {
         const actually_register = () => {
-            console.log("Should be logging in");
-
             post("/api/v0/register", {
                 username: this.ref_username.current.value.trim(),
                 password: this.ref_password.current.value,
@@ -149,74 +151,78 @@ export class Register extends React.PureComponent<{}, any> {
     render() {
         return (
             <div id="Register">
-                <Card>
-                    <h2>{_("Welcome new player!")}</h2>
-                    <form name="login" autoComplete="on">
-                        <label htmlFor="username">
-                            {_("Username") /* translators: New account registration */}
-                        </label>
-                        <input
-                            className="boxed"
-                            id="username"
-                            autoFocus
-                            ref={this.ref_username}
-                            name="username"
-                            onKeyPress={this.register}
-                            onChange={this.validateUsername}
-                        />
-                        {this.state.error && (
-                            <div className="error-message">{this.state.error}</div>
-                        )}
-                        <label htmlFor="password">
-                            {_("Password") /* translators: New account registration */}
-                        </label>
-                        <input
-                            className="boxed"
-                            id="password"
-                            ref={this.ref_password}
-                            type="password"
-                            name="password"
-                            onKeyPress={this.register}
-                        />
-                        <label htmlFor="email">
-                            {_("Email (optional)") /* translators: New account registration */}
-                        </label>
-                        <input
-                            className="boxed"
-                            id="email"
-                            ref={this.ref_email}
-                            type="email"
-                            name="email"
-                            onKeyPress={this.register}
-                        />
-                        <div style={{ textAlign: "right", marginBottom: "1.0rem" }}>
-                            <button className="primary" onClick={this.register}>
-                                <i className="fa fa-sign-in" /> {_("Sign up")}
-                            </button>
-                        </div>
-                    </form>
+                <div>
+                    <Card>
+                        <h2>{_("Welcome new player!")}</h2>
+                        <form name="login" autoComplete="on">
+                            <label htmlFor="username">
+                                {_("Username") /* translators: New account registration */}
+                            </label>
+                            <input
+                                className="boxed"
+                                id="username"
+                                autoFocus
+                                ref={this.ref_username}
+                                name="username"
+                                onKeyPress={this.register}
+                                onChange={this.validateUsername}
+                            />
+                            {this.state.error && (
+                                <div className="error-message">{this.state.error}</div>
+                            )}
+                            <label htmlFor="password">
+                                {_("Password") /* translators: New account registration */}
+                            </label>
+                            <input
+                                className="boxed"
+                                id="password"
+                                ref={this.ref_password}
+                                type="password"
+                                name="password"
+                                onKeyPress={this.register}
+                            />
+                            <label htmlFor="email">
+                                {_("Email (optional)") /* translators: New account registration */}
+                            </label>
+                            <input
+                                className="boxed"
+                                id="email"
+                                ref={this.ref_email}
+                                type="email"
+                                name="email"
+                                onKeyPress={this.register}
+                            />
+                            <div style={{ textAlign: "right", marginBottom: "1.0rem" }}>
+                                <button className="primary" onClick={this.register}>
+                                    <i className="fa fa-sign-in" />
+                                    {pgettext(
+                                        "This is the button they press to register with OGS",
+                                        "Register",
+                                    )}
+                                </button>
+                            </div>
+                        </form>
 
-                    <div className="social-buttons">
-                        <Link to="/sign-in" className="s btn md-icon">
-                            <i className="email-icon fa fa-envelope-o" /> {_("Sign in with Email")}
-                        </Link>
-                        <a href="/login/google-oauth2/" className="s btn md-icon" target="_self">
-                            <span className="google google-oauth2-icon" />{" "}
-                            {_("Sign in with Google")}
-                        </a>
-                        <a href="/login/facebook/" className="s btn md-icon" target="_self">
-                            <span className="facebook facebook-icon" /> {_("Sign in with Facebook")}
-                        </a>
-                        <a href="/login/twitter/" className="s btn md-icon" target="_self">
-                            <i className="twitter twitter-icon fa fa-twitter" />
-                            {_("Sign in with Twitter")}
-                        </a>
-                        <a href="/login/apple-id/" className="s btn md-icon" target="_self">
-                            <i className="twitter apple-id-icon fa fa-apple" />
-                            {_("Sign in with Apple")}
-                        </a>
+                        <hr />
+                        <LineText>
+                            {
+                                _(
+                                    "or sign in using another account:",
+                                ) /* translators: username or password, or sign in with social authentication */
+                            }
+                        </LineText>
+
+                        <SocialLoginButtons />
+                    </Card>
+                    <div className="signin-option">
+                        <h3>{_("Already have an account?")} </h3>
+                        <div>
+                            <Link to="/sign-in" className="btn primary">
+                                <b>{_("Sign-in here!")}</b>
+                            </Link>
+                        </div>
                     </div>
-                </Card>
+                </div>
             </div>
         );
     }
