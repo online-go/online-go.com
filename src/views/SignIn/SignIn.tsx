@@ -97,14 +97,15 @@ export class SignIn extends React.PureComponent<{}, any> {
                     data.remove("appeals.jwt");
                     data.remove("appeals.ban-reason");
 
-                    // The server can detect that the person might have a valid SSO, in which case it
-                    // asks us to redirect to there for them to sign in.
+                    // The username/supplied is not valid, but the server can detect that the person might have a valid SSO,
+                    // in which case it asks us to redirect to there for them to sign in.
                     if ("redirect" in config) {
                         window.location.pathname = config.redirect;
                         return;
                     }
 
                     data.set(cached.config, config);
+
                     if (window.location.hash && window.location.hash[1] === "/") {
                         window.location.pathname = window.location.hash.substr(1);
                     } else {
