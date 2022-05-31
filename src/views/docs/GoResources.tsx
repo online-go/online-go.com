@@ -370,6 +370,11 @@ export const GoResources = () => {
                         {scramble(
                             <BasicResource
                                 countries={[en]}
+                                title="Dsaun Shape Lecture"
+                                href="https://www.youtube.com/watch?v=JKBh8FGK9bU"
+                            />,
+                            <BasicResource
+                                countries={[en]}
                                 title="Go Commentary Videos"
                                 href="http://www.gocommentary.com/free-tutorial-videos.html"
                             />,
