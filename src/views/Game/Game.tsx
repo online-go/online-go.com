@@ -64,8 +64,9 @@ import {
 import { CancelButton } from "./PlayButtons";
 import { GameDock } from "./GameDock";
 import swal from "sweetalert2";
-import { useScore, useShowTitle, useTitle, useUserIsParticipant } from "./GameHooks";
+import { useCurrentMove, useShowTitle, useTitle, useUserIsParticipant } from "./GameHooks";
 import { GobanContainer } from "GobanContainer";
+import { GobanContext } from "./goban_context";
 
 export function Game(): JSX.Element {
     const params = useParams<"game_id" | "review_id" | "move_number">();
@@ -118,7 +119,7 @@ export function Game(): JSX.Element {
     const [show_game_timing, set_show_game_timing] = React.useState(false);
 
     const title = useTitle(goban.current);
-    useScore(goban.current);
+    const cur_move = useCurrentMove(goban.current);
 
     const [mode, set_mode] = React.useState<GobanModes>("play");
     const [score_estimate_winner, set_score_estimate_winner] = React.useState<string>();
@@ -685,7 +686,6 @@ export function Game(): JSX.Element {
                 setAnalyzePencilColor={set_analyze_pencil_color}
                 analyze_pencil_color={analyze_pencil_color}
                 setAnalyzeTool={setAnalyzeTool}
-                goban={goban.current}
                 forceUpdate={forceUpdate}
                 is_review={!!review_id}
                 mode={mode}
@@ -696,7 +696,6 @@ export function Game(): JSX.Element {
     const frag_review_controls = () => (
         <ReviewControls
             mode={mode}
-            goban={goban.current}
             review_id={review_id}
             renderEstimateScore={frag_estimate_score}
             renderAnalyzeButtonBar={frag_analyze_button_bar}
@@ -711,7 +710,6 @@ export function Game(): JSX.Element {
     );
     const frag_play_controls = (show_cancel: boolean) => (
         <PlayControls
-            goban={goban.current}
             show_cancel={show_cancel}
             review_list={review_list}
             stashed_conditional_moves={stashed_conditional_moves.current}
@@ -747,7 +745,7 @@ export function Game(): JSX.Element {
                 <AIReview
                     onAIReviewSelected={(r) => set_selected_ai_review_uuid(r?.uuid)}
                     game_id={game_id}
-                    move={goban.current.engine.cur_move}
+                    move={cur_move}
                     hidden={!ai_review_enabled}
                 />
             );
@@ -922,7 +920,6 @@ export function Game(): JSX.Element {
         }
 
         goban.current = new Goban(opts);
-        game_control.goban = goban.current;
         onResize(true);
         window["global_goban"] = goban.current;
         if (review_id) {
@@ -1316,7 +1313,6 @@ export function Game(): JSX.Element {
                 console.error(e.stack);
             }
             goban.current = null;
-            game_control.goban = null;
             if (resize_debounce.current) {
                 clearTimeout(resize_debounce.current);
                 resize_debounce.current = null;
@@ -1351,7 +1347,6 @@ export function Game(): JSX.Element {
         <GameChat
             selected_chat_log={selected_chat_log}
             onSelectedChatModeChange={set_selected_chat_log}
-            goban={goban.current}
             channel={game_id ? `game-${game_id}` : `review-${review_id}`}
             game_id={game_id}
             review_id={review_id}
@@ -1370,75 +1365,16 @@ export function Game(): JSX.Element {
                     (squashed ? "squashed" : "")
                 }
             >
-                {frag_kb_shortcuts()}
-                <i onClick={toggleZenMode} className="leave-zen-mode-button ogs-zen-mode"></i>
+                <GobanContext.Provider value={goban.current}>
+                    {frag_kb_shortcuts()}
+                    <i onClick={toggleZenMode} className="leave-zen-mode-button ogs-zen-mode"></i>
 
-                <div className="align-row-start"></div>
-                <div className="left-col"></div>
+                    <div className="align-row-start"></div>
+                    <div className="left-col"></div>
 
-                <div className="center-col">
-                    {(view_mode === "portrait" || null) && (
-                        <PlayerCards
-                            goban={goban.current}
-                            historical_black={historical_black}
-                            historical_white={historical_white}
-                            estimating_score={estimating_score}
-                            zen_mode={zen_mode}
-                        />
-                    )}
-
-                    <GobanContainer goban={goban.current} onResize={onResize} />
-
-                    {frag_below_board_controls()}
-
-                    {((view_mode === "square" && !squashed) || null) && CHAT}
-
-                    {((view_mode === "portrait" && !zen_mode) || null) && frag_ai_review()}
-
-                    {(view_mode === "portrait" || null) &&
-                        (review ? frag_review_controls() : frag_play_controls(false))}
-
-                    {((view_mode === "portrait" && !zen_mode) || null) && CHAT}
-
-                    {((view_mode === "portrait" &&
-                        !zen_mode &&
-                        user_is_player &&
-                        phase !== "finished") ||
-                        null) && <CancelButton goban={goban.current} className="bold reject" />}
-
-                    {((view_mode === "portrait" && !zen_mode) || null) && (
-                        <GameDock
-                            goban={goban.current}
-                            annulled={annulled}
-                            review_id={review_id}
-                            game_id={game_id}
-                            selected_ai_review_uuid={selected_ai_review_uuid}
-                            tournament_id={tournament_id.current}
-                            ladder_id={ladder_id.current}
-                            ai_review_enabled={ai_review_enabled}
-                            historical_black={historical_black}
-                            historical_white={historical_white}
-                            onZenClicked={toggleZenMode}
-                            onCoordinatesClicked={toggleCoordinates}
-                            onAIReviewClicked={toggleAIReview}
-                            onAnalyzeClicked={gameAnalyze}
-                            onConditionalMovesClicked={enterConditionalMovePlanner}
-                            onPauseClicked={pauseGame}
-                            onEstimateClicked={estimateScore}
-                            onGameAnnulled={set_annulled}
-                            onTimingClicked={toggleShowTiming}
-                            onCoordinatesMarked={gameLogModalMarkCoords}
-                            onReviewClicked={startReview}
-                        />
-                    )}
-                </div>
-
-                {(view_mode !== "portrait" || null) && (
-                    <div className="right-col">
-                        {(zen_mode || null) && <div className="align-col-start"></div>}
-                        {(view_mode === "square" || view_mode === "wide" || null) && (
+                    <div className="center-col">
+                        {(view_mode === "portrait" || null) && (
                             <PlayerCards
-                                goban={goban.current}
                                 historical_black={historical_black}
                                 historical_white={historical_white}
                                 estimating_score={estimating_score}
@@ -1446,48 +1382,105 @@ export function Game(): JSX.Element {
                             />
                         )}
 
-                        {(view_mode === "square" || view_mode === "wide" || null) &&
+                        <GobanContainer goban={goban.current} onResize={onResize} />
+
+                        {frag_below_board_controls()}
+
+                        {((view_mode === "square" && !squashed) || null) && CHAT}
+
+                        {((view_mode === "portrait" && !zen_mode) || null) && frag_ai_review()}
+
+                        {(view_mode === "portrait" || null) &&
+                            (review ? frag_review_controls() : frag_play_controls(false))}
+
+                        {((view_mode === "portrait" && !zen_mode) || null) && CHAT}
+
+                        {((view_mode === "portrait" &&
                             !zen_mode &&
-                            frag_ai_review()}
+                            user_is_player &&
+                            phase !== "finished") ||
+                            null) && <CancelButton className="bold reject" />}
 
-                        {(view_mode === "square" || view_mode === "wide" || null) &&
-                            show_game_timing &&
-                            frag_timings()}
-
-                        {review ? frag_review_controls() : frag_play_controls(true)}
-
-                        {(view_mode === "wide" || null) && CHAT}
-                        {((view_mode === "square" && squashed) || null) && CHAT}
-                        {((view_mode === "square" && squashed) || null) && CHAT}
-
-                        <GameDock
-                            goban={goban.current}
-                            annulled={annulled}
-                            review_id={review_id}
-                            game_id={game_id}
-                            selected_ai_review_uuid={selected_ai_review_uuid}
-                            tournament_id={tournament_id.current}
-                            ladder_id={ladder_id.current}
-                            ai_review_enabled={ai_review_enabled}
-                            historical_black={historical_black}
-                            historical_white={historical_white}
-                            onZenClicked={toggleZenMode}
-                            onCoordinatesClicked={toggleCoordinates}
-                            onAIReviewClicked={toggleAIReview}
-                            onAnalyzeClicked={gameAnalyze}
-                            onConditionalMovesClicked={enterConditionalMovePlanner}
-                            onPauseClicked={pauseGame}
-                            onEstimateClicked={estimateScore}
-                            onGameAnnulled={set_annulled}
-                            onTimingClicked={toggleShowTiming}
-                            onCoordinatesMarked={gameLogModalMarkCoords}
-                            onReviewClicked={startReview}
-                        />
-                        {(zen_mode || null) && <div className="align-col-end"></div>}
+                        {((view_mode === "portrait" && !zen_mode) || null) && (
+                            <GameDock
+                                annulled={annulled}
+                                review_id={review_id}
+                                game_id={game_id}
+                                selected_ai_review_uuid={selected_ai_review_uuid}
+                                tournament_id={tournament_id.current}
+                                ladder_id={ladder_id.current}
+                                ai_review_enabled={ai_review_enabled}
+                                historical_black={historical_black}
+                                historical_white={historical_white}
+                                onZenClicked={toggleZenMode}
+                                onCoordinatesClicked={toggleCoordinates}
+                                onAIReviewClicked={toggleAIReview}
+                                onAnalyzeClicked={gameAnalyze}
+                                onConditionalMovesClicked={enterConditionalMovePlanner}
+                                onPauseClicked={pauseGame}
+                                onEstimateClicked={estimateScore}
+                                onGameAnnulled={set_annulled}
+                                onTimingClicked={toggleShowTiming}
+                                onCoordinatesMarked={gameLogModalMarkCoords}
+                                onReviewClicked={startReview}
+                            />
+                        )}
                     </div>
-                )}
 
-                <div className="align-row-end"></div>
+                    {(view_mode !== "portrait" || null) && (
+                        <div className="right-col">
+                            {(zen_mode || null) && <div className="align-col-start"></div>}
+                            {(view_mode === "square" || view_mode === "wide" || null) && (
+                                <PlayerCards
+                                    historical_black={historical_black}
+                                    historical_white={historical_white}
+                                    estimating_score={estimating_score}
+                                    zen_mode={zen_mode}
+                                />
+                            )}
+
+                            {(view_mode === "square" || view_mode === "wide" || null) &&
+                                !zen_mode &&
+                                frag_ai_review()}
+
+                            {(view_mode === "square" || view_mode === "wide" || null) &&
+                                show_game_timing &&
+                                frag_timings()}
+
+                            {review ? frag_review_controls() : frag_play_controls(true)}
+
+                            {(view_mode === "wide" || null) && CHAT}
+                            {((view_mode === "square" && squashed) || null) && CHAT}
+                            {((view_mode === "square" && squashed) || null) && CHAT}
+
+                            <GameDock
+                                annulled={annulled}
+                                review_id={review_id}
+                                game_id={game_id}
+                                selected_ai_review_uuid={selected_ai_review_uuid}
+                                tournament_id={tournament_id.current}
+                                ladder_id={ladder_id.current}
+                                ai_review_enabled={ai_review_enabled}
+                                historical_black={historical_black}
+                                historical_white={historical_white}
+                                onZenClicked={toggleZenMode}
+                                onCoordinatesClicked={toggleCoordinates}
+                                onAIReviewClicked={toggleAIReview}
+                                onAnalyzeClicked={gameAnalyze}
+                                onConditionalMovesClicked={enterConditionalMovePlanner}
+                                onPauseClicked={pauseGame}
+                                onEstimateClicked={estimateScore}
+                                onGameAnnulled={set_annulled}
+                                onTimingClicked={toggleShowTiming}
+                                onCoordinatesMarked={gameLogModalMarkCoords}
+                                onReviewClicked={startReview}
+                            />
+                            {(zen_mode || null) && <div className="align-col-end"></div>}
+                        </div>
+                    )}
+
+                    <div className="align-row-end"></div>
+                </GobanContext.Provider>
             </div>
         </div>
     );

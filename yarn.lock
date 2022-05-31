@@ -2423,6 +2423,11 @@ ci-info@^3.3.0:
   resolved "https://registry.yarnpkg.com/ci-info/-/ci-info-3.3.1.tgz#58331f6f472a25fe3a50a351ae3052936c2c7f32"
   integrity sha512-SXgeMX9VwDe7iFFaEWkA5AstuER9YKqy4EhHqr4DVqkwmD9rpVimkMKWHdjn30Ja45txyjhSn63lVX69eVCckg==
 
+circular-dependency-plugin@^5.2.2:
+  version "5.2.2"
+  resolved "https://registry.yarnpkg.com/circular-dependency-plugin/-/circular-dependency-plugin-5.2.2.tgz#39e836079db1d3cf2f988dc48c5188a44058b600"
+  integrity sha512-g38K9Cm5WRwlaH6g03B9OEz/0qRizI+2I7n+Gz+L5DxXJAPAiWQvwlYNm1V1jkdpUv95bOe/ASm2vfi/G560jQ==
+
 cjs-module-lexer@^0.6.0:
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/cjs-module-lexer/-/cjs-module-lexer-0.6.0.tgz#4186fcca0eae175970aee870b9fe2d6cf8d5655f"
@@ -4678,10 +4683,10 @@ glogg@^1.0.0:
   dependencies:
     sparkles "^1.0.0"
 
-goban@=0.5.92:
-  version "0.5.92"
-  resolved "https://registry.yarnpkg.com/goban/-/goban-0.5.92.tgz#57bf17b796e143c5dbede97165f86040f05a9337"
-  integrity sha512-SHN10QUj0YkXPSFAIDOaqJSPjOC/81+6uIeYHjISE0motGWfs2Ot1d1LNkhv9W7p+odesqhCihpXZLSpEWQWbQ==
+goban@=0.5.93:
+  version "0.5.93"
+  resolved "https://registry.yarnpkg.com/goban/-/goban-0.5.93.tgz#a16e79c3d158d087531726dd1817634be1eac05b"
+  integrity sha512-N84feCrv3ka5yKYLT/GB9zGE5q5j8qsrhDjZbZBtTG8jABXkLllYpkjxoxV7t51/xEF1XV5WkSpECuafbq/oWA==
 
 graceful-fs@4.X, graceful-fs@^4.0.0, graceful-fs@^4.1.11, graceful-fs@^4.1.2, graceful-fs@^4.1.6, graceful-fs@^4.2.0, graceful-fs@^4.2.4, graceful-fs@^4.2.9:
   version "4.2.10"

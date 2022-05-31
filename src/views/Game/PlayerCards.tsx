@@ -28,11 +28,11 @@ import { _, interpolate, ngettext } from "translate";
 import * as data from "data";
 import { generateGobanHook, usePlayerToMove, useShowTitle, useTitle } from "./GameHooks";
 import { get_network_latency, get_clock_drift } from "sockets";
+import { useGoban } from "./goban_context";
 
 type PlayerType = rest_api.games.Player;
 
 interface PlayerCardsProps {
-    goban: Goban;
     historical_black: PlayerType;
     historical_white: PlayerType;
     estimating_score: boolean;
@@ -40,12 +40,12 @@ interface PlayerCardsProps {
 }
 
 export function PlayerCards({
-    goban,
     historical_black,
     historical_white,
     estimating_score,
     zen_mode,
 }: PlayerCardsProps): JSX.Element {
+    const goban = useGoban();
     const engine = goban.engine;
 
     const orig_marks = React.useRef<string | null>(null);

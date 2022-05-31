@@ -102,6 +102,12 @@ export const useCurrentMoveNumber = generateGobanHook(
     ["cur_move"],
 );
 
+/** React hook that returns the current move tree from goban */
+export const useCurrentMove = generateGobanHook(
+    (goban: GobanCore | null) => goban?.engine.cur_move,
+    ["cur_move"],
+);
+
 /** React hook that returns the current player whose move it is.
  *
  * @returns the player ID of the player whose turn it is.
@@ -124,14 +130,3 @@ export const useShowTitle = generateGobanHook(
 
 /** React hook that returns the title text (e.g. "Black to move"). */
 export const useTitle = generateGobanHook((goban: GobanCore | null) => goban?.title, ["title"]);
-
-export const useScore = generateGobanHook(
-    (goban: GobanCore) => {
-        if (!goban) {
-            return;
-        }
-        const engine = goban.engine;
-        return engine.computeScore(true);
-    },
-    ["cur_move"],
-);

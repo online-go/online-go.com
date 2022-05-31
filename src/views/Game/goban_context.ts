@@ -15,25 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.BanModal {
-    width: 30rem;
-    height: 30rem
-    max-height: 90vh;
-    max-width: 90vw;
-    text-align: center;
+import * as React from "react";
+import { Goban } from "goban";
 
-    .player-name {
-        font-size: 1.5rem;
-        margin: auto;
-        padding-bottom: 1rem;
+export const GobanContext = React.createContext<Goban | null>(null);
+
+/**
+ * A React hook that provides the goban.
+ *
+ * Throws if a goban is not set.
+ */
+export function useGoban(): Goban {
+    const goban = React.useContext(GobanContext);
+
+    if (goban === null) {
+        throw TypeError("useContext: goban is null.");
+    }
+    if (!goban) {
+        throw TypeError("GobanContext was not set.");
     }
 
-    .Modal-content {
-        textarea {
-            width: 100%;
-        }
-    }
-    .rdt { // react date time
-        margin-bottom: 0.5rem;
-    }
+    return goban;
 }

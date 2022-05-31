@@ -48,10 +48,9 @@ import {
     useShowUndoRequested,
     useUserIsParticipant,
 } from "./GameHooks";
+import { useGoban } from "./goban_context";
 
 interface PlayControlsProps {
-    goban: Goban;
-
     // Cancel buttons are in props because the Cancel Button is placed below
     // chat on mobile.
     show_cancel: boolean;
@@ -89,7 +88,6 @@ interface PlayControlsProps {
 
 export function PlayControls({
     show_cancel,
-    goban,
     review_list,
     stashed_conditional_moves,
     mode,
@@ -109,6 +107,7 @@ export function PlayControls({
     stopEstimatingScore,
 }: PlayControlsProps): JSX.Element {
     const user = data.get("user");
+    const goban = useGoban();
     const engine = goban.engine;
 
     const user_is_active_player = [engine.players.black.id, engine.players.white.id].includes(
@@ -277,7 +276,7 @@ export function PlayControls({
         <div className="play-controls">
             <div className="game-action-buttons">
                 {mode === "play" && phase === "play" && user_is_player && (
-                    <PlayButtons goban={goban} show_cancel={show_cancel} />
+                    <PlayButtons show_cancel={show_cancel} />
                 )}
             </div>
             <div className="game-state">
@@ -687,7 +686,6 @@ export function EstimateScore({
 }
 
 interface AnalyzeButtonBarProps {
-    goban: Goban;
     setAnalyzeTool: (tool: AnalysisTool, subtool: string) => boolean;
     setAnalyzePencilColor: (color: string) => void;
     analyze_pencil_color: string;
@@ -700,7 +698,6 @@ interface AnalyzeButtonBarProps {
     forceUpdate: (nonce: number) => void;
 }
 export function AnalyzeButtonBar({
-    goban,
     setAnalyzeTool,
     setAnalyzePencilColor,
     analyze_pencil_color,
@@ -711,6 +708,9 @@ export function AnalyzeButtonBar({
 }: AnalyzeButtonBarProps) {
     const [analyze_tool, set_analyze_tool] = React.useState<AnalysisTool>();
     const [analyze_subtool, set_analyze_subtool] = React.useState<string>();
+
+    const goban = useGoban();
+
     React.useEffect(() => {
         goban.on("load", () => {
             set_analyze_tool(goban.analyze_tool);
@@ -1001,7 +1001,6 @@ export function deleteBranch(goban: Goban, mode: GobanModes) {
 
 interface ReviewControlsProps {
     mode: GobanModes;
-    goban: GobanCore;
     review_id: number;
     renderEstimateScore: () => JSX.Element;
     renderAnalyzeButtonBar: () => JSX.Element;
@@ -1040,7 +1039,6 @@ const useReviewOutOfSync = generateGobanHook(
 );
 
 export function ReviewControls({
-    goban,
     mode,
     review_id,
     renderAnalyzeButtonBar,
@@ -1054,6 +1052,7 @@ export function ReviewControls({
     selected_chat_log,
 }: ReviewControlsProps) {
     const user = data.get("user");
+    const goban = useGoban();
 
     const review_owner_id = useReviewOwnerId(goban);
     const review_controller_id = useReviewControllerId(goban);

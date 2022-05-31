@@ -15,25 +15,4 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.BanModal {
-    width: 30rem;
-    height: 30rem
-    max-height: 90vh;
-    max-width: 90vw;
-    text-align: center;
-
-    .player-name {
-        font-size: 1.5rem;
-        margin: auto;
-        padding-bottom: 1rem;
-    }
-
-    .Modal-content {
-        textarea {
-            width: 100%;
-        }
-    }
-    .rdt { // react date time
-        margin-bottom: 0.5rem;
-    }
-}
+export * from "./SocialLoginButtons";

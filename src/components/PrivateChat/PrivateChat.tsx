@@ -24,7 +24,7 @@ import ITC from "ITC";
 import { splitOnBytes, unicodeFilter } from "misc";
 import { profanity_filter } from "profanity_filter";
 import { player_is_ignored } from "BlockPlayer";
-import { emitNotification } from "Notifications";
+import { emitNotification } from "Notifications/NotificationManager";
 import { PlayerCacheEntry } from "player_cache";
 import * as player_cache from "player_cache";
 import online_status from "online_status";

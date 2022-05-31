@@ -18,7 +18,6 @@
 import * as React from "react";
 import * as data from "data";
 import * as preferences from "preferences";
-import { Goban } from "goban";
 import { api1, post, del } from "requests";
 import { Dock } from "Dock";
 import { Link } from "react-router-dom";
@@ -28,15 +27,15 @@ import { openGameLinkModal } from "./GameLinkModal";
 import { openGameLogModal } from "./GameLogModal";
 import { sfx } from "sfx";
 import swal from "sweetalert2";
-import { challengeFromBoardPosition } from "ChallengeModal";
+import { challengeFromBoardPosition } from "ChallengeModal/ForkModal";
 import { errorAlerter, ignore } from "misc";
 import { openReport } from "Report";
 import { game_control } from "./game_control";
 import { openGameInfoModal } from "./GameInfoModal";
 import { useUserIsParticipant } from "./GameHooks";
+import { useGoban } from "./goban_context";
 
 interface DockProps {
-    goban: Goban;
     annulled: boolean;
     review_id?: number;
     game_id?: number;
@@ -59,7 +58,6 @@ interface DockProps {
     onReviewClicked: () => void;
 }
 export function GameDock({
-    goban,
     annulled,
     review_id,
     game_id,
@@ -81,6 +79,7 @@ export function GameDock({
     onCoordinatesMarked,
     onReviewClicked,
 }: DockProps): JSX.Element {
+    const goban = useGoban();
     const engine = goban.engine;
     const phase = engine.phase;
 

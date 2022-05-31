@@ -17,23 +17,23 @@
 
 import * as React from "react";
 import { _ } from "translate";
-import { Goban, GobanCore, JGOFNumericPlayerColor } from "goban";
+import { JGOFNumericPlayerColor } from "goban";
 import { isLiveGame } from "TimeControl";
 import * as preferences from "preferences";
 import * as data from "data";
 import { game_control } from "./game_control";
 import swal from "sweetalert2";
 import { useCurrentMoveNumber, usePlayerToMove, useShowUndoRequested } from "./GameHooks";
+import { useGoban } from "./goban_context";
 
 interface PlayButtonsProps {
-    goban: Goban;
-
     // This option exists because Cancel Button is placed below
     // chat on mobile layouts.
     show_cancel?: boolean;
 }
 
-export function PlayButtons({ goban, show_cancel = true }: PlayButtonsProps): JSX.Element {
+export function PlayButtons({ show_cancel = true }: PlayButtonsProps): JSX.Element {
+    const goban = useGoban();
     const engine = goban.engine;
     const phase = engine.phase;
 
@@ -156,9 +156,7 @@ export function PlayButtons({ goban, show_cancel = true }: PlayButtonsProps): JS
                 )}
             </span>
             <span>
-                {show_cancel && phase !== "finished" && (
-                    <CancelButton goban={goban} className={"bold xs"} />
-                )}
+                {show_cancel && phase !== "finished" && <CancelButton className={"bold xs"} />}
             </span>
         </span>
     );
@@ -166,9 +164,9 @@ export function PlayButtons({ goban, show_cancel = true }: PlayButtonsProps): JS
 
 interface CancelButtonProps {
     className?: string;
-    goban: GobanCore;
 }
-export function CancelButton({ className = "", goban }: CancelButtonProps) {
+export function CancelButton({ className = "" }: CancelButtonProps) {
+    const goban = useGoban();
     const [resign_mode, set_resign_mode] = React.useState<"cancel" | "resign">();
     React.useEffect(() => {
         const sync_resign_mode = () => {

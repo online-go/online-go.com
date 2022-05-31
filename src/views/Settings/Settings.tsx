@@ -46,7 +46,7 @@ import { IAssociation, associations } from "associations";
 import { BlockPlayerModal, getAllBlocksWithUsernames } from "BlockPlayer";
 import { Player } from "Player";
 import { PaginatedTable } from "PaginatedTable";
-import { SocialLoginButtons } from "SignIn";
+import { SocialLoginButtons } from "SocialLoginButtons";
 import swal from "sweetalert2";
 
 export const MAX_DOCK_DELAY = 3.0;

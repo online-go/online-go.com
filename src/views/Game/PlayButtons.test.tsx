@@ -3,6 +3,7 @@ import { CancelButton, PlayButtons } from "./PlayButtons";
 import { act, cleanup, fireEvent, render, screen /* waitFor */ } from "@testing-library/react";
 import * as React from "react";
 import * as data from "data";
+import { GobanContext } from "./goban_context";
 
 const LOGGED_IN_USER = {
     anonymous: false,
@@ -63,7 +64,11 @@ describe("CancelButton", () => {
     test('says "Cancel game" in the first 6 moves.', () => {
         const goban = new Goban(LESS_THAN_SIX_MOVES);
 
-        render(<CancelButton goban={goban} />);
+        render(
+            <GobanContext.Provider value={goban}>
+                <CancelButton />
+            </GobanContext.Provider>,
+        );
 
         expect(screen.getByText("Cancel game")).toBeDefined();
         expect(screen.queryByText("Resign")).toBeNull();
@@ -72,7 +77,11 @@ describe("CancelButton", () => {
     test('says "Resign" after 6 moves', () => {
         const goban = new Goban(MORE_THAN_SIX_MOVES);
 
-        render(<CancelButton goban={goban} />);
+        render(
+            <GobanContext.Provider value={goban}>
+                <CancelButton />
+            </GobanContext.Provider>,
+        );
 
         expect(screen.getByText("Resign")).toBeDefined();
         expect(screen.queryByText("Cancel game")).toBeNull();
@@ -94,7 +103,11 @@ describe("CancelButton", () => {
             },
         });
 
-        render(<CancelButton goban={goban} />);
+        render(
+            <GobanContext.Provider value={goban}>
+                <CancelButton />
+            </GobanContext.Provider>,
+        );
 
         act(() => {
             goban.engine.place(10, 10);
@@ -115,7 +128,11 @@ describe("CancelButton", () => {
         const goban = new Goban(LESS_THAN_SIX_MOVES);
         const cancel_spy = spyOn(goban, "cancelGame");
 
-        render(<CancelButton goban={goban} />);
+        render(
+            <GobanContext.Provider value={goban}>
+                <CancelButton />
+            </GobanContext.Provider>,
+        );
         fireEvent.click(screen.getByText("Cancel game"));
 
         expect(screen.getByText(/Are you sure.*cancel.*?/)).toBeDefined();
@@ -130,7 +147,11 @@ describe("CancelButton", () => {
         const goban = new Goban(MORE_THAN_SIX_MOVES);
         const resign_spy = spyOn(goban, "resign");
 
-        render(<CancelButton goban={goban} />);
+        render(
+            <GobanContext.Provider value={goban}>
+                <CancelButton />
+            </GobanContext.Provider>,
+        );
         fireEvent.click(screen.getByText("Resign"));
 
         expect(screen.getByText(/Are you sure.*resign.*?/)).toBeDefined();
@@ -158,7 +179,11 @@ describe("CancelButton", () => {
             rengo_casual_mode: true,
         });
         const resign_spy = spyOn(goban, "resign");
-        render(<CancelButton goban={goban} />);
+        render(
+            <GobanContext.Provider value={goban}>
+                <CancelButton />
+            </GobanContext.Provider>,
+        );
         fireEvent.click(screen.getByText("Resign"));
         expect(screen.getByText(/Are you sure.*abandon.*?/)).toBeDefined();
         fireEvent.click(screen.getByText("Yes"));
@@ -171,7 +196,11 @@ describe("CancelButton", () => {
         const goban = new Goban(MORE_THAN_SIX_MOVES);
         const resign_spy = spyOn(goban, "resign");
 
-        render(<CancelButton goban={goban} />);
+        render(
+            <GobanContext.Provider value={goban}>
+                <CancelButton />
+            </GobanContext.Provider>,
+        );
         fireEvent.click(screen.getByText("Resign"));
 
         expect(screen.getByText(/Are you sure.*resign.*?/)).toBeDefined();
@@ -199,7 +228,11 @@ describe("PlayButtons", () => {
             },
         });
 
-        render(<PlayButtons goban={goban} />);
+        render(
+            <GobanContext.Provider value={goban}>
+                <PlayButtons />
+            </GobanContext.Provider>,
+        );
 
         // Present
         expect(screen.getByText("Cancel game")).toBeDefined();
@@ -225,7 +258,11 @@ describe("PlayButtons", () => {
             },
         });
 
-        render(<PlayButtons goban={goban} />);
+        render(
+            <GobanContext.Provider value={goban}>
+                <PlayButtons />
+            </GobanContext.Provider>,
+        );
 
         // Present
         expect(screen.getByText("Cancel game")).toBeDefined();
@@ -251,7 +288,11 @@ describe("PlayButtons", () => {
             },
         });
         goban.engine.undo_requested = 4;
-        render(<PlayButtons goban={goban} />);
+        render(
+            <GobanContext.Provider value={goban}>
+                <PlayButtons />
+            </GobanContext.Provider>,
+        );
 
         // Present
         expect(screen.getByText("Cancel game")).toBeDefined();
@@ -276,7 +317,11 @@ describe("PlayButtons", () => {
                 white: { id: 456, username: "test_user2" },
             },
         });
-        render(<PlayButtons goban={goban} />);
+        render(
+            <GobanContext.Provider value={goban}>
+                <PlayButtons />
+            </GobanContext.Provider>,
+        );
 
         act(() => {
             goban.engine.undo_requested = 4;
@@ -309,7 +354,11 @@ describe("PlayButtons", () => {
         // usually this is set by a tap event, but I don't really
         // want to mess with GobanCanvas in these tests.
         goban.submit_move = jest.fn();
-        render(<PlayButtons goban={goban} />);
+        render(
+            <GobanContext.Provider value={goban}>
+                <PlayButtons />
+            </GobanContext.Provider>,
+        );
 
         // Present
         expect(screen.getByText("Cancel game")).toBeDefined();
@@ -339,7 +388,11 @@ describe("PlayButtons", () => {
             rengo: true,
         });
 
-        render(<PlayButtons goban={goban} />);
+        render(
+            <GobanContext.Provider value={goban}>
+                <PlayButtons />
+            </GobanContext.Provider>,
+        );
 
         // Present
         expect(screen.getByText("Cancel game")).toBeDefined();
@@ -359,7 +412,11 @@ describe("PlayButtons", () => {
             },
         });
 
-        render(<PlayButtons goban={goban} />);
+        render(
+            <GobanContext.Provider value={goban}>
+                <PlayButtons />
+            </GobanContext.Provider>,
+        );
 
         // Present
         expect(screen.getByText("Cancel game")).toBeDefined();
@@ -384,7 +441,11 @@ describe("PlayButtons", () => {
             },
         });
 
-        render(<PlayButtons goban={goban} />);
+        render(
+            <GobanContext.Provider value={goban}>
+                <PlayButtons />
+            </GobanContext.Provider>,
+        );
 
         // go back two moves
         act(() => {
@@ -410,7 +471,11 @@ describe("PlayButtons", () => {
             },
         });
 
-        render(<PlayButtons goban={goban} />);
+        render(
+            <GobanContext.Provider value={goban}>
+                <PlayButtons />
+            </GobanContext.Provider>,
+        );
         // opponent requests undo
         act(() => {
             goban.engine.undo_requested = 4;

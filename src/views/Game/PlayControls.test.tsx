@@ -3,6 +3,7 @@ import { PlayControls } from "./PlayControls";
 import { render, screen } from "@testing-library/react";
 import * as React from "react";
 import * as data from "data";
+import { GobanContext } from "./goban_context";
 
 const TEST_USER = {
     anonymous: false,
@@ -81,7 +82,11 @@ test("No moves have been played", () => {
     });
     data.set("user", TEST_USER);
 
-    render(<PlayControls goban={goban} {...PLAY_CONTROLS_DEFAULTS} />);
+    render(
+        <GobanContext.Provider value={goban}>
+            <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
+        </GobanContext.Provider>,
+    );
 
     expect(screen.getByText("Cancel game")).toBeDefined();
     expect(screen.queryByText("Undo")).toBeNull();
@@ -94,7 +99,11 @@ test("Don't render play buttons if user is not a player", () => {
     const goban = new Goban({ game_id: 1234 });
     data.set("user", TEST_USER);
 
-    render(<PlayControls goban={goban} {...PLAY_CONTROLS_DEFAULTS} />);
+    render(
+        <GobanContext.Provider value={goban}>
+            <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
+        </GobanContext.Provider>,
+    );
 
     expect(screen.queryByText("Resign")).toBeNull();
     expect(screen.queryByText("Undo")).toBeNull();
@@ -121,7 +130,11 @@ test("Renders undo if it is not the players turn", () => {
     });
     data.set("user", TEST_USER);
 
-    render(<PlayControls goban={goban} {...PLAY_CONTROLS_DEFAULTS} />);
+    render(
+        <GobanContext.Provider value={goban}>
+            <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
+        </GobanContext.Provider>,
+    );
 
     expect(screen.getByText("Undo")).toBeDefined();
     expect(screen.queryByText("Accept Undo")).toBeNull();
@@ -146,7 +159,11 @@ test("Renders accept undo if undo requested", () => {
     goban.engine.undo_requested = 3;
     data.set("user", TEST_USER);
 
-    render(<PlayControls goban={goban} {...PLAY_CONTROLS_DEFAULTS} />);
+    render(
+        <GobanContext.Provider value={goban}>
+            <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
+        </GobanContext.Provider>,
+    );
 
     expect(screen.queryByText("Undo")).toBeNull();
     expect(screen.getByText("Accept Undo")).toBeDefined();
@@ -170,7 +187,11 @@ test("Renders Pass if it is the user's turn", () => {
     goban.engine.undo_requested = 3;
     data.set("user", TEST_USER);
 
-    render(<PlayControls goban={goban} {...PLAY_CONTROLS_DEFAULTS} />);
+    render(
+        <GobanContext.Provider value={goban}>
+            <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
+        </GobanContext.Provider>,
+    );
 
     expect(screen.getByText("Pass")).toBeDefined();
 });

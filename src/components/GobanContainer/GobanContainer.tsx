@@ -20,7 +20,8 @@ import { PersistentElement } from "PersistentElement";
 import ReactResizeDetector from "react-resize-detector";
 import { GobanCanvas, GobanCanvasConfig } from "goban";
 // Pull this out its own util
-import { goban_view_mode } from "Game";
+import { goban_view_mode } from "Game/util";
+import { generateGobanHook } from "Game/GameHooks";
 
 interface GobanContainerProps {
     goban?: GobanCanvas;
@@ -110,12 +111,8 @@ export function GobanContainer({
         recenterGoban();
     };
 
-    React.useEffect(() => {
-        if (!goban) {
-            return;
-        }
-        onResize(/* no_debounce */ true, /* do_cb */ false);
-    }, [goban]);
+    // Trigger resize on new Goban and subsequent "load" events
+    generateGobanHook(() => onResize(/* no_debounce */ true, /* do_cb */ false))(goban);
 
     if (!goban || !goban_div) {
         return <React.Fragment />;

@@ -42,9 +42,10 @@ import { Size } from "src/lib/types";
 
 import { RengoManagementPane } from "RengoManagementPane";
 import { RengoTeamManagementPane } from "RengoTeamManagementPane";
+import { nominateForRengoChallenge } from "./util";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
-type Challenge = socket_api.seekgraph_global.Challenge;
+export type Challenge = socket_api.seekgraph_global.Challenge;
 
 interface PlayState {
     live_list: Array<Challenge>;
@@ -1402,28 +1403,7 @@ function challenge_sort(A: Challenge, B: Challenge) {
     return A.challenge_id - B.challenge_id;
 }
 
-// This is used by the SeekGraph to perform this function as well as this page...
-
-export function nominateForRengoChallenge(C: Challenge) {
-    swal({
-        text: _("Joining..."), // translator: the server is processing their request to join a rengo game
-        type: "info",
-        showCancelButton: false,
-        showConfirmButton: false,
-        allowEscapeKey: false,
-    }).catch(swal.noop);
-
-    put("challenges/%%/join", C.challenge_id, {})
-        .then(() => {
-            swal.close();
-        })
-        .catch((err) => {
-            swal.close();
-            errorAlerter(err);
-        });
-}
-
-function time_per_move_challenge_sort(A: Challenge, B: Challenge) {
+export function time_per_move_challenge_sort(A: Challenge, B: Challenge) {
     const comparison = Math.sign(A.time_per_move - B.time_per_move);
 
     if (comparison) {

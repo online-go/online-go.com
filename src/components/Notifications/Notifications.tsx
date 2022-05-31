@@ -28,9 +28,7 @@ import { FabX, FabCheck } from "material";
 import { deepEqual } from "misc";
 import { isLiveGame, durationString } from "TimeControl";
 
-import { NotificationManager } from "./NotificationManager";
-
-export const notification_manager: NotificationManager = new NotificationManager();
+import { notification_manager } from "./NotificationManager";
 
 /* TODO: This should be removed once we are happy with the new nav bar style,
  * as we use the NotificationIndicator component for that system */

@@ -101,3 +101,10 @@ export class ForkModal extends Modal<Events, ForkModalProperties, any> {
 export function openForkModal(goban) {
     return openModal(<ForkModal goban={goban} />);
 }
+export function challengeFromBoardPosition(goban) {
+    if (!goban) {
+        return;
+    }
+
+    openForkModal(goban);
+}

@@ -26,6 +26,8 @@ import { post } from "requests";
 import cached from "cached";
 import { Md5 } from "ts-md5/dist/md5";
 
+import { SocialLoginButtons } from "SocialLoginButtons";
+
 window["Md5"] = Md5;
 import swal from "sweetalert2";
 
@@ -180,10 +182,6 @@ export class SignIn extends React.PureComponent<{}, any> {
     };
 
     render() {
-        const test = window.location.pathname;
-
-        console.log(test);
-
         return (
             <div id="SignIn">
                 <div>
@@ -220,6 +218,7 @@ export class SignIn extends React.PureComponent<{}, any> {
                             </div>
                         </form>
 
+                        <hr />
                         <LineText>
                             {
                                 _(
@@ -227,7 +226,7 @@ export class SignIn extends React.PureComponent<{}, any> {
                                 ) /* translators: username or password, or sign in with social authentication */
                             }
                         </LineText>
-                        <SocialLoginButtons next_url={test} />
+                        <SocialLoginButtons />
                     </Card>
 
                     <div className="registration">
@@ -244,35 +243,4 @@ export class SignIn extends React.PureComponent<{}, any> {
             </div>
         );
     }
-}
-
-type SocialLoginButtonsProps = {
-    next_url?: string;
-};
-
-export function SocialLoginButtons(props: SocialLoginButtonsProps): JSX.Element {
-    const next = props.next_url ? `?next=${props.next_url}` : "";
-
-    return (
-        <div className="social-buttons">
-            <a href={`/login/google-oauth2/${next}`} className="s btn md-icon" target="_self">
-                <span className="google google-oauth2-icon" /> {_("Sign in with Google")}
-            </a>
-            <a href={`/login/facebook/${next}`} className="s btn md-icon" target="_self">
-                <span className="facebook facebook-icon" /> {_("Sign in with Facebook")}
-            </a>
-            <a href={`/login/twitter/${next}`} className="s btn md-icon" target="_self">
-                <i className="twitter twitter-icon fa fa-twitter" />
-                {_("Sign in with Twitter")}
-            </a>
-            <a href={`/login/apple/${next}`} className="s btn md-icon" target="_self">
-                <i className="apple apple-id-icon fa fa-apple" />
-                {_("Sign in with Apple")}
-            </a>
-            <a href={`/login/github/${next}`} className="s btn md-icon" target="_self">
-                <i className="github github-icon fa fa-github" />
-                {_("Sign in with GitHub")}
-            </a>
-        </div>
-    );
 }
