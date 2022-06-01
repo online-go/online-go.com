@@ -39,6 +39,7 @@ import { EmbeddedChatCard } from "Chat";
 import { localize_time_strings } from "localize-time";
 import swal from "sweetalert2";
 import { PlayerCacheEntry } from "player_cache";
+import { is_valid_url } from "url_validation";
 
 type GroupProperties = RouteComponentProps<{
     group_id: string;
@@ -469,6 +470,9 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             // no protocol? Guess at http
             group_website_href = "http://" + group_website_href;
         }
+        if (!is_valid_url(group_website_href)) {
+            group_website_href = null;
+        }
 
         return (
             <div className="Group container">
@@ -674,14 +678,14 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                         ))}
 
                                     <div className="pad">
-                                        {(editing || group.website || null) && (
+                                        {(editing || group_website_href || null) && (
                                             <b>{_("Website")}: </b>
                                         )}
-                                        {((!editing && group.website) || null) && (
+                                        {((!editing && group_website_href) || null) && (
                                             <span>
                                                 {
                                                     <a target="_blank" href={group_website_href}>
-                                                        {group.website}
+                                                        {group_website_href}
                                                     </a>
                                                 }
                                             </span>

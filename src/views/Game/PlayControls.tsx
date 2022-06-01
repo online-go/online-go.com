@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 import * as React from "react";
+import { useSearchParams } from "react-router-dom";
 import { _, interpolate, pgettext } from "translate";
 import * as data from "data";
 import {
@@ -49,6 +50,7 @@ import {
     useUserIsParticipant,
 } from "./GameHooks";
 import { useGoban } from "./goban_context";
+import { is_valid_url } from "url_validation";
 
 interface PlayControlsProps {
     // Cancel buttons are in props because the Cancel Button is placed below
@@ -109,20 +111,12 @@ export function PlayControls({
     const user = data.get("user");
     const goban = useGoban();
     const engine = goban.engine;
+    const [searchParams] = useSearchParams();
+    const return_url = is_valid_url(searchParams.get("return")) ? searchParams.get("return") : null;
 
     const user_is_active_player = [engine.players.black.id, engine.players.white.id].includes(
         user.id,
     );
-
-    const return_url = React.useRef<string>(); // url to return to after a game is over
-    React.useEffect(() => {
-        try {
-            return_url.current =
-                new URLSearchParams(window.location.search).get("return") || undefined;
-        } catch (e) {
-            console.error(e);
-        }
-    }, [goban]);
 
     const stone_removal_accept_timeout = React.useRef<NodeJS.Timeout>();
     const [black_accepted, set_black_accepted] = React.useState(
@@ -394,16 +388,16 @@ export function PlayControls({
                             ))}
                         </div>
                     )}
-                    {(return_url.current || null) && (
+                    {(return_url || null) && (
                         <div className="return-url">
-                            <a href={return_url.current} rel="noopener">
+                            <a href={return_url} rel="noopener">
                                 {interpolate(
                                     pgettext(
                                         "Link to where the user came from",
                                         "Return to {{url}}",
                                     ),
                                     {
-                                        url: return_url.current,
+                                        url: return_url,
                                     },
                                 )}
                             </a>

@@ -161,7 +161,7 @@ export function EXV6NavBar(): JSX.Element {
                         {ladders.length > 0 && (
                             <div className="submenu">
                                 {ladders.map((ladder) => (
-                                    <Link to={`/groups/${ladder.id}`} key={ladder.id}>
+                                    <Link to={`/ladder/${ladder.id}`} key={ladder.id}>
                                         <span className="ladder-rank">#{ladder.player_rank}</span>{" "}
                                         {ladder.name}
                                     </Link>
@@ -208,7 +208,7 @@ export function EXV6NavBar(): JSX.Element {
                         {groups.length > 0 && (
                             <div className="submenu">
                                 {groups.map((group) => (
-                                    <Link to={`/groups/${group.id}`} key={group.id}>
+                                    <Link to={`/group/${group.id}`} key={group.id}>
                                         <img src={group.icon} />
                                         {group.name}
                                     </Link>
