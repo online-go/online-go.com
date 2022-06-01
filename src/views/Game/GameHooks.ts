@@ -62,10 +62,15 @@ export function generateGobanHook<T, G extends GobanCore | null>(
 /** React hook that returns true if an undo was requested on the current move */
 export function useShowUndoRequested(goban: GobanCore): boolean {
     const [show_undo_requested, setShowUndoRequested] = React.useState(
-        goban.engine.undo_requested === goban.engine.last_official_move.move_number &&
+        !!goban &&
+            goban.engine.undo_requested === goban.engine.last_official_move.move_number &&
             goban.engine.undo_requested === goban.engine.cur_move.move_number,
     );
     React.useEffect(() => {
+        if (!goban) {
+            return;
+        }
+
         const syncShowUndoRequested = () => {
             if (game_control.in_pushed_analysis) {
                 return;
