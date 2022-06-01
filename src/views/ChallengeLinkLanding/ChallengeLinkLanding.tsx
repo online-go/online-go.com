@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { Link } from "react-router-dom";
 import swal from "sweetalert2";
 import * as data from "data";
 import { _, pgettext } from "translate";
@@ -23,12 +24,9 @@ import { get, post } from "requests";
 import { errorAlerter } from "misc";
 import { browserHistory } from "ogsHistory";
 
-import { SvgBouncer } from "SvgBouncer";
 import { Card } from "material";
-
-import { Register } from "Register";
+import { SvgBouncer } from "SvgBouncer";
 import { Player } from "Player";
-
 import { ChallengeDetailsReviewPane } from "ChallengeDetailsReviewPane";
 
 type Challenge = socket_api.seekgraph_global.Challenge;
@@ -47,7 +45,7 @@ export function ChallengeLinkLanding(): JSX.Element {
 
     /* Actions */
 
-    const doAcceptance = () => {
+    const doAcceptance = (challenge: Challenge) => {
         swal({
             text: "Accepting game...",
             type: "info",
@@ -56,40 +54,66 @@ export function ChallengeLinkLanding(): JSX.Element {
             allowEscapeKey: false,
         }).catch(swal.noop);
 
-        post("challenges/%%/accept", linked_challenge.challenge_id, {})
+        post("challenges/%%/accept", challenge.challenge_id, {})
             .then(() => {
                 swal.close();
-                browserHistory.push(`/game/${linked_challenge.game_id}`);
+                browserHistory.push(`/game/${challenge.game_id}`);
             })
             .catch((err) => {
                 swal.close();
                 errorAlerter(err);
             });
+        data.set("pending_accepted_challenge", null);
     };
 
     const accept = () => {
         if (logged_in) {
-            doAcceptance();
+            doAcceptance(linked_challenge);
         } else {
             set_ask_to_login(true);
+            // We need to save this here for when we come back after logging in.
+            // An alternative is passing this "state" via the URL hash or params, but believe me
+            // this does not work out well :)
+            data.set("pending_accepted_challenge", linked_challenge);
+            console.log("pended", linked_challenge);
         }
     };
 
     /* Display Logic */
 
     // ... we need to get the linked challenge, then display it, then have them accept it,
-    // possibly logging in or registering along the way...
+    // possibly logging in or registering them as guest along the way...
 
     const linked_challenge_uuid = new URLSearchParams(location.search).get("linked-challenge");
 
-    if (linked_challenge_uuid && !linked_challenge) {
-        get(`challenges/uu-${linked_challenge_uuid}`)
-            .then((challenge) => {
-                set_linked_challenge(challenge);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
+    const already_accepted = location.pathname.includes("accepted");
+
+    const pending_accepted_challenge = data.get("pending_accepted_challenge");
+
+    if (already_accepted) {
+        console.log("Already accepted", pending_accepted_challenge);
+        // we have to guard against being called multiple times
+        if (pending_accepted_challenge) {
+            doAcceptance(pending_accepted_challenge);
+        }
+    } else {
+        if (!linked_challenge_uuid) {
+            console.log("Unexpected arrival at Welcome, without linked challenge id!");
+            window.location.pathname = "/";
+            return <div />;
+        }
+
+        console.log("Challenge: ", linked_challenge_uuid);
+
+        if (linked_challenge_uuid && !linked_challenge) {
+            get(`challenges/uu-${linked_challenge_uuid}`)
+                .then((challenge) => {
+                    set_linked_challenge(challenge);
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+        }
     }
 
     /* Render */
@@ -101,9 +125,9 @@ export function ChallengeLinkLanding(): JSX.Element {
                     : _("Welcome to OGS!")}
             </h2>
 
-            {(!linked_challenge || null) && <SvgBouncer />}
+            {((!linked_challenge && !already_accepted) || null) && <SvgBouncer />}
 
-            {((linked_challenge && !ask_to_login) || null) && (
+            {((linked_challenge && !ask_to_login && !already_accepted) || null) && (
                 <Card>
                     <div className="invitation">
                         <span className="invite-text">
@@ -125,16 +149,32 @@ export function ChallengeLinkLanding(): JSX.Element {
                 </Card>
             )}
 
-            {(ask_to_login || null) && (
-                <>
+            {((ask_to_login && !already_accepted) || null) && (
+                <div className="login-options">
                     <span>
                         {pgettext(
-                            "The person has to chose to register or log in before commencing a game they just accepted",
-                            "Please register or sign in, to commence your game!",
+                            "The user just accepted a challenge via a link, but they are not logged in",
+                            "Before you start, we just need you to be logged in!",
                         )}
                     </span>
-                    <Register no_header after_registration={doAcceptance} />
-                </>
+
+                    <Card>
+                        <div>
+                            <span>New to OGS?</span>
+                            <Link to="/register" className="btn primary">
+                                <b>{_("Proceed as a Guest") /*  */}</b>
+                            </Link>
+                        </div>
+                        <hr />
+
+                        <div>
+                            <span>Already have an account?</span>
+                            <Link to={`/sign-in#/welcome/accepted`} className="btn primary">
+                                <b>{_("Sign In") /*  */}</b>
+                            </Link>
+                        </div>
+                    </Card>
+                </div>
             )}
         </div>
     );

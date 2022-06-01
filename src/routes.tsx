@@ -174,7 +174,7 @@ export const routes = (
             <Routes>
                 <Route path="/sign-in" element={<SignIn />} />
                 <Route path="/register" element={<Register />} />
-                <Route path="/welcome" element={<ChallengeLinkLanding />} />
+                <Route path="/welcome/*" element={<ChallengeLinkLanding />} />
                 <Route path="/appeal/:player_id" element={<Appeal />} />
                 <Route path="/appeal" element={<Appeal />} />
                 <Route path="/appeals-center" element={<AppealsCenter />} />

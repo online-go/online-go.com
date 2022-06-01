@@ -230,6 +230,12 @@ function OldNavBar(): JSX.Element {
         omnisearch_groups.length +
         omnisearch_sitemap.length;
 
+    // Don't show the signin link at the top if they arrived to the welcome page
+    // because the welcome page has special treatment of signin that takes them
+    // to the challenge that they accepted via a challenge link.
+
+    const show_signin = !window.location.pathname.includes("/welcome");
+
     return (
         <div id="NavBar" className={left_nav_active || right_nav_active ? "active" : ""}>
             <KBShortcut shortcut="`" action={toggleLeftNav} />
@@ -265,9 +271,11 @@ function OldNavBar(): JSX.Element {
                 <section className="right">
                     <i className="fa fa-adjust" onClick={toggleTheme} />
                     <LanguagePicker />
-                    <Link className="sign-in" to={"/sign-in#" + path}>
-                        {_("Sign In")}
-                    </Link>
+                    {(show_signin || null) && (
+                        <Link className="sign-in" to={"/sign-in#" + path}>
+                            {_("Sign In")}
+                        </Link>
+                    )}
                 </section>
             ) : (
                 <section className="right">

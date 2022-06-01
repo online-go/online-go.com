@@ -20,7 +20,6 @@ import { Link } from "react-router-dom";
 import * as data from "data";
 import { _ } from "translate";
 import { Card } from "material";
-import { LineText } from "misc-ui";
 import { errorAlerter, ignore } from "misc";
 import { post } from "requests";
 import cached from "cached";
@@ -97,17 +96,22 @@ export class SignIn extends React.PureComponent<{}, any> {
                     data.remove("appeals.jwt");
                     data.remove("appeals.ban-reason");
 
-                    // The username/supplied is not valid, but the server can detect that the person might have a valid SSO,
-                    // in which case it asks us to redirect to there for them to sign in.
                     if ("redirect" in config) {
-                        window.location.pathname = config.redirect;
+                        // The username/password supplied is not valid, but the server can detect that the person might have a valid SSO,
+                        // in which case it asks us to redirect to SSO, for them to sign in.
+
+                        // We need to retain any info in location.hash, because it can also have a ChallengeLink redirect
+                        // to be honoured after login!
+
+                        window.location.pathname = config.redirect + (window.location.hash || "");
                         return;
                     }
 
                     data.set(cached.config, config);
 
                     if (window.location.hash && window.location.hash[1] === "/") {
-                        window.location.pathname = window.location.hash.substr(1);
+                        const next_page = window.location.hash.substring(1);
+                        window.location.pathname = next_page;
                     } else {
                         window.location.pathname = "/";
                     }
@@ -220,13 +224,13 @@ export class SignIn extends React.PureComponent<{}, any> {
                         </form>
 
                         <hr />
-                        <LineText>
+                        <span>
                             {
                                 _(
                                     "or sign in using another account:",
                                 ) /* translators: username or password, or sign in with social authentication */
                             }
-                        </LineText>
+                        </span>
                         <SocialLoginButtons />
                     </Card>
 

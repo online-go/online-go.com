@@ -115,6 +115,14 @@ export function EXV6NavBar(): JSX.Element {
     const tournaments = data.get("cached.active_tournaments", []);
     const ladders = data.get("cached.ladders", []);
 
+    // Don't show the signin link at the top if they arrived to the welcome page
+    // because the welcome page has special treatment of signin that takes them
+    // to the challenge that they accepted via a challenge link.
+
+    const show_signin =
+        !window.location.pathname.includes("/welcome") && // a challenge link page is being shown
+        !window.location.hash.includes("/welcome"); // the signin with redirect to challenge accept
+
     return (
         <header className={"NavBar" + (hamburger_expanded ? " hamburger-expanded" : "")}>
             <span className="hamburger" onClick={toggleHamburgerExpanded}>
@@ -297,9 +305,11 @@ export function EXV6NavBar(): JSX.Element {
                 <section className="right">
                     <i className="fa fa-adjust" onClick={toggleTheme} />
                     <LanguagePicker />
-                    <Link className="sign-in" to={"/sign-in#" + location.pathname}>
-                        {_("Sign In")}
-                    </Link>
+                    {(show_signin || null) && (
+                        <Link className="sign-in" to={"/sign-in#" + location.pathname}>
+                            {_("Sign In")}
+                        </Link>
+                    )}
                 </section>
             ) : (
                 <section className="right">

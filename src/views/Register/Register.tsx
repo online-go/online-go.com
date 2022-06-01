@@ -26,7 +26,6 @@ import { post } from "requests";
 import { get_ebi } from "SignIn";
 import cached from "cached";
 
-import { LineText } from "misc-ui";
 import { SocialLoginButtons } from "SocialLoginButtons";
 
 export class Register extends React.PureComponent<{}, any> {
@@ -204,16 +203,17 @@ export class Register extends React.PureComponent<{}, any> {
                         </form>
 
                         <hr />
-                        <LineText>
+                        <span>
                             {
                                 _(
                                     "or sign in using another account:",
                                 ) /* translators: username or password, or sign in with social authentication */
                             }
-                        </LineText>
+                        </span>
 
                         <SocialLoginButtons />
                     </Card>
+
                     <div className="signin-option">
                         <h3>{_("Already have an account?")} </h3>
                         <div>

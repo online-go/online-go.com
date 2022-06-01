@@ -362,4 +362,5 @@ window["preferences"] = preferences;
 window["player_cache"] = player_cache;
 window["GoMath"] = GoMath;
 
+console.log(data.get("pending_accepted_challenge"));
 console.log("Finished initialisation from main");
