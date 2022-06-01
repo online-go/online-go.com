@@ -18,7 +18,7 @@
 import * as data from "data";
 import * as preferences from "preferences";
 import * as React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation, useSearchParams } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
 import { _, interpolate, current_language } from "translate";
 import { popover } from "popover";
@@ -67,12 +67,16 @@ import swal from "sweetalert2";
 import { useCurrentMove, useShowTitle, useTitle, useUserIsParticipant } from "./GameHooks";
 import { GobanContainer } from "GobanContainer";
 import { GobanContext } from "./goban_context";
+import { is_valid_url } from "url_validation";
 
 export function Game(): JSX.Element {
     const params = useParams<"game_id" | "review_id" | "move_number">();
+    const location = useLocation();
+    const [searchParams] = useSearchParams();
 
     const game_id = params.game_id ? parseInt(params.game_id) : 0;
     const review_id = params.review_id ? parseInt(params.review_id) : 0;
+    const return_url = is_valid_url(searchParams.get("return")) ? searchParams.get("return") : null;
 
     /* Refs */
     const ref_move_tree_container = React.useRef<HTMLElement>();
@@ -90,6 +94,9 @@ export function Game(): JSX.Element {
     const white_username = React.useRef<string>("White");
     const black_username = React.useRef<string>("Black");
     const goban = React.useRef<Goban>(null);
+    const return_url_debounce = React.useRef<boolean>(false);
+    const last_phase = React.useRef<string>("");
+    const page_loaded_time = React.useRef<number>(Date.now()); // when we first created this view
 
     /* State */
     const [view_mode, set_view_mode] = React.useState<ViewMode>(goban_view_mode());
@@ -130,7 +137,7 @@ export function Game(): JSX.Element {
 
     /* Functions */
     const getLocation = (): string => {
-        return window.location.pathname;
+        return location.pathname;
     };
 
     const autoadvance = () => {
@@ -1067,32 +1074,6 @@ export function Game(): JSX.Element {
             set_undo_requested(engine.undo_requested);
 
             sync_stone_removal();
-
-            // These are only updated on load events
-
-            // I have no recollection of this code and why I thought it was necessary. If you find
-            // this code after 2022-06-01, feel free to remove it. - anoek 2022-04-19
-            // If we do need it, it needs to be implemented as some function that listens for phase
-            // changes.
-            /*
-            if (phase && engine.phase && phase !== engine.phase && engine.phase === "finished") {
-                if (return_url.current && !return_url_debounce.current) {
-                    return_url_debounce.current = true;
-                    console.log("Transition from ", phase, " to ", engine.phase);
-                    setTimeout(() => {
-                        if (
-                            confirm(
-                                interpolate(_("Would you like to return to {{url}}?"), {
-                                    url: return_url.current,
-                                }),
-                            )
-                        ) {
-                            window.location.href = return_url.current;
-                        }
-                    }, 1500);
-                }
-            }
-            */
         };
 
         goban.current.on("load", onLoad);
@@ -1334,6 +1315,35 @@ export function Game(): JSX.Element {
             goban_div.current.childNodes.forEach((node) => node.remove());
         };
     }, [game_id, review_id]);
+
+    React.useEffect(() => {
+        const elapsed = Date.now() - page_loaded_time.current;
+        if (
+            last_phase.current &&
+            last_phase.current !== phase && // only trigger as we transition to finished
+            phase === "finished" &&
+            elapsed > 2000 // on first load there will always be a play->finished transition, so ignore that
+        ) {
+            console.log(last_phase.current, " -> ", phase);
+            if (return_url && !return_url_debounce.current) {
+                return_url_debounce.current = true;
+                console.log("Transition from ", phase, " to ", phase);
+                setTimeout(() => {
+                    if (
+                        confirm(
+                            interpolate(_("Would you like to return to {{url}}?"), {
+                                url: return_url,
+                            }),
+                        )
+                    ) {
+                        window.location.href = return_url;
+                    }
+                }, 1500);
+            }
+        }
+        console.log(last_phase.current);
+        last_phase.current = phase;
+    }, [phase, return_url]);
 
     /**********/
     /* RENDER */

@@ -28,6 +28,7 @@ import { del, put } from "requests";
 import swal from "sweetalert2";
 import { durationString } from "TimeControl";
 import { cc_to_country_name, pgettext, sorted_locale_countries, _ } from "translate";
+import { is_valid_url } from "url_validation";
 
 const inlineBlock = { display: "inline-flex", alignItems: "center" };
 
@@ -132,6 +133,10 @@ export function AvatarCard({
             cleaned_website = "https://" + user.website;
         } else {
             cleaned_website = user.website;
+        }
+
+        if (!is_valid_url(cleaned_website)) {
+            cleaned_website = "";
         }
     }
 
@@ -294,7 +299,7 @@ export function AvatarCard({
                 </div>
             )}
 
-            {!editing && user.website && (
+            {!editing && user.website && cleaned_website && (
                 <div className="website-url">
                     <a target="_blank" rel="noopener" href={cleaned_website}>
                         {user.website}
