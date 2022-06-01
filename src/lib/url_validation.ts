@@ -16,5 +16,8 @@
  */
 
 export function is_valid_url(url: string): boolean {
+    if (!url || typeof url !== "string") {
+        return false;
+    }
     return /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/.test(url.toLowerCase());
 }
