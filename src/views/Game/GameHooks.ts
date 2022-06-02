@@ -116,6 +116,12 @@ export const useCurrentMoveNumber = generateGobanHook(
     ["cur_move"],
 );
 
+/** React hook that returns the phase */
+export const usePhase = generateGobanHook(
+    (goban: GobanCore | null) => goban?.engine.phase,
+    ["phase"],
+);
+
 /** React hook that returns the current move tree from goban */
 export const useCurrentMove = generateGobanHook(
     (goban: GobanCore | null) => goban?.engine.cur_move,
