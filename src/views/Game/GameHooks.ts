@@ -85,8 +85,17 @@ export function useShowUndoRequested(goban: GobanCore): boolean {
 
         goban.on("load", syncShowUndoRequested);
         goban.on("undo_requested", syncShowUndoRequested);
+        goban.on("undo_canceled", syncShowUndoRequested);
         goban.on("last_official_move", syncShowUndoRequested);
         goban.on("cur_move", syncShowUndoRequested);
+
+        return () => {
+            goban.off("load", syncShowUndoRequested);
+            goban.off("undo_requested", syncShowUndoRequested);
+            goban.off("undo_canceled", syncShowUndoRequested);
+            goban.off("last_official_move", syncShowUndoRequested);
+            goban.off("cur_move", syncShowUndoRequested);
+        };
     }, [goban, game_control.in_pushed_analysis]);
 
     return show_undo_requested;
