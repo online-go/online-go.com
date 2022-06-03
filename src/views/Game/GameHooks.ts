@@ -62,10 +62,15 @@ export function generateGobanHook<T, G extends GobanCore | null>(
 /** React hook that returns true if an undo was requested on the current move */
 export function useShowUndoRequested(goban: GobanCore): boolean {
     const [show_undo_requested, setShowUndoRequested] = React.useState(
-        goban.engine.undo_requested === goban.engine.last_official_move.move_number &&
+        !!goban &&
+            goban.engine.undo_requested === goban.engine.last_official_move.move_number &&
             goban.engine.undo_requested === goban.engine.cur_move.move_number,
     );
     React.useEffect(() => {
+        if (!goban) {
+            return;
+        }
+
         const syncShowUndoRequested = () => {
             if (game_control.in_pushed_analysis) {
                 return;
@@ -80,8 +85,17 @@ export function useShowUndoRequested(goban: GobanCore): boolean {
 
         goban.on("load", syncShowUndoRequested);
         goban.on("undo_requested", syncShowUndoRequested);
+        goban.on("undo_canceled", syncShowUndoRequested);
         goban.on("last_official_move", syncShowUndoRequested);
         goban.on("cur_move", syncShowUndoRequested);
+
+        return () => {
+            goban.off("load", syncShowUndoRequested);
+            goban.off("undo_requested", syncShowUndoRequested);
+            goban.off("undo_canceled", syncShowUndoRequested);
+            goban.off("last_official_move", syncShowUndoRequested);
+            goban.off("cur_move", syncShowUndoRequested);
+        };
     }, [goban, game_control.in_pushed_analysis]);
 
     return show_undo_requested;
@@ -100,6 +114,12 @@ export const useUserIsParticipant = generateGobanHook((goban: GobanCore | null) 
 export const useCurrentMoveNumber = generateGobanHook(
     (goban: GobanCore | null) => goban?.engine.cur_move?.move_number || -1,
     ["cur_move"],
+);
+
+/** React hook that returns the phase */
+export const usePhase = generateGobanHook(
+    (goban: GobanCore | null) => goban?.engine.phase,
+    ["phase"],
 );
 
 /** React hook that returns the current move tree from goban */

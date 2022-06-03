@@ -55,6 +55,7 @@ export const GoResources = () => {
     const au = getLanguageFlag("au", country, "au");
     const ca = getLanguageFlag("ca", country, "ca");
     const ru = getLanguageFlag("ru", country, "ru");
+    const hk = getLanguageFlag("hk", country, "hk");
     const gr = "gr";
     const br = "br";
     const ar = getLanguageFlag("spanish", country, "ar");
@@ -911,6 +912,11 @@ export const GoResources = () => {
                                 countries={[en]}
                                 title="Life in 19x19"
                                 href="http://www.lifein19x19.com/forum/"
+                            />,
+                            <BasicResource
+                                countries={[hk]}
+                                title="香港圍棋網 / hkgof.com"
+                                href="http://hkgof.com/"
                             />,
                             <BasicResource
                                 countries={[fr]}
