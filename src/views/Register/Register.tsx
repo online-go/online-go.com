@@ -47,11 +47,10 @@ export class Register extends React.PureComponent<{}, any> {
                 ebi: get_ebi(),
             })
                 .then((config) => {
-                    console.log("Logged in");
                     data.set(cached.config, config);
 
                     if (window.location.hash && window.location.hash[1] === "/") {
-                        window.location.pathname = window.location.hash.substr(1);
+                        window.location.pathname = window.location.hash.substring(1);
                     } else {
                         window.location.pathname = "/";
                     }
@@ -68,7 +67,6 @@ export class Register extends React.PureComponent<{}, any> {
                     if (err.responseJSON) {
                         console.log(err.responseJSON);
                         if (err.responseJSON.firewall_action === "COLLECT_VPN_INFORMATION") {
-                            //console.error("VPN information collection requested");
                             window.location.pathname = "/blocked-vpn";
                         } else {
                             errorAlerter(err);

@@ -23,6 +23,8 @@ import { _, pgettext } from "translate";
 import { get, post } from "requests";
 import { errorAlerter } from "misc";
 import { browserHistory } from "ogsHistory";
+import { get_ebi } from "SignIn";
+import cached from "cached";
 
 import { Card } from "material";
 import { SvgBouncer } from "SvgBouncer";
@@ -33,7 +35,7 @@ type Challenge = socket_api.seekgraph_global.Challenge;
 
 // Users are intended to arrive here via a challenge-link URL - those point here.
 // This page will display a bouncing OGS logo until the challenge given in search param is loaded.
-// From there, the user can accept the game - going via login or registration if necessary.
+// From there, the user can accept the game - going via login orn auto-registration if necessary.
 
 export function ChallengeLinkLanding(): JSX.Element {
     const user = data.get("user");
@@ -71,12 +73,63 @@ export function ChallengeLinkLanding(): JSX.Element {
             doAcceptance(linked_challenge);
         } else {
             set_ask_to_login(true);
-            // We need to save this here for when we come back after logging in.
+            // We need to save the challenge info in this way for when we come back after logging in.
             // An alternative is passing this "state" via the URL hash or params, but believe me
             // this does not work out well :)
             data.set("pending_accepted_challenge", linked_challenge);
             console.log("pended", linked_challenge);
         }
+    };
+
+    const registerAndCommence = () => {
+        const new_username_root = pgettext(
+            "This needs to be a no-spaces honorific for a guest user",
+            "HonouredGuest",
+        );
+        // naively uniquify... good enough?
+        const new_username =
+            new_username_root.replace(/\s+/g, "") + Date.now().toString().substring(0, 5);
+
+        const initial_password = Date.now().toString(); // They will have to change this, so anything random & unique is OK
+
+        post("/api/v0/register", {
+            username: new_username,
+            password: initial_password,
+            email: "",
+            ebi: get_ebi(),
+        })
+            .then((config) => {
+                data.set(cached.config, config);
+                // signal to the Game page that this person needs a prompt to set their password
+                // ... might as well do it by showing help.
+                data.set("dynamic-help.user-management.show_set", true);
+                data.set("dynamic-help.user-management.password-help.show_item", true);
+
+                doAcceptance(linked_challenge);
+            })
+            // note - no handling at the moment for the hopefully madly-unlikely duplicate username,
+            // we just crash and burn here in that case, like any other error.
+
+            .catch((err) => {
+                if (err.responseJSON && err.responseJSON.error_code === "banned") {
+                    data.set("appeals.banned_user_id", err.responseJSON.banned_user_id);
+                    data.set("appeals.jwt", err.responseJSON.jwt);
+                    data.set("appeals.ban-reason", err.responseJSON.ban_reason);
+                    window.location.pathname = "/appeal";
+                    return;
+                }
+
+                if (err.responseJSON) {
+                    console.log(err.responseJSON);
+                    if (err.responseJSON.firewall_action === "COLLECT_VPN_INFORMATION") {
+                        window.location.pathname = "/blocked-vpn";
+                    } else {
+                        errorAlerter(err);
+                    }
+                } else {
+                    errorAlerter(err);
+                }
+            });
     };
 
     /* Display Logic */
@@ -161,9 +214,9 @@ export function ChallengeLinkLanding(): JSX.Element {
                     <Card>
                         <div>
                             <span>New to OGS?</span>
-                            <Link to="/register" className="btn primary">
-                                <b>{_("Proceed as a Guest") /*  */}</b>
-                            </Link>
+                            <button className="btn primary" onClick={registerAndCommence}>
+                                {_("Proceed as a Guest") /*  */}
+                            </button>
                         </div>
                         <hr />
 
