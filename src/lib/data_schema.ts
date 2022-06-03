@@ -29,6 +29,8 @@ import { AutomatchPreferences } from "src/components/AutomatchSettings";
 import { JosekiFilter } from "src/components/JosekiVariationFilter";
 import { Challenge } from "src/views/Play";
 
+import * as dynamic_help from "dynamic_help_config";
+
 interface CachedSchema {
     groups: GroupList;
     active_tournaments: ActiveTournamentList;
@@ -160,14 +162,6 @@ interface DemoSettings {
     private: boolean;
 }
 
-interface DynamicHelpItemConfig {
-    show_item: boolean;
-}
-
-interface DynamicHelpSetConfig extends Prefixed<DynamicHelpItemConfig, "password-help"> {
-    show_set: boolean;
-}
-
 /**
  * Prefixes every member of a type.
  *
@@ -205,7 +199,7 @@ export interface DataSchema
         Prefixed<ObservedGamesSchema, "observed-games">,
         Prefixed<AnnouncementsSchema, "announcements">,
         Prefixed<ChallengeSchema, "challenge">,
-        Prefixed<DynamicHelpSetConfig, "dynamic-help.user-management"> {
+        Prefixed<dynamic_help.DynamicHelpSchema, "dynamic-help"> {
     user: rest_api.UserConfig;
     bid: string;
     theme: string;

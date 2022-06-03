@@ -25,7 +25,7 @@ import { errorAlerter } from "misc";
 import { browserHistory } from "ogsHistory";
 import { get_ebi } from "SignIn";
 import cached from "cached";
-
+import * as dynamic_help from "dynamic_help_config";
 import { Card } from "material";
 import { SvgBouncer } from "SvgBouncer";
 import { Player } from "Player";
@@ -86,9 +86,9 @@ export function ChallengeLinkLanding(): JSX.Element {
             "This needs to be a no-spaces honorific for a guest user",
             "HonouredGuest",
         );
-        // naively uniquify... good enough?
+        // naively uniquify... 6 lsbs of epoch... good enough?
         const new_username =
-            new_username_root.replace(/\s+/g, "") + Date.now().toString().substring(0, 5);
+            new_username_root.replace(/\s+/g, "") + Date.now().toString().slice(-6);
 
         const initial_password = Date.now().toString(); // They will have to change this, so anything random & unique is OK
 
@@ -100,10 +100,8 @@ export function ChallengeLinkLanding(): JSX.Element {
         })
             .then((config) => {
                 data.set(cached.config, config);
-                // signal to the Game page that this person needs a prompt to set their password
-                // ... might as well do it by showing help.
-                data.set("dynamic-help.user-management.show_set", true);
-                data.set("dynamic-help.user-management.password-help.show_item", true);
+
+                dynamic_help.showHelpSet("guest-password-help-set");
 
                 doAcceptance(linked_challenge);
             })

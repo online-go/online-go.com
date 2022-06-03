@@ -1,0 +1,51 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.right-nav-help {
+    text-align: right ;
+    display: flex;
+    align-items: center;
+    justify-content: right;
+    position: absolute;
+
+    width: fit-content;
+
+    span {
+        width: fit-content;
+        white-space: nowrap;
+    }
+
+    // position the help popup to the left of the right-nav button
+    transform-origin: top right;
+    transform: translate(-102%);
+
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+
+
+    border-width: 2px;
+    border-color: grey;
+    border-style: solid;
+    border-radius: 5px;
+
+    themed background-color navbar-background-color;
+    overflow-y: auto;
+    user-select: none;
+    z-index: z.nav-menu.menu;
+
+    box-shadow: -3px 1px 4px 4px rgba(148, 109, 109, 0.75);
+}

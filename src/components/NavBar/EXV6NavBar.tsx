@@ -32,11 +32,13 @@ import { TurnIndicator } from "TurnIndicator";
 import { NotificationIndicator } from "NotificationIndicator";
 import { TournamentIndicator } from "Announcements";
 import { FriendIndicator } from "FriendList";
+import { RightNavHelp } from "RightNavHelp";
+
 import * as preferences from "preferences";
-//import { ChatIndicator } from "Chat";
 import { logout } from "auth";
 import { useUser } from "hooks";
 import { OmniSearch } from "./OmniSearch";
+import { hideHelpSetItem, isVisible } from "dynamic_help_config";
 
 const body = $(document.body);
 
@@ -86,6 +88,9 @@ export function EXV6NavBar(): JSX.Element {
     };
 
     const toggleRightNav = () => {
+        if (!right_nav_active && isVisible("guest-password-help-set", "right-nav-helper")) {
+            hideHelpSetItem("guest-password-help-set", "right-nav-help");
+        }
         setRightNavActive(!right_nav_active);
     };
 
@@ -319,6 +324,7 @@ export function EXV6NavBar(): JSX.Element {
                     <FriendIndicator />
                     <NotificationIndicator onClick={toggleNotifications} />
                     <span className="icon-container" onClick={toggleRightNav}>
+                        <RightNavHelp />
                         {user.username}
                     </span>
                 </section>
