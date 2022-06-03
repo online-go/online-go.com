@@ -88,7 +88,7 @@ export function EXV6NavBar(): JSX.Element {
     };
 
     const toggleRightNav = () => {
-        if (!right_nav_active && isVisible("guest-password-help-set", "right-nav-helper")) {
+        if (!right_nav_active && isVisible("guest-password-help-set", "right-nav-help")) {
             hideHelpSetItem("guest-password-help-set", "right-nav-help");
         }
         setRightNavActive(!right_nav_active);

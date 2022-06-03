@@ -52,11 +52,12 @@ const DEFAULT_DYNAMIC_HELP_CONFIG: DynamicHelpSchema = {
 export function isVisible(set_name: DynamicHelpSet, item_name: string): boolean {
     const set_config = data.get(`dynamic-help.${set_name}`, { show_set: false, items: {} });
 
-    return (
-        set_config["show_set"] &&
-        item_name in set_config["items"] &&
-        set_config["items"][item_name]["show_item"]
-    );
+    const visible =
+        set_config.show_set &&
+        item_name in set_config.items &&
+        set_config.items[item_name].show_item;
+
+    return visible;
 }
 
 // Turn on "show item" for a help set item...

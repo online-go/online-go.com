@@ -561,6 +561,7 @@ export class Play extends React.Component<{}, PlayState> {
                                             ? pgettext("Automatch: no preference", "No preference")
                                             : rulesText(m.rules.value)}
                                     </span>
+                                    <span className="cell"></span>
                                 </div>
                             ))}
 
@@ -1006,9 +1007,31 @@ export class Play extends React.Component<{}, PlayState> {
                     <span className="cell">{C.handicap_text}</span>
                     <span className="cell">{C.name}</span>
                     <span className="cell">{rulesText(C.rules)}</span>
+                    <span className="cell">
+                        <i
+                            className="fa fa-share"
+                            onClick={this.copyChallengeLinkURL.bind(this, C.uuid)}
+                        />
+                    </span>
                 </div>
             ) : null,
         );
+    }
+
+    copyChallengeLinkURL(uuid: string): void {
+        const challenge_link =
+            window.location.protocol +
+            "//" +
+            window.location.hostname +
+            (window.location.port ? ":" + window.location.port : "") +
+            `/welcome/?linked-challenge=${uuid}`;
+
+        navigator.clipboard
+            .writeText(challenge_link)
+            .then(() => null)
+            .catch(() => null);
+
+        console.log("Copied:", challenge_link);
     }
 
     cellBreaks(amount) {
@@ -1035,6 +1058,7 @@ export class Play extends React.Component<{}, PlayState> {
                 <span className="head" style={{ textAlign: "left" }}>
                     {_("Rules")}
                 </span>
+                <span className="head"></span>
             </div>
         );
     }
