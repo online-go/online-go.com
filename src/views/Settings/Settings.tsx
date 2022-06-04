@@ -77,9 +77,6 @@ export function Settings(): JSX.Element {
 
     React.useEffect(refresh, []);
 
-    const selected = category;
-    data.set("settings.page-selected", selected);
-
     function select(s: string): void {
         data.set("settings.page-selected", s);
         browserHistory.push(`/settings/${s}`);
@@ -110,8 +107,12 @@ export function Settings(): JSX.Element {
         };
     }
 
+    const selected = category;
+    data.set("settings.page-selected", selected);
+
     if (dynamic_help.isVisible("guest-password-help-set", "settings-button-help")) {
         dynamic_help.hideHelpSetItem("guest-password-help-set", "settings-button-help");
+        select("account");
     }
 
     const groups: Array<{ key: string; label: string }> = [
@@ -183,6 +184,8 @@ export function Settings(): JSX.Element {
             break;
             */
     }
+
+    console.log(selected, SelectedPage);
 
     const props: SettingGroupProps = {
         state: settings_state,
