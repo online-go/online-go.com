@@ -110,6 +110,10 @@ export function Settings(): JSX.Element {
         };
     }
 
+    if (dynamic_help.isVisible("guest-password-help-set", "settings-button-help")) {
+        dynamic_help.hideHelpSetItem("guest-password-help-set", "settings-button-help");
+    }
+
     const groups: Array<{ key: string; label: string }> = [
         { key: "general", label: _("General Preferences") },
         { key: "sound", label: _("Sound Preferences") },
@@ -133,10 +137,6 @@ export function Settings(): JSX.Element {
         */
         { key: "logout", label: _("Logout") },
     ];
-
-    if (dynamic_help.isVisible("guest-password-help-set", "settings-button-help")) {
-        dynamic_help.hideHelpSetItem("guest-password-help-set", "settings-button-help");
-    }
 
     let SelectedPage: (props: SettingGroupProps) => JSX.Element = () => <div>Error</div>;
 
