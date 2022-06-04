@@ -1042,7 +1042,7 @@ export class Play extends React.Component<{}, PlayState> {
                         </span>
                     ),
                     below: event.target,
-                    //closeAfter: 2000,
+                    closeAfter: 2000,
                     animate: true,
                     minWidth: 180,
                 }),
