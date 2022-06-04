@@ -19,7 +19,7 @@ import * as data from "data";
 
 export type DynamicHelpSet = "guest-password-help-set";
 
-export type GuestPasswordHelperSetItem = "right-nav-help" | "show-profile-help";
+export type GuestPasswordHelperSetItem = "right-nav-help" | "settings-button-help";
 
 export type HelperSetItem = GuestPasswordHelperSetItem;
 
@@ -44,7 +44,7 @@ const DEFAULT_DYNAMIC_HELP_CONFIG: DynamicHelpSchema = {
         show_set: false,
         items: {
             "right-nav-help": { show_item: false },
-            "show-profile-help": { show_item: false },
+            "settings-button-help": { show_item: false },
         },
     },
 };

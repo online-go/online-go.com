@@ -15,10 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.right-nav-help {
+.right-nav-button-help {
     text-align: right ;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: right;
     justify-content: right;
     position: absolute;
 
@@ -29,23 +30,21 @@
         white-space: nowrap;
     }
 
-    // position the help popup to the left of the right-nav button
+    // position the help popup below the Nav "button" (so it doesn't get clipped)
     transform-origin: top right;
-    transform: translate(-102%);
+    transform: translate(-40%, 90%);
 
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-
+    padding: 3px 0.3rem  0 0.3rem;
 
     border-width: 2px;
     border-color: grey;
     border-style: solid;
     border-radius: 5px;
 
-    themed background-color navbar-background-color;
+    themed background-color dynamic-help-background-color;
     overflow-y: auto;
     user-select: none;
     z-index: z.nav-menu.menu;
 
-    box-shadow: -3px 1px 4px 4px rgba(148, 109, 109, 0.75);
+    box-shadow: 0px 3px 4px 4px rgba(148, 109, 109, 0.75);
 }

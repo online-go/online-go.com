@@ -32,7 +32,8 @@ import { TurnIndicator } from "TurnIndicator";
 import { NotificationIndicator } from "NotificationIndicator";
 import { TournamentIndicator } from "Announcements";
 import { FriendIndicator } from "FriendList";
-import { RightNavHelp } from "RightNavHelp";
+import { RightNavButtonHelp } from "RightNavButtonHelp";
+import { SettingsButtonHelp } from "SettingsButtonHelp";
 
 import * as preferences from "preferences";
 import { logout } from "auth";
@@ -324,7 +325,7 @@ export function EXV6NavBar(): JSX.Element {
                     <FriendIndicator />
                     <NotificationIndicator onClick={toggleNotifications} />
                     <span className="icon-container" onClick={toggleRightNav}>
-                        <RightNavHelp />
+                        <RightNavButtonHelp />
                         {user.username}
                     </span>
                 </section>
@@ -349,6 +350,7 @@ export function EXV6NavBar(): JSX.Element {
                     </Link>
 
                     <Link to="/user/settings">
+                        <SettingsButtonHelp />
                         <i className="fa fa-gear"></i>
                         {_("Settings")}
                     </Link>

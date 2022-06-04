@@ -21,13 +21,14 @@ import * as dynamic_help from "dynamic_help_config";
 
 import { _ /*pgettext*/ } from "translate";
 
-export function RightNavHelp(): JSX.Element {
+export function SettingsButtonHelp(): JSX.Element {
     return (
         <>
-            {(dynamic_help.isVisible("guest-password-help-set", "right-nav-help") || null) && (
-                <div className="right-nav-help">
+            {(dynamic_help.isVisible("guest-password-help-set", "settings-button-help") ||
+                null) && (
+                <div className="settings-button-help">
+                    <i className="fa fa-arrow-up" />
                     <span>{_("To set your password, click here")}</span>
-                    <i className="fa fa-arrow-right" />
                 </div>
             )}
         </>

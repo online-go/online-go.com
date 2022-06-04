@@ -20,6 +20,7 @@ import * as preferences from "preferences";
 import { usePreference } from "preferences";
 import * as data from "data";
 import * as moment from "moment";
+import * as dynamic_help from "dynamic_help_config";
 
 import Select from "react-select";
 import { ValidPreference } from "preferences";
@@ -132,6 +133,10 @@ export function Settings(): JSX.Element {
         */
         { key: "logout", label: _("Logout") },
     ];
+
+    if (dynamic_help.isVisible("guest-password-help-set", "settings-button-help")) {
+        dynamic_help.hideHelpSetItem("guest-password-help-set", "settings-button-help");
+    }
 
     let SelectedPage: (props: SettingGroupProps) => JSX.Element = () => <div>Error</div>;
 
