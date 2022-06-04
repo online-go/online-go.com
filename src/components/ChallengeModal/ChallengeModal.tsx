@@ -689,7 +689,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             ["challenge.game.private", ev],
             ["challenge.game.ranked", false],
         ]);
-    update_restricted = (ev) => this.upstate("challenge.restricted", ev);
+    update_invite_only = (ev) => this.upstate("challenge.invite_only", ev);
     update_rengo = (ev) => {
         this.upstate([
             ["challenge.game.rengo", ev],
@@ -1605,8 +1605,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         </button>
                     )}
                 </div>
-                <div className="form-group restricted-challenge-selector">
-                    <label className="control-label" htmlFor="challenge-restricted">
+                <div className="form-group invite-only-challenge-selector">
+                    <label className="control-label" htmlFor="challenge-invite-only">
                         {pgettext(
                             "A checkbox to make a challenge open only to invited people who have the link to it",
                             "Invite-only",
@@ -1618,9 +1618,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                             <div className="checkbox">
                                 <input
                                     type="checkbox"
-                                    id="challenge-restricted"
-                                    checked={this.state.challenge.restricted}
-                                    onChange={this.update_restricted}
+                                    id="challenge-invite-only"
+                                    checked={this.state.challenge.invite_only}
+                                    onChange={this.update_invite_only}
                                 />
                             </div>
                         )}
@@ -1777,7 +1777,7 @@ export function challengeRematch(
                 initial_state: null,
                 private: conf["private"],
             },
-            restricted: false, // maybe one day we will support challenge-links on the rematch dialog!
+            invite_only: false, // maybe one day we will support challenge-links on the rematch dialog!
         },
         time_control: dup(conf.time_control),
     };
@@ -1893,7 +1893,7 @@ interface ChallengeModalConfig {
         min_ranking?: number;
         max_ranking?: number;
         challenger_color: rest_api.ColorSelectionOptions;
-        restricted: boolean;
+        invite_only: boolean;
 
         game: {
             name?: string;
@@ -1934,7 +1934,7 @@ interface ChallengeConfig {
     };
     min_ranking?: number;
     max_ranking?: number;
-    restricted: boolean;
+    invite_only: boolean;
 }
 
 interface TimeControlConfig {
@@ -1960,7 +1960,7 @@ export const blitz_config: GameConfig = {
     },
     challenge: {
         challenger_color: "automatic",
-        restricted: false,
+        invite_only: false,
         game: {
             name: "",
             rules: "japanese",
@@ -1987,7 +1987,7 @@ export const live_config: GameConfig = {
     },
     challenge: {
         challenger_color: "automatic",
-        restricted: false,
+        invite_only: false,
         game: {
             name: "",
             rules: "japanese",
@@ -2014,7 +2014,7 @@ export const correspondence_config: GameConfig = {
     },
     challenge: {
         challenger_color: "automatic",
-        restricted: false,
+        invite_only: false,
         game: {
             name: "",
             rules: "japanese",

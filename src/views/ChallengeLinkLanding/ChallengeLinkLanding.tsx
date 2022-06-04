@@ -27,7 +27,7 @@ import { get_ebi } from "SignIn";
 import cached from "cached";
 import * as dynamic_help from "dynamic_help_config";
 import { Card } from "material";
-import { SvgBouncer } from "SvgBouncer";
+import { LoadingPage } from "Loading";
 import { Player } from "Player";
 import { ChallengeDetailsReviewPane } from "ChallengeDetailsReviewPane";
 
@@ -130,42 +130,39 @@ export function ChallengeLinkLanding(): JSX.Element {
             });
     };
 
-    /* Display Logic */
-
     // ... we need to get the linked challenge, then display it, then have them accept it,
     // possibly logging in or registering them as guest along the way...
 
     const linked_challenge_uuid = new URLSearchParams(location.search).get("linked-challenge");
-
+    const pending_accepted_challenge = data.get("pending_accepted_challenge");
     const already_accepted = location.pathname.includes("accepted");
 
-    const pending_accepted_challenge = data.get("pending_accepted_challenge");
+    React.useEffect(() => {
+        if (already_accepted) {
+            console.log("Already accepted", pending_accepted_challenge);
+            // we have to guard against being called multiple times
+            if (pending_accepted_challenge) {
+                doAcceptance(pending_accepted_challenge);
+            }
+        } else {
+            if (!linked_challenge_uuid) {
+                console.log("Unexpected arrival at Welcome, without linked challenge id!");
+                window.location.pathname = "/";
+            }
 
-    if (already_accepted) {
-        console.log("Already accepted", pending_accepted_challenge);
-        // we have to guard against being called multiple times
-        if (pending_accepted_challenge) {
-            doAcceptance(pending_accepted_challenge);
-        }
-    } else {
-        if (!linked_challenge_uuid) {
-            console.log("Unexpected arrival at Welcome, without linked challenge id!");
-            window.location.pathname = "/";
-            return <div />;
-        }
+            console.log("Challenge: ", linked_challenge_uuid);
 
-        console.log("Challenge: ", linked_challenge_uuid);
-
-        if (linked_challenge_uuid && !linked_challenge) {
-            get(`challenges/uu-${linked_challenge_uuid}`)
-                .then((challenge) => {
-                    set_linked_challenge(challenge);
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
+            if (linked_challenge_uuid && !linked_challenge) {
+                get(`challenges/uu-${linked_challenge_uuid}`)
+                    .then((challenge) => {
+                        set_linked_challenge(challenge);
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    });
+            }
         }
-    }
+    });
 
     /* Render */
     return (
@@ -176,7 +173,7 @@ export function ChallengeLinkLanding(): JSX.Element {
                     : _("Welcome to OGS!")}
             </h2>
 
-            {((!linked_challenge && !already_accepted) || null) && <SvgBouncer />}
+            {((!linked_challenge && !already_accepted) || null) && <LoadingPage />}
 
             {((linked_challenge && !ask_to_login && !already_accepted) || null) && (
                 <Card>
@@ -213,7 +210,7 @@ export function ChallengeLinkLanding(): JSX.Element {
                         <div>
                             <span>New to OGS?</span>
                             <button className="btn primary" onClick={registerAndCommence}>
-                                {_("Proceed as a Guest") /*  */}
+                                <b>{_("Proceed as a Guest") /*  */}</b>
                             </button>
                         </div>
                         <hr />

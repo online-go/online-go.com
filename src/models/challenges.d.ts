@@ -50,7 +50,7 @@ declare namespace socket_api {
             rengo_black_team: number[]; // array of player ids
             rengo_white_team: number[]; // array of player ids
             rengo_participants: number[]; // array of player ids
-            restricted: boolean;
+            invite_only: boolean;
             uuid: string;
 
             // All this stuff seems to get added *after* we get a challenge from the api
