@@ -1009,10 +1009,12 @@ export class Play extends React.Component<{}, PlayState> {
                     <span className="cell">{C.name}</span>
                     <span className="cell">{rulesText(C.rules)}</span>
                     <span className="cell">
-                        <i
-                            className="fa fa-share"
+                        <button
                             onClick={(event) => this.copyChallengeLinkURL(event, C.uuid)}
-                        />
+                            className="btn xs"
+                        >
+                            <i className="fa fa-share" />
+                        </button>
                     </span>
                 </div>
             ) : null,
