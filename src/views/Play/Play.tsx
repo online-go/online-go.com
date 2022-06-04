@@ -1010,7 +1010,9 @@ export class Play extends React.Component<{}, PlayState> {
                     <span className="cell">{rulesText(C.rules)}</span>
                     <span className="cell">
                         <button
-                            onClick={(event) => this.copyChallengeLinkURL(event, C.uuid)}
+                            onClick={(event) =>
+                                this.copyChallengeLinkURL(event.target as HTMLElement, C.uuid)
+                            }
                             className="btn xs"
                         >
                             <i className="fa fa-share" />
@@ -1021,7 +1023,7 @@ export class Play extends React.Component<{}, PlayState> {
         );
     }
 
-    copyChallengeLinkURL(event, uuid: string): void {
+    copyChallengeLinkURL(ack_target: HTMLElement, uuid: string): void {
         const challenge_link =
             window.location.protocol +
             "//" +
@@ -1029,42 +1031,51 @@ export class Play extends React.Component<{}, PlayState> {
             (window.location.port ? ":" + window.location.port : "") +
             `/welcome/?linked-challenge=${uuid}`;
 
-        navigator.clipboard
-            .writeText(challenge_link)
-            .then(() =>
-                popover({
-                    elt: (
-                        <span className="challenge-link-copied">
-                            {pgettext(
-                                "They clicked the button to copy a challenge link, we copied it into their clipboard",
-                                "Challenge Link Copied!",
-                            )}
-                        </span>
-                    ),
-                    below: event.target,
-                    closeAfter: 2000,
-                    animate: true,
-                    minWidth: 180,
-                }),
-            )
-            .catch(() =>
-                // Uh-oh, their browser won't let us access the clipboard?
-                // ... give them the whole thing to copy...
-                popover({
-                    elt: (
-                        <div className="challenge-link-copy">
-                            {pgettext(
-                                "This is the label for a link (URL) that they created",
-                                "Challenge link:",
-                            )}
-                            <br />
-                            {challenge_link}
-                        </div>
-                    ),
-                    below: event.target,
-                    minWidth: 300,
-                }),
-            );
+        try {
+            navigator.clipboard
+                .writeText(challenge_link)
+                .then(() =>
+                    popover({
+                        elt: (
+                            <span className="challenge-link-copied">
+                                {pgettext(
+                                    "They clicked the button to copy a challenge link, we copied it into their clipboard",
+                                    "Challenge Link Copied!",
+                                )}
+                            </span>
+                        ),
+                        below: ack_target,
+                        closeAfter: 2000,
+                        animate: true,
+                        minWidth: 180,
+                    }),
+                )
+                .catch(() =>
+                    // Uh-oh, their browser won't let us access the clipboard?
+                    // ... give them the whole thing to copy...
+                    this.showChallengeLink(challenge_link, ack_target),
+                );
+        } catch (e) {
+            // Their browser doesn't even know about navigator.clipboard?
+            this.showChallengeLink(challenge_link, ack_target);
+        }
+    }
+
+    showChallengeLink(challenge_link: string, target: HTMLElement) {
+        popover({
+            elt: (
+                <div className="challenge-link-copy">
+                    {pgettext(
+                        "This is the label for a link (URL) that they created",
+                        "Challenge link:",
+                    )}
+                    <br />
+                    {challenge_link}
+                </div>
+            ),
+            below: target,
+            minWidth: 300,
+        });
     }
 
     cellBreaks(amount) {
