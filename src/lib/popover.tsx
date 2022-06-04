@@ -34,10 +34,8 @@ interface PopoverConfig {
     below?: HTMLElement;
     minWidth?: number;
     minHeight?: number;
-    //above?:HTMLElement;;
-    //below?:HTMLElement;;
-    //left?:HTMLElement;;
-    //right?:HTMLElement;;
+    closeAfter?: number; // milliseconds till self-close
+    animate?: boolean;
 }
 
 let last_id = 0;
@@ -58,7 +56,15 @@ export class PopOver extends TypedEventEmitter<Events> {
         $(backdrop).click(this.close);
         $(container).click(this.close);
         open_popovers[this.id] = this;
+        if (this.config.closeAfter) {
+            setTimeout(this.fadeout, this.config.closeAfter);
+        }
     }
+
+    fadeout = () => {
+        this.container.classList.add("popover-fadeout");
+        setTimeout(this.close, 500); // matches css transition-duration
+    };
 
     close = (ev) => {
         if (!ev || ev.target === this.backdrop || ev.target === this.container) {

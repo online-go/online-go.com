@@ -21,6 +21,7 @@ import * as preferences from "preferences";
 import * as player_cache from "player_cache";
 import ReactResizeDetector from "react-resize-detector";
 import { browserHistory } from "ogsHistory";
+import { popover } from "popover";
 import { _, pgettext } from "translate";
 import { Card } from "material";
 import { put, post, del } from "requests";
@@ -1010,7 +1011,7 @@ export class Play extends React.Component<{}, PlayState> {
                     <span className="cell">
                         <i
                             className="fa fa-share"
-                            onClick={this.copyChallengeLinkURL.bind(this, C.uuid)}
+                            onClick={(event) => this.copyChallengeLinkURL(event, C.uuid)}
                         />
                     </span>
                 </div>
@@ -1018,7 +1019,7 @@ export class Play extends React.Component<{}, PlayState> {
         );
     }
 
-    copyChallengeLinkURL(uuid: string): void {
+    copyChallengeLinkURL(event, uuid: string): void {
         const challenge_link =
             window.location.protocol +
             "//" +
@@ -1031,7 +1032,19 @@ export class Play extends React.Component<{}, PlayState> {
             .then(() => null)
             .catch(() => null);
 
-        console.log("Copied:", challenge_link);
+        popover({
+            elt: (
+                <span className="challenge-link-copied">
+                    {pgettext(
+                        "They clicked the button to copy a challenge link",
+                        "Challenge Link Copied!",
+                    )}
+                </span>
+            ),
+            below: event.target,
+            closeAfter: 1000,
+            animate: true,
+        });
     }
 
     cellBreaks(amount) {
