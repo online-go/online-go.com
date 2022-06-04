@@ -1031,22 +1031,40 @@ export class Play extends React.Component<{}, PlayState> {
 
         navigator.clipboard
             .writeText(challenge_link)
-            .then(() => null)
-            .catch(() => null);
-
-        popover({
-            elt: (
-                <span className="challenge-link-copied">
-                    {pgettext(
-                        "They clicked the button to copy a challenge link",
-                        "Challenge Link Copied!",
-                    )}
-                </span>
-            ),
-            below: event.target,
-            closeAfter: 1000,
-            animate: true,
-        });
+            .then(() =>
+                popover({
+                    elt: (
+                        <span className="challenge-link-copied">
+                            {pgettext(
+                                "They clicked the button to copy a challenge link, we copied it into their clipboard",
+                                "Challenge Link Copied!",
+                            )}
+                        </span>
+                    ),
+                    below: event.target,
+                    //closeAfter: 2000,
+                    animate: true,
+                    minWidth: 180,
+                }),
+            )
+            .catch(() =>
+                // Uh-oh, their browser won't let us access the clipboard?
+                // ... give them the whole thing to copy...
+                popover({
+                    elt: (
+                        <div className="challenge-link-copy">
+                            {pgettext(
+                                "This is the label for a link (URL) that they created",
+                                "Challenge link:",
+                            )}
+                            <br />
+                            {challenge_link}
+                        </div>
+                    ),
+                    below: event.target,
+                    minWidth: 300,
+                }),
+            );
     }
 
     cellBreaks(amount) {
