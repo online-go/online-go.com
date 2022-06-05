@@ -17,7 +17,7 @@
 
 import * as React from "react";
 
-import * as data from "data";
+import { useUser } from "hooks";
 
 import { pgettext } from "translate";
 
@@ -30,7 +30,7 @@ export function TemplateComponent(props: TemplateComponentProps): JSX.Element {
 
     const hangs_around = React.useRef("forever");
 
-    const user = data.get("config.user"); // user.anonymous will be set if they aren't logged in
+    const user = useUser(); // user.anonymous will be set if they aren't logged in
 
     const anAction = () => {
         console.log("A visitor clicked the question mark!");
