@@ -96,5 +96,6 @@ export function showChallengeLink(challenge_link: string, target: HTMLElement): 
         ),
         below: target,
         minWidth: 300,
+        container_class: "challenge-link-copy",
     });
 }
