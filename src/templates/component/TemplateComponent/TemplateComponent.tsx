@@ -28,6 +28,10 @@ export function TemplateComponent(): JSX.Element {
 
     const user = data.get("config.user"); // user.anonymous will be set if they aren't logged in
 
+    const anAction = () => {
+        console.log("A visitor clicked the question mark!");
+    };
+
     React.useEffect(() => {
         // Don't forget that side-effects go here, executed after rendering the return value
         console.log("Rendered!");
@@ -46,7 +50,7 @@ export function TemplateComponent(): JSX.Element {
                     "This text is just in a template, it's not used in the site",
                     "Consider using pgettext instead of '_', to make translators' life easier",
                 )}
-            {(user.anonymous || null) && <i className="fa fa-question" />}
+            {(user.anonymous || null) && <i className="fa fa-question" onClick={anAction} />}
 
             {<span className="hangs-around">{hangs_around.current}</span>}
         </div>
