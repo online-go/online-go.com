@@ -21,7 +21,11 @@ import * as data from "data";
 
 import { pgettext } from "translate";
 
-export function TemplateComponent(): JSX.Element {
+type TemplateComponentProps = {
+    render_twice?: boolean;
+};
+
+export function TemplateComponent(props: TemplateComponentProps): JSX.Element {
     const [username, setUsername] = React.useState("");
 
     const hangs_around = React.useRef("forever");
@@ -38,7 +42,7 @@ export function TemplateComponent(): JSX.Element {
         hangs_around.current = "rendered";
     });
 
-    if (username === "") {
+    if (username === "" && props.render_twice) {
         setUsername("Mr ReRender :)");
     }
 
