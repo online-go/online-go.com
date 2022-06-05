@@ -68,51 +68,16 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
                     </div>
                 </div>
                 <div className="body">
-                    <div className="GameLink-kv">
-                        <a href={"" + window.location} target="_blank">
-                            <i className="fa fa-link" />
-                        </a>
-                        <span>
-                            {
-                                goban.game_id
-                                    ? _("Game") /* Translators: Link to game */
-                                    : _("Review") /* Translators: Link to review */
-                            }
-                            :{" "}
-                        </span>
-                        <input
-                            type="text"
-                            value={"" + window.location}
-                            onClick={(ev) => (ev.target as HTMLInputElement).select()}
-                            readOnly
-                        />
-                    </div>
-
-                    <div className="GameLink-kv">
-                        <a href={sgf_url} target="_blank">
-                            <i className="fa fa-link" />
-                        </a>
-                        <span>{_("SGF")}: </span>
-                        <input
-                            type="text"
-                            value={sgf_url}
-                            onClick={(ev) => (ev.target as HTMLInputElement).select()}
-                            readOnly
-                        />
-                    </div>
-
-                    <div className="GameLink-kv">
-                        <a href={png_url} target="_blank">
-                            <i className="fa fa-link" />
-                        </a>
-                        <span>{_("PNG")}: </span>
-                        <input
-                            type="text"
-                            value={png_url}
-                            onClick={(ev) => (ev.target as HTMLInputElement).select()}
-                            readOnly
-                        />
-                    </div>
+                    <GameLinkKv
+                        name={
+                            goban.game_id
+                                ? _("Game") /* Translators: Link to game */
+                                : _("Review") /* Translators: Link to review */
+                        }
+                        url={window.location.toString()}
+                    />
+                    <GameLinkKv name={_("SGF")} url={sgf_url} />
+                    <GameLinkKv name={_("PNG")} url={png_url} />
 
                     {(goban.game_id || null) && <AnimatedPngCreator goban={goban} />}
                 </div>
@@ -226,4 +191,21 @@ function AnimatedPngCreator({ goban }: { goban: Goban }): JSX.Element {
 
 export function openGameLinkModal(goban): void {
     openModal(<GameLinkModal goban={goban} fastDismiss />);
+}
+
+function GameLinkKv({ name, url }: { name: string; url: string }) {
+    return (
+        <div className="GameLink-kv">
+            <a href={url} target="_blank">
+                <i className="fa fa-link" />
+            </a>
+            <span>{name}: </span>
+            <input
+                type="text"
+                value={url}
+                onClick={(ev) => (ev.target as HTMLInputElement).select()}
+                readOnly
+            />
+        </div>
+    );
 }
