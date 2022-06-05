@@ -36,10 +36,13 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
         const goban = this.props.goban;
         let png_url: string;
         let sgf_url: string;
+        let embed_html: string;
 
         if (goban.game_id) {
             sgf_url = `${window.location.protocol}//${window.location.hostname}/api/v1/games/${goban.game_id}/sgf/${goban.game_id}.sgf`;
             png_url = `${window.location.protocol}//${window.location.hostname}/api/v1/games/${goban.game_id}/png/${goban.game_id}.png`;
+            const embed_url = `${window.location.protocol}//${window.location.hostname}/game/${goban.game_id}/embed`;
+            embed_html = `<iframe src="${embed_url}" style="width: 400px; height: 444px;" allowtransparency="true" scrolling="no" frameborder="0"></iframe>`;
         } else {
             sgf_url = `${window.location.protocol}//${window.location.hostname}/api/v1/reviews/${goban.review_id}/sgf/${goban.review_id}.sgf`;
             png_url = `${window.location.protocol}//${window.location.hostname}/api/v1/reviews/${goban.review_id}/png/${goban.review_id}.png`;
@@ -74,10 +77,11 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
                                 ? _("Game") /* Translators: Link to game */
                                 : _("Review") /* Translators: Link to review */
                         }
-                        url={window.location.toString()}
+                        value={window.location.toString()}
                     />
-                    <GameLinkKv name={_("SGF")} url={sgf_url} />
-                    <GameLinkKv name={_("PNG")} url={png_url} />
+                    <GameLinkKv name={_("SGF")} value={sgf_url} />
+                    <GameLinkKv name={_("PNG")} value={png_url} />
+                    {embed_html && <GameLinkKv name={_("Embed")} value={embed_html} nolink />}
 
                     {(goban.game_id || null) && <AnimatedPngCreator goban={goban} />}
                 </div>
@@ -193,16 +197,18 @@ export function openGameLinkModal(goban): void {
     openModal(<GameLinkModal goban={goban} fastDismiss />);
 }
 
-function GameLinkKv({ name, url }: { name: string; url: string }) {
+function GameLinkKv({ name, value, nolink }: { name: string; value: string; nolink?: boolean }) {
     return (
         <div className="GameLink-kv">
-            <a href={url} target="_blank">
-                <i className="fa fa-link" />
-            </a>
+            {!nolink && (
+                <a href={value} target="_blank">
+                    <i className="fa fa-link" />
+                </a>
+            )}
             <span>{name}: </span>
             <input
                 type="text"
-                value={url}
+                value={value}
                 onClick={(ev) => (ev.target as HTMLInputElement).select()}
                 readOnly
             />
