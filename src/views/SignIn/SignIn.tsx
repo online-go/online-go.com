@@ -231,7 +231,7 @@ export class SignIn extends React.PureComponent<{}, any> {
                                 ) /* translators: username or password, or sign in with social authentication */
                             }
                         </span>
-                        <SocialLoginButtons />
+                        <SocialLoginButtons next_url={window.location.hash.substring(1)} />
                     </Card>
 
                     <div className="registration">
