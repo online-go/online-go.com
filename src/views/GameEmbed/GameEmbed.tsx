@@ -57,7 +57,7 @@ export function GameEmbed(): JSX.Element {
 
     return (
         <div className="goban-embed" ref={ref}>
-            <MiniGoban id={game_id} displayWidth={width - PADDING} />
+            <MiniGoban id={game_id} displayWidth={width - PADDING} openLinksInNewTab />
         </div>
     );
 }
