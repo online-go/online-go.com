@@ -21,7 +21,6 @@ import * as preferences from "preferences";
 import * as player_cache from "player_cache";
 import ReactResizeDetector from "react-resize-detector";
 import { browserHistory } from "ogsHistory";
-import { popover } from "popover";
 import { _, pgettext } from "translate";
 import { Card } from "material";
 import { put, post, del } from "requests";
@@ -37,6 +36,7 @@ import { automatch_manager, AutomatchPreferences } from "automatch_manager";
 import { bot_count } from "bots";
 import { SupporterGoals } from "SupporterGoals";
 import { CreatedChallengeInfo } from "types";
+import { ChallengeLinkButton } from "ChallengeLinkButton";
 
 import swal from "sweetalert2";
 import { Size } from "src/lib/types";
@@ -1009,14 +1009,7 @@ export class Play extends React.Component<{}, PlayState> {
                     <span className="cell">{C.name}</span>
                     <span className="cell">{rulesText(C.rules)}</span>
                     <span className="cell">
-                        <button
-                            onClick={(event) =>
-                                this.copyChallengeLinkURL(event.target as HTMLElement, C.uuid)
-                            }
-                            className="btn xs"
-                        >
-                            <i className="fa fa-share" />
-                        </button>
+                        <ChallengeLinkButton uuid={C.uuid} />
                     </span>
                 </div>
             ) : null,

@@ -19,9 +19,18 @@ import * as React from "react";
 
 import { pgettext } from "translate";
 
-export function ChallengeLinkButton(): JSX.Element {
+import { popover } from "popover";
 
-    copyChallengeLinkURL(ack_target: HTMLElement, uuid: string): void {
+type ChallengeLinkButtonProps = {
+    uuid: string;
+};
+
+/**
+ *  Render a button that generates a "Challenge Link" URL, and tries to copy it to the clipboard, or display it.
+ */
+
+export function ChallengeLinkButton(props: ChallengeLinkButtonProps): JSX.Element {
+    const copyChallengeLinkURL = (ack_target: HTMLElement, uuid: string): void => {
         const challenge_link =
             window.location.protocol +
             "//" +
@@ -51,15 +60,15 @@ export function ChallengeLinkButton(): JSX.Element {
                 .catch(() =>
                     // Uh-oh, their browser won't let us access the clipboard?
                     // ... give them the whole thing to copy...
-                    this.showChallengeLink(challenge_link, ack_target),
+                    showChallengeLink(challenge_link, ack_target),
                 );
-        } catch(e) {
+        } catch (e) {
             // Their browser doesn't even know about navigator.clipboard?
-            this.showChallengeLink(challenge_link, ack_target);
+            showChallengeLink(challenge_link, ack_target);
         }
     };
 
-    showChallengeLink(challenge_link: string, target: HTMLElement) {
+    const showChallengeLink = (challenge_link: string, target: HTMLElement) => {
         popover({
             elt: (
                 <div className="challenge-link-copy">
@@ -74,10 +83,15 @@ export function ChallengeLinkButton(): JSX.Element {
             below: target,
             minWidth: 300,
         });
-    }
+    };
 
     /* render */
     return (
-        <div></div>
+        <button
+            onClick={(event) => copyChallengeLinkURL(event.target as HTMLElement, props.uuid)}
+            className="btn xs"
+        >
+            <i className="fa fa-share" />
+        </button>
     );
 }
