@@ -51,6 +51,8 @@ import {
     JGOFTimeControlSystem,
 } from "goban";
 
+import { copyChallengeLinkURL } from "ChallengeLinkButton";
+
 import swal from "sweetalert2";
 
 type ChallengeDetails = rest_api.ChallengeDetails;
@@ -577,6 +579,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 // console.log("Challenge response: ", res);
 
                 const challenge_id = res.challenge;
+                const challenge_uuid = res.uuid;
+
                 const game_id = typeof res.game === "object" ? res.game.id : res.game;
                 let keepalive_interval;
 
@@ -620,6 +624,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 } else {
                     if (this.props.mode === "open") {
                         swal(_("Challenge created!")).catch(swal.noop);
+                        if (this.state.challenge.invite_only) {
+                            copyChallengeLinkURL(swal.getConfirmButton(), challenge_uuid);
+                        } else {
+                            console.log(this.state.challenge);
+                        }
                     } else if (this.props.mode === "player") {
                         swal(_("Challenge sent!")).catch(swal.noop);
                     }

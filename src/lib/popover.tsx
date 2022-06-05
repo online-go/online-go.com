@@ -36,6 +36,7 @@ interface PopoverConfig {
     minHeight?: number;
     closeAfter?: number; // milliseconds till self-close
     animate?: boolean;
+    container_class?: string;
 }
 
 let last_id = 0;
@@ -85,8 +86,10 @@ export function close_all_popovers(): void {
 }
 
 export function popover(config: PopoverConfig): PopOver {
+    const container_class = config.container_class ? ` ${config.container_class}` : "";
+
     const backdrop = $("<div class='popover-backdrop'></div>");
-    const container = $("<div class='popover-container'></div>");
+    const container = $(`<div class='popover-container${container_class}'></div>`);
 
     const minWidth: number = config.minWidth || 150;
     const minHeight: number = config.minHeight || 25;

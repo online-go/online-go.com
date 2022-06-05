@@ -30,61 +30,6 @@ type ChallengeLinkButtonProps = {
  */
 
 export function ChallengeLinkButton(props: ChallengeLinkButtonProps): JSX.Element {
-    const copyChallengeLinkURL = (ack_target: HTMLElement, uuid: string): void => {
-        const challenge_link =
-            window.location.protocol +
-            "//" +
-            window.location.hostname +
-            (window.location.port ? ":" + window.location.port : "") +
-            `/welcome/?linked-challenge=${uuid}`;
-
-        try {
-            navigator.clipboard
-                .writeText(challenge_link)
-                .then(() =>
-                    popover({
-                        elt: (
-                            <span className="challenge-link-copied">
-                                {pgettext(
-                                    "They clicked the button to copy a challenge link, we copied it into their clipboard",
-                                    "Challenge Link Copied!",
-                                )}
-                            </span>
-                        ),
-                        below: ack_target,
-                        closeAfter: 2000,
-                        animate: true,
-                        minWidth: 180,
-                    }),
-                )
-                .catch(() =>
-                    // Uh-oh, their browser won't let us access the clipboard?
-                    // ... give them the whole thing to copy...
-                    showChallengeLink(challenge_link, ack_target),
-                );
-        } catch (e) {
-            // Their browser doesn't even know about navigator.clipboard?
-            showChallengeLink(challenge_link, ack_target);
-        }
-    };
-
-    const showChallengeLink = (challenge_link: string, target: HTMLElement) => {
-        popover({
-            elt: (
-                <div className="challenge-link-copy">
-                    {pgettext(
-                        "This is the label for a link (URL) that they created",
-                        "Challenge link:",
-                    )}
-                    <br />
-                    {challenge_link}
-                </div>
-            ),
-            below: target,
-            minWidth: 300,
-        });
-    };
-
     /* render */
     return (
         <button
@@ -94,4 +39,62 @@ export function ChallengeLinkButton(props: ChallengeLinkButtonProps): JSX.Elemen
             <i className="fa fa-share" />
         </button>
     );
+}
+
+// Generally useful challenge link functions
+
+export function copyChallengeLinkURL(ack_target: HTMLElement, uuid: string): void {
+    const challenge_link =
+        window.location.protocol +
+        "//" +
+        window.location.hostname +
+        (window.location.port ? ":" + window.location.port : "") +
+        `/welcome/?linked-challenge=${uuid}`;
+
+    try {
+        navigator.clipboard
+            .writeText(challenge_link)
+            .then(() =>
+                popover({
+                    elt: (
+                        <span>
+                            {pgettext(
+                                "They clicked the button to copy a challenge link, we copied it into their clipboard",
+                                "Challenge Link Copied!",
+                            )}
+                        </span>
+                    ),
+                    below: ack_target,
+                    closeAfter: 2000,
+                    animate: true,
+                    minWidth: 180,
+                    container_class: "challenge-link-copied",
+                }),
+            )
+            .catch(() =>
+                // Uh-oh, their browser won't let us access the clipboard?
+                // ... give them the whole thing to copy...
+                showChallengeLink(challenge_link, ack_target),
+            );
+    } catch (e) {
+        // Their browser doesn't even know about navigator.clipboard?
+        showChallengeLink(challenge_link, ack_target);
+    }
+}
+
+export function showChallengeLink(challenge_link: string, target: HTMLElement): void {
+    popover({
+        elt: (
+            <div className="challenge- link - copy">
+                {pgettext(
+                    "This is the label for a link (URL) that they created",
+                    "Challenge link:",
+                )}
+                <br />
+                {challenge_link}
+            </div>
+        ),
+        below: target,
+        minWidth: 300,
+    });
 }
