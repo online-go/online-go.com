@@ -23,6 +23,7 @@ import { popover } from "popover";
 
 type ChallengeLinkButtonProps = {
     uuid: string;
+    class_extension?: string;
 };
 
 /**
@@ -30,11 +31,13 @@ type ChallengeLinkButtonProps = {
  */
 
 export function ChallengeLinkButton(props: ChallengeLinkButtonProps): JSX.Element {
+    const full_class = "btn xs" + (props.class_extension ? ` ${props.class_extension}` : "");
+
     /* render */
     return (
         <button
             onClick={(event) => copyChallengeLinkURL(event.target as HTMLElement, props.uuid)}
-            className="btn xs"
+            className={full_class}
         >
             <i className="fa fa-share" />
         </button>

@@ -26,6 +26,7 @@ import * as preferences from "preferences";
 import { errorAlerter, ignore } from "misc";
 import { DismissableNotification } from "DismissableNotification";
 import { ChallengesList } from "./ChallengesList";
+import { InviteList } from "./InviteList";
 import { EmailBanner } from "EmailBanner";
 import { notification_manager } from "Notifications";
 import { ActiveAnnouncements } from "Announcements";
@@ -128,6 +129,7 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
                         <EmailBanner />
                         <ActiveAnnouncements />
                         <ChallengesList onAccept={() => this.refresh()} />
+                        <InviteList />
 
                         {((user && user.provisional) || null) && (
                             <DismissableNotification
