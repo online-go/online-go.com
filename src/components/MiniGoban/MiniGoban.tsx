@@ -235,7 +235,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
 
     // Update displayWidth dynamically
     React.useEffect(() => {
-        if (!goban.current && props.displayWidth == null) {
+        if (!goban.current || props.displayWidth == null) {
             return;
         }
         goban.current.setSquareSizeBasedOnDisplayWidth(props.displayWidth);
