@@ -303,10 +303,7 @@ export class GobanThemePicker extends React.PureComponent<
             const canvas = this.canvases.white[i];
             const ctx = (canvas[0] as HTMLCanvasElement).getContext("2d");
             const radius = Math.round(square_size / 2.2);
-            const draw = (tf) => {
-                if (!tf) {
-                    console.log("Should be rawing white");
-                }
+            const draw = () => {
                 ctx.clearRect(0, 0, square_size, square_size);
                 theme.placeWhiteStone(
                     ctx,
@@ -317,8 +314,8 @@ export class GobanThemePicker extends React.PureComponent<
                     radius,
                 );
             };
-            const stones = theme.preRenderWhite(radius, 23434, () => draw(false));
-            draw(true);
+            const stones = theme.preRenderWhite(radius, 23434, draw);
+            draw();
         }
 
         for (let i = 0; i < GoThemesSorted.black.length; ++i) {

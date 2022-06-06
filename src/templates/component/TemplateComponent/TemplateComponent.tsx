@@ -17,16 +17,24 @@
 
 import * as React from "react";
 
-import * as data from "data";
+import { useUser } from "hooks";
 
 import { pgettext } from "translate";
 
-export function TemplateComponent(): JSX.Element {
+type TemplateComponentProps = {
+    render_twice?: boolean;
+};
+
+export function TemplateComponent(props: TemplateComponentProps): JSX.Element {
     const [username, setUsername] = React.useState("");
 
     const hangs_around = React.useRef("forever");
 
-    const user = data.get("config.user"); // user.anonymous will be set if they aren't logged in
+    const user = useUser(); // user.anonymous will be set if they aren't logged in
+
+    const anAction = () => {
+        console.log("A visitor clicked the question mark!");
+    };
 
     React.useEffect(() => {
         // Don't forget that side-effects go here, executed after rendering the return value
@@ -34,7 +42,7 @@ export function TemplateComponent(): JSX.Element {
         hangs_around.current = "rendered";
     });
 
-    if (username === "") {
+    if (username === "" && props.render_twice) {
         setUsername("Mr ReRender :)");
     }
 
@@ -46,7 +54,7 @@ export function TemplateComponent(): JSX.Element {
                     "This text is just in a template, it's not used in the site",
                     "Consider using pgettext instead of '_', to make translators' life easier",
                 )}
-            {(user.anonymous || null) && <i className="fa fa-question" />}
+            {(user.anonymous || null) && <i className="fa fa-question" onClick={anAction} />}
 
             {<span className="hangs-around">{hangs_around.current}</span>}
         </div>
