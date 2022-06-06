@@ -126,6 +126,12 @@ module.exports = {
             },
         ],
         "react-hooks/rules-of-hooks": "error",
+        "prefer-const": [
+            "error",
+            {
+                destructuring: "all",
+            },
+        ],
     },
     overrides: [
         {
