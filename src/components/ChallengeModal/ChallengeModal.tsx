@@ -1614,27 +1614,29 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         </button>
                     )}
                 </div>
-                <div className="form-group invite-only-challenge-selector">
-                    <label className="control-label" htmlFor="challenge-invite-only">
-                        {pgettext(
-                            "A checkbox to make a challenge open only to invited people who have the link to it",
-                            "Invite-only",
-                        )}
-                    </label>
+                {!(this.props.playerId || null) && (
+                    <div className="form-group invite-only-challenge-selector">
+                        <label className="control-label" htmlFor="challenge-invite-only">
+                            {pgettext(
+                                "A checkbox to make a challenge open only to invited people who have the link to it",
+                                "Invite-only",
+                            )}
+                        </label>
 
-                    <div className="controls">
-                        {(mode !== "demo" || null) && (
-                            <div className="checkbox">
-                                <input
-                                    type="checkbox"
-                                    id="challenge-invite-only"
-                                    checked={this.state.challenge.invite_only}
-                                    onChange={this.update_invite_only}
-                                />
-                            </div>
-                        )}
+                        <div className="controls">
+                            {(mode !== "demo" || null) && (
+                                <div className="checkbox">
+                                    <input
+                                        type="checkbox"
+                                        id="challenge-invite-only"
+                                        checked={this.state.challenge.invite_only}
+                                        onChange={this.update_invite_only}
+                                    />
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
+                )}
                 {(mode !== "demo" || null) && this.preferredGameSettings()}
             </div>
         );
