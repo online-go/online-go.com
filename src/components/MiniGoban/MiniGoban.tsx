@@ -45,6 +45,7 @@ interface MiniGobanProps {
     onUpdate?: () => void;
     json?: any;
     noLink?: boolean;
+    openLinksInNewTab?: boolean;
     noText?: boolean;
     title?: boolean;
 }
@@ -232,6 +233,14 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
         };
     }, [props.id]);
 
+    // Update displayWidth dynamically
+    React.useEffect(() => {
+        if (!goban.current || props.displayWidth == null) {
+            return;
+        }
+        goban.current.setSquareSizeBasedOnDisplayWidth(props.displayWidth);
+    }, [props.displayWidth]);
+
     const inner = (
         <React.Fragment>
             {props.title && (
@@ -285,11 +294,16 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
         </React.Fragment>
     );
 
+    let new_tab_attributes = {};
+    if (props.openLinksInNewTab) {
+        new_tab_attributes = { target: "_blank", rel: "noopener noreferrer" };
+    }
+
     if (props.noLink) {
         return <div className="MiniGoban nolink">{inner}</div>;
     } else {
         return (
-            <Link to={`/game/${props.id}`} className="MiniGoban link">
+            <Link to={`/game/${props.id}`} className="MiniGoban link" {...new_tab_attributes}>
                 {inner}
             </Link>
         );
