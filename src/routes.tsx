@@ -33,6 +33,7 @@ import { Admin, MerchantLog } from "Admin";
 import { ChatView } from "ChatView";
 import { Developer } from "Developer";
 import { Game } from "Game";
+import { GameEmbed } from "GameEmbed";
 import { Joseki } from "Joseki";
 import { Group } from "Group";
 import { GroupCreate } from "GroupCreate";
@@ -192,6 +193,7 @@ export const routes = (
                 <Route path="/review/:review_id" element={<Game />} />
                 <Route path="/demo/view/:review_id" element={<Game />} />
                 <Route path="/demo/:review_id" element={<Game />} />
+                <Route path="/game/:game_id/embed" element={<GameEmbed />} />
                 <Route path="/joseki/" element={<Joseki />} />{" "}
                 {/* ^^ this is equivalent to specifying pos = "root" */}
                 <Route path="/joseki/:pos" element={<Joseki />} />

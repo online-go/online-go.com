@@ -721,7 +721,7 @@ function AccountSettings(props: SettingGroupProps): JSX.Element {
                 <dd>
                     <i>
                         {_(
-                            "Warning: this action is permanant, there is no way to recover an account after it's been deleted.",
+                            "Warning: this action is permanent, there is no way to recover an account after it's been deleted.",
                         )}
                     </i>
                 </dd>
