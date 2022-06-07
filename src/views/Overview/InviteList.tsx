@@ -85,7 +85,7 @@ export function InviteList(): JSX.Element {
                                     <ChallengeLinkButton uuid={challenge.uuid} />
                                 </div>
                                 <div className="fab-section">
-                                    <FabX onClick={deleteChallenge.bind(this, challenge)} />
+                                    <FabX onClick={() => deleteChallenge(challenge)} />
                                 </div>
                             </div>
                             <div>{challenge_text_description(challenge)}</div>
