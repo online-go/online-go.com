@@ -23,6 +23,7 @@
 
     .Card {
         max-width: 30rem;
+        margin-bottom: 1.5rem; // Space above "already have an account"
 
         .invitation {
             display: flex;
@@ -33,12 +34,21 @@
                 padding-bottom: 0.75rem;
             }
         }
+
+        .buttons {
+            button {
+                display: block;
+                margin: auto;
+            }
+            span {
+                float: right;
+                margin-right: 1rem;
+            }
+        }
     }
 
-    .login-options {
-            .btn {
-                margin-left: 0.5rem;
-            }
-
-        }
+    button {
+        // Space above the Sign In button.
+        margin-top: 0.5rem;
+    }
 }

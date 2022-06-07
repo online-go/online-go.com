@@ -16,9 +16,10 @@
  */
 
 import * as React from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import swal from "sweetalert2";
 import * as data from "data";
+import { useUser } from "hooks";
 import { _, pgettext } from "translate";
 import { get, post } from "requests";
 import { errorAlerter } from "misc";
@@ -38,12 +39,11 @@ type Challenge = socket_api.seekgraph_global.Challenge;
 // From there, the user can accept the game - going via login orn auto-registration if necessary.
 
 export function ChallengeLinkLanding(): JSX.Element {
-    const user = data.get("user");
-    const logged_in = !user.anonymous;
-
     /* State */
     const [linked_challenge, set_linked_challenge] = React.useState<Challenge>(null);
-    const [ask_to_login, set_ask_to_login] = React.useState<boolean>(false);
+    const [logging_in, set_logging_in] = React.useState<boolean>(false);
+
+    const navigate = useNavigate();
 
     /* Actions */
 
@@ -72,12 +72,10 @@ export function ChallengeLinkLanding(): JSX.Element {
         if (logged_in) {
             doAcceptance(linked_challenge);
         } else {
-            set_ask_to_login(true);
+            set_logging_in(true);
             // We need to save the challenge info in this way for when we come back after logging in.
-            // An alternative is passing this "state" via the URL hash or params, but believe me
-            // this does not work out well :)
             data.set("pending_accepted_challenge", linked_challenge);
-            console.log("pended", linked_challenge);
+            navigate("/sign-in#/welcome/accepted", { replace: true });
         }
     };
 
@@ -139,8 +137,6 @@ export function ChallengeLinkLanding(): JSX.Element {
 
     React.useEffect(() => {
         if (already_accepted) {
-            console.log("Already accepted", pending_accepted_challenge);
-            // we have to guard against being called multiple times
             if (pending_accepted_challenge) {
                 doAcceptance(pending_accepted_challenge);
             }
@@ -150,79 +146,89 @@ export function ChallengeLinkLanding(): JSX.Element {
                 window.location.pathname = "/";
             }
 
-            console.log("Challenge: ", linked_challenge_uuid);
-
             if (linked_challenge_uuid && !linked_challenge) {
                 get(`challenges/uu-${linked_challenge_uuid}`)
-                    .then((challenge) => {
-                        set_linked_challenge(challenge);
+                    .then((challenge: Challenge) => {
+                        if (user.anonymous || challenge.user_id !== user.id) {
+                            set_linked_challenge(challenge);
+                        } else {
+                            // If it's their own challenge, send them back to their home page where they will see it
+                            window.location.pathname = "/";
+                        }
                     })
                     .catch((err) => {
                         console.log(err);
+                        window.location.pathname = "/";
                     });
             }
         }
     });
 
+    const user = useUser();
+    const logged_in = !user.anonymous;
+
     /* Render */
     return (
         <div id="ChallengeLinkLanding">
             <h2>
-                {logged_in || ask_to_login
+                {logged_in || logging_in
                     ? "" /* this vertical space intentionally left blank! */
                     : _("Welcome to OGS!")}
             </h2>
 
-            {((!linked_challenge && !already_accepted) || null) && <LoadingPage />}
+            {((!linked_challenge && !pending_accepted_challenge) || null) && <LoadingPage />}
 
-            {((linked_challenge && !ask_to_login && !already_accepted) || null) && (
-                <Card>
-                    <div className="invitation">
-                        <span className="invite-text">
-                            {pgettext(
-                                "The challenger's name and avatar appear on the next line after this",
-                                "You have been invited to a game of Go, by",
-                            )}
-                        </span>
-                        <Player icon iconSize={32} user={linked_challenge.user_id} />
-                    </div>
-                    <hr />
-                    <ChallengeDetailsReviewPane challenge={linked_challenge} />
-                    <hr />
-                    <div className="buttons">
-                        <button onClick={accept} className="primary">
-                            {_("Accept Game")}
-                        </button>
-                    </div>
-                </Card>
-            )}
-
-            {((ask_to_login && !already_accepted) || null) && (
-                <div className="login-options">
-                    <span>
-                        {pgettext(
-                            "The user just accepted a challenge via a link, but they are not logged in",
-                            "Before you start, we just need you to be logged in!",
-                        )}
-                    </span>
-
+            {((linked_challenge && !pending_accepted_challenge) || null) && (
+                <>
                     <Card>
-                        <div>
-                            <span>New to OGS?</span>
-                            <button className="btn primary" onClick={registerAndCommence}>
-                                <b>{_("Proceed as a Guest") /*  */}</b>
-                            </button>
+                        <div className="invitation">
+                            <span className="invite-text">
+                                {pgettext(
+                                    "The challenger's name and avatar appear on the next line after this",
+                                    "You have been invited to a game of Go, by",
+                                )}
+                            </span>
+                            <Player icon iconSize={32} user={linked_challenge.user_id} />
                         </div>
                         <hr />
-
-                        <div>
-                            <span>Already have an account?</span>
-                            <Link to={`/sign-in#/welcome/accepted`} className="btn primary">
-                                <b>{_("Sign In") /*  */}</b>
-                            </Link>
+                        <ChallengeDetailsReviewPane challenge={linked_challenge} />
+                        <hr />
+                        <div className="buttons">
+                            {(logged_in || null) && (
+                                <button onClick={accept} className="primary">
+                                    {_("Accept Game")}
+                                </button>
+                            )}
+                            {(!logged_in || null) && (
+                                <>
+                                    <button onClick={registerAndCommence} className="primary">
+                                        {_("Accept Game")}
+                                    </button>
+                                    <span>
+                                        {pgettext(
+                                            "This text is next to the accept game button for someone who is not logged in",
+                                            "and play as a Guest",
+                                        )}
+                                    </span>
+                                </>
+                            )}
                         </div>
                     </Card>
-                </div>
+                    {(!logged_in || null) && (
+                        <>
+                            <span>Already have an account?</span>
+                            <button onClick={accept} className="primary">
+                                {_("Sign In")}
+                            </button>
+                            <span>
+                                {pgettext(
+                                    "this label is next to the 'sign in' button when a guest is accepting a challenge from a link",
+                                    "and accept game",
+                                )}
+                            </span>
+                        </>
+                    )}
+                </>
             )}
         </div>
     );
