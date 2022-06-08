@@ -324,6 +324,9 @@ export class NotificationManager {
         this.rebuildNotificationList();
     }
     connect() {
+        if (socket.connected) {
+            socket.send("notification/connect", { player_id: this.user.id, auth: this.auth });
+        }
         socket.on("connect", () => {
             socket.send("notification/connect", { player_id: this.user.id, auth: this.auth });
         });
