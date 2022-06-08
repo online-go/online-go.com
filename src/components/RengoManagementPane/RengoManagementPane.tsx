@@ -29,10 +29,14 @@ interface RengoManagementPaneProperties {
     withdrawFromRengoChallenge: (challenge: any) => void;
     joinRengoChallenge: (challenge: any) => void;
     dontShowCancelButton?: boolean;
-    children: React.ReactNode;
+    children: React.ReactNode; // intended for team management pane
 }
 
 interface RengoManagementPaneState {}
+
+/** This Pane is designed to manage a challenge identified by `id`,
+ * picked out of a supplied list of challenges
+ * */
 
 export class RengoManagementPane extends React.PureComponent<
     RengoManagementPaneProperties,

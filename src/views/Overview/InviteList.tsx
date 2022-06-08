@@ -20,7 +20,10 @@ import * as React from "react";
 import { errorAlerter } from "misc";
 import { pgettext } from "translate";
 import { del, get } from "requests";
+import { useUser } from "hooks";
+import { dup } from "misc";
 
+import { popover } from "popover";
 import { profanity_filter } from "profanity_filter";
 import { challenge_text_description } from "ChallengeModal";
 
@@ -28,9 +31,14 @@ import { Card } from "material";
 import { FabX } from "material";
 
 import { ChallengeLinkButton } from "ChallengeLinkButton";
+import { RengoManagementPane } from "RengoManagementPane";
+
+type ChallengeDTO = rest_api.OpenChallengeDTO;
 
 export function InviteList(): JSX.Element {
-    const [invites, setInvites] = React.useState([]);
+    const [invites, setInvites] = React.useState<ChallengeDTO[]>([]);
+
+    const manage_button = React.useRef();
 
     const deleteChallenge = (challenge) => {
         del("challenges/%%", challenge.id)
@@ -40,22 +48,39 @@ export function InviteList(): JSX.Element {
             .catch(errorAlerter);
     };
 
+    const user = useUser();
+
+    const showRengoManagementPane = (challenge: ChallengeDTO) => {
+        const challenge_details = popover({
+            elt: (
+                <RengoManagementPane
+                    challenge_id={challenge.id}
+                    user={user}
+                    rengo_challenge_list={[challenge]}
+                ></RengoManagementPane>
+            ),
+            below: manage_button.current,
+            animate: true,
+            minWidth: 180,
+            container_class: "rengo-management-pane-container",
+        });
+    };
+
     React.useEffect(
         () => {
             get("me/challenges/invites", { page_size: 30 })
                 .then((res) => {
-                    for (const challenge of res.results) {
+                    const invite_list = dup<ChallengeDTO[]>(res.results);
+                    for (const challenge of invite_list) {
                         try {
                             challenge.game.time_control_parameters = JSON.parse(
-                                challenge.game.time_control_parameters,
+                                challenge.game.time_control_parameters as string,
                             );
                         } catch (e) {
-                            console.log(
-                                "parse error - ignoring, assuming it means we already converted this one",
-                            );
+                            console.log(e);
                         }
                     }
-                    setInvites(res.results);
+                    setInvites(invite_list);
                 })
                 .catch((err) => {
                     console.error("Error receiving invite list:", err);
@@ -84,8 +109,26 @@ export function InviteList(): JSX.Element {
                                     <h4>{profanity_filter(challenge.game.name)}</h4>
                                     <ChallengeLinkButton uuid={challenge.uuid} />
                                 </div>
-                                <div className="fab-section">
-                                    <FabX onClick={() => deleteChallenge(challenge)} />
+                                <div className="fab-section" ref={manage_button}>
+                                    {(challenge.game.rengo && null) || (
+                                        <button
+                                            className="primary sm"
+                                            onClick={() => showRengoManagementPane(challenge)}
+                                        >
+                                            {challenge.challenger.id === user.id
+                                                ? pgettext(
+                                                      "Manage rengo teams in a challenge",
+                                                      "Manage",
+                                                  )
+                                                : pgettext(
+                                                      "Look at rengo teams in a challenge",
+                                                      "View",
+                                                  )}
+                                        </button>
+                                    )}
+                                    {(challenge.challenger.id === user.id || null) && (
+                                        <FabX onClick={() => deleteChallenge(challenge)} />
+                                    )}
                                 </div>
                             </div>
                             <div>{challenge_text_description(challenge)}</div>

@@ -31,7 +31,7 @@ import { kb_bind, kb_unbind } from "KBShortcut";
 import { Player } from "Player";
 import * as player_cache from "player_cache";
 import swal from "sweetalert2";
-import { nominateForRengoChallenge } from "Play/util";
+import { nominateForRengoChallenge } from "rengo_utils";
 
 type Challenge = socket_api.seekgraph_global.Challenge;
 

@@ -21,7 +21,7 @@ import swal from "sweetalert2";
 import * as data from "data";
 import { useUser } from "hooks";
 import { _, pgettext } from "translate";
-import { get, post } from "requests";
+import { get, put, post } from "requests";
 import { errorAlerter } from "misc";
 import { browserHistory } from "ogsHistory";
 import { get_ebi } from "SignIn";
@@ -49,22 +49,42 @@ export function ChallengeLinkLanding(): JSX.Element {
 
     const doAcceptance = (challenge: Challenge) => {
         swal({
-            text: "Accepting game...",
+            text: pgettext(
+                "Appears in a dialog while the server is responding",
+                "Accepting game...",
+            ),
             type: "info",
             showCancelButton: false,
             showConfirmButton: false,
             allowEscapeKey: false,
         }).catch(swal.noop);
 
-        post("challenges/%%/accept", challenge.challenge_id, {})
-            .then(() => {
-                swal.close();
-                browserHistory.push(`/game/${challenge.game_id}`);
-            })
-            .catch((err) => {
-                swal.close();
-                errorAlerter(err);
-            });
+        if (challenge.rengo) {
+            put("challenges/%%/join", challenge.challenge_id, {})
+                .then(() => {
+                    swal.close();
+                    if (challenge.invite_only) {
+                        navigate("/", { replace: true });
+                    } else {
+                        navigate("/play", { replace: true }); // TBD: extend Play route to support opening the correct rengo pane
+                    }
+                    // TBD: activate help item to tell newcomers when the game will actually start
+                })
+                .catch((err: any) => {
+                    swal.close();
+                    errorAlerter(err);
+                });
+        } else {
+            post("challenges/%%/accept", challenge.challenge_id, {})
+                .then(() => {
+                    swal.close();
+                    browserHistory.push(`/game/${challenge.game_id}`);
+                })
+                .catch((err) => {
+                    swal.close();
+                    errorAlerter(err);
+                });
+        }
         data.set("pending_accepted_challenge", null);
     };
 

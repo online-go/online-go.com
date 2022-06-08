@@ -15,13 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { Challenge } from "./Play";
+import type { Challenge } from "../views/Play/Play";
 import swal from "sweetalert2";
 import { put } from "requests";
 import { errorAlerter } from "misc";
 import { _ } from "translate";
 
-// This is used by the SeekGraph to perform this function as well as this page...
+// This is used by the SeekGraph to perform this function, as well as the Play page...
 export function nominateForRengoChallenge(C: Challenge) {
     swal({
         text: _("Joining..."), // translator: the server is processing their request to join a rengo game

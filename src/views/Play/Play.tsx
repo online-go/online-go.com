@@ -43,7 +43,7 @@ import { Size } from "src/lib/types";
 
 import { RengoManagementPane } from "RengoManagementPane";
 import { RengoTeamManagementPane } from "RengoTeamManagementPane";
-import { nominateForRengoChallenge } from "./util";
+import { nominateForRengoChallenge } from "rengo_utils";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 export type Challenge = socket_api.seekgraph_global.Challenge;
