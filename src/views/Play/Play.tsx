@@ -227,7 +227,7 @@ export class Play extends React.Component<{}, PlayState> {
         this.closeChallengeManagementPane(challenge.challenge_id);
 
         // do the action
-        rengo_utils.cancelChallenge(challenge);
+        rengo_utils.cancelChallenge(challenge).catch(errorAlerter);
 
         this.unfreezeChallenges();
     };
@@ -1027,7 +1027,7 @@ export class Play extends React.Component<{}, PlayState> {
     unNominateForRengoChallenge = (C: Challenge) => {
         this.closeChallengeManagementPane(C.challenge_id);
 
-        rengo_utils.unNominate(C);
+        rengo_utils.unNominate(C).catch(errorAlerter);
     };
 
     rengoListHeaders() {
@@ -1058,7 +1058,7 @@ export class Play extends React.Component<{}, PlayState> {
 
     nominateAndShow = (C) => {
         this.toggleRengoChallengePane(C.challenge_id);
-        rengo_utils.nominateForRengoChallenge(C);
+        rengo_utils.nominateForRengoChallenge(C).catch(errorAlerter);
     };
 
     rengoList = () => {

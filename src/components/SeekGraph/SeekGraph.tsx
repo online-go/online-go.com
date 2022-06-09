@@ -743,7 +743,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                         .addClass("fa fa-check-circle")
                         .attr("title", _("Join rengo game"))
                         .click(() => {
-                            nominateForRengoChallenge(C);
+                            nominateForRengoChallenge(C).catch(errorAlerter);
                             this.list_locked = false;
                             this.closeChallengeList();
                         }),
