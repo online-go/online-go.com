@@ -155,10 +155,7 @@ function autoBalance(participants: Participant[], maxIterations: number = 100): 
 type Challenge = socket_api.seekgraph_global.Challenge;
 type RengoParticipantsDTO = rest_api.RengoParticipantsDTO;
 
-export async function balanceTeams(
-    challenge: Challenge,
-    on_done?: (participants: RengoParticipantsDTO) => void,
-) {
+export async function balanceTeams(challenge: Challenge): Promise<RengoParticipantsDTO> {
     const user_id = (p) => p.user_id;
     const participants = await toParticipants(challenge.rengo_participants);
     const result = autoBalance(participants);
@@ -173,24 +170,22 @@ export async function balanceTeams(
         Math.abs(result.blackAverageRating - result.whiteAverageRating),
     );
 
-    put("challenges/%%/team", challenge.challenge_id, {
+    return put("challenges/%%/team", challenge.challenge_id, {
         assign_black: result.black.map(user_id),
         assign_white: result.white.map(user_id),
     })
         .then((res) => {
-            console.log(res);
-            on_done(res);
+            return res;
         })
         .catch(errorAlerter);
 }
 
-export function unassignPlayers(
-    challenge: Challenge,
-    on_done?: (participants: RengoParticipantsDTO) => void,
-) {
-    put("challenges/%%/team", challenge.challenge_id, {
+export function unassignPlayers(challenge: Challenge): Promise<RengoParticipantsDTO> {
+    return put("challenges/%%/team", challenge.challenge_id, {
         unassign: challenge.rengo_participants,
     })
-        .then(on_done)
+        .then((res) => {
+            return res;
+        })
         .catch(errorAlerter);
 }

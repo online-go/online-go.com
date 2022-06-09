@@ -24,10 +24,7 @@ type Challenge = socket_api.seekgraph_global.Challenge;
 type RengoParticipantsDTO = rest_api.RengoParticipantsDTO;
 
 // This is used by the SeekGraph to perform this function, as well as the Play page...
-export function nominateForRengoChallenge(
-    c: Challenge,
-    on_done?: (participants: RengoParticipantsDTO) => void,
-) {
+export function nominateForRengoChallenge(c: Challenge): Promise<RengoParticipantsDTO> {
     swal({
         text: _("Joining..."), // translator: the server is processing their request to join a rengo game
         type: "info",
@@ -36,10 +33,10 @@ export function nominateForRengoChallenge(
         allowEscapeKey: false,
     }).catch(swal.noop);
 
-    put("challenges/%%/join", c.challenge_id, {})
+    return put("challenges/%%/join", c.challenge_id, {})
         .then((res) => {
             swal.close();
-            on_done(res);
+            return res;
         })
         .catch((err: any) => {
             swal.close();
@@ -51,8 +48,7 @@ export function assignToTeam(
     player_id: number,
     team: string,
     challenge,
-    on_done?: (participants: RengoParticipantsDTO) => void,
-) {
+): Promise<RengoParticipantsDTO> {
     const assignment =
         team === "rengo_black_team"
             ? "assign_black"
@@ -60,26 +56,26 @@ export function assignToTeam(
             ? "assign_white"
             : "unassign";
 
-    put("challenges/%%/team", challenge.challenge_id, {
+    return put("challenges/%%/team", challenge.challenge_id, {
         [assignment]: [player_id], // back end expects an array of changes, but we only ever send one at a time.
     })
-        .then(on_done)
+        .then((res) => {
+            return res;
+        })
         .catch((err) => {
             errorAlerter(err);
         });
 }
 
-export function kickRengoUser(player_id: number, on_done?: () => void) {
-    put("challenges", {
+export function kickRengoUser(player_id: number): Promise<void> {
+    return put("challenges", {
         rengo_kick: player_id,
-    })
-        .then(on_done)
-        .catch((err) => {
-            errorAlerter(err);
-        });
+    }).catch((err) => {
+        errorAlerter(err);
+    });
 }
 
-export function startOwnRengoChallenge(the_challenge: Challenge, on_done?: () => void) {
+export function startOwnRengoChallenge(the_challenge: Challenge): Promise<void> {
     swal({
         text: "Starting...",
         type: "info",
@@ -88,10 +84,9 @@ export function startOwnRengoChallenge(the_challenge: Challenge, on_done?: () =>
         allowEscapeKey: false,
     }).catch(swal.noop);
 
-    post("challenges/%%/start", the_challenge.challenge_id, {})
+    return post("challenges/%%/start", the_challenge.challenge_id, {})
         .then(() => {
             swal.close();
-            on_done();
         })
         .catch((err) => {
             swal.close();
@@ -99,11 +94,11 @@ export function startOwnRengoChallenge(the_challenge: Challenge, on_done?: () =>
         });
 }
 
-export function cancelChallenge(the_challenge: Challenge, on_done?: () => void) {
-    del("challenges/%%", the_challenge.challenge_id).then(on_done).catch(errorAlerter);
+export function cancelChallenge(the_challenge: Challenge): Promise<void> {
+    return del("challenges/%%", the_challenge.challenge_id).catch(errorAlerter);
 }
 
-export function unNominate(the_challenge: Challenge, on_done?: () => void) {
+export function unNominate(the_challenge: Challenge): Promise<RengoParticipantsDTO> {
     swal({
         text: _("Withdrawing..."), // translator: the server is processing their request to withdraw from a rengo challenge
         type: "info",
@@ -112,10 +107,10 @@ export function unNominate(the_challenge: Challenge, on_done?: () => void) {
         allowEscapeKey: false,
     }).catch(swal.noop);
 
-    del("challenges/%%/join", the_challenge.challenge_id, {})
-        .then(() => {
+    return del("challenges/%%/join", the_challenge.challenge_id, {})
+        .then((res) => {
             swal.close();
-            on_done();
+            return res;
         })
         .catch((err) => {
             swal.close();

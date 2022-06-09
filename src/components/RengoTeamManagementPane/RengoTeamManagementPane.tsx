@@ -33,10 +33,12 @@ interface RengoTeamManagementPaneProps {
     challenge_id: number;
     moderator: boolean;
     show_chat: boolean;
-    assignToTeam: (player_id: number, team: string, challenge: Challenge, done: () => void) => void;
-    kickRengoUser: (player_id: number, done: () => void) => void;
-    unassignPlayers?: (challenge: Challenge, done: () => void) => void;
-    balanceTeams?: (challenge: Challenge, done: () => void) => void;
+    // The following promises signal when the server action is done, for UI update.
+    // typing note - we genuinely don't care what the promise return type is, we just use the `then` event
+    assignToTeam: (player_id: number, team: string, challenge: Challenge) => Promise<any>;
+    kickRengoUser: (player_id: number) => Promise<any>;
+    unassignPlayers?: (challenge: Challenge) => Promise<any>;
+    balanceTeams?: (challenge: Challenge) => Promise<any>;
 }
 
 interface RengoTeamManagementPaneState {
@@ -60,7 +62,7 @@ export class RengoTeamManagementPane extends React.PureComponent<
 
     _assignToTeam = (player_id: number, team: string, challenge: Challenge) => {
         this.setState({ assignment_pending: true });
-        this.props.assignToTeam(player_id, team, challenge, this.done.bind(self));
+        this.props.assignToTeam(player_id, team, challenge).then(this.done).catch(errorAlerter);
     };
 
     _kickRengoUser = (player_id: number) => {
@@ -73,18 +75,18 @@ export class RengoTeamManagementPane extends React.PureComponent<
         })
             .then(() => {
                 this.setState({ assignment_pending: true });
-                this.props.kickRengoUser(player_id, this.done.bind(self));
+                this.props.kickRengoUser(player_id).then(this.done).catch(errorAlerter);
             })
-            .catch(() => 0);
+            .catch(errorAlerter);
     };
 
     _unassignPlayers = (challenge: Challenge) => {
         if (!this.props.unassignPlayers) {
-            // Play page is happy to have us just deal with tis
-            unassignPlayers(challenge);
+            // Play page is happy to have us just deal with this
+            unassignPlayers(challenge).catch(errorAlerter);
         } else {
             // Overview page needs to know what's going on, so it supplies this
-            this.props.unassignPlayers(challenge, this.done.bind(self));
+            this.props.unassignPlayers(challenge).then(this.done).catch(errorAlerter);
         }
     };
 
@@ -94,7 +96,7 @@ export class RengoTeamManagementPane extends React.PureComponent<
             balanceTeams(challenge).catch(errorAlerter);
         } else {
             // Overview page needs to know what's going on, so it supplies this
-            this.props.balanceTeams(challenge, this.done.bind(self));
+            this.props.balanceTeams(challenge).then(this.done).catch(errorAlerter);
         }
     };
     render = () => {
