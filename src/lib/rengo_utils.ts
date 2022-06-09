@@ -15,11 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { Challenge } from "../views/Play/Play";
 import swal from "sweetalert2";
-import { put } from "requests";
+import { put, post, del } from "requests";
 import { errorAlerter } from "misc";
 import { _ } from "translate";
+
+type Challenge = socket_api.seekgraph_global.Challenge;
 
 // This is used by the SeekGraph to perform this function, as well as the Play page...
 export function nominateForRengoChallenge(C: Challenge) {
@@ -36,6 +37,77 @@ export function nominateForRengoChallenge(C: Challenge) {
             swal.close();
         })
         .catch((err: any) => {
+            swal.close();
+            errorAlerter(err);
+        });
+}
+
+export function assignToTeam(player_id: number, team: string, challenge, signal_done?: () => void) {
+    const assignment =
+        team === "rengo_black_team"
+            ? "assign_black"
+            : team === "rengo_white_team"
+            ? "assign_white"
+            : "unassign";
+
+    put("challenges/%%/team", challenge.challenge_id, {
+        [assignment]: [player_id], // back end expects an array of changes, but we only ever send one at a time.
+    })
+        .then(signal_done) // tell caller that we got the response from the server now.
+        .catch((err) => {
+            errorAlerter(err);
+        });
+}
+
+export function kickRengoUser(player_id: number, signal_done?: () => void) {
+    put("challenges", {
+        rengo_kick: player_id,
+    })
+        .then(signal_done)
+        .catch((err) => {
+            errorAlerter(err);
+        });
+}
+
+export function startOwnRengoChallenge(the_challenge: Challenge) {
+    swal({
+        text: "Starting...",
+        type: "info",
+        showCancelButton: false,
+        showConfirmButton: false,
+        allowEscapeKey: false,
+    }).catch(swal.noop);
+
+    post("challenges/%%/start", the_challenge.challenge_id, {})
+        .then(() => {
+            swal.close();
+        })
+        .catch((err) => {
+            swal.close();
+            errorAlerter(err);
+        });
+}
+
+export function cancelChallenge(the_challenge: Challenge) {
+    del("challenges/%%", the_challenge.challenge_id)
+        .then(() => 0)
+        .catch(errorAlerter);
+}
+
+export function unNominate(the_challenge: Challenge) {
+    swal({
+        text: _("Withdrawing..."), // translator: the server is processing their request to withdraw from a rengo challenge
+        type: "info",
+        showCancelButton: false,
+        showConfirmButton: false,
+        allowEscapeKey: false,
+    }).catch(swal.noop);
+
+    del("challenges/%%/join", the_challenge.challenge_id, {})
+        .then(() => {
+            swal.close();
+        })
+        .catch((err) => {
             swal.close();
             errorAlerter(err);
         });

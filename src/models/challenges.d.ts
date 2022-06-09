@@ -116,6 +116,10 @@ declare namespace rest_api {
         min_ranking: number;
         max_ranking: number;
         uuid: string;
+        rengo_nominees: number[]; // array of player ids
+        rengo_black_team: number[]; // array of player ids
+        rengo_white_team: number[]; // array of player ids
+        rengo_participants: number[]; // array of player ids
     }
 
     interface MinimalPlayerDTO {

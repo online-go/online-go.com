@@ -29,7 +29,7 @@ interface RengoManagementPaneProperties {
     withdrawFromRengoChallenge: (challenge: any) => void;
     joinRengoChallenge: (challenge: any) => void;
     dontShowCancelButton?: boolean;
-    children: React.ReactNode; // intended for team management pane
+    children: React.ReactNode; // intended for team management pane, which receives different props from our parent
 }
 
 interface RengoManagementPaneState {}
