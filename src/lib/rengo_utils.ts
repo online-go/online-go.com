@@ -21,9 +21,13 @@ import { errorAlerter } from "misc";
 import { _ } from "translate";
 
 type Challenge = socket_api.seekgraph_global.Challenge;
+type RengoParticipantsDTO = rest_api.RengoParticipantsDTO;
 
 // This is used by the SeekGraph to perform this function, as well as the Play page...
-export function nominateForRengoChallenge(C: Challenge) {
+export function nominateForRengoChallenge(
+    c: Challenge,
+    on_done?: (participants: RengoParticipantsDTO) => void,
+) {
     swal({
         text: _("Joining..."), // translator: the server is processing their request to join a rengo game
         type: "info",
@@ -32,9 +36,10 @@ export function nominateForRengoChallenge(C: Challenge) {
         allowEscapeKey: false,
     }).catch(swal.noop);
 
-    put("challenges/%%/join", C.challenge_id, {})
-        .then(() => {
+    put("challenges/%%/join", c.challenge_id, {})
+        .then((res) => {
             swal.close();
+            on_done(res);
         })
         .catch((err: any) => {
             swal.close();
@@ -42,7 +47,12 @@ export function nominateForRengoChallenge(C: Challenge) {
         });
 }
 
-export function assignToTeam(player_id: number, team: string, challenge, signal_done?: () => void) {
+export function assignToTeam(
+    player_id: number,
+    team: string,
+    challenge,
+    on_done?: (participants: RengoParticipantsDTO) => void,
+) {
     const assignment =
         team === "rengo_black_team"
             ? "assign_black"
@@ -53,23 +63,23 @@ export function assignToTeam(player_id: number, team: string, challenge, signal_
     put("challenges/%%/team", challenge.challenge_id, {
         [assignment]: [player_id], // back end expects an array of changes, but we only ever send one at a time.
     })
-        .then(signal_done) // tell caller that we got the response from the server now.
+        .then(on_done)
         .catch((err) => {
             errorAlerter(err);
         });
 }
 
-export function kickRengoUser(player_id: number, signal_done?: () => void) {
+export function kickRengoUser(player_id: number, on_done?: () => void) {
     put("challenges", {
         rengo_kick: player_id,
     })
-        .then(signal_done)
+        .then(on_done)
         .catch((err) => {
             errorAlerter(err);
         });
 }
 
-export function startOwnRengoChallenge(the_challenge: Challenge) {
+export function startOwnRengoChallenge(the_challenge: Challenge, on_done?: () => void) {
     swal({
         text: "Starting...",
         type: "info",
@@ -81,6 +91,7 @@ export function startOwnRengoChallenge(the_challenge: Challenge) {
     post("challenges/%%/start", the_challenge.challenge_id, {})
         .then(() => {
             swal.close();
+            on_done();
         })
         .catch((err) => {
             swal.close();
@@ -88,13 +99,11 @@ export function startOwnRengoChallenge(the_challenge: Challenge) {
         });
 }
 
-export function cancelChallenge(the_challenge: Challenge) {
-    del("challenges/%%", the_challenge.challenge_id)
-        .then(() => 0)
-        .catch(errorAlerter);
+export function cancelChallenge(the_challenge: Challenge, on_done?: () => void) {
+    del("challenges/%%", the_challenge.challenge_id).then(on_done).catch(errorAlerter);
 }
 
-export function unNominate(the_challenge: Challenge) {
+export function unNominate(the_challenge: Challenge, on_done?: () => void) {
     swal({
         text: _("Withdrawing..."), // translator: the server is processing their request to withdraw from a rengo challenge
         type: "info",
@@ -106,6 +115,7 @@ export function unNominate(the_challenge: Challenge) {
     del("challenges/%%/join", the_challenge.challenge_id, {})
         .then(() => {
             swal.close();
+            on_done();
         })
         .catch((err) => {
             swal.close();

@@ -20,6 +20,7 @@ import swal from "sweetalert2";
 
 import { balanceTeams, unassignPlayers } from "rengo_balancer";
 import { _, pgettext } from "translate";
+import { errorAlerter } from "misc";
 
 import { Player } from "Player";
 import { EmbeddedChatCard } from "Chat";
@@ -34,6 +35,8 @@ interface RengoTeamManagementPaneProps {
     show_chat: boolean;
     assignToTeam: (player_id: number, team: string, challenge: Challenge, done: () => void) => void;
     kickRengoUser: (player_id: number, done: () => void) => void;
+    unassignPlayers?: (challenge: Challenge, done: () => void) => void;
+    balanceTeams?: (challenge: Challenge, done: () => void) => void;
 }
 
 interface RengoTeamManagementPaneState {
@@ -52,7 +55,6 @@ export class RengoTeamManagementPane extends React.PureComponent<
     }
 
     done = () => {
-        //console.log("assign done called... ap", this.state.assignment_pending, this.props.challenge_id);
         this.setState({ assignment_pending: false });
     };
 
@@ -76,6 +78,25 @@ export class RengoTeamManagementPane extends React.PureComponent<
             .catch(() => 0);
     };
 
+    _unassignPlayers = (challenge: Challenge) => {
+        if (!this.props.unassignPlayers) {
+            // Play page is happy to have us just deal with tis
+            unassignPlayers(challenge);
+        } else {
+            // Overview page needs to know what's going on, so it supplies this
+            this.props.unassignPlayers(challenge, this.done.bind(self));
+        }
+    };
+
+    _balanceTeams = (challenge: Challenge) => {
+        if (!this.props.balanceTeams) {
+            // Play page is happy to have us just deal with tis
+            balanceTeams(challenge).catch(errorAlerter);
+        } else {
+            // Overview page needs to know what's going on, so it supplies this
+            this.props.balanceTeams(challenge, this.done.bind(self));
+        }
+    };
     render = () => {
         const the_challenge = this.props.challenge_list.find(
             (c) => c.challenge_id === this.props.challenge_id,
@@ -241,7 +262,7 @@ export class RengoTeamManagementPane extends React.PureComponent<
                             {has_assigned_players ? (
                                 <button
                                     className="sm"
-                                    onClick={unassignPlayers.bind(self, the_challenge)}
+                                    onClick={this._unassignPlayers.bind(self, the_challenge)}
                                     disabled={!has_assigned_players}
                                 >
                                     {_("Unassign players")}
@@ -249,7 +270,7 @@ export class RengoTeamManagementPane extends React.PureComponent<
                             ) : (
                                 <button
                                     className="sm"
-                                    onClick={balanceTeams.bind(self, the_challenge)}
+                                    onClick={this._balanceTeams.bind(self, the_challenge)}
                                     disabled={has_assigned_players}
                                 >
                                     {_("Balance teams")}

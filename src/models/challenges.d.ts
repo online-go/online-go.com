@@ -68,6 +68,7 @@ declare namespace socket_api {
             ineligible_reason?: string;
             user_challenge?: boolean;
             eligible?: boolean;
+            game_name?: string;
         }
     }
 }
@@ -105,7 +106,7 @@ declare namespace rest_api {
         };
     }
 
-    // This version of 'challenge' is what comes back out of the server's OpenChallenge serializer,
+    // Response payload from the server's OpenChallenge serializer,
     // you would expect this to be what's on any route returning an Open (not Direct) challenge.
     interface OpenChallengeDTO {
         id: number;
@@ -116,6 +117,7 @@ declare namespace rest_api {
         min_ranking: number;
         max_ranking: number;
         uuid: string;
+
         rengo_nominees: number[]; // array of player ids
         rengo_black_team: number[]; // array of player ids
         rengo_white_team: number[]; // array of player ids
@@ -172,5 +174,12 @@ declare namespace rest_api {
         rengo_white_team: [number];
         historical_ratings: { black: MinimalPlayerDTO; white: MinimalPlayerDTO };
         related: any; // not sure what this is, the serializer is a gnarly function
+    }
+
+    interface RengoParticipantsDTO {
+        challenge: number; //challenge.id,
+        rengo_nominees: [number]; //[x.id for x in challenge.rengo_nominees.all()],
+        rengo_black_team: [number]; //[x.id for x in challenge.rengo_black_team.all()],
+        rengo_white_team: [number]; //[x.id for x in challenge.rengo_white_team.all()]
     }
 }

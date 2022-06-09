@@ -18,14 +18,13 @@
 import * as React from "react";
 
 import * as rengo_utils from "rengo_utils";
+import * as rengo_balancer from "rengo_balancer";
 
 import { errorAlerter } from "misc";
 import { pgettext } from "translate";
 import { del, get } from "requests";
 import { useUser } from "hooks";
-import { dup } from "misc";
 
-import { popover } from "popover";
 import { profanity_filter } from "profanity_filter";
 import { challenge_text_description } from "ChallengeModal";
 
@@ -44,8 +43,12 @@ import { RengoTeamManagementPane } from "RengoTeamManagementPane";
 // dto schema, but proliferating serializers is not attractive, and it would be a challenging task
 // ... plus only a few of the fields  are actually needed here!
 
+import { TimeControlTypes } from "TimeControl";
+
 type ChallengeDTO = rest_api.OpenChallengeDTO;
+type RengoParticipantsDTO = rest_api.RengoParticipantsDTO;
 type Challenge = socket_api.seekgraph_global.Challenge;
+type TimeControlSystem = TimeControlTypes.TimeControlSystem;
 
 function challengeDtoToSeekgraphChallengeSubset(c: ChallengeDTO, user_id: number): Challenge {
     console.log(c);
@@ -54,11 +57,15 @@ function challengeDtoToSeekgraphChallengeSubset(c: ChallengeDTO, user_id: number
         user_id: c.challenger.id, // number;
         username: c.challenger.username, // string;
 
+        rengo: c.game.rengo, // boolean;
         rengo_nominees: c.rengo_nominees, // number[], // array of player ids
         rengo_black_team: c.rengo_black_team, // number[], // array of player ids
         rengo_white_team: c.rengo_white_team, // number[], // array of player ids
         rengo_participants: c.rengo_participants, // number[], // array of player ids
         user_challenge: c.challenger.id === user_id,
+        time_control_parameters: JSON.parse(c.game.time_control_parameters as string),
+        time_control: c.game.time_control as TimeControlSystem,
+        game_name: c.game.name,
 
         // These fields are not used by us, so we don't need to bother with them
         // (which is just as well, since many are not in ChallengeDTO)
@@ -76,10 +83,7 @@ function challengeDtoToSeekgraphChallengeSubset(c: ChallengeDTO, user_id: number
         height: null, // number;
         challenger_color: null, // "black" | "white" | "automatic";
         disable_analysis: null, // true;
-        time_control: null, // import("../components/TimeControl").TimeControlTypes.TimeControlSystem;
-        time_control_parameters: null, // import("../components/TimeControl").TimeControl;
         time_per_move: null, // number;
-        rengo: null, // boolean;
         rengo_casual_mode: null, // boolean;
         rengo_auto_start: null, // number;
 
@@ -89,64 +93,111 @@ function challengeDtoToSeekgraphChallengeSubset(c: ChallengeDTO, user_id: number
 }
 
 export function InviteList(): JSX.Element {
-    const [invites, setInvites] = React.useState<ChallengeDTO[]>([]);
+    const [invites, setInvites] = React.useState<Challenge[]>([]);
+    const [show_details, setShowDetails] = React.useState<Challenge>(null);
 
     const manage_button = React.useRef();
 
-    const deleteChallenge = (challenge) => {
-        del("challenges/%%", challenge.id)
+    const deleteChallenge = (challenge: Challenge) => {
+        del("challenges/%%", challenge.challenge_id)
             .then(() => {
-                setInvites(invites.filter((c) => c.id !== challenge.id));
+                setInvites(invites.filter((c) => c.challenge_id !== challenge.challenge_id));
             })
             .catch(errorAlerter);
     };
 
     const user = useUser();
 
-    const showRengoManagementPane = (challenge: ChallengeDTO) => {
-        const c = challengeDtoToSeekgraphChallengeSubset(challenge, user.id);
-        popover({
-            elt: (
-                <RengoManagementPane
-                    challenge_id={c.challenge_id}
-                    user={user}
-                    rengo_challenge_list={[c]}
-                    startRengoChallenge={rengo_utils.startOwnRengoChallenge}
-                    cancelChallenge={rengo_utils.cancelChallenge}
-                    withdrawFromRengoChallenge={rengo_utils.unNominate}
-                    joinRengoChallenge={rengo_utils.nominateForRengoChallenge}
-                >
-                    <RengoTeamManagementPane
-                        user={user}
-                        challenge_id={c.challenge_id}
-                        challenge_list={[c]}
-                        moderator={user.is_moderator}
-                        show_chat={false}
-                        assignToTeam={rengo_utils.assignToTeam}
-                        kickRengoUser={rengo_utils.kickRengoUser}
-                    />
-                </RengoManagementPane>
-            ),
-            below: manage_button.current,
-            animate: true,
-            minWidth: 180,
-            container_class: "rengo-management-pane-container",
+    const removeChallenge = (challenge: Challenge) => {
+        setInvites(invites.filter((c) => c.challenge_id !== challenge.challenge_id));
+    };
+
+    const startRengoChallenge = (challenge: Challenge) => {
+        setShowDetails(null);
+        rengo_utils.startOwnRengoChallenge(challenge, () => {
+            removeChallenge(challenge);
         });
+    };
+
+    // technically this is the same as deleteChallenge, but it seems good to keep
+    // rengo and normal challenges using a separate interface
+    const cancelRengoChallenge = (challenge: Challenge) => {
+        setShowDetails(null);
+        rengo_utils.cancelChallenge(challenge, () => {
+            setInvites(invites.filter((c) => c.challenge_id !== challenge.challenge_id));
+        });
+    };
+
+    const unNominate = (challenge: Challenge) => {
+        setShowDetails(null);
+        rengo_utils.unNominate(challenge, () => {
+            setInvites(invites.filter((c) => c.challenge_id !== challenge.challenge_id));
+        });
+    };
+
+    const updateRengoParticipants = (challenge: Challenge, participants: RengoParticipantsDTO) => {
+        console.log("updateRengoParticipants", participants);
+        const invites_update = invites.filter((c) => c.challenge_id !== challenge.challenge_id);
+        challenge.rengo_nominees = participants.rengo_nominees;
+        challenge.rengo_black_team = participants.rengo_black_team;
+        challenge.rengo_white_team = participants.rengo_white_team;
+        setInvites([challenge, ...invites_update]);
+    };
+
+    const nominateForRengoChallenge = (challenge: Challenge) => {
+        rengo_utils.nominateForRengoChallenge(challenge, (participants) => {
+            updateRengoParticipants(challenge, participants);
+        });
+    };
+
+    const assignToTeam = (
+        player_id: number,
+        team: string,
+        challenge: Challenge,
+        on_done: () => void,
+    ) => {
+        rengo_utils.assignToTeam(player_id, team, challenge, (participants) => {
+            updateRengoParticipants(challenge, participants);
+            on_done();
+        });
+    };
+
+    const kickRengoUser = (player_id: number, on_done: () => void) => {
+        rengo_utils.kickRengoUser(player_id, () => {
+            setInvites(invites.filter((c) => c.rengo));
+            on_done();
+        });
+    };
+
+    const unassignPlayers = (challenge: Challenge) => {
+        rengo_balancer.unassignPlayers(challenge, (participants) => {
+            updateRengoParticipants(challenge, participants);
+        });
+    };
+
+    const balanceTeams = (challenge: Challenge) => {
+        rengo_balancer
+            .balanceTeams(challenge, (participants) => {
+                updateRengoParticipants(challenge, participants);
+            })
+            .catch(errorAlerter);
+    };
+
+    const showRengoManagementPane = (challenge: Challenge) => {
+        setShowDetails(challenge);
     };
 
     React.useEffect(
         () => {
             get("me/challenges/invites", { page_size: 30 })
                 .then((res) => {
-                    const invite_list = dup<ChallengeDTO[]>(res.results);
-                    for (const challenge of invite_list) {
-                        try {
-                            challenge.game.time_control_parameters = JSON.parse(
-                                challenge.game.time_control_parameters as string,
-                            );
-                        } catch (e) {
-                            console.log(e);
-                        }
+                    // The result contains a list of ChallengeDTO objects
+                    // We need a list of Challenge objects to work with for Rengo panes etc...
+                    const invite_list: Challenge[] = [];
+                    for (const challenge of res.results as ChallengeDTO[]) {
+                        invite_list.push(
+                            challengeDtoToSeekgraphChallengeSubset(challenge, user.id),
+                        );
                     }
                     setInvites(invite_list);
                 })
@@ -171,19 +222,19 @@ export function InviteList(): JSX.Element {
             <div className="challenge-cards">
                 {invites.map((challenge) => {
                     return (
-                        <Card key={challenge.id}>
+                        <Card key={challenge.challenge_id}>
                             <div className="name-and-buttons">
                                 <div className="name">
-                                    <h4>{profanity_filter(challenge.game.name)}</h4>
+                                    <h4>{profanity_filter(challenge.game_name)}</h4>
                                     <ChallengeLinkButton uuid={challenge.uuid} />
                                 </div>
                                 <div className="fab-section" ref={manage_button}>
-                                    {(challenge.game.rengo && null) || (
+                                    {(challenge.rengo && null) || (
                                         <button
                                             className="primary sm"
                                             onClick={() => showRengoManagementPane(challenge)}
                                         >
-                                            {challenge.challenger.id === user.id
+                                            {challenge.user_id === user.id
                                                 ? pgettext(
                                                       "Manage rengo teams in a challenge",
                                                       "Manage",
@@ -194,7 +245,7 @@ export function InviteList(): JSX.Element {
                                                   )}
                                         </button>
                                     )}
-                                    {(challenge.challenger.id === user.id || null) && (
+                                    {(challenge.user_id === user.id || null) && (
                                         <FabX onClick={() => deleteChallenge(challenge)} />
                                     )}
                                 </div>
@@ -204,6 +255,29 @@ export function InviteList(): JSX.Element {
                     );
                 })}
             </div>
+            {(show_details || null) && (
+                <RengoManagementPane
+                    challenge_id={show_details.challenge_id}
+                    user={user}
+                    rengo_challenge_list={invites}
+                    startRengoChallenge={startRengoChallenge}
+                    cancelChallenge={cancelRengoChallenge}
+                    withdrawFromRengoChallenge={unNominate}
+                    joinRengoChallenge={nominateForRengoChallenge}
+                >
+                    <RengoTeamManagementPane
+                        user={user}
+                        challenge_id={show_details.challenge_id}
+                        challenge_list={invites}
+                        moderator={user.is_moderator}
+                        show_chat={true}
+                        assignToTeam={assignToTeam}
+                        kickRengoUser={kickRengoUser}
+                        unassignPlayers={unassignPlayers}
+                        balanceTeams={balanceTeams}
+                    />
+                </RengoManagementPane>
+            )}
         </div>
     );
 }

@@ -61,6 +61,10 @@ export class RengoManagementPane extends React.PureComponent<
             (c) => c.challenge_id === this.props.challenge_id,
         );
 
+        if (!the_challenge) {
+            return <div></div>;
+        }
+
         const our_rengo_challenges = this.props.rengo_challenge_list.filter(
             (c) => c.user_id === this.props.user.id,
         );
