@@ -523,6 +523,13 @@ class ChatChannel extends TypedEventEmitter<Events> {
             console.error(e);
         }
     }
+    handleUserUpdate(old_player_id, user): void {
+        if (user.id in this.user_list) {
+            const old_entry = this.user_list[user.id];
+            this.handlePart(old_entry);
+        }
+        this.handleJoins([user]);
+    }
 
     _insert_into_sorted_lists(new_user) {
         insert_into_sorted_list(
@@ -757,6 +764,7 @@ class ChatManager {
         socket.on("chat-message-removed", this.onMessageRemoved);
         socket.on("chat-join", this.onJoin);
         socket.on("chat-part", this.onPart);
+        socket.on("chat-update-user", this.onUserUpdate);
     }
 
     onTopic = (obj: TopicMessage) => {
@@ -825,6 +833,14 @@ class ChatManager {
         }
 
         this.channels[part.channel].handlePart(part.user);
+    };
+    onUserUpdate = ({ channel, old_player_id, user }) => {
+        if (!(channel in this.channels)) {
+            return;
+        }
+
+        const chan = this.channels[channel];
+        chan.handleUserUpdate(old_player_id, user);
     };
     join(channel: string): ChatChannelProxy {
         const display_name = resolveChannelDisplayName(channel);
