@@ -52,8 +52,6 @@ export function assignToTeam(
 
     return put("challenges/%%/team", challenge.challenge_id, {
         [assignment]: [player_id], // back end expects an array of changes, but we only ever send one at a time.
-    }).then((res) => {
-        return res;
     });
 }
 

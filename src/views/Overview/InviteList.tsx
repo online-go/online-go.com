@@ -135,7 +135,6 @@ export function InviteList(): JSX.Element {
     };
 
     const updateRengoParticipants = (challenge: Challenge, participants: RengoParticipantsDTO) => {
-        console.log("updateRengoParticipants", participants);
         const invites_update = invites.filter((c) => c.challenge_id !== challenge.challenge_id);
         challenge.rengo_nominees = participants.rengo_nominees;
         challenge.rengo_black_team = participants.rengo_black_team;

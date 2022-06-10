@@ -172,15 +172,11 @@ export async function balanceTeams(challenge: Challenge): Promise<RengoParticipa
     return put("challenges/%%/team", challenge.challenge_id, {
         assign_black: result.black.map(user_id),
         assign_white: result.white.map(user_id),
-    }).then((res) => {
-        return res;
     });
 }
 
 export function unassignPlayers(challenge: Challenge): Promise<RengoParticipantsDTO> {
     return put("challenges/%%/team", challenge.challenge_id, {
         unassign: challenge.rengo_participants,
-    }).then((res) => {
-        return res;
     });
 }
