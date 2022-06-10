@@ -172,6 +172,7 @@ declare namespace rest_api {
         rengo: boolean;
         rengo_black_team: [number];
         rengo_white_team: [number];
+        rengo_casual_mode: boolean;
         historical_ratings: { black: MinimalPlayerDTO; white: MinimalPlayerDTO };
         related: any; // not sure what this is, the serializer is a gnarly function
     }
