@@ -180,7 +180,7 @@ export const routes = (
                 <Route path="/appeal" element={<Appeal />} />
                 <Route path="/appeals-center" element={<AppealsCenter />} />
                 <Route path="/overview" element={<Overview />} />
-                <Route path="/play" element={<Play />} />
+                <Route path="/play/*" element={<Play />} />
                 <Route path="/chat/:channel" element={<ChatView />} />
                 <Route path="/chat/:channel/*" element={<ChatView />} />
                 <Route path="/chat/:channel/**/*" element={<ChatView />} />

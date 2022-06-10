@@ -107,6 +107,11 @@ export class Play extends React.Component<{}, PlayState> {
         automatch_manager.on("entry", this.onAutomatchEntry);
         automatch_manager.on("start", this.onAutomatchStart);
         automatch_manager.on("cancel", this.onAutomatchCancel);
+
+        const [match, id] = window.location.hash.match(/#rengo:(\d+)/) || [];
+        if (match) {
+            this.openRengoChallengePane(parseInt(id));
+        }
     }
 
     componentWillUnmount() {
@@ -1153,6 +1158,17 @@ export class Play extends React.Component<{}, PlayState> {
         </>
     );
 
+    openRengoChallengePane = (challenge_id: number) => {
+        if (!this.state.show_in_rengo_management_pane.includes(challenge_id)) {
+            this.setState({
+                show_in_rengo_management_pane: [
+                    challenge_id,
+                    ...this.state.show_in_rengo_management_pane,
+                ],
+            });
+        }
+    };
+
     toggleRengoChallengePane = (challenge_id: number) => {
         if (this.state.show_in_rengo_management_pane.includes(challenge_id)) {
             this.closeChallengeManagementPane(challenge_id);
@@ -1311,6 +1327,9 @@ export class Play extends React.Component<{}, PlayState> {
                 <td className="cell">{C.handicap_text}</td>
                 <td className="cell">{C.name}</td>
                 <td className="cell">{rulesText(C.rules)}</td>
+                <td className="cell">
+                    <ChallengeLinkButton uuid={C.uuid} />
+                </td>
             </tr>
         );
     };

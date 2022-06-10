@@ -66,7 +66,7 @@ export function ChallengeLinkLanding(): JSX.Element {
                     if (challenge.invite_only) {
                         navigate("/", { replace: true });
                     } else {
-                        navigate("/play", { replace: true }); // TBD: extend Play route to support opening the correct rengo pane
+                        navigate(`/play#rengo:${challenge.challenge_id}`, { replace: true });
                     }
                     // TBD: activate help item to tell newcomers when the game will actually start
                 })
