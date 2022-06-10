@@ -190,7 +190,7 @@ export function InviteList(): JSX.Element {
 
     const startRengoChallenge = (challenge: Challenge) => {
         setShowDetails(null);
-        rengo_utils
+        return rengo_utils
             .startOwnRengoChallenge(challenge)
             .then(() => {
                 removeChallenge(challenge);

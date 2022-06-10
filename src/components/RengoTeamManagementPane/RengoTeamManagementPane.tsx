@@ -81,9 +81,10 @@ export class RengoTeamManagementPane extends React.PureComponent<
     };
 
     _unassignPlayers = (challenge: Challenge) => {
+        this.setState({ assignment_pending: true });
         if (!this.props.unassignPlayers) {
             // Play page is happy to have us just deal with this
-            unassignPlayers(challenge).catch(errorAlerter);
+            unassignPlayers(challenge).then(this.done).catch(errorAlerter);
         } else {
             // Overview page needs to know what's going on, so it supplies this
             this.props.unassignPlayers(challenge).then(this.done).catch(errorAlerter);
@@ -91,9 +92,10 @@ export class RengoTeamManagementPane extends React.PureComponent<
     };
 
     _balanceTeams = (challenge: Challenge) => {
+        this.setState({ assignment_pending: true });
         if (!this.props.balanceTeams) {
             // Play page is happy to have us just deal with tis
-            balanceTeams(challenge).catch(errorAlerter);
+            balanceTeams(challenge).then(this.done).catch(errorAlerter);
         } else {
             // Overview page needs to know what's going on, so it supplies this
             this.props.balanceTeams(challenge).then(this.done).catch(errorAlerter);

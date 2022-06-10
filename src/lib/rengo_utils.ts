@@ -17,7 +17,6 @@
 
 import swal from "sweetalert2";
 import { put, post, del } from "requests";
-import { errorAlerter } from "misc";
 import { _ } from "translate";
 
 type Challenge = socket_api.seekgraph_global.Challenge;
@@ -33,15 +32,10 @@ export function nominateForRengoChallenge(c: Challenge): Promise<RengoParticipan
         allowEscapeKey: false,
     }).catch(swal.noop);
 
-    return put("challenges/%%/join", c.challenge_id, {})
-        .then((res) => {
-            swal.close();
-            return res;
-        })
-        .catch((err: any) => {
-            swal.close();
-            errorAlerter(err);
-        });
+    return put("challenges/%%/join", c.challenge_id, {}).then((res) => {
+        swal.close();
+        return res;
+    });
 }
 
 export function assignToTeam(
@@ -58,20 +52,14 @@ export function assignToTeam(
 
     return put("challenges/%%/team", challenge.challenge_id, {
         [assignment]: [player_id], // back end expects an array of changes, but we only ever send one at a time.
-    })
-        .then((res) => {
-            return res;
-        })
-        .catch((err) => {
-            errorAlerter(err);
-        });
+    }).then((res) => {
+        return res;
+    });
 }
 
 export function kickRengoUser(player_id: number): Promise<void> {
     return put("challenges", {
         rengo_kick: player_id,
-    }).catch((err) => {
-        errorAlerter(err);
     });
 }
 
@@ -84,18 +72,13 @@ export function startOwnRengoChallenge(the_challenge: Challenge): Promise<void> 
         allowEscapeKey: false,
     }).catch(swal.noop);
 
-    return post("challenges/%%/start", the_challenge.challenge_id, {})
-        .then(() => {
-            swal.close();
-        })
-        .catch((err) => {
-            swal.close();
-            errorAlerter(err);
-        });
+    return post("challenges/%%/start", the_challenge.challenge_id, {}).then(() => {
+        swal.close();
+    });
 }
 
 export function cancelChallenge(the_challenge: Challenge): Promise<void> {
-    return del("challenges/%%", the_challenge.challenge_id).catch(errorAlerter);
+    return del("challenges/%%", the_challenge.challenge_id);
 }
 
 export function unNominate(the_challenge: Challenge): Promise<RengoParticipantsDTO> {
@@ -107,13 +90,8 @@ export function unNominate(the_challenge: Challenge): Promise<RengoParticipantsD
         allowEscapeKey: false,
     }).catch(swal.noop);
 
-    return del("challenges/%%/join", the_challenge.challenge_id, {})
-        .then((res) => {
-            swal.close();
-            return res;
-        })
-        .catch((err) => {
-            swal.close();
-            errorAlerter(err);
-        });
+    return del("challenges/%%/join", the_challenge.challenge_id, {}).then((res) => {
+        swal.close();
+        return res;
+    });
 }

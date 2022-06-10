@@ -24,7 +24,7 @@ interface RengoManagementPaneProperties {
     challenge_id: number;
     rengo_challenge_list: any[];
 
-    startRengoChallenge: (challenge: any) => void;
+    startRengoChallenge: (challenge: any) => Promise<void>;
     cancelChallenge: (challenge: any) => void;
     withdrawFromRengoChallenge: (challenge: any) => void;
     joinRengoChallenge: (challenge: any) => void;
