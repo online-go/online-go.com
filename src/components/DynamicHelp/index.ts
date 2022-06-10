@@ -16,4 +16,4 @@
  */
 
 export * from "./SettingsButtonHelp";
-export * from "./RightNavButtonHelp";
+export * from "./RightNavHelp";

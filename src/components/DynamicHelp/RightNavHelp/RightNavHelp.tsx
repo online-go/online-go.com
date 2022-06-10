@@ -19,14 +19,36 @@ import * as React from "react";
 
 import * as dynamic_help from "dynamic_help_config";
 
-import { _ /*pgettext*/ } from "translate";
+import { _ } from "translate";
 
-export function RightNavButtonHelp(): JSX.Element {
+const HELP_SET = "guest-password-help-set";
+const ITEM = "right-nav-help";
+
+export function RightNavHelp(): JSX.Element {
+    const visibility = dynamic_help.isVisible(HELP_SET, ITEM);
+
+    const [show_self, setShowSelf] = React.useState<boolean>(visibility);
+
+    const close = (e) => {
+        dynamic_help.hideHelpSetItem(HELP_SET, ITEM);
+        setShowSelf(false);
+        e.stopPropagation();
+    };
+
+    // we have to allow for the settings changing while we are mounted, yet also be able to
+    // turn ourselves off...
+    if (show_self !== visibility) {
+        setShowSelf(visibility);
+    }
+
     return (
         <>
-            {(dynamic_help.isVisible("guest-password-help-set", "right-nav-help") || null) && (
-                <div className="right-nav-button-help">
-                    <i className="fa fa-arrow-up" />
+            {(show_self || null) && (
+                <div className={ITEM}>
+                    <div className="help-controls">
+                        <i className="fa fa-window-close" onClick={close} />
+                        <i className="fa fa-arrow-up" />
+                    </div>
                     <span>{_("To set your password, click here")}</span>
                 </div>
             )}

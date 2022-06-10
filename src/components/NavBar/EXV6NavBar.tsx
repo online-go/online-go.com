@@ -324,7 +324,7 @@ export function EXV6NavBar(): JSX.Element {
                     <FriendIndicator />
                     <NotificationIndicator onClick={toggleNotifications} />
                     <span className="icon-container" onClick={toggleRightNav}>
-                        <DynamicHelp.RightNavButtonHelp />
+                        <DynamicHelp.RightNavHelp />
                         {user.username}
                     </span>
                 </section>

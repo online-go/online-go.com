@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.right-nav-button-help {
+.right-nav-help {
     text-align: right ;
     display: flex;
     flex-direction: column;
@@ -24,6 +24,15 @@
     position: absolute;
 
     width: fit-content;
+
+    .help-controls {
+        display: flex;
+        justify-content: space-between
+
+        .fa-window-close {
+            margin: 0px !important;
+        }
+    }
 
     span {
         width: fit-content;

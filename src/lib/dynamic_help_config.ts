@@ -72,7 +72,7 @@ export function hideHelpSetItem(set_name: DynamicHelpSet, item_name: string): vo
 
 // Set the value of "show_item" for a help set item
 // (with optional parameter of current help set config, to avoid re-reading it a lot)
-// Note: this does not set show_set for the HelpSet, only show_item for the items
+// Note: this does control set show_set for the HelpSet, only show_item for the items
 
 function setHelpSetItem(
     value: boolean,
