@@ -75,7 +75,12 @@ export class RengoTeamManagementPane extends React.PureComponent<
         })
             .then(() => {
                 this.setState({ assignment_pending: true });
-                this.props.kickRengoUser(player_id).then(this.done).catch(errorAlerter);
+                this.props
+                    .kickRengoUser(player_id)
+                    .then(() => {
+                        this.done();
+                    })
+                    .catch(errorAlerter);
             })
             .catch(errorAlerter);
     };

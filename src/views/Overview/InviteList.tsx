@@ -161,11 +161,15 @@ export function InviteList(): JSX.Element {
             .catch(errorAlerter);
     };
 
+    // note, this probably can't get invoked for a normal user in practice,
+    // because the kick button only appears for moderators, but this is on
+    // the person's home page.   TBD: solve how moderators help in this case!
     const kickRengoUser = (player_id: number): Promise<void> => {
         return rengo_utils
             .kickRengoUser(player_id)
             .then(() => {
-                setInvites(invites.filter((c) => c.rengo));
+                // dump rengo challenges, because this person has been kicked.
+                setInvites(invites.filter((c) => !c.rengo));
             })
             .catch(errorAlerter);
     };
