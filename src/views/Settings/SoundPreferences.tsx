@@ -33,7 +33,7 @@ import { Card } from "material";
 import { Toggle } from "Toggle";
 import { Flag } from "Flag";
 
-import { PreferenceToggle } from "./Settings";
+import { PreferenceToggle } from "./SettingsUtils";
 
 export function SoundPreferences(): JSX.Element {
     const [tick_tock_start, __setTickTockStart] = usePreference("sound.countdown.tick-tock.start");

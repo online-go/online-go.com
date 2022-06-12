@@ -24,7 +24,6 @@ import { usePreference } from "preferences";
 import * as data from "data";
 import * as dynamic_help from "dynamic_help_config";
 
-import { ValidPreference } from "preferences";
 import { useParams } from "react-router-dom";
 import { _, pgettext } from "translate";
 import { get, put, abort_requests_in_flight } from "requests";
@@ -40,6 +39,8 @@ import { Player } from "Player";
 import { PaginatedTable } from "PaginatedTable";
 import { Toggle } from "Toggle";
 
+import { SettingGroupProps, PreferenceLine, SettingsState } from "./SettingsUtils";
+
 import { SoundPreferences } from "./SoundPreferences";
 import { GeneralPreferences } from "./GeneralPreferences";
 import { GamePreferences } from "./GamePreferences";
@@ -49,23 +50,6 @@ import { BlockedPlayerPreferences } from "./BlockedPlayerPreferences";
 import { VacationSettings } from "./VacationSettings";
 import { AccountSettings } from "./AccountSettings";
 import { LinkPreferences } from "./LinkPreferences";
-
-export const MAX_DOCK_DELAY = 3.0;
-
-interface SettingsState {
-    profile?: any;
-    notifications?: any;
-    vacation_left?: string;
-    hide_ui_class?: boolean;
-    self_reported_account_linkages?: any;
-}
-
-export interface SettingGroupProps {
-    state: SettingsState;
-    vacation_base_time: number;
-    refresh: () => () => void;
-    updateSelfReportedAccountLinkages: (link: any) => void;
-}
 
 export function Settings(): JSX.Element {
     const { category } = useParams();
@@ -263,69 +247,6 @@ export function Settings(): JSX.Element {
                     {loaded ? <SelectedPage {...props} /> : <LoadingPage />}
                 </div>
             </div>
-        </div>
-    );
-}
-
-export interface PreferenceDropdownProps {
-    value: any;
-    options: Array<{ value: any; label: string }>;
-    onChange: (value: any) => void;
-}
-
-export function PreferenceDropdown(props: PreferenceDropdownProps): JSX.Element {
-    return (
-        <Select
-            className="PreferenceDropdown"
-            classNamePrefix="ogs-react-select"
-            value={props.options.filter((opt) => opt.value === props.value)[0]}
-            getOptionValue={(data) => data.value}
-            onChange={(data: any) => props.onChange(data.value)}
-            options={props.options}
-            isClearable={false}
-            isSearchable={false}
-            blurInputOnSelect={true}
-            components={{
-                Option: ({ innerRef, innerProps, isFocused, isSelected, data }) => (
-                    <div
-                        ref={innerRef}
-                        {...innerProps}
-                        className={
-                            "PreferenceDropdown-option " +
-                            (isFocused ? "focused " : "") +
-                            (isSelected ? "selected" : "")
-                        }
-                    >
-                        {data.label}
-                    </div>
-                ),
-                SingleValue: ({ innerProps, data }) => (
-                    <span {...innerProps} className="PreferenceDropdown-value">
-                        {data.label}
-                    </span>
-                ),
-                ValueContainer: ({ children }) => (
-                    <div className="PreferenceDropdown-value-container">{children}</div>
-                ),
-            }}
-        />
-    );
-}
-
-export function PreferenceLine(props: {
-    title: string | JSX.Element;
-    description?: string;
-    children: React.ReactNode;
-}): JSX.Element {
-    return (
-        <div className="PreferenceLine">
-            <span className="PreferenceLineTitle">
-                {props.title}
-                {props.description && (
-                    <div className="PreferenceLineDescription">{props.description}</div>
-                )}
-            </span>
-            <span className="PreferenceLineBody">{props.children}</span>
         </div>
     );
 }
@@ -564,26 +485,6 @@ function EmailNotificationToggle(props: {
             <label>
                 <span className="preference-toggle-name">{props.name}</span>
                 <Toggle onChange={save} checked={on} />
-            </label>
-        </div>
-    );
-}
-
-export function PreferenceToggle(props: {
-    name: string;
-    preference: ValidPreference;
-}): JSX.Element {
-    const [on, setPreference] = usePreference(props.preference);
-
-    return (
-        <div className="PreferenceToggle">
-            <label>
-                <span className="preference-toggle-name">{props.name}</span>
-                <Toggle
-                    id={`preference-toggle-${props.preference}`}
-                    onChange={setPreference}
-                    checked={on}
-                />
             </label>
         </div>
     );
