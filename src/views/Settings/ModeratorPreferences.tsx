@@ -25,7 +25,7 @@ import { usePreference } from "preferences";
 
 import { Toggle } from "Toggle";
 
-import { SettingGroupProps, PreferenceLine } from "./SettingsUtils";
+import { SettingGroupProps, PreferenceLine } from "SettingsCommon";
 
 export function ModeratorPreferences(_props: SettingGroupProps): JSX.Element {
     const [incident_report_notifications, setIncidentReportNotifications] = usePreference(

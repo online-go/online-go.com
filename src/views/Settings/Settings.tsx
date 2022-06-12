@@ -39,7 +39,7 @@ import { Player } from "Player";
 import { PaginatedTable } from "PaginatedTable";
 import { Toggle } from "Toggle";
 
-import { SettingGroupProps, PreferenceLine, SettingsState } from "./SettingsUtils";
+import { SettingGroupProps, PreferenceLine, SettingsState } from "SettingsCommon";
 
 import { SoundPreferences } from "./SoundPreferences";
 import { GeneralPreferences } from "./GeneralPreferences";

@@ -33,7 +33,7 @@ import { usePreference } from "preferences";
 
 import { Toggle } from "Toggle";
 
-import { SettingGroupProps, PreferenceLine, PreferenceDropdown } from "./SettingsUtils";
+import { SettingGroupProps, PreferenceLine, PreferenceDropdown } from "SettingsCommon";
 
 export function GeneralPreferences(props: SettingGroupProps): JSX.Element {
     const [profanity_filter, _setProfanityFilter]: [Array<string>, (x: Array<string>) => void] =
