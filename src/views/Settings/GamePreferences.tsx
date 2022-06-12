@@ -24,7 +24,7 @@ import { usePreference, ValidPreference } from "preferences";
 
 import { Toggle } from "Toggle";
 
-import { PreferenceLine, PreferenceDropdown, MAX_DOCK_DELAY } from "./SettingsUtils";
+import { PreferenceLine, PreferenceDropdown, MAX_DOCK_DELAY } from "SettingsCommon";
 
 export function GamePreferences(): JSX.Element {
     const [dock_delay, _setDockDelay]: [number, (x: number) => void] = React.useState(

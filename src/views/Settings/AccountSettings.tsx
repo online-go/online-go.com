@@ -27,7 +27,7 @@ import { errorAlerter, errorLogger, ignore } from "misc";
 import { SocialLoginButtons } from "SocialLoginButtons";
 import swal from "sweetalert2";
 
-import { SettingGroupProps } from "./Settings";
+import { SettingGroupProps } from "SettingsCommon";
 
 export function AccountSettings(props: SettingGroupProps): JSX.Element {
     const [password1, setPassword1]: [string, (x: string) => void] = React.useState("");

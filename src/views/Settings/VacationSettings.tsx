@@ -23,7 +23,7 @@ import { errorAlerter } from "misc";
 
 import { durationString } from "TimeControl";
 
-import { SettingGroupProps } from "./Settings";
+import { SettingGroupProps } from "SettingsCommon";
 
 export function VacationSettings(props: SettingGroupProps): JSX.Element {
     const [vacation_left, set_vacation_left]: [number, (x: number) => void] = React.useState(
