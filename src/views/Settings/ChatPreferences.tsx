@@ -23,7 +23,7 @@ import { usePreference } from "preferences";
 
 import { Toggle } from "Toggle";
 
-import { PreferenceLine } from "./Settings";
+import { PreferenceLine } from "./SettingsUtils";
 
 export function ChatPreferences(): JSX.Element {
     const [show_empty_chat_notification, toggleEmptyChatNotification] = usePreference(

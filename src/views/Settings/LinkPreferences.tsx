@@ -25,7 +25,7 @@ import { errorAlerter, Timeout } from "misc";
 
 import { Toggle } from "Toggle";
 
-import { SettingGroupProps, PreferenceLine } from "./Settings";
+import { SettingGroupProps, PreferenceLine } from "./SettingsUtils";
 
 import { IAssociation, associations } from "associations";
 import { allRanks, IRankInfo } from "rank_utils";
