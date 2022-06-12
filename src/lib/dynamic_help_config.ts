@@ -16,6 +16,7 @@
  */
 
 import * as data from "data";
+import { pgettext } from "./translate";
 
 export type DynamicHelpSet = "guest-password-help-set";
 
@@ -29,6 +30,7 @@ export type DynamicHelpSetItemSchema = {
 
 export type DynamicHelpSetSchema = {
     show_set: boolean;
+    set_title: string;
     items: { [item_name in HelperSetItem]?: DynamicHelpSetItemSchema };
 };
 
@@ -39,9 +41,13 @@ export type DynamicHelpSchema = {
 // This could be used to set initial values.  Right now it isn't used for that.
 // This is currently used to define what items are in a help set,
 // so we can make sure we turn them all on in `showHelpSet()`
-const DEFAULT_DYNAMIC_HELP_CONFIG: DynamicHelpSchema = {
+export const DEFAULT_DYNAMIC_HELP_CONFIG: DynamicHelpSchema = {
     "guest-password-help-set": {
         show_set: false,
+        set_title: pgettext(
+            "Label for settings controlling guest password help",
+            "Guest Password Help",
+        ),
         items: {
             "right-nav-help": { show_item: false },
             "settings-button-help": { show_item: false },
@@ -49,8 +55,16 @@ const DEFAULT_DYNAMIC_HELP_CONFIG: DynamicHelpSchema = {
     },
 };
 
+export function setIsVisible(set_name: DynamicHelpSet): boolean {
+    return data.get(`dynamic-help.${set_name}`, DEFAULT_DYNAMIC_HELP_CONFIG[set_name]).show_set;
+}
+
 export function isVisible(set_name: DynamicHelpSet, item_name: string): boolean {
-    const set_config = data.get(`dynamic-help.${set_name}`, { show_set: false, items: {} });
+    const set_config = data.get(`dynamic-help.${set_name}`, {
+        show_set: false,
+        items: {},
+        set_title: "",
+    });
 
     const visible =
         set_config.show_set &&
@@ -72,7 +86,7 @@ export function hideHelpSetItem(set_name: DynamicHelpSet, item_name: string): vo
 
 // Set the value of "show_item" for a help set item
 // (with optional parameter of current help set config, to avoid re-reading it a lot)
-// Note: this does control set show_set for the HelpSet, only show_item for the items
+// Note: this does not control set show_set for the HelpSet, only show_item for the items
 
 function setHelpSetItem(
     value: boolean,
@@ -81,7 +95,7 @@ function setHelpSetItem(
     prev_config?,
 ): DynamicHelpSetSchema {
     const set_config =
-        prev_config || data.get(`dynamic-help.${set_name}`, { show_set: false, items: {} });
+        prev_config || data.get(`dynamic-help.${set_name}`, DEFAULT_DYNAMIC_HELP_CONFIG[set_name]);
 
     if (!(item_name in set_config["items"])) {
         set_config["items"][item_name] = { show_item: value };
@@ -98,11 +112,35 @@ function setHelpSetItem(
 
 // Turn on "show_set" for a named help set, and turn on all the items.
 export function showHelpSet(set_name: DynamicHelpSet): void {
-    let set_config = data.get(`dynamic-help.${set_name}`, { show_set: false, items: {} });
+    let set_config = data.get(`dynamic-help.${set_name}`);
 
-    data.set(`dynamic-help.${set_name}`, { show_set: true, items: set_config.items });
+    set_config = { ...set_config, show_set: true };
+
+    data.set(`dynamic-help.${set_name}`, set_config);
 
     for (const item in DEFAULT_DYNAMIC_HELP_CONFIG[set_name]["items"]) {
         set_config = setHelpSetItem(true, set_name, item, set_config);
     }
+}
+
+// Note: this doesn't change the visibility of the items in the set
+export function hideHelpSet(set_name: DynamicHelpSet): void {
+    const set_config = data.get(`dynamic-help.${set_name}`);
+
+    data.set(`dynamic-help.${set_name}`, { ...set_config, show_set: false });
+}
+
+export function toggleHelpSet(set_name: DynamicHelpSet): boolean {
+    const set_config = data.get(`dynamic-help.${set_name}`, DEFAULT_DYNAMIC_HELP_CONFIG[set_name]);
+    const new_value = !set_config.show_set;
+
+    if (new_value) {
+        console.log("show");
+        showHelpSet(set_name);
+    } else {
+        console.log("hide");
+        hideHelpSet(set_name);
+    }
+
+    return new_value;
 }

@@ -50,6 +50,7 @@ import { BlockedPlayerPreferences } from "./BlockedPlayerPreferences";
 import { VacationSettings } from "./VacationSettings";
 import { AccountSettings } from "./AccountSettings";
 import { LinkPreferences } from "./LinkPreferences";
+import { HelpSettings } from "./HelpSettings";
 
 export function Settings(): JSX.Element {
     const { category } = useParams();
@@ -111,6 +112,7 @@ export function Settings(): JSX.Element {
         { key: "blocked_players", label: _("Blocked Players") },
         { key: "account", label: _("Account Settings") },
         { key: "link", label: _("Account Linking") },
+        { key: "help", label: _("Help Settings") },
         /*
         {
             key: "experiments",
@@ -158,6 +160,9 @@ export function Settings(): JSX.Element {
             break;
         case "link":
             SelectedPage = LinkPreferences;
+            break;
+        case "help":
+            SelectedPage = HelpSettings;
             break;
         case "logout":
             SelectedPage = LogoutPreferences;
