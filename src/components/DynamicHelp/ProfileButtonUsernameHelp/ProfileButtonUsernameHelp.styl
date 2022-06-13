@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.right-nav-help {
+.profile-button-username-help {
     text-align: right ;
     display: flex;
     flex-direction: column;
-    align-items: right;
-    justify-content: right;
+    align-items: flex-start;
+    justify-content: left;
     position: absolute;
 
     width: fit-content;
@@ -28,9 +28,10 @@
     .help-controls {
         display: flex;
         justify-content: space-between
+        width: 100%
 
         .fa-window-close {
-            margin: 0px !important;
+            margin-right: 0px !important;
         }
     }
 
@@ -39,11 +40,13 @@
         white-space: nowrap;
     }
 
-    // position the help popup to the left of the Nav 'button'
+    // position the help popup below and slightly displaced
+    // (this is the only position that doesn't appear to risk getting clipped)
     transform-origin: top left;
-    transform: translate(-101%, 30%);
+    transform: translate(5%, 90%);
 
-    padding: 3px 0.3rem  0 0.3rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
 
     border-width: 2px;
     border-color: grey;
@@ -51,11 +54,11 @@
     border-radius: 5px;
 
     themed background-color dynamic-help-background-color;
-    opacity: 70%;
+    // opacity: 70%; opacity doesn't look good here.
 
     overflow-y: auto;
     user-select: none;
     z-index: z.nav-menu.menu;
 
-    box-shadow: -3px 0px 4px 4px rgba(148, 109, 109, 0.75);
+    box-shadow: 0px 2px 4px 4px rgba(148, 109, 109, 0.75);
 }

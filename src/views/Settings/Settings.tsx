@@ -97,6 +97,7 @@ export function Settings(): JSX.Element {
 
     if (dynamic_help.isVisible("guest-password-help-set", "settings-button-help")) {
         dynamic_help.hideHelpSetItem("guest-password-help-set", "settings-button-help");
+        dynamic_help.showHelpSetItem("guest-password-help-set", "username-change-help");
         select("account");
     }
 
@@ -174,8 +175,6 @@ export function Settings(): JSX.Element {
             break;
             */
     }
-
-    console.log(selected, SelectedPage);
 
     const props: SettingGroupProps = {
         state: settings_state,

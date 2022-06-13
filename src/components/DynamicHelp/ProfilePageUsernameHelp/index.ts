@@ -15,8 +15,4 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from "./SettingsButtonHelp";
-export * from "./RightNavHelp";
-export * from "./UsernameChangeHelp";
-export * from "./ProfileButtonUsernameHelp";
 export * from "./ProfilePageUsernameHelp";

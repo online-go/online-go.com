@@ -22,6 +22,8 @@ import { get, put } from "requests";
 import { parse } from "query-string";
 import * as data from "data";
 import * as moment from "moment";
+import * as dynamic_help from "dynamic_help_config";
+
 import { Card } from "material";
 import { GameList } from "GameList";
 import * as preferences from "preferences";
@@ -301,6 +303,11 @@ export function User(props: { user_id?: number }): JSX.Element {
             setResolved(false);
         };
     }, [user_id]);
+
+    if (dynamic_help.isVisible("guest-password-help-set", "profile-button-username-help")) {
+        dynamic_help.hideHelpSetItem("guest-password-help-set", "profile-button-username-help");
+        dynamic_help.showHelpSetItem("guest-password-help-set", "profile-page-username-help");
+    }
 
     /* Render */
     if (!user) {

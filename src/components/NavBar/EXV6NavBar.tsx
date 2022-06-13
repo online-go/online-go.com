@@ -38,7 +38,7 @@ import { FriendIndicator } from "FriendList";
 import { logout } from "auth";
 import { useUser } from "hooks";
 import { OmniSearch } from "./OmniSearch";
-import { hideHelpSetItem, isVisible } from "dynamic_help_config";
+import { hideHelpSetItem, isVisible, showHelpSetItem } from "dynamic_help_config";
 
 const body = $(document.body);
 
@@ -88,8 +88,14 @@ export function EXV6NavBar(): JSX.Element {
     };
 
     const toggleRightNav = () => {
-        if (!right_nav_active && isVisible("guest-password-help-set", "right-nav-help")) {
-            hideHelpSetItem("guest-password-help-set", "right-nav-help");
+        if (!right_nav_active) {
+            if (isVisible("guest-password-help-set", "right-nav-help")) {
+                hideHelpSetItem("guest-password-help-set", "right-nav-help");
+            }
+            if (isVisible("guest-password-help-set", "username-change-help")) {
+                hideHelpSetItem("guest-password-help-set", "username-change-help");
+                showHelpSetItem("guest-password-help-set", "profile-button-username-help");
+            }
         }
         setRightNavActive(!right_nav_active);
     };
@@ -325,6 +331,7 @@ export function EXV6NavBar(): JSX.Element {
                     <NotificationIndicator onClick={toggleNotifications} />
                     <span className="icon-container" onClick={toggleRightNav}>
                         <DynamicHelp.RightNavHelp />
+                        <DynamicHelp.UsernameChangeHelp />
                         {user.username}
                     </span>
                 </section>
@@ -344,6 +351,7 @@ export function EXV6NavBar(): JSX.Element {
             {right_nav_active && (
                 <div className="RightNav">
                     <Link to={`/user/view/${user.id}`}>
+                        <DynamicHelp.ProfileButtonUsernameHelp />
                         <PlayerIcon user={user} size={16} />
                         {_("Profile")}
                     </Link>

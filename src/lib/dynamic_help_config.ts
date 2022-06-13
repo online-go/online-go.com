@@ -20,7 +20,12 @@ import { pgettext } from "./translate";
 
 export type DynamicHelpSet = "guest-password-help-set";
 
-export type GuestPasswordHelperSetItem = "right-nav-help" | "settings-button-help";
+export type GuestPasswordHelperSetItem =
+    | "right-nav-help"
+    | "settings-button-help"
+    | "username-change-help"
+    | "profile-button-username-help"
+    | "profile-page-username-help";
 
 export type HelperSetItem = GuestPasswordHelperSetItem;
 
@@ -45,18 +50,42 @@ export const DEFAULT_DYNAMIC_HELP_CONFIG: DynamicHelpSchema = {
     "guest-password-help-set": {
         show_set: false,
         set_title: pgettext(
-            "Label for settings controlling guest password help",
-            "Guest Password Help",
+            "Label for the settings controlling guest password help",
+            "Guest Password Help Set",
         ),
         items: {
             "right-nav-help": { show_item: false },
             "settings-button-help": { show_item: false },
+            "username-change-help": { show_item: false },
+            "profile-button-username-help": { show_item: false },
+            "profile-page-username-help": { show_item: false },
         },
     },
 };
 
 export function setIsVisible(set_name: DynamicHelpSet): boolean {
     return data.get(`dynamic-help.${set_name}`, DEFAULT_DYNAMIC_HELP_CONFIG[set_name]).show_set;
+}
+
+export function allItemsVisible(set_name: DynamicHelpSet): boolean {
+    const config = data.get(`dynamic-help.${set_name}`, DEFAULT_DYNAMIC_HELP_CONFIG[set_name]);
+
+    return Object.keys(config.items).reduce(
+        (prev, current) => prev && config.items[current].show_item,
+        config.show_set,
+    );
+}
+
+export function someItemsVisible(set_name: DynamicHelpSet): boolean {
+    const config = data.get(`dynamic-help.${set_name}`, DEFAULT_DYNAMIC_HELP_CONFIG[set_name]);
+
+    return (
+        config.show_set &&
+        Object.keys(config.items).reduce(
+            (prev, current) => prev || config.items[current].show_item,
+            false,
+        )
+    );
 }
 
 export function isVisible(set_name: DynamicHelpSet, item_name: string): boolean {
@@ -105,8 +134,6 @@ function setHelpSetItem(
 
     data.set(`dynamic-help.${set_name}`, set_config);
 
-    console.log(set_name, set_config);
-
     return set_config;
 }
 
@@ -135,10 +162,8 @@ export function toggleHelpSet(set_name: DynamicHelpSet): boolean {
     const new_value = !set_config.show_set;
 
     if (new_value) {
-        console.log("show");
         showHelpSet(set_name);
     } else {
-        console.log("hide");
         hideHelpSet(set_name);
     }
 

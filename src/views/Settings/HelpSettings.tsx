@@ -19,16 +19,25 @@ import * as React from "react";
 
 import * as data from "data";
 
-import { Toggle } from "Toggle";
+import { pgettext } from "translate";
 
-import { DEFAULT_DYNAMIC_HELP_CONFIG, DynamicHelpSet, toggleHelpSet } from "dynamic_help_config";
+import {
+    DEFAULT_DYNAMIC_HELP_CONFIG,
+    DynamicHelpSet,
+    showHelpSet,
+    hideHelpSet,
+    allItemsVisible,
+    someItemsVisible,
+} from "dynamic_help_config";
 
 import { PreferenceLine } from "SettingsCommon";
 
 export function HelpSettings(): JSX.Element {
     const help_sets = Object.keys(DEFAULT_DYNAMIC_HELP_CONFIG) as DynamicHelpSet[];
 
-    // Keep the settings visivbility value as state so we rerender when we change it...
+    // Here, we keep the settings visibility value as state so we rerender when we change it.
+    // We get the initial value for the state by reading it from datam, or using the
+    // default values if it has never been set.
     const [visibility, setVisibility] = React.useState<{ [help_set: string]: boolean }>(
         Object.fromEntries(
             help_sets.map((help_set) => [
@@ -39,10 +48,14 @@ export function HelpSettings(): JSX.Element {
         ),
     );
 
-    // toggle the state to be the value that we toggle the actual setting to...
-    const toggleVisibility = (help_set: DynamicHelpSet) => {
-        console.log("click");
-        setVisibility({ ...visibility, [help_set]: toggleHelpSet(help_set) });
+    const show = (help_set: DynamicHelpSet) => {
+        showHelpSet(help_set);
+        setVisibility({ ...visibility, [help_set]: true });
+    };
+
+    const hide = (help_set: DynamicHelpSet) => {
+        hideHelpSet(help_set);
+        setVisibility({ ...visibility, [help_set]: false });
     };
 
     return (
@@ -52,10 +65,25 @@ export function HelpSettings(): JSX.Element {
                     key={help_set}
                     title={DEFAULT_DYNAMIC_HELP_CONFIG[help_set].set_title}
                 >
-                    <Toggle
-                        checked={visibility[help_set]}
-                        onChange={() => toggleVisibility(help_set)}
-                    />
+                    <button onClick={() => show(help_set)}>
+                        {pgettext("Press this button to show all help in the set", "Show all")}
+                    </button>
+                    <button onClick={() => hide(help_set)}>
+                        {pgettext("Press this button to hide this help set", "Hide set")}
+                    </button>
+                    <span>
+                        {pgettext(
+                            "Following this label is the list of currently visible help items",
+                            "Currently:",
+                        )}
+                    </span>
+                    <span>
+                        {allItemsVisible(help_set)
+                            ? "All"
+                            : someItemsVisible(help_set)
+                            ? "Some"
+                            : "None"}
+                    </span>
                 </PreferenceLine>
             ))}
         </div>
