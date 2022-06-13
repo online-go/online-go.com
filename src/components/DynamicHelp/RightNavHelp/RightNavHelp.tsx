@@ -47,7 +47,7 @@ export function RightNavHelp(): JSX.Element {
                 <div className={ITEM}>
                     <div className="help-controls">
                         <i className="fa fa-window-close" onClick={close} />
-                        <i className="fa fa-arrow-up" />
+                        <i className="fa fa-arrow-right" />
                     </div>
                     <span>{_("To set your password, click here")}</span>
                 </div>

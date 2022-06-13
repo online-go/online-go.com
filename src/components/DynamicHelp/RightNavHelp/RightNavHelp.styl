@@ -38,10 +38,9 @@
         width: fit-content;
         white-space: nowrap;
     }
-
     // position the help popup below the Nav "button" (so it doesn't get clipped)
-    transform-origin: top right;
-    transform: translate(-40%, 90%);
+    transform-origin: top left;
+    transform: translate(-101%, 30%);
 
     padding: 3px 0.3rem  0 0.3rem;
 
@@ -51,9 +50,11 @@
     border-radius: 5px;
 
     themed background-color dynamic-help-background-color;
+    opacity: 70%;
+
     overflow-y: auto;
     user-select: none;
     z-index: z.nav-menu.menu;
 
-    box-shadow: 0px 3px 4px 4px rgba(148, 109, 109, 0.75);
+    box-shadow: -3px 0px 4px 4px rgba(148, 109, 109, 0.75);
 }
