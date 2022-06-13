@@ -20,14 +20,14 @@ import { pgettext } from "./translate";
 
 export type DynamicHelpSet = "guest-arrival-help-set";
 
-export type GuestPasswordHelperSetItem =
+export type GuestArrivalHelperSetItem =
     | "right-nav-help"
     | "settings-button-help"
     | "username-change-help"
     | "profile-button-username-help"
     | "profile-page-username-help";
 
-export type HelperSetItem = GuestPasswordHelperSetItem;
+export type HelperSetItem = GuestArrivalHelperSetItem;
 
 export type DynamicHelpSetItemSchema = {
     show_item: boolean;
