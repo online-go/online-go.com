@@ -18,16 +18,18 @@
 import * as data from "data";
 import { pgettext } from "./translate";
 
-export type DynamicHelpSet = "guest-arrival-help-set";
+export type DynamicHelpSet = "new-user-help-set" | "guest-arrival-help-set";
 
-export type GuestArrivalHelperSetItem =
+export type NewUserHelpSetItem = "new-user-welcome";
+
+export type GuestArrivalHelpSetItem =
     | "right-nav-help"
     | "settings-button-help"
     | "username-change-help"
     | "profile-button-username-help"
     | "profile-page-username-help";
 
-export type HelperSetItem = GuestArrivalHelperSetItem;
+export type HelperSetItem = NewUserHelpSetItem | GuestArrivalHelpSetItem;
 
 export type DynamicHelpSetItemSchema = {
     show_item: boolean;
@@ -47,6 +49,16 @@ export type DynamicHelpSchema = {
 // This is currently used to define what items are in a help set,
 // so we can make sure we turn them all on in `showHelpSet()`
 export const DEFAULT_DYNAMIC_HELP_CONFIG: DynamicHelpSchema = {
+    "new-user-help-set": {
+        show_set: false,
+        set_title: pgettext(
+            "Label for the settings controlling help for newly registered users",
+            "New User Help Set",
+        ),
+        items: {
+            "new-user-welcome": { show_item: false },
+        },
+    },
     "guest-arrival-help-set": {
         show_set: false,
         set_title: pgettext(
