@@ -18,7 +18,7 @@
 import * as data from "data";
 import { pgettext } from "./translate";
 
-export type DynamicHelpSet = "guest-password-help-set";
+export type DynamicHelpSet = "guest-arrival-help-set";
 
 export type GuestPasswordHelperSetItem =
     | "right-nav-help"
@@ -47,11 +47,11 @@ export type DynamicHelpSchema = {
 // This is currently used to define what items are in a help set,
 // so we can make sure we turn them all on in `showHelpSet()`
 export const DEFAULT_DYNAMIC_HELP_CONFIG: DynamicHelpSchema = {
-    "guest-password-help-set": {
+    "guest-arrival-help-set": {
         show_set: false,
         set_title: pgettext(
-            "Label for the settings controlling guest password help",
-            "Guest Password Help Set",
+            "Label for the settings controlling help for arriving guests",
+            "Guest Arrival Help Set",
         ),
         items: {
             "right-nav-help": { show_item: false },

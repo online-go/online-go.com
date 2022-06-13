@@ -21,7 +21,7 @@ import * as dynamic_help from "dynamic_help_config";
 
 import { _ /*pgettext*/ } from "translate";
 
-const HELP_SET = "guest-password-help-set";
+const HELP_SET = "guest-arrival-help-set";
 const ITEM = "settings-button-help";
 
 export function SettingsButtonHelp(): JSX.Element {

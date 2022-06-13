@@ -95,9 +95,9 @@ export function Settings(): JSX.Element {
     const selected = category;
     data.set("settings.page-selected", selected);
 
-    if (dynamic_help.isVisible("guest-password-help-set", "settings-button-help")) {
-        dynamic_help.hideHelpSetItem("guest-password-help-set", "settings-button-help");
-        dynamic_help.showHelpSetItem("guest-password-help-set", "username-change-help");
+    if (dynamic_help.isVisible("guest-arrival-help-set", "settings-button-help")) {
+        dynamic_help.hideHelpSetItem("guest-arrival-help-set", "settings-button-help");
+        dynamic_help.showHelpSetItem("guest-arrival-help-set", "username-change-help");
         select("account");
     }
 

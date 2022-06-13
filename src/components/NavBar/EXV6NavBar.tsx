@@ -89,12 +89,12 @@ export function EXV6NavBar(): JSX.Element {
 
     const toggleRightNav = () => {
         if (!right_nav_active) {
-            if (isVisible("guest-password-help-set", "right-nav-help")) {
-                hideHelpSetItem("guest-password-help-set", "right-nav-help");
+            if (isVisible("guest-arrival-help-set", "right-nav-help")) {
+                hideHelpSetItem("guest-arrival-help-set", "right-nav-help");
             }
-            if (isVisible("guest-password-help-set", "username-change-help")) {
-                hideHelpSetItem("guest-password-help-set", "username-change-help");
-                showHelpSetItem("guest-password-help-set", "profile-button-username-help");
+            if (isVisible("guest-arrival-help-set", "username-change-help")) {
+                hideHelpSetItem("guest-arrival-help-set", "username-change-help");
+                showHelpSetItem("guest-arrival-help-set", "profile-button-username-help");
             }
         }
         setRightNavActive(!right_nav_active);

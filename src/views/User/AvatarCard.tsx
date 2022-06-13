@@ -126,8 +126,8 @@ export function AvatarCard({
             setNewRealNameIsPrivate(user.real_name_is_private);
             setNewCountry(user.country);
             setNewWebsite(user.website);
-            if (isVisible("guest-password-help-set", "profile-page-username-help")) {
-                hideHelpSetItem("guest-password-help-set", "profile-page-username-help");
+            if (isVisible("guest-arrival-help-set", "profile-page-username-help")) {
+                hideHelpSetItem("guest-arrival-help-set", "profile-page-username-help");
             }
             onEdit();
         }

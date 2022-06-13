@@ -304,9 +304,9 @@ export function User(props: { user_id?: number }): JSX.Element {
         };
     }, [user_id]);
 
-    if (dynamic_help.isVisible("guest-password-help-set", "profile-button-username-help")) {
-        dynamic_help.hideHelpSetItem("guest-password-help-set", "profile-button-username-help");
-        dynamic_help.showHelpSetItem("guest-password-help-set", "profile-page-username-help");
+    if (dynamic_help.isVisible("guest-arrival-help-set", "profile-button-username-help")) {
+        dynamic_help.hideHelpSetItem("guest-arrival-help-set", "profile-button-username-help");
+        dynamic_help.showHelpSetItem("guest-arrival-help-set", "profile-page-username-help");
     }
 
     /* Render */
