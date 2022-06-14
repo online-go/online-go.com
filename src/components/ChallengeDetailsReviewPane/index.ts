@@ -15,21 +15,4 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import { Link } from "react-router-dom";
-import { _, pgettext } from "translate";
-
-import Select from "react-select";
-
-import * as data from "data";
-import { post, get, put, del, getCookie } from "requests";
-import { errorAlerter, errorLogger, ignore } from "misc";
-
-import * as preferences from "preferences";
-import { usePreference } from "preferences";
-
-import { Toggle } from "Toggle";
-
-import { SettingGroupProps, PreferenceToggle, PreferenceLine } from "SettingsCommon";
-
-export
+export * from "./ChallengeDetailsReviewPane";
