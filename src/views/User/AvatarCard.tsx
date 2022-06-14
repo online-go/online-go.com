@@ -16,6 +16,10 @@
  */
 
 import * as data from "data";
+import * as DynamicHelp from "DynamicHelp";
+
+import { isVisible, hideHelpSetItem } from "dynamic_help_config";
+
 import { Flag } from "Flag";
 import { image_resizer } from "image_resizer";
 import { errorAlerter, ignore } from "misc";
@@ -122,6 +126,9 @@ export function AvatarCard({
             setNewRealNameIsPrivate(user.real_name_is_private);
             setNewCountry(user.country);
             setNewWebsite(user.website);
+            if (isVisible("guest-arrival-help-set", "profile-page-username-help")) {
+                hideHelpSetItem("guest-arrival-help-set", "profile-page-username-help");
+            }
             onEdit();
         }
     };
@@ -318,10 +325,13 @@ export function AvatarCard({
 
             <div className="avatar-buttons">
                 {(global_user.id === user.id || global_user.is_moderator || null) && (
-                    <button onClick={toggleEdit} className="xs edit-button">
-                        <i className={editing ? "fa fa-save" : "fa fa-pencil"} />{" "}
-                        {" " + (editing ? _("Save") : _("Edit"))}
-                    </button>
+                    <>
+                        <button onClick={toggleEdit} className="xs edit-button">
+                            <i className={editing ? "fa fa-save" : "fa fa-pencil"} />{" "}
+                            {" " + (editing ? _("Save") : _("Edit"))}
+                        </button>
+                        <DynamicHelp.ProfilePageUsernameHelp />
+                    </>
                 )}
 
                 {global_user.is_moderator && (

@@ -74,7 +74,6 @@ z = {
         backdrop       : 300,
         menu           : 310
     },
-    //player-autocomplete: 900, // not sure why this ever existed, if this doesn't cause a problem in a few weeks remove this comment. - anoek 2021-05-20
     nav-menu: {
         backdrop       : 1000,
         menu           : 1010,
@@ -86,6 +85,8 @@ z = {
     popover            : 5000,
     report             : 6000,
     swal               : 10000,
+    challenge-link     : 10010,  // We have to say "Challenge Link Copied" over the top of "Challenge Created"
+
     superchat-modal    : 50005,
     superchat          : 50010,
 }
@@ -233,6 +234,10 @@ light.navbar-highlight-background-color = light.bg;
 light.navbar-background-color           = light.bg;
 light.logo-svg                          = svg-load("../assets/ogs_light.svg")
 
+/** Dynamic Help **/
+
+light.dynamic-help-background-color     = light.bg;  // curiously dark needs differentiation, but light doesn't!
+
 /** Input **/
 
 light.input-bg                          = darken(light.bg, 3%)
@@ -364,6 +369,9 @@ dark.navbar-highlight-background-color  = #333
 dark.navbar-background-color            = lighten(dark.bg, 5%)
 dark.logo-svg                           = svg-load("../assets/ogs_dark.svg")
 
+/** Dynamic Help **/
+
+dark.dynamic-help-background-color     = #00001a;  // stands out boldly
 
 /** Input **/
 
@@ -464,6 +472,7 @@ nowrap()
 
 @require "./components/material/*.styl";
 @require "./components/[A-Z]*/*.styl";
+@require "./components/[A-Z]*/[A-Z]*/*.styl";
 @require "./views/[A-Z]*/*.styl";
 @require "./views/docs/*.styl";
 

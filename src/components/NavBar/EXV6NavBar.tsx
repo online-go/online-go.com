@@ -19,6 +19,8 @@ import * as React from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import * as data from "data";
+import * as preferences from "preferences";
+import * as DynamicHelp from "DynamicHelp";
 
 import { _ } from "translate";
 import { PlayerIcon } from "PlayerIcon";
@@ -32,11 +34,11 @@ import { TurnIndicator } from "TurnIndicator";
 import { NotificationIndicator } from "NotificationIndicator";
 import { TournamentIndicator } from "Announcements";
 import { FriendIndicator } from "FriendList";
-import * as preferences from "preferences";
-//import { ChatIndicator } from "Chat";
+
 import { logout } from "auth";
 import { useUser } from "hooks";
 import { OmniSearch } from "./OmniSearch";
+import { hideHelpSetItem, isVisible, showHelpSetItem } from "dynamic_help_config";
 
 const body = $(document.body);
 
@@ -86,6 +88,15 @@ export function EXV6NavBar(): JSX.Element {
     };
 
     const toggleRightNav = () => {
+        if (!right_nav_active) {
+            if (isVisible("guest-arrival-help-set", "right-nav-help")) {
+                hideHelpSetItem("guest-arrival-help-set", "right-nav-help");
+            }
+            if (isVisible("guest-arrival-help-set", "username-change-help")) {
+                hideHelpSetItem("guest-arrival-help-set", "username-change-help");
+                showHelpSetItem("guest-arrival-help-set", "profile-button-username-help");
+            }
+        }
         setRightNavActive(!right_nav_active);
     };
 
@@ -309,6 +320,8 @@ export function EXV6NavBar(): JSX.Element {
                     <FriendIndicator />
                     <NotificationIndicator onClick={toggleNotifications} />
                     <span className="icon-container" onClick={toggleRightNav}>
+                        <DynamicHelp.RightNavHelp />
+                        <DynamicHelp.UsernameChangeHelp />
                         {user.username}
                     </span>
                 </section>
@@ -328,11 +341,13 @@ export function EXV6NavBar(): JSX.Element {
             {right_nav_active && (
                 <div className="RightNav">
                     <Link to={`/user/view/${user.id}`}>
+                        <DynamicHelp.ProfileButtonUsernameHelp />
                         <PlayerIcon user={user} size={16} />
                         {_("Profile")}
                     </Link>
 
                     <Link to="/user/settings">
+                        <DynamicHelp.SettingsButtonHelp />
                         <i className="fa fa-gear"></i>
                         {_("Settings")}
                     </Link>

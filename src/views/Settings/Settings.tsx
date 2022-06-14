@@ -23,9 +23,11 @@ import { useParams } from "react-router-dom";
 import * as preferences from "preferences";
 
 import * as data from "data";
+import * as dynamic_help from "dynamic_help_config";
 
 import { _ } from "translate";
 import { get, abort_requests_in_flight } from "requests";
+
 import { errorAlerter, dup } from "misc";
 import { durationString } from "TimeControl";
 
@@ -46,6 +48,7 @@ import { AccountSettings } from "./AccountSettings";
 import { LinkPreferences } from "./LinkPreferences";
 import { AnnouncementPreferences } from "./AnnouncementPreferences";
 import { EmailPreferences } from "./EmailPreferences";
+import { HelpSettings } from "./HelpSettings";
 
 export function Settings(): JSX.Element {
     const { category } = useParams();
@@ -56,9 +59,6 @@ export function Settings(): JSX.Element {
     const [loaded, set_loaded]: [number, (b: number) => void] = React.useState(0);
 
     React.useEffect(refresh, []);
-
-    const selected = category;
-    data.set("settings.page-selected", selected);
 
     function select(s: string): void {
         data.set("settings.page-selected", s);
@@ -90,6 +90,15 @@ export function Settings(): JSX.Element {
         };
     }
 
+    const selected = category;
+    data.set("settings.page-selected", selected);
+
+    if (dynamic_help.isVisible("guest-arrival-help-set", "settings-button-help")) {
+        dynamic_help.hideHelpSetItem("guest-arrival-help-set", "settings-button-help");
+        dynamic_help.showHelpSetItem("guest-arrival-help-set", "username-change-help");
+        select("account");
+    }
+
     const groups: Array<{ key: string; label: string }> = [
         { key: "general", label: _("General Preferences") },
         { key: "sound", label: _("Sound Preferences") },
@@ -102,6 +111,7 @@ export function Settings(): JSX.Element {
         { key: "blocked_players", label: _("Blocked Players") },
         { key: "account", label: _("Account Settings") },
         { key: "link", label: _("Account Linking") },
+        { key: "help", label: _("Help Settings") },
         /*
         {
             key: "experiments",
@@ -149,6 +159,9 @@ export function Settings(): JSX.Element {
             break;
         case "link":
             SelectedPage = LinkPreferences;
+            break;
+        case "help":
+            SelectedPage = HelpSettings;
             break;
         case "logout":
             SelectedPage = LogoutPreferences;

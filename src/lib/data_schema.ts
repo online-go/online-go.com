@@ -28,6 +28,8 @@ import { TimeControl, TimeControlTypes } from "src/components/TimeControl";
 import { AutomatchPreferences } from "src/components/AutomatchSettings";
 import { JosekiFilter } from "src/components/JosekiVariationFilter";
 
+import * as dynamic_help from "dynamic_help_config";
+
 interface CachedSchema {
     groups: GroupList;
     active_tournaments: ActiveTournamentList;
@@ -195,7 +197,8 @@ export interface DataSchema
         Prefixed<AutomatchSchema, "automatch">,
         Prefixed<ObservedGamesSchema, "observed-games">,
         Prefixed<AnnouncementsSchema, "announcements">,
-        Prefixed<ChallengeSchema, "challenge"> {
+        Prefixed<ChallengeSchema, "challenge">,
+        Prefixed<dynamic_help.DynamicHelpSchema, "dynamic-help"> {
     user: rest_api.UserConfig;
     bid: string;
     theme: string;

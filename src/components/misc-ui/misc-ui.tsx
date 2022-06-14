@@ -17,6 +17,10 @@
 
 import * as React from "react";
 
+/* This is intended to create text embedded in a horizontal line like
+ *   --- my text ---
+ * It relies on css for 'left' and 'right' being as expected in context, caveat emptor. */
+
 export const LineText = (props) => (
     <div {...props} className={"LineText " + (props.className || "")}>
         <span className="left" />
