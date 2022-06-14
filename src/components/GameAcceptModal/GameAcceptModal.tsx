@@ -19,10 +19,10 @@ import * as React from "react";
 import { _ } from "translate";
 import { post } from "requests";
 import { openModal, Modal } from "Modal";
-import { timeControlDescription, usedForCheating } from "TimeControl";
 import { Player, PlayerObjectType } from "Player";
-import { errorAlerter, yesno } from "misc";
+import { errorAlerter } from "misc";
 import swal from "sweetalert2";
+import { ChallengeDetailsReviewPane } from "../ChallengeDetailsReviewPane";
 
 interface Events {}
 
@@ -62,19 +62,6 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
 
     render() {
         const challenge = this.props.challenge;
-        const time_control_description = timeControlDescription(challenge.time_control_parameters);
-        let player_color = _(challenge.challenger_color);
-
-        if (challenge.challenger_color === "black") {
-            player_color = _("White");
-        } else if (challenge.challenger_color === "white") {
-            player_color = _("Black");
-        } else if (challenge.challenger_color === "automatic") {
-            player_color = _("Automatic");
-        } else if (challenge.challenger_color === "random") {
-            player_color = _("Random");
-        }
-
         const challenger_details: PlayerObjectType = {
             id: challenge.user_id,
             username: challenge.username,
@@ -93,57 +80,7 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
                     </div>
                 </div>
                 <div className="body">
-                    <p>{time_control_description}</p>
-                    {usedForCheating(challenge.time_control_parameters) ? (
-                        <p className="cheat-warning">
-                            <i className="fa fa-exclamation-triangle cheat-alert"></i>
-                            {_(
-                                "Note: this time setting sometimes causes problems.  Accept at your own risk.",
-                            )}
-                        </p>
-                    ) : (
-                        ""
-                    )}
-                    {challenge.komi ? (
-                        <p className="cheat-warning">
-                            <i className="fa fa-exclamation-triangle cheat-alert"></i>
-                            {_("Note: Custom komi.  Accept at your own risk.")}
-                        </p>
-                    ) : (
-                        ""
-                    )}
-                    <hr />
-                    <dl className="horizontal">
-                        <dt>{_("Your color")}</dt>
-                        <dd>{player_color}</dd>
-                        <dt>{_("Ranked")}</dt>
-                        <dd>{challenge.ranked ? _("Yes") : _("No")}</dd>
-                        <dt>{_("Handicap")}</dt>
-                        <dd>{handicapText(challenge.handicap)}</dd>
-                        <dt>{_("Komi")}</dt>
-                        <dd>
-                            {challenge.komi ? (
-                                <span title={_("Custom komi setting")}>
-                                    {challenge.komi}
-                                    <i className="fa fa-exclamation-triangle cheat-alert"></i>
-                                </span>
-                            ) : (
-                                _("Automatic")
-                            )}
-                        </dd>
-                        <dt>{_("Board Size")}</dt>
-                        <dd>
-                            {challenge.width}x{challenge.height}
-                        </dd>
-                        <dt>{_("In-game analysis")}</dt>
-                        <dd>{yesno(!challenge.disable_analysis)}</dd>
-                        {(challenge.time_per_move > 3600 || null) && (
-                            <dt>{_("Pause on weekends")}</dt>
-                        )}
-                        {(challenge.time_per_move > 3600 || null) && (
-                            <dd>{yesno(challenge.time_control_parameters.pause_on_weekends)}</dd>
-                        )}
-                    </dl>
+                    <ChallengeDetailsReviewPane challenge={challenge} />
                 </div>
                 <div className="buttons">
                     <button onClick={this.close}>{_("Close")}</button>
