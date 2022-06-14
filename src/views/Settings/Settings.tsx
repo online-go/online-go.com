@@ -17,16 +17,17 @@
 
 import * as React from "react";
 import Select from "react-select";
-import * as moment from "moment";
+
+import { useParams } from "react-router-dom";
 
 import * as preferences from "preferences";
-import { usePreference } from "preferences";
+
 import * as data from "data";
 import * as dynamic_help from "dynamic_help_config";
 
-import { useParams } from "react-router-dom";
-import { _, pgettext } from "translate";
-import { get, put, abort_requests_in_flight } from "requests";
+import { _ } from "translate";
+import { get, abort_requests_in_flight } from "requests";
+
 import { errorAlerter, dup } from "misc";
 import { durationString } from "TimeControl";
 
@@ -34,12 +35,7 @@ import { logout, logoutOtherDevices, logoutAndClearLocalData } from "auth";
 import { LoadingPage } from "Loading";
 import { browserHistory } from "ogsHistory";
 
-import { BlockPlayerModal, getAllBlocksWithUsernames } from "BlockPlayer";
-import { Player } from "Player";
-import { PaginatedTable } from "PaginatedTable";
-import { Toggle } from "Toggle";
-
-import { SettingGroupProps, PreferenceLine, SettingsState } from "SettingsCommon";
+import { SettingGroupProps, SettingsState } from "SettingsCommon";
 
 import { SoundPreferences } from "./SoundPreferences";
 import { GeneralPreferences } from "./GeneralPreferences";
@@ -50,6 +46,8 @@ import { BlockedPlayerPreferences } from "./BlockedPlayerPreferences";
 import { VacationSettings } from "./VacationSettings";
 import { AccountSettings } from "./AccountSettings";
 import { LinkPreferences } from "./LinkPreferences";
+import { AnnouncementPreferences } from "./AnnouncementPreferences";
+import { EmailPreferences } from "./EmailPreferences";
 import { HelpSettings } from "./HelpSettings";
 
 export function Settings(): JSX.Element {
@@ -300,135 +298,6 @@ function LogoutPreferences(): JSX.Element {
     );
 }
 
-function EmailPreferences(props: SettingGroupProps): JSX.Element {
-    return (
-        <div>
-            {_("Email me a notification when ...")}
-            {Object.keys(props.state.notifications).map((k) => (
-                <EmailNotificationToggle
-                    key={k}
-                    name={_(props.state.notifications[k].description)}
-                    notification={k}
-                    state={props.state}
-                />
-            ))}
-        </div>
-    );
-}
-
-function AnnouncementPreferences(): JSX.Element {
-    const [blocked_players, setBlockedPlayers]: [
-        Array<any> | null,
-        (x: Array<any> | null) => void,
-    ] = React.useState(null);
-
-    React.useEffect(() => {
-        getAllBlocksWithUsernames()
-            .then((blocks) => {
-                blocks = blocks.filter((bs) => bs.block_announcements);
-                setBlockedPlayers(blocks);
-            })
-            .catch(errorAlerter);
-    }, []);
-
-    const [mute_stream_announcements, toggleMuteStreamAnnouncements] = usePreference(
-        "mute-stream-announcements",
-    );
-    const [mute_event_announcements, toggleMuteEventAnnouncements] = usePreference(
-        "mute-event-announcements",
-    );
-
-    return (
-        <div id="AnnouncementPreferences">
-            <br />
-            <h2>{_("Announcements")}</h2>
-            <div>
-                <PreferenceLine title={_("Hide stream announcements")}>
-                    <Toggle
-                        checked={mute_stream_announcements}
-                        onChange={toggleMuteStreamAnnouncements}
-                    />
-                </PreferenceLine>
-                <PreferenceLine title={_("Hide event announcements")}>
-                    <Toggle
-                        checked={mute_event_announcements}
-                        onChange={toggleMuteEventAnnouncements}
-                    />
-                </PreferenceLine>
-            </div>
-
-            <h2>{_("Announcement History")}</h2>
-
-            <PaginatedTable
-                className="announcement-history"
-                source={`announcements/history`}
-                orderBy={["-timestamp"]}
-                columns={[
-                    {
-                        header: "Time",
-                        className: "announcement-time ",
-                        render: (a) => moment(a.timestamp).format("YYYY-MM-DD LTS"),
-                    },
-                    {
-                        header: "Duration",
-                        className: "",
-                        render: (a) => {
-                            const ms = moment(a.expiration).diff(moment(a.timestamp));
-                            const d = moment.duration(ms);
-                            return Math.floor(d.asHours()) + moment.utc(ms).format(":mm");
-                            //.format('HH:mm')
-                        },
-                    },
-                    {
-                        header: "Type",
-                        className: "announcement-type ",
-                        render: (a) => {
-                            switch (a.type) {
-                                case "system":
-                                    return pgettext("Announcement type", "System");
-                                case "event":
-                                    return pgettext("Announcement type", "Event");
-                                case "stream":
-                                    return pgettext("Announcement type (video stream)", "Stream");
-                            }
-                            return a.type;
-                        },
-                    },
-                    { header: "Player", className: "", render: (a) => <Player user={a.creator} /> },
-                    { header: "Message", className: "announcement-message", render: (a) => a.text },
-                    {
-                        header: "Link",
-                        className: "announcement-link",
-                        render: (a) => <a href={a.link}>{a.link}</a>,
-                    },
-                ]}
-            />
-
-            {blocked_players && blocked_players.length > 0 && (
-                <div>
-                    <h2>{_("Blocked players")}</h2>
-                    {blocked_players.map((block_state) => {
-                        const user_id = block_state.blocked;
-                        if (!user_id) {
-                            return null;
-                        }
-                        return (
-                            <div key={user_id} className="blocked-player-row">
-                                <span className="blocked-player">{block_state.username}</span>
-                                <BlockPlayerModal
-                                    playerId={user_id}
-                                    inline={true}
-                                    onlyAnnouncements={true}
-                                />
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
-        </div>
-    );
-}
-
 /*
 export function Experiments(): JSX.Element {
     const [test, setTest] = React.useState<boolean>(data.get("experiments.test") === "a");
@@ -456,43 +325,6 @@ export function Experiments(): JSX.Element {
     );
 }
 */
-
-function EmailNotificationToggle(props: {
-    state: SettingsState;
-    name: string;
-    notification: string;
-}): JSX.Element {
-    const [on, __set]: [boolean, (x: boolean) => void] = React.useState(
-        !!props.state.notifications[props.notification].value.email,
-    );
-
-    function save(on: boolean): void {
-        __set(on);
-        const up = {};
-        up[props.notification] = {
-            description: props.state.notifications[props.notification].description,
-            value: {
-                email: on,
-                mobile: on,
-            },
-        };
-        props.state.notifications[props.notification] = up[props.notification];
-        put("me/settings", {
-            notifications: up,
-        })
-            .then(() => 0)
-            .catch(errorAlerter);
-    }
-
-    return (
-        <div className="EmailNotificationToggle">
-            <label>
-                <span className="preference-toggle-name">{props.name}</span>
-                <Toggle onChange={save} checked={on} />
-            </label>
-        </div>
-    );
-}
 
 preferences.watch(
     "sound.vibrate-on-stone-placement",

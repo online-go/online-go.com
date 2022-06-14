@@ -30,6 +30,6 @@ import { usePreference } from "preferences";
 
 import { Toggle } from "Toggle";
 
-import { SettingGroupProps, PreferenceToggle, PreferenceLine } from "./Settings";
+import { SettingGroupProps, PreferenceToggle, PreferenceLine } from "SettingsCommon";
 
 export
