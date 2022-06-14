@@ -71,7 +71,7 @@ export const DEFAULT_DYNAMIC_HELP_CONFIG: DynamicHelpSchema = {
         ),
         items: {
             "right-nav-help": { show_item: false, set_initially: true },
-            "settings-button-help": { show_item: false, set_initially: false },
+            "settings-button-help": { show_item: false, set_initially: true },
             "username-change-help": { show_item: false, set_initially: false },
             "profile-button-username-help": { show_item: false, set_initially: false },
             "profile-page-username-help": { show_item: false, set_initially: false },
