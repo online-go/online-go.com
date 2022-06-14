@@ -18,6 +18,9 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { _ } from "translate";
+
+import * as DynamicHelp from "DynamicHelp";
+
 import { GameList } from "GameList";
 import { post, get, abort_requests_in_flight } from "requests";
 import * as data from "data";
@@ -26,7 +29,7 @@ import * as preferences from "preferences";
 import { errorAlerter, ignore } from "misc";
 import { DismissableNotification } from "DismissableNotification";
 import { ChallengesList } from "./ChallengesList";
-import { EmailBanner } from "EmailBanner";
+
 import { notification_manager } from "Notifications";
 import { ActiveAnnouncements } from "Announcements";
 import { ActiveTournamentList, Group } from "src/lib/types";
@@ -125,7 +128,7 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
                 <div id="Overview">
                     <div className="left">
                         <DismissableMessages />
-                        <EmailBanner />
+                        <DynamicHelp.NewUserWelcome />
                         <ActiveAnnouncements />
                         <ChallengesList onAccept={() => this.refresh()} />
 

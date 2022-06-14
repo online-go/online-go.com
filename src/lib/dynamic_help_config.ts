@@ -20,7 +20,7 @@ import { pgettext } from "./translate";
 
 export type DynamicHelpSet = "new-user-help-set" | "guest-arrival-help-set";
 
-export type NewUserHelpSetItem = "new-user-welcome";
+export type NewUserHelpSetItem = "new-user-welcome" | "new-user-verify-email-in-settings";
 
 export type GuestArrivalHelpSetItem =
     | "right-nav-help"
@@ -61,6 +61,7 @@ export const DEFAULT_DYNAMIC_HELP_CONFIG: DynamicHelpSchema = {
         ),
         items: {
             "new-user-welcome": { show_item: false, set_initially: true },
+            "new-user-verify-email-in-settings": { show_item: false, set_initially: true },
         },
     },
     "guest-arrival-help-set": {
