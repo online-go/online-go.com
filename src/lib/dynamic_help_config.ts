@@ -49,9 +49,8 @@ export type DynamicHelpSchema = {
     [set_name in DynamicHelpSet]: DynamicHelpSetSchema;
 };
 
-// This could be used to set initial values.  Right now it isn't used for that.
 // This is currently used to define what items are in a help set,
-// so we can make sure we turn them all on in `showHelpSet()`
+// so we can make sure we turn them all on in `showHelpSet()` and related
 export const DEFAULT_DYNAMIC_HELP_CONFIG: DynamicHelpSchema = {
     "new-user-help-set": {
         show_set: false,

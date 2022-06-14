@@ -22,6 +22,7 @@ import * as dynamic_help from "dynamic_help_config";
 import { _ } from "translate";
 
 import { browserHistory } from "ogsHistory";
+// import { useUser } from "hooks";
 
 import { Card } from "material";
 
@@ -29,7 +30,9 @@ const HELP_SET = "new-user-help-set";
 const ITEM = "new-user-welcome";
 
 export function NewUserWelcome(): JSX.Element {
-    const visibility = dynamic_help.isVisible(HELP_SET, ITEM);
+    //const user = useUser();
+
+    const visibility = dynamic_help.isVisible(HELP_SET, ITEM); // eventually: && !user.email_validated;
 
     const [show_self, setShowSelf] = React.useState<boolean>(visibility);
 
