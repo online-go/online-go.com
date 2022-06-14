@@ -24,9 +24,10 @@ import { pgettext } from "translate";
 import {
     DEFAULT_DYNAMIC_HELP_CONFIG,
     DynamicHelpSet,
-    showHelpSet,
+    initializeHelpSet,
     hideHelpSet,
     allItemsVisible,
+    initialItemsVisible,
     someItemsVisible,
 } from "dynamic_help_config";
 
@@ -49,7 +50,7 @@ export function HelpSettings(): JSX.Element {
     );
 
     const show = (help_set: DynamicHelpSet) => {
-        showHelpSet(help_set);
+        initializeHelpSet(help_set);
         setVisibility({ ...visibility, [help_set]: true });
     };
 
@@ -66,20 +67,22 @@ export function HelpSettings(): JSX.Element {
                     title={DEFAULT_DYNAMIC_HELP_CONFIG[help_set].set_title}
                 >
                     <button onClick={() => show(help_set)}>
-                        {pgettext("Press this button to show all help in the set", "Show all")}
+                        {pgettext("Press this button to show all the initial items", "Reset")}
                     </button>
                     <button onClick={() => hide(help_set)}>
                         {pgettext("Press this button to hide this help set", "Hide set")}
                     </button>
                     <span>
                         {pgettext(
-                            "Following this label is the list of currently visible help items",
+                            "Following this label is the status of currently visible help items",
                             "Currently:",
                         )}
                     </span>
                     <span>
                         {allItemsVisible(help_set)
                             ? "All"
+                            : initialItemsVisible(help_set)
+                            ? "Initial"
                             : someItemsVisible(help_set)
                             ? "Some"
                             : "None"}
