@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* All boolean helper functions hacked to return false, thereby disabling the whole feature for now */
+
 import * as data from "data";
 import { pgettext } from "./translate";
 
@@ -80,25 +82,34 @@ export const DEFAULT_DYNAMIC_HELP_CONFIG: DynamicHelpSchema = {
 };
 
 export function setIsVisible(set_name: DynamicHelpSet): boolean {
-    return data.get(`dynamic-help.${set_name}`, DEFAULT_DYNAMIC_HELP_CONFIG[set_name]).show_set;
+    return (
+        false &&
+        data.get(`dynamic-help.${set_name}`, DEFAULT_DYNAMIC_HELP_CONFIG[set_name]).show_set
+    );
 }
 
 export function allItemsVisible(set_name: DynamicHelpSet): boolean {
     const config = data.get(`dynamic-help.${set_name}`, DEFAULT_DYNAMIC_HELP_CONFIG[set_name]);
 
-    return Object.keys(config.items).reduce(
-        (prev, current) => prev && config.items[current].show_item,
-        config.show_set,
+    return (
+        false &&
+        Object.keys(config.items).reduce(
+            (prev, current) => prev && config.items[current].show_item,
+            config.show_set,
+        )
     );
 }
 
 export function initialItemsVisible(set_name: DynamicHelpSet): boolean {
     const config = data.get(`dynamic-help.${set_name}`, DEFAULT_DYNAMIC_HELP_CONFIG[set_name]);
 
-    return Object.keys(config.items).reduce(
-        (prev, current) =>
-            prev && (!config.items[current].set_initially || config.items[current].show_item),
-        config.show_set,
+    return (
+        false &&
+        Object.keys(config.items).reduce(
+            (prev, current) =>
+                prev && (!config.items[current].set_initially || config.items[current].show_item),
+            config.show_set,
+        )
     );
 }
 
@@ -106,6 +117,7 @@ export function someItemsVisible(set_name: DynamicHelpSet): boolean {
     const config = data.get(`dynamic-help.${set_name}`, DEFAULT_DYNAMIC_HELP_CONFIG[set_name]);
 
     return (
+        false &&
         config.show_set &&
         Object.keys(config.items).reduce(
             (prev, current) => prev || config.items[current].show_item,
@@ -118,6 +130,7 @@ export function isVisible(set_name: DynamicHelpSet, item_name: string): boolean 
     const set_config = data.get(`dynamic-help.${set_name}`, DEFAULT_DYNAMIC_HELP_CONFIG[set_name]);
 
     const visible =
+        false &&
         set_config.show_set &&
         item_name in set_config.items &&
         set_config.items[item_name].show_item;
