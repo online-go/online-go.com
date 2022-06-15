@@ -18,6 +18,9 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { _ } from "translate";
+
+import * as DynamicHelp from "DynamicHelp";
+
 import { Card } from "material";
 import { GameList } from "GameList";
 import { post, get, abort_requests_in_flight } from "requests";
@@ -28,9 +31,9 @@ import { errorAlerter, ignore } from "misc";
 import { DismissableNotification } from "DismissableNotification";
 import { FriendList } from "FriendList";
 import { ChallengesList } from "./ChallengesList";
-import { EmailBanner } from "EmailBanner";
 import { SupporterGoals } from "SupporterGoals";
 import { ProfileCard } from "ProfileCard";
+import { InviteList } from "./InviteList";
 import { notification_manager } from "Notifications";
 import { ActiveAnnouncements } from "Announcements";
 import { FabX } from "material";
@@ -146,9 +149,10 @@ export class OldOverview extends React.Component<{}, OverviewState> {
                 <div id="Overview">
                     <div className="left">
                         <DismissableMessages />
-                        <EmailBanner />
+                        <DynamicHelp.NewUserWelcome />
                         <ActiveAnnouncements />
                         <ChallengesList onAccept={() => this.refresh()} />
+                        <InviteList />
 
                         {((user && user.provisional) || null) && (
                             <DismissableNotification
