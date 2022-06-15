@@ -22,11 +22,13 @@ import { get, put } from "requests";
 import { parse } from "query-string";
 import * as data from "data";
 import * as moment from "moment";
-import * as dynamic_help from "dynamic_help_config";
+
+import * as preferences from "preferences";
+import * as player_cache from "player_cache";
 
 import { Card } from "material";
 import { GameList } from "GameList";
-import * as preferences from "preferences";
+
 import { ModTools } from "./ModTools";
 import { GameHistoryTable } from "./GameHistoryTable";
 import { ReviewsAndDemosTable } from "./ReviewsAndDemosTable";
@@ -41,7 +43,6 @@ import {
 } from "rank_utils";
 import { openModerateUserModal } from "ModerateUser";
 import { errorAlerter } from "misc";
-import * as player_cache from "player_cache";
 import { Flag } from "Flag";
 import { Markdown } from "Markdown";
 import { RatingsChart } from "RatingsChart";
@@ -303,11 +304,6 @@ export function User(props: { user_id?: number }): JSX.Element {
             setResolved(false);
         };
     }, [user_id]);
-
-    if (dynamic_help.isVisible("guest-arrival-help-set", "profile-button-username-help")) {
-        dynamic_help.hideHelpSetItem("guest-arrival-help-set", "profile-button-username-help");
-        dynamic_help.showHelpSetItem("guest-arrival-help-set", "profile-page-username-help");
-    }
 
     /* Render */
     if (!user) {

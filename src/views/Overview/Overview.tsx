@@ -19,14 +19,13 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { _ } from "translate";
 
-import * as DynamicHelp from "DynamicHelp";
+import * as data from "data";
+import * as preferences from "preferences";
+import cached from "cached";
 
 import { Card } from "material";
 import { GameList } from "GameList";
 import { post, get, abort_requests_in_flight } from "requests";
-import * as data from "data";
-import cached from "cached";
-import * as preferences from "preferences";
 import { errorAlerter, ignore } from "misc";
 import { DismissableNotification } from "DismissableNotification";
 import { FriendList } from "FriendList";
@@ -41,6 +40,7 @@ import { ActiveTournamentList, Group } from "src/lib/types";
 import { DismissableMessages } from "DismissableMessages";
 import { Experiment, Variant, Default } from "Experiment";
 import { EXV6Overview } from "./EXV6Overview";
+import { EmailBanner } from "EmailBanner";
 
 declare let ogs_missing_translation_count: number;
 
@@ -149,7 +149,7 @@ export class OldOverview extends React.Component<{}, OverviewState> {
                 <div id="Overview">
                     <div className="left">
                         <DismissableMessages />
-                        <DynamicHelp.NewUserWelcome />
+                        <EmailBanner />
                         <ActiveAnnouncements />
                         <ChallengesList onAccept={() => this.refresh()} />
                         <InviteList />

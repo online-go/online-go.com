@@ -21,9 +21,7 @@ import Select from "react-select";
 import { useParams } from "react-router-dom";
 
 import * as preferences from "preferences";
-
 import * as data from "data";
-import * as dynamic_help from "dynamic_help_config";
 
 import { _ } from "translate";
 import { get, abort_requests_in_flight } from "requests";
@@ -48,7 +46,6 @@ import { AccountSettings } from "./AccountSettings";
 import { LinkPreferences } from "./LinkPreferences";
 import { AnnouncementPreferences } from "./AnnouncementPreferences";
 import { EmailPreferences } from "./EmailPreferences";
-import { HelpSettings } from "./HelpSettings";
 
 export function Settings(): JSX.Element {
     const { category } = useParams();
@@ -93,12 +90,6 @@ export function Settings(): JSX.Element {
     const selected = category;
     data.set("settings.page-selected", selected);
 
-    if (dynamic_help.isVisible("guest-arrival-help-set", "settings-button-help")) {
-        dynamic_help.hideHelpSetItem("guest-arrival-help-set", "settings-button-help");
-        dynamic_help.showHelpSetItem("guest-arrival-help-set", "username-change-help");
-        select("account");
-    }
-
     const groups: Array<{ key: string; label: string }> = [
         { key: "general", label: _("General Preferences") },
         { key: "sound", label: _("Sound Preferences") },
@@ -123,21 +114,6 @@ export function Settings(): JSX.Element {
         */
         { key: "logout", label: _("Logout") },
     ];
-
-    /* Settings "Dynamic Help Control" ...
-
-     * In normal use, 'guest arrival' and 'new user' are mutually exclusive.
-     * If they are both set (user-choice?), it doesn't really matter, it's arbitrary which one to honour...  */
-
-    if (dynamic_help.isVisible("guest-arrival-help-set", "settings-button-help")) {
-        dynamic_help.hideHelpSetItem("guest-arrival-help-set", "settings-button-help");
-        dynamic_help.showHelpSetItem("guest-arrival-help-set", "username-change-help");
-        select("account");
-    } else if (dynamic_help.isVisible("new-user-help-set", "new-user-welcome")) {
-        dynamic_help.hideHelpSetItem("new-user-help-set", "new-user-welcome");
-        dynamic_help.showHelpSetItem("new-user-help-set", "new-user-verify-email-in-settings");
-        select("account");
-    }
 
     let SelectedPage: (props: SettingGroupProps) => JSX.Element = () => <div>Error</div>;
 
@@ -174,9 +150,6 @@ export function Settings(): JSX.Element {
             break;
         case "link":
             SelectedPage = LinkPreferences;
-            break;
-        case "help":
-            SelectedPage = HelpSettings;
             break;
         case "logout":
             SelectedPage = LogoutPreferences;
