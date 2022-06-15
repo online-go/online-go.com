@@ -74,6 +74,7 @@ function challengeDtoToSeekgraphChallengeSubset(c: ChallengeDTO, user_id: number
         challenger_color: c.challenger_color, // "black" | "white" | "automatic";
         handicap: c.game.handicap, // number;
         ranked: c.game.ranked, // boolean;
+        uuid: c.uuid, // string;
 
         // These fields are not used by us, so we don't need to bother with them
         // (which is just as well, since many are not in ChallengeDTO)
@@ -89,7 +90,6 @@ function challengeDtoToSeekgraphChallengeSubset(c: ChallengeDTO, user_id: number
         rengo_auto_start: null, // number;
 
         invite_only: null, // boolean;
-        uuid: null, // string;
     };
 }
 
