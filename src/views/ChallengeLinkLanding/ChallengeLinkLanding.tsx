@@ -20,7 +20,7 @@ import { useNavigate } from "react-router-dom";
 import swal from "sweetalert2";
 import * as data from "data";
 import { useUser } from "hooks";
-import { _, pgettext } from "translate";
+import { _, pgettext, interpolate } from "translate";
 import { get, put, post } from "requests";
 import { errorAlerter } from "misc";
 import { browserHistory } from "ogsHistory";
@@ -198,6 +198,8 @@ export function ChallengeLinkLanding(): JSX.Element {
     const user = useUser();
     const logged_in = !user.anonymous;
 
+    const game_type = linked_challenge && linked_challenge.rengo ? _("Rengo") : _("Go");
+
     /* Render */
     return (
         <div id="ChallengeLinkLanding">
@@ -214,9 +216,12 @@ export function ChallengeLinkLanding(): JSX.Element {
                     <Card>
                         <div className="invitation">
                             <span className="invite-text">
-                                {pgettext(
-                                    "The challenger's name and avatar appear on the next line after this",
-                                    "You have been invited to a game of Go, by",
+                                {interpolate(
+                                    pgettext(
+                                        "The challenger's name and avatar appear on the next line after this",
+                                        "You have been invited to a game of {{game_type}}, by",
+                                    ),
+                                    { game_type },
                                 )}
                             </span>
                             <Player icon iconSize={32} user={linked_challenge.user_id} />
