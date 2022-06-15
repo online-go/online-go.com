@@ -90,15 +90,6 @@ export function Settings(): JSX.Element {
         };
     }
 
-    const selected = category;
-    data.set("settings.page-selected", selected);
-
-    if (dynamic_help.isVisible("guest-arrival-help-set", "settings-button-help")) {
-        dynamic_help.hideHelpSetItem("guest-arrival-help-set", "settings-button-help");
-        dynamic_help.showHelpSetItem("guest-arrival-help-set", "username-change-help");
-        select("account");
-    }
-
     const groups: Array<{ key: string; label: string }> = [
         { key: "general", label: _("General Preferences") },
         { key: "sound", label: _("Sound Preferences") },
@@ -123,6 +114,24 @@ export function Settings(): JSX.Element {
         */
         { key: "logout", label: _("Logout") },
     ];
+
+    const selected = category;
+    data.set("settings.page-selected", selected);
+
+    /* Settings "Dynamic Help Control" ...
+
+     * In normal use, 'guest arrival' and 'new user' are mutually exclusive.
+     * If they are both set (user-choice?), it doesn't really matter, it's arbitrary which one to honour...  */
+
+    if (dynamic_help.isVisible("guest-arrival-help-set", "settings-button-help")) {
+        dynamic_help.hideHelpSetItem("guest-arrival-help-set", "settings-button-help");
+        dynamic_help.showHelpSetItem("guest-arrival-help-set", "username-change-help");
+        select("account");
+    } else if (dynamic_help.isVisible("new-user-help-set", "new-user-welcome")) {
+        dynamic_help.hideHelpSetItem("new-user-help-set", "new-user-welcome");
+        dynamic_help.showHelpSetItem("new-user-help-set", "new-user-verify-email-in-settings");
+        select("account");
+    }
 
     let SelectedPage: (props: SettingGroupProps) => JSX.Element = () => <div>Error</div>;
 

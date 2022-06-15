@@ -1,0 +1,60 @@
+/*
+ * Copyright (C) 2012-2017  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.new-user-verify-email-in-settings {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between
+    width: fit-content;
+
+    .fa-window-close {
+        margin: 0.25rem 0px 0.25rem 0.5rem !important;
+    }
+
+    span {
+        max-width: 15rem;
+    }
+
+    // position the help popup to overcome
+    // top margin of the dt below it
+
+    transform-origin: top left;
+    transform: translate(0%, 50%);
+
+    /* deliberately in-line for this help, hence these don't apply...
+
+    position: absolute;
+
+    z-index: z.nav-menu.menu;
+    */
+
+    padding-left: 0.5rem;
+    padding-right: 0.25rem;
+
+    border-width: 2px;
+    border-color: grey;
+    border-style: solid;
+    border-radius: 5px;
+
+    themed background-color dynamic-help-background-color;
+    // opacity: 70%; opacity doesn't look good here.
+
+    //overflow-y: auto;
+    user-select: none;
+
+    box-shadow: 2px -2px 4px 4px rgba(148, 109, 109, 0.75);
+}

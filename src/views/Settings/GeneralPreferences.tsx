@@ -181,6 +181,7 @@ export function GeneralPreferences(props: SettingGroupProps): JSX.Element {
         window.location.reload();
     }
 
+    // Render...
     return (
         <div>
             <PreferenceLine title={_("Language")}>

@@ -42,9 +42,7 @@ export function NewUserWelcome(): JSX.Element {
         e.stopPropagation();
     };
 
-    const viewSettings = (e) => {
-        close(e);
-        dynamic_help.showHelpSetItem(HELP_SET, "new-user-verify-email-in-settings");
+    const viewSettings = () => {
         browserHistory.push("/user/settings");
     };
 
