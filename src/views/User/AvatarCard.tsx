@@ -15,21 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as data from "data";
-import * as DynamicHelp from "DynamicHelp";
+import * as React from "react";
+import * as player_cache from "player_cache";
+import { del, put } from "requests";
+import swal from "sweetalert2";
 
-import { isVisible, hideHelpSetItem } from "dynamic_help_config";
+import * as data from "data";
 
 import { Flag } from "Flag";
 import { image_resizer } from "image_resizer";
 import { errorAlerter, ignore } from "misc";
 import { Player } from "Player";
 import { PlayerIcon } from "PlayerIcon";
-import * as player_cache from "player_cache";
-import * as React from "react";
 import Dropzone from "react-dropzone";
-import { del, put } from "requests";
-import swal from "sweetalert2";
 import { durationString } from "TimeControl";
 import { cc_to_country_name, pgettext, sorted_locale_countries, _ } from "translate";
 import { is_valid_url } from "url_validation";
@@ -126,9 +124,7 @@ export function AvatarCard({
             setNewRealNameIsPrivate(user.real_name_is_private);
             setNewCountry(user.country);
             setNewWebsite(user.website);
-            if (isVisible("guest-arrival-help-set", "profile-page-username-help")) {
-                hideHelpSetItem("guest-arrival-help-set", "profile-page-username-help");
-            }
+
             onEdit();
         }
     };
@@ -330,7 +326,6 @@ export function AvatarCard({
                             <i className={editing ? "fa fa-save" : "fa fa-pencil"} />{" "}
                             {" " + (editing ? _("Save") : _("Edit"))}
                         </button>
-                        <DynamicHelp.ProfilePageUsernameHelp />
                     </>
                 )}
 

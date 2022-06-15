@@ -29,8 +29,6 @@ import { AutomatchPreferences } from "src/components/AutomatchSettings";
 import { JosekiFilter } from "src/components/JosekiVariationFilter";
 import { Challenge } from "src/views/Play";
 
-import * as dynamic_help from "dynamic_help_config";
-
 interface CachedSchema {
     groups: GroupList;
     active_tournaments: ActiveTournamentList;
@@ -198,8 +196,7 @@ export interface DataSchema
         Prefixed<AutomatchSchema, "automatch">,
         Prefixed<ObservedGamesSchema, "observed-games">,
         Prefixed<AnnouncementsSchema, "announcements">,
-        Prefixed<ChallengeSchema, "challenge">,
-        Prefixed<dynamic_help.DynamicHelpSchema, "dynamic-help"> {
+        Prefixed<ChallengeSchema, "challenge"> {
     user: rest_api.UserConfig;
     bid: string;
     theme: string;

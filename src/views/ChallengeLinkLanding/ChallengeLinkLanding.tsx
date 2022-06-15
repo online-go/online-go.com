@@ -26,7 +26,7 @@ import { errorAlerter } from "misc";
 import { browserHistory } from "ogsHistory";
 import { get_ebi } from "SignIn";
 import cached from "cached";
-import * as dynamic_help from "dynamic_help_config";
+
 import { Card } from "material";
 import { LoadingPage } from "Loading";
 import { Player } from "Player";
@@ -118,8 +118,6 @@ export function ChallengeLinkLanding(): JSX.Element {
         })
             .then((config) => {
                 data.set(cached.config, config);
-
-                dynamic_help.initializeHelpSet("guest-arrival-help-set");
 
                 doAcceptance(linked_challenge);
             })
