@@ -24,7 +24,7 @@
 import * as d3 from "d3";
 import * as moment from "moment";
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
+import { OgsResizeDetector } from "OgsResizeDetector";
 import { _, pgettext, interpolate } from "translate";
 import { PersistentElement } from "PersistentElement";
 import { RatingEntry, makeRatingEntry } from "./RatingEntry";
@@ -931,7 +931,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                     <div className="nodata">{_("No rated games played yet")}</div>
                 ) : (
                     <div className="ratings-graph">
-                        <ReactResizeDetector
+                        <OgsResizeDetector
                             handleWidth
                             handleHeight
                             onResize={() => this.onResize()}
