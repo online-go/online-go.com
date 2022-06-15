@@ -161,6 +161,10 @@ function setHelpSetItem(
     const set_config =
         prev_config || data.get(`dynamic-help.${set_name}`, DEFAULT_DYNAMIC_HELP_CONFIG[set_name]);
 
+    console.log("Not actually setting HelpSetItem, knobbled: ", value, item_name);
+
+    return set_config;
+
     if (!(item_name in set_config["items"])) {
         set_config["items"][item_name] = { show_item: value };
     } else {
