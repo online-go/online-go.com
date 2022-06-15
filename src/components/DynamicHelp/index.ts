@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+export * from "./NewUserWelcome";
+export * from "./NewUserVerifyEmailInSettings";
 export * from "./SettingsButtonHelp";
 export * from "./RightNavHelp";
 export * from "./UsernameChangeHelp";

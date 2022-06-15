@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2022  Online-Go.com
+ * Copyright (C) 2012-2017  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,21 +15,4 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import * as React from "react";
-import { Link } from "react-router-dom";
-import { _, pgettext } from "translate";
-
-import Select from "react-select";
-
-import * as data from "data";
-import { post, get, put, del, getCookie } from "requests";
-import { errorAlerter, errorLogger, ignore } from "misc";
-
-import * as preferences from "preferences";
-import { usePreference } from "preferences";
-
-import { Toggle } from "Toggle";
-
-import { SettingGroupProps, PreferenceToggle, PreferenceLine } from "SettingsCommon";
-
-export
+export * from "./NewUserVerifyEmailInSettings";

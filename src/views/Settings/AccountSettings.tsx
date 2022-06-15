@@ -18,6 +18,7 @@
 import * as React from "react";
 
 import * as data from "data";
+import * as DynamicHelp from "DynamicHelp";
 
 import { Link } from "react-router-dom";
 import { _ } from "translate";
@@ -175,6 +176,8 @@ export function AccountSettings(props: SettingGroupProps): JSX.Element {
         }
     }
 
+    // Render...
+
     return (
         <div>
             <i>
@@ -183,6 +186,9 @@ export function AccountSettings(props: SettingGroupProps): JSX.Element {
                 </Link>
             </i>
             <dl>
+                <dd>
+                    <DynamicHelp.NewUserVerifyEmailInSettings />
+                </dd>
                 <dt>{_("Email address")}</dt>
                 <dd>
                     <input

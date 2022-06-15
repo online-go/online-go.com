@@ -131,7 +131,7 @@ interface Price {
     //currency: string;
     //interval: string;
 
-    slug: "hane" | "tenuki" | "meijin";
+    slug: "aji" | "hane" | "tenuki" | "meijin";
     monthly_paddle_plan_id: string;
     annual_paddle_plan_id: string;
     price: {
@@ -301,6 +301,30 @@ export function Supporter(props: SupporterProperties): JSX.Element {
         ),
     ];
 
+    const aji = prices.filter((x) => x.slug === "aji")[0];
+    if (aji) {
+        aji.title = pgettext("Aji supporter plan", "Aji Supporter");
+        aji.description = [
+            <b>
+                {_("Automatic AI reviews for your games")}
+                <sup>*</sup>
+            </b>,
+            <span>
+                <HighlightNumbers
+                    text={interpolate(
+                        _("AI reviews are processed using {{num}} playouts per move"),
+                        {
+                            num: "400",
+                        },
+                    )}
+                />
+                <sup>*</sup>
+            </span>,
+            <span>{_("Good for beginners looking to improve their game")}</span>,
+            ...common_description,
+        ];
+    }
+
     const hane = prices.filter((x) => x.slug === "hane")[0];
     if (hane) {
         hane.title = pgettext("Hane supporter plan", "Hane Supporter");
@@ -310,14 +334,19 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                 <sup>*</sup>
             </b>,
             <span>
-                {interpolate(
-                    _("AI reviews are processed moderately deep using {{num}} playouts per move"),
-                    {
-                        num: "1000",
-                    },
-                )}
+                <HighlightNumbers
+                    text={interpolate(
+                        _(
+                            "AI reviews are processed moderately deep using {{num}} playouts per move",
+                        ),
+                        {
+                            num: "1000",
+                        },
+                    )}
+                />
                 <sup>*</sup>
             </span>,
+            <span>{_("Good for beginners and intermediates looking to improve their game")}</span>,
             ...common_description,
         ];
     }
@@ -331,12 +360,20 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                 <sup>*</sup>
             </b>,
             <span>
-                {interpolate(_("AI reviews are processed deeper using {{num}} playouts per move"), {
-                    num: "3000",
-                })}
+                <HighlightNumbers
+                    text={interpolate(
+                        _("AI reviews are processed deeper using {{num}} playouts per move"),
+                        {
+                            num: "3000",
+                        },
+                    )}
+                />
                 <sup>*</sup>
             </span>,
-            <b className="green">{_("3x the analysis done by the AI per move")}</b>,
+            //<b className="green">{_("3x the analysis done by the AI per move")}</b>,
+            <span>{_("Great for all players looking to improve their game")}</span>,
+            <span>{_("Deep move reading for very good reviews")}</span>,
+            <b className="green">{_("Great balance between cost and review strength")}</b>,
             ...common_description,
         ];
     }
@@ -350,11 +387,18 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                 <sup>*</sup>
             </b>,
             <span>
-                {interpolate(_("AI reviews are processed deeper using {{num}} playouts per move"), {
-                    num: "12000",
-                })}
+                <HighlightNumbers
+                    text={interpolate(
+                        _("AI reviews are processed deeper using {{num}} playouts per move"),
+                        {
+                            num: "12000",
+                        },
+                    )}
+                />
                 <sup>*</sup>
             </span>,
+            <span>{_("Designed for very serious players looking to improve their game")}</span>,
+            <span>{_("Deepest reading and best reviews available")}</span>,
             //<b className='green'>{_("3x the analysis done by the AI per move")}</b>,
             ...common_description,
         ];
@@ -1163,8 +1207,10 @@ function SupporterOverridesEditor({
             value = parseInt(value);
             if (!overrides.plan) {
                 overrides.plan = {
+                    aji: {},
                     hane: {},
                     tenuki: {},
+                    meijin: {},
                 };
             }
             if (!overrides.plan.meijin) {
@@ -1173,7 +1219,7 @@ function SupporterOverridesEditor({
             overrides.plan[slug][interval] = value;
         }
         let found = false;
-        for (const _slug of ["hane", "tenuki", "meijin"]) {
+        for (const _slug of ["aji", "hane", "tenuki", "meijin"]) {
             for (const _interval of ["month", "year"]) {
                 if (overrides?.plan?.[_slug]?.[_interval]) {
                     found = true;
@@ -1264,6 +1310,22 @@ function SupporterOverridesEditor({
                     <label>Price</label>
                 </dt>
                 <dd>
+                    <label htmlFor="aji">Aji</label>
+                    <input
+                        id="aji"
+                        type="text"
+                        placeholder="Monthly"
+                        value={overrides.plan?.aji?.month || ""}
+                        onChange={(ev) => upprice("aji", "month", ev.target.value || undefined)}
+                    />
+                    <input
+                        placeholder="Yearly"
+                        type="text"
+                        value={overrides.plan?.aji?.year || ""}
+                        onChange={(ev) => upprice("aji", "year", ev.target.value || undefined)}
+                    />
+                </dd>
+                <dd>
                     <label htmlFor="hane">Hane</label>
                     <input
                         id="hane"
@@ -1333,7 +1395,7 @@ function SupporterOverridesEditor({
 }
 
 function DeprecatedPlanNote({ slug }: { slug: string }): JSX.Element {
-    if (slug === "hane" || slug === "tenuki" || slug === "meijin") {
+    if (slug === "aji" || slug === "hane" || slug === "tenuki" || slug === "meijin") {
         return null;
     }
 
@@ -1352,6 +1414,10 @@ function DeprecatedPlanNote({ slug }: { slug: string }): JSX.Element {
 
         case "kyu":
             name = "Kyu";
+            playouts = 400;
+            break;
+        case "aji":
+            name = "Aji";
             playouts = 400;
             break;
 
@@ -1385,6 +1451,24 @@ function DeprecatedPlanNote({ slug }: { slug: string }): JSX.Element {
                 )}
             </p>
         </div>
+    );
+}
+
+function HighlightNumbers({ text }: { text: string }): JSX.Element {
+    const arr = text.split(/([0-9]+)/);
+    return (
+        <span className="HighlightNumbers">
+            {arr.map((x, idx) => {
+                if (/[0-9]+/.test(x)) {
+                    return (
+                        <span key={idx} className="highlight">
+                            {x}
+                        </span>
+                    );
+                }
+                return <span key={idx}>{x}</span>;
+            })}
+        </span>
     );
 }
 
@@ -1449,7 +1533,8 @@ function getCurentPlanSlug(config: Config): string {
         return "hane";
     }
     if (max_service_level >= 3) {
-        return "kyu";
+        return "aji";
+        //return "kyu";
     }
     if (max_service_level >= 1) {
         return "basic";

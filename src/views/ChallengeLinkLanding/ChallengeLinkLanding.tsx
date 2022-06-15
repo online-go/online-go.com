@@ -119,18 +119,7 @@ export function ChallengeLinkLanding(): JSX.Element {
             .then((config) => {
                 data.set(cached.config, config);
 
-                dynamic_help.showHelpSet("guest-arrival-help-set"); // turns on the whole set
-
-                // need to turn these off manually here, because we turn these ones on later...
-                dynamic_help.hideHelpSetItem("guest-arrival-help-set", "username-change-help");
-                dynamic_help.hideHelpSetItem(
-                    "guest-arrival-help-set",
-                    "profile-button-username-help",
-                );
-                dynamic_help.hideHelpSetItem(
-                    "guest-arrival-help-set",
-                    "profile-page-username-help",
-                );
+                dynamic_help.initializeHelpSet("guest-arrival-help-set");
 
                 doAcceptance(linked_challenge);
             })

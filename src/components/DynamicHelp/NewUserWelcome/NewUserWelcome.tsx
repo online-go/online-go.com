@@ -21,11 +21,18 @@ import * as dynamic_help from "dynamic_help_config";
 
 import { _ } from "translate";
 
+import { browserHistory } from "ogsHistory";
+// import { useUser } from "hooks";
+
+import { Card } from "material";
+
 const HELP_SET = "new-user-help-set";
 const ITEM = "new-user-welcome";
 
 export function NewUserWelcome(): JSX.Element {
-    const visibility = dynamic_help.isVisible(HELP_SET, ITEM);
+    //const user = useUser();
+
+    const visibility = dynamic_help.isVisible(HELP_SET, ITEM); // eventually: && !user.email_validated;
 
     const [show_self, setShowSelf] = React.useState<boolean>(visibility);
 
@@ -33,6 +40,10 @@ export function NewUserWelcome(): JSX.Element {
         dynamic_help.hideHelpSetItem(HELP_SET, ITEM);
         setShowSelf(false);
         e.stopPropagation();
+    };
+
+    const viewSettings = () => {
+        browserHistory.push("/user/settings");
     };
 
     // we have to allow for the settings changing while we are mounted, yet also be able to
@@ -44,12 +55,21 @@ export function NewUserWelcome(): JSX.Element {
     return (
         <>
             {(show_self || null) && (
-                <div className={ITEM}>
-                    <div className="help-controls">
-                        <i className="fa fa-window-close" onClick={close} />
-                        <i className="fa fa-arrow-up" />
-                    </div>
-                    <span>{_("Welcome! You can learn how to play here.")}</span>
+                <div className="EmailBanner-container">
+                    <Card className="EmailBanner">
+                        <i className="fa fa-times" onClick={close} />
+                        {_(
+                            "Welcome to OGS! Feel free to start playing games. In an effort to reduce spam and limit trolls, chat is disabled for all users until their email address has been validated. To validate your email address, simply click the activation link that has been sent to you.",
+                        )}
+                        <br />
+                        <br />
+                        {_(
+                            "You can visit the settings page to update your email address or resend the validation email.",
+                        )}
+                        <button className="primary" onClick={viewSettings}>
+                            {_("Go to settings")} &rarr;
+                        </button>
+                    </Card>
                 </div>
             )}
         </>
