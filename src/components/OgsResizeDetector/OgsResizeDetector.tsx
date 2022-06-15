@@ -17,12 +17,57 @@
 
 import React from "react";
 import ReactResizeDetector from "react-resize-detector";
+import { TypedEventEmitter } from "TypedEventEmitter";
+
+interface Events {
+    resize: void;
+}
+
+const resize_emitter = new TypedEventEmitter<Events>();
+
+if (!window.ResizeObserver) {
+    window.onresize = () => {
+        resize_emitter.emit("resize");
+    };
+}
 
 /**
  * Some OGS users have browsers (mostly Safari <12) that don't support
- * ResizeObserver.  This class is a wrapper that just does no resize handling
- * on these older browsers.
+ * ResizeObserver. This class is a wrapper that calls based on a change of
+ * window size (which should only happen on orientation changes for mobile
+ * devices, I think). It's not a perfect solution as it doesn't detect resizes
+ * stemming from dom reflows, but it's better than nothing and is probably good
+ * enough.
  */
 export function OgsResizeDetector(props: ReactResizeDetector["props"]): JSX.Element {
-    return window.ResizeObserver ? <ReactResizeDetector {...props} /> : <React.Fragment />;
+    React.useEffect(() => {
+        if (window.ResizeObserver) {
+            return;
+        }
+
+        let debounce = null;
+
+        const cb = () => {
+            if (!debounce) {
+                debounce = setTimeout(() => {
+                    debounce = null;
+                    props.onResize();
+                }, 50);
+            }
+        };
+
+        resize_emitter.on("resize", cb);
+        return () => {
+            if (debounce) {
+                clearTimeout(debounce);
+            }
+            resize_emitter.off("resize", cb);
+        };
+    }, []);
+
+    if (window.ResizeObserver) {
+        return <ReactResizeDetector {...props} />;
+    }
+
+    return <React.Fragment />;
 }
