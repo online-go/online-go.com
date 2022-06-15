@@ -19,7 +19,7 @@ import * as React from "react";
 import * as data from "data";
 import * as preferences from "preferences";
 import * as player_cache from "player_cache";
-import ReactResizeDetector from "react-resize-detector";
+import { OgsResizeDetector } from "OgsResizeDetector";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext } from "translate";
 import { Card } from "material";
@@ -475,7 +475,7 @@ export class Play extends React.Component<{}, PlayState> {
                                 ref={(el) => (this.ref_container = el)}
                                 className="seek-graph-container"
                             >
-                                <ReactResizeDetector
+                                <OgsResizeDetector
                                     handleWidth
                                     handleHeight
                                     onResize={() => this.onResize()}

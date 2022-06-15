@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
+import { OgsResizeDetector } from "OgsResizeDetector";
 import { _ } from "translate";
 import { Player } from "Player";
 import { PaginatedTable } from "PaginatedTable";
@@ -33,7 +33,7 @@ export class LadderComponent extends React.PureComponent<LadderComponentProperti
     render() {
         return (
             <div className="LadderComponent">
-                <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
+                <OgsResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
 
                 <PaginatedTable
                     className="ladder"

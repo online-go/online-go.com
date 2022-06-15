@@ -18,7 +18,7 @@
 import * as data from "data";
 import * as player_cache from "player_cache";
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
+import { OgsResizeDetector } from "OgsResizeDetector";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext, interpolate } from "translate";
 import { post, del } from "requests";
@@ -1488,7 +1488,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     preferredGameSettings = () => {
         return (
             <div style={{ padding: "0.5em" }}>
-                <ReactResizeDetector handleWidth handleHeight onResize={this.onResize} />
+                <OgsResizeDetector handleWidth handleHeight onResize={this.onResize} />
                 <hr />
                 <div>
                     <span onClick={this.togglePreferredSettings}>

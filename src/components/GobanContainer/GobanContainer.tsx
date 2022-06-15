@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { PersistentElement } from "PersistentElement";
-import ReactResizeDetector from "react-resize-detector";
+import { OgsResizeDetector } from "OgsResizeDetector";
 import { GobanCanvas, GobanCanvasConfig } from "goban";
 // Pull this out its own util
 import { goban_view_mode } from "Game/util";
@@ -120,7 +120,7 @@ export function GobanContainer({
 
     return (
         <div ref={ref_goban_container} className="goban-container">
-            <ReactResizeDetector handleWidth handleHeight onResize={() => onResize()} />
+            <OgsResizeDetector handleWidth handleHeight onResize={() => onResize()} />
             <PersistentElement className="Goban" elt={goban_div} extra_props={extra_props} />
         </div>
     );

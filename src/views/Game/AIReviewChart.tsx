@@ -19,7 +19,7 @@ import * as d3 from "d3";
 import * as React from "react";
 import * as JSNoise from "js-noise";
 import * as data from "data";
-import ReactResizeDetector from "react-resize-detector";
+import { OgsResizeDetector } from "OgsResizeDetector";
 import { AIReviewEntry } from "./AIReview";
 import { PersistentElement } from "PersistentElement";
 import { deepCompare } from "misc";
@@ -621,7 +621,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
     render() {
         return (
             <div ref={this.container} className="AIReviewChart">
-                <ReactResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
+                <OgsResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
                 <PersistentElement elt={this.chart_div} />
             </div>
         );
