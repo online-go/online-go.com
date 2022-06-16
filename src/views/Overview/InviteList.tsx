@@ -225,6 +225,8 @@ export function InviteList(): JSX.Element {
         [] /* run once */,
     );
 
+    console.log(invites);
+
     /* render */
     return (
         <div className="InviteList">
@@ -246,7 +248,7 @@ export function InviteList(): JSX.Element {
                                     <ChallengeLinkButton uuid={challenge.uuid} />
                                 </div>
                                 <div className="fab-section">
-                                    {(challenge.rengo && null) || (
+                                    {(challenge.rengo || null) && (
                                         <button
                                             className="primary sm"
                                             onClick={() => showRengoManagementPane(challenge)}
