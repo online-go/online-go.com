@@ -108,11 +108,10 @@ export function ChallengeLinkLanding(): JSX.Element {
         const new_username =
             new_username_root.replace(/\s+/g, "") + Date.now().toString().slice(-6);
 
-        const initial_password = Date.now().toString(); // They will have to change this, so anything random & unique is OK
-
         post("/api/v0/register", {
             username: new_username,
-            password: initial_password,
+            password: "",
+            guest: true,
             email: "",
             ebi: get_ebi(),
         })
