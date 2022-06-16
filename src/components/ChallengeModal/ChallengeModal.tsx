@@ -559,8 +559,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         const live = isLiveGame(challenge.game.time_control_parameters); // save for after the post, below, when TimeControlPicker is gone
 
         let open_now = false;
-        if (live) {
-            open_now = true;
+        if (live && !this.state.challenge.invite_only) {
+            open_now = true; // invite-only goes to the Home page, it's not "open now"
         }
         if (this.props.mode === "computer") {
             open_now = true;
@@ -631,6 +631,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         }
                     } else if (this.props.mode === "player") {
                         swal(_("Challenge sent!")).catch(swal.noop);
+                    } else {
+                        console.log(this.props.mode);
                     }
                 }
 
