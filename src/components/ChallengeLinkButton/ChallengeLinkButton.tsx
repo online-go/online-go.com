@@ -63,7 +63,7 @@ export function copyChallengeLinkURL(ack_target: HTMLElement, uuid: string): voi
                         <span>
                             {pgettext(
                                 "They clicked the button to copy a challenge link, we copied it into their clipboard",
-                                "Challenge Link Copied!",
+                                "Invitation Link Copied!",
                             )}
                         </span>
                     ),
@@ -91,7 +91,7 @@ export function showChallengeLink(challenge_link: string, target: HTMLElement): 
             <div className="challenge- link - copy">
                 {pgettext(
                     "This is the label for a link (URL) that they created",
-                    "Challenge link:",
+                    "Invitation link:",
                 )}
                 <br />
                 {challenge_link}
