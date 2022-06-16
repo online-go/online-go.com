@@ -160,7 +160,7 @@ export function ChallengeLinkLanding(): JSX.Element {
         } else {
             if (!linked_challenge_uuid) {
                 console.log("Unexpected arrival at Welcome, without linked challenge id!");
-                window.location.pathname = "/";
+                browserHistory.push("/");
             }
 
             if (linked_challenge_uuid && !linked_challenge) {
@@ -170,17 +170,38 @@ export function ChallengeLinkLanding(): JSX.Element {
                             set_linked_challenge(challenge);
                         } else {
                             // If it's their own challenge, send them back to their home page where they will see it
-                            window.location.pathname = "/";
+                            swal({
+                                text: _("It looks like you tried to accept your own challenge!"),
+                                type: "warning",
+                                showCancelButton: false,
+                                showConfirmButton: true,
+                                allowEscapeKey: true,
+                            })
+                                .catch(swal.noop)
+                                .finally(() => {
+                                    browserHistory.push("/");
+                                });
                         }
                     })
                     .catch((err) => {
-                        console.log(err);
-                        window.location.pathname = "/";
+                        swal({
+                            text: _("It appears the invite you clicked on has expired."),
+                            type: "info",
+                            showCancelButton: false,
+                            showConfirmButton: true,
+                            allowEscapeKey: true,
+                        })
+                            .catch(swal.noop)
+                            .finally(() => {
+                                console.log(err); // we're assuming the cause, this can help us check!
+                                browserHistory.push("/");
+                            });
                     });
             }
         }
     });
 
+    //const too_late = linked_challenge
     const user = useUser();
     const logged_in = !user.anonymous;
 
