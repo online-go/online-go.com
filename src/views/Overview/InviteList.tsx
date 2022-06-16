@@ -97,8 +97,6 @@ export function InviteList(): JSX.Element {
     const [invites, setInvites] = React.useState<Challenge[]>([]);
     const [show_details, setShowDetails] = React.useState<Challenge>(null);
 
-    const manage_button = React.useRef();
-
     const user = useUser();
 
     const removeChallenge = (challenge: Challenge) => {
@@ -247,7 +245,7 @@ export function InviteList(): JSX.Element {
                                     <h4>{profanity_filter(challenge.game_name)}</h4>
                                     <ChallengeLinkButton uuid={challenge.uuid} />
                                 </div>
-                                <div className="fab-section" ref={manage_button}>
+                                <div className="fab-section">
                                     {(challenge.rengo && null) || (
                                         <button
                                             className="primary sm"
