@@ -36,20 +36,13 @@ export function GameEmbed(): JSX.Element {
 
     const game_id = params.game_id ? parseInt(params.game_id) : 0;
 
-    // Hide NavBar
+    // Hide NavBar, announcements, PMs etc.
     React.useEffect(() => {
-        const v6_nav_bar = document.getElementsByClassName("NavBar")[0] as HTMLElement;
-        const old_nav_bar = document.getElementById("NavBar");
-        const nav_bar = v6_nav_bar || old_nav_bar;
-
-        if (nav_bar) {
-            nav_bar.style.display = "none";
-        }
+        const body = document.getElementsByTagName("body")[0];
+        body.classList.add("zen");
 
         return () => {
-            if (nav_bar) {
-                delete nav_bar.style.display;
-            }
+            body.classList.remove("zen");
         };
     }, []);
 
