@@ -19,21 +19,23 @@ import * as React from "react";
 import { BanModal } from "BanModal";
 import { openModal } from "Modal";
 import { post, put } from "requests";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 function moderate(player_id, prompt, obj) {
     return new Promise((resolve, reject) => {
-        swal({
-            text: prompt,
-            input: "text",
-            showCancelButton: true,
-        }).then((reason) => {
-            obj.moderation_note = reason;
-            console.log(obj);
-            put("players/" + player_id + "/moderate", obj)
-                .then(resolve)
-                .catch(reject);
-        }, reject);
+        alert
+            .fire({
+                text: prompt,
+                input: "text",
+                showCancelButton: true,
+            })
+            .then((reason) => {
+                obj.moderation_note = reason;
+                console.log(obj);
+                put("players/" + player_id + "/moderate", obj)
+                    .then(resolve)
+                    .catch(reject);
+            }, reject);
     });
 }
 

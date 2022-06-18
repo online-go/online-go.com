@@ -25,7 +25,7 @@ import * as player_cache from "player_cache";
 import * as React from "react";
 import Dropzone from "react-dropzone";
 import { del, put } from "requests";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { durationString } from "TimeControl";
 import { cc_to_country_name, pgettext, sorted_locale_countries, _ } from "translate";
 import { is_valid_url } from "url_validation";
@@ -92,27 +92,29 @@ export function AvatarCard({
 
     const toggleEdit = () => {
         if (editing) {
-            let promise: Promise<void>;
+            let promise: Promise<any>;
             if (!data.get("user")?.is_moderator && user.username !== new_username) {
-                promise = swal({
+                promise = alert.fire({
                     text: _(
                         "You can only change your name once every 30 days. Are you sure you wish to change your username at this time?",
                     ),
                     showCancelButton: true,
                 });
             } else {
-                promise = Promise.resolve();
+                promise = Promise.resolve({ value: true }); // pretend to be an accepted alert
             }
             promise
-                .then(() => {
-                    onSave({
-                        username: new_username,
-                        first_name: new_first_name,
-                        last_name: new_last_name,
-                        real_name_is_private: new_real_name_is_private,
-                        country: new_country,
-                        website: new_website,
-                    });
+                .then(({ value }) => {
+                    if (value) {
+                        onSave({
+                            username: new_username,
+                            first_name: new_first_name,
+                            last_name: new_last_name,
+                            real_name_is_private: new_real_name_is_private,
+                            country: new_country,
+                            website: new_website,
+                        });
+                    }
                 })
                 .catch(ignore);
         } else {

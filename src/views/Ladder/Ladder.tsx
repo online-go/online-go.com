@@ -27,7 +27,7 @@ import { shouldOpenNewTab } from "misc";
 import { PlayerAutocomplete } from "PlayerAutocomplete";
 import { close_all_popovers, popover } from "popover";
 import { browserHistory } from "ogsHistory";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
 import { IdType } from "src/lib/types";
 
@@ -100,15 +100,16 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
     };
 
     leave = () => {
-        swal({
-            text: _(
-                "Are you sure you want to withdraw from the ladder? If you decide to rejoin the ladder in the future you will have to start from the bottom!",
-            ),
-            showCancelButton: true,
-            confirmButtonText: _("Yes"),
-            cancelButtonText: _("No"),
-            focusCancel: true,
-        })
+        alert
+            .fire({
+                text: _(
+                    "Are you sure you want to withdraw from the ladder? If you decide to rejoin the ladder in the future you will have to start from the bottom!",
+                ),
+                showCancelButton: true,
+                confirmButtonText: _("Yes"),
+                cancelButtonText: _("No"),
+                focusCancel: true,
+            })
             .then(() => {
                 del("ladders/%%/players", this.props.match.params.ladder_id)
                     .then(() => {
@@ -461,11 +462,12 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
     adjustLadderPosition(player) {
         console.log(player);
 
-        swal({
-            text: "New ladder position for player " + player.username,
-            input: "number",
-            showCancelButton: true,
-        })
+        alert
+            .fire({
+                text: "New ladder position for player " + player.username,
+                input: "number",
+                showCancelButton: true,
+            })
             .then((new_rank) => {
                 put("ladders/%%/players/moderate", this.props.ladder.props.match.params.ladder_id, {
                     moderation_note: "Adjusting ladder position",
@@ -596,17 +598,18 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
     };
 
     challenge(ladder_player) {
-        swal({
-            text: interpolate(
-                _(
-                    "Are you ready to start your game with {{player_name}}?",
-                ) /* translators: ladder challenge */,
-                { player_name: ladder_player.player.username },
-            ),
-            showCancelButton: true,
-            confirmButtonText: _("Yes!"),
-            cancelButtonText: _("No"),
-        })
+        alert
+            .fire({
+                text: interpolate(
+                    _(
+                        "Are you ready to start your game with {{player_name}}?",
+                    ) /* translators: ladder challenge */,
+                    { player_name: ladder_player.player.username },
+                ),
+                showCancelButton: true,
+                confirmButtonText: _("Yes!"),
+                cancelButtonText: _("No"),
+            })
             .then(() => {
                 post(
                     "ladders/%%/players/challenge",

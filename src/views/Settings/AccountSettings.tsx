@@ -25,7 +25,7 @@ import { post, get, put, del, getCookie } from "requests";
 import { errorAlerter, errorLogger, ignore } from "misc";
 
 import { SocialLoginButtons } from "SocialLoginButtons";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 import { SettingGroupProps } from "SettingsCommon";
 
@@ -89,23 +89,26 @@ export function AccountSettings(props: SettingGroupProps): JSX.Element {
                 .then(() => {
                     props.refresh();
                     refreshAccountSettings();
-                    swal(_("Password updated successfully!")).catch(swal.noop);
+                    void alert.fire(_("Password updated successfully!"));
                 })
                 .catch(errorAlerter);
         } else {
-            swal({
-                text: _("Enter your current password"),
-                input: "password",
-            })
-                .then((password) => {
-                    post("/api/v0/changePassword", {
-                        old_password: password,
-                        new_password: password1,
-                    })
-                        .then(() => {
-                            swal(_("Password updated successfully!")).catch(swal.noop);
+            alert
+                .fire({
+                    text: _("Enter your current password"),
+                    input: "password",
+                })
+                .then(({ value: password }) => {
+                    if (password) {
+                        post("/api/v0/changePassword", {
+                            old_password: password,
+                            new_password: password1,
                         })
-                        .catch(errorAlerter);
+                            .then(() => {
+                                void alert.fire(_("Password updated successfully!"));
+                            })
+                            .catch(errorAlerter);
+                    }
                 })
                 .catch(errorAlerter);
         }
@@ -114,9 +117,9 @@ export function AccountSettings(props: SettingGroupProps): JSX.Element {
     function resendValidationEmail() {
         post("me/validateEmail", {})
             .then(() => {
-                swal(
+                void alert.fire(
                     "Validation email sent! Please check your email and click the validation link.",
-                ).catch(swal.noop);
+                );
             })
             .catch(errorAlerter);
     }
@@ -154,21 +157,28 @@ export function AccountSettings(props: SettingGroupProps): JSX.Element {
         if (user && user.id) {
             if (!settings.password_is_set) {
                 // social auth account
-                swal({
-                    text: _("Are you sure you want to delete this account? This cannot be undone."),
-                    showCancelButton: true,
-                })
-                    .then(() => {
-                        doDel(null);
+                void alert
+                    .fire({
+                        text: _(
+                            "Are you sure you want to delete this account? This cannot be undone.",
+                        ),
+                        showCancelButton: true,
                     })
-                    .catch(ignore);
+                    .then(({ value: accept }) => {
+                        if (accept) {
+                            doDel(null);
+                        }
+                    });
             } else {
-                swal({
-                    text: _("Enter your current password"),
-                    input: "password",
-                })
-                    .then((password) => {
-                        doDel(password);
+                alert
+                    .fire({
+                        text: _("Enter your current password"),
+                        input: "password",
+                    })
+                    .then(({ value: password }) => {
+                        if (password) {
+                            doDel(password);
+                        }
                     })
                     .catch(errorAlerter);
             }

@@ -148,7 +148,7 @@ import * as player_cache from "player_cache";
 import { toast } from "toast";
 import cached from "cached";
 import * as moment from "moment";
-import swal from "sweetalert2";
+
 import { ConfigSchema } from "data_schema";
 import * as history from "history";
 import "debug";
@@ -206,18 +206,6 @@ data.watch("config.user", (user) => {
  * tabs with our new logout-other-devices button
  */
 data.set("device.uuid", data.get("device.uuid", uuid()));
-
-/*** SweetAlert setup ***/
-swal.setDefaults({
-    confirmButtonClass: "primary",
-    cancelButtonClass: "reject",
-    buttonsStyling: false,
-    reverseButtons: true,
-    confirmButtonText: _("OK"),
-    cancelButtonText: _("Cancel"),
-    allowEscapeKey: true,
-    //focusCancel: true,
-});
 
 /***
  * Test if local storage is disabled for some reason (Either because the user

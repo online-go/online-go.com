@@ -24,10 +24,10 @@ import { openModal, Modal, ModalConstructorInput } from "Modal";
 import { timeControlDescription } from "TimeControl";
 import { Player } from "Player";
 import { handicapText } from "GameAcceptModal";
-import { errorAlerter, ignore, rulesText, yesno, getGameResultText } from "misc";
+import { errorAlerter, rulesText, yesno, getGameResultText } from "misc";
 import { rankString } from "rank_utils";
 import { browserHistory } from "ogsHistory";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { GobanConfig, GoEnginePlayerEntry } from "goban";
 
 interface Events {}
@@ -90,21 +90,23 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         const review_id = this.props.config.review_id;
 
         if (review_id) {
-            swal({
-                text: _("Are you sure you wish to delete this board?"),
-                showCancelButton: true,
-            })
-                .then(() => {
-                    console.log("Should be deleting");
-
-                    del(`reviews/${review_id}`)
-                        .then(() => {
-                            this.close();
-                            console.log(browserHistory.back());
-                        })
-                        .catch(errorAlerter);
+            void alert
+                .fire({
+                    text: _("Are you sure you wish to delete this board?"),
+                    showCancelButton: true,
                 })
-                .catch(ignore);
+                .then(({ value: accept }) => {
+                    if (accept) {
+                        console.log("Should be deleting");
+
+                        del(`reviews/${review_id}`)
+                            .then(() => {
+                                this.close();
+                                console.log(browserHistory.back());
+                            })
+                            .catch(errorAlerter);
+                    }
+                });
         }
     };
 

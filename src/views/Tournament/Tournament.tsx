@@ -46,7 +46,7 @@ import { computeAverageMoveTime, GoEngineRules } from "goban";
 import { openMergeReportModal } from "MergeReportModal";
 import * as d3 from "d3";
 import Dropzone from "react-dropzone";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 let logspam_debounce: any;
 
@@ -438,47 +438,53 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
     };
 
     startTournament = () => {
-        swal({
-            text: _("Start this tournament now?"),
-            showCancelButton: true,
-            focusCancel: true,
-        })
-            .then(() => {
-                post("tournaments/%%/start", this.state.tournament.id, {})
-                    .then(ignore)
-                    .catch(errorAlerter);
+        void alert
+            .fire({
+                text: _("Start this tournament now?"),
+                showCancelButton: true,
+                focusCancel: true,
             })
-            .catch(ignore);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    post("tournaments/%%/start", this.state.tournament.id, {})
+                        .then(ignore)
+                        .catch(errorAlerter);
+                }
+            });
     };
     deleteTournament = () => {
-        swal({
-            text: _("Delete this tournament?"),
-            showCancelButton: true,
-            focusCancel: true,
-        })
-            .then(() => {
-                del("tournaments/%%", this.state.tournament.id)
-                    .then(() => {
-                        browserHistory.push("/");
-                    })
-                    .catch(errorAlerter);
+        void alert
+            .fire({
+                text: _("Delete this tournament?"),
+                showCancelButton: true,
+                focusCancel: true,
             })
-            .catch(ignore);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    del("tournaments/%%", this.state.tournament.id)
+                        .then(() => {
+                            browserHistory.push("/");
+                        })
+                        .catch(errorAlerter);
+                }
+            });
     };
     endTournament = () => {
-        swal({
-            text: _("End this tournament?"),
-            showCancelButton: true,
-            focusCancel: true,
-        })
-            .then(() => {
-                post("tournaments/%%/end", this.state.tournament.id, {})
-                    .then(() => {
-                        this.reloadTournament();
-                    })
-                    .catch(errorAlerter);
+        void alert
+            .fire({
+                text: _("End this tournament?"),
+                showCancelButton: true,
+                focusCancel: true,
             })
-            .catch(ignore);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    post("tournaments/%%/end", this.state.tournament.id, {})
+                        .then(() => {
+                            this.reloadTournament();
+                        })
+                        .catch(errorAlerter);
+                }
+            });
     };
     setUserToInvite = (user) => {
         this.setState({ user_to_invite: user });
@@ -518,14 +524,19 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
             .catch(errorAlerter);
     };
     resign = () => {
-        swal({
-            text: _(
-                "Are you sure you want to resign from the tournament? This will also resign you from all games you are playing in this tournament.",
-            ),
-            showCancelButton: true,
-            focusCancel: true,
-        })
-            .then(this.partTournament)
+        alert
+            .fire({
+                text: _(
+                    "Are you sure you want to resign from the tournament? This will also resign you from all games you are playing in this tournament.",
+                ),
+                showCancelButton: true,
+                focusCancel: true,
+            })
+            .then(({ value: accept }) => {
+                if (accept) {
+                    this.partTournament;
+                }
+            })
             .catch(errorAlerter);
     };
     updateEliminationTrees() {
@@ -936,7 +947,7 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
                 }
             }
             if (not_laid_out) {
-                swal("Warning: " + not_laid_out + " matches not laid out").catch(swal.noop);
+                void alert.fire("Warning: " + not_laid_out + " matches not laid out");
             }
 
             const svg = d3.select(elimination_tree);
@@ -1211,27 +1222,25 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
 
         if (tournament.name.length < 5) {
             this.ref_tournament_name.current.focus();
-            swal(_("Please provide a name for the tournament")).catch(swal.noop);
+            void alert.fire(_("Please provide a name for the tournament"));
             return;
         }
 
         if (tournament.description.length < 5) {
             this.ref_description.current.focus();
-            swal(_("Please provide a description for the tournament")).catch(swal.noop);
+            void alert.fire(_("Please provide a description for the tournament"));
             return;
         }
 
         const max_players = parseInt(tournament.settings.maximum_players);
         if (max_players > 10 && tournament.tournament_type === "roundrobin") {
             this.ref_max_players.current.focus();
-            swal(_("Round Robin tournaments are limited to a maximum of 10 players")).catch(
-                swal.noop,
-            );
+            void alert.fire(_("Round Robin tournaments are limited to a maximum of 10 players"));
             return;
         }
         if (max_players < 2) {
             this.ref_max_players.current.focus();
-            swal(_("You need at least two players in a tournament")).catch(swal.noop);
+            void alert.fire(_("You need at least two players in a tournament"));
             return;
         }
 
@@ -3126,39 +3135,42 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
     kick(player_id: number) {
         const user = player_cache.lookup(player_id);
 
-        swal({
-            text: interpolate(_("Really kick {{user}} from the tournament?"), {
-                user: user.username,
-            }),
-            showCancelButton: true,
-            focusCancel: true,
-        })
-            .then(() => {
-                post("tournaments/%%/players", this.state.tournament.id, {
-                    delete: true,
-                    player_id: user.id,
-                })
-                    .then(ignore)
-                    .catch(errorAlerter);
+        void alert
+            .fire({
+                text: interpolate(_("Really kick {{user}} from the tournament?"), {
+                    user: user.username,
+                }),
+                showCancelButton: true,
+                focusCancel: true,
             })
-            .catch(ignore);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    post("tournaments/%%/players", this.state.tournament.id, {
+                        delete: true,
+                        player_id: user.id,
+                    })
+                        .then(ignore)
+                        .catch(errorAlerter);
+                }
+            });
 
         close_all_popovers();
     }
     adjustPoints(player_id: number) {
         const user = player_cache.lookup(player_id);
 
-        swal({
-            input: "number",
-            text: interpolate(
-                pgettext("How may tournament points to adjust a user by", "Adjustment for %s"),
-                [user.username],
-            ),
-            showCancelButton: true,
-            focusCancel: true,
-        })
-            .then((val) => {
-                const v = parseInt(val);
+        alert
+            .fire({
+                input: "number",
+                text: interpolate(
+                    pgettext("How may tournament points to adjust a user by", "Adjustment for %s"),
+                    [user.username],
+                ),
+                showCancelButton: true,
+                focusCancel: true,
+            })
+            .then(({ value }) => {
+                const v = parseInt(value);
                 if (!v) {
                     return;
                 }
@@ -3178,19 +3190,21 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
     disqualify(player_id: number) {
         const user = player_cache.lookup(player_id);
 
-        swal({
-            text: interpolate(_("Really disqualify {{user}}?"), { user: user.username }),
-            showCancelButton: true,
-            focusCancel: true,
-        })
-            .then(() => {
-                put("tournaments/%%/players", this.state.tournament.id, {
-                    disqualify: user.id,
-                })
-                    .then(ignore)
-                    .catch(errorAlerter);
+        void alert
+            .fire({
+                text: interpolate(_("Really disqualify {{user}}?"), { user: user.username }),
+                showCancelButton: true,
+                focusCancel: true,
             })
-            .catch(ignore);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    put("tournaments/%%/players", this.state.tournament.id, {
+                        disqualify: user.id,
+                    })
+                        .then(ignore)
+                        .catch(errorAlerter);
+                }
+            });
 
         close_all_popovers();
     }
@@ -3296,23 +3310,25 @@ function OpenGothaTournamentRound({
 
     function startRound() {
         console.log("ok");
-        swal({
-            text: interpolate(
-                pgettext(
-                    "Start the tournament round now? Leave {{num}} as it is, it is a placeholder for the round number.",
-                    "Start round {{num}} now?",
+        void alert
+            .fire({
+                text: interpolate(
+                    pgettext(
+                        "Start the tournament round now? Leave {{num}} as it is, it is a placeholder for the round number.",
+                        "Start round {{num}} now?",
+                    ),
+                    { num: selectedRound },
                 ),
-                { num: selectedRound },
-            ),
-            showCancelButton: true,
-            //focusCancel: true
-        })
-            .then(() => {
-                post(`tournaments/${tournament.id}/rounds/${selectedRound}/start`)
-                    .then(ignore)
-                    .catch(errorAlerter);
+                showCancelButton: true,
+                //focusCancel: true
             })
-            .catch(ignore);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    post(`tournaments/${tournament.id}/rounds/${selectedRound}/start`)
+                        .then(ignore)
+                        .catch(errorAlerter);
+                }
+            });
     }
 
     const selected_round = rounds[selectedRound - 1];

@@ -30,7 +30,7 @@ import { Markdown } from "Markdown";
 import { Steps } from "Steps";
 import { errcodeAlerter } from "ErrcodeModal";
 import * as moment from "moment";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 export class Styling extends React.PureComponent<{}, any> {
     ccinput = null;
@@ -532,17 +532,17 @@ function bigtoast() {
         <div>
             <h1>Big stuff</h1>
             is comming to a place near you!
-            <button onClick={() => swal("HI")}> Click me </button>
+            <button onClick={() => alert.fire("HI")}> Click me </button>
         </div>,
     ).on("close", () => {
         console.log("Toast closed");
     });
 }
 function swal_popup() {
-    swal({
+    void alert.fire({
         title: "Title here",
         text: "Some text here",
         input: "text",
         showCancelButton: true,
-    }).catch(swal.noop);
+    });
 }

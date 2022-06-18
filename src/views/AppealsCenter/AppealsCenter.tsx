@@ -22,7 +22,7 @@ import { _ } from "translate";
 import * as moment from "moment";
 import { PaginatedTable } from "PaginatedTable";
 import * as data from "data";
-//import swal from "sweetalert2";
+//import { alert } from "swal_config";
 
 export function AppealsCenter(): JSX.Element {
     const user = data.get("user");

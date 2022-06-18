@@ -18,13 +18,13 @@
 import * as data from "data";
 import cached from "cached";
 import { get } from "requests";
-import { errorLogger, ignore } from "misc";
+import { errorLogger } from "misc";
 import ITC from "ITC";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 ITC.register("logout", (device_uuid: string) => {
     if (device_uuid !== data.get("device.uuid", "")) {
-        swal("This device has been logged out remotely").then(logout).catch(logout);
+        alert.fire("This device has been logged out remotely").then(logout).catch(logout);
     }
 });
 
@@ -38,16 +38,17 @@ export function logout() {
 }
 
 export function logoutOtherDevices() {
-    swal({
-        text: "Logout of other devices you are logged in to?",
-        showCancelButton: true,
-    })
-        .then(() => {
-            ITC.send("logout", data.get("device.uuid"));
-            swal("Other devices have been logged out").then(ignore).catch(ignore);
+    void alert
+        .fire({
+            text: "Logout of other devices you are logged in to?",
+            showCancelButton: true,
         })
-        .catch(ignore);
-    //get("/api/v0/logout?everywhere=1").then(console.log).catch(errorAlerter);
+        .then(({ value: accept }) => {
+            if (accept) {
+                ITC.send("logout", data.get("device.uuid"));
+                void alert.fire("Other devices have been logged out");
+            }
+        });
 }
 
 export function logoutAndClearLocalData() {

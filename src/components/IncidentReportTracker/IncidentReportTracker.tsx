@@ -31,7 +31,7 @@ import { openReportedConversationModal } from "ReportedConversationModal";
 import { ReportedConversation, report_categories } from "Report";
 import { AutoTranslate } from "AutoTranslate";
 import { PlayerCacheEntry } from "player_cache";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 export interface Report {
     id: number;
@@ -130,7 +130,7 @@ export function IncidentReportTracker(): JSX.Element {
                     post("moderation/incident/%%", report.id, { id: report.id, action: "claim" })
                         .then((res) => {
                             if (res.vanished) {
-                                swal("Report was removed").catch(swal.noop);
+                                void alert.fire("Report was removed");
                             }
                         })
                         .catch(errorAlerter);
@@ -142,12 +142,13 @@ export function IncidentReportTracker(): JSX.Element {
                 };
 
                 report.set_note = () => {
-                    swal({
-                        input: "text",
-                        inputValue: report.moderator_note,
-                        showCancelButton: true,
-                    })
-                        .then((txt) => {
+                    void alert
+                        .fire({
+                            input: "text",
+                            inputValue: report.moderator_note,
+                            showCancelButton: true,
+                        })
+                        .then(({ value: txt }) => {
                             post("moderation/incident/%%", report.id, {
                                 id: report.id,
                                 action: "note",
@@ -155,8 +156,7 @@ export function IncidentReportTracker(): JSX.Element {
                             })
                                 .then(ignore)
                                 .catch(errorAlerter);
-                        })
-                        .catch(ignore);
+                        });
                 };
 
                 if (!(report.id in active_incident_reports_ref.current)) {

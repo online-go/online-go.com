@@ -37,7 +37,7 @@ import { bot_count } from "bots";
 import { SupporterGoals } from "SupporterGoals";
 import { CreatedChallengeInfo } from "types";
 
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { Size } from "src/lib/types";
 
 import { RengoManagementPane } from "RengoManagementPane";
@@ -309,7 +309,7 @@ export class Play extends React.Component<{}, PlayState> {
 
     newComputerGame = () => {
         if (bot_count() === 0) {
-            swal(_("Sorry, all bots seem to be offline, please try again later.")).catch(swal.noop);
+            void alert.fire(_("Sorry, all bots seem to be offline, please try again later."));
             return;
         }
         challengeComputer();
@@ -412,20 +412,20 @@ export class Play extends React.Component<{}, PlayState> {
     };
 
     startOwnRengoChallenge = (the_challenge: Challenge) => {
-        swal({
+        void alert.fire({
             text: "Starting...",
-            type: "info",
+            icon: "info",
             showCancelButton: false,
             showConfirmButton: false,
             allowEscapeKey: false,
-        }).catch(swal.noop);
+        });
 
         post("challenges/%%/start", the_challenge.challenge_id, {})
             .then(() => {
-                swal.close();
+                alert.close();
             })
             .catch((err) => {
-                swal.close();
+                alert.close();
                 errorAlerter(err);
             });
     };
@@ -1040,22 +1040,22 @@ export class Play extends React.Component<{}, PlayState> {
     }
 
     unNominateForRengoChallenge = (C: Challenge) => {
-        swal({
+        void alert.fire({
             text: _("Withdrawing..."), // translator: the server is processing their request to withdraw from a rengo challenge
-            type: "info",
+            icon: "info",
             showCancelButton: false,
             showConfirmButton: false,
             allowEscapeKey: false,
-        }).catch(swal.noop);
+        });
 
         this.closeChallengeManagementPane(C.challenge_id);
 
         del("challenges/%%/join", C.challenge_id, {})
             .then(() => {
-                swal.close();
+                alert.close();
             })
             .catch((err) => {
-                swal.close();
+                alert.close();
                 errorAlerter(err);
             });
     };

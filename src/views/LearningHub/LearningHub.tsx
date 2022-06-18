@@ -26,7 +26,7 @@ import { getSectionCompletion, getSectionByName } from "./util";
 import { ignore } from "misc";
 import { browserHistory } from "ogsHistory";
 import { MiniGoban } from "MiniGoban";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 interface LearningHubParams {
     section: string;
@@ -259,10 +259,11 @@ class SectionNav extends React.Component<{}, any> {
     }
 
     resetProgress = () => {
-        swal({
-            text: _("Are you sure you wish to reset your tutorial progress?"),
-            showCancelButton: true,
-        })
+        alert
+            .fire({
+                text: _("Are you sure you wish to reset your tutorial progress?"),
+                showCancelButton: true,
+            })
             .then(() => {
                 data.removePrefix("learning-hub.");
                 browserHistory.push("/learn-to-play-go");

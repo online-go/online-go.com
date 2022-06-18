@@ -30,7 +30,7 @@ import { rankString, bounded_rank } from "rank_utils";
 import { kb_bind, kb_unbind } from "KBShortcut";
 import { Player } from "Player";
 import * as player_cache from "player_cache";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { nominateForRengoChallenge } from "Play/util";
 
 type Challenge = socket_api.seekgraph_global.Challenge;
@@ -754,7 +754,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                             //console.log("Remove");
                             del("challenges/%%", C.challenge_id)
                                 .then(() => e.html(_("Challenge removed")))
-                                .catch(() => swal(_("Error removing challenge")));
+                                .catch(() => alert.fire(_("Error removing challenge")));
                         }),
                 );
             } else {

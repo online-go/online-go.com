@@ -19,13 +19,13 @@ import * as React from "react";
 import * as moment from "moment";
 import { _ } from "translate";
 import { post } from "requests";
-import { ignore, errorAlerter, navigateTo, unitify } from "misc";
+import { errorAlerter, navigateTo, unitify } from "misc";
 import { PaginatedTable } from "PaginatedTable";
 import { longRankString, rankString } from "rank_utils";
 import { StarRating } from "StarRating";
 import { Player } from "Player";
 import { MiniGoban } from "MiniGoban";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { useParams } from "react-router";
 
 export function PuzzleCollectionList(): JSX.Element {
@@ -151,16 +151,18 @@ export function PuzzleCollectionList(): JSX.Element {
     );
 
     function newPuzzleCollection() {
-        swal({
-            text: _("Collection name"),
-            input: "text",
-            showCancelButton: true,
-        })
-            .then((name) => {
+        void alert
+            .fire({
+                text: _("Collection name"),
+                input: "text",
+                showCancelButton: true,
+            })
+            .then((res) => {
+                const name = res.value;
                 if (!name || name.length < 5) {
-                    swal({ text: _("Please provide a longer name for your new puzzle collection") })
-                        .then(ignore)
-                        .catch(ignore);
+                    void alert.fire({
+                        text: _("Please provide a longer name for your new puzzle collection"),
+                    });
                     return;
                 }
 
@@ -173,7 +175,6 @@ export function PuzzleCollectionList(): JSX.Element {
                         navigateTo(`/puzzle-collection/${res.id}`);
                     })
                     .catch(errorAlerter);
-            })
-            .catch(ignore);
+            });
     }
 }

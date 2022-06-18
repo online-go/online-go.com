@@ -16,27 +16,27 @@
  */
 
 import type { Challenge } from "./Play";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { put } from "requests";
 import { errorAlerter } from "misc";
 import { _ } from "translate";
 
 // This is used by the SeekGraph to perform this function as well as this page...
 export function nominateForRengoChallenge(C: Challenge) {
-    swal({
+    void alert.fire({
         text: _("Joining..."), // translator: the server is processing their request to join a rengo game
-        type: "info",
+        icon: "info",
         showCancelButton: false,
         showConfirmButton: false,
         allowEscapeKey: false,
-    }).catch(swal.noop);
+    });
 
     put("challenges/%%/join", C.challenge_id, {})
         .then(() => {
-            swal.close();
+            alert.close();
         })
         .catch((err: any) => {
-            swal.close();
+            alert.close();
             errorAlerter(err);
         });
 }

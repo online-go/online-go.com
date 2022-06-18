@@ -44,7 +44,7 @@ import { browserHistory } from "ogsHistory";
 import { ObserveGamesComponent } from "ObserveGamesComponent";
 import { profanity_filter } from "profanity_filter";
 import { popover } from "popover";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 interface ChatLogProperties {
     channel: string;
@@ -519,7 +519,7 @@ function ChatInput({ channel, autoFocus }: InternalChatLogProperties): JSX.Eleme
             if (event.charCode === 13) {
                 const input = event.target as HTMLInputElement;
                 if (!socket.connected) {
-                    void swal(_("Connection to server lost"));
+                    void alert.fire(_("Connection to server lost"));
                     return false;
                 }
 
