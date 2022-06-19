@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { put, post, del } from "requests";
 import { _ } from "translate";
 
@@ -24,16 +24,16 @@ type RengoParticipantsDTO = rest_api.RengoParticipantsDTO;
 
 // This is used by the SeekGraph to perform this function, as well as the Play page...
 export function nominateForRengoChallenge(c: Challenge): Promise<RengoParticipantsDTO> {
-    swal({
+    void alert.fire({
         text: _("Joining..."), // translator: the server is processing their request to join a rengo game
-        type: "info",
+        icon: "info",
         showCancelButton: false,
         showConfirmButton: false,
         allowEscapeKey: false,
-    }).catch(swal.noop);
+    });
 
     return put("challenges/%%/join", c.challenge_id, {}).then((res) => {
-        swal.close();
+        alert.close();
         return res;
     });
 }
@@ -62,16 +62,16 @@ export function kickRengoUser(player_id: number): Promise<void> {
 }
 
 export function startOwnRengoChallenge(the_challenge: Challenge): Promise<void> {
-    swal({
+    void alert.fire({
         text: "Starting...",
-        type: "info",
+        icon: "info",
         showCancelButton: false,
         showConfirmButton: false,
         allowEscapeKey: false,
-    }).catch(swal.noop);
+    });
 
     return post("challenges/%%/start", the_challenge.challenge_id, {}).then(() => {
-        swal.close();
+        alert.close();
     });
 }
 
@@ -80,16 +80,16 @@ export function cancelChallenge(the_challenge: Challenge): Promise<void> {
 }
 
 export function unNominate(the_challenge: Challenge): Promise<RengoParticipantsDTO> {
-    swal({
+    void alert.fire({
         text: _("Withdrawing..."), // translator: the server is processing their request to withdraw from a rengo challenge
-        type: "info",
+        icon: "info",
         showCancelButton: false,
         showConfirmButton: false,
         allowEscapeKey: false,
-    }).catch(swal.noop);
+    });
 
     return del("challenges/%%/join", the_challenge.challenge_id, {}).then((res) => {
-        swal.close();
+        alert.close();
         return res;
     });
 }
