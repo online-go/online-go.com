@@ -201,7 +201,7 @@ export function getOutcomeTranslation(outcome: string) {
     }
 
     if (/[0-9.]+/.test(outcome)) {
-        const num = Math.round(outcome.match(/([0-9.]+)/)[1]*2)/2;
+        const num = Math.round(outcome.match(/([0-9.]+)/)[1] * 2) / 2;
 
         return interpolate(pgettext("Game outcome", "{{number}} points"), { number: num }); // eslint-disable-line id-denylist
     }
