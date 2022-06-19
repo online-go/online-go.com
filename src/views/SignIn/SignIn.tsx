@@ -21,7 +21,7 @@ import * as data from "data";
 import { _ } from "translate";
 import { Card } from "material";
 import { LineText } from "misc-ui";
-import { errorAlerter, ignore } from "misc";
+import { errorAlerter } from "misc";
 import { post } from "requests";
 import cached from "cached";
 import { Md5 } from "ts-md5/dist/md5";
@@ -159,27 +159,28 @@ export class SignIn extends React.PureComponent<{}, any> {
     }
 
     resetPassword = () => {
-        alert
+        void alert
             .fire({
                 text: _("What is your username?"),
                 input: "text",
                 showCancelButton: true,
             })
-            .then((username) => {
-                post("/api/v0/reset", { username: username })
-                    .then((res) => {
-                        if (res.success) {
-                            void alert.fire(
-                                _("An email with your new password has been emailed to you."),
-                            );
-                        } else {
-                            console.error(res);
-                            errorAlerter(res);
-                        }
-                    })
-                    .catch(errorAlerter);
-            })
-            .catch(ignore);
+            .then(({ value: username }) => {
+                if (username) {
+                    post("/api/v0/reset", { username: username })
+                        .then((res) => {
+                            if (res.success) {
+                                void alert.fire(
+                                    _("An email with your new password has been emailed to you."),
+                                );
+                            } else {
+                                console.error(res);
+                                errorAlerter(res);
+                            }
+                        })
+                        .catch(errorAlerter);
+                }
+            });
     };
 
     render() {
