@@ -20,6 +20,8 @@ import Swal from "sweetalert2";
 
 /*** SweetAlert setup ***/
 
+/* (see ogs.style for global swal styling) */
+
 export const alert = Swal.mixin({
     customClass: {
         confirmButton: "primary",

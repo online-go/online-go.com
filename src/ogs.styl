@@ -442,7 +442,12 @@ nowrap()
     white-space: nowrap;
 
 
+/* Sweetalert2 */
 @require '../node_modules/sweetalert2/dist/sweetalert2.css';
+
+.swal2-footer {
+    border: none !important; // default solid border is ugly
+}
 
 @require "global_styl/mixins.styl";
 @require "global_styl/global.styl";

@@ -14,10 +14,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+import * as React from "react";
 
 import * as data from "data";
 import * as player_cache from "player_cache";
-import * as React from "react";
+
 import { OgsResizeDetector } from "OgsResizeDetector";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext, interpolate } from "translate";
@@ -628,11 +629,15 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     active_check();
                 } else {
                     if (this.props.mode === "open") {
-                        void alert.fire(_("Challenge created!"));
                         if (this.state.challenge.invite_only) {
+                            const footer_text = _("View your invite-only challenges");
+                            void alert.fire({
+                                text: _("Invite-only Challenge created!"),
+                                footer: `<a href='/'>${footer_text}</a>`,
+                            });
                             copyChallengeLinkURL(alert.getConfirmButton(), challenge_uuid);
                         } else {
-                            console.log(this.state.challenge);
+                            void alert.fire(_("Challenge created!"));
                         }
                     } else if (this.props.mode === "player") {
                         void alert.fire(_("Challenge sent!"));
