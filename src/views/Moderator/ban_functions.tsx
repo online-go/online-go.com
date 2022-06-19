@@ -29,13 +29,18 @@ function moderate(player_id, prompt, obj) {
                 input: "text",
                 showCancelButton: true,
             })
-            .then((reason) => {
-                obj.moderation_note = reason;
-                console.log(obj);
-                put("players/" + player_id + "/moderate", obj)
-                    .then(resolve)
-                    .catch(reject);
-            }, reject);
+            .then(({ value: reason }) => {
+                if (reason) {
+                    obj.moderation_note = reason;
+                    console.log(obj);
+                    put("players/" + player_id + "/moderate", obj)
+                        .then(resolve)
+                        .catch(reject);
+                } else {
+                    reject();
+                }
+            })
+            .catch(reject);
     });
 }
 

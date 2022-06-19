@@ -52,8 +52,6 @@ import {
     JGOFTimeControlSystem,
 } from "goban";
 
-import { copyChallengeLinkURL } from "ChallengeLinkButton";
-
 import { alert } from "swal_config";
 
 type ChallengeDetails = rest_api.ChallengeDetails;

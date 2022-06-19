@@ -100,7 +100,7 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
     };
 
     leave = () => {
-        alert
+        void alert
             .fire({
                 text: _(
                     "Are you sure you want to withdraw from the ladder? If you decide to rejoin the ladder in the future you will have to start from the bottom!",
@@ -110,15 +110,16 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
                 cancelButtonText: _("No"),
                 focusCancel: true,
             })
-            .then(() => {
-                del("ladders/%%/players", this.props.match.params.ladder_id)
-                    .then(() => {
-                        this.invalidate();
-                        this.resolve(this.props.match.params.ladder_id);
-                    })
-                    .catch(errorAlerter);
-            })
-            .catch(() => 0);
+            .then(({ value: yes }) => {
+                if (yes) {
+                    del("ladders/%%/players", this.props.match.params.ladder_id)
+                        .then(() => {
+                            this.invalidate();
+                            this.resolve(this.props.match.params.ladder_id);
+                        })
+                        .catch(errorAlerter);
+                }
+            });
     };
 
     updateAutocompletedPlayer = (user) => {
@@ -462,25 +463,30 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
     adjustLadderPosition(player) {
         console.log(player);
 
-        alert
+        void alert
             .fire({
                 text: "New ladder position for player " + player.username,
                 input: "number",
                 showCancelButton: true,
             })
-            .then((new_rank) => {
-                put("ladders/%%/players/moderate", this.props.ladder.props.match.params.ladder_id, {
-                    moderation_note: "Adjusting ladder position",
-                    player_id: player.id,
-                    rank: new_rank,
-                })
-                    .then(() => {
-                        close_all_popovers();
-                        this.props.ladder.invalidate();
-                    })
-                    .catch(errorAlerter);
-            })
-            .catch(() => 0);
+            .then(({ value: new_rank }) => {
+                if (new_rank) {
+                    put(
+                        "ladders/%%/players/moderate",
+                        this.props.ladder.props.match.params.ladder_id,
+                        {
+                            moderation_note: "Adjusting ladder position",
+                            player_id: player.id,
+                            rank: new_rank,
+                        },
+                    )
+                        .then(() => {
+                            close_all_popovers();
+                            this.props.ladder.invalidate();
+                        })
+                        .catch(errorAlerter);
+                }
+            });
     }
 
     challengeDetails = (event) => {
@@ -598,7 +604,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
     };
 
     challenge(ladder_player) {
-        alert
+        void alert
             .fire({
                 text: interpolate(
                     _(
@@ -610,20 +616,21 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                 confirmButtonText: _("Yes!"),
                 cancelButtonText: _("No"),
             })
-            .then(() => {
-                post(
-                    "ladders/%%/players/challenge",
-                    this.props.ladder.props.match.params.ladder_id,
-                    {
-                        player_id: ladder_player.player.id,
-                    },
-                )
-                    .then(() => {
-                        this.props.ladder.invalidate();
-                    })
-                    .catch(errorAlerter);
-            })
-            .catch(() => 0);
+            .then(({ value: yes }) => {
+                if (yes) {
+                    post(
+                        "ladders/%%/players/challenge",
+                        this.props.ladder.props.match.params.ladder_id,
+                        {
+                            player_id: ladder_player.player.id,
+                        },
+                    )
+                        .then(() => {
+                            this.props.ladder.invalidate();
+                        })
+                        .catch(errorAlerter);
+                }
+            });
     }
 }
 

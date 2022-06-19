@@ -125,12 +125,14 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                 text: `Are you sure you want to delete the account "${username}" (${user_id})? This cannot be undone.`,
                 showCancelButton: true,
             })
-            .then(() => {
-                del(`players/${user_id}`, {})
-                    .then(() => {
-                        void alert.fire("Done");
-                    })
-                    .catch(errorAlerter);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    del(`players/${user_id}`, {})
+                        .then(() => {
+                            void alert.fire("Done");
+                        })
+                        .catch(errorAlerter);
+                }
             });
     };
 

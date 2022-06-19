@@ -230,22 +230,23 @@ function FirewallRuleRow({
     }
 
     function del_row() {
-        alert
+        void alert
             .fire({
                 text: "Are you sure you want to delete this row?",
                 showCancelButton: true,
                 confirmButtonText: "Yes",
                 cancelButtonText: "Cancel",
             })
-            .then(() => {
-                del(`/firewall/rule/${firewall_rule.id}`)
-                    .then(() => {
-                        table_refresh();
-                        void alert.fire("Deleted");
-                    })
-                    .catch(errorAlerter);
-            })
-            .catch(() => 0);
+            .then(({ value: yes }) => {
+                if (yes) {
+                    del(`/firewall/rule/${firewall_rule.id}`)
+                        .then(() => {
+                            table_refresh();
+                            void alert.fire("Deleted");
+                        })
+                        .catch(errorAlerter);
+                }
+            });
     }
 
     return (
