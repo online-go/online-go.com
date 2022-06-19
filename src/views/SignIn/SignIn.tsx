@@ -20,7 +20,7 @@ import { Link } from "react-router-dom";
 import * as data from "data";
 import { _ } from "translate";
 import { Card } from "material";
-import { errorAlerter, ignore } from "misc";
+import { errorAlerter } from "misc";
 import { post } from "requests";
 import cached from "cached";
 import { Md5 } from "ts-md5/dist/md5";
