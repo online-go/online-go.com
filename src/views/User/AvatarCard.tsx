@@ -95,7 +95,7 @@ export function AvatarCard({
 
     const toggleEdit = () => {
         if (editing) {
-            let promise: Promise<any>;
+            let promise: Promise<{ value?: boolean }>;
             if (!data.get("user")?.is_moderator && user.username !== new_username) {
                 promise = alert.fire({
                     text: _(
