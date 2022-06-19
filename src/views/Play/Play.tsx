@@ -38,7 +38,7 @@ import { SupporterGoals } from "SupporterGoals";
 import { CreatedChallengeInfo } from "types";
 import { ChallengeLinkButton } from "ChallengeLinkButton";
 
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { Size } from "src/lib/types";
 
 import { RengoManagementPane } from "RengoManagementPane";
@@ -313,7 +313,7 @@ export class Play extends React.Component<{}, PlayState> {
 
     newComputerGame = () => {
         if (bot_count() === 0) {
-            swal(_("Sorry, all bots seem to be offline, please try again later.")).catch(swal.noop);
+            void alert.fire(_("Sorry, all bots seem to be offline, please try again later."));
             return;
         }
         challengeComputer();

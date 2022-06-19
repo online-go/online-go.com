@@ -28,7 +28,7 @@ import { Md5 } from "ts-md5/dist/md5";
 import { SocialLoginButtons } from "SocialLoginButtons";
 
 window["Md5"] = Md5;
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 export function get_bid() {
     const bid = data.get("bid") || `${Math.random()}`.split(".")[1];
@@ -164,18 +164,19 @@ export class SignIn extends React.PureComponent<{}, any> {
     }
 
     resetPassword = () => {
-        swal({
-            text: _("What is your username?"),
-            input: "text",
-            showCancelButton: true,
-        })
+        alert
+            .fire({
+                text: _("What is your username?"),
+                input: "text",
+                showCancelButton: true,
+            })
             .then((username) => {
                 post("/api/v0/reset", { username: username })
                     .then((res) => {
                         if (res.success) {
-                            swal(
+                            void alert.fire(
                                 _("An email with your new password has been emailed to you."),
-                            ).catch(swal.noop);
+                            );
                         } else {
                             console.error(res);
                             errorAlerter(res);

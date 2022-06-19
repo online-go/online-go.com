@@ -37,7 +37,7 @@ import * as moment from "moment";
 import { PlayerAutocomplete } from "PlayerAutocomplete";
 import { EmbeddedChatCard } from "Chat";
 import { localize_time_strings } from "localize-time";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { PlayerCacheEntry } from "player_cache";
 import { is_valid_url } from "url_validation";
 
@@ -270,12 +270,13 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
         browserHistory.push(`/tournament/new/${this.state.group_id}`);
     };
     createTournamentRecord = () => {
-        swal({
-            text: _("Tournament Name"),
-            input: "text",
-            showCancelButton: true,
-        })
-            .then((name) => {
+        alert
+            .fire({
+                text: _("Tournament Name"),
+                input: "text",
+                showCancelButton: true,
+            })
+            .then(({ value: name }) => {
                 if (!name) {
                     return;
                 }
@@ -340,14 +341,16 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
     };
     postNewNews = () => {
         if (this.state.new_news_title.trim().length < 5) {
-            swal({ title: _("Please provide a title") })
+            alert
+                .fire({ title: _("Please provide a title") })
                 .then(() => this.ref_new_news_title.current.focus())
                 .catch(errorAlerter);
             this.ref_new_news_title.current.focus();
             return;
         }
         if (this.state.new_news_body.trim().length < 16) {
-            swal({ title: _("Please provide more content for your news") })
+            alert
+                .fire({ title: _("Please provide more content for your news") })
                 .then(() => this.ref_new_news_body.current.focus())
                 .catch(errorAlerter);
             this.ref_new_news_body.current.focus();
@@ -380,29 +383,31 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
         }, 1);
     };
     deleteNewsPost(entry) {
-        swal({
-            text: _("Delete this news post?"),
-            showCancelButton: true,
-            focusCancel: true,
-        })
-            .then(() => {
-                post("group/%%/news/", this.state.group_id, {
-                    id: entry.id,
-                    delete: true,
-                })
-                    .then(() => {
-                        this.news_ref.current?.refresh();
-                        /* Since the removal of the refs I don't think we need to worry about this? - anoek 2021-12-23
-                if (this.refs.news) {
-                    this.setState({news_refresh: Date.now()});
-                } else {
-                    this.resolve(this.state.group_id);
-                }
-                */
-                    })
-                    .catch(errorAlerter);
+        void alert
+            .fire({
+                text: _("Delete this news post?"),
+                showCancelButton: true,
+                focusCancel: true,
             })
-            .catch(ignore);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    post("group/%%/news/", this.state.group_id, {
+                        id: entry.id,
+                        delete: true,
+                    })
+                        .then(() => {
+                            this.news_ref.current?.refresh();
+                            /* Since the removal of the refs I don't think we need to worry about this? - anoek 2021-12-23
+                    if (this.refs.news) {
+                        this.setState({news_refresh: Date.now()});
+                    } else {
+                        this.resolve(this.state.group_id);
+                    }
+                    */
+                        })
+                        .catch(errorAlerter);
+                }
+            });
     }
     editNewsPost(entry) {
         this.setState({ editing_news: entry });
@@ -1133,72 +1138,80 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
     };
 
     deleteGroup = () => {
-        swal({
-            text: _("Are you SURE you want to delete this group? This action is irreversible."),
-            showCancelButton: true,
-            focusCancel: true,
-        })
-            .then(() => {
-                del("groups/%%", this.state.group.id)
-                    .then(() => {
-                        browserHistory.push("/groups/");
-                    })
-                    .catch(errorAlerter);
+        void alert
+            .fire({
+                text: _("Are you SURE you want to delete this group? This action is irreversible."),
+                showCancelButton: true,
+                focusCancel: true,
             })
-            .catch(ignore);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    del("groups/%%", this.state.group.id)
+                        .then(() => {
+                            browserHistory.push("/groups/");
+                        })
+                        .catch(errorAlerter);
+                }
+            });
     };
 
     makeAdmin(player_id: number) {
-        swal({
-            text: _("Are you sure you wish to make this user an administrator of the group?"),
-            showCancelButton: true,
-            focusCancel: true,
-        })
-            .then(() => {
-                put("groups/%%/members", this.state.group_id, {
-                    player_id: player_id,
-                    is_admin: true,
-                })
-                    .then(() => this.resolve(this.state.group_id))
-                    .catch(errorAlerter);
+        void alert
+            .fire({
+                text: _("Are you sure you wish to make this user an administrator of the group?"),
+                showCancelButton: true,
+                focusCancel: true,
             })
-            .catch(() => 0);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    put("groups/%%/members", this.state.group_id, {
+                        player_id: player_id,
+                        is_admin: true,
+                    })
+                        .then(() => this.resolve(this.state.group_id))
+                        .catch(errorAlerter);
+                }
+            });
         close_all_popovers();
     }
     unAdmin(player_id: number) {
-        swal({
-            text: _("Are you sure you wish to remove administrator privileges from this user?"),
-            showCancelButton: true,
-            focusCancel: true,
-        })
-            .then(() => {
-                put("groups/%%/members", this.state.group_id, {
-                    player_id: player_id,
-                    is_admin: false,
-                })
-                    .then(() => this.resolve(this.state.group_id))
-                    .catch(errorAlerter);
+        void alert
+            .fire({
+                text: _("Are you sure you wish to remove administrator privileges from this user?"),
+                showCancelButton: true,
+                focusCancel: true,
             })
-            .catch(() => 0);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    put("groups/%%/members", this.state.group_id, {
+                        player_id: player_id,
+                        is_admin: false,
+                    })
+                        .then(() => this.resolve(this.state.group_id))
+                        .catch(errorAlerter);
+                }
+            });
         close_all_popovers();
     }
     kick(player_id: number) {
-        swal({
-            text: _("Are you sure you wish to remove this user from the group?"),
-            showCancelButton: true,
-            focusCancel: true,
-        })
-            .then(() => {
-                post("groups/%%/members", this.state.group_id, {
-                    delete: true,
-                    player_id: player_id,
-                })
-                    .then(() => {
-                        this.resolve(this.state.group_id);
-                    })
-                    .catch(errorAlerter);
+        void alert
+            .fire({
+                text: _("Are you sure you wish to remove this user from the group?"),
+                showCancelButton: true,
+                focusCancel: true,
             })
-            .catch(() => 0);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    post("groups/%%/members", this.state.group_id, {
+                        delete: true,
+                        player_id: player_id,
+                    })
+                        .then(() => {
+                            this.resolve(this.state.group_id);
+                        })
+                        .catch(errorAlerter);
+                }
+            });
         close_all_popovers();
     }
 }

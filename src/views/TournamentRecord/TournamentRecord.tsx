@@ -28,7 +28,7 @@ import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
 
 window["dup"] = dup;
 
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 const ranks = allRanks();
 
 type TournamentRecordProperties = RouteComponentProps<{ tournament_record_id: string }>;
@@ -195,73 +195,83 @@ class _TournamentRecord extends React.PureComponent<
     };
 
     removePlayer(player: any) {
-        swal({
-            title: "Really remove player?",
-            text: player.name + " [" + rankString(player.rank) + "]",
-            showCancelButton: true,
-        })
-            .then(() => {
-                del(`tournament_records/${this.state.tournament_record_id}/players/${player.id}`)
-                    .then(() => {
-                        this.player_table_ref.current?.refresh();
-                    })
-                    .catch(errorAlerter);
+        void alert
+            .fire({
+                title: "Really remove player?",
+                text: player.name + " [" + rankString(player.rank) + "]",
+                showCancelButton: true,
             })
-            .catch(ignore);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    del(
+                        `tournament_records/${this.state.tournament_record_id}/players/${player.id}`,
+                    )
+                        .then(() => {
+                            this.player_table_ref.current?.refresh();
+                        })
+                        .catch(errorAlerter);
+                }
+            });
     }
 
     deleteEntry(round, entry) {
-        swal({
-            text: "Are you sure you wish to delete this entry? The original game or review content will not be affected, but the entry will be removed from this list of game in this round.",
-            showCancelButton: true,
-        })
-            .then(() => {
-                for (let i = 0; i < round.entries.length; ++i) {
-                    if (round.entries[i].id === entry.id) {
-                        round.entries.splice(i, 1);
-                        break;
+        alert
+            .fire({
+                text: "Are you sure you wish to delete this entry? The original game or review content will not be affected, but the entry will be removed from this list of game in this round.",
+                showCancelButton: true,
+            })
+            .then(({ value: accept }) => {
+                if (accept) {
+                    for (let i = 0; i < round.entries.length; ++i) {
+                        if (round.entries[i].id === entry.id) {
+                            round.entries.splice(i, 1);
+                            break;
+                        }
                     }
-                }
-                this.forceUpdate();
+                    this.forceUpdate();
 
-                del(
-                    `tournament_records/${this.state.tournament_record_id}/rounds/${round.id}/${entry.id}`,
-                )
-                    .then(ignore)
-                    .catch(errorAlerter);
+                    del(
+                        `tournament_records/${this.state.tournament_record_id}/rounds/${round.id}/${entry.id}`,
+                    )
+                        .then(ignore)
+                        .catch(errorAlerter);
+                }
             })
             .catch(errorAlerter);
     }
 
     deleteRound(round: Round) {
-        swal({
-            title: _("Are you sure you wish to delete this round?"),
-            text: round.name,
-            showCancelButton: true,
-        })
-            .then(() => {
-                del(`tournament_records/${this.state.tournament_record_id}/round/${round.id}/`)
-                    .then(() => {
-                        for (let i = 0; i < this.state.rounds.length; ++i) {
-                            if (this.state.rounds[i].id === round.id) {
-                                this.state.rounds.splice(i, 1);
-                                break;
-                            }
-                        }
-                        this.forceUpdate();
-                    })
-                    .catch(errorAlerter);
+        void alert
+            .fire({
+                title: _("Are you sure you wish to delete this round?"),
+                text: round.name,
+                showCancelButton: true,
             })
-            .catch(swal.noop);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    del(`tournament_records/${this.state.tournament_record_id}/round/${round.id}/`)
+                        .then(() => {
+                            for (let i = 0; i < this.state.rounds.length; ++i) {
+                                if (this.state.rounds[i].id === round.id) {
+                                    this.state.rounds.splice(i, 1);
+                                    break;
+                                }
+                            }
+                            this.forceUpdate();
+                        })
+                        .catch(errorAlerter);
+                }
+            });
     }
 
     linkGame(round: Round) {
-        swal({
-            text: _("Please provide the link to the game, review, or demo board"),
-            input: "text",
-            showCancelButton: true,
-        })
-            .then((url) => {
+        void alert
+            .fire({
+                text: _("Please provide the link to the game, review, or demo board"),
+                input: "text",
+                showCancelButton: true,
+            })
+            .then(({ value: url }) => {
                 if (!url) {
                     return;
                 }
@@ -275,8 +285,7 @@ class _TournamentRecord extends React.PureComponent<
                         this.forceUpdate();
                     })
                     .catch(errorAlerter);
-            })
-            .catch(ignore);
+            });
     }
 
     recordGame(round: Round) {

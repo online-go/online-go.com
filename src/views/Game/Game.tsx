@@ -63,7 +63,7 @@ import {
 } from "./PlayControls";
 import { CancelButton } from "./PlayButtons";
 import { GameDock } from "./GameDock";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { useCurrentMove, useShowTitle, useTitle, useUserIsParticipant } from "./GameHooks";
 import { GobanContainer } from "GobanContainer";
 import { GobanContext } from "./goban_context";
@@ -439,7 +439,7 @@ export function Game(): JSX.Element {
     };
     const gameAnalyze = () => {
         if (goban.current.isAnalysisDisabled() && goban.current.engine.phase !== "finished") {
-            //swal(_("Analysis mode has been disabled for this game"));
+            //alert.fire(_("Analysis mode has been disabled for this game"));
         } else {
             const last_estimate_move = stopEstimatingScore();
 
@@ -590,7 +590,7 @@ export function Game(): JSX.Element {
     };
     const enterConditionalMovePlanner = () => {
         if (goban.current.isAnalysisDisabled() && goban.current.engine.phase !== "finished") {
-            //swal(_("Conditional moves have been disabled for this game."));
+            //alert.fire(_("Conditional moves have been disabled for this game."));
         } else {
             stashed_conditional_moves.current = goban.current.conditional_tree.duplicate();
             goban.current.setMode("conditional");
@@ -610,16 +610,19 @@ export function Game(): JSX.Element {
             goban.current.engine.phase !== "finished" &&
             is_player
         ) {
-            //swal(_("Analysis mode has been disabled for this game, you can start a review after the game has concluded."));
+            //alert.fire(_("Analysis mode has been disabled for this game, you can start a review after the game has concluded."));
         } else {
-            swal({
-                text: _("Start a review of this game?"),
-                showCancelButton: true,
-            })
-                .then(() => {
-                    post("games/%%/reviews", game_id, {})
-                        .then((res) => browserHistory.push(`/review/${res.id}`))
-                        .catch(errorAlerter);
+            alert
+                .fire({
+                    text: _("Start a review of this game?"),
+                    showCancelButton: true,
+                })
+                .then(({ value: accept }) => {
+                    if (accept) {
+                        post("games/%%/reviews", game_id, {})
+                            .then((res) => browserHistory.push(`/review/${res.id}`))
+                            .catch(errorAlerter);
+                    }
                 })
                 .catch(ignore);
         }

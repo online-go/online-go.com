@@ -22,7 +22,7 @@ import { isLiveGame } from "TimeControl";
 import * as preferences from "preferences";
 import * as data from "data";
 import { game_control } from "./game_control";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { useCurrentMoveNumber, usePlayerToMove, useShowUndoRequested } from "./GameHooks";
 import { useGoban } from "./goban_context";
 
@@ -95,9 +95,13 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): JSX.Eleme
 
     const pass = () => {
         if (!isLiveGame(goban.engine.time_control) || !preferences.get("one-click-submit-live")) {
-            swal({ text: _("Are you sure you want to pass?"), showCancelButton: true })
-                .then(() => goban.pass())
-                .catch(() => 0);
+            void alert
+                .fire({ text: _("Are you sure you want to pass?"), showCancelButton: true })
+                .then(({ value: accept }) => {
+                    if (accept) {
+                        goban.pass();
+                    }
+                });
         } else {
             goban.pass();
         }
@@ -199,15 +203,19 @@ export function CancelButton({ className = "" }: CancelButtonProps) {
                 : _("Are you sure you wish to resign this game?");
         const cb = resign_mode === "cancel" ? () => goban.cancelGame() : () => goban.resign();
 
-        swal({
-            text: text,
-            confirmButtonText: _("Yes"),
-            cancelButtonText: _("No"),
-            showCancelButton: true,
-            focusCancel: true,
-        })
-            .then(cb)
-            .catch(swal.noop);
+        void alert
+            .fire({
+                text: text,
+                confirmButtonText: _("Yes"),
+                cancelButtonText: _("No"),
+                showCancelButton: true,
+                focusCancel: true,
+            })
+            .then(({ value: accept }) => {
+                if (accept) {
+                    cb();
+                }
+            });
     };
 
     return (

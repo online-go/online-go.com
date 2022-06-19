@@ -20,7 +20,7 @@ import { Link } from "react-router-dom";
 import { post, get } from "requests";
 import { socket } from "sockets";
 import { ignore, getPrintableError } from "misc";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 declare let ogs_release;
 declare let ogs_version;
@@ -114,11 +114,11 @@ export class Admin extends React.PureComponent<{}, AdminState> {
         };
 
         if (txt) {
-            swal({ text: txt, showCancelButton: true })
-                .then(() => {
+            void alert.fire({ text: txt, showCancelButton: true }).then(({ value: accept }) => {
+                if (accept) {
                     doPost();
-                })
-                .catch(ignore);
+                }
+            });
         } else {
             doPost();
         }

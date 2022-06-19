@@ -17,7 +17,8 @@
 
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
+
 import * as data from "data";
 import { useUser } from "hooks";
 import { _, pgettext, interpolate } from "translate";
@@ -48,21 +49,21 @@ export function ChallengeLinkLanding(): JSX.Element {
     /* Actions */
 
     const doAcceptance = (challenge: Challenge) => {
-        swal({
+        void alert.fire({
             text: pgettext(
                 "Appears in a dialog while the server is responding",
                 "Accepting game...",
             ),
-            type: "info",
+            icon: "info",
             showCancelButton: false,
             showConfirmButton: false,
             allowEscapeKey: false,
-        }).catch(swal.noop);
+        });
 
         if (challenge.rengo) {
             put("challenges/%%/join", challenge.challenge_id, {})
                 .then(() => {
-                    swal.close();
+                    alert.close();
                     if (challenge.invite_only) {
                         navigate("/", { replace: true });
                     } else {
@@ -71,17 +72,17 @@ export function ChallengeLinkLanding(): JSX.Element {
                     // TBD: activate help item to tell newcomers when the game will actually start
                 })
                 .catch((err: any) => {
-                    swal.close();
+                    alert.close();
                     errorAlerter(err);
                 });
         } else {
             post("challenges/%%/accept", challenge.challenge_id, {})
                 .then(() => {
-                    swal.close();
+                    alert.close();
                     browserHistory.push(`/game/${challenge.game_id}`);
                 })
                 .catch((err) => {
-                    swal.close();
+                    alert.close();
                     errorAlerter(err);
                 });
         }
@@ -170,28 +171,30 @@ export function ChallengeLinkLanding(): JSX.Element {
                             set_linked_challenge(challenge);
                         } else {
                             // If it's their own challenge, send them back to their home page where they will see it
-                            swal({
-                                text: _("It looks like you tried to accept your own challenge!"),
-                                type: "warning",
-                                showCancelButton: false,
-                                showConfirmButton: true,
-                                allowEscapeKey: true,
-                            })
-                                .catch(swal.noop)
+                            void alert
+                                .fire({
+                                    text: _(
+                                        "It looks like you tried to accept your own challenge!",
+                                    ),
+                                    icon: "warning",
+                                    showCancelButton: false,
+                                    showConfirmButton: true,
+                                    allowEscapeKey: true,
+                                })
                                 .finally(() => {
                                     browserHistory.push("/");
                                 });
                         }
                     })
                     .catch((err) => {
-                        swal({
-                            text: _("It appears the invite you clicked on has expired."),
-                            type: "info",
-                            showCancelButton: false,
-                            showConfirmButton: true,
-                            allowEscapeKey: true,
-                        })
-                            .catch(swal.noop)
+                        void alert
+                            .fire({
+                                text: _("It appears the invite you clicked on has expired."),
+                                icon: "info",
+                                showCancelButton: false,
+                                showConfirmButton: true,
+                                allowEscapeKey: true,
+                            })
                             .finally(() => {
                                 console.log(err); // we're assuming the cause, this can help us check!
                                 browserHistory.push("/");

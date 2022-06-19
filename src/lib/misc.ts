@@ -19,7 +19,7 @@ import { _, interpolate, pgettext } from "translate";
 import { errcodeAlerter } from "ErrcodeModal";
 import { browserHistory } from "ogsHistory";
 import * as preferences from "preferences";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 import { Goban } from "goban";
 import { isLiveGame } from "TimeControl";
@@ -370,10 +370,10 @@ export function errorAlerter(...args) {
         }
         errcodeAlerter(errobj);
     } else {
-        swal({
+        void alert.fire({
             title: _(err.substring(0, 128)),
-            type: "error",
-        }).catch(swal.noop);
+            icon: "error",
+        });
     }
     console.error(err);
 }

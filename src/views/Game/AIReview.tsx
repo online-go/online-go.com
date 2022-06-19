@@ -43,7 +43,7 @@ import {
     GobanCore,
 } from "goban";
 import { game_control } from "./game_control";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { GobanContext } from "./goban_context";
 
 export interface AIReviewEntry {
@@ -277,7 +277,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         const user = data.get("user");
 
         if (user.anonymous) {
-            swal(_("Please sign in first")).catch(swal.noop);
+            void alert.fire(_("Please sign in first"));
         } else {
             if (user.supporter || user.professional || user.is_moderator) {
                 post(`games/${this.getGameId()}/ai_reviews`, {
@@ -286,7 +286,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 })
                     .then((res) => {
                         sanityCheck(res);
-                        swal("Analysis started").catch(swal.noop);
+                        void alert.fire(_("Analysis started"));
                     })
                     .catch(errorAlerter);
             } else {

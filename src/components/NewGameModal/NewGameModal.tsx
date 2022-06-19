@@ -31,7 +31,7 @@ import {
 import { shortShortTimeControl } from "TimeControl";
 import * as preferences from "preferences";
 import { bot_count } from "bots";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 interface Events {}
 
@@ -75,7 +75,7 @@ export class NewGameModal extends Modal<Events, NewGameModalProperties, any> {
     };
     newComputer = () => {
         if (bot_count() === 0) {
-            swal(_("Sorry, all bots seem to be offline, please try again later.")).catch(swal.noop);
+            void alert.fire(_("Sorry, all bots seem to be offline, please try again later."));
             return;
         }
         challengeComputer();

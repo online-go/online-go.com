@@ -37,7 +37,7 @@ import * as preferences from "preferences";
 import { close_friend_list } from "FriendList/close_friend_list";
 import cached from "cached";
 import { openPlayerNotesModal } from "PlayerNotesModal";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { PlayerCacheEntry } from "player_cache";
 import { openReport } from "Report";
 
@@ -250,21 +250,27 @@ export class PlayerDetails extends React.PureComponent<
 
         this.close_all_modals_and_popovers();
     };
+
     removeAllChats = () => {
         this.close_all_modals_and_popovers();
 
-        swal({
-            text: _(
-                `Are you sure you wish to remove all non-game chats made by user ${this.props.playerId}? This is not reversible.`,
-            ),
-            confirmButtonText: _("Yes"),
-            cancelButtonText: _("No"),
-            showCancelButton: true,
-            focusCancel: true,
-        })
-            .then(() => socket.send("chat/remove_all", { player_id: this.props.playerId }))
-            .catch(() => 0);
+        void alert
+            .fire({
+                text: _(
+                    `Are you sure you wish to remove all non-game chats made by user ${this.props.playerId}? This is not reversible.`,
+                ),
+                confirmButtonText: _("Yes"),
+                cancelButtonText: _("No"),
+                showCancelButton: true,
+                focusCancel: true,
+            })
+            .then(({ value: yes }) => {
+                if (yes) {
+                    socket.send("chat/remove_all", { player_id: this.props.playerId });
+                }
+            });
     };
+
     render() {
         const user = data.get("user");
 

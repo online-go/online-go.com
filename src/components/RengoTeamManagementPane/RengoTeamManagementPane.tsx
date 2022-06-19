@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 import { balanceTeams, unassignPlayers } from "rengo_balancer";
 import { _, pgettext } from "translate";
@@ -66,23 +66,23 @@ export class RengoTeamManagementPane extends React.PureComponent<
     };
 
     _kickRengoUser = (player_id: number) => {
-        swal({
-            text: pgettext(
-                "Confirmation text to remove the selected player from all rengo challenges",
-                "This will kick the person from all rengo challenges, are you sure you want to do this?",
-            ),
-            showCancelButton: true,
-        })
-            .then(() => {
-                this.setState({ assignment_pending: true });
-                this.props
-                    .kickRengoUser(player_id)
-                    .then(() => {
-                        this.done();
-                    })
-                    .catch(errorAlerter);
+        void alert
+            .fire({
+                text: pgettext(
+                    "Confirmation text to remove the selected player from all rengo challenges",
+                    "This will kick the person from all rengo challenges, are you sure you want to do this?",
+                ),
+                showCancelButton: true,
             })
-            .catch(errorAlerter);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    this.setState({ assignment_pending: true });
+                    this.props
+                        .kickRengoUser(player_id)
+                        .then(() => this.done())
+                        .catch(errorAlerter);
+                }
+            });
     };
 
     _unassignPlayers = (challenge: Challenge) => {

@@ -33,7 +33,7 @@ import {
     bounded_rank,
 } from "rank_utils";
 import { CreatedChallengeInfo, RuleSet } from "types";
-import { errorLogger, errorAlerter, rulesText, dup, ignore } from "misc";
+import { errorLogger, errorAlerter, rulesText, dup } from "misc";
 import { PlayerIcon } from "PlayerIcon";
 import { timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker } from "TimeControl";
 import { sfx } from "sfx";
@@ -53,7 +53,7 @@ import {
 
 import { copyChallengeLinkURL } from "ChallengeLinkButton";
 
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 type ChallengeDetails = rest_api.ChallengeDetails;
 
@@ -514,18 +514,18 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         const next = this.next();
 
         if (!this.validateBoardSize()) {
-            swal(_("Invalid board size, please correct and try again")).catch(swal.noop);
+            void alert.fire(_("Invalid board size, please correct and try again"));
             return;
         }
         /*
-            swal(_("Invalid time settings, please correct them and try again"));
+            void alert.fire(_("Invalid time settings, please correct them and try again"));
             return;
         }
         */
         const conf = next.conf;
 
         if (next.challenge.game.komi_auto === "custom" && next.challenge.game.komi === null) {
-            swal(_("Invalid custom komi, please correct and try again")).catch(swal.noop);
+            void alert.fire(_("Invalid custom komi, please correct and try again"));
             return;
         }
 
@@ -603,18 +603,23 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
                            This doesn't _have to be_ a modal, but currently is a modal pending a different design.
                          */
-                        swal({
-                            title: _("Waiting for opponent"),
-                            html: '<div class="spinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>',
-                            confirmButtonClass: "btn-danger",
-                            confirmButtonText: pgettext("Cancel game challenge", "Cancel"),
-                            allowOutsideClick: false,
-                            allowEscapeKey: false,
-                        })
-                            .then(() => {
+                        alert
+                            .fire({
+                                title: _("Waiting for opponent"),
+                                html: '<div class="spinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>',
+                                customClass: {
+                                    confirmButton: "btn-danger",
+                                },
+                                confirmButtonText: pgettext("Cancel game challenge", "Cancel"),
+                                allowOutsideClick: false,
+                                allowEscapeKey: false,
+                            })
+                            .then(({ value: accept }) => {
                                 off();
-                                // cancel challenge
-                                del("me/challenges/%%", challenge_id).then(ignore).catch(ignore);
+                                if (accept) {
+                                    // cancel challenge
+                                    void del("me/challenges/%%", challenge_id);
+                                }
                             })
                             .catch(() => {
                                 off();
@@ -623,14 +628,14 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     active_check();
                 } else {
                     if (this.props.mode === "open") {
-                        swal(_("Challenge created!")).catch(swal.noop);
+                        void alert.fire(_("Challenge created!"));
                         if (this.state.challenge.invite_only) {
-                            copyChallengeLinkURL(swal.getConfirmButton(), challenge_uuid);
+                            copyChallengeLinkURL(alert.getConfirmButton(), challenge_uuid);
                         } else {
                             console.log(this.state.challenge);
                         }
                     } else if (this.props.mode === "player") {
-                        swal(_("Challenge sent!")).catch(swal.noop);
+                        void alert.fire(_("Challenge sent!"));
                     } else {
                         console.log(this.props.mode);
                     }
@@ -649,7 +654,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
                 function onGamedata() {
                     off();
-                    swal.close();
+                    alert.close();
                     //sfx.play("game_accepted");
                     sfx.play("game_started", 3000);
                     //sfx.play("setup-bowl");
@@ -658,10 +663,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
                 function onRejected(message?: string) {
                     off();
-                    swal.close();
-                    swal({
+                    alert.close();
+                    void alert.fire({
                         text: message || _("Game offer was rejected"),
-                    }).catch(swal.noop);
+                    });
                 }
 
                 function off() {
@@ -686,7 +691,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 }
             })
             .catch((err) => {
-                swal.close();
+                alert.close();
                 errorAlerter(err);
             });
     };
