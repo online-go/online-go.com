@@ -149,13 +149,15 @@ export function IncidentReportTracker(): JSX.Element {
                             showCancelButton: true,
                         })
                         .then(({ value: txt }) => {
-                            post("moderation/incident/%%", report.id, {
-                                id: report.id,
-                                action: "note",
-                                note: txt,
-                            })
-                                .then(ignore)
-                                .catch(errorAlerter);
+                            if (txt) {
+                                post("moderation/incident/%%", report.id, {
+                                    id: report.id,
+                                    action: "note",
+                                    note: txt,
+                                })
+                                    .then(ignore)
+                                    .catch(errorAlerter);
+                            }
                         });
                 };
 
