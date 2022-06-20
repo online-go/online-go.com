@@ -19,9 +19,9 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
 import { browserHistory } from "ogsHistory";
-import { _ } from "translate";
+import { _, pgettext } from "translate";
 import { post, del, put, get } from "requests";
-import { errorAlerter, ignore, slugify } from "misc";
+import { errorAlerter, slugify } from "misc";
 import * as data from "data";
 import { Card } from "material";
 import { Player, setExtraActionCallback } from "Player";
@@ -270,17 +270,22 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
         browserHistory.push(`/tournament/new/${this.state.group_id}`);
     };
     createTournamentRecord = () => {
-        alert
+        void alert
             .fire({
                 text: _("Tournament Name"),
                 input: "text",
                 showCancelButton: true,
+                inputValidator: (value) => {
+                    if (!value) {
+                        return pgettext(
+                            "They have to supply a name for a tournament they want to create",
+                            "Please fill in the name!",
+                        );
+                    }
+                },
             })
             .then(({ value: name, isConfirmed }) => {
-                if (
-                    !isConfirmed ||
-                    !name // no point in proceeding without a name
-                ) {
+                if (!isConfirmed) {
                     return;
                 }
 
@@ -292,8 +297,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                         browserHistory.push(`/tournament-record/${res.id}/${slugify(name)}`);
                     })
                     .catch(errorAlerter);
-            })
-            .catch(ignore);
+            });
     };
     setGroupName = (ev) => {
         this.setState({ group: Object.assign({}, this.state.group, { name: ev.target.value }) });

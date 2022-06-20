@@ -268,23 +268,24 @@ class _TournamentRecord extends React.PureComponent<
         void alert
             .fire({
                 text: _("Please provide the link to the game, review, or demo board"),
-                input: "text",
+                input: "url", // TBD should we provide stricter validation - make sure it is actually pointing at one?
                 showCancelButton: true,
             })
-            .then(({ value: url }) => {
-                if (!url) {
-                    return;
+            .then(({ value: url, isConfirmed }) => {
+                if (isConfirmed) {
+                    post(
+                        `tournament_records/${this.state.tournament_record_id}/round/${round.id}/`,
+                        {
+                            url,
+                            notes: "",
+                        },
+                    )
+                        .then((res) => {
+                            round.entries.unshift(res);
+                            this.forceUpdate();
+                        })
+                        .catch(errorAlerter);
                 }
-
-                post(`tournament_records/${this.state.tournament_record_id}/round/${round.id}/`, {
-                    url,
-                    notes: "",
-                })
-                    .then((res) => {
-                        round.entries.unshift(res);
-                        this.forceUpdate();
-                    })
-                    .catch(errorAlerter);
             });
     }
 
