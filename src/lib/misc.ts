@@ -203,7 +203,7 @@ export function getOutcomeTranslation(outcome: string) {
     if (/[0-9.]+/.test(outcome)) {
         const num: number = +outcome.match(/([0-9.]+)/)[1];
         const rounded_num = Math.round(num * 2) / 2;
-        return interpolate(pgettext("Game outcome", "{{number}} points"), { number: rounded_num }); // eslint-disable-line id-denylist
+        return interpolate(pgettext("Game outcome", "{{score}} points"), { score: rounded_num });
     }
 
     return outcome;
