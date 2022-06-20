@@ -175,13 +175,6 @@ export class Announcements extends React.PureComponent<{}, AnnouncementsState> {
                     return (
                         <div className="announcement" key={idx}>
                             <i className="fa fa-times-circle" onClick={announcement.clear} />
-                            {/*
-                    {(announcement.type === 'tournament' || null) &&
-                        <span className='expiration'>
-                            {moment(announcement.expiration).fromNow(true)}:
-                        </span>
-                    }
-                    */}
                             {announcement.link ? (
                                 announcement.link.indexOf("://") > 0 ? (
                                     <a href={announcement.link} target="_blank">
