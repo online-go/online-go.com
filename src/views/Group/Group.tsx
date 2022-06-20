@@ -276,8 +276,11 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                 input: "text",
                 showCancelButton: true,
             })
-            .then(({ value: name }) => {
-                if (!name) {
+            .then(({ value: name, isConfirmed }) => {
+                if (
+                    !isConfirmed ||
+                    !name // no point in proceeding without a name
+                ) {
                     return;
                 }
 

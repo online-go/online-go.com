@@ -157,24 +157,28 @@ export function PuzzleCollectionList(): JSX.Element {
                 input: "text",
                 showCancelButton: true,
             })
-            .then(({ value: name }) => {
-                if (name) {
-                    if (!name || name.length < 5) {
-                        void alert.fire({
-                            text: _("Please provide a longer name for your new puzzle collection"),
-                        });
-                        return;
-                    }
+            .then(({ value: name, isConfirmed }) => {
+                if (isConfirmed) {
+                    if (name) {
+                        if (!name || name.length < 5) {
+                            void alert.fire({
+                                text: _(
+                                    "Please provide a longer name for your new puzzle collection",
+                                ),
+                            });
+                            return;
+                        }
 
-                    post("puzzles/collections/", {
-                        name: name,
-                        private: true,
-                        price: "0.00",
-                    })
-                        .then((res) => {
-                            navigateTo(`/puzzle-collection/${res.id}`);
+                        post("puzzles/collections/", {
+                            name: name,
+                            private: true,
+                            price: "0.00",
                         })
-                        .catch(errorAlerter);
+                            .then((res) => {
+                                navigateTo(`/puzzle-collection/${res.id}`);
+                            })
+                            .catch(errorAlerter);
+                    }
                 }
             });
     }
