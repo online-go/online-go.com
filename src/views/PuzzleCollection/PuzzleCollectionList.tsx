@@ -156,16 +156,14 @@ export function PuzzleCollectionList(): JSX.Element {
                 text: _("Collection name"),
                 input: "text",
                 showCancelButton: true,
-            })
-            .then(({ value: name }) => {
-                if (name) {
+                inputValidator: (name) => {
                     if (!name || name.length < 5) {
-                        void alert.fire({
-                            text: _("Please provide a longer name for your new puzzle collection"),
-                        });
-                        return;
+                        return _("Please provide a longer name for your new puzzle collection");
                     }
-
+                },
+            })
+            .then(({ value: name, isConfirmed }) => {
+                if (isConfirmed) {
                     post("puzzles/collections/", {
                         name: name,
                         private: true,

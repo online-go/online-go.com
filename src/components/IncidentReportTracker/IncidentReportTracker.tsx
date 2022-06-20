@@ -148,8 +148,8 @@ export function IncidentReportTracker(): JSX.Element {
                             inputValue: report.moderator_note,
                             showCancelButton: true,
                         })
-                        .then(({ value: txt }) => {
-                            if (txt) {
+                        .then(({ value: txt, isConfirmed }) => {
+                            if (isConfirmed) {
                                 post("moderation/incident/%%", report.id, {
                                     id: report.id,
                                     action: "note",

@@ -63,8 +63,8 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                 input: "text",
                 showCancelButton: true,
             })
-            .then(({ value: reason }) => {
-                if (!reason) {
+            .then(({ value: reason, isConfirmed }) => {
+                if (!isConfirmed) {
                     return;
                 }
 

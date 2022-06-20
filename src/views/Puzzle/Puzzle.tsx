@@ -483,19 +483,19 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                     text: _("Collection name"),
                     input: "text",
                     showCancelButton: true,
+                    inputValidator: (name) => {
+                        if (!name || name.length < 5) {
+                            return _("Please provide a longer name for your new puzzle collection");
+                        }
+                    },
                 })
-                .then(({ value: name }) => {
-                    if (!name || name.length < 5) {
-                        void alert.fire({
-                            text: _("Please provide a longer name for your new puzzle collection"),
-                        });
-                        return;
+                .then(({ value: name, isConfirmed }) => {
+                    if (isConfirmed) {
+                        this.editor
+                            .createPuzzleCollection(this.state.puzzle, name)
+                            .then((state) => this.setState(state))
+                            .catch(errorAlerter);
                     }
-
-                    this.editor
-                        .createPuzzleCollection(this.state.puzzle, name)
-                        .then((state) => this.setState(state))
-                        .catch(errorAlerter);
                 });
         }
     };

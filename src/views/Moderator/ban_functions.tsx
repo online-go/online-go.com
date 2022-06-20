@@ -29,8 +29,8 @@ function moderate(player_id, prompt, obj) {
                 input: "text",
                 showCancelButton: true,
             })
-            .then(({ value: reason }) => {
-                if (reason) {
+            .then(({ value: reason, isConfirmed }) => {
+                if (isConfirmed) {
                     obj.moderation_note = reason;
                     console.log(obj);
                     put("players/" + player_id + "/moderate", obj)

@@ -169,9 +169,14 @@ export class SignIn extends React.PureComponent<{}, any> {
                 text: _("What is your username?"),
                 input: "text",
                 showCancelButton: true,
+                inputValidator: (username) => {
+                    if (!username) {
+                        return _("Please supply a username!");
+                    }
+                },
             })
-            .then(({ value: username }) => {
-                if (username) {
+            .then(({ value: username, isConfirmed }) => {
+                if (isConfirmed) {
                     post("/api/v0/reset", { username: username })
                         .then((res) => {
                             if (res.success) {
