@@ -52,7 +52,6 @@ type RengoParticipantsDTO = rest_api.RengoParticipantsDTO;
 type TimeControlSystem = TimeControlTypes.TimeControlSystem;
 
 function challengeDtoToSeekgraphChallengeSubset(c: ChallengeDTO, user_id: number): Challenge {
-    console.log(c);
     return {
         challenge_id: c.id,
         user_id: c.challenger.id, // number;
@@ -224,8 +223,6 @@ export function InviteList(): JSX.Element {
         },
         [] /* run once */,
     );
-
-    console.log(invites);
 
     /* render */
     return (
