@@ -633,6 +633,9 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                             const footer_text = _("View your invite-only challenges");
                             void alert.fire({
                                 text: _("Invite-only Challenge created!"),
+                                // It could be better if this were a <Link>
+                                // The problem with this is discussed here: https://stackoverflow.com/a/72690830/554807
+                                // This can be fixed when HistoryRouter is properly supported, if we can be bothered.
                                 footer: `<a href='/'>${footer_text}</a>`,
                             });
                             copyChallengeLinkURL(alert.getConfirmButton(), challenge_uuid);
