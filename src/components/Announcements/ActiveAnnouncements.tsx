@@ -31,7 +31,7 @@ import { getBlocks, setAnnouncementBlock } from "../BlockPlayer";
 import * as data from "data";
 import * as preferences from "preferences";
 
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 // Holds the expirations dates of cleared announcements
 const hard_cleared_announcements: { [id: number]: number } = data.get(
@@ -115,20 +115,23 @@ export class ActiveAnnouncements extends React.PureComponent {
                                 username: announcement.creator.username,
                             }),
                             onClick: () => {
-                                swal({
-                                    text: interpolate(
-                                        _(
-                                            "Are you sure you want to hide all announcements from {{name}}?",
+                                alert
+                                    .fire({
+                                        text: interpolate(
+                                            _(
+                                                "Are you sure you want to hide all announcements from {{name}}?",
+                                            ),
+                                            { name: announcement.creator.username },
                                         ),
-                                        { name: announcement.creator.username },
-                                    ),
-                                    showCancelButton: true,
-                                    confirmButtonText: _("Yes"),
-                                    cancelButtonText: _("Cancel"),
-                                })
-                                    .then(() => {
-                                        setAnnouncementBlock(announcement.creator.id, true);
-                                        this.forceUpdate();
+                                        showCancelButton: true,
+                                        confirmButtonText: _("Yes"),
+                                        cancelButtonText: _("Cancel"),
+                                    })
+                                    .then(({ value: yes }) => {
+                                        if (yes) {
+                                            setAnnouncementBlock(announcement.creator.id, true);
+                                            this.forceUpdate();
+                                        }
                                     })
                                     .catch(() => 0);
                                 return;
@@ -140,17 +143,20 @@ export class ActiveAnnouncements extends React.PureComponent {
                         announcement_actions.push({
                             title: _("Hide stream announcements"),
                             onClick: () => {
-                                swal({
-                                    text: _(
-                                        "Are you sure you want to hide all announcements for streamers?",
-                                    ),
-                                    showCancelButton: true,
-                                    confirmButtonText: _("Yes"),
-                                    cancelButtonText: _("Cancel"),
-                                })
-                                    .then(() => {
-                                        preferences.set("mute-stream-announcements", true);
-                                        this.forceUpdate();
+                                alert
+                                    .fire({
+                                        text: _(
+                                            "Are you sure you want to hide all announcements for streamers?",
+                                        ),
+                                        showCancelButton: true,
+                                        confirmButtonText: _("Yes"),
+                                        cancelButtonText: _("Cancel"),
+                                    })
+                                    .then(({ value: yes }) => {
+                                        if (yes) {
+                                            preferences.set("mute-stream-announcements", true);
+                                            this.forceUpdate();
+                                        }
                                     })
                                     .catch(() => 0);
                                 return;
@@ -162,17 +168,20 @@ export class ActiveAnnouncements extends React.PureComponent {
                         announcement_actions.push({
                             title: _("Hide event announcements"),
                             onClick: () => {
-                                swal({
-                                    text: _(
-                                        "Are you sure you want to hide all event announcements?",
-                                    ),
-                                    showCancelButton: true,
-                                    confirmButtonText: _("Yes"),
-                                    cancelButtonText: _("Cancel"),
-                                })
-                                    .then(() => {
-                                        preferences.set("mute-event-announcements", true);
-                                        this.forceUpdate();
+                                alert
+                                    .fire({
+                                        text: _(
+                                            "Are you sure you want to hide all event announcements?",
+                                        ),
+                                        showCancelButton: true,
+                                        confirmButtonText: _("Yes"),
+                                        cancelButtonText: _("Cancel"),
+                                    })
+                                    .then(({ value: yes }) => {
+                                        if (yes) {
+                                            preferences.set("mute-event-announcements", true);
+                                            this.forceUpdate();
+                                        }
                                     })
                                     .catch(() => 0);
                                 return;
@@ -184,17 +193,20 @@ export class ActiveAnnouncements extends React.PureComponent {
                         announcement_actions.push({
                             title: _("Hide go service advertisements"),
                             onClick: () => {
-                                swal({
-                                    text: _(
-                                        "Are you sure you want to hide all go related advertisements?",
-                                    ),
-                                    showCancelButton: true,
-                                    confirmButtonText: _("Yes"),
-                                    cancelButtonText: _("Cancel"),
-                                })
-                                    .then(() => {
-                                        preferences.set("mute-event-announcements", true);
-                                        this.forceUpdate();
+                                alert
+                                    .fire({
+                                        text: _(
+                                            "Are you sure you want to hide all go related advertisements?",
+                                        ),
+                                        showCancelButton: true,
+                                        confirmButtonText: _("Yes"),
+                                        cancelButtonText: _("Cancel"),
+                                    })
+                                    .then(({ value: yes }) => {
+                                        if (yes) {
+                                            preferences.set("mute-event-announcements", true);
+                                            this.forceUpdate();
+                                        }
                                     })
                                     .catch(() => 0);
                                 return;

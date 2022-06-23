@@ -19,7 +19,7 @@ import * as React from "react";
 import * as data from "data";
 import { _ } from "translate";
 import { put, get, del } from "requests";
-import { errorAlerter, ignore } from "misc";
+import { errorAlerter } from "misc";
 import { proRankList } from "rank_utils";
 import { Modal, openModal } from "Modal";
 import { lookup } from "player_cache";
@@ -30,7 +30,7 @@ interface ModerateUserProperties {
     playerId?: number;
 }
 
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 const pro_ranks = proRankList(false);
 
@@ -57,13 +57,14 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     }
 
     save = () => {
-        swal({
-            text: _("Moderator note"),
-            input: "text",
-            showCancelButton: true,
-        })
-            .then((reason) => {
-                if (!reason) {
+        void alert
+            .fire({
+                text: _("Moderator note"),
+                input: "text",
+                showCancelButton: true,
+            })
+            .then(({ value: reason, isConfirmed }) => {
+                if (!isConfirmed) {
                     return;
                 }
 
@@ -98,8 +99,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                         this.close();
                     })
                     .catch(errorAlerter);
-            })
-            .catch(ignore);
+            });
     };
     setLockedUsername = (ev) => this.setState({ locked_username: ev.target.checked });
     setSupporter = (ev) => this.setState({ supporter: ev.target.checked });
@@ -120,18 +120,20 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
         const user_id = this.props.playerId;
         const username = lookup(user_id)?.username || "";
 
-        swal({
-            text: `Are you sure you want to delete the account "${username}" (${user_id})? This cannot be undone.`,
-            showCancelButton: true,
-        })
-            .then(() => {
-                del(`players/${user_id}`, {})
-                    .then(() => {
-                        swal("Done").catch(swal.noop);
-                    })
-                    .catch(errorAlerter);
+        void alert
+            .fire({
+                text: `Are you sure you want to delete the account "${username}" (${user_id})? This cannot be undone.`,
+                showCancelButton: true,
             })
-            .catch(ignore);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    del(`players/${user_id}`, {})
+                        .then(() => {
+                            void alert.fire("Done");
+                        })
+                        .catch(errorAlerter);
+                }
+            });
     };
 
     render() {

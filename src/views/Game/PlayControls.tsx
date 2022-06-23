@@ -29,7 +29,7 @@ import {
     PlayerColor,
 } from "goban";
 import device from "device";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { challengeRematch } from "ChallengeModal";
 import { Clock } from "Clock";
 import { getOutcomeTranslation } from "misc";
@@ -249,9 +249,16 @@ export function PlayControls({
         );
     };
     const onStoneRemovalCancel = () => {
-        swal({ text: _("Are you sure you want to resume the game?"), showCancelButton: true })
-            .then(() => goban.rejectRemovedStones())
-            .catch(() => 0);
+        void alert
+            .fire({
+                text: _("Are you sure you want to resume the game?"),
+                showCancelButton: true,
+            })
+            .then(({ value: accept }) => {
+                if (accept) {
+                    goban.rejectRemovedStones();
+                }
+            });
         return false;
     };
     const onStoneRemovalAccept = () => {
@@ -975,21 +982,23 @@ export function deleteBranch(goban: Goban, mode: GobanModes) {
     }
 
     if (goban.engine.cur_move.trunk) {
-        swal({
+        void alert.fire({
             text: _(
                 "The current position is not an explored branch, so there is nothing to delete",
             ),
-        }).catch(swal.noop);
+        });
     } else {
-        swal({
-            text: _("Are you sure you wish to remove this move branch?"),
-            showCancelButton: true,
-        })
-            .then(() => {
-                goban.deleteBranch();
-                goban.syncReviewMove();
+        void alert
+            .fire({
+                text: _("Are you sure you wish to remove this move branch?"),
+                showCancelButton: true,
             })
-            .catch(() => 0);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    goban.deleteBranch();
+                    goban.syncReviewMove();
+                }
+            });
     }
 }
 

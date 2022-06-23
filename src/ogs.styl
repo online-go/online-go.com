@@ -74,7 +74,6 @@ z = {
         backdrop       : 300,
         menu           : 310
     },
-    //player-autocomplete: 900, // not sure why this ever existed, if this doesn't cause a problem in a few weeks remove this comment. - anoek 2021-05-20
     nav-menu: {
         backdrop       : 1000,
         menu           : 1010,
@@ -86,6 +85,8 @@ z = {
     popover            : 5000,
     report             : 6000,
     swal               : 10000,
+    challenge-link     : 10010,  // We have to say "Challenge Link Copied" over the top of "Challenge Created"
+
     superchat-modal    : 50005,
     superchat          : 50010,
 }
@@ -364,7 +365,6 @@ dark.navbar-highlight-background-color  = #333
 dark.navbar-background-color            = lighten(dark.bg, 5%)
 dark.logo-svg                           = svg-load("../assets/ogs_dark.svg")
 
-
 /** Input **/
 
 dark.input-bg                           = lighten(dark.bg, 30%)
@@ -442,7 +442,12 @@ nowrap()
     white-space: nowrap;
 
 
+/* Sweetalert2 */
 @require '../node_modules/sweetalert2/dist/sweetalert2.css';
+
+.swal2-footer {
+    border: none !important; // default solid border is ugly
+}
 
 @require "global_styl/mixins.styl";
 @require "global_styl/global.styl";
@@ -464,6 +469,7 @@ nowrap()
 
 @require "./components/material/*.styl";
 @require "./components/[A-Z]*/*.styl";
+
 @require "./views/[A-Z]*/*.styl";
 @require "./views/docs/*.styl";
 

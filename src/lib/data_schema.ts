@@ -27,6 +27,7 @@ import { defaults as defaultPreferences, ValidPreference } from "./preferences";
 import { TimeControl, TimeControlTypes } from "src/components/TimeControl";
 import { AutomatchPreferences } from "src/components/AutomatchSettings";
 import { JosekiFilter } from "src/components/JosekiVariationFilter";
+import { Challenge } from "src/views/Play";
 
 interface CachedSchema {
     groups: GroupList;
@@ -223,6 +224,10 @@ export interface DataSchema
     "demo.settings": DemoSettings;
 
     "preferred-game-settings": rest_api.ChallengeDetails[];
+
+    // A challenge that the user accepted, but we didn't tell the server yet, because
+    // we are busy getting them logged in first.
+    pending_accepted_challenge: Challenge;
 
     [player_notes_key: `player-notes.${number}.${number}`]: string;
     [learning_hub_key: `learning-hub.${string}`]: { [page_number: number]: true };

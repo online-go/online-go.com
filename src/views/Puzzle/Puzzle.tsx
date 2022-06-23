@@ -36,7 +36,7 @@ import { TransformSettings, PuzzleTransform } from "./PuzzleTransform";
 import { PuzzleNavigation } from "./PuzzleNavigation";
 import { PuzzleEditor } from "./PuzzleEditing";
 import { GobanContainer } from "GobanContainer";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 type PuzzleProperties = RouteComponentProps<{ puzzle_id: string }>;
 
@@ -478,27 +478,25 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                 }),
             });
         } else if (ev.target.value === "new") {
-            swal({
-                text: _("Collection name"),
-                input: "text",
-                showCancelButton: true,
-            })
-                .then((name) => {
-                    if (!name || name.length < 5) {
-                        swal({
-                            text: _("Please provide a longer name for your new puzzle collection"),
-                        })
-                            .then(ignore)
-                            .catch(ignore);
-                        return;
-                    }
-
-                    this.editor
-                        .createPuzzleCollection(this.state.puzzle, name)
-                        .then((state) => this.setState(state))
-                        .catch(errorAlerter);
+            void alert
+                .fire({
+                    text: _("Collection name"),
+                    input: "text",
+                    showCancelButton: true,
+                    inputValidator: (name) => {
+                        if (!name || name.length < 5) {
+                            return _("Please provide a longer name for your new puzzle collection");
+                        }
+                    },
                 })
-                .catch(ignore);
+                .then(({ value: name, isConfirmed }) => {
+                    if (isConfirmed) {
+                        this.editor
+                            .createPuzzleCollection(this.state.puzzle, name)
+                            .then((state) => this.setState(state))
+                            .catch(errorAlerter);
+                    }
+                });
         }
     };
     setSetupStep = () => {
@@ -611,20 +609,22 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         this.forceUpdate();
     };
     deletePuzzle = () => {
-        swal({
-            text: _("Are you sure you want to delete this puzzle?"),
-            showCancelButton: true,
-        })
-            .then(() => {
-                del("puzzles/%%", +this.props.match.params.puzzle_id)
-                    .then(() =>
-                        browserHistory.push(
-                            `/puzzle-collection/${this.state.puzzle.puzzle_collection}`,
-                        ),
-                    )
-                    .catch(errorAlerter);
+        void alert
+            .fire({
+                text: _("Are you sure you want to delete this puzzle?"),
+                showCancelButton: true,
             })
-            .catch(ignore);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    del("puzzles/%%", +this.props.match.params.puzzle_id)
+                        .then(() =>
+                            browserHistory.push(
+                                `/puzzle-collection/${this.state.puzzle.puzzle_collection}`,
+                            ),
+                        )
+                        .catch(errorAlerter);
+                }
+            });
     };
 
     showHint = () => {

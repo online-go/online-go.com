@@ -15,30 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.popover-backdrop {
-    position: fixed;
-    display: flex;
-    //min-height: 100%;
-    //height: 100%;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: z.popover;
+import { _ } from "translate";
+import Swal from "sweetalert2";
 
-    align-items: flex-start;
-    align-content: stretch;
-    justify-content: center;
-}
+/*** SweetAlert setup ***/
 
-.popover-fadeout {
-    transition-property: opacity;
-    transition-duration: 0.5s; // matches corresponding delay in fadeout()
-    opacity: 0%;
-}
+/* (see ogs.style for global swal styling) */
 
-.popover-container {
-    position: absolute;
-    display: inline-block;
-    z-index: z.popover;
-}
+export const alert = Swal.mixin({
+    customClass: {
+        confirmButton: "primary",
+        cancelButton: "reject",
+    },
+    buttonsStyling: false,
+    reverseButtons: true,
+    confirmButtonText: _("OK"),
+    cancelButtonText: _("Cancel"),
+    allowEscapeKey: true,
+});

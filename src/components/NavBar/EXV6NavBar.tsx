@@ -19,6 +19,7 @@ import * as React from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import * as data from "data";
+import * as preferences from "preferences";
 
 import { _ } from "translate";
 import { PlayerIcon } from "PlayerIcon";
@@ -32,8 +33,7 @@ import { TurnIndicator } from "TurnIndicator";
 import { NotificationIndicator } from "NotificationIndicator";
 import { TournamentIndicator } from "Announcements";
 import { FriendIndicator } from "FriendList";
-import * as preferences from "preferences";
-//import { ChatIndicator } from "Chat";
+
 import { logout } from "auth";
 import { useUser } from "hooks";
 import { OmniSearch } from "./OmniSearch";
@@ -114,6 +114,14 @@ export function EXV6NavBar(): JSX.Element {
     const groups = data.get("cached.groups", []);
     const tournaments = data.get("cached.active_tournaments", []);
     const ladders = data.get("cached.ladders", []);
+
+    // Don't show the signin link at the top if they arrived to the welcome page
+    // because the welcome page has special treatment of signin that takes them
+    // to the challenge that they accepted via a challenge link.
+
+    const show_signin =
+        !window.location.pathname.includes("/welcome") && // a challenge link page is being shown
+        !window.location.hash.includes("/welcome"); // the signin with redirect to challenge accept
 
     return (
         <header className={"NavBar" + (hamburger_expanded ? " hamburger-expanded" : "")}>
@@ -297,9 +305,11 @@ export function EXV6NavBar(): JSX.Element {
                 <section className="right">
                     <i className="fa fa-adjust" onClick={toggleTheme} />
                     <LanguagePicker />
-                    <Link className="sign-in" to={"/sign-in#" + location.pathname}>
-                        {_("Sign In")}
-                    </Link>
+                    {(show_signin || null) && (
+                        <Link className="sign-in" to={"/sign-in#" + location.pathname}>
+                            {_("Sign In")}
+                        </Link>
+                    )}
                 </section>
             ) : (
                 <section className="right">

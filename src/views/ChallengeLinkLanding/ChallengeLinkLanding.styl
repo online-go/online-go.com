@@ -15,30 +15,40 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.popover-backdrop {
-    position: fixed;
+
+#ChallengeLinkLanding {
     display: flex;
-    //min-height: 100%;
-    //height: 100%;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: z.popover;
+    flex-direction: column;
+    align-items: center;
 
-    align-items: flex-start;
-    align-content: stretch;
-    justify-content: center;
-}
+    .Card {
+        max-width: 30rem;
+        margin-bottom: 1.5rem; // Space above "already have an account"
 
-.popover-fadeout {
-    transition-property: opacity;
-    transition-duration: 0.5s; // matches corresponding delay in fadeout()
-    opacity: 0%;
-}
+        .invitation {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
 
-.popover-container {
-    position: absolute;
-    display: inline-block;
-    z-index: z.popover;
+            .invite-text {
+                padding-bottom: 0.75rem;
+            }
+        }
+
+        .buttons {
+            button {
+                display: block;
+                margin: auto;
+            }
+            span {
+                float: right;
+                margin-right: 1rem;
+            }
+        }
+    }
+
+    button {
+        // Space above the Sign In button.
+        margin-top: 0.5rem;
+    }
 }

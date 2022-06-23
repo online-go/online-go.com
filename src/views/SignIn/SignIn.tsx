@@ -20,8 +20,7 @@ import { Link } from "react-router-dom";
 import * as data from "data";
 import { _ } from "translate";
 import { Card } from "material";
-import { LineText } from "misc-ui";
-import { errorAlerter, ignore } from "misc";
+import { errorAlerter } from "misc";
 import { post } from "requests";
 import cached from "cached";
 import { Md5 } from "ts-md5/dist/md5";
@@ -29,7 +28,7 @@ import { Md5 } from "ts-md5/dist/md5";
 import { SocialLoginButtons } from "SocialLoginButtons";
 
 window["Md5"] = Md5;
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 export function get_bid() {
     const bid = data.get("bid") || `${Math.random()}`.split(".")[1];
@@ -97,16 +96,22 @@ export class SignIn extends React.PureComponent<{}, any> {
                     data.remove("appeals.jwt");
                     data.remove("appeals.ban-reason");
 
-                    // The server can detect that the person might have a valid SSO, in which case it
-                    // asks us to redirect to there for them to sign in.
                     if ("redirect" in config) {
-                        window.location.pathname = config.redirect;
+                        // The username/password supplied is not valid, but the server can detect that the person might have a valid SSO,
+                        // in which case it asks us to redirect to SSO, for them to sign in.
+
+                        // We need to retain any info in location.hash, because it can also have a ChallengeLink redirect
+                        // to be honoured after login!
+
+                        window.location.pathname = config.redirect + (window.location.hash || "");
                         return;
                     }
 
                     data.set(cached.config, config);
+
                     if (window.location.hash && window.location.hash[1] === "/") {
-                        window.location.pathname = window.location.hash.substr(1);
+                        const next_page = window.location.hash.substring(1);
+                        window.location.pathname = next_page;
                     } else {
                         window.location.pathname = "/";
                     }
@@ -159,26 +164,33 @@ export class SignIn extends React.PureComponent<{}, any> {
     }
 
     resetPassword = () => {
-        swal({
-            text: _("What is your username?"),
-            input: "text",
-            showCancelButton: true,
-        })
-            .then((username) => {
-                post("/api/v0/reset", { username: username })
-                    .then((res) => {
-                        if (res.success) {
-                            swal(
-                                _("An email with your new password has been emailed to you."),
-                            ).catch(swal.noop);
-                        } else {
-                            console.error(res);
-                            errorAlerter(res);
-                        }
-                    })
-                    .catch(errorAlerter);
+        void alert
+            .fire({
+                text: _("What is your username?"),
+                input: "text",
+                showCancelButton: true,
+                inputValidator: (username) => {
+                    if (!username) {
+                        return _("Please supply a username!");
+                    }
+                },
             })
-            .catch(ignore);
+            .then(({ value: username, isConfirmed }) => {
+                if (isConfirmed) {
+                    post("/api/v0/reset", { username: username })
+                        .then((res) => {
+                            if (res.success) {
+                                void alert.fire(
+                                    _("An email with your new password has been emailed to you."),
+                                );
+                            } else {
+                                console.error(res);
+                                errorAlerter(res);
+                            }
+                        })
+                        .catch(errorAlerter);
+                }
+            });
     };
 
     render() {
@@ -219,14 +231,14 @@ export class SignIn extends React.PureComponent<{}, any> {
                         </form>
 
                         <hr />
-                        <LineText>
+                        <span>
                             {
                                 _(
                                     "or sign in using another account:",
                                 ) /* translators: username or password, or sign in with social authentication */
                             }
-                        </LineText>
-                        <SocialLoginButtons />
+                        </span>
+                        <SocialLoginButtons next_url={window.location.hash.substring(1)} />
                     </Card>
 
                     <div className="registration">

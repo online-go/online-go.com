@@ -1,0 +1,70 @@
+/*
+ * Copyright (C) 2012-2022  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.InviteList {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .challenge-cards {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .Card {
+        width: 20rem;
+        max-width: 100vw;
+
+        .name-and-buttons {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+
+            .name {
+                flex-grow: 1;
+                display: flex;
+                align-items: center;
+
+                h4 {
+                    margin: 0 0.3rem 0 0;
+                }
+            }
+
+            .fab-section {
+                display: flex;
+                align-items: center;
+            }
+        }
+
+        .challenge-actions {
+            text-align: right;
+        }
+        .fab {
+            float: right;
+        }
+    }
+
+    .RengoManagementPane {
+        margin-top: 2rem;
+        border-style: solid;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        border-width: 1px;
+    }
+}

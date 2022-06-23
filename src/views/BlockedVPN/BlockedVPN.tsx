@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { post } from "requests";
 import { errorAlerter } from "misc";
 
@@ -26,10 +26,10 @@ export function BlockedVPN(): JSX.Element {
     function submit() {
         post("/firewall/report_vpn", { vpn_name: vpn })
             .then(() =>
-                swal(
+                alert.fire(
                     "Thank you",
-                    `Thank you for letting us know! You can sign up by disabling your VPN. Once you've signed up, you can turn your VPN back on to play on the site.`,
-                ).catch(swal.noop),
+                    "Thank you for letting us know! You can sign up by disabling your VPN. Once you've signed up, you can turn your VPN back on to play on the site.",
+                ),
             )
             .catch(errorAlerter);
     }

@@ -21,11 +21,11 @@ import Select from "react-select";
 import { useParams } from "react-router-dom";
 
 import * as preferences from "preferences";
-
 import * as data from "data";
 
 import { _ } from "translate";
 import { get, abort_requests_in_flight } from "requests";
+
 import { errorAlerter, dup } from "misc";
 import { durationString } from "TimeControl";
 
@@ -57,9 +57,6 @@ export function Settings(): JSX.Element {
 
     React.useEffect(refresh, []);
 
-    const selected = category;
-    data.set("settings.page-selected", selected);
-
     function select(s: string): void {
         data.set("settings.page-selected", s);
         browserHistory.push(`/settings/${s}`);
@@ -90,6 +87,9 @@ export function Settings(): JSX.Element {
         };
     }
 
+    const selected = category;
+    data.set("settings.page-selected", selected);
+
     const groups: Array<{ key: string; label: string }> = [
         { key: "general", label: _("General Preferences") },
         { key: "sound", label: _("Sound Preferences") },
@@ -102,6 +102,7 @@ export function Settings(): JSX.Element {
         { key: "blocked_players", label: _("Blocked Players") },
         { key: "account", label: _("Account Settings") },
         { key: "link", label: _("Account Linking") },
+        { key: "help", label: _("Help Settings") },
         /*
         {
             key: "experiments",

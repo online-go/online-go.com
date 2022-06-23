@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2022  Online-Go.com
+ * Copyright (C) 2012-2017  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,30 +15,4 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-.popover-backdrop {
-    position: fixed;
-    display: flex;
-    //min-height: 100%;
-    //height: 100%;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: z.popover;
-
-    align-items: flex-start;
-    align-content: stretch;
-    justify-content: center;
-}
-
-.popover-fadeout {
-    transition-property: opacity;
-    transition-duration: 0.5s; // matches corresponding delay in fadeout()
-    opacity: 0%;
-}
-
-.popover-container {
-    position: absolute;
-    display: inline-block;
-    z-index: z.popover;
-}
+export * from "./ChallengeLinkButton";

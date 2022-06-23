@@ -22,7 +22,7 @@ import { Card } from "material";
 import { _, pgettext } from "translate";
 import { PlayerIcon } from "PlayerIcon";
 import { post } from "requests";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 type ReportType =
     | "stalling"
@@ -215,12 +215,12 @@ export function Report(props: ReportProperties): JSX.Element {
             .then(() => {
                 set_submitting(false);
                 onClose();
-                swal({ text: _("Thanks for the report!") }).catch(swal.noop);
+                void alert.fire({ text: _("Thanks for the report!") });
             })
             .catch(() => {
                 set_submitting(false);
                 onClose();
-                swal({ text: _("There was an error submitting your report") }).catch(swal.noop);
+                void alert.fire({ text: _("There was an error submitting your report") });
             });
     }
 

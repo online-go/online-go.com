@@ -14,10 +14,11 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+import * as React from "react";
 
 import * as data from "data";
 import * as player_cache from "player_cache";
-import * as React from "react";
+
 import { OgsResizeDetector } from "OgsResizeDetector";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext, interpolate } from "translate";
@@ -33,7 +34,7 @@ import {
     bounded_rank,
 } from "rank_utils";
 import { CreatedChallengeInfo, RuleSet } from "types";
-import { errorLogger, errorAlerter, rulesText, dup, ignore } from "misc";
+import { errorLogger, errorAlerter, rulesText, dup } from "misc";
 import { PlayerIcon } from "PlayerIcon";
 import { timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker } from "TimeControl";
 import { sfx } from "sfx";
@@ -51,7 +52,9 @@ import {
     JGOFTimeControlSystem,
 } from "goban";
 
-import swal from "sweetalert2";
+import { copyChallengeLinkURL } from "ChallengeLinkButton";
+
+import { alert } from "swal_config";
 
 type ChallengeDetails = rest_api.ChallengeDetails;
 
@@ -512,18 +515,18 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         const next = this.next();
 
         if (!this.validateBoardSize()) {
-            swal(_("Invalid board size, please correct and try again")).catch(swal.noop);
+            void alert.fire(_("Invalid board size, please correct and try again"));
             return;
         }
         /*
-            swal(_("Invalid time settings, please correct them and try again"));
+            void alert.fire(_("Invalid time settings, please correct them and try again"));
             return;
         }
         */
         const conf = next.conf;
 
         if (next.challenge.game.komi_auto === "custom" && next.challenge.game.komi === null) {
-            swal(_("Invalid custom komi, please correct and try again")).catch(swal.noop);
+            void alert.fire(_("Invalid custom komi, please correct and try again"));
             return;
         }
 
@@ -557,8 +560,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         const live = isLiveGame(challenge.game.time_control_parameters); // save for after the post, below, when TimeControlPicker is gone
 
         let open_now = false;
-        if (live) {
-            open_now = true;
+        if (live && !this.state.challenge.invite_only) {
+            open_now = true; // invite-only goes to the Home page, it's not "open now"
         }
         if (this.props.mode === "computer") {
             open_now = true;
@@ -577,6 +580,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 // console.log("Challenge response: ", res);
 
                 const challenge_id = res.challenge;
+                const challenge_uuid = res.uuid;
+
                 const game_id = typeof res.game === "object" ? res.game.id : res.game;
                 let keepalive_interval;
 
@@ -599,18 +604,23 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
                            This doesn't _have to be_ a modal, but currently is a modal pending a different design.
                          */
-                        swal({
-                            title: _("Waiting for opponent"),
-                            html: '<div class="spinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>',
-                            confirmButtonClass: "btn-danger",
-                            confirmButtonText: pgettext("Cancel game challenge", "Cancel"),
-                            allowOutsideClick: false,
-                            allowEscapeKey: false,
-                        })
-                            .then(() => {
+                        alert
+                            .fire({
+                                title: _("Waiting for opponent"),
+                                html: '<div class="spinner"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>',
+                                customClass: {
+                                    confirmButton: "btn-danger",
+                                },
+                                confirmButtonText: pgettext("Cancel game challenge", "Cancel"),
+                                allowOutsideClick: false,
+                                allowEscapeKey: false,
+                            })
+                            .then(({ value: accept }) => {
                                 off();
-                                // cancel challenge
-                                del("me/challenges/%%", challenge_id).then(ignore).catch(ignore);
+                                if (accept) {
+                                    // cancel challenge
+                                    void del("me/challenges/%%", challenge_id);
+                                }
                             })
                             .catch(() => {
                                 off();
@@ -619,9 +629,23 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     active_check();
                 } else {
                     if (this.props.mode === "open") {
-                        swal(_("Challenge created!")).catch(swal.noop);
+                        if (this.state.challenge.invite_only) {
+                            const footer_text = _("View your invite-only challenges");
+                            void alert.fire({
+                                text: _("Invite-only Challenge created!"),
+                                // It could be better if this were a <Link>
+                                // The problem with this is discussed here: https://stackoverflow.com/a/72690830/554807
+                                // This can be fixed when HistoryRouter is properly supported, if we can be bothered.
+                                footer: `<a href='/'>${footer_text}</a>`,
+                            });
+                            copyChallengeLinkURL(alert.getConfirmButton(), challenge_uuid);
+                        } else {
+                            void alert.fire(_("Challenge created!"));
+                        }
                     } else if (this.props.mode === "player") {
-                        swal(_("Challenge sent!")).catch(swal.noop);
+                        void alert.fire(_("Challenge sent!"));
+                    } else {
+                        console.log(this.props.mode);
                     }
                 }
 
@@ -638,7 +662,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
                 function onGamedata() {
                     off();
-                    swal.close();
+                    alert.close();
                     //sfx.play("game_accepted");
                     sfx.play("game_started", 3000);
                     //sfx.play("setup-bowl");
@@ -647,10 +671,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
                 function onRejected(message?: string) {
                     off();
-                    swal.close();
-                    swal({
+                    alert.close();
+                    void alert.fire({
                         text: message || _("Game offer was rejected"),
-                    }).catch(swal.noop);
+                    });
                 }
 
                 function off() {
@@ -675,7 +699,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 }
             })
             .catch((err) => {
-                swal.close();
+                alert.close();
                 errorAlerter(err);
             });
     };
@@ -689,6 +713,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             ["challenge.game.private", ev],
             ["challenge.game.ranked", false],
         ]);
+    update_invite_only = (ev) => this.upstate("challenge.invite_only", ev);
     update_rengo = (ev) => {
         this.upstate([
             ["challenge.game.rengo", ev],
@@ -844,6 +869,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     <label className="control-label" htmlFor="challenge-private">
                         {_("Private")}
                     </label>
+
                     <div className="controls">
                         {(mode !== "demo" || null) && (
                             <div className="checkbox">
@@ -1603,6 +1629,29 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         </button>
                     )}
                 </div>
+                {!(this.props.playerId || null) && (
+                    <div className="form-group invite-only-challenge-selector">
+                        <label className="control-label" htmlFor="challenge-invite-only">
+                            {pgettext(
+                                "A checkbox to make a challenge open only to invited people who have the link to it",
+                                "Invite-only",
+                            )}
+                        </label>
+
+                        <div className="controls">
+                            {(mode !== "demo" || null) && (
+                                <div className="checkbox">
+                                    <input
+                                        type="checkbox"
+                                        id="challenge-invite-only"
+                                        checked={this.state.challenge.invite_only}
+                                        onChange={this.update_invite_only}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
                 {(mode !== "demo" || null) && this.preferredGameSettings()}
             </div>
         );
@@ -1754,6 +1803,7 @@ export function challengeRematch(
                 initial_state: null,
                 private: conf["private"],
             },
+            invite_only: false, // maybe one day we will support challenge-links on the rematch dialog!
         },
         time_control: dup(conf.time_control),
     };
@@ -1869,6 +1919,8 @@ interface ChallengeModalConfig {
         min_ranking?: number;
         max_ranking?: number;
         challenger_color: rest_api.ColorSelectionOptions;
+        invite_only: boolean;
+
         game: {
             name?: string;
             rules: RuleSet;
@@ -1908,6 +1960,7 @@ interface ChallengeConfig {
     };
     min_ranking?: number;
     max_ranking?: number;
+    invite_only: boolean;
 }
 
 interface TimeControlConfig {
@@ -1933,6 +1986,7 @@ export const blitz_config: GameConfig = {
     },
     challenge: {
         challenger_color: "automatic",
+        invite_only: false,
         game: {
             name: "",
             rules: "japanese",
@@ -1959,6 +2013,7 @@ export const live_config: GameConfig = {
     },
     challenge: {
         challenger_color: "automatic",
+        invite_only: false,
         game: {
             name: "",
             rules: "japanese",
@@ -1985,6 +2040,7 @@ export const correspondence_config: GameConfig = {
     },
     challenge: {
         challenger_color: "automatic",
+        invite_only: false,
         game: {
             name: "",
             rules: "japanese",

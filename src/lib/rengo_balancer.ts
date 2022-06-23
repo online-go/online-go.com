@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { errorAlerter } from "misc";
 import * as player_cache from "player_cache";
 import { put } from "requests";
 
@@ -153,8 +152,9 @@ function autoBalance(participants: Participant[], maxIterations: number = 100): 
 }
 
 type Challenge = socket_api.seekgraph_global.Challenge;
+type RengoParticipantsDTO = rest_api.RengoParticipantsDTO;
 
-export async function balanceTeams(challenge: Challenge) {
+export async function balanceTeams(challenge: Challenge): Promise<RengoParticipantsDTO> {
     const user_id = (p) => p.user_id;
     const participants = await toParticipants(challenge.rengo_participants);
     const result = autoBalance(participants);
@@ -169,14 +169,14 @@ export async function balanceTeams(challenge: Challenge) {
         Math.abs(result.blackAverageRating - result.whiteAverageRating),
     );
 
-    put("challenges/%%/team", challenge.challenge_id, {
+    return put("challenges/%%/team", challenge.challenge_id, {
         assign_black: result.black.map(user_id),
         assign_white: result.white.map(user_id),
-    }).catch(errorAlerter);
+    });
 }
 
-export function unassignPlayers(challenge: Challenge) {
-    put("challenges/%%/team", challenge.challenge_id, {
+export function unassignPlayers(challenge: Challenge): Promise<RengoParticipantsDTO> {
+    return put("challenges/%%/team", challenge.challenge_id, {
         unassign: challenge.rengo_participants,
-    }).catch(errorAlerter);
+    });
 }

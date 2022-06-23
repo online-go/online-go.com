@@ -19,7 +19,7 @@ import * as React from "react";
 import { _ } from "translate";
 import { put, post } from "requests";
 import { errorAlerter } from "misc";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 interface BotControlsProperties {
     bot_id: number;
@@ -52,7 +52,7 @@ export function BotControls({
     const saveBot = () => {
         put("ui/bot/saveBotInfo", { bot_id: bot_id, bot_ai: bot_ai })
             .then(() => {
-                swal("Bot Engine updated").catch(swal.noop);
+                void alert.fire("Bot Engine updated");
             })
             .catch(errorAlerter);
     };

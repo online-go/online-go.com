@@ -22,7 +22,7 @@ import { post, put, del } from "requests";
 import { deepCompare, errorAlerter } from "misc";
 import { PaginatedTable } from "PaginatedTable";
 import { Player } from "Player";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 /*
 import { Card } from "material";
 import { SearchInput } from "misc-ui";
@@ -215,9 +215,7 @@ function FirewallRuleRow({
         put(`/firewall/rule/${firewall_rule.id}`, firewall_rule)
             .then(() => {
                 table_refresh();
-                swal("Saved")
-                    .then(() => 0)
-                    .catch(() => 0);
+                void alert.fire("Saved");
                 setMessage(null);
             })
             .catch((err: any) => {
@@ -232,23 +230,23 @@ function FirewallRuleRow({
     }
 
     function del_row() {
-        swal({
-            text: "Are you sure you want to delete this row?",
-            showCancelButton: true,
-            confirmButtonText: "Yes",
-            cancelButtonText: "Cancel",
-        })
-            .then(() => {
-                del(`/firewall/rule/${firewall_rule.id}`)
-                    .then(() => {
-                        table_refresh();
-                        swal("Deleted")
-                            .then(() => 0)
-                            .catch(() => 0);
-                    })
-                    .catch(errorAlerter);
+        void alert
+            .fire({
+                text: "Are you sure you want to delete this row?",
+                showCancelButton: true,
+                confirmButtonText: "Yes",
+                cancelButtonText: "Cancel",
             })
-            .catch(() => 0);
+            .then(({ value: yes }) => {
+                if (yes) {
+                    del(`/firewall/rule/${firewall_rule.id}`)
+                        .then(() => {
+                            table_refresh();
+                            void alert.fire("Deleted");
+                        })
+                        .catch(errorAlerter);
+                }
+            });
     }
 
     return (

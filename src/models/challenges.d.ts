@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+type RatingsBySizeAndSpeed = rest_api.RatingsBySizeAndSpeed;
+
 declare namespace socket_api {
     namespace seekgraph_global {
         /**
@@ -50,6 +52,8 @@ declare namespace socket_api {
             rengo_black_team: number[]; // array of player ids
             rengo_white_team: number[]; // array of player ids
             rengo_participants: number[]; // array of player ids
+            invite_only: boolean;
+            uuid: string;
 
             // All this stuff seems to get added *after* we get a challenge from the api
             // but I don't have a good idea where to put it for now... (benjito)
@@ -64,6 +68,7 @@ declare namespace socket_api {
             ineligible_reason?: string;
             user_challenge?: boolean;
             eligible?: boolean;
+            game_name?: string;
         }
     }
 }
@@ -99,5 +104,83 @@ declare namespace rest_api {
             time_control?: import("../components/TimeControl").TimeControlTypes.TimeControlSystem;
             time_control_parameters?: import("../components/TimeControl").TimeControl;
         };
+    }
+
+    // Response payload from the server's OpenChallenge serializer,
+    // you would expect this to be what's on any route returning an Open (not Direct) challenge.
+    interface OpenChallengeDTO {
+        id: number;
+        challenger: MinimalPlayerDTO;
+        group: number;
+        game?: GameDTO; // not clear why/when this would not be present
+        challenger_color: ColorOptions;
+        min_ranking: number;
+        max_ranking: number;
+        uuid: string;
+
+        rengo_nominees: number[]; // array of player ids
+        rengo_black_team: number[]; // array of player ids
+        rengo_white_team: number[]; // array of player ids
+        rengo_participants: number[]; // array of player ids
+    }
+
+    interface MinimalPlayerDTO {
+        id?: number;
+        username: string;
+        country?: string;
+        icon?: string; // URL
+        ratings?: RatingsBySizeAndSpeed;
+        ranking: number;
+        professional: boolean;
+        ui_class?: string;
+    }
+
+    interface GameDTO {
+        id: number;
+        players: { white: MinimalPlayerDTO; black: MinimalPlayerDTO };
+        name: string;
+        creator: number;
+        mode: "game" | "demo" | "puzzle";
+        source: "play" | "demo" | "sgf";
+        black: number;
+        white: number;
+        width: number;
+        height: number;
+        rules: string;
+        ranked: boolean;
+        handicap: number;
+        komi: number;
+        time_control: string; // JSON?
+        black_player_rank: number;
+        black_player_rating: number;
+        white_player_rank: number;
+        white_player_rating: number;
+        time_per_move: number;
+        time_control_parameters: string; // JSON
+        disable_analysis: boolean;
+        tournament: number;
+        tournament_round: number;
+        ladder: number;
+        pause_on_weekends: boolean;
+        outcome: string;
+        black_lost: boolean;
+        white_lost: boolean;
+        annulled: boolean;
+        started: any; // It's a date
+        ended: any; // It's a date
+        sgf_filename: string;
+        rengo: boolean;
+        rengo_black_team: [number];
+        rengo_white_team: [number];
+        rengo_casual_mode: boolean;
+        historical_ratings: { black: MinimalPlayerDTO; white: MinimalPlayerDTO };
+        related: any; // not sure what this is, the serializer is a gnarly function
+    }
+
+    interface RengoParticipantsDTO {
+        challenge: number; //challenge.id,
+        rengo_nominees: [number]; //[x.id for x in challenge.rengo_nominees.all()],
+        rengo_black_team: [number]; //[x.id for x in challenge.rengo_black_team.all()],
+        rengo_white_team: [number]; //[x.id for x in challenge.rengo_white_team.all()]
     }
 }

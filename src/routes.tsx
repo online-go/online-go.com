@@ -27,6 +27,7 @@ import { NavBar } from "NavBar";
 import { Announcements } from "Announcements";
 import { SignIn } from "SignIn";
 import { Register } from "Register";
+import { ChallengeLinkLanding } from "ChallengeLinkLanding";
 import { Overview } from "Overview";
 import { Admin, MerchantLog } from "Admin";
 import { ChatView } from "ChatView";
@@ -174,11 +175,12 @@ export const routes = (
             <Routes>
                 <Route path="/sign-in" element={<SignIn />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/welcome/*" element={<ChallengeLinkLanding />} />
                 <Route path="/appeal/:player_id" element={<Appeal />} />
                 <Route path="/appeal" element={<Appeal />} />
                 <Route path="/appeals-center" element={<AppealsCenter />} />
                 <Route path="/overview" element={<Overview />} />
-                <Route path="/play" element={<Play />} />
+                <Route path="/play/*" element={<Play />} />
                 <Route path="/chat/:channel" element={<ChatView />} />
                 <Route path="/chat/:channel/*" element={<ChatView />} />
                 <Route path="/chat/:channel/**/*" element={<ChatView />} />

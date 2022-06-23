@@ -21,7 +21,7 @@ import { post } from "requests";
 import { openModal, Modal } from "Modal";
 import { Player, PlayerObjectType } from "Player";
 import { errorAlerter } from "misc";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { ChallengeDetailsReviewPane } from "../ChallengeDetailsReviewPane";
 
 interface Events {}
@@ -40,22 +40,22 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
     }
 
     accept = () => {
-        swal({
+        void alert.fire({
             text: "Accepting...",
-            type: "info",
+            icon: "info",
             showCancelButton: false,
             showConfirmButton: false,
             allowEscapeKey: false,
-        }).catch(swal.noop);
+        });
 
         post("challenges/%%/accept", this.props.challenge.challenge_id, {})
             .then(() => {
-                swal.close();
+                alert.close();
                 this.close();
                 this.props.onAccept(this.props.challenge);
             })
             .catch((err) => {
-                swal.close();
+                alert.close();
                 errorAlerter(err);
             });
     };

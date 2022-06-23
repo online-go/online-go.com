@@ -24,15 +24,19 @@ interface RengoManagementPaneProperties {
     challenge_id: number;
     rengo_challenge_list: any[];
 
-    startRengoChallenge: (challenge: any) => void;
+    startRengoChallenge: (challenge: any) => Promise<void>;
     cancelChallenge: (challenge: any) => void;
     withdrawFromRengoChallenge: (challenge: any) => void;
     joinRengoChallenge: (challenge: any) => void;
     dontShowCancelButton?: boolean;
-    children: React.ReactNode;
+    children: React.ReactNode; // intended for team management pane, which receives different props from our parent
 }
 
 interface RengoManagementPaneState {}
+
+/** This Pane is designed to manage a challenge identified by `id`,
+ * picked out of a supplied list of challenges
+ * */
 
 export class RengoManagementPane extends React.PureComponent<
     RengoManagementPaneProperties,
@@ -56,6 +60,10 @@ export class RengoManagementPane extends React.PureComponent<
         const the_challenge = this.props.rengo_challenge_list.find(
             (c) => c.challenge_id === this.props.challenge_id,
         );
+
+        if (!the_challenge) {
+            return <div></div>;
+        }
 
         const our_rengo_challenges = this.props.rengo_challenge_list.filter(
             (c) => c.user_id === this.props.user.id,

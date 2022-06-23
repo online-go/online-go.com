@@ -19,11 +19,11 @@ import * as React from "react";
 import * as data from "data";
 import * as preferences from "preferences";
 import * as player_cache from "player_cache";
+import * as rengo_utils from "rengo_utils";
 import { OgsResizeDetector } from "OgsResizeDetector";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext } from "translate";
 import { Card } from "material";
-import { put, post, del } from "requests";
 import { SeekGraph } from "SeekGraph";
 import { PersistentElement } from "PersistentElement";
 import { isLiveGame, shortShortTimeControl, usedForCheating } from "TimeControl";
@@ -36,13 +36,13 @@ import { automatch_manager, AutomatchPreferences } from "automatch_manager";
 import { bot_count } from "bots";
 import { SupporterGoals } from "SupporterGoals";
 import { CreatedChallengeInfo } from "types";
+import { ChallengeLinkButton } from "ChallengeLinkButton";
 
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { Size } from "src/lib/types";
 
 import { RengoManagementPane } from "RengoManagementPane";
 import { RengoTeamManagementPane } from "RengoTeamManagementPane";
-import { nominateForRengoChallenge } from "./util";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 export type Challenge = socket_api.seekgraph_global.Challenge;
@@ -107,6 +107,11 @@ export class Play extends React.Component<{}, PlayState> {
         automatch_manager.on("entry", this.onAutomatchEntry);
         automatch_manager.on("start", this.onAutomatchStart);
         automatch_manager.on("cancel", this.onAutomatchCancel);
+
+        const [match, id] = window.location.hash.match(/#rengo:(\d+)/) || [];
+        if (match) {
+            this.openRengoChallengePane(parseInt(id));
+        }
     }
 
     componentWillUnmount() {
@@ -226,10 +231,9 @@ export class Play extends React.Component<{}, PlayState> {
         // stop trying to show the cancelled challenge
         this.closeChallengeManagementPane(challenge.challenge_id);
 
-        // then tell the server
-        del("challenges/%%", challenge.challenge_id)
-            .then(() => 0)
-            .catch(errorAlerter);
+        // do the action
+        rengo_utils.cancelChallenge(challenge).catch(errorAlerter);
+
         this.unfreezeChallenges();
     };
 
@@ -309,7 +313,7 @@ export class Play extends React.Component<{}, PlayState> {
 
     newComputerGame = () => {
         if (bot_count() === 0) {
-            swal(_("Sorry, all bots seem to be offline, please try again later.")).catch(swal.noop);
+            void alert.fire(_("Sorry, all bots seem to be offline, please try again later."));
             return;
         }
         challengeComputer();
@@ -409,25 +413,6 @@ export class Play extends React.Component<{}, PlayState> {
         );
         // console.log("joined rcp", jrcp);
         return jrcp;
-    };
-
-    startOwnRengoChallenge = (the_challenge: Challenge) => {
-        swal({
-            text: "Starting...",
-            type: "info",
-            showCancelButton: false,
-            showConfirmButton: false,
-            allowEscapeKey: false,
-        }).catch(swal.noop);
-
-        post("challenges/%%/start", the_challenge.challenge_id, {})
-            .then(() => {
-                swal.close();
-            })
-            .catch((err) => {
-                swal.close();
-                errorAlerter(err);
-            });
     };
 
     freezeChallenges = () => {
@@ -561,6 +546,7 @@ export class Play extends React.Component<{}, PlayState> {
                                             ? pgettext("Automatch: no preference", "No preference")
                                             : rulesText(m.rules.value)}
                                     </span>
+                                    <span className="cell"></span>
                                 </div>
                             ))}
 
@@ -736,10 +722,10 @@ export class Play extends React.Component<{}, PlayState> {
                         user={user}
                         challenge_id={rengo_challenge_to_show.challenge_id}
                         rengo_challenge_list={this.state.rengo_list}
-                        startRengoChallenge={this.startOwnRengoChallenge}
+                        startRengoChallenge={rengo_utils.startOwnRengoChallenge}
                         cancelChallenge={this.cancelOpenChallenge}
                         withdrawFromRengoChallenge={this.unNominateForRengoChallenge}
-                        joinRengoChallenge={nominateForRengoChallenge}
+                        joinRengoChallenge={rengo_utils.nominateForRengoChallenge}
                     >
                         <RengoTeamManagementPane
                             user={user}
@@ -747,8 +733,8 @@ export class Play extends React.Component<{}, PlayState> {
                             challenge_list={this.state.rengo_list}
                             moderator={user.is_moderator}
                             show_chat={false}
-                            assignToTeam={this.assignToTeam}
-                            kickRengoUser={this.kickRengoUser}
+                            assignToTeam={rengo_utils.assignToTeam}
+                            kickRengoUser={rengo_utils.kickRengoUser}
                         />
                     </RengoManagementPane>
                 </div>
@@ -1006,6 +992,9 @@ export class Play extends React.Component<{}, PlayState> {
                     <span className="cell">{C.handicap_text}</span>
                     <span className="cell">{C.name}</span>
                     <span className="cell">{rulesText(C.rules)}</span>
+                    <span className="cell">
+                        <ChallengeLinkButton uuid={C.uuid} />
+                    </span>
                 </div>
             ) : null,
         );
@@ -1035,29 +1024,15 @@ export class Play extends React.Component<{}, PlayState> {
                 <span className="head" style={{ textAlign: "left" }}>
                     {_("Rules")}
                 </span>
+                <span className="head"></span>
             </div>
         );
     }
 
     unNominateForRengoChallenge = (C: Challenge) => {
-        swal({
-            text: _("Withdrawing..."), // translator: the server is processing their request to withdraw from a rengo challenge
-            type: "info",
-            showCancelButton: false,
-            showConfirmButton: false,
-            allowEscapeKey: false,
-        }).catch(swal.noop);
-
         this.closeChallengeManagementPane(C.challenge_id);
 
-        del("challenges/%%/join", C.challenge_id, {})
-            .then(() => {
-                swal.close();
-            })
-            .catch((err) => {
-                swal.close();
-                errorAlerter(err);
-            });
+        rengo_utils.unNominate(C).catch(errorAlerter);
     };
 
     rengoListHeaders() {
@@ -1088,7 +1063,7 @@ export class Play extends React.Component<{}, PlayState> {
 
     nominateAndShow = (C) => {
         this.toggleRengoChallengePane(C.challenge_id);
-        nominateForRengoChallenge(C);
+        rengo_utils.nominateForRengoChallenge(C).catch(errorAlerter);
     };
 
     rengoList = () => {
@@ -1183,6 +1158,17 @@ export class Play extends React.Component<{}, PlayState> {
         </>
     );
 
+    openRengoChallengePane = (challenge_id: number) => {
+        if (!this.state.show_in_rengo_management_pane.includes(challenge_id)) {
+            this.setState({
+                show_in_rengo_management_pane: [
+                    challenge_id,
+                    ...this.state.show_in_rengo_management_pane,
+                ],
+            });
+        }
+    };
+
     toggleRengoChallengePane = (challenge_id: number) => {
         if (this.state.show_in_rengo_management_pane.includes(challenge_id)) {
             this.closeChallengeManagementPane(challenge_id);
@@ -1228,10 +1214,10 @@ export class Play extends React.Component<{}, PlayState> {
                             user={user}
                             challenge_id={C.challenge_id}
                             rengo_challenge_list={this.state.rengo_list}
-                            startRengoChallenge={this.startOwnRengoChallenge}
+                            startRengoChallenge={rengo_utils.startOwnRengoChallenge}
                             cancelChallenge={this.cancelOpenChallenge}
                             withdrawFromRengoChallenge={this.unNominateForRengoChallenge}
-                            joinRengoChallenge={nominateForRengoChallenge}
+                            joinRengoChallenge={rengo_utils.nominateForRengoChallenge}
                             dontShowCancelButton={true}
                         >
                             <RengoTeamManagementPane
@@ -1240,8 +1226,8 @@ export class Play extends React.Component<{}, PlayState> {
                                 challenge_list={this.state.rengo_list}
                                 moderator={user.is_moderator}
                                 show_chat={true}
-                                assignToTeam={this.assignToTeam}
-                                kickRengoUser={this.kickRengoUser}
+                                assignToTeam={rengo_utils.assignToTeam}
+                                kickRengoUser={rengo_utils.kickRengoUser}
                             />
                         </RengoManagementPane>
                     </Card>
@@ -1341,35 +1327,11 @@ export class Play extends React.Component<{}, PlayState> {
                 <td className="cell">{C.handicap_text}</td>
                 <td className="cell">{C.name}</td>
                 <td className="cell">{rulesText(C.rules)}</td>
+                <td className="cell">
+                    <ChallengeLinkButton uuid={C.uuid} />
+                </td>
             </tr>
         );
-    };
-
-    assignToTeam = (player_id: number, team: string, challenge, signal_done?: () => void) => {
-        const assignment =
-            team === "rengo_black_team"
-                ? "assign_black"
-                : team === "rengo_white_team"
-                ? "assign_white"
-                : "unassign";
-
-        put("challenges/%%/team", challenge.challenge_id, {
-            [assignment]: [player_id], // back end expects an array of changes, but we only ever send one at a time.
-        })
-            .then(signal_done) // tell caller that we got the response from the server now.
-            .catch((err) => {
-                errorAlerter(err);
-            });
-    };
-
-    kickRengoUser = (player_id: number, signal_done?: () => void) => {
-        put("challenges", {
-            rengo_kick: player_id,
-        })
-            .then(signal_done)
-            .catch((err) => {
-                errorAlerter(err);
-            });
     };
 }
 

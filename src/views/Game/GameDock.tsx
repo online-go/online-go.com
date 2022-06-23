@@ -26,9 +26,9 @@ import { openACLModal } from "ACLModal";
 import { openGameLinkModal } from "./GameLinkModal";
 import { openGameLogModal } from "./GameLogModal";
 import { sfx } from "sfx";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { challengeFromBoardPosition } from "ChallengeModal/ForkModal";
-import { errorAlerter, ignore } from "misc";
+import { errorAlerter } from "misc";
 import { openReport } from "Report";
 import { game_control } from "./game_control";
 import { openGameInfoModal } from "./GameInfoModal";
@@ -194,11 +194,11 @@ export function GameDock({
         }
 
         if (!obj.reported_user_id) {
-            swal(
+            void alert.fire(
                 _(
                     'Please report the player that is a problem by clicking on their name and selecting "Report".',
                 ),
-            ).catch(swal.noop);
+            );
         } else {
             openReport(obj);
         }
@@ -207,7 +207,7 @@ export function GameDock({
     // Mod Functions
     const decide = (winner: string): void => {
         if (!game_id) {
-            swal(_("Game ID missing")).catch(swal.noop);
+            void alert.fire(_("Game ID missing"));
             return;
         }
 
@@ -230,7 +230,7 @@ export function GameDock({
     const decide_tie = () => decide("tie");
     const force_autoscore = () => {
         if (!game_id) {
-            swal(_("Game ID missing")).catch(swal.noop);
+            void alert.fire(_("Game ID missing"));
             return;
         }
 
@@ -250,7 +250,7 @@ export function GameDock({
     };
     const do_annul = (tf: boolean): void => {
         if (!game_id) {
-            swal(_("Game ID missing")).catch(swal.noop);
+            void alert.fire(_("Game ID missing"));
             return;
         }
 
@@ -274,9 +274,9 @@ export function GameDock({
         })
             .then(() => {
                 if (tf) {
-                    swal({ text: _("Game has been annulled") }).catch(swal.noop);
+                    void alert.fire({ text: _("Game has been annulled") });
                 } else {
-                    swal({ text: _("Game ranking has been restored") }).catch(swal.noop);
+                    void alert.fire({ text: _("Game ranking has been restored") });
                 }
                 onGameAnnulled(tf);
             })
@@ -301,24 +301,26 @@ export function GameDock({
         );
     };
     const delete_ai_reviews = () => {
-        swal({
-            text: _("Really clear ALL AI reviews for this game?"),
-            showCancelButton: true,
-        })
-            .then(() => {
-                console.info(`Clearing AI reviews for ${game_id}`);
-                del(`games/${game_id}/ai_reviews`, {})
-                    .then(() => console.info("AI Reviews cleared"))
-                    .catch(errorAlerter);
+        void alert
+            .fire({
+                text: _("Really clear ALL AI reviews for this game?"),
+                showCancelButton: true,
             })
-            .catch(ignore);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    console.info(`Clearing AI reviews for ${game_id}`);
+                    del(`games/${game_id}/ai_reviews`, {})
+                        .then(() => console.info("AI Reviews cleared"))
+                        .catch(errorAlerter);
+                }
+            });
     };
     const force_ai_review = (analysis_type: "fast" | "full") => {
         post(`games/${game_id}/ai_reviews`, {
             engine: "katago",
             type: analysis_type,
         })
-            .then(() => swal(_("Analysis started")))
+            .then(() => void alert.fire(_("Analysis started")))
             .catch(errorAlerter);
     };
 
@@ -448,7 +450,7 @@ export function GameDock({
                 <a
                     className="disabled"
                     onClick={() =>
-                        swal(
+                        void alert.fire(
                             _(
                                 "SGF downloading for this game is disabled until the game is complete.",
                             ),

@@ -21,7 +21,7 @@ import * as moment from "moment";
 import { useParams, useSearchParams } from "react-router-dom";
 import { get, post, put } from "requests";
 import { _, pgettext, interpolate, sorted_locale_countries } from "translate";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { ignore, errorAlerter } from "misc";
 import { currencies } from "./currencies";
 import { Toggle } from "Toggle";
@@ -212,9 +212,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
     if (search_params.get("payment_updated") === "true") {
         if (!already_showed_payment_updated_modal.current) {
             already_showed_payment_updated_modal.current = true;
-            swal(_("Payment method upated, thank you!"))
-                .then(() => 0)
-                .catch(() => 0);
+            void alert.fire(_("Payment method upated, thank you!"));
             setSearchParams({});
         }
     }
@@ -588,7 +586,7 @@ export function PriceBox({
     function stripe_subscribe() {
         //this.setState({disable_payment_buttons: true});
         if (!stripe) {
-            swal("Error", "Stripe is not configured", "error").catch(swal.noop);
+            void alert.fire("Error", "Stripe is not configured", "error");
             return;
         }
 
@@ -629,9 +627,7 @@ export function PriceBox({
     function paddle_subscribe() {
         setDisabled(true);
         if (!Paddle) {
-            swal("Error", "Paddle is not loaded. Please try again later.", "error").catch(
-                swal.noop,
-            );
+            void alert.fire("Error", "Paddle is not loaded. Please try again later.", "error");
             return;
         }
 
@@ -845,65 +841,68 @@ function Subscription({
     );
 
     function cancel() {
-        swal({
-            text: grandfathered_plan
-                ? pgettext(
-                      'A "grandfathered plan" means the supporter signed up before prices increased, so is paying at a reduced rate. Signing up again in the future will be more expensive.',
-                      "Are you sure you want to cancel your support for OGS? Please note that you are on a grandfathered plan at a reduced rate.",
-                  )
-                : _("Are you sure you want to cancel your support for OGS?"),
+        alert
+            .fire({
+                text: grandfathered_plan
+                    ? pgettext(
+                          'A "grandfathered plan" means the supporter signed up before prices increased, so is paying at a reduced rate. Signing up again in the future will be more expensive.',
+                          "Are you sure you want to cancel your support for OGS? Please note that you are on a grandfathered plan at a reduced rate.",
+                      )
+                    : _("Are you sure you want to cancel your support for OGS?"),
 
-            showCancelButton: true,
-            focusCancel: true,
-        })
-            .then(() => {
-                let promise;
+                showCancelButton: true,
+                focusCancel: true,
+            })
+            .then(({ value: accept }) => {
+                if (accept) {
+                    let promise;
 
-                switch (subscription.payment_processor) {
-                    case "stripe":
-                        promise = post(`/billing/stripe/cancel_subscription`, {
-                            ref_id: subscription.ref_id,
-                        });
-                        break;
+                    switch (subscription.payment_processor) {
+                        case "stripe":
+                            promise = post(`/billing/stripe/cancel_subscription`, {
+                                ref_id: subscription.ref_id,
+                            });
+                            break;
 
-                    case "paypal":
-                        promise = post(`/billing/paypal/cancel_subscription`, {
-                            ref_id: subscription.ref_id,
-                        });
-                        break;
+                        case "paypal":
+                            promise = post(`/billing/paypal/cancel_subscription`, {
+                                ref_id: subscription.ref_id,
+                            });
+                            break;
 
-                    case "paddle":
-                        window.location.assign(subscription.paddle_cancel_url);
-                        //promise = post(`/billing/paddle/cancel_subscription`, {'ref_id': subscription.ref_id});
-                        break;
+                        case "paddle":
+                            window.location.assign(subscription.paddle_cancel_url);
+                            //promise = post(`/billing/paddle/cancel_subscription`, {'ref_id': subscription.ref_id});
+                            break;
 
-                    case "braintree":
-                        //promise = post(`/billing/braintree/cancel_subscription`, {'ref_id': subscription.ref_id});
-                        swal(
-                            "Please contact anoek@online-go.com to cancel your subscription",
-                        ).catch(swal.noop);
-                        break;
+                        case "braintree":
+                            //promise = post(`/billing/braintree/cancel_subscription`, {'ref_id': subscription.ref_id});
+                            void alert.fire(
+                                "Please contact anoek@online-go.com to cancel your subscription",
+                            );
+                            break;
 
-                    default:
-                        swal(
-                            "Error canceling subscription, please contact billing@online-go.com",
-                        ).catch(swal.noop);
-                        break;
-                }
+                        default:
+                            void alert.fire(
+                                "Error canceling subscription, please contact billing@online-go.com",
+                            );
+                            break;
+                    }
 
-                //this.setState({processing: true});
-                if (promise) {
-                    promise
-                        .then(() => {
-                            window.location.reload();
-                        })
-                        .catch((err: any) => {
-                            //this.setState({processing: false});
-                            console.error(err);
-                            swal(
-                                "Error canceling subscription [2], please contact billing@online-go.com",
-                            ).catch(swal.noop);
-                        });
+                    //this.setState({processing: true});
+                    if (promise) {
+                        promise
+                            .then(() => {
+                                window.location.reload();
+                            })
+                            .catch((err: any) => {
+                                //this.setState({processing: false});
+                                console.error(err);
+                                void alert.fire(
+                                    "Error canceling subscription [2], please contact billing@online-go.com",
+                                );
+                            });
+                    }
                 }
             })
             .catch(errorAlerter);
@@ -946,8 +945,8 @@ function Subscription({
                 break;
 
             default:
-                swal("Error canceling subscription, please contact billing@online-go.com").catch(
-                    swal.noop,
+                void alert.fire(
+                    "Error canceling subscription, please contact billing@online-go.com",
                 );
                 break;
         }

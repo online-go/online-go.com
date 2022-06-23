@@ -18,11 +18,11 @@
 import * as React from "react";
 import * as data from "data";
 import { _, pgettext } from "translate";
-import { ignore, errorAlerter, navigateTo } from "misc";
+import { errorAlerter, navigateTo } from "misc";
 import { get, del, put, abort_requests_in_flight } from "requests";
 import { SortablePuzzleList } from "./SortablePuzzleList";
 import { openACLModal } from "ACLModal";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 import { useParams } from "react-router-dom";
 
 export function PuzzleCollection(): JSX.Element {
@@ -167,23 +167,25 @@ export function PuzzleCollection(): JSX.Element {
             position_transform_enabled: position_transform_enabled,
         })
             .then(() => {
-                swal("Changes saved").then(ignore).catch(ignore);
+                void alert.fire("Changes saved");
             })
             .catch(errorAlerter);
     }
 
     function remove() {
-        swal({
-            text: _("Are you sure you wish to remove this puzzle collection?"),
-            showCancelButton: true,
-        })
-            .then(() => {
-                del(`puzzles/collections/${collection_id}`)
-                    .then(() => {
-                        window.location.pathname = "/puzzle-collections/" + data.get("user").id;
-                    })
-                    .catch(errorAlerter);
+        void alert
+            .fire({
+                text: _("Are you sure you wish to remove this puzzle collection?"),
+                showCancelButton: true,
             })
-            .catch(ignore);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    del(`puzzles/collections/${collection_id}`)
+                        .then(() => {
+                            window.location.pathname = "/puzzle-collections/" + data.get("user").id;
+                        })
+                        .catch(errorAlerter);
+                }
+            });
     }
 }

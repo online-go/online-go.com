@@ -16,10 +16,11 @@
  */
 
 import * as React from "react";
-import swal from "sweetalert2";
+import { alert } from "swal_config";
 
 import { balanceTeams, unassignPlayers } from "rengo_balancer";
 import { _, pgettext } from "translate";
+import { errorAlerter } from "misc";
 
 import { Player } from "Player";
 import { EmbeddedChatCard } from "Chat";
@@ -32,8 +33,12 @@ interface RengoTeamManagementPaneProps {
     challenge_id: number;
     moderator: boolean;
     show_chat: boolean;
-    assignToTeam: (player_id: number, team: string, challenge: Challenge, done: () => void) => void;
-    kickRengoUser: (player_id: number, done: () => void) => void;
+    // The following promises signal when the server action is done, for UI update.
+    // typing note - we genuinely don't care what the promise return type is, we just use the `then` event
+    assignToTeam: (player_id: number, team: string, challenge: Challenge) => Promise<any>;
+    kickRengoUser: (player_id: number) => Promise<any>;
+    unassignPlayers?: (challenge: Challenge) => Promise<any>;
+    balanceTeams?: (challenge: Challenge) => Promise<any>;
 }
 
 interface RengoTeamManagementPaneState {
@@ -52,30 +57,55 @@ export class RengoTeamManagementPane extends React.PureComponent<
     }
 
     done = () => {
-        //console.log("assign done called... ap", this.state.assignment_pending, this.props.challenge_id);
         this.setState({ assignment_pending: false });
     };
 
     _assignToTeam = (player_id: number, team: string, challenge: Challenge) => {
         this.setState({ assignment_pending: true });
-        this.props.assignToTeam(player_id, team, challenge, this.done.bind(self));
+        this.props.assignToTeam(player_id, team, challenge).then(this.done).catch(errorAlerter);
     };
 
     _kickRengoUser = (player_id: number) => {
-        swal({
-            text: pgettext(
-                "Confirmation text to remove the selected player from all rengo challenges",
-                "This will kick the person from all rengo challenges, are you sure you want to do this?",
-            ),
-            showCancelButton: true,
-        })
-            .then(() => {
-                this.setState({ assignment_pending: true });
-                this.props.kickRengoUser(player_id, this.done.bind(self));
+        void alert
+            .fire({
+                text: pgettext(
+                    "Confirmation text to remove the selected player from all rengo challenges",
+                    "This will kick the person from all rengo challenges, are you sure you want to do this?",
+                ),
+                showCancelButton: true,
             })
-            .catch(() => 0);
+            .then(({ value: accept }) => {
+                if (accept) {
+                    this.setState({ assignment_pending: true });
+                    this.props
+                        .kickRengoUser(player_id)
+                        .then(() => this.done())
+                        .catch(errorAlerter);
+                }
+            });
     };
 
+    _unassignPlayers = (challenge: Challenge) => {
+        this.setState({ assignment_pending: true });
+        if (!this.props.unassignPlayers) {
+            // Play page is happy to have us just deal with this
+            unassignPlayers(challenge).then(this.done).catch(errorAlerter);
+        } else {
+            // Overview page needs to know what's going on, so it supplies this
+            this.props.unassignPlayers(challenge).then(this.done).catch(errorAlerter);
+        }
+    };
+
+    _balanceTeams = (challenge: Challenge) => {
+        this.setState({ assignment_pending: true });
+        if (!this.props.balanceTeams) {
+            // Play page is happy to have us just deal with tis
+            balanceTeams(challenge).then(this.done).catch(errorAlerter);
+        } else {
+            // Overview page needs to know what's going on, so it supplies this
+            this.props.balanceTeams(challenge).then(this.done).catch(errorAlerter);
+        }
+    };
     render = () => {
         const the_challenge = this.props.challenge_list.find(
             (c) => c.challenge_id === this.props.challenge_id,
@@ -241,7 +271,7 @@ export class RengoTeamManagementPane extends React.PureComponent<
                             {has_assigned_players ? (
                                 <button
                                     className="sm"
-                                    onClick={unassignPlayers.bind(self, the_challenge)}
+                                    onClick={this._unassignPlayers.bind(self, the_challenge)}
                                     disabled={!has_assigned_players}
                                 >
                                     {_("Unassign players")}
@@ -249,7 +279,7 @@ export class RengoTeamManagementPane extends React.PureComponent<
                             ) : (
                                 <button
                                     className="sm"
-                                    onClick={balanceTeams.bind(self, the_challenge)}
+                                    onClick={this._balanceTeams.bind(self, the_challenge)}
                                     disabled={has_assigned_players}
                                 >
                                     {_("Balance teams")}
