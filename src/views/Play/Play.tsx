@@ -484,7 +484,7 @@ export class Play extends React.Component<{}, PlayState> {
                             )}
                             {(corr_automatchers.length || null) && (
                                 <div className="challenge-row">
-                                    <span className="head"></span>
+                                    <span className="head">{/* buttons */}</span>
                                     <span className="head">{_("Rank")}</span>
                                     <span className="head">{_("Size")}</span>
                                     <span className="head">{_("Time Control")}</span>
@@ -993,7 +993,7 @@ export class Play extends React.Component<{}, PlayState> {
                     <span className="cell">{C.name}</span>
                     <span className="cell">{rulesText(C.rules)}</span>
                     <span className="cell">
-                        <ChallengeLinkButton uuid={C.uuid} />
+                        {(C.user_challenge || null) && <ChallengeLinkButton uuid={C.uuid} />}
                     </span>
                 </div>
             ) : null,
@@ -1011,7 +1011,7 @@ export class Play extends React.Component<{}, PlayState> {
     challengeListHeaders() {
         return (
             <div className="challenge-row">
-                <span className="head"></span>
+                <span className="head">{/* buttons */}</span>
                 <span className="head">{_("Player")}</span>
                 {/* <span className="head">{_("Rank")}</span> */}
                 <span className="head">{_("Size")}</span>
@@ -1024,7 +1024,7 @@ export class Play extends React.Component<{}, PlayState> {
                 <span className="head" style={{ textAlign: "left" }}>
                     {_("Rules")}
                 </span>
-                <span className="head"></span>
+                <span className="head">{/* invite link */}</span>
             </div>
         );
     }
@@ -1040,7 +1040,7 @@ export class Play extends React.Component<{}, PlayState> {
             <>
                 <tr className="challenge-row">
                     <td className="head " style={{ textAlign: "right" }}>
-                        {_("")}
+                        {/* buttons */ ""}
                     </td>
                     <td className="head organizer">{_("Organizer")}</td>
                     {/* <td className="head">{_("Rank")}</td> */}
@@ -1054,7 +1054,7 @@ export class Play extends React.Component<{}, PlayState> {
                         {_("Name")}
                     </td>
                     <td className="head" style={{ textAlign: "left" }}>
-                        {_("Rules")}
+                        {/* invite link */ ""}
                     </td>
                 </tr>
             </>
@@ -1196,7 +1196,7 @@ export class Play extends React.Component<{}, PlayState> {
         const { C, user } = { ...props };
         return (
             <tr className={"challenge-row rengo-management-row"}>
-                <td className="cell" colSpan={9}>
+                <td className="cell" colSpan={10}>
                     <Card className="rengo-management-list-item">
                         <div className="rengo-management-header">
                             <span>{C.name}</span>
@@ -1326,9 +1326,8 @@ export class Play extends React.Component<{}, PlayState> {
                 <td className="cell">{C.rengo_participants.length}</td>
                 <td className="cell">{C.handicap_text}</td>
                 <td className="cell">{C.name}</td>
-                <td className="cell">{rulesText(C.rules)}</td>
                 <td className="cell">
-                    <ChallengeLinkButton uuid={C.uuid} />
+                    {(C.user_challenge || null) && <ChallengeLinkButton uuid={C.uuid} />}
                 </td>
             </tr>
         );
