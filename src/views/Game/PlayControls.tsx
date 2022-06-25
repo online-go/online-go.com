@@ -51,7 +51,7 @@ import {
 } from "./GameHooks";
 import { useGoban } from "./goban_context";
 import { is_valid_url } from "url_validation";
-import { enableScrolling } from "./scrolling";
+import { enableTouchAction } from "./touch_actions";
 
 interface PlayControlsProps {
     // Cancel buttons are in props because the Cancel Button is placed below
@@ -551,7 +551,7 @@ export function PlayControls({
                         <button
                             className="sm primary bold"
                             onClick={() => {
-                                enableScrolling();
+                                enableTouchAction();
                                 goban.setModeDeferred("play");
                             }}
                         >
@@ -739,7 +739,7 @@ export function AnalyzeButtonBar({
     };
 
     const goban_setModeDeferredPlay = () => {
-        enableScrolling();
+        enableTouchAction();
         goban.setModeDeferred("play");
     };
 

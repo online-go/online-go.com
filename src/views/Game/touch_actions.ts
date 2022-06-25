@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export function disableScrolling() {
-    document.documentElement.classList.add("noscroll");
+export function disableTouchAction() {
+    document.documentElement.classList.add("no-touch-action");
 }
 
-export function enableScrolling() {
-    document.documentElement.classList.remove("noscroll");
+export function enableTouchAction() {
+    document.documentElement.classList.remove("no-touch-action");
 }
