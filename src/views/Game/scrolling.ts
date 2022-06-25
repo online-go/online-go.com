@@ -17,10 +17,8 @@
 
 export function disableScrolling() {
     document.documentElement.classList.add("noscroll");
-    document.body.classList.add("noscroll");
 }
 
 export function enableScrolling() {
     document.documentElement.classList.remove("noscroll");
-    document.body.classList.remove("noscroll");
 }
