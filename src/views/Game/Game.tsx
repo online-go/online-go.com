@@ -343,10 +343,7 @@ export function Game(): JSX.Element {
             enableTouchAction();
             switch (tool) {
                 case "draw":
-                    if ("ontouchstart" in window) {
-                        void alert.fire(_("Scrolling is disabled while the pen tool is selected."));
-                        disableTouchAction();
-                    }
+                    disableTouchAction();
                     goban.current.setAnalyzeTool(tool, analyze_pencil_color);
                     break;
                 case "erase":
