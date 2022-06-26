@@ -15,10 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-export function disableTouchAction() {
-    document.documentElement.classList.add("no-touch-action");
+const gobanSelector = ".goban-container .Goban .Goban";
+
+export function disableTouchAction(selector: string = gobanSelector) {
+    document.querySelector(selector).classList.add("no-touch-action");
 }
 
-export function enableTouchAction() {
-    document.documentElement.classList.remove("no-touch-action");
+export function enableTouchAction(selector: string = gobanSelector) {
+    document.querySelector(selector).classList.remove("no-touch-action");
 }
