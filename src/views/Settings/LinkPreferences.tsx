@@ -192,6 +192,15 @@ export function LinkPreferences(props: SettingGroupProps): JSX.Element {
                 />
                 <RankSelect value={link.goquest_rank} onChange={set("goquest_rank")} />
             </PreferenceLine>
+            <PreferenceLine title={_("BadukPop")}>
+                <input
+                    type="text"
+                    placeholder={_("Username")}
+                    value={link.badukpop_username || ""}
+                    onChange={set("badukpop_username")}
+                />
+                <RankSelect value={link.badukpop_rank} onChange={set("badukpop_rank")} />
+            </PreferenceLine>
         </div>
     );
 }
