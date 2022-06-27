@@ -51,6 +51,7 @@ import {
 } from "./GameHooks";
 import { useGoban } from "./goban_context";
 import { is_valid_url } from "url_validation";
+import { enableTouchAction } from "./touch_actions";
 
 interface PlayControlsProps {
     // Cancel buttons are in props because the Cancel Button is placed below
@@ -549,7 +550,10 @@ export function PlayControls({
                     <span>
                         <button
                             className="sm primary bold"
-                            onClick={() => goban.setModeDeferred("play")}
+                            onClick={() => {
+                                enableTouchAction();
+                                goban.setModeDeferred("play");
+                            }}
                         >
                             {_("Back to Game")}
                         </button>
@@ -735,6 +739,7 @@ export function AnalyzeButtonBar({
     };
 
     const goban_setModeDeferredPlay = () => {
+        enableTouchAction();
         goban.setModeDeferred("play");
     };
 

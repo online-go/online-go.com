@@ -68,6 +68,7 @@ import { useCurrentMove, useShowTitle, useTitle, useUserIsParticipant } from "./
 import { GobanContainer } from "GobanContainer";
 import { GobanContext } from "./goban_context";
 import { is_valid_url } from "url_validation";
+import { disableTouchAction, enableTouchAction } from "./touch_actions";
 
 export function Game(): JSX.Element {
     const params = useParams<"game_id" | "review_id" | "move_number">();
@@ -339,8 +340,10 @@ export function Game(): JSX.Element {
         if (checkAndEnterAnalysis()) {
             $("#game-analyze-button-bar .active").removeClass("active");
             $("#game-analyze-" + tool + "-tool").addClass("active");
+            enableTouchAction();
             switch (tool) {
                 case "draw":
+                    disableTouchAction();
                     goban.current.setAnalyzeTool(tool, analyze_pencil_color);
                     break;
                 case "erase":
