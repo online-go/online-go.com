@@ -210,6 +210,7 @@ export class SignIn extends React.PureComponent<{}, any> {
                                 ref={this.ref_username}
                                 name="username"
                                 onKeyPress={this.login}
+                                autoCapitalize="off"
                             />
                             <label htmlFor="password">
                                 {_("Password") /* translators: Provide password to sign in with */}
