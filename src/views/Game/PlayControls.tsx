@@ -1043,7 +1043,7 @@ const useReviewOutOfSync = generateGobanHook(
             engine.cur_move.id !== engine.cur_review_move.id
         );
     },
-    ["cur_move"],
+    ["cur_move", "review.updated"],
 );
 
 export function ReviewControls({
