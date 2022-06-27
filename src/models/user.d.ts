@@ -15,7 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-type Server = "kgs" | "igs" | "dgs" | "golem" | "wbaduk" | "tygem" | "fox" | "yike" | "goquest";
+type Server =
+    | "kgs"
+    | "igs"
+    | "dgs"
+    | "golem"
+    | "wbaduk"
+    | "tygem"
+    | "fox"
+    | "yike"
+    | "goquest"
+    | "badukpop";
 declare namespace rest_api {
     interface RatingsConfig {
         rating: number;

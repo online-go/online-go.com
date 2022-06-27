@@ -604,7 +604,11 @@ function SelfReportedAccountLinkages({ links }: { links: rest_api.AccountLinks }
             <ServerLink name={_("Fox")} id={links.fox_username} rank={links.fox_rank} />
             <ServerLink name={_("Yike Weiqi")} id={links.yike_username} rank={links.yike_rank} />
             <ServerLink name={_("GoQuest")} id={links.goquest_username} rank={links.goquest_rank} />
-            <ServerLink name={_("BadukPop")} id={links.badukpop_username} rank={links.badukpop_rank} />
+            <ServerLink
+                name={_("BadukPop")}
+                id={links.badukpop_username}
+                rank={links.badukpop_rank}
+            />
         </div>
     );
 }
