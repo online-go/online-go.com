@@ -187,12 +187,6 @@ export function EXV6NavBar(): JSX.Element {
                         <i className="fa fa-link"></i>
                         {_("Other Go Resources")}
                     </Link>
-                    <li>
-                        <span className="fakelink" onClick={newDemo}>
-                            <i className="fa fa-plus"></i>
-                            {_("Demo Board")}
-                        </span>
-                    </li>
                 </Menu>
                 <Menu title={_("Watch")} to="/observe-games">
                     <Link to="/observe-games">
