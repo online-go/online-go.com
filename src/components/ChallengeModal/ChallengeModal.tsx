@@ -1629,7 +1629,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         </button>
                     )}
                 </div>
-                {!(this.props.playerId || null) && (
+                {!(this.props.playerId || null) && (mode !== "demo" || null) && (
                     <div className="form-group invite-only-challenge-selector">
                         <label className="control-label" htmlFor="challenge-invite-only">
                             {pgettext(
