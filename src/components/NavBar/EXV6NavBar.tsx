@@ -199,6 +199,13 @@ export function EXV6NavBar(): JSX.Element {
                         <i className="fa fa-eye"></i>
                         {_("Games")}
                     </Link>
+                </Menu>
+
+                <Menu title={_("Community")} to="/chat">
+                    <Link to="/chat">
+                        <i className="fa fa-comment-o"></i>
+                        {_("Chat")}
+                    </Link>
                     <div className="submenu-container">
                         <Link to="/groups">
                             <i className="fa fa-users"></i>
