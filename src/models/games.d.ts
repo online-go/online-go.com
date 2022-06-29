@@ -158,8 +158,14 @@ declare namespace rest_api {
             ranked: boolean;
             rengo: boolean;
             rengo_teams: {
-                black: number[];
-                white: number[];
+                black: {
+                    id: number;
+                    username: string;
+                }[];
+                white: {
+                    id: number;
+                    username: string;
+                }[];
             };
             reviews: { [player_id: number]: import("../lib/player_cache").PlayerCacheEntry };
             rules: import("../lib/types").RuleSet;
