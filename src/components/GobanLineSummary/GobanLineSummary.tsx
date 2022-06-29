@@ -160,18 +160,21 @@ export class GobanLineSummary extends React.Component<
         let player_color: string;
         let opponent_color: string;
 
-        if (this.props.player && this.props.player.id === this.props.black.id) {
-            player = this.props.black;
-            opponent = this.props.white;
-            player_color = "black";
-            opponent_color = "white";
-        }
-
-        if (this.props.player && this.props.player.id === this.props.white.id) {
-            player = this.props.white;
-            opponent = this.props.black;
-            player_color = "white";
-            opponent_color = "black";
+        switch (playerColor(this.props)) {
+            case "black":
+                player = this.props.black;
+                opponent = this.props.white;
+                player_color = "black";
+                opponent_color = "white";
+                break;
+            case "white":
+                player = this.props.white;
+                opponent = this.props.black;
+                player_color = "white";
+                opponent_color = "black";
+                break;
+            default:
+                break;
         }
 
         return (
@@ -226,4 +229,27 @@ export class GobanLineSummary extends React.Component<
             </Link>
         );
     }
+}
+
+function playerColor(props: GobanLineSummaryProps): "black" | "white" | null {
+    if (!props.player) {
+        return null;
+    }
+    if (props.player.id === props.black.id) {
+        return "black";
+    }
+    if (props.player.id === props.white.id) {
+        return "white";
+    }
+
+    const isPlayer = (p) => p.id === props.player.id;
+    if (props.rengo_teams) {
+        if (props.rengo_teams.black.some(isPlayer)) {
+            return "black";
+        }
+        if (props.rengo_teams.white.some(isPlayer)) {
+            return "white";
+        }
+    }
+    return null;
 }
