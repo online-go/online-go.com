@@ -23,21 +23,24 @@ import { GobanLineSummary } from "GobanLineSummary";
 import { Player } from "Player";
 import { AdHocClock, AdHocPackedMove, Goban } from "goban";
 
+interface UserType {
+    id: number;
+    username: string;
+}
+
 interface GameType {
     id: number;
     name: string;
-    black: {
-        id: number;
-        username: string;
-    };
-    white: {
-        id: number;
-        username: string;
-    };
+    black: UserType;
+    white: UserType;
     goban?: Goban;
     json?: {
         clock: AdHocClock;
         moves: AdHocPackedMove[];
+        rengo_teams: {
+            black: Array<UserType>;
+            white: Array<UserType>;
+        };
     };
     width: number;
     height: number;
@@ -80,7 +83,6 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
 
     render() {
         const lst = this.props.list.slice(0);
-
         if (!this.props.disableSort) {
             switch (this.state.sort_order) {
                 case "-clock":
