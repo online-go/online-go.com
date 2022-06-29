@@ -42,6 +42,10 @@ interface GobanLineSummaryProps {
     gobanref?: (goban: Goban) => void;
     width?: number;
     height?: number;
+    rengo_teams?: {
+        black: UserType[];
+        white: UserType[];
+    };
 }
 
 interface GobanLineSummaryState extends GobanInfoStateBase {
