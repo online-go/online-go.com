@@ -356,12 +356,14 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
             });
         }
 
-        this.x.domain(
-            d3.extent([
-                0,
-                Math.max(entries[entries.length - 1].move_number, this.props.variation_move_number),
-            ]) as [number, number],
-        );
+        this.x.domain([
+            0,
+            Math.max(
+                entries[entries.length - 1].move_number,
+                this.props.entries.length > 0 ? this.props.variation_move_number : 0,
+            ),
+        ]);
+
         if (use_score_safe) {
             this.y.domain(d3.extent(d3.merge([entries, variation_entries]), (e) => e.score));
         } else {
