@@ -266,183 +266,198 @@ export function IncidentReportTracker(): JSX.Element {
                                 )}
                             </div>
                         )}
-                        {reports.map((report) => (
-                            <div className="incident" key={report.id}>
-                                <div className="report-header">
-                                    <div className="report-id">
-                                        {"R" + `${report.id}`.slice(-3) + ": "}
-                                        {getReportType(report)}
-                                    </div>
-                                    {((!report.moderator && user.is_moderator) || null) && (
-                                        <button className="primary xs" onClick={report.claim}>
-                                            {_("Claim")}
-                                        </button>
-                                    )}
-                                    {user.is_moderator && report.moderator && (
-                                        <Player user={report.moderator} icon />
-                                    )}
-                                </div>
-                                {(report.reporter_note || null) && (
-                                    <h4 className="notes">
-                                        {report.reporter_note_translation ? (
-                                            <>
-                                                {report.reporter_note_translation.source_text}
-                                                {(report.reporter_note_translation
-                                                    .target_language !==
-                                                    report.reporter_note_translation
-                                                        .source_language ||
-                                                    null) && (
-                                                    <>
-                                                        <div className="source-to-target-languages">
-                                                            {
-                                                                report.reporter_note_translation
-                                                                    .source_language
-                                                            }{" "}
-                                                            =&gt;{" "}
-                                                            {
-                                                                report.reporter_note_translation
-                                                                    .target_language
-                                                            }
-                                                        </div>
-                                                        <div className="translated">
-                                                            {
-                                                                report.reporter_note_translation
-                                                                    .target_text
-                                                            }
-                                                        </div>
-                                                    </>
-                                                )}
-                                            </>
-                                        ) : (
-                                            <AutoTranslate source={report.reporter_note} />
+                        {reports
+                            .filter(
+                                (report) =>
+                                    !preferences.get("hide-claimed-reports") ||
+                                    report.moderator === null ||
+                                    report.moderator.id === user.id,
+                            )
+                            .map((report) => (
+                                <div className="incident" key={report.id}>
+                                    <div className="report-header">
+                                        <div className="report-id">
+                                            {"R" + `${report.id}`.slice(-3) + ": "}
+                                            {getReportType(report)}
+                                        </div>
+                                        {((!report.moderator && user.is_moderator) || null) && (
+                                            <button className="primary xs" onClick={report.claim}>
+                                                {_("Claim")}
+                                            </button>
                                         )}
-                                    </h4>
-                                )}
-
-                                {(report.system_note || null) && (
-                                    <h4 className="notes">{report.system_note}</h4>
-                                )}
-
-                                <div className="notes">
-                                    <i>{user.is_moderator ? report.moderator_note || "" : ""}</i>
-                                </div>
-
-                                <div className="spread">
-                                    {(report.url || null) && (
-                                        <a href={report.url} target="_blank">
-                                            {report.url}
-                                        </a>
-                                    )}
-
-                                    {(report.reported_user || null) && (
-                                        <span>
-                                            {_("Reported user")}:{" "}
-                                            <Player user={report.reported_user} icon />
-                                        </span>
-                                    )}
-                                    {(report.reported_game || null) && (
-                                        <span>
-                                            {_("Game")}:{" "}
-                                            <Link to={`/game/view/${report.reported_game}`}>
-                                                #{report.reported_game}
-                                            </Link>
-                                        </span>
-                                    )}
-                                    {(report.reported_review || null) && (
-                                        <span>
-                                            {_("Review")}:{" "}
-                                            <Link to={`/review/${report.reported_review}`}>
-                                                ##{report.reported_review}
-                                            </Link>
-                                        </span>
-                                    )}
-                                </div>
-
-                                {(report.report_type === "appeal" || null) && (
-                                    <h3>
-                                        <Link to={`/appeal/${report.reported_user.id}`}>
-                                            View Appeal
-                                        </Link>
-                                    </h3>
-                                )}
-
-                                {(report.reported_conversation || null) && (
-                                    <div
-                                        className="spread"
-                                        onClick={() => {
-                                            openReportedConversationModal(
-                                                report.reported_user?.id,
-                                                report.reported_conversation,
-                                            );
-                                        }}
-                                    >
-                                        <span id="conversation">
-                                            {_("View Reported Conversation")}
-                                        </span>
+                                        {user.is_moderator && report.moderator && (
+                                            <Player user={report.moderator} icon />
+                                        )}
                                     </div>
-                                )}
+                                    {(report.reporter_note || null) && (
+                                        <h4 className="notes">
+                                            {report.reporter_note_translation ? (
+                                                <>
+                                                    {report.reporter_note_translation.source_text}
+                                                    {(report.reporter_note_translation
+                                                        .target_language !==
+                                                        report.reporter_note_translation
+                                                            .source_language ||
+                                                        null) && (
+                                                        <>
+                                                            <div className="source-to-target-languages">
+                                                                {
+                                                                    report.reporter_note_translation
+                                                                        .source_language
+                                                                }{" "}
+                                                                =&gt;{" "}
+                                                                {
+                                                                    report.reporter_note_translation
+                                                                        .target_language
+                                                                }
+                                                            </div>
+                                                            <div className="translated">
+                                                                {
+                                                                    report.reporter_note_translation
+                                                                        .target_text
+                                                                }
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <AutoTranslate source={report.reporter_note} />
+                                            )}
+                                        </h4>
+                                    )}
 
-                                <div className="spread">
-                                    {((report.moderator &&
-                                        user.is_moderator &&
-                                        user.id !== report.moderator.id) ||
-                                        null) && (
-                                        <button className="danger xs" onClick={report.claim}>
-                                            {_("Steal")}
-                                        </button>
-                                    )}
-                                    {((!report.moderator &&
-                                        report.reporting_user &&
-                                        user.id === report.reporting_user.id) ||
-                                        null) && (
-                                        <button className="reject xs" onClick={report.cancel}>
-                                            {_("Cancel")}
-                                        </button>
+                                    {(report.system_note || null) && (
+                                        <h4 className="notes">{report.system_note}</h4>
                                     )}
 
-                                    {((report.moderator &&
-                                        user.is_moderator &&
-                                        user.id === report.moderator.id) ||
-                                        null) && (
-                                        <button className="success xs" onClick={report.good_report}>
-                                            {_("Good report")}
-                                        </button>
+                                    <div className="notes">
+                                        <i>
+                                            {user.is_moderator ? report.moderator_note || "" : ""}
+                                        </i>
+                                    </div>
+
+                                    <div className="spread">
+                                        {(report.url || null) && (
+                                            <a href={report.url} target="_blank">
+                                                {report.url}
+                                            </a>
+                                        )}
+
+                                        {(report.reported_user || null) && (
+                                            <span>
+                                                {_("Reported user")}:{" "}
+                                                <Player user={report.reported_user} icon />
+                                            </span>
+                                        )}
+                                        {(report.reported_game || null) && (
+                                            <span>
+                                                {_("Game")}:{" "}
+                                                <Link to={`/game/view/${report.reported_game}`}>
+                                                    #{report.reported_game}
+                                                </Link>
+                                            </span>
+                                        )}
+                                        {(report.reported_review || null) && (
+                                            <span>
+                                                {_("Review")}:{" "}
+                                                <Link to={`/review/${report.reported_review}`}>
+                                                    ##{report.reported_review}
+                                                </Link>
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {(report.report_type === "appeal" || null) && (
+                                        <h3>
+                                            <Link to={`/appeal/${report.reported_user.id}`}>
+                                                View Appeal
+                                            </Link>
+                                        </h3>
                                     )}
-                                    {((report.moderator &&
-                                        user.is_moderator &&
-                                        user.id === report.moderator.id) ||
-                                        null) && (
-                                        <button className="info xs" onClick={report.set_note}>
-                                            {_("Note")}
-                                        </button>
+
+                                    {(report.reported_conversation || null) && (
+                                        <div
+                                            className="spread"
+                                            onClick={() => {
+                                                openReportedConversationModal(
+                                                    report.reported_user?.id,
+                                                    report.reported_conversation,
+                                                );
+                                            }}
+                                        >
+                                            <span id="conversation">
+                                                {_("View Reported Conversation")}
+                                            </span>
+                                        </div>
                                     )}
-                                    {((report.moderator &&
-                                        user.is_moderator &&
-                                        user.id === report.moderator.id) ||
-                                        null) && (
-                                        <button className="danger xs" onClick={report.unclaim}>
-                                            {_("Unclaim")}
-                                        </button>
-                                    )}
-                                    {((report.moderator &&
-                                        user.is_moderator &&
-                                        user.id === report.moderator.id) ||
-                                        null) && (
-                                        <button className="reject xs" onClick={report.bad_report}>
-                                            {_("Bad report")}
-                                        </button>
-                                    )}
+
+                                    <div className="spread">
+                                        {((report.moderator &&
+                                            user.is_moderator &&
+                                            user.id !== report.moderator.id) ||
+                                            null) && (
+                                            <button className="danger xs" onClick={report.claim}>
+                                                {_("Steal")}
+                                            </button>
+                                        )}
+                                        {((!report.moderator &&
+                                            report.reporting_user &&
+                                            user.id === report.reporting_user.id) ||
+                                            null) && (
+                                            <button className="reject xs" onClick={report.cancel}>
+                                                {_("Cancel")}
+                                            </button>
+                                        )}
+
+                                        {((report.moderator &&
+                                            user.is_moderator &&
+                                            user.id === report.moderator.id) ||
+                                            null) && (
+                                            <button
+                                                className="success xs"
+                                                onClick={report.good_report}
+                                            >
+                                                {_("Good report")}
+                                            </button>
+                                        )}
+                                        {((report.moderator &&
+                                            user.is_moderator &&
+                                            user.id === report.moderator.id) ||
+                                            null) && (
+                                            <button className="info xs" onClick={report.set_note}>
+                                                {_("Note")}
+                                            </button>
+                                        )}
+                                        {((report.moderator &&
+                                            user.is_moderator &&
+                                            user.id === report.moderator.id) ||
+                                            null) && (
+                                            <button className="danger xs" onClick={report.unclaim}>
+                                                {_("Unclaim")}
+                                            </button>
+                                        )}
+                                        {((report.moderator &&
+                                            user.is_moderator &&
+                                            user.id === report.moderator.id) ||
+                                            null) && (
+                                            <button
+                                                className="reject xs"
+                                                onClick={report.bad_report}
+                                            >
+                                                {_("Bad report")}
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="spread">
+                                        {report.reporting_user ? (
+                                            <Player user={report.reporting_user} icon />
+                                        ) : (
+                                            <span>{_("System")}</span>
+                                        )}
+                                        <i>{moment(report.created).fromNow()}</i>
+                                    </div>
                                 </div>
-                                <div className="spread">
-                                    {report.reporting_user ? (
-                                        <Player user={report.reporting_user} icon />
-                                    ) : (
-                                        <span>{_("System")}</span>
-                                    )}
-                                    <i>{moment(report.created).fromNow()}</i>
-                                </div>
-                            </div>
-                        ))}
+                            ))}
                     </div>
                 </div>
             )}

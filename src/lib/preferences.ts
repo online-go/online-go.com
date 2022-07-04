@@ -55,6 +55,7 @@ export const defaults = {
     "notification-timeout": 10,
     "notify-on-incident-report": true,
     "hide-incident-reports": false,
+    "hide-claimed-reports": false,
     "observed-games-page-size": 9,
     "observed-games-viewing": "live",
     "observed-games-filter": {},

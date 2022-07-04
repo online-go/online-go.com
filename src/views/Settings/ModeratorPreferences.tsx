@@ -32,6 +32,7 @@ export function ModeratorPreferences(_props: SettingGroupProps): JSX.Element {
         "notify-on-incident-report",
     );
     const [hide_incident_reports, setHideIncidentReports] = usePreference("hide-incident-reports");
+    const [hide_claimed_reports, setHideClaimedReports] = usePreference("hide-claimed-reports");
     const [join_games_anonymously, setJoinGamesAnonymously] = usePreference(
         "moderator.join-games-anonymously",
     );
@@ -52,6 +53,9 @@ export function ModeratorPreferences(_props: SettingGroupProps): JSX.Element {
             </PreferenceLine>
             <PreferenceLine title="Hide incident reports">
                 <Toggle checked={hide_incident_reports} onChange={setHideIncidentReports} />
+            </PreferenceLine>
+            <PreferenceLine title="Hide claimed reports">
+                <Toggle checked={hide_claimed_reports} onChange={setHideClaimedReports} />
             </PreferenceLine>
             <PreferenceLine title="Join games anonymously">
                 <Toggle checked={join_games_anonymously} onChange={setJoinGamesAnonymously} />
