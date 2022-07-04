@@ -310,7 +310,7 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                             gobanref={(goban) => (game.goban = goban)}
                             width={game.width}
                             height={game.height}
-                            rengo_teams={game.json.rengo_teams}
+                            rengo_teams={game.json?.rengo_teams}
                         />
                     ))}
                 </div>
