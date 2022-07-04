@@ -206,18 +206,27 @@ export function IncidentReportTracker(): JSX.Element {
             }
 
             reports.sort((a, b) => {
-                if (a.moderator && a.moderator.id === user.id && !b.moderator) {
-                    return -1;
+                const A_BEFORE_B = -1;
+                const B_BEFORE_A = 1;
+
+                if (!a.moderator && !b.moderator) {
+                    return parseInt(b.id) - parseInt(a.id);
                 }
-                if (b.moderator && b.moderator.id === user.id && !a.moderator) {
-                    return 1;
+                if (a.moderator && !b.moderator) {
+                    return B_BEFORE_A;
+                }
+                if (b.moderator && !a.moderator) {
+                    return A_BEFORE_B;
                 }
 
-                if (a.moderator && a.moderator.id !== user.id && !b.moderator) {
-                    return 1;
+                // both have moderators, sort our mod reports first, then other
+                // mods, then by id
+
+                if (a.moderator.id !== user.id && b.moderator.id === user.id) {
+                    return B_BEFORE_A;
                 }
-                if (b.moderator && b.moderator.id !== user.id && !a.moderator) {
-                    return -1;
+                if (a.moderator.id === user.id && b.moderator.id !== user.id) {
+                    return A_BEFORE_B;
                 }
 
                 return parseInt(b.id) - parseInt(a.id);
