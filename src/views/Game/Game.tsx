@@ -552,18 +552,19 @@ export function Game(): JSX.Element {
 
     /*** Game stuff ***/
     const reviewAdded = (review) => {
-        const review_list = [];
+        console.log("Review added: " + JSON.stringify(review));
+        const new_review_list = [];
         for (const r of review_list) {
-            review_list.push(r);
+            new_review_list.push(r);
         }
-        review_list.push(review);
-        review_list.sort((a, b) => {
+        new_review_list.push(review);
+        new_review_list.sort((a, b) => {
             if (a.owner.ranking === b.owner.ranking) {
                 return a.owner.username < b.owner.username ? -1 : 1;
             }
             return a.owner.ranking - b.owner.ranking;
         });
-        set_review_list(review_list);
+        set_review_list(new_review_list);
         if (goban.current?.engine?.phase === "finished") {
             sfx.play("review_started");
         }
@@ -1080,6 +1081,22 @@ export function Game(): JSX.Element {
             set_undo_requested(engine.undo_requested);
 
             sync_stone_removal();
+
+            const review_list = [];
+            for (const k in (engine.config as any).reviews) {
+                review_list.push({
+                    id: k,
+                    owner: (engine.config as any).reviews[k],
+                });
+            }
+            review_list.sort((a, b) => {
+                if (a.owner.ranking === b.owner.ranking) {
+                    return a.owner.username < b.owner.username ? -1 : 1;
+                }
+                return a.owner.ranking - b.owner.ranking;
+            });
+
+            set_review_list(review_list);
         };
 
         goban.current.on("load", onLoad);
@@ -1225,21 +1242,6 @@ export function Game(): JSX.Element {
                     ladder_id.current = game.ladder;
                     tournament_id.current = game.tournament;
 
-                    const review_list = [];
-                    for (const k in game.gamedata.reviews) {
-                        review_list.push({
-                            id: k,
-                            owner: game.gamedata.reviews[k],
-                        });
-                    }
-                    review_list.sort((a, b) => {
-                        if (a.owner.ranking === b.owner.ranking) {
-                            return a.owner.username < b.owner.username ? -1 : 1;
-                        }
-                        return a.owner.ranking - b.owner.ranking;
-                    });
-
-                    set_review_list(review_list);
                     set_annulled(game.annulled);
                     set_historical_black(game.historical_ratings.black);
                     set_historical_white(game.historical_ratings.white);
