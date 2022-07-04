@@ -67,6 +67,10 @@ export interface Report {
     set_note: () => void;
 }
 
+// when true, don't alert mods about notifications - this prevents a surge of
+// existing notifications when we reconnect to the server
+let post_connect_notification_squelch = true;
+
 export function IncidentReportTracker(): JSX.Element {
     const active_incident_reports_ref = React.useRef({});
     const [show_incident_list, setShowIncidentList] = React.useState(false);
@@ -78,6 +82,11 @@ export function IncidentReportTracker(): JSX.Element {
             const user = data.get("user");
             active_incident_reports_ref.current = {};
             setReports(new Array<Report>());
+
+            post_connect_notification_squelch = true;
+            setTimeout(() => {
+                post_connect_notification_squelch = false;
+            }, 5000);
 
             if (!user.anonymous) {
                 socket.send("incident/connect", {
@@ -164,7 +173,8 @@ export function IncidentReportTracker(): JSX.Element {
                 if (!(report.id in active_incident_reports_ref.current)) {
                     if (
                         data.get("user").is_moderator &&
-                        preferences.get("notify-on-incident-report")
+                        preferences.get("notify-on-incident-report") &&
+                        !post_connect_notification_squelch
                     ) {
                         emitNotification(
                             "Incident Report",
