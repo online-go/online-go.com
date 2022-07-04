@@ -1083,10 +1083,10 @@ export function Game(): JSX.Element {
             sync_stone_removal();
 
             const review_list = [];
-            for (const k in (engine.config as any).reviews) {
+            for (const k in engine.config.reviews) {
                 review_list.push({
                     id: k,
-                    owner: (engine.config as any).reviews[k],
+                    owner: engine.config.reviews[k],
                 });
             }
             review_list.sort((a, b) => {
