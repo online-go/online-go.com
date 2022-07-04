@@ -448,7 +448,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
                 <p className="fineprint">
                     <sup>*</sup>
                     {_(
-                        "Only 19x19, 9x9, and 13x13 games are supported for AI review. Engines currently available are KataGo and Leela Zero. Playouts and engines are subject to change over time as technology and software improves, but only if the changes should provide you with better reviews.",
+                        "Only 19x19, 9x9, and 13x13 games are supported for AI review. Playouts and engines are subject to change over time as technology and software improves, but only if the changes should provide you with better reviews.",
                     )}
                 </p>
             </div>
