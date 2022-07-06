@@ -207,14 +207,20 @@ export function Supporter(props: SupporterProperties): JSX.Element {
         false as boolean,
     );
     const already_showed_payment_updated_modal = React.useRef<boolean>(false);
-    const [search_params, setSearchParams] = useSearchParams();
+    try {
+        const [search_params, setSearchParams] = useSearchParams();
 
-    if (search_params.get("payment_updated") === "true") {
-        if (!already_showed_payment_updated_modal.current) {
-            already_showed_payment_updated_modal.current = true;
-            void alert.fire(_("Payment method upated, thank you!"));
-            setSearchParams({});
+        if (search_params.get("payment_updated") === "true") {
+            if (!already_showed_payment_updated_modal.current) {
+                already_showed_payment_updated_modal.current = true;
+                void alert.fire(_("Payment method upated, thank you!"));
+                setSearchParams({});
+            }
         }
+    } catch (e) {
+        // ignore. This case happens when we are clicking the "Full AI REview" button because
+        // we can't use search params in this context, however it's also not important since
+        // this is only ever used for payment callback stuff.
     }
 
     load_checkout_libraries();
