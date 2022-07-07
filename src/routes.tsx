@@ -83,7 +83,7 @@ function Main(props): JSX.Element {
     return (
         <Experiment name="v6">
             <Variant value="enabled" bodyclass="v6">
-                <div>
+                <div id="variant-container">
                     <ErrorBoundary>
                         <NavBar />
                     </ErrorBoundary>
@@ -94,7 +94,7 @@ function Main(props): JSX.Element {
                 </div>
             </Variant>
             <ExDefault>
-                <div>
+                <div id="default-variant-container">
                     <ErrorBoundary>
                         <NavBar />
                     </ErrorBoundary>
