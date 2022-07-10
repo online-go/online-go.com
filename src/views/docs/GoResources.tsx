@@ -725,6 +725,11 @@ export const GoResources = () => {
                             />,
                             <BasicResource
                                 countries={[en]}
+                                title="Phoebe's blog"
+                                href="http://smoonst.blogspot.com/"
+                            />,
+                            <BasicResource
+                                countries={[en]}
                                 title="Yike Weiqi"
                                 href="https://twitter.com/yikego_en"
                             />,
