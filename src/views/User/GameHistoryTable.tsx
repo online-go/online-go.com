@@ -358,7 +358,7 @@ function getGameResultRichText(game: rest_api.Game) {
 }
 
 function capitalize<T extends string>(s: T): Capitalize<T> {
-    return (s.toUpperCase() + s.slice(1)) as Capitalize<T>;
+    return (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<T>;
 }
 
 function getResultClass(game: rest_api.Game, user_id: number): ResultClass {
