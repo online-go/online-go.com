@@ -102,7 +102,6 @@ export function Settings(): JSX.Element {
         { key: "blocked_players", label: _("Blocked Players") },
         { key: "account", label: _("Account Settings") },
         { key: "link", label: _("Account Linking") },
-        { key: "help", label: _("Help Settings") },
         /*
         {
             key: "experiments",
