@@ -243,7 +243,7 @@ export function parseIntWithDefaultValue(
 export function makeTimeControlParameters(tc: any): TimeControl {
     const tpm = computeAverageMoveTime(tc);
     const speed: TimeControlTypes.TimeControlSpeed =
-        tpm === 0 || tpm > 3600 ? "correspondence" : tpm < 10 ? "blitz" : "live";
+        tpm === 0 || tpm > 3600 ? "correspondence" : tpm < 11 ? "blitz" : "live";
 
     switch (tc.system || tc.time_control) {
         case "fischer":
