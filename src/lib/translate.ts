@@ -500,6 +500,8 @@ export function setCurrentLanguage(language_code: string) {
         "Enter the label you want to add to the board": _(
             "Enter the label you want to add to the board",
         ),
+        Error: _("Error"),
+        "Self-capture is not allowed": _("Self-capture is not allowed"),
 
         "Black Walnut": _("Black Walnut"),
         Book: _("Book"),
