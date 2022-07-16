@@ -546,7 +546,9 @@ export function Game(): JSX.Element {
             goban.current.sendChat(analysis, selected_chat_log);
             last_analysis_sent.current = analysis;
         } else {
-            goban.current.message("Can't send to the " + selected_chat_log + " chat_log");
+            goban.current.showMessage("error", {
+                error: { message: "Can't send to the " + selected_chat_log + " chat_log" },
+            });
         }
     };
 
