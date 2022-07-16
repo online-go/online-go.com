@@ -534,7 +534,7 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    this.partTournament;
+                    this.partTournament();
                 }
             })
             .catch(errorAlerter);
