@@ -23,7 +23,14 @@ import { Link } from "react-router-dom";
 import { Player } from "Player";
 import { ignore } from "misc";
 
-export function OmniSearch({ search }: { search: string }): JSX.Element {
+interface OmniSearchProperties {
+    search: string;
+    onMouseOver: (e: React.MouseEvent<HTMLDivElement>) => void;
+    onMouseOut: (e: React.MouseEvent<HTMLDivElement>) => void;
+}
+
+export function OmniSearch(props: OmniSearchProperties): JSX.Element {
+    const { search } = props;
     const [omnisearch_string, setOmnisearchString] = React.useState("");
     const [omnisearch_loading, setOmnisearchLoading] = React.useState(false);
     const [omnisearch_sitemap, setOmnisearchSitemap] = React.useState([]);
@@ -73,7 +80,12 @@ export function OmniSearch({ search }: { search: string }): JSX.Element {
     }
 
     return (
-        <aside className="OmniSearch">
+        <aside
+            className="OmniSearch"
+            {...props}
+            onMouseOver={props.onMouseOver}
+            onMouseOut={props.onMouseOut}
+        >
             {(omnisearch_sitemap.length || null) && (
                 <div className="results">
                     <h3>{_("Site")}</h3>

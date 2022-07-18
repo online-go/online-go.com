@@ -69,6 +69,8 @@ export function EXV6NavBar(): JSX.Element {
     const user = useUser();
     const location = useLocation();
     const [search, setSearch] = React.useState<string>("");
+    const [focus, setFocus] = React.useState<boolean>(false);
+    const [omniMouseOver, setOmniMouseOver] = React.useState<boolean>(false);
     const [right_nav_active, setRightNavActive] = React.useState(false);
     const [notifications_active, setNotificationsActive] = React.useState(false);
     const [hamburger_expanded, setHamburgerExpanded] = React.useState(false);
@@ -76,6 +78,7 @@ export function EXV6NavBar(): JSX.Element {
     const closeNavbar = () => {
         setRightNavActive(false);
         setNotificationsActive(false);
+        setSearch("");
     };
 
     const toggleNotifications = () => {
@@ -90,6 +93,9 @@ export function EXV6NavBar(): JSX.Element {
     };
 
     const toggleHamburgerExpanded = () => {
+        if (hamburger_expanded) {
+            setSearch("");
+        }
         setHamburgerExpanded(!hamburger_expanded);
     };
 
@@ -130,7 +136,7 @@ export function EXV6NavBar(): JSX.Element {
             </span>
 
             <nav className="left">
-                <Link to="/" className="menutitle">
+                <Link to="/" className="Menu-title">
                     {_("Home")}
                 </Link>
                 <Menu title={_("Play")} to="/play">
@@ -239,23 +245,6 @@ export function EXV6NavBar(): JSX.Element {
                 </Menu>
 
                 <Menu title={_("Tools")}>
-                    <section className="OmniSearch-container">
-                        <i className="fa fa-search" />
-                        <input
-                            type="search"
-                            className="OmniSearch-input"
-                            value={search}
-                            onChange={(ev) => setSearch(ev.target.value)}
-                            onKeyUp={(ev) => {
-                                if (ev.key === "Escape") {
-                                    setSearch("");
-                                }
-                            }}
-                            placeholder={_("Search")}
-                        />
-                        <OmniSearch search={search} />
-                    </section>
-
                     <Link to="/joseki">
                         <i className="fa fa-sitemap"></i>
                         {_("Joseki")}
@@ -299,6 +288,33 @@ export function EXV6NavBar(): JSX.Element {
                         </Link>
                     )}
                 </Menu>
+
+                <section className="OmniSearch-container">
+                    <div className="OmniSearch-input-container">
+                        <i className="fa fa-search" />
+                        <input
+                            type="search"
+                            className="OmniSearch-input"
+                            value={search}
+                            onChange={(ev) => setSearch(ev.target.value)}
+                            onKeyUp={(ev) => {
+                                if (ev.key === "Escape") {
+                                    setSearch("");
+                                }
+                            }}
+                            onFocus={() => setFocus(true)}
+                            onBlur={() => setFocus(false)}
+                            placeholder={_("Search")}
+                        />
+                    </div>
+                    {(focus || omniMouseOver || null) && (
+                        <OmniSearch
+                            search={search}
+                            onMouseOver={() => setOmniMouseOver(true)}
+                            onMouseOut={() => setOmniMouseOver(false)}
+                        />
+                    )}
+                </section>
             </nav>
 
             {user.anonymous ? (
@@ -382,15 +398,15 @@ interface MenuProps {
 
 function Menu({ title, to, children }: MenuProps): JSX.Element {
     return (
-        <section className="menu">
+        <section className="Menu">
             {to ? (
-                <Link to={to} className="menutitle">
+                <Link to={to} className="Menu-title">
                     {title}
                 </Link>
             ) : (
-                <span className="menutitle">{title}</span>
+                <span className="Menu-title">{title}</span>
             )}
-            <div className="menu-children">{children}</div>
+            <div className="Menu-children">{children}</div>
         </section>
     );
 }

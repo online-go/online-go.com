@@ -16,7 +16,8 @@
  */
 
 import * as React from "react";
-import { browserHistory } from "ogsHistory";
+//import { browserHistory } from "ogsHistory";
+import { useNavigate } from "react-router-dom";
 import * as data from "data";
 import { shouldOpenNewTab, errorLogger, unicodeFilter } from "misc";
 import { rankString, getUserRating, PROVISIONAL_RATING_CUTOFF } from "rank_utils";
@@ -77,6 +78,7 @@ export function Player(props: PlayerProperties): JSX.Element {
     const player_id =
         typeof props.user !== "object" ? props.user : props.user.id || props.user.player_id;
     const historical = props.historical;
+    const navigate = useNavigate();
 
     const [is_online, set_is_online] = React.useState<boolean>(false);
     const [player, set_player] = React.useState<PlayerObjectType>(
@@ -217,7 +219,7 @@ export function Player(props: PlayerProperties): JSX.Element {
         } else if (props.nodetails) {
             close_all_popovers();
             close_friend_list();
-            browserHistory.push(`/player/${player_id}/`);
+            navigate(`/player/${player_id}/`);
             return;
         } else {
             let chat_id = null;
