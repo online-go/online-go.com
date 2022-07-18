@@ -301,7 +301,7 @@ export const GoResources = () => {
                             />,
                             <span>
                                 <Flag country={en} />
-                                <Flag country={ru} />{" "}
+                                <Flag country={"ge"} />{" "}
                                 <a rel="noopener" href="https://gomagic.org/">
                                     Go Magic
                                 </a>
@@ -434,12 +434,15 @@ export const GoResources = () => {
                                 href="https://www.youtube.com/user/KNMeepsie"
                             />,
                             <span>
-                                <Flag country={en} /> <Flag country={ru} />{" "}
+                                <Flag country={en} />{" "}
                                 <a rel="noopener" href="https://twitch.tv/gomagic_live">
                                     Go Magic Twitch
                                 </a>{" "}
                                 /{" "}
-                                <a rel="noopener" href="https://www.youtube.com/c/GoMagic">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/channel/UCqerkZelwpOiq56XXPmfZSQ"
+                                >
                                     YouTube
                                 </a>
                             </span>,
