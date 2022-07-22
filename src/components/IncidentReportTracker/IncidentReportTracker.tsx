@@ -61,6 +61,7 @@ export interface Report {
 
     unclaim: () => void;
     claim: () => void;
+    steal: () => void;
     bad_report: () => void;
     good_report: () => void;
     cancel: () => void;
@@ -135,10 +136,22 @@ export function IncidentReportTracker(): JSX.Element {
                         .then(ignore)
                         .catch(errorAlerter);
                 };
+                report.steal = () => {
+                    post("moderation/incident/%%", report.id, { id: report.id, action: "steal" })
+                        .then((res) => {
+                            if (res.vanished) {
+                                void alert.fire("Report was removed");
+                            }
+                        })
+                        .catch(errorAlerter);
+                };
                 report.claim = () => {
                     post("moderation/incident/%%", report.id, { id: report.id, action: "claim" })
                         .then((res) => {
                             if (res.vanished) {
+                                void alert.fire("Report was removed");
+                            }
+                            if (res.already_claimed) {
                                 void alert.fire("Report was removed");
                             }
                         })
@@ -403,7 +416,7 @@ export function IncidentReportTracker(): JSX.Element {
                                         user.is_moderator &&
                                         user.id !== report.moderator.id) ||
                                         null) && (
-                                        <button className="danger xs" onClick={report.claim}>
+                                        <button className="danger xs" onClick={report.steal}>
                                             {_("Steal")}
                                         </button>
                                     )}
