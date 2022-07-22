@@ -116,6 +116,8 @@ export function Game(): JSX.Element {
     const [historical_white, set_historical_white] = React.useState<rest_api.games.Player | null>(
         null,
     );
+    const [black_flags, set_black_flags] = React.useState<null | rest_api.GamePlayerFlags>(null);
+    const [white_flags, set_white_flags] = React.useState<null | rest_api.GamePlayerFlags>(null);
     const [annulled, set_annulled] = React.useState(false);
     const [ai_review_enabled, set_ai_review_enabled] = React.useState(
         preferences.get("ai-review-enabled"),
@@ -1250,6 +1252,15 @@ export function Game(): JSX.Element {
 
                     goban_div.current.setAttribute("data-game-id", game_id.toString());
 
+                    if (game.flags) {
+                        if (game.players.black.id && game.players.black.id in game.flags) {
+                            set_black_flags(game.flags[game.players.black.id]);
+                        }
+                        if (game.players.white.id && game.players.white.id in game.flags) {
+                            set_white_flags(game.flags[game.players.white.id]);
+                        }
+                    }
+
                     if (ladder_id.current) {
                         goban_div.current.setAttribute(
                             "data-ladder-id",
@@ -1399,6 +1410,8 @@ export function Game(): JSX.Element {
                                 historical_white={historical_white}
                                 estimating_score={estimating_score}
                                 zen_mode={zen_mode}
+                                black_flags={black_flags}
+                                white_flags={white_flags}
                             />
                         )}
 
@@ -1456,6 +1469,8 @@ export function Game(): JSX.Element {
                                     historical_white={historical_white}
                                     estimating_score={estimating_score}
                                     zen_mode={zen_mode}
+                                    black_flags={black_flags}
+                                    white_flags={white_flags}
                                 />
                             )}
 

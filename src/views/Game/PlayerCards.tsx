@@ -37,6 +37,8 @@ interface PlayerCardsProps {
     historical_white: PlayerType;
     estimating_score: boolean;
     zen_mode: boolean;
+    black_flags: null | rest_api.GamePlayerFlags;
+    white_flags: null | rest_api.GamePlayerFlags;
 }
 
 export function PlayerCards({
@@ -44,6 +46,8 @@ export function PlayerCards({
     historical_white,
     estimating_score,
     zen_mode,
+    black_flags,
+    white_flags,
 }: PlayerCardsProps): JSX.Element {
     const goban = useGoban();
     const engine = goban.engine;
@@ -95,6 +99,7 @@ export function PlayerCards({
                     show_score_breakdown={show_score_breakdown}
                     onScoreClick={toggleScorePopup}
                     zen_mode={zen_mode}
+                    flags={black_flags}
                 />
                 <PlayerCard
                     historical={historical_white}
@@ -104,6 +109,7 @@ export function PlayerCards({
                     show_score_breakdown={show_score_breakdown}
                     onScoreClick={toggleScorePopup}
                     zen_mode={zen_mode}
+                    flags={white_flags}
                 />
             </div>
             {(engine.rengo || null) && (
@@ -188,6 +194,7 @@ interface PlayerCardProps {
     show_score_breakdown: boolean;
     onScoreClick: () => void;
     zen_mode: boolean;
+    flags: null | rest_api.GamePlayerFlags;
 }
 
 function PlayerCard({
@@ -198,6 +205,7 @@ function PlayerCard({
     show_score_breakdown,
     onScoreClick,
     zen_mode,
+    flags,
 }: PlayerCardProps) {
     const engine = goban.engine;
     const player = engine.players[color];
@@ -291,6 +299,18 @@ function PlayerCard({
                 <div id={`${color}-score-details`} className="score-details">
                     <ScorePopup goban={goban} color={color} show={show_score_breakdown} />
                 </div>
+                {flags && (
+                    <div className="player-flags">
+                        {Object.keys(flags).map((flag) => (
+                            <div key={flag}>
+                                <i className="fa fa-flag" /> {flag}:{" "}
+                                {flag === "blur_rate"
+                                    ? `${Math.round((flags[flag] as number) * 100.0)}%`
+                                    : flags[flag]}
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
             {!!(engine.rengo && engine.rengo_teams) && (
                 <div className={"rengo-team-members player-name-container " + color}>

@@ -58,6 +58,7 @@ interface GroomedGame {
     white: PlayerCacheEntry;
     result_class: ResultClass;
     result: JSX.Element;
+    flags?: { [flag_key: string]: number | string | boolean };
     rengo_vs_text?: `${number} vs. ${number}`;
 }
 
@@ -145,6 +146,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
 
             item.href = `/game/${item.id}`;
             item.result = getGameResultRichText(r);
+            item.flags = r.flags && props.user_id in r.flags ? r.flags[props.user_id] : undefined;
 
             ret.push(item);
         }
@@ -328,7 +330,30 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                 header: _("Result"),
                                 className: (X) =>
                                     X ? X.result_class + (X.annulled ? " annulled" : "") : "",
-                                render: (X) => X.result,
+                                render: (X) => {
+                                    if (X.flags) {
+                                        let str = "";
+                                        for (const flag of Object.keys(X.flags)) {
+                                            if (flag === "blur_rate") {
+                                                str +=
+                                                    flag +
+                                                    ": " +
+                                                    Math.round((X.flags[flag] as number) * 100.0) +
+                                                    "%\n";
+                                            } else {
+                                                str += flag + ": " + X.flags[flag] + "\n";
+                                            }
+                                        }
+
+                                        return (
+                                            <span className="flagged-game">
+                                                <i className="fa fa-flag" title={str} /> {X.result}
+                                            </span>
+                                        );
+                                    }
+
+                                    return X.result;
+                                },
                             },
                         ]}
                     />

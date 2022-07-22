@@ -75,6 +75,9 @@ declare namespace rest_api {
         sgf_filename: string | null;
         rengo_black_team?: number[];
         rengo_white_team?: number[];
+        flags: null | {
+            [player_id: string]: GamePlayerFlags;
+        };
     }
 
     namespace games {
@@ -193,6 +196,10 @@ declare namespace rest_api {
         }
     }
 
+    interface GamePlayerFlags {
+        [flag_key: string]: number | boolean;
+    }
+
     /**
      * The response from `games/%game_id%`
      */
@@ -203,6 +210,9 @@ declare namespace rest_api {
         auth: string;
         game_chat_auth: string;
         gamedata: games.GameData;
+        flags: null | {
+            [player_id: string]: GamePlayerFlags;
+        };
     }
 
     namespace players.full {
