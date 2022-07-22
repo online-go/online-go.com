@@ -143,6 +143,9 @@ export class Admin extends React.PureComponent<{}, AdminState> {
                                 Merchant account request/response postback log
                             </Link>
                         </div>
+                        <div>
+                            <Link to="/admin/flagged_games">Flagged Games</Link>
+                        </div>
 
                         <h3>Pause Controls</h3>
                         <div>

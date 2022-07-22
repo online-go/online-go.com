@@ -29,7 +29,7 @@ import { SignIn } from "SignIn";
 import { Register } from "Register";
 import { ChallengeLinkLanding } from "ChallengeLinkLanding";
 import { Overview } from "Overview";
-import { Admin, MerchantLog } from "Admin";
+import { Admin, MerchantLog, FlaggedGames } from "Admin";
 import { ChatView } from "ChatView";
 import { Developer } from "Developer";
 import { Game } from "Game";
@@ -264,6 +264,7 @@ export const routes = (
                 <Route path="/developer" element={<Developer />} />
                 <Route path="/admin/merchant_log" element={<MerchantLog />} />
                 <Route path="/admin/firewall" element={<Firewall />} />
+                <Route path="/admin/flagged_games" element={<FlaggedGames />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/announcement-center" element={<AnnouncementCenter />} />
                 {/*
