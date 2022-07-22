@@ -891,6 +891,8 @@ export function Game(): JSX.Element {
         set_review_list([]);
         set_historical_black(null);
         set_historical_white(null);
+        set_black_flags(null);
+        set_white_flags(null);
 
         game_control.on("stopEstimatingScore", stopEstimatingScore);
         game_control.on("gotoMove", nav_goto_move);
