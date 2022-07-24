@@ -29,6 +29,7 @@ import * as data from "data";
 import { generateGobanHook, usePlayerToMove, useShowTitle, useTitle } from "./GameHooks";
 import { get_network_latency, get_clock_drift } from "sockets";
 import { useGoban } from "./goban_context";
+import { usePreference } from "preferences";
 
 type PlayerType = rest_api.games.Player;
 
@@ -210,6 +211,7 @@ function PlayerCard({
     const engine = goban.engine;
     const player = engine.players[color];
     const player_to_move = usePlayerToMove(goban);
+    const [hide_flags] = usePreference("moderator.hide-flags");
 
     const auto_resign_expiration = useAutoResignExpiration(goban, color);
     const score = useScore(goban)[color];
@@ -299,7 +301,7 @@ function PlayerCard({
                 <div id={`${color}-score-details`} className="score-details">
                     <ScorePopup goban={goban} color={color} show={show_score_breakdown} />
                 </div>
-                {flags && (
+                {!hide_flags && flags && (
                     <div className="player-flags">
                         {Object.keys(flags).map((flag) => (
                             <div key={flag}>

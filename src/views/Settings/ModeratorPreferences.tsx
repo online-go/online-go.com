@@ -36,6 +36,7 @@ export function ModeratorPreferences(_props: SettingGroupProps): JSX.Element {
     const [join_games_anonymously, setJoinGamesAnonymously] = usePreference(
         "moderator.join-games-anonymously",
     );
+    const [hide_flags, setHideFlags] = usePreference("moderator.hide-flags");
 
     const user = data.get("user");
 
@@ -59,6 +60,9 @@ export function ModeratorPreferences(_props: SettingGroupProps): JSX.Element {
             </PreferenceLine>
             <PreferenceLine title="Join games anonymously">
                 <Toggle checked={join_games_anonymously} onChange={setJoinGamesAnonymously} />
+            </PreferenceLine>
+            <PreferenceLine title="Hide flags">
+                <Toggle checked={hide_flags} onChange={setHideFlags} />
             </PreferenceLine>
         </div>
     );

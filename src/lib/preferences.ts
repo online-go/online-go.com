@@ -114,6 +114,7 @@ export const defaults = {
     "mute-event-announcements": false,
 
     "moderator.join-games-anonymously": true,
+    "moderator.hide-flags": false,
 
     "table-color-default-on": false,
 

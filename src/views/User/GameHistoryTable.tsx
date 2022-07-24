@@ -32,6 +32,7 @@ import * as preferences from "preferences";
 import { PlayerCacheEntry } from "src/lib/player_cache";
 import { TimeControl } from "src/components/TimeControl";
 import { Speed } from "src/lib/types";
+import { usePreference } from "preferences";
 
 interface GameHistoryProps {
     user_id: number;
@@ -70,6 +71,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
     const [game_history_ranked_filter, setGameHistoryRankedFilter] = React.useState<string>(
         preferences.get("game-history-ranked-filter"),
     );
+    const [hide_flags] = usePreference("moderator.hide-flags");
 
     function getBoardSize(size_filter: string): number {
         switch (size_filter) {
@@ -331,7 +333,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                 className: (X) =>
                                     X ? X.result_class + (X.annulled ? " annulled" : "") : "",
                                 render: (X) => {
-                                    if (X.flags) {
+                                    if (!hide_flags && X.flags) {
                                         let str = "";
                                         for (const flag of Object.keys(X.flags)) {
                                             if (flag === "blur_rate") {
