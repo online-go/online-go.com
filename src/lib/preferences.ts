@@ -115,6 +115,7 @@ export const defaults = {
 
     "moderator.join-games-anonymously": true,
     "moderator.hide-flags": false,
+    "moderator.hide-profile-information": false, // hide extra moderator information
 
     "table-color-default-on": false,
 

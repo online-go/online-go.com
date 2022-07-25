@@ -28,6 +28,7 @@ import { chat_markup } from "Chat";
 import { errorAlerter } from "misc";
 import { put } from "requests";
 import { IPDetails } from "Moderator";
+import { usePreference } from "preferences";
 
 interface ModToolsProps {
     user_id: number;
@@ -35,6 +36,7 @@ interface ModToolsProps {
 }
 
 export function ModTools(props: ModToolsProps): JSX.Element {
+    const [hide_moderator_controls] = usePreference("moderator.hide-profile-information");
     const moderator_note = React.useRef<HTMLTextAreaElement>(null);
     const addModeratorNote = async () => {
         const txt = moderator_note.current.value.trim();
@@ -61,6 +63,10 @@ export function ModTools(props: ModToolsProps): JSX.Element {
             moderator_log_anchor.current.scrollIntoView();
         }
     });
+
+    if (hide_moderator_controls) {
+        return null;
+    }
 
     return (
         <Card className="ModTools">

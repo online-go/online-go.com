@@ -32,6 +32,7 @@ import Dropzone from "react-dropzone";
 import { durationString } from "TimeControl";
 import { cc_to_country_name, pgettext, sorted_locale_countries, _ } from "translate";
 import { is_valid_url } from "url_validation";
+import { usePreference } from "preferences";
 
 const inlineBlock = { display: "inline-flex", alignItems: "center" };
 
@@ -92,6 +93,7 @@ export function AvatarCard({
     );
     const [new_country, setNewCountry] = React.useState(user.country);
     const [new_website, setNewWebsite] = React.useState(user.website);
+    const [hide_moderator_controls] = usePreference("moderator.hide-profile-information");
 
     const toggleEdit = () => {
         if (editing) {
@@ -332,7 +334,7 @@ export function AvatarCard({
                     </>
                 )}
 
-                {global_user.is_moderator && (
+                {global_user.is_moderator && !hide_moderator_controls && (
                     <button className="danger xs pull-right" onClick={openModerateUser}>
                         {_("Moderator Controls")}
                     </button>

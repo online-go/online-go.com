@@ -37,6 +37,7 @@ export function ModeratorPreferences(_props: SettingGroupProps): JSX.Element {
         "moderator.join-games-anonymously",
     );
     const [hide_flags, setHideFlags] = usePreference("moderator.hide-flags");
+    const [hide_profile, setHideProfile] = usePreference("moderator.hide-profile-information");
 
     const user = data.get("user");
 
@@ -63,6 +64,9 @@ export function ModeratorPreferences(_props: SettingGroupProps): JSX.Element {
             </PreferenceLine>
             <PreferenceLine title="Hide flags">
                 <Toggle checked={hide_flags} onChange={setHideFlags} />
+            </PreferenceLine>
+            <PreferenceLine title="Hide moderator information on profile pages">
+                <Toggle checked={hide_profile} onChange={setHideProfile} />
             </PreferenceLine>
         </div>
     );
