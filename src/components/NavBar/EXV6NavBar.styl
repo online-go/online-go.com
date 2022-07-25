@@ -440,9 +440,18 @@ header.NavBar {
         themed background-color navbar-background-color
     }
 
-    .FriendIndicator, .IncidentReportIndicator, .TournamentIndicator, .TurnIndicator, .NotificationIndicator {
+    .FriendIndicator, .IncidentReportIndicator, .TournamentIndicator, .TurnIndicator, .NotificationIndicator, .ChatIndicator {
         padding-left: 0.7rem;
         padding-right: 0.7rem;
+    }
+
+    .ChatIndicator {
+        display: inline-flex;
+        align-self: center;
+        line-height: 1rem;
+        .navbar-icon {
+            margin-bottom: 0px !important;
+        }
     }
 }
 

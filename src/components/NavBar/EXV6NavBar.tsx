@@ -33,6 +33,7 @@ import { TurnIndicator } from "TurnIndicator";
 import { NotificationIndicator } from "NotificationIndicator";
 import { TournamentIndicator } from "Announcements";
 import { FriendIndicator } from "FriendList";
+//import { ChatIndicator } from "Chat";
 
 import { logout } from "auth";
 import { useUser } from "hooks";
@@ -330,6 +331,7 @@ export function EXV6NavBar(): JSX.Element {
             ) : (
                 <section className="right">
                     {!preferences.get("hide-incident-reports") && <IncidentReportTracker />}
+                    {/* <ChatIndicator /> */}
                     {preferences.get("show-tournament-indicator") && <TournamentIndicator />}
                     <TurnIndicator />
                     <FriendIndicator />
