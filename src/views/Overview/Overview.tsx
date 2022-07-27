@@ -9,7 +9,7 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
+ * GNU Affero General Public License for more detils.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -18,6 +18,8 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { _ } from "translate";
+
+import * as DynamicHelp from "react-dynamic-help";
 
 import * as data from "data";
 import * as preferences from "preferences";
@@ -67,8 +69,11 @@ interface OverviewState {
     overview: { active_games: Array<ActiveGameType> };
     show_translation_dialog: boolean;
 }
+
 export class OldOverview extends React.Component<{}, OverviewState> {
     private static defaultTitle = "OGS";
+
+    static contextType = DynamicHelp.Api;
 
     constructor(props: {}) {
         super(props);
@@ -143,6 +148,10 @@ export class OldOverview extends React.Component<{}, OverviewState> {
     render() {
         const user = this.state.user;
 
+        const { registerTargetItem } = this.context as DynamicHelp.AppApi;
+
+        const { ref: noGames } = registerTargetItem("test-help");
+
         return (
             <div id="Overview-Container">
                 <SupporterGoals />
@@ -183,7 +192,7 @@ export class OldOverview extends React.Component<{}, OverviewState> {
                         {((this.state.resolved && this.state.overview.active_games.length === 0) ||
                             null) && (
                             <div className="no-active-games">
-                                <div style={{ marginBottom: "1rem" }}>
+                                <div style={{ marginBottom: "1rem" }} ref={noGames}>
                                     {_("You're not currently playing any games.")}
                                 </div>
                                 <Link to="/play" className="btn primary">

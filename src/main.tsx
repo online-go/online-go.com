@@ -18,6 +18,9 @@
 /// <reference path="../typings_manual/index.d.ts" />
 import "whatwg-fetch"; /* polyfills window.fetch */
 import * as Sentry from "@sentry/browser";
+
+import { HelpProvider } from "react-dynamic-help";
+
 import { configure_goban } from "configure-goban";
 import {
     GoMath,
@@ -27,6 +30,7 @@ import {
     ScoreEstimateResponse,
 } from "goban";
 
+import { HelpFlows } from "HelpFlows";
 import { sfx } from "sfx";
 import { post } from "requests";
 import { ai_host } from "sockets";
@@ -341,7 +345,10 @@ const react_root = ReactDOM.createRoot(document.getElementById("main-content"));
 
 react_root.render(
     <React.StrictMode>
-        <ForceReactUpdateWrapper>{routes}</ForceReactUpdateWrapper>
+        <HelpProvider>
+            <ForceReactUpdateWrapper>{routes}</ForceReactUpdateWrapper>
+            <HelpFlows />
+        </HelpProvider>
     </React.StrictMode>,
 );
 
