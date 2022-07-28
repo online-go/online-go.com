@@ -20,6 +20,8 @@ import Select from "react-select";
 
 import { useParams } from "react-router-dom";
 
+import * as DynamicHelp from "react-dynamic-help";
+
 import * as preferences from "preferences";
 import * as data from "data";
 
@@ -33,7 +35,7 @@ import { logout, logoutOtherDevices, logoutAndClearLocalData } from "auth";
 import { LoadingPage } from "Loading";
 import { browserHistory } from "ogsHistory";
 
-import { SettingGroupProps, SettingsState } from "SettingsCommon";
+import { SettingGroupPageProps, SettingsState } from "SettingsCommon";
 
 import { SoundPreferences } from "./SoundPreferences";
 import { GeneralPreferences } from "./GeneralPreferences";
@@ -54,6 +56,13 @@ export function Settings(): JSX.Element {
     const [vacation_base_time, set_vacation_base_time]: [number, (s: number) => void] =
         React.useState(Date.now());
     const [loaded, set_loaded]: [number, (b: number) => void] = React.useState(0);
+
+    const { signalUsed } = React.useContext(DynamicHelp.Api);
+
+    signalUsed("settings-nav-link"); // since they arrive here, they don't need to be told how to get here anymore
+
+    //const { ref: toggleRightNavButton, used: rightNavToggled } =
+    //    registerTargetItem("toggle-right-nav");
 
     React.useEffect(refresh, []);
 
@@ -90,7 +99,7 @@ export function Settings(): JSX.Element {
     const selected = category;
     data.set("settings.page-selected", selected);
 
-    const groups: Array<{ key: string; label: string }> = [
+    const groups: Array<{ key: string; label: string; ref?: React.RefObject<any> }> = [
         { key: "general", label: _("General Preferences") },
         { key: "sound", label: _("Sound Preferences") },
         { key: "game", label: _("Game Preferences") },
@@ -114,7 +123,7 @@ export function Settings(): JSX.Element {
         { key: "logout", label: _("Logout") },
     ];
 
-    let SelectedPage: (props: SettingGroupProps) => JSX.Element = () => <div>Error</div>;
+    let SelectedPage: (props: SettingGroupPageProps) => JSX.Element = () => <div>Error</div>;
 
     switch (selected) {
         case "general":
@@ -161,7 +170,7 @@ export function Settings(): JSX.Element {
             */
     }
 
-    const props: SettingGroupProps = {
+    const child_props: SettingGroupPageProps = {
         state: settings_state,
         vacation_base_time: vacation_base_time,
         refresh: refresh,
@@ -190,6 +199,7 @@ export function Settings(): JSX.Element {
                                 key={x.key}
                                 selected={selected === x.key}
                                 onClick={() => select(x.key)}
+                                ref={x.ref}
                             >
                                 {x.label}
                             </SettingsGroup>
@@ -233,7 +243,7 @@ export function Settings(): JSX.Element {
                 />
 
                 <div id="SelectedSettingsContainer">
-                    {loaded ? <SelectedPage {...props} /> : <LoadingPage />}
+                    {loaded ? <SelectedPage {...child_props} /> : <LoadingPage />}
                 </div>
             </div>
         </div>
@@ -244,22 +254,28 @@ function SettingsGroupSelector(props: { children: React.ReactNode }): JSX.Elemen
     return <div id="SettingsGroupSelector">{props.children}</div>;
 }
 
-function SettingsGroup(props: {
-    selected: boolean;
-    onClick: (ev?: any) => void;
-    children: React.ReactNode;
-}): JSX.Element {
-    return (
-        <div
-            className={"SettingsGroup" + (props.selected ? " selected" : "")}
-            onClick={props.onClick}
-        >
-            {props.children}
-            <span className="spacer" />
-            {props.selected ? <i className="fa fa-chevron-right" /> : <i />}
-        </div>
-    );
-}
+const SettingsGroup = React.forwardRef<HTMLDivElement>(
+    (
+        props: {
+            selected: boolean;
+            onClick: (ev?: any) => void;
+            children: React.ReactNode;
+        },
+        ref,
+    ): JSX.Element => {
+        return (
+            <div
+                className={"SettingsGroup" + (props.selected ? " selected" : "")}
+                onClick={props.onClick}
+                ref={ref}
+            >
+                {props.children}
+                <span className="spacer" />
+                {props.selected ? <i className="fa fa-chevron-right" /> : <i />}
+            </div>
+        );
+    },
+);
 
 function LogoutPreferences(): JSX.Element {
     return (

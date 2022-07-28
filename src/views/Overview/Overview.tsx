@@ -19,8 +19,6 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { _ } from "translate";
 
-import * as DynamicHelp from "react-dynamic-help";
-
 import * as data from "data";
 import * as preferences from "preferences";
 import cached from "cached";
@@ -72,8 +70,6 @@ interface OverviewState {
 
 export class OldOverview extends React.Component<{}, OverviewState> {
     private static defaultTitle = "OGS";
-
-    static contextType = DynamicHelp.Api;
 
     constructor(props: {}) {
         super(props);
@@ -148,10 +144,6 @@ export class OldOverview extends React.Component<{}, OverviewState> {
     render() {
         const user = this.state.user;
 
-        const { registerTargetItem } = this.context as DynamicHelp.AppApi;
-
-        const { ref: noGames } = registerTargetItem("test-help");
-
         return (
             <div id="Overview-Container">
                 <SupporterGoals />
@@ -192,7 +184,7 @@ export class OldOverview extends React.Component<{}, OverviewState> {
                         {((this.state.resolved && this.state.overview.active_games.length === 0) ||
                             null) && (
                             <div className="no-active-games">
-                                <div style={{ marginBottom: "1rem" }} ref={noGames}>
+                                <div style={{ marginBottom: "1rem" }}>
                                     {_("You're not currently playing any games.")}
                                 </div>
                                 <Link to="/play" className="btn primary">

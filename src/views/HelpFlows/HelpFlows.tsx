@@ -19,9 +19,20 @@ import React from "react";
 
 import { HelpFlow, HelpItem } from "react-dynamic-help";
 
+import { _ } from "translate";
+
 export function HelpFlows(): JSX.Element {
     return (
         <div id="help-flow-container">
+            <HelpFlow id="guest-user-intro" showInitially={true} debug={true}>
+                <HelpItem target="toggle-right-nav" position={"bottom-left"}>
+                    <div>{_("To set your password, click here")} </div>
+                </HelpItem>
+                <HelpItem target="settings-nav-link" position={"center-left"} anchor={"top-right"}>
+                    <div>{_("To set your password, click here")} </div>
+                </HelpItem>
+            </HelpFlow>
+
             <HelpFlow id="help-test-flow" showInitially={true} debug={true}>
                 <HelpItem target="test-help">
                     <div>A useful prompt :) </div>

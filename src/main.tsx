@@ -345,7 +345,7 @@ const react_root = ReactDOM.createRoot(document.getElementById("main-content"));
 
 react_root.render(
     <React.StrictMode>
-        <HelpProvider>
+        <HelpProvider debug={true}>
             <ForceReactUpdateWrapper>{routes}</ForceReactUpdateWrapper>
             <HelpFlows />
         </HelpProvider>

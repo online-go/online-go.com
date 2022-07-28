@@ -33,9 +33,9 @@ import { usePreference } from "preferences";
 
 import { Toggle } from "Toggle";
 
-import { SettingGroupProps, PreferenceLine, PreferenceDropdown } from "SettingsCommon";
+import { SettingGroupPageProps, PreferenceLine, PreferenceDropdown } from "SettingsCommon";
 
-export function GeneralPreferences(props: SettingGroupProps): JSX.Element {
+export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
     const [profanity_filter, _setProfanityFilter]: [Array<string>, (x: Array<string>) => void] =
         React.useState(Object.keys(preferences.get("profanity-filter")));
 
