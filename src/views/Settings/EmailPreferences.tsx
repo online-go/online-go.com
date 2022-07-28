@@ -24,9 +24,9 @@ import { errorAlerter } from "misc";
 
 import { Toggle } from "Toggle";
 
-import { SettingGroupProps, SettingsState } from "SettingsCommon";
+import { SettingGroupPageProps, SettingsState } from "SettingsCommon";
 
-export function EmailPreferences(props: SettingGroupProps): JSX.Element {
+export function EmailPreferences(props: SettingGroupPageProps): JSX.Element {
     return (
         <div>
             {_("Email me a notification when ...")}

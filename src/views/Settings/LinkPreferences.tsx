@@ -25,14 +25,14 @@ import { errorAlerter, Timeout } from "misc";
 
 import { Toggle } from "Toggle";
 
-import { SettingGroupProps, PreferenceLine } from "SettingsCommon";
+import { SettingGroupPageProps, PreferenceLine } from "SettingsCommon";
 
 import { IAssociation, associations } from "associations";
 import { allRanks, IRankInfo } from "rank_utils";
 
 let update_link_preferences_debounce: Timeout;
 
-export function LinkPreferences(props: SettingGroupProps): JSX.Element {
+export function LinkPreferences(props: SettingGroupPageProps): JSX.Element {
     const link = props.state.self_reported_account_linkages || {};
 
     function set(key: string): (value: any) => void {

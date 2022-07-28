@@ -25,7 +25,7 @@ import { Toggle } from "Toggle";
 
 export const MAX_DOCK_DELAY = 3.0;
 
-export interface SettingGroupProps {
+export interface SettingGroupPageProps {
     state: SettingsState;
     vacation_base_time: number;
     refresh: () => () => void;
