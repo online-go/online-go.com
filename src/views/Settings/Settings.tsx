@@ -57,12 +57,11 @@ export function Settings(): JSX.Element {
         React.useState(Date.now());
     const [loaded, set_loaded]: [number, (b: number) => void] = React.useState(0);
 
-    const { signalUsed } = React.useContext(DynamicHelp.Api);
+    const { registerTargetItem, signalUsed } = React.useContext(DynamicHelp.Api);
 
-    signalUsed("settings-nav-link"); // since they arrive here, they don't need to be told how to get here anymore
+    signalUsed("settings-nav-link"); // they have arrived here now, so they don't need to be told how to get here anymore
 
-    //const { ref: toggleRightNavButton, used: rightNavToggled } =
-    //    registerTargetItem("toggle-right-nav");
+    const { ref: accountSettingsButton } = registerTargetItem("account-settings-button"); // cleared on AccountSettings page
 
     React.useEffect(refresh, []);
 
@@ -109,7 +108,7 @@ export function Settings(): JSX.Element {
         { key: "email", label: _("Email Notifications") },
         { key: "announcement", label: _("Announcements Preferences") },
         { key: "blocked_players", label: _("Blocked Players") },
-        { key: "account", label: _("Account Settings") },
+        { key: "account", label: _("Account Settings"), ref: accountSettingsButton },
         { key: "link", label: _("Account Linking") },
         /*
         {
@@ -254,15 +253,11 @@ function SettingsGroupSelector(props: { children: React.ReactNode }): JSX.Elemen
     return <div id="SettingsGroupSelector">{props.children}</div>;
 }
 
-const SettingsGroup = React.forwardRef<HTMLDivElement>(
-    (
-        props: {
-            selected: boolean;
-            onClick: (ev?: any) => void;
-            children: React.ReactNode;
-        },
-        ref,
-    ): JSX.Element => {
+type SettingsGroupProps = { selected: boolean; onClick: () => void; children: React.ReactNode };
+
+const SettingsGroup = React.forwardRef<HTMLDivElement, SettingsGroupProps>(
+    (props: SettingsGroupProps, ref): JSX.Element => {
+        console.log("SettingsGroup render:", props.children, ref);
         return (
             <div
                 className={"SettingsGroup" + (props.selected ? " selected" : "")}

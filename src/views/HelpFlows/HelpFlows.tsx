@@ -31,11 +31,28 @@ export function HelpFlows(): JSX.Element {
                 <HelpItem target="settings-nav-link" position={"center-left"} anchor={"top-right"}>
                     <div>{_("To set your password, click here")} </div>
                 </HelpItem>
+                <HelpItem
+                    target="account-settings-button"
+                    position={"center-left"}
+                    anchor={"top-right"}
+                >
+                    <div>{_("To set your password, click here")} </div>
+                </HelpItem>
+                <HelpItem target="password-entry" position={"center-right"}>
+                    <div>{_("You can enter your new password here.")} </div>
+                </HelpItem>
+                <HelpItem target="profile-edit-link">
+                    <div>{_("You can also change your username, here.")} </div>
+                </HelpItem>
+                <HelpItem target="profile-edit-page" position="center-left">
+                    <div>{_("In here you can change your profile items, then click 'Save'.")} </div>
+                </HelpItem>
             </HelpFlow>
 
+            {/* you can register "help-test-flow" anywhere to get this to pop up if needed */}
             <HelpFlow id="help-test-flow" showInitially={true} debug={true}>
                 <HelpItem target="test-help">
-                    <div>A useful prompt :) </div>
+                    <div>This is a debug prompt!</div>
                 </HelpItem>
             </HelpFlow>
         </div>
