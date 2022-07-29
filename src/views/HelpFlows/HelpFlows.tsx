@@ -44,8 +44,14 @@ export function HelpFlows(): JSX.Element {
                 <HelpItem target="profile-edit-link">
                     <div>{_("You can also change your username, here.")} </div>
                 </HelpItem>
-                <HelpItem target="profile-edit-page" position="center-left">
-                    <div>{_("In here you can change your profile items, then click 'Save'.")} </div>
+                <HelpItem
+                    target="profile-edit-page"
+                    position="center-left"
+                    id="help-for-profile-edit-page"
+                >
+                    <div>
+                        {_("In here you can change your profile appearance, then click 'Save'.")}{" "}
+                    </div>
                 </HelpItem>
             </HelpFlow>
 
