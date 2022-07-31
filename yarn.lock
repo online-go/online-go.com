@@ -7870,10 +7870,10 @@ react-dropzone@^12.0.5:
     file-selector "^0.5.0"
     prop-types "^15.8.1"
 
-react-dynamic-help@^0.15.0:
-  version "0.15.0"
-  resolved "https://registry.yarnpkg.com/react-dynamic-help/-/react-dynamic-help-0.15.0.tgz#1364c248d47e6bf59874275862f08cb32f293a87"
-  integrity sha512-m8rPjRkmdvFIXQbCqYNvkkSlb02pZHVYyCQXAdnDvY7z4BrJAm8wwH/Aiq1F85eYruyb5eyQcvMkOmCUSO2Nyg==
+react-dynamic-help@^0.15.1:
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/react-dynamic-help/-/react-dynamic-help-0.15.1.tgz#ab4e01f00af5c49c2c151bd9e273ed145116a725"
+  integrity sha512-B1g8x0+Jha0SnBNdqAnButt1CYPC5yb3WM/ZgOUoJfNV9YjiqacXaZvMwYHMax/a/VCQtsCF/Yxy1Tt6lN7cyA==
   dependencies:
     "@types/react" "^18.0.15"
     react "^18.2.0"
