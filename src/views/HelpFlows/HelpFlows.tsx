@@ -23,7 +23,7 @@ import { _ } from "translate";
 
 export function HelpFlows(): JSX.Element {
     return (
-        <div id="help-flow-container">
+        <>
             <HelpFlow id="guest-user-intro" showInitially={true} debug={true}>
                 <HelpItem target="toggle-right-nav" position={"bottom-left"}>
                     <div>{_("To set your password, click here")} </div>
@@ -61,6 +61,6 @@ export function HelpFlows(): JSX.Element {
                     <div>This is a debug prompt!</div>
                 </HelpItem>
             </HelpFlow>
-        </div>
+        </>
     );
 }
