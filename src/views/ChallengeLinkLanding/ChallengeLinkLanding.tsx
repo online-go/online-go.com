@@ -19,6 +19,8 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { alert } from "swal_config";
 
+import * as DynamicHelp from "react-dynamic-help";
+
 import * as data from "data";
 import { useUser } from "hooks";
 import { _, pgettext, interpolate } from "translate";
@@ -45,6 +47,8 @@ export function ChallengeLinkLanding(): JSX.Element {
     const [logging_in, set_logging_in] = React.useState<boolean>(false);
 
     const navigate = useNavigate();
+
+    const { enableFlow } = React.useContext(DynamicHelp.Api);
 
     /* Actions */
 
@@ -80,6 +84,8 @@ export function ChallengeLinkLanding(): JSX.Element {
                 .then(() => {
                     alert.close();
                     browserHistory.push(`/game/${challenge.game_id}`);
+                    enableFlow("guest-user-intro-exv6");
+                    enableFlow("guest-user-intro-oldnav");
                 })
                 .catch((err) => {
                     alert.close();

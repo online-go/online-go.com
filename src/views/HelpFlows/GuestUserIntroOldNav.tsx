@@ -28,7 +28,7 @@ import { _ } from "translate";
 
 export function GuestUserIntroOldNav(): JSX.Element {
     return (
-        <HelpFlow id="guest-user-intro-old-nav" showInitially={true} debug={true}>
+        <HelpFlow id="guest-user-intro-old-nav" showInitially={false} debug={false}>
             <HelpItem target="toggle-left-nav" position={"bottom-right"}>
                 <div>{_("To set your password, click here")} </div>
             </HelpItem>
