@@ -28,7 +28,7 @@ import { GuestUserIntroOldNav } from "./GuestUserIntroOldNav";
  */
 export function HelpFlows(): JSX.Element {
     return (
-        <div id="help-flow-container">
+        <>
             <GuestUserIntroEXV6 />
 
             <GuestUserIntroOldNav />
@@ -39,6 +39,6 @@ export function HelpFlows(): JSX.Element {
                     <div>This is a debug prompt!</div>
                 </HelpItem>
             </HelpFlow>
-        </div>
+        </>
     );
 }
