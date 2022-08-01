@@ -33,7 +33,7 @@ import { logout, logoutOtherDevices, logoutAndClearLocalData } from "auth";
 import { LoadingPage } from "Loading";
 import { browserHistory } from "ogsHistory";
 
-import { SettingGroupProps, SettingsState } from "SettingsCommon";
+import { SettingGroupPageProps, SettingsState } from "SettingsCommon";
 
 import { SoundPreferences } from "./SoundPreferences";
 import { GeneralPreferences } from "./GeneralPreferences";
@@ -114,7 +114,7 @@ export function Settings(): JSX.Element {
         { key: "logout", label: _("Logout") },
     ];
 
-    let SelectedPage: (props: SettingGroupProps) => JSX.Element = () => <div>Error</div>;
+    let SelectedPage: (props: SettingGroupPageProps) => JSX.Element = () => <div>Error</div>;
 
     switch (selected) {
         case "general":
@@ -161,7 +161,7 @@ export function Settings(): JSX.Element {
             */
     }
 
-    const props: SettingGroupProps = {
+    const child_props: SettingGroupPageProps = {
         state: settings_state,
         vacation_base_time: vacation_base_time,
         refresh: refresh,
@@ -233,7 +233,7 @@ export function Settings(): JSX.Element {
                 />
 
                 <div id="SelectedSettingsContainer">
-                    {loaded ? <SelectedPage {...props} /> : <LoadingPage />}
+                    {loaded ? <SelectedPage {...child_props} /> : <LoadingPage />}
                 </div>
             </div>
         </div>

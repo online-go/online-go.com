@@ -27,9 +27,9 @@ import { errorAlerter, errorLogger, ignore } from "misc";
 import { SocialLoginButtons } from "SocialLoginButtons";
 import { alert } from "swal_config";
 
-import { SettingGroupProps } from "SettingsCommon";
+import { SettingGroupPageProps } from "SettingsCommon";
 
-export function AccountSettings(props: SettingGroupProps): JSX.Element {
+export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
     const [password1, setPassword1]: [string, (x: string) => void] = React.useState("");
     const [password2, setPassword2]: [string, (x: string) => void] = React.useState("");
     const [email, __setEmail]: [string, (x: string) => void] = React.useState(
