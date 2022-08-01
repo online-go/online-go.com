@@ -343,9 +343,11 @@ function ForceReactUpdateWrapper(props): JSX.Element {
 
 const react_root = ReactDOM.createRoot(document.getElementById("main-content"));
 
+const debugDynamicHelp = data.get("debug-dynamic-help", false);
+
 react_root.render(
     <React.StrictMode>
-        <HelpProvider debug={true}>
+        <HelpProvider debug={debugDynamicHelp}>
             <ForceReactUpdateWrapper>{routes}</ForceReactUpdateWrapper>
             <HelpFlows />
         </HelpProvider>
