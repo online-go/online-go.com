@@ -84,8 +84,11 @@ export function ChallengeLinkLanding(): JSX.Element {
                 .then(() => {
                     alert.close();
                     browserHistory.push(`/game/${challenge.game_id}`);
-                    enableFlow("guest-user-intro-exv6");
-                    enableFlow("guest-user-intro-oldnav");
+                    if (data.get("experiments.v6") === "enabled") {
+                        enableFlow("guest-user-intro-exv6");
+                    } else {
+                        enableFlow("guest-user-intro-old-nav");
+                    }
                 })
                 .catch((err) => {
                     alert.close();
