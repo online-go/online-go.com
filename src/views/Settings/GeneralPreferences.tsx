@@ -65,8 +65,6 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
 
     const user = data.get("user");
     const desktop_notifications_enableable: boolean = typeof Notification !== "undefined";
-    const v6_experiment_enabled: boolean =
-        window.location.hostname !== "online-go.com" || user.is_moderator;
 
     let desktop_notifications_enabled = false;
     try {
@@ -268,17 +266,15 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
                 <Toggle checked={hide_ranks} onChange={setHideRanks} />
             </PreferenceLine>
 
-            {v6_experiment_enabled && (
-                <PreferenceLine title={"Enable experimental interface changes"}>
-                    <Toggle
-                        checked={enable_v6}
-                        onChange={(tf) => {
-                            data.set("experiments.v6", tf ? "enabled" : undefined);
-                            setEnableV6(tf);
-                        }}
-                    />
-                </PreferenceLine>
-            )}
+            <PreferenceLine title={"Enable experimental interface changes"}>
+                <Toggle
+                    checked={enable_v6}
+                    onChange={(tf) => {
+                        data.set("experiments.v6", tf ? "enabled" : undefined);
+                        setEnableV6(tf);
+                    }}
+                />
+            </PreferenceLine>
 
             <PreferenceLine title={_("Plot rating graph by")}>
                 <span>{_("Ask me")}</span>
