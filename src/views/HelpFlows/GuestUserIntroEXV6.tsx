@@ -28,7 +28,12 @@ import { _ } from "translate";
 
 export function GuestUserIntroEXV6(): JSX.Element {
     return (
-        <HelpFlow id="guest-user-intro-exv6" showInitially={false} debug={false}>
+        <HelpFlow
+            id="guest-user-intro-exv6"
+            showInitially={false}
+            debug={false}
+            description="Guest user introduction"
+        >
             <HelpItem target="toggle-right-nav" position={"bottom-left"}>
                 <div>{_("To set your password, click here")} </div>
             </HelpItem>
@@ -45,7 +50,7 @@ export function GuestUserIntroEXV6(): JSX.Element {
                 <div>{_("To set your password, click here")} </div>
             </HelpItem>
 
-            <HelpItem target="password-entry" position={"center-right"}>
+            <HelpItem target="password-entry" position={"top-center"}>
                 <div>{_("You can enter your new password here.")} </div>
             </HelpItem>
 

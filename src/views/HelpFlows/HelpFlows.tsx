@@ -17,8 +17,6 @@
 
 import React from "react";
 
-import { HelpFlow, HelpItem } from "react-dynamic-help";
-
 import { GuestUserIntroEXV6 } from "./GuestUserIntroEXV6";
 import { GuestUserIntroOldNav } from "./GuestUserIntroOldNav";
 
@@ -32,13 +30,6 @@ export function HelpFlows(): JSX.Element {
             <GuestUserIntroEXV6 />
 
             <GuestUserIntroOldNav />
-
-            {/* you can register a "test-help" target anywhere to get this to pop up if needed */}
-            <HelpFlow id="help-test-flow" showInitially={true} debug={true}>
-                <HelpItem target="test-help">
-                    <div>This is a debug prompt!</div>
-                </HelpItem>
-            </HelpFlow>
         </>
     );
 }

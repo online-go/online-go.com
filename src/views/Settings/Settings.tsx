@@ -48,6 +48,7 @@ import { AccountSettings } from "./AccountSettings";
 import { LinkPreferences } from "./LinkPreferences";
 import { AnnouncementPreferences } from "./AnnouncementPreferences";
 import { EmailPreferences } from "./EmailPreferences";
+import { HelpSettings } from "./HelpSettings";
 
 export function Settings(): JSX.Element {
     const { category } = useParams();
@@ -109,6 +110,7 @@ export function Settings(): JSX.Element {
         { key: "announcement", label: _("Announcements Preferences") },
         { key: "blocked_players", label: _("Blocked Players") },
         { key: "account", label: _("Account Settings"), ref: accountSettingsButton },
+        { key: "help", label: _("Help Settings") },
         { key: "link", label: _("Account Linking") },
         /*
         {
@@ -154,6 +156,9 @@ export function Settings(): JSX.Element {
             break;
         case "announcement":
             SelectedPage = AnnouncementPreferences;
+            break;
+        case "help":
+            SelectedPage = HelpSettings;
             break;
         case "link":
             SelectedPage = LinkPreferences;
@@ -257,7 +262,6 @@ type SettingsGroupProps = { selected: boolean; onClick: () => void; children: Re
 
 const SettingsGroup = React.forwardRef<HTMLDivElement, SettingsGroupProps>(
     (props: SettingsGroupProps, ref): JSX.Element => {
-        console.log("SettingsGroup render:", props.children, ref);
         return (
             <div
                 className={"SettingsGroup" + (props.selected ? " selected" : "")}

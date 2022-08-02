@@ -17,60 +17,46 @@
 
 import * as React from "react";
 
-import * as data from "data";
+import * as DynamicHelp from "react-dynamic-help";
 
 import { pgettext } from "translate";
-
-import {
-    DEFAULT_DYNAMIC_HELP_CONFIG,
-    DynamicHelpSet,
-    initializeHelpSet,
-    hideHelpSet,
-    allItemsVisible,
-    initialItemsVisible,
-    someItemsVisible,
-} from "dynamic_help_config";
 
 import { PreferenceLine } from "SettingsCommon";
 
 export function HelpSettings(): JSX.Element {
-    const help_sets = Object.keys(DEFAULT_DYNAMIC_HELP_CONFIG) as DynamicHelpSet[];
+    const { getFlowInfo, enableFlow } = React.useContext(DynamicHelp.Api);
+    const availableHelp = getFlowInfo() as DynamicHelp.FlowState[];
 
-    // Here, we keep the settings visibility value as state so we rerender when we change it.
-    // We get the initial value for the state by reading it from datam, or using the
-    // default values if it has never been set.
-    const [visibility, setVisibility] = React.useState<{ [help_set: string]: boolean }>(
-        Object.fromEntries(
-            help_sets.map((help_set) => [
-                help_set,
-                data.get(`dynamic-help.${help_set}`, DEFAULT_DYNAMIC_HELP_CONFIG[help_set])
-                    .show_set,
-            ]),
-        ),
-    );
+    // we need a state to trigger re-reander after changing a flow visibility,
+    // because DynamicHelp can't trigger a re-render in that circumstance.
 
-    const show = (help_set: DynamicHelpSet) => {
-        initializeHelpSet(help_set);
-        setVisibility({ ...visibility, [help_set]: true });
+    const [reload, setReload] = React.useState(false);
+
+    const show = (flow: DynamicHelp.FlowState) => {
+        enableFlow(flow.id);
+        setReload(true);
     };
 
-    const hide = (help_set: DynamicHelpSet) => {
-        hideHelpSet(help_set);
-        setVisibility({ ...visibility, [help_set]: false });
+    const hide = (flow: DynamicHelp.FlowState) => {
+        enableFlow(flow.id, false);
+        setReload(true);
     };
+
+    React.useEffect(() => {
+        if (reload) {
+            setReload(false);
+        }
+    });
 
     return (
         <div>
-            {help_sets.map((help_set) => (
-                <PreferenceLine
-                    key={help_set}
-                    title={DEFAULT_DYNAMIC_HELP_CONFIG[help_set].set_title}
-                >
-                    <button onClick={() => show(help_set)}>
+            {availableHelp.map((flow, index) => (
+                <PreferenceLine key={index} title={flow.description}>
+                    <button onClick={() => show(flow)}>
                         {pgettext("Press this button to show all the initial items", "Reset")}
                     </button>
-                    <button onClick={() => hide(help_set)}>
-                        {pgettext("Press this button to hide this help set", "Hide set")}
+                    <button onClick={() => hide(flow)}>
+                        {pgettext("Press this button to hide this help flow", "Hide")}
                     </button>
                     <span>
                         {pgettext(
@@ -79,13 +65,9 @@ export function HelpSettings(): JSX.Element {
                         )}
                     </span>
                     <span>
-                        {allItemsVisible(help_set)
-                            ? "All"
-                            : initialItemsVisible(help_set)
-                            ? "Initial"
-                            : someItemsVisible(help_set)
-                            ? "Some"
-                            : "None"}
+                        {flow.visible
+                            ? pgettext("This help flow is showing its help items", "active")
+                            : pgettext("This help flow is not visible", "inactive")}
                     </span>
                 </PreferenceLine>
             ))}

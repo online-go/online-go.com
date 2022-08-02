@@ -375,8 +375,8 @@ export function EXV6NavBar(): JSX.Element {
                         {_("Profile")}
                     </Link>
 
-                    <Link to="/user/settings" ref={settingsNavLink}>
-                        <i className="fa fa-gear"></i>
+                    <Link to="/user/settings">
+                        <i className="fa fa-gear" ref={settingsNavLink}></i>
                         {_("Settings")}
                     </Link>
                     <span className="fakelink" onClick={logout}>
