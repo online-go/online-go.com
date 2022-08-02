@@ -44,8 +44,8 @@ export function GuestUserIntroEXV6(): JSX.Element {
 
             <HelpItem
                 target="account-settings-button"
-                position={"center-left"}
-                anchor={"top-right"}
+                position={"center-right"}
+                anchor={"bottom-left"}
             >
                 <div>{_("To set your password, click here")} </div>
             </HelpItem>
@@ -60,8 +60,9 @@ export function GuestUserIntroEXV6(): JSX.Element {
 
             <HelpItem
                 target="profile-edit-page"
-                position="center-left"
-                id="help-for-profile-edit-page"
+                position="bottom-right"
+                anchor="bottom-left"
+                id="help-for-profile-edit-page-exv6"
             >
                 <div>{_("In here you can change your profile appearance, then click 'Save'.")}</div>
             </HelpItem>
