@@ -1312,7 +1312,7 @@
     "@types/prop-types" "*"
     "@types/react" "^17"
 
-"@types/react@*", "@types/react@^17", "@types/react@^17.0.14", "@types/react@^18.0.5":
+"@types/react@*", "@types/react@^17", "@types/react@^17.0.14", "@types/react@^18.0.15", "@types/react@^18.0.5":
   version "18.0.15"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-18.0.15.tgz#d355644c26832dc27f3e6cbf0c4f4603fc4ab7fe"
   integrity sha512-iz3BtLuIYH1uWdsv6wXYdhozhqj20oD4/Hk2DNXIn1kFsmp9x8d9QB6FnPhfkbhd2PgEONt9Q1x/ebkwjfFLow==
@@ -7919,6 +7919,14 @@ react-dropzone@^12.0.5:
     file-selector "^0.5.0"
     prop-types "^15.8.1"
 
+react-dynamic-help@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/react-dynamic-help/-/react-dynamic-help-1.0.2.tgz#33d3c97e6030230be8ea28ccab7dd0f3053c5a44"
+  integrity sha512-5zRTqeHcou+45ZeYFSYpcertQUMZR6jzw5WFAwKDpqcoZHV8lkpmX+gEZc0QUA1EvY8EJJYncig4r2g4V21AgA==
+  dependencies:
+    "@types/react" "^18.0.15"
+    react "^18.2.0"
+
 react-is@^16.13.1, react-is@^16.7.0, react-is@^16.8.1:
   version "16.13.1"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
@@ -8037,7 +8045,7 @@ react-virtualized@^9.22.3:
     prop-types "^15.7.2"
     react-lifecycles-compat "^3.0.4"
 
-react@^18.0.0:
+react@^18.0.0, react@^18.2.0:
   version "18.2.0"
   resolved "https://registry.yarnpkg.com/react/-/react-18.2.0.tgz#555bd98592883255fa00de14f1151a917b5d77d5"
   integrity sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==
