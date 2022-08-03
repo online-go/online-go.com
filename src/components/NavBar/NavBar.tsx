@@ -19,6 +19,8 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
 
+import * as DynamicHelp from "react-dynamic-help";
+
 import * as data from "data";
 
 import { _ } from "translate";
@@ -97,6 +99,13 @@ function OldNavBar(): JSX.Element {
     const [omnisearch_groups, setOmnisearchGroups] = React.useState([]);
     const [omnisearch_tournaments, setOmnisearchTournaments] = React.useState([]);
 
+    const { registerTargetItem } = React.useContext(DynamicHelp.Api);
+
+    const { ref: toggleLeftNavButton, used: leftNavToggled } =
+        registerTargetItem("toggle-left-nav");
+
+    const { ref: settingsNavLink } = registerTargetItem("settings-nav-link");
+
     const clearOmnisearch = () => {
         abortOmnisearch();
         setOmnisearchString("");
@@ -122,6 +131,7 @@ function OldNavBar(): JSX.Element {
             if (ev && ev.type === "keydown") {
                 omnisearch_input_ref.current.focus();
             }
+            leftNavToggled();
         } else {
             clearOmnisearch();
         }
@@ -243,7 +253,11 @@ function OldNavBar(): JSX.Element {
             <KBShortcut shortcut="shift-`" action={toggleRightNav} />
             <KBShortcut shortcut="escape" action={closeNavbar} />
 
-            <span className="ogs-nav-logo-container" onClick={toggleLeftNav}>
+            <span
+                className="ogs-nav-logo-container"
+                onClick={toggleLeftNav}
+                ref={toggleLeftNavButton}
+            >
                 <i className="fa fa-bars" />
                 <span className="ogs-nav-logo" />
             </span>
@@ -493,7 +507,7 @@ function OldNavBar(): JSX.Element {
                         )}
                         {valid_user && (
                             <li>
-                                <Link to="/user/settings">
+                                <Link to="/user/settings" ref={settingsNavLink}>
                                     <i className="fa fa-gear"></i>
                                     {_("Settings")}
                                 </Link>

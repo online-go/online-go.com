@@ -17,50 +17,19 @@
 
 import React from "react";
 
-import { HelpFlow, HelpItem } from "react-dynamic-help";
+import { GuestUserIntroEXV6 } from "./GuestUserIntroEXV6";
+import { GuestUserIntroOldNav } from "./GuestUserIntroOldNav";
 
-import { _ } from "translate";
-
+/**
+ * This component is just a handy wrapper for all the Help Flows
+ * (technically they _can_ be instantiated direct into the HelpProvider, but this encapsulation is tidier!)
+ */
 export function HelpFlows(): JSX.Element {
     return (
         <>
-            <HelpFlow id="guest-user-intro" showInitially={true} debug={true}>
-                <HelpItem target="toggle-right-nav" position={"bottom-left"}>
-                    <div>{_("To set your password, click here")} </div>
-                </HelpItem>
-                <HelpItem target="settings-nav-link" position={"center-left"} anchor={"top-right"}>
-                    <div>{_("To set your password, click here")} </div>
-                </HelpItem>
-                <HelpItem
-                    target="account-settings-button"
-                    position={"center-left"}
-                    anchor={"top-right"}
-                >
-                    <div>{_("To set your password, click here")} </div>
-                </HelpItem>
-                <HelpItem target="password-entry" position={"center-right"}>
-                    <div>{_("You can enter your new password here.")} </div>
-                </HelpItem>
-                <HelpItem target="profile-edit-link">
-                    <div>{_("You can also change your username, here.")} </div>
-                </HelpItem>
-                <HelpItem
-                    target="profile-edit-page"
-                    position="center-left"
-                    id="help-for-profile-edit-page"
-                >
-                    <div>
-                        {_("In here you can change your profile appearance, then click 'Save'.")}{" "}
-                    </div>
-                </HelpItem>
-            </HelpFlow>
+            <GuestUserIntroEXV6 />
 
-            {/* you can register "help-test-flow" anywhere to get this to pop up if needed */}
-            <HelpFlow id="help-test-flow" showInitially={true} debug={true}>
-                <HelpItem target="test-help">
-                    <div>This is a debug prompt!</div>
-                </HelpItem>
-            </HelpFlow>
+            <GuestUserIntroOldNav />
         </>
     );
 }
