@@ -32,7 +32,7 @@ export function GuestUserIntroEXV6(): JSX.Element {
             id="guest-user-intro-exv6"
             showInitially={false}
             debug={false}
-            description="Guest user introduction"
+            description="Guest user introduction (for new Nav)"
         >
             <HelpItem target="toggle-right-nav" position={"bottom-left"}>
                 <div>{_("To set your password, click here")} </div>
