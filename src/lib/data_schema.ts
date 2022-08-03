@@ -226,6 +226,7 @@ export interface DataSchema
     "preferred-game-settings": rest_api.ChallengeDetails[];
 
     "debug-dynamic-help": boolean;
+    "help-system-enabled": boolean;
 
     // A challenge that the user accepted, but we didn't tell the server yet, because
     // we are busy getting them logged in first.

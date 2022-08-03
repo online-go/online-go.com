@@ -19,13 +19,22 @@ import * as React from "react";
 
 import * as DynamicHelp from "react-dynamic-help";
 
-import { pgettext } from "translate";
+import { _, pgettext } from "translate";
 
+import { usePreference } from "preferences";
 import { PreferenceLine } from "SettingsCommon";
+import { Toggle } from "Toggle";
 
 export function HelpSettings(): JSX.Element {
-    const { getFlowInfo, enableFlow } = React.useContext(DynamicHelp.Api);
+    const { getFlowInfo, enableFlow, enableHelp } = React.useContext(DynamicHelp.Api);
     const availableHelp = getFlowInfo() as DynamicHelp.FlowState[];
+
+    const [help_enabled, _toggleHelpEnabled] = usePreference("help-system-enabled");
+
+    const toggleHelpEnabled = (ev) => {
+        enableHelp(!help_enabled);
+        _toggleHelpEnabled(ev);
+    };
 
     // we need a state to trigger re-reander after changing a flow visibility,
     // because DynamicHelp can't trigger a re-render in that circumstance.
@@ -50,27 +59,33 @@ export function HelpSettings(): JSX.Element {
 
     return (
         <div>
-            {availableHelp.map((flow, index) => (
-                <PreferenceLine key={index} title={flow.description}>
-                    <button onClick={() => show(flow)}>
-                        {pgettext("Press this button to show all the initial items", "Reset")}
-                    </button>
-                    <button onClick={() => hide(flow)}>
-                        {pgettext("Press this button to hide this help flow", "Hide")}
-                    </button>
-                    <span>
-                        {pgettext(
-                            "Following this label is the status of currently visible help items",
-                            "Currently:",
-                        )}
-                    </span>
-                    <span>
-                        {flow.visible
-                            ? pgettext("This help flow is showing its help items", "active")
-                            : pgettext("This help flow is not visible", "inactive")}
-                    </span>
-                </PreferenceLine>
-            ))}
+            <PreferenceLine title={_("Show dynamic help.")}>
+                <Toggle checked={help_enabled} onChange={toggleHelpEnabled} />
+            </PreferenceLine>
+
+            <div className={"help-detail-settings" + (help_enabled ? "" : " help-details-greyed")}>
+                {availableHelp.map((flow, index) => (
+                    <PreferenceLine key={index} title={flow.description}>
+                        <button onClick={() => show(flow)}>
+                            {pgettext("Press this button to show all the initial items", "Reset")}
+                        </button>
+                        <button onClick={() => hide(flow)}>
+                            {pgettext("Press this button to hide this help flow", "Hide")}
+                        </button>
+                        <span>
+                            {pgettext(
+                                "Following this label is the status of currently visible help items",
+                                "Currently:",
+                            )}
+                        </span>
+                        <span>
+                            {flow.visible
+                                ? pgettext("This help flow is showing its help items", "active")
+                                : pgettext("This help flow is not visible", "inactive")}
+                        </span>
+                    </PreferenceLine>
+                ))}
+            </div>
         </div>
     );
 }
