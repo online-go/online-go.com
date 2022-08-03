@@ -39,23 +39,24 @@ export function GuestUserIntroOldNav(): JSX.Element {
 
             <HelpItem
                 target="account-settings-button"
-                position={"center-left"}
-                anchor={"top-right"}
+                position={"center-right"}
+                anchor={"bottom-left"}
             >
                 <div>{_("To set your password, click here")} </div>
             </HelpItem>
 
-            <HelpItem target="password-entry" position={"center-right"}>
+            <HelpItem target="password-entry" position={"top-center"}>
                 <div>{_("You can enter your new password here.")} </div>
             </HelpItem>
 
-            <HelpItem target="profile-edit-link">
+            <HelpItem target="profile-edit-link" position="top-centre" anchor="bottom-left">
                 <div>{_("You can also change your username, here.")} </div>
             </HelpItem>
 
             <HelpItem
                 target="profile-edit-page"
-                position="center-left"
+                position="bottom-right"
+                anchor="bottom-left"
                 id="help-for-profile-edit-page"
             >
                 <div>{_("In here you can change your profile appearance, then click 'Save'.")}</div>
