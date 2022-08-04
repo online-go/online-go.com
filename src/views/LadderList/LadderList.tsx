@@ -35,29 +35,44 @@ interface LadderEntry {
     name: string;
     player_rank: number;
     size: number;
+    group?: {
+        id: number;
+        icon: string;
+        name: string;
+    };
 }
 
 export function LadderList(): JSX.Element {
     const [ladders, setLadders] = React.useState<Array<LadderEntry>>([]);
+    const [joinedLadders, setJoinedLadders] = React.useState<Array<LadderEntry>>([]);
     const user = useUser();
 
     React.useEffect(() => {
         window.document.title = "Ladders";
-        resolve();
+        fetchLadders();
     }, []);
 
-    function resolve() {
+    function fetchLadders() {
         get("ladders")
             .then((res) => {
                 setLadders(res.results);
             })
             .catch(errorAlerter);
+
+        if (!user.anonymous) {
+            get("me/ladders", { page_size: 100 })
+                .then((res) => {
+                    console.log(res.results);
+                    setJoinedLadders(res.results);
+                })
+                .catch(errorAlerter);
+        }
     }
 
     const join = (ladder_id: number) => {
         post("ladders/%%/players", ladder_id, {})
             .then(() => {
-                this.resolve();
+                fetchLadders();
             })
             .catch(errorAlerter);
     };
@@ -103,6 +118,31 @@ export function LadderList(): JSX.Element {
                     </Card>
                 ))}
             </div>
+            {joinedLadders.length > 0 && (
+                <div className="MyLadders">
+                    <h2 style={{ marginLeft: "1rem" }}>
+                        <i className="fa fa-list-ol"></i> {_("My Ladders")}
+                    </h2>
+                    {joinedLadders.map((ladder, idx) => (
+                        <div className="MyLadders-row" key={idx}>
+                            <span className="player-rank">#{ladder.player_rank}</span>
+                            {ladder.group?.icon ? (
+                                <img
+                                    className="group-icon"
+                                    src={ladder.group.icon}
+                                    title={ladder.group.name}
+                                    alt={ladder.group.name}
+                                />
+                            ) : (
+                                <i className="fa fa-list-ol"></i>
+                            )}
+                            <Link to={`/ladder/${ladder.id}`}>
+                                {ladder.name} {ladder.board_size + "x" + ladder.board_size}
+                            </Link>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
