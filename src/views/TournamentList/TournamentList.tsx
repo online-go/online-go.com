@@ -38,350 +38,319 @@ interface TournamentListProperties {
     group?: IdType;
 }
 
-interface TournamentListMainViewState {
-    tab: "schedule" | "live" | "archive" | "correspondence";
-    show_all: boolean;
-}
+type TabValues = "schedule" | "live" | "archive" | "correspondence";
 
-interface TournamentListMainViewState {
-    tab: "schedule" | "live" | "archive" | "correspondence";
-}
+export function TournamentListMainView(): JSX.Element {
+    const [tab, _setTab] = React.useState<TabValues>(preferences.get("tournaments-tab"));
+    const [show_all, setShowAll] = React.useState<boolean>(preferences.get("tournaments-show-all"));
 
-export class TournamentListMainView extends React.PureComponent<{}, TournamentListMainViewState> {
-    constructor(props) {
-        super(props);
-        this.state = {
-            tab: preferences.get("tournaments-tab"),
-            show_all: preferences.get("tournaments-show-all"),
-            //show_all: false,
-        };
-    }
-
-    componentDidMount() {
+    React.useEffect(() => {
         window.document.title = _("Tournaments");
-    }
+    });
 
-    setTabArchive = () => this.setTab("archive");
-    setTabSchedule = () => this.setTab("schedule");
-    setTabLive = () => this.setTab("live");
-    setTabCorrespondence = () => this.setTab("correspondence");
-
-    setTab(tab) {
-        this.setState({ tab: tab });
+    const setTab = (tab: TabValues) => {
         preferences.set("tournaments-tab", tab);
-    }
-    toggleShowAll(show_all: boolean) {
-        this.setState({ show_all: show_all });
+        _setTab(tab);
+    };
+
+    const setTabArchive = () => setTab("archive");
+    const setTabSchedule = () => setTab("schedule");
+    const setTabLive = () => setTab("live");
+    const setTabCorrespondence = () => setTab("correspondence");
+
+    const toggleShowAll = (show_all: boolean) => {
+        setShowAll(show_all);
         preferences.set("tournaments-show-all", show_all);
-    }
+    };
 
-    render() {
-        const tab = this.state.tab;
-
-        const frag_open_tournament = (speed: "live" | "correspondence") => (
-            <React.Fragment>
-                <div className="open-tourney-header">
-                    <h3>{_("Open Tournaments")}</h3>
-                    <div>
-                        {_("Show all")}
-                        <Toggle
-                            height={14}
-                            width={30}
-                            checked={this.state.show_all}
-                            onChange={(tf) => this.toggleShowAll(tf)}
-                        />
-                    </div>
-                </div>
-                <TournamentList
-                    phase="open"
-                    speed={speed}
-                    hide_stale={!this.state.show_all}
-                    hide_exclusive={!this.state.show_all}
-                />
-            </React.Fragment>
-        );
-
-        return (
-            <div className="page-width">
-                <div className="TournamentList container">
-                    <div className="tabhead">
-                        <h2>
-                            <i className="fa fa-trophy"></i> {_("Tournaments")}
-                        </h2>
-                        <div>
-                            <span
-                                className={"tab" + (tab === "schedule" ? " active" : "")}
-                                onClick={this.setTabSchedule}
-                            >
-                                <i className="fa fa-calendar"></i>
-                                {_("Schedule")}
-                            </span>
-                            <span
-                                className={"tab" + (tab === "live" ? " active" : "")}
-                                onClick={this.setTabLive}
-                            >
-                                <i className="fa fa-clock-o"></i>
-                                {_("Live")}
-                            </span>
-                            <span
-                                className={"tab" + (tab === "correspondence" ? " active" : "")}
-                                onClick={this.setTabCorrespondence}
-                            >
-                                <i className="ogs-turtle"></i>
-                                {_("Correspondence")}
-                            </span>
-                            <span
-                                className={"tab" + (tab === "archive" ? " active" : "")}
-                                onClick={this.setTabArchive}
-                            >
-                                <i className="fa fa-university"></i>
-                                {_("Archive")}
-                            </span>
-                        </div>
-                    </div>
-                    <hr />
-
-                    {tab === "schedule" && <Schedule />}
-                    {tab === "live" && (
-                        <div>
-                            {frag_open_tournament("live")}
-
-                            <h3>{_("Active Tournaments")}</h3>
-                            <TournamentList phase="active" speed="live" />
-                        </div>
-                    )}
-                    {tab === "correspondence" && (
-                        <div>
-                            {frag_open_tournament("correspondence")}
-
-                            <h3>{_("Active Tournaments")}</h3>
-                            <TournamentList phase="active" speed="correspondence" />
-                        </div>
-                    )}
-                    {tab === "archive" && (
-                        <div>
-                            <h3>{_("Finished Tournaments")}</h3>
-                            <TournamentList phase="finished" />
-                        </div>
-                    )}
+    const frag_open_tournament = (speed: "live" | "correspondence") => (
+        <React.Fragment>
+            <div className="open-tourney-header">
+                <h3>{_("Open Tournaments")}</h3>
+                <div>
+                    {_("Show all")}
+                    <Toggle
+                        height={14}
+                        width={30}
+                        checked={show_all}
+                        onChange={(tf) => toggleShowAll(tf)}
+                    />
                 </div>
             </div>
-        );
-    }
+            <TournamentList
+                phase="open"
+                speed={speed}
+                hide_stale={!show_all}
+                hide_exclusive={!show_all}
+            />
+        </React.Fragment>
+    );
+
+    return (
+        <div className="page-width">
+            <div className="TournamentList container">
+                <div className="tabhead">
+                    <h2>
+                        <i className="fa fa-trophy"></i> {_("Tournaments")}
+                    </h2>
+                    <div>
+                        <span
+                            className={"tab" + (tab === "schedule" ? " active" : "")}
+                            onClick={setTabSchedule}
+                        >
+                            <i className="fa fa-calendar"></i>
+                            {_("Schedule")}
+                        </span>
+                        <span
+                            className={"tab" + (tab === "live" ? " active" : "")}
+                            onClick={setTabLive}
+                        >
+                            <i className="fa fa-clock-o"></i>
+                            {_("Live")}
+                        </span>
+                        <span
+                            className={"tab" + (tab === "correspondence" ? " active" : "")}
+                            onClick={setTabCorrespondence}
+                        >
+                            <i className="ogs-turtle"></i>
+                            {_("Correspondence")}
+                        </span>
+                        <span
+                            className={"tab" + (tab === "archive" ? " active" : "")}
+                            onClick={setTabArchive}
+                        >
+                            <i className="fa fa-university"></i>
+                            {_("Archive")}
+                        </span>
+                    </div>
+                </div>
+                <hr />
+
+                {tab === "schedule" && <Schedule />}
+                {tab === "live" && (
+                    <div>
+                        {frag_open_tournament("live")}
+
+                        <h3>{_("Active Tournaments")}</h3>
+                        <TournamentList phase="active" speed="live" />
+                    </div>
+                )}
+                {tab === "correspondence" && (
+                    <div>
+                        {frag_open_tournament("correspondence")}
+
+                        <h3>{_("Active Tournaments")}</h3>
+                        <TournamentList phase="active" speed="correspondence" />
+                    </div>
+                )}
+                {tab === "archive" && (
+                    <div>
+                        <h3>{_("Finished Tournaments")}</h3>
+                        <TournamentList phase="finished" />
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 }
 
-class Schedule extends React.PureComponent<{}, any> {
-    constructor(props) {
-        super(props);
-        this.state = {
-            schedules: [],
-        };
-    }
+function Schedule(): JSX.Element {
+    const [schedules, setSchedules] = React.useState([]);
 
-    componentDidMount() {
+    React.useEffect(() => {
         get("tournament_schedules/", { page_size: 100 })
             .then((res) => {
                 res.results.sort((a, b) => {
                     return new Date(a.next_run).getTime() - new Date(b.next_run).getTime();
                 });
-                this.setState({ schedules: res.results });
+                setSchedules(res.results);
             })
             .catch(errorAlerter);
-    }
+    });
 
-    render() {
-        return (
-            <div className="TournamentList-Schedule">
-                <table className="schedule-table">
-                    <thead>
-                        <tr>
-                            <th>{_("Tournament")}</th>
-                            <th>{_("Type")}</th>
-                            <th>{_("Registration")}</th>
-                            <th>{_("Start time")}</th>
+    return (
+        <div className="TournamentList-Schedule">
+            <table className="schedule-table">
+                <thead>
+                    <tr>
+                        <th>{_("Tournament")}</th>
+                        <th>{_("Type")}</th>
+                        <th>{_("Registration")}</th>
+                        <th>{_("Start time")}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {schedules.map((entry, idx) => (
+                        <tr key={idx}>
+                            <td>
+                                <h4>
+                                    <i className={speedIcon(entry) + " site-tourny"}></i>
+                                    {entry.name}
+                                </h4>
+                                <div>
+                                    <i>{rrule_description(entry)}</i>
+                                </div>
+                            </td>
+                            <td>
+                                <div>{typeDescription(entry)}</div>
+                            </td>
+                            <td>
+                                <div>{datefmt(entry.next_run)}</div>
+                                <div>
+                                    <i>{fromNow(entry.next_run)}</i>
+                                </div>
+                            </td>
+                            <td>
+                                <div>{datefmt(entry.next_run, entry.lead_time_seconds)}</div>
+                                <div>
+                                    <i>{fromNow(entry.next_run, entry.lead_time_seconds)}</i>
+                                </div>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {this.state.schedules.map((entry, idx) => (
-                            <tr key={idx}>
-                                <td>
-                                    <h4>
-                                        <i className={speedIcon(entry) + " site-tourny"}></i>
-                                        {entry.name}
-                                    </h4>
-                                    <div>
-                                        <i>{rrule_description(entry)}</i>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div>{typeDescription(entry)}</div>
-                                </td>
-                                <td>
-                                    <div>{datefmt(entry.next_run)}</div>
-                                    <div>
-                                        <i>{fromNow(entry.next_run)}</i>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div>{datefmt(entry.next_run, entry.lead_time_seconds)}</div>
-                                    <div>
-                                        <i>{fromNow(entry.next_run, entry.lead_time_seconds)}</i>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        );
-    }
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
 }
-export class TournamentList extends React.PureComponent<TournamentListProperties> {
-    constructor(props) {
-        super(props);
-    }
 
-    static makeFilter(
-        phase: "open" | "active" | "finished",
-        speed?: "live" | "correspondence",
-        hide_stale?: boolean,
-        hide_exclusive?: boolean,
-        group?: IdType,
-    ) {
-        const filter: Filter = {};
-        switch (phase) {
-            case "open":
-                filter["started__isnull"] = true;
-                filter["ended__isnull"] = true;
-                break;
-            case "active":
-                filter["started__isnull"] = false;
-                filter["ended__isnull"] = true;
-                break;
-            case "finished":
-                filter["started__isnull"] = false;
-                filter["ended__isnull"] = false;
-                break;
-        }
+export function TournamentList(props: TournamentListProperties) {
+    const filter = makeTournamentFilter(
+        props.phase,
+        props.speed,
+        props.hide_stale,
+        props.hide_exclusive,
+        props.group,
+    );
 
-        if (speed !== undefined) {
-            switch (speed) {
-                case "live":
-                    filter["time_per_move__lt"] = 3600;
-                    filter["time_per_move__gt"] = 0;
-                    break;
-                case "correspondence":
-                    filter["time_per_move__gte"] = 3600;
-                    break;
-            }
-        }
-
-        if (hide_stale) {
-            filter["time_start__gte"] = new Date().toISOString();
-        }
-
-        if (hide_exclusive) {
-            filter["exclusivity"] = "open";
-        }
-
-        if (group !== undefined) {
-            filter["group"] = group;
-        }
-
-        return filter;
-    }
-
-    render() {
-        const filter = TournamentList.makeFilter(
-            this.props.phase,
-            this.props.speed,
-            this.props.hide_stale,
-            this.props.hide_exclusive,
-            this.props.group,
-        );
-
-        return (
-            <div className="TournamentList">
-                <PaginatedTable
-                    className="TournamentList-table"
-                    name="game-history"
-                    source={`tournaments/`}
-                    filter={filter}
-                    orderBy={["-started", "time_start", "name"]}
-                    columns={[
-                        {
-                            header: _("Tournament"),
-                            className: () => "name",
-                            render: (tournament: rest_api.Tournament) => (
-                                <div className="tournament-name">
-                                    <i
-                                        className={
-                                            timeIcon(tournament.time_per_move) +
-                                            (tournament.group ? " group-tourny" : " site-tourny")
-                                        }
-                                    />
-                                    {tournament.group ? (
-                                        <Link to={`/group/${tournament.group.id}`}>
-                                            <img
-                                                src={mk32icon(tournament.icon)}
-                                                data-title={tournament.group.name}
-                                                onMouseOver={tooltip}
-                                                onMouseOut={tooltip}
-                                                onMouseMove={tooltip}
-                                            />
-                                        </Link>
-                                    ) : (
+    return (
+        <div className="TournamentList">
+            <PaginatedTable
+                className="TournamentList-table"
+                name="game-history"
+                source={`tournaments/`}
+                filter={filter}
+                orderBy={["-started", "time_start", "name"]}
+                columns={[
+                    {
+                        header: _("Tournament"),
+                        className: () => "name",
+                        render: (tournament: rest_api.Tournament) => (
+                            <div className="tournament-name">
+                                <i
+                                    className={
+                                        timeIcon(tournament.time_per_move) +
+                                        (tournament.group ? " group-tourny" : " site-tourny")
+                                    }
+                                />
+                                {tournament.group ? (
+                                    <Link to={`/group/${tournament.group.id}`}>
                                         <img
-                                            src={tournament.icon}
-                                            data-title={_("OGS Site Wide Tournament")}
+                                            src={mk32icon(tournament.icon)}
+                                            data-title={tournament.group.name}
                                             onMouseOver={tooltip}
                                             onMouseOut={tooltip}
                                             onMouseMove={tooltip}
                                         />
-                                    )}
-                                    <Link to={`/tournament/${tournament.id}`}>
-                                        {tournament.name}
                                     </Link>
-                                </div>
-                            ),
-                        },
+                                ) : (
+                                    <img
+                                        src={tournament.icon}
+                                        data-title={_("OGS Site Wide Tournament")}
+                                        onMouseOver={tooltip}
+                                        onMouseOut={tooltip}
+                                        onMouseMove={tooltip}
+                                    />
+                                )}
+                                <Link to={`/tournament/${tournament.id}`}>{tournament.name}</Link>
+                            </div>
+                        ),
+                    },
 
-                        {
-                            header: _("When"),
-                            className: "nobr",
-                            render: (tournament) => when(tournament.time_start),
-                        },
-                        {
-                            header: _("Time Control"),
-                            className: "nobr",
-                            render: (tournament) =>
-                                shortShortTimeControl(tournament.time_control_parameters),
-                        },
-                        {
-                            header: _("Size"),
-                            className: "nobr",
-                            render: (tournament) =>
-                                `${tournament.board_size}x${tournament.board_size}`,
-                        },
-                        {
-                            header: _("Players"),
-                            className: "nobr",
-                            render: (tournament) => tournament.player_count,
-                        },
-                        {
-                            header: _("Ranks"),
-                            className: "nobr",
-                            render: (tournament) =>
-                                shortRankRestrictionText(
-                                    tournament.min_ranking,
-                                    tournament.max_ranking,
-                                ),
-                        },
-                    ]}
-                />
-            </div>
-        );
+                    {
+                        header: _("When"),
+                        className: "nobr",
+                        render: (tournament) => when(tournament.time_start),
+                    },
+                    {
+                        header: _("Time Control"),
+                        className: "nobr",
+                        render: (tournament) =>
+                            shortShortTimeControl(tournament.time_control_parameters),
+                    },
+                    {
+                        header: _("Size"),
+                        className: "nobr",
+                        render: (tournament) => `${tournament.board_size}x${tournament.board_size}`,
+                    },
+                    {
+                        header: _("Players"),
+                        className: "nobr",
+                        render: (tournament) => tournament.player_count,
+                    },
+                    {
+                        header: _("Ranks"),
+                        className: "nobr",
+                        render: (tournament) =>
+                            shortRankRestrictionText(
+                                tournament.min_ranking,
+                                tournament.max_ranking,
+                            ),
+                    },
+                ]}
+            />
+        </div>
+    );
+}
+
+function makeTournamentFilter(
+    phase: "open" | "active" | "finished",
+    speed?: "live" | "correspondence",
+    hide_stale?: boolean,
+    hide_exclusive?: boolean,
+    group?: IdType,
+) {
+    const filter: Filter = {};
+    switch (phase) {
+        case "open":
+            filter["started__isnull"] = true;
+            filter["ended__isnull"] = true;
+            break;
+        case "active":
+            filter["started__isnull"] = false;
+            filter["ended__isnull"] = true;
+            break;
+        case "finished":
+            filter["started__isnull"] = false;
+            filter["ended__isnull"] = false;
+            break;
     }
+
+    if (speed !== undefined) {
+        switch (speed) {
+            case "live":
+                filter["time_per_move__lt"] = 3600;
+                filter["time_per_move__gt"] = 0;
+                break;
+            case "correspondence":
+                filter["time_per_move__gte"] = 3600;
+                break;
+        }
+    }
+
+    if (hide_stale) {
+        filter["time_start__gte"] = new Date().toISOString();
+    }
+
+    if (hide_exclusive) {
+        filter["exclusivity"] = "open";
+    }
+
+    if (group !== undefined) {
+        filter["group"] = group;
+    }
+
+    return filter;
 }
 
 function mk32icon(path) {
