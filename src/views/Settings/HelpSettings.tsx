@@ -21,19 +21,27 @@ import * as DynamicHelp from "react-dynamic-help";
 
 import { _, pgettext } from "translate";
 
-import { usePreference } from "preferences";
 import { PreferenceLine } from "SettingsCommon";
 import { Toggle } from "Toggle";
 
 export function HelpSettings(): JSX.Element {
-    const { getFlowInfo, enableFlow, enableHelp } = React.useContext(DynamicHelp.Api);
+    const {
+        getFlowInfo,
+        enableFlow,
+        enableHelp,
+        getSystemStatus: helpSystemStatus,
+    } = React.useContext(DynamicHelp.Api);
+
     const availableHelp = getFlowInfo() as DynamicHelp.FlowState[];
 
-    const [help_enabled, _toggleHelpEnabled] = usePreference("help-system-enabled");
+    const helpEnabled = helpSystemStatus().enabled;
 
-    const toggleHelpEnabled = (ev) => {
-        enableHelp(!help_enabled);
-        _toggleHelpEnabled(ev);
+    // a local state variable to make sure we re-render when enabled state changes
+    const [__helpEnabled, setRenderNewHelpState] = React.useState(helpEnabled);
+
+    const toggleHelpEnabled = () => {
+        enableHelp(!helpEnabled);
+        setRenderNewHelpState(!helpEnabled);
     };
 
     // we need a state to trigger re-reander after changing a flow visibility,
@@ -60,10 +68,10 @@ export function HelpSettings(): JSX.Element {
     return (
         <div>
             <PreferenceLine title={_("Show dynamic help.")}>
-                <Toggle checked={help_enabled} onChange={toggleHelpEnabled} />
+                <Toggle checked={__helpEnabled} onChange={toggleHelpEnabled} />
             </PreferenceLine>
 
-            <div className={"help-detail-settings" + (help_enabled ? "" : " help-details-greyed")}>
+            <div className={"help-detail-settings" + (__helpEnabled ? "" : " help-details-greyed")}>
                 {availableHelp.map((flow, index) => (
                     <PreferenceLine key={index} title={flow.description}>
                         <button onClick={() => show(flow)}>
