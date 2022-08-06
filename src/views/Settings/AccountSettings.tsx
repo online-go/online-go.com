@@ -17,6 +17,8 @@
 
 import * as React from "react";
 
+import * as DynamicHelp from "react-dynamic-help";
+
 import * as data from "data";
 
 import { Link } from "react-router-dom";
@@ -30,14 +32,25 @@ import { alert } from "swal_config";
 import { SettingGroupPageProps } from "SettingsCommon";
 
 export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
-    const [password1, setPassword1]: [string, (x: string) => void] = React.useState("");
-    const [password2, setPassword2]: [string, (x: string) => void] = React.useState("");
-    const [email, __setEmail]: [string, (x: string) => void] = React.useState(
-        props.state.profile.email,
-    );
-    const [email_changed, setEmailChanged]: [boolean, (x: boolean) => void] = React.useState();
-    const [message, setMessage]: [string, (x: string) => void] = React.useState("");
-    const [settings, setSettings]: [any, (x: any) => void] = React.useState({});
+    const [password1, __setPassword1] = React.useState("");
+    const [password2, setPassword2] = React.useState("");
+    const [email, __setEmail] = React.useState(props.state.profile.email);
+    const [email_changed, setEmailChanged] = React.useState(false);
+    const [message, setMessage] = React.useState("");
+    const [settings, setSettings] = React.useState<any>({}); // we probably need a type for settings
+
+    const { registerTargetItem, signalUsed } = React.useContext(DynamicHelp.Api);
+
+    signalUsed("account-settings-button"); // they have arrived here now, so they don't need to be told how to get here anymore
+
+    const { ref: profileLink } = registerTargetItem("profile-edit-link"); // cleared on Profile page
+
+    const { ref: passwordEntry, used: signalPasswordTyping } = registerTargetItem("password-entry");
+
+    const setPassword1 = (password: string): void => {
+        __setPassword1(password);
+        signalPasswordTyping();
+    };
 
     React.useEffect(refreshAccountSettings, []);
 
@@ -190,7 +203,7 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
     return (
         <div>
             <i>
-                <Link to={`/user/view/${user.id}#edit`}>
+                <Link to={`/user/view/${user.id}#edit`} ref={profileLink}>
                     {_("To update your profile information, click here")}
                 </Link>
             </i>
@@ -226,7 +239,7 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
                 </dd>
 
                 <dt>{_("Password")}</dt>
-                <dd className="password-update">
+                <dd className="password-update" ref={passwordEntry}>
                     <div>
                         <input
                             type="password"

@@ -121,6 +121,8 @@ export const defaults = {
 
     "game-history-size-filter": "all",
     "game-history-ranked-filter": "all",
+
+    "help-system-enabled": true,
 };
 
 defaults["profanity-filter"][current_language] = true;

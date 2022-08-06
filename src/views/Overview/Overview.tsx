@@ -9,7 +9,7 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
+ * GNU Affero General Public License for more detils.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -67,6 +67,7 @@ interface OverviewState {
     overview: { active_games: Array<ActiveGameType> };
     show_translation_dialog: boolean;
 }
+
 export class OldOverview extends React.Component<{}, OverviewState> {
     private static defaultTitle = "OGS";
 
