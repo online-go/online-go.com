@@ -180,6 +180,7 @@ function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Elem
             onBlur: onBlur,
             onKeyDown: onKeyDown,
             onChange: onChange,
+            autoCapitalize: "off",
         }),
         [props.placeholder, value],
     );
