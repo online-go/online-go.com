@@ -19,7 +19,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
 import { browserHistory } from "ogsHistory";
-import { _, pgettext } from "translate";
+import { _, interpolate, pgettext } from "translate";
 import { post, del, put, get } from "requests";
 import { errorAlerter, slugify } from "misc";
 import * as data from "data";
@@ -449,13 +449,13 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
     };
 
     inviteUser = () => {
-        post("group/%%/members", this.state.group_id, {
-            username: this.state.user_to_invite.username,
-        })
+        const username = this.state.user_to_invite.username;
+        post("group/%%/members", this.state.group_id, { username })
             .then((res) => {
                 console.log(res);
-                _("Player invited"); /* for translations */
-                this.setState({ invite_result: _(res.success) });
+                this.setState({
+                    invite_result: interpolate(_("Player invited: {{username}}"), { username }),
+                });
             })
             .catch((res) => {
                 try {

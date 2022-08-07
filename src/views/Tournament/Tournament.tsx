@@ -490,13 +490,13 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
         this.setState({ user_to_invite: user });
     };
     inviteUser = () => {
-        post("tournaments/%%/players", this.state.tournament_id, {
-            username: this.state.user_to_invite.username,
-        })
+        const username = this.state.user_to_invite.username;
+        post("tournaments/%%/players", this.state.tournament_id, { username })
             .then((res) => {
                 console.log(res);
-                _("Player invited"); /* for translations */
-                this.setState({ invite_result: _(res.success) });
+                this.setState({
+                    invite_result: interpolate(_("Player invited: {{username}}"), { username }),
+                });
             })
             .catch((res) => {
                 try {
