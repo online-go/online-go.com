@@ -110,8 +110,8 @@ export function Settings(): JSX.Element {
         { key: "announcement", label: _("Announcements Preferences") },
         { key: "blocked_players", label: _("Blocked Players") },
         { key: "account", label: _("Account Settings"), ref: accountSettingsButton },
-        { key: "help", label: _("Help Settings") },
         { key: "link", label: _("Account Linking") },
+        { key: "help", label: _("Help Settings") },
         /*
         {
             key: "experiments",

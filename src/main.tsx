@@ -351,6 +351,7 @@ const helpPopupDictionary: HelpPopupDictionary = {
         "Don't show me these",
     ),
     Skip: pgettext("A button to dismiss a help popup", "Skip"),
+    OK: pgettext("A button to dismiss the last help popup", "OK"),
 };
 
 react_root.render(
