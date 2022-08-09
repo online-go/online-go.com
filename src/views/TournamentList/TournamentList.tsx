@@ -96,7 +96,7 @@ export function TournamentListMainView(): JSX.Element {
                     <h2>
                         <i className="fa fa-trophy"></i> {_("Tournaments")}
                     </h2>
-                    <div>
+                    <div className="tabs-container">
                         {!user.anonymous && (
                             <span
                                 className={"tab" + (tab === "my-tournaments" ? " active" : "")}
