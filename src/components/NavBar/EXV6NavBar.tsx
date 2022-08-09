@@ -192,6 +192,10 @@ export function EXV6NavBar(): JSX.Element {
                 </Menu>
 
                 <Menu title={_("Community")} to="/chat">
+                    <a href="https://forums.online-go.com/" target="_blank">
+                        <i className="fa fa-comments"></i>
+                        {_("Forums")}
+                    </a>
                     <Link to="/chat">
                         <i className="fa fa-comment-o"></i>
                         {_("Chat")}
@@ -202,10 +206,6 @@ export function EXV6NavBar(): JSX.Element {
                             {_("Groups")}
                         </Link>
                     </div>
-                    <a href="https://forums.online-go.com/" target="_blank">
-                        <i className="fa fa-comments"></i>
-                        {_("Forums")}
-                    </a>
                     <Link to="/supporter">
                         <i className="fa fa-star"></i>
                         {_("Support OGS")}
