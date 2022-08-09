@@ -316,7 +316,9 @@ export function EXV6NavBar(): JSX.Element {
                     {preferences.get("show-tournament-indicator") && <TournamentIndicator />}
                     <FriendIndicator />
                     <NotificationIndicator onClick={toggleNotifications} />
-                    <span className="icon-container" onClick={toggleRightNav}
+                    <span
+                        className="icon-container"
+                        onClick={toggleRightNav}
                         ref={toggleRightNavButton}
                     >
                         <PlayerIcon user={user} size={64} />
