@@ -303,7 +303,7 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
                                     <i>
                                         {pgettext(
                                             "This is an explanation for what 'Username' is",
-                                            "This is what other players will know you as.",
+                                            "This is what other players will know you as. You may change your username once every 30 days.",
                                         )}
                                     </i>
                                 </div>
