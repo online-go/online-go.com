@@ -16,34 +16,53 @@
  */
 
 import * as React from "react";
-
 import * as DynamicHelp from "react-dynamic-help";
-
 import * as data from "data";
-
-import { Link } from "react-router-dom";
-import { _ } from "translate";
+import * as player_cache from "player_cache";
+import Dropzone from "react-dropzone";
+import { alert } from "swal_config";
+import { PlayerIcon } from "PlayerIcon";
 import { post, get, put, del, getCookie } from "requests";
 import { errorAlerter, errorLogger, ignore } from "misc";
-
 import { SocialLoginButtons } from "SocialLoginButtons";
-import { alert } from "swal_config";
-
 import { SettingGroupPageProps } from "SettingsCommon";
+import { useUser } from "hooks";
+import { image_resizer } from "image_resizer";
+import { Flag } from "Flag";
+import { toast } from "toast";
+import { pgettext, sorted_locale_countries, _ } from "translate";
 
 export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
+    const user = useUser();
+
+    const [username, setUsername] = React.useState(user.username);
+    const [first_name, setFirstName] = React.useState("");
+    const [last_name, setLastName] = React.useState("");
+    const [real_name_is_private, setRealNameIsPrivate] = React.useState(true);
+    const [country, setCountry] = React.useState("un");
+    const [website, setWebsite] = React.useState("");
     const [password1, __setPassword1] = React.useState("");
     const [password2, setPassword2] = React.useState("");
-    const [email, __setEmail] = React.useState(props.state.profile.email);
-    const [email_changed, setEmailChanged] = React.useState(false);
-    const [message, setMessage] = React.useState("");
+    const [email, setEmail] = React.useState(props.state.profile.email);
+    const [email_validated, setEmailValidated] = React.useState(true);
+    const [new_icon, setNewIcon] = React.useState<(File & { preview: any }) | null>(null);
     const [settings, setSettings] = React.useState<any>({}); // we probably need a type for settings
+    const [loading, setLoading] = React.useState(true);
+
+    const profile_changed =
+        settings &&
+        (settings.username !== username ||
+            settings.first_name !== first_name ||
+            settings.last_name !== last_name ||
+            settings.real_name_is_private !== real_name_is_private ||
+            settings.country !== country ||
+            settings.email !== email ||
+            settings.website !== website);
+    const email_changed = settings.email !== email;
 
     const { registerTargetItem, signalUsed } = React.useContext(DynamicHelp.Api);
 
     signalUsed("account-settings-button"); // they have arrived here now, so they don't need to be told how to get here anymore
-
-    const { ref: profileLink } = registerTargetItem("profile-edit-link"); // cleared on Profile page
 
     const { ref: passwordEntry, used: signalPasswordTyping } = registerTargetItem("password-entry");
 
@@ -54,20 +73,23 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
 
     React.useEffect(refreshAccountSettings, []);
 
-    const user = data.get("user");
-
     function refreshAccountSettings() {
+        setLoading(true);
         get(`me/account_settings`)
             .then((settings) => {
                 console.log(settings);
                 setSettings(settings);
+                setUsername(settings.username);
+                setFirstName(settings.first_name);
+                setLastName(settings.last_name);
+                setRealNameIsPrivate(settings.real_name_is_private);
+                setCountry(settings.country);
+                setWebsite(settings.website);
+                setEmailValidated(settings.email_validated);
+                setEmailValidated(settings.email);
+                setLoading(false);
             })
             .catch(errorLogger);
-    }
-
-    function setEmail(s: string): void {
-        __setEmail(s);
-        setEmailChanged(true);
     }
 
     function passwordIsValid(): boolean {
@@ -83,15 +105,6 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
         return re.test(email.trim());
     }
 
-    function saveEmail(): void {
-        put("players/%%", user.id, { email })
-            .then(() => {
-                setEmailChanged(false);
-                setMessage(_("Email updated successfully!"));
-            })
-            .catch(errorAlerter);
-    }
-
     function savePassword(): void {
         if (!settings.password_is_set) {
             // social auth account
@@ -102,7 +115,9 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
                 .then(() => {
                     props.refresh();
                     refreshAccountSettings();
-                    void alert.fire(_("Password updated successfully!"));
+                    toast(<span>{_("Password updated successfully!")}</span>, 5000);
+                    setPassword1("");
+                    setPassword2("");
                 })
                 .catch(errorAlerter);
         } else {
@@ -118,7 +133,9 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
                             new_password: password1,
                         })
                             .then(() => {
-                                void alert.fire(_("Password updated successfully!"));
+                                toast(<span>{_("Password updated successfully!")}</span>, 5000);
+                                setPassword1("");
+                                setPassword2("");
                             })
                             .catch(errorAlerter);
                     }
@@ -198,139 +215,317 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
         }
     }
 
-    // Render...
+    const updateIcon = (files: File[]) => {
+        console.log(files);
+        const file = files[0];
+        setNewIcon(Object.assign(file, { preview: URL.createObjectURL(file) }));
+
+        image_resizer(files[0], 512, 512)
+            .then((file: Blob) => {
+                put("players/%%/icon", user.id, file)
+                    .then((res) => {
+                        console.log("Upload successful", res);
+                        user.icon = res.icon;
+                        player_cache.update({
+                            id: user.id,
+                            icon: res.icon,
+                        });
+                    })
+                    .catch(errorAlerter);
+            })
+            .catch(errorAlerter);
+    };
+    const clearIcon = () => {
+        setNewIcon(null);
+        del("players/%%/icon", user.id)
+            .then((res) => {
+                console.log("Cleared icon", res);
+                user.icon = res.icon;
+                player_cache.update({
+                    id: user.id,
+                    icon: res.icon,
+                });
+            })
+            .catch(errorAlerter);
+    };
+
+    const save = () => {
+        if (profile_changed) {
+            const data = {
+                username,
+                first_name,
+                last_name,
+                real_name_is_private,
+                country,
+                email,
+                website,
+            };
+            put("players/%%", user.id, data)
+                .then(() => {
+                    toast(<span>{_("Account settings updated successfully!")}</span>, 5000);
+                })
+                .catch(errorAlerter);
+        }
+
+        if (password1.length > 0 && passwordIsValid()) {
+            savePassword();
+        }
+    };
+
+    let save_button_disabled = (loading || !profile_changed) && password1.length === 0;
+    let save_button_text = _("Save changes");
+
+    if (password1.length > 0 && !passwordIsValid()) {
+        save_button_text = _("Passwords don't match");
+        save_button_disabled = true;
+    }
+
+    if (email.trim() !== "" && !emailIsValid()) {
+        save_button_text = _("Invalid email");
+        save_button_disabled = true;
+    }
 
     return (
-        <div>
-            <i>
-                <Link to={`/user/view/${user.id}#edit`} ref={profileLink}>
-                    {_("To update your profile information, click here")}
-                </Link>
-            </i>
-            <dl>
-                <dt>{_("Email address")}</dt>
-                <dd>
-                    <input
-                        type="email"
-                        name="new_email"
-                        value={email}
-                        onChange={(ev) => setEmail(ev.target.value)}
-                    />
-                    {!email_changed ? null : (
-                        <button disabled={!emailIsValid()} className="primary" onClick={saveEmail}>
-                            {emailIsValid()
-                                ? _("Update email address")
-                                : _("Email address is not valid")}
-                        </button>
-                    )}
-                    {message && <div>{message}</div>}
-                    {email && !email_changed && !user.email_validated && (
-                        <div>
-                            <div className="awaiting-validation-text">
-                                {_(
-                                    "Awaiting email address confirmation. Chat will be disabled until your email address has been validated.",
-                                )}
-                            </div>
-                            <button onClick={resendValidationEmail}>
-                                {_("Resend validation email")}
-                            </button>
-                        </div>
-                    )}
-                </dd>
+        <div className="AccountSettings">
+            <div className="row">
+                <div className="left">
+                    <dl>
+                        <dt>{_("Username")}</dt>
+                        <dd>
+                            <div>
+                                <input
+                                    value={username}
+                                    onChange={(ev) => setUsername(ev.target.value)}
+                                />
 
-                <dt>{_("Password")}</dt>
-                <dd className="password-update" ref={passwordEntry}>
-                    <div>
-                        <input
-                            type="password"
-                            value={password1}
-                            onChange={(ev) => setPassword1(ev.target.value)}
-                        />
-                    </div>
-                    <div>
-                        <input
-                            placeholder={_("(again)")}
-                            type="password"
-                            value={password2}
-                            onChange={(ev) => setPassword2(ev.target.value)}
-                        />
-                    </div>
-                    <div>
-                        {password1.length === 0 ? null : (
-                            <button
-                                disabled={!passwordIsValid()}
-                                className="primary"
-                                onClick={savePassword}
-                            >
-                                {passwordIsValid()
-                                    ? _("Update password")
-                                    : _("Passwords don't match")}
-                            </button>
-                        )}
-                    </div>
-                </dd>
-
-                <dt>{_("Social account linking")}</dt>
-                {settings.social_auth_accounts && (
-                    <dd>
-                        {settings.social_auth_accounts.map((account) => (
-                            <div key={account.provider}>
-                                <div className="social-link">
-                                    {account.provider === "github" && (
-                                        <span className="github fa fa-github" />
-                                    )}
-                                    {account.provider === "google-oauth2" && (
-                                        <span className="google google-oauth2-icon" />
-                                    )}
-                                    {account.provider === "facebook" && (
-                                        <span className="facebook facebook-icon" />
-                                    )}
-                                    {account.provider === "twitter" && (
-                                        <i className="twitter twitter-icon fa fa-twitter" />
-                                    )}
-                                    {account.provider === "apple-id" && (
-                                        <i className="apple apple-id-icon fa fa-apple" />
-                                    )}
-
-                                    {account.provider === "github" && (
-                                        <GitHubUsername uid={account.uid} />
-                                    )}
-                                    {account.provider !== "github" && account.uid}
-
-                                    <form method="POST" action={`/disconnect/${account.provider}/`}>
-                                        <input
-                                            type="hidden"
-                                            name="csrfmiddlewaretoken"
-                                            value={getCookie("csrftoken")}
-                                        />
-                                        {settings.password_is_set && (
-                                            <button type="submit">Unlink</button>
+                                <div className="explanation">
+                                    <i className="fa fa-info-circle" />
+                                    <i>
+                                        {pgettext(
+                                            "This is an explanation for what 'Username' is",
+                                            "This is what other players will know you as.",
                                         )}
-                                    </form>
+                                    </i>
                                 </div>
                             </div>
-                        ))}
+                        </dd>
+
+                        <dt>{_("Name")}</dt>
+                        <dd>
+                            <div>
+                                <input
+                                    className="name-input"
+                                    placeholder={_("First") /* translators: First name */}
+                                    value={first_name || ""}
+                                    onChange={(e) => setFirstName(e.target.value)}
+                                />
+                                &nbsp;
+                                <input
+                                    className="name-input"
+                                    placeholder={_("Last") /* translators: Last name */}
+                                    value={last_name || ""}
+                                    onChange={(e) => setLastName(e.target.value)}
+                                />
+                            </div>
+                            <div>
+                                <input
+                                    type="checkbox"
+                                    id="real-name-is-private"
+                                    checked={real_name_is_private}
+                                    onChange={(e) => setRealNameIsPrivate(e.target.checked)}
+                                />{" "}
+                                <label htmlFor="real-name-is-private">{_("Hide real name")}</label>
+                            </div>
+
+                            <div className="explanation">
+                                <i className="fa fa-info-circle" />
+                                <i>{_("Providing your real name is optional.")}</i>
+                            </div>
+                        </dd>
+
+                        <dt>{_("Password")}</dt>
+                        <dd className="password-update" ref={passwordEntry}>
+                            <div>
+                                <input
+                                    type="password"
+                                    value={password1}
+                                    onChange={(ev) => setPassword1(ev.target.value)}
+                                />
+                            </div>
+                            <div>
+                                <input
+                                    placeholder={_("(again)")}
+                                    type="password"
+                                    value={password2}
+                                    onChange={(ev) => setPassword2(ev.target.value)}
+                                />
+                            </div>
+                        </dd>
+
+                        <dt>{_("Email address")}</dt>
+                        <dd>
+                            <input
+                                type="email"
+                                name="new_email"
+                                value={email}
+                                onChange={(ev) => setEmail(ev.target.value)}
+                            />
+                            <div className="explanation">
+                                <i className="fa fa-info-circle" />
+                                <i>
+                                    {_(
+                                        'Providing your email address is optional. We will never sell your email address to third parties. Your email address is used for sending things like password reset requests and turn notifications. Notification emails may be turned off under "Email Notifications".',
+                                    )}
+                                </i>
+                            </div>
+
+                            {email && !email_changed && !email_validated && (
+                                <div>
+                                    <div className="awaiting-validation-text">
+                                        {_(
+                                            "Awaiting email address confirmation. Chat will be disabled until your email address has been validated.",
+                                        )}
+                                    </div>
+                                    <button onClick={resendValidationEmail}>
+                                        {_("Resend validation email")}
+                                    </button>
+                                </div>
+                            )}
+                        </dd>
+                    </dl>
+                </div>
+
+                <div className="right">
+                    <dl>
+                        <dt>{_("Icon")}</dt>
+                        <dd>
+                            <Dropzone onDrop={updateIcon} multiple={false}>
+                                {({ getRootProps, getInputProps }) => (
+                                    <section className="Dropzone">
+                                        <div {...getRootProps()}>
+                                            <input {...getInputProps()} />
+                                            {new_icon ? (
+                                                <img
+                                                    src={new_icon.preview}
+                                                    style={{ height: "128px", width: "128px" }}
+                                                />
+                                            ) : (
+                                                <PlayerIcon id={user.id} size={128} />
+                                            )}
+                                        </div>
+                                    </section>
+                                )}
+                            </Dropzone>
+                        </dd>
+                        <dd className="clear-icon-container">
+                            <button className="xs" onClick={clearIcon}>
+                                {_("Clear icon")}
+                            </button>
+                        </dd>
+
+                        <dt>{_("Country")}</dt>
+                        <dd>
+                            <div className="country-line">
+                                <Flag country={country} big />
+                                <select
+                                    value={country}
+                                    onChange={(e) => setCountry(e.target.value)}
+                                >
+                                    {sorted_locale_countries.map((C) => (
+                                        <option key={C.cc} value={C.cc}>
+                                            {C.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </dd>
+
+                        <dt>{_("Website")}</dt>
+                        <dd>
+                            <div className="website-url">
+                                <input
+                                    type="url"
+                                    value={website}
+                                    onChange={(e) => setWebsite(e.target.value)}
+                                />
+                            </div>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div className="save-button-container">
+                <button className="primary" onClick={save} disabled={save_button_disabled}>
+                    {save_button_text}
+                </button>
+            </div>
+
+            <div className="row">
+                <dl>
+                    <dt>{_("Social account linking")}</dt>
+                    {settings.social_auth_accounts && (
+                        <dd>
+                            {settings.social_auth_accounts.map((account) => (
+                                <div key={account.provider}>
+                                    <div className="social-link">
+                                        {account.provider === "github" && (
+                                            <span className="github fa fa-github" />
+                                        )}
+                                        {account.provider === "google-oauth2" && (
+                                            <span className="google google-oauth2-icon" />
+                                        )}
+                                        {account.provider === "facebook" && (
+                                            <span className="facebook facebook-icon" />
+                                        )}
+                                        {account.provider === "twitter" && (
+                                            <i className="twitter twitter-icon fa fa-twitter" />
+                                        )}
+                                        {account.provider === "apple-id" && (
+                                            <i className="apple apple-id-icon fa fa-apple" />
+                                        )}
+
+                                        {account.provider === "github" && (
+                                            <GitHubUsername uid={account.uid} />
+                                        )}
+                                        {account.provider !== "github" && account.uid}
+
+                                        <form
+                                            method="POST"
+                                            action={`/disconnect/${account.provider}/`}
+                                        >
+                                            <input
+                                                type="hidden"
+                                                name="csrfmiddlewaretoken"
+                                                value={getCookie("csrftoken")}
+                                            />
+                                            {settings.password_is_set && (
+                                                <button type="submit">Unlink</button>
+                                            )}
+                                        </form>
+                                    </div>
+                                </div>
+                            ))}
+                        </dd>
+                    )}
+
+                    <dd>
+                        <SocialLoginButtons />
                     </dd>
-                )}
-
-                <dd>
-                    <SocialLoginButtons />
-                </dd>
-
-                <dt>{_("Delete account")}</dt>
-                <dd>
-                    <i>
-                        {_(
-                            "Warning: this action is permanent, there is no way to recover an account after it's been deleted.",
-                        )}
-                    </i>
-                </dd>
-                <dd>
-                    <button className="reject" onClick={deleteAccount}>
-                        {_("Delete account")}
-                    </button>
-                </dd>
-            </dl>
+                    <dt>{_("Delete account")}</dt>
+                    <dd>
+                        <i>
+                            {_(
+                                "Warning: this action is permanent, there is no way to recover an account after it's been deleted.",
+                            )}
+                        </i>
+                    </dd>
+                    <dd>
+                        <button className="reject" onClick={deleteAccount}>
+                            {_("Delete account")}
+                        </button>
+                    </dd>
+                </dl>
+            </div>
         </div>
     );
 }
