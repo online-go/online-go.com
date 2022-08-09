@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as data from "data";
 import { Link } from "react-router-dom";
 import { _ } from "translate";
 import { PaginatedTable } from "PaginatedTable";
@@ -27,9 +28,13 @@ export function GroupList(): JSX.Element {
     const user = useUser();
     const [name_contains_filter, setNameContainsFilter] = React.useState("");
 
+    const my_groups = data.get("cached.groups", []);
+
     React.useEffect(() => {
         window.document.title = _("Groups");
     }, []);
+
+    console.log(my_groups);
 
     return (
         <div className="page-width">
@@ -98,8 +103,40 @@ export function GroupList(): JSX.Element {
                             },
                         ]}
                     />
+
+                    {my_groups.length > 0 && (
+                        <div className="MyGroups">
+                            <h3>{_("My groups")}</h3>
+                            {my_groups.sort(group_sort_fn).map((group) => (
+                                <div key={group.id} className="group-item">
+                                    <Link to={`/group/${group.id}`}>
+                                        <img
+                                            className="group-icon"
+                                            src={group.icon}
+                                            width="16"
+                                            height="16"
+                                        />
+                                        {group.name} ({group.member_count})
+                                    </Link>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
     );
+}
+
+function group_sort_fn(a, b) {
+    const aname = a.name.toLowerCase();
+    const bname = b.name.toLowerCase();
+
+    if (aname < bname) {
+        return -1;
+    } else if (aname > bname) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
