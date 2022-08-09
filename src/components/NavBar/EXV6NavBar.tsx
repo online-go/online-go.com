@@ -129,10 +129,6 @@ export function EXV6NavBar(): JSX.Element {
 
     //const valid_user = user.anonymous ? null : user;
 
-    const groups = data.get("cached.groups", []);
-    const tournaments = data.get("cached.active_tournaments", []);
-    const ladders = data.get("cached.ladders", []);
-
     // Don't show the signin link at the top if they arrived to the welcome page
     // because the welcome page has special treatment of signin that takes them
     // to the challenge that they accepted via a challenge link.
@@ -162,32 +158,12 @@ export function EXV6NavBar(): JSX.Element {
                             <i className="fa fa-trophy"></i>
                             {_("Tournaments")}
                         </Link>
-                        {tournaments.length > 0 && (
-                            <div className="submenu">
-                                {tournaments.map((tournament) => (
-                                    <Link to={`/tournaments/${tournament.id}`} key={tournament.id}>
-                                        <img src={tournament.icon} />
-                                        {tournament.name}
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
                     </div>
                     <div className="submenu-container">
                         <Link to="/ladders">
                             <i className="fa fa-list-ol"></i>
                             {_("Ladders")}
                         </Link>
-                        {ladders.length > 0 && (
-                            <div className="submenu">
-                                {ladders.map((ladder) => (
-                                    <Link to={`/ladder/${ladder.id}`} key={ladder.id}>
-                                        <span className="ladder-rank">#{ladder.player_rank}</span>{" "}
-                                        {ladder.name}
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
                     </div>
                 </Menu>
                 <Menu title={_("Learn")} to="/learn-to-play-go">
@@ -225,16 +201,6 @@ export function EXV6NavBar(): JSX.Element {
                             <i className="fa fa-users"></i>
                             {_("Groups")}
                         </Link>
-                        {groups.length > 0 && (
-                            <div className="submenu">
-                                {groups.map((group) => (
-                                    <Link to={`/group/${group.id}`} key={group.id}>
-                                        <img src={group.icon} />
-                                        {group.name}
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
                     </div>
                     <a href="https://forums.online-go.com/" target="_blank">
                         <i className="fa fa-comments"></i>
