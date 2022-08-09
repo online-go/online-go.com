@@ -16,6 +16,8 @@
  */
 
 import * as React from "react";
+import * as DynamicHelp from "react-dynamic-help";
+
 import * as player_cache from "player_cache";
 import { del, put } from "requests";
 
@@ -95,8 +97,13 @@ export function AvatarCard({
     const [new_website, setNewWebsite] = React.useState(user.website);
     const [hide_moderator_controls] = usePreference("moderator.hide-profile-information");
 
+    const { registerTargetItem } = React.useContext(DynamicHelp.Api);
+
+    const { ref: profileEditPage, used: signalEditting } = registerTargetItem("profile-edit-page");
+
     const toggleEdit = () => {
         if (editing) {
+            signalEditting();
             let promise: Promise<{ value?: boolean }>;
             if (!data.get("user")?.is_moderator && user.username !== new_username) {
                 promise = alert.fire({
@@ -183,8 +190,10 @@ export function AvatarCard({
             .catch(errorAlerter);
     };
 
+    const avatarContainerEditMode = editing ? profileEditPage : null;
+
     return (
-        <div className="avatar-container">
+        <div className="avatar-container" ref={avatarContainerEditMode}>
             {editing ? (
                 <input
                     className="username-input"

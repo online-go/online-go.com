@@ -18,6 +18,8 @@
 import * as React from "react";
 import { Link, useLocation } from "react-router-dom";
 
+import * as DynamicHelp from "react-dynamic-help";
+
 import * as data from "data";
 import * as preferences from "preferences";
 
@@ -69,12 +71,20 @@ const setThemeAccessible = setTheme.bind(null, "accessible");
 export function EXV6NavBar(): JSX.Element {
     const user = useUser();
     const location = useLocation();
+
     const [search, setSearch] = React.useState<string>("");
     const [focus, setFocus] = React.useState<boolean>(false);
     const [omniMouseOver, setOmniMouseOver] = React.useState<boolean>(false);
     const [right_nav_active, setRightNavActive] = React.useState(false);
     const [notifications_active, setNotificationsActive] = React.useState(false);
     const [hamburger_expanded, setHamburgerExpanded] = React.useState(false);
+
+    const { registerTargetItem } = React.useContext(DynamicHelp.Api);
+
+    const { ref: toggleRightNavButton, used: rightNavToggled } =
+        registerTargetItem("toggle-right-nav");
+
+    const { ref: settingsNavLink } = registerTargetItem("settings-nav-link");
 
     const closeNavbar = () => {
         setRightNavActive(false);
@@ -91,6 +101,7 @@ export function EXV6NavBar(): JSX.Element {
 
     const toggleRightNav = () => {
         setRightNavActive(!right_nav_active);
+        rightNavToggled();
     };
 
     const toggleHamburgerExpanded = () => {
@@ -336,7 +347,11 @@ export function EXV6NavBar(): JSX.Element {
                     <TurnIndicator />
                     <FriendIndicator />
                     <NotificationIndicator onClick={toggleNotifications} />
-                    <span className="icon-container" onClick={toggleRightNav}>
+                    <span
+                        className="icon-container"
+                        onClick={toggleRightNav}
+                        ref={toggleRightNavButton}
+                    >
                         {user.username}
                     </span>
                 </section>
@@ -360,7 +375,7 @@ export function EXV6NavBar(): JSX.Element {
                         {_("Profile")}
                     </Link>
 
-                    <Link to="/user/settings">
+                    <Link to="/user/settings" ref={settingsNavLink}>
                         <i className="fa fa-gear"></i>
                         {_("Settings")}
                     </Link>

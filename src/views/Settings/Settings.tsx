@@ -20,6 +20,8 @@ import Select from "react-select";
 
 import { useParams } from "react-router-dom";
 
+import * as DynamicHelp from "react-dynamic-help";
+
 import * as preferences from "preferences";
 import * as data from "data";
 
@@ -46,6 +48,7 @@ import { AccountSettings } from "./AccountSettings";
 import { LinkPreferences } from "./LinkPreferences";
 import { AnnouncementPreferences } from "./AnnouncementPreferences";
 import { EmailPreferences } from "./EmailPreferences";
+import { HelpSettings } from "./HelpSettings";
 
 export function Settings(): JSX.Element {
     const { category } = useParams();
@@ -54,6 +57,12 @@ export function Settings(): JSX.Element {
     const [vacation_base_time, set_vacation_base_time]: [number, (s: number) => void] =
         React.useState(Date.now());
     const [loaded, set_loaded]: [number, (b: number) => void] = React.useState(0);
+
+    const { registerTargetItem, signalUsed } = React.useContext(DynamicHelp.Api);
+
+    signalUsed("settings-nav-link"); // they have arrived here now, so they don't need to be told how to get here anymore
+
+    const { ref: accountSettingsButton } = registerTargetItem("account-settings-button"); // cleared on AccountSettings page
 
     React.useEffect(refresh, []);
 
@@ -90,7 +99,7 @@ export function Settings(): JSX.Element {
     const selected = category;
     data.set("settings.page-selected", selected);
 
-    const groups: Array<{ key: string; label: string }> = [
+    const groups: Array<{ key: string; label: string; ref?: React.RefObject<any> }> = [
         { key: "general", label: _("General Preferences") },
         { key: "sound", label: _("Sound Preferences") },
         { key: "game", label: _("Game Preferences") },
@@ -100,8 +109,9 @@ export function Settings(): JSX.Element {
         { key: "email", label: _("Email Notifications") },
         { key: "announcement", label: _("Announcements Preferences") },
         { key: "blocked_players", label: _("Blocked Players") },
-        { key: "account", label: _("Account Settings") },
+        { key: "account", label: _("Account Settings"), ref: accountSettingsButton },
         { key: "link", label: _("Account Linking") },
+        { key: "help", label: _("Help Settings") },
         /*
         {
             key: "experiments",
@@ -147,6 +157,9 @@ export function Settings(): JSX.Element {
         case "announcement":
             SelectedPage = AnnouncementPreferences;
             break;
+        case "help":
+            SelectedPage = HelpSettings;
+            break;
         case "link":
             SelectedPage = LinkPreferences;
             break;
@@ -190,6 +203,7 @@ export function Settings(): JSX.Element {
                                 key={x.key}
                                 selected={selected === x.key}
                                 onClick={() => select(x.key)}
+                                ref={x.ref}
                             >
                                 {x.label}
                             </SettingsGroup>
@@ -244,22 +258,23 @@ function SettingsGroupSelector(props: { children: React.ReactNode }): JSX.Elemen
     return <div id="SettingsGroupSelector">{props.children}</div>;
 }
 
-function SettingsGroup(props: {
-    selected: boolean;
-    onClick: (ev?: any) => void;
-    children: React.ReactNode;
-}): JSX.Element {
-    return (
-        <div
-            className={"SettingsGroup" + (props.selected ? " selected" : "")}
-            onClick={props.onClick}
-        >
-            {props.children}
-            <span className="spacer" />
-            {props.selected ? <i className="fa fa-chevron-right" /> : <i />}
-        </div>
-    );
-}
+type SettingsGroupProps = { selected: boolean; onClick: () => void; children: React.ReactNode };
+
+const SettingsGroup = React.forwardRef<HTMLDivElement, SettingsGroupProps>(
+    (props: SettingsGroupProps, ref): JSX.Element => {
+        return (
+            <div
+                className={"SettingsGroup" + (props.selected ? " selected" : "")}
+                onClick={props.onClick}
+                ref={ref}
+            >
+                {props.children}
+                <span className="spacer" />
+                {props.selected ? <i className="fa fa-chevron-right" /> : <i />}
+            </div>
+        );
+    },
+);
 
 function LogoutPreferences(): JSX.Element {
     return (

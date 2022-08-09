@@ -23,6 +23,8 @@ import { parse } from "query-string";
 import * as data from "data";
 import * as moment from "moment";
 
+import * as DynamicHelp from "react-dynamic-help";
+
 import * as preferences from "preferences";
 import * as player_cache from "player_cache";
 
@@ -93,6 +95,10 @@ export function User(props: { user_id?: number }): JSX.Element {
     const [titles, setTitles] = React.useState<rest_api.FullPlayerDetail["titles"]>();
     const [trophies, setTrophies] = React.useState<rest_api.FullPlayerDetail["trophies"]>();
     const [vs, setVs] = React.useState<rest_api.FullPlayerDetail["vs"]>();
+
+    const { signalUsed } = React.useContext(DynamicHelp.Api);
+
+    signalUsed("profile-edit-link"); // they have arrived here now, so they don't need to be told how to get here anymore
 
     const show_graph_type_toggle = !preferences.get("rating-graph-always-use");
 

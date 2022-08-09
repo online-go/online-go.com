@@ -18,6 +18,9 @@
 /// <reference path="../typings_manual/index.d.ts" />
 import "whatwg-fetch"; /* polyfills window.fetch */
 import * as Sentry from "@sentry/browser";
+
+import { HelpProvider, HelpPopupDictionary } from "react-dynamic-help";
+
 import { configure_goban } from "configure-goban";
 import {
     GoMath,
@@ -27,6 +30,7 @@ import {
     ScoreEstimateResponse,
 } from "goban";
 
+import { HelpFlows } from "HelpFlows";
 import { sfx } from "sfx";
 import { post } from "requests";
 import { ai_host } from "sockets";
@@ -142,7 +146,7 @@ import { routes } from "./routes";
 import { errorAlerter, uuid } from "misc";
 import { close_all_popovers } from "popover";
 import * as sockets from "sockets";
-import { _, setCurrentLanguage } from "translate";
+import { _, setCurrentLanguage, pgettext } from "translate";
 import { init_tabcomplete } from "tabcomplete";
 import * as player_cache from "player_cache";
 import { toast } from "toast";
@@ -339,9 +343,23 @@ function ForceReactUpdateWrapper(props): JSX.Element {
 
 const react_root = ReactDOM.createRoot(document.getElementById("main-content"));
 
+const debugDynamicHelp = data.get("debug-dynamic-help", false);
+
+const helpPopupDictionary: HelpPopupDictionary = {
+    "Don't show me these": pgettext(
+        "A button to turn off help popups completely",
+        "Don't show me these",
+    ),
+    Skip: pgettext("A button to dismiss a help popup", "Skip"),
+    OK: pgettext("A button to dismiss the last help popup", "OK"),
+};
+
 react_root.render(
     <React.StrictMode>
-        <ForceReactUpdateWrapper>{routes}</ForceReactUpdateWrapper>
+        <HelpProvider debug={debugDynamicHelp} dictionary={helpPopupDictionary}>
+            <ForceReactUpdateWrapper>{routes}</ForceReactUpdateWrapper>
+            <HelpFlows />
+        </HelpProvider>
     </React.StrictMode>,
 );
 
