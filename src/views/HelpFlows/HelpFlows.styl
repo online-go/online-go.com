@@ -21,12 +21,17 @@
     z-index: z.dynamic-help;
     themed background-color help-popup-bg
     themed border-color help-popup-bg
-    themed color fg
+    themed color colored-background-fg
+    padding: 0.2rem;
+    font-size: 1.0rem;
+    box-shadow: 0 0.2rem 0.5rem 0.2rem rgba(0,0,0,0.2);
 }
 
 .rdh-help-item>.rdh-popup-dismissers {
-    themed color shade1
+    themed-darken color colored-background-fg 10%
     cursor: pointer;
+    margin-top: 0.7rem;
+    font-size: 0.9rem;
 }
 
 #help-for-profile-edit-page, #help-for-profile-edit-page-exv6 {
