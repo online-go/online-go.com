@@ -145,10 +145,12 @@ export function EXV6NavBar(): JSX.Element {
         <header className={"NavBar" + (hamburger_expanded ? " hamburger-expanded" : "")}>
             <span className="hamburger" onClick={toggleHamburgerExpanded}>
                 {hamburger_expanded ? <i className="fa fa-times" /> : <i className="fa fa-bars" />}
+                <span className="ogs-nav-logo" />
             </span>
 
             <nav className="left">
                 <Link to="/" className="Menu-title">
+                    <span className="ogs-nav-logo" />
                     {_("Home")}
                 </Link>
                 <Menu title={_("Play")} to="/play">
@@ -308,6 +310,7 @@ export function EXV6NavBar(): JSX.Element {
                             type="search"
                             className="OmniSearch-input"
                             value={search}
+                            autoComplete="off"
                             onChange={(ev) => setSearch(ev.target.value)}
                             onKeyUp={(ev) => {
                                 if (ev.key === "Escape") {

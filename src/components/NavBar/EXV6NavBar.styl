@@ -114,6 +114,10 @@ header.NavBar {
             overflow-y: auto;
             z-index: z.nav-menu.menu;
 
+            .ogs-nav-logo {
+                display: none;
+            }
+
             .OmniSearch-container {
                 padding-top: 0.2rem;
                 order: 1;
@@ -124,9 +128,12 @@ header.NavBar {
 
                 .OmniSearch-input-container {
                     position: fixed;
+                    z-index: z.nav-menu.omnisearch;
+                    background-color: black;
                     top: 0;
-                    left: navbar-height; // we use this to box a square around the hamburger/x icon
+                    left: 2rem; // we use this to box a square around the hamburger/x icon
                     height: navbar-height; // we use this to box a square around the hamburger/x icon
+                    padding-left: 1rem;
                     right: 0;
                     themed-important background-color navbar-background-color
                     display: inline-flex;
@@ -238,6 +245,7 @@ header.NavBar {
         }
     }
 
+
     a, .clickable, .fakelink {
         themed color text-color
     }
@@ -247,15 +255,22 @@ header.NavBar {
         themed color text-color-active
     }
 
+    .ogs-nav-logo {
+        height: 1.5rem;
+        width: 4rem;
+        margin-right: 1rem;
+    }
+
     .left {
         display: flex;
         align-items: center;
-        padding-left: 1rem;
+        //padding-left: 1rem;
         .Menu-title {
-            display: inline-block;
+            display: inline-flex;
             line-height: navbar-height;
             padding-left: 0.5rem;
             padding-right: 0.5rem;
+            align-items: center;
         }
 
         a, .fakelink {
