@@ -100,6 +100,16 @@ header.NavBar {
             display: none !important;
         }
 
+        .icon-container {
+            padding-right: 0 !important;
+            img.PlayerIcon {
+                margin-right: 0 !important;
+            }
+            .username {
+                display: none;
+            }
+        }
+
         &.hamburger-expanded .left {
             display: inline-flex !important;
             flex-direction: column;
@@ -304,6 +314,7 @@ header.NavBar {
                 height: navbar-height;
                 width: navbar-height;
                 pointer-events: none;
+                margin-right: 0.5rem;
             }
 
             .fa, .ogs-goban {

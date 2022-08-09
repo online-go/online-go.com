@@ -350,12 +350,14 @@ export function EXV6NavBar(): JSX.Element {
                     <TurnIndicator />
                     <FriendIndicator />
                     <NotificationIndicator onClick={toggleNotifications} />
-                    <span
-                        className="icon-container"
-                        onClick={toggleRightNav}
+                    <span className="icon-container" onClick={toggleRightNav}
                         ref={toggleRightNavButton}
                     >
-                        {user.username}
+                        <PlayerIcon user={user} size={64} />
+                        <span className="username">
+                            {user.username}
+                            <i className="fa fa-caret-down" />
+                        </span>
                     </span>
                 </section>
             )}
