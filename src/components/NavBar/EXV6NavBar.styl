@@ -33,7 +33,8 @@ header.NavBar {
     justify-content: space-between;
 
     .fa-star {
-        themed color supporter
+        //themed color supporter-gold
+        color: supporter-gold;
     }
 
     /* desktop / wide screens */
@@ -488,6 +489,33 @@ header.NavBar {
             margin-bottom: -0.2rem;
         }
     }
+
+
+    .ChatList {
+        themed background-color navbar-highlight-background-color
+        padding: 0.5rem;
+        height: "calc(100vh - %s)" % navbar-height;
+        max-height: "calc(100vh - %s)" % navbar-height;
+        width: 15rem;
+        .channels {
+            margin-top: 0.5rem;
+        }
+        .channel {
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+            height: 1.2rem;
+
+            .channel-name {
+                display: inline-flex;
+                align-items: center;
+                align-content: center;
+                .fa-trophy, .icon {
+                    margin-right: 0.5rem;
+                }
+            }
+        }
+    }
+
 }
 
 button.theme-button {
