@@ -119,7 +119,7 @@ export function EXV6NavBar(): JSX.Element {
     React.useEffect(() => {
         setHamburgerExpanded(false);
         closeNavbar();
-    }, [location.pathname]);
+    }, [location.key]);
 
     React.useEffect(() => {
         // here we are watching in case 'theme' is updated by the
