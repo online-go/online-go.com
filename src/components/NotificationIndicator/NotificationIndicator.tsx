@@ -32,7 +32,7 @@ export function NotificationIndicator({ onClick }: { onClick: () => void }): JSX
     return (
         <span className="NotificationIndicator" title={_("Notifications")} onClick={onClick}>
             <i className={"fa fa-bell " + (count > 0 ? "active" : "")} />
-            {count > 0 && <span className="count">{count}</span>}
+            <span className={"count " + (count > 0 ? "active" : "")}>{count || 0}</span>
         </span>
     );
 }

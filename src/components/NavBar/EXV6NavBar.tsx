@@ -35,7 +35,7 @@ import { TurnIndicator } from "TurnIndicator";
 import { NotificationIndicator } from "NotificationIndicator";
 import { TournamentIndicator } from "Announcements";
 import { FriendIndicator } from "FriendList";
-//import { ChatIndicator } from "Chat";
+import { ChatIndicator } from "Chat";
 
 import { logout } from "auth";
 import { useUser } from "hooks";
@@ -119,7 +119,7 @@ export function EXV6NavBar(): JSX.Element {
     React.useEffect(() => {
         setHamburgerExpanded(false);
         closeNavbar();
-    }, [location.pathname]);
+    }, [location.key]);
 
     React.useEffect(() => {
         // here we are watching in case 'theme' is updated by the
@@ -128,10 +128,6 @@ export function EXV6NavBar(): JSX.Element {
     }, []);
 
     //const valid_user = user.anonymous ? null : user;
-
-    const groups = data.get("cached.groups", []);
-    const tournaments = data.get("cached.active_tournaments", []);
-    const ladders = data.get("cached.ladders", []);
 
     // Don't show the signin link at the top if they arrived to the welcome page
     // because the welcome page has special treatment of signin that takes them
@@ -145,10 +141,12 @@ export function EXV6NavBar(): JSX.Element {
         <header className={"NavBar" + (hamburger_expanded ? " hamburger-expanded" : "")}>
             <span className="hamburger" onClick={toggleHamburgerExpanded}>
                 {hamburger_expanded ? <i className="fa fa-times" /> : <i className="fa fa-bars" />}
+                <span className="ogs-nav-logo" />
             </span>
 
             <nav className="left">
                 <Link to="/" className="Menu-title">
+                    <span className="ogs-nav-logo" />
                     {_("Home")}
                 </Link>
                 <Menu title={_("Play")} to="/play">
@@ -160,32 +158,12 @@ export function EXV6NavBar(): JSX.Element {
                             <i className="fa fa-trophy"></i>
                             {_("Tournaments")}
                         </Link>
-                        {tournaments.length > 0 && (
-                            <div className="submenu">
-                                {tournaments.map((tournament) => (
-                                    <Link to={`/tournaments/${tournament.id}`} key={tournament.id}>
-                                        <img src={tournament.icon} />
-                                        {tournament.name}
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
                     </div>
                     <div className="submenu-container">
                         <Link to="/ladders">
                             <i className="fa fa-list-ol"></i>
                             {_("Ladders")}
                         </Link>
-                        {ladders.length > 0 && (
-                            <div className="submenu">
-                                {ladders.map((ladder) => (
-                                    <Link to={`/ladder/${ladder.id}`} key={ladder.id}>
-                                        <span className="ladder-rank">#{ladder.player_rank}</span>{" "}
-                                        {ladder.name}
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
                     </div>
                 </Menu>
                 <Menu title={_("Learn")} to="/learn-to-play-go">
@@ -214,6 +192,10 @@ export function EXV6NavBar(): JSX.Element {
                 </Menu>
 
                 <Menu title={_("Community")} to="/chat">
+                    <a href="https://forums.online-go.com/" target="_blank">
+                        <i className="fa fa-comments"></i>
+                        {_("Forums")}
+                    </a>
                     <Link to="/chat">
                         <i className="fa fa-comment-o"></i>
                         {_("Chat")}
@@ -223,21 +205,7 @@ export function EXV6NavBar(): JSX.Element {
                             <i className="fa fa-users"></i>
                             {_("Groups")}
                         </Link>
-                        {groups.length > 0 && (
-                            <div className="submenu">
-                                {groups.map((group) => (
-                                    <Link to={`/group/${group.id}`} key={group.id}>
-                                        <img src={group.icon} />
-                                        {group.name}
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
                     </div>
-                    <a href="https://forums.online-go.com/" target="_blank">
-                        <i className="fa fa-comments"></i>
-                        {_("Forums")}
-                    </a>
                     <Link to="/supporter">
                         <i className="fa fa-star"></i>
                         {_("Support OGS")}
@@ -308,6 +276,7 @@ export function EXV6NavBar(): JSX.Element {
                             type="search"
                             className="OmniSearch-input"
                             value={search}
+                            autoComplete="off"
                             onChange={(ev) => setSearch(ev.target.value)}
                             onKeyUp={(ev) => {
                                 if (ev.key === "Escape") {
@@ -341,10 +310,10 @@ export function EXV6NavBar(): JSX.Element {
                 </section>
             ) : (
                 <section className="right">
-                    {!preferences.get("hide-incident-reports") && <IncidentReportTracker />}
-                    {/* <ChatIndicator /> */}
-                    {preferences.get("show-tournament-indicator") && <TournamentIndicator />}
                     <TurnIndicator />
+                    {!preferences.get("hide-incident-reports") && <IncidentReportTracker />}
+                    <ChatIndicator />
+                    {preferences.get("show-tournament-indicator") && <TournamentIndicator />}
                     <FriendIndicator />
                     <NotificationIndicator onClick={toggleNotifications} />
                     <span
@@ -352,7 +321,11 @@ export function EXV6NavBar(): JSX.Element {
                         onClick={toggleRightNav}
                         ref={toggleRightNavButton}
                     >
-                        {user.username}
+                        <PlayerIcon user={user} size={64} />
+                        <span className="username">
+                            {user.username}
+                            <i className="fa fa-caret-down" />
+                        </span>
                     </span>
                 </section>
             )}

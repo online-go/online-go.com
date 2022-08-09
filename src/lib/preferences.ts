@@ -97,7 +97,12 @@ export const defaults = {
 
     "supporter.currency": "auto",
     "supporter.interval": "month",
-    "tournaments-tab": "schedule" as "schedule" | "live" | "archive" | "correspondence",
+    "tournaments-tab": "schedule" as
+        | "my-tournaments"
+        | "schedule"
+        | "live"
+        | "archive"
+        | "correspondence",
     "tournaments-show-all": false,
     "translation-dialog-dismissed": 0,
     "translation-dialog-never-show": false,

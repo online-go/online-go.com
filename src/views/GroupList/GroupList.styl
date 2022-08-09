@@ -26,6 +26,20 @@
 
     .group-list-container {
         width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+
+
+        .PaginatedTable {
+            flex: 40rem;
+            min-width: 20rem;
+        }
+
+        .MyGroups {
+            flex: 20rem;
+            width: 20rem;
+            padding-left: 1rem;
+        }
     }
 
     .name {
@@ -57,5 +71,18 @@
 
     .group-icon-header {
         width: 64px;
+    }
+
+    .MyGroups {
+        h3 {
+            margin-top: 0;
+        }
+        .group-icon {
+            width: 16px;
+            height: 16px;
+            max-height: 64px;
+            max-width: 64px;
+            margin-right: 1rem;
+        }
     }
 }

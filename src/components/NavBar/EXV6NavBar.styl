@@ -33,7 +33,8 @@ header.NavBar {
     justify-content: space-between;
 
     .fa-star {
-        themed color supporter
+        //themed color supporter-gold
+        color: supporter-gold;
     }
 
     /* desktop / wide screens */
@@ -100,6 +101,16 @@ header.NavBar {
             display: none !important;
         }
 
+        .icon-container {
+            padding-right: 0 !important;
+            img.PlayerIcon {
+                margin-right: 0 !important;
+            }
+            .username {
+                display: none;
+            }
+        }
+
         &.hamburger-expanded .left {
             display: inline-flex !important;
             flex-direction: column;
@@ -114,6 +125,10 @@ header.NavBar {
             overflow-y: auto;
             z-index: z.nav-menu.menu;
 
+            .ogs-nav-logo {
+                display: none;
+            }
+
             .OmniSearch-container {
                 padding-top: 0.2rem;
                 order: 1;
@@ -124,9 +139,12 @@ header.NavBar {
 
                 .OmniSearch-input-container {
                     position: fixed;
+                    z-index: z.nav-menu.omnisearch;
+                    background-color: black;
                     top: 0;
-                    left: navbar-height; // we use this to box a square around the hamburger/x icon
+                    left: 2rem; // we use this to box a square around the hamburger/x icon
                     height: navbar-height; // we use this to box a square around the hamburger/x icon
+                    padding-left: 1rem;
                     right: 0;
                     themed-important background-color navbar-background-color
                     display: inline-flex;
@@ -168,7 +186,6 @@ header.NavBar {
             }
 
             .Menu-title {
-                order: 2;
                 font-size: font-size-big
             }
 
@@ -238,6 +255,7 @@ header.NavBar {
         }
     }
 
+
     a, .clickable, .fakelink {
         themed color text-color
     }
@@ -247,15 +265,22 @@ header.NavBar {
         themed color text-color-active
     }
 
+    .ogs-nav-logo {
+        height: 1.5rem;
+        width: 4rem;
+        margin-right: 1rem;
+    }
+
     .left {
         display: flex;
         align-items: center;
-        padding-left: 1rem;
+        //padding-left: 1rem;
         .Menu-title {
-            display: inline-block;
+            display: inline-flex;
             line-height: navbar-height;
             padding-left: 0.5rem;
             padding-right: 0.5rem;
+            align-items: center;
         }
 
         a, .fakelink {
@@ -279,6 +304,10 @@ header.NavBar {
             cursor: pointer;
             align-items: center;
 
+            .username {
+                white-space: nowrap;
+            }
+
 
             .notification-indicator {
                 left: 0.5rem;
@@ -289,6 +318,7 @@ header.NavBar {
                 height: navbar-height;
                 width: navbar-height;
                 pointer-events: none;
+                margin-right: 0.5rem;
             }
 
             .fa, .ogs-goban {
@@ -440,8 +470,12 @@ header.NavBar {
     }
 
     .FriendIndicator, .IncidentReportIndicator, .TournamentIndicator, .TurnIndicator, .NotificationIndicator, .ChatIndicator {
-        padding-left: 0.7rem;
-        padding-right: 0.7rem;
+        padding-left: 0.6rem;
+        padding-right: 0.6rem;
+    }
+
+    .TurnIndicator {
+        width: auto;
     }
 
     .ChatIndicator {
@@ -452,6 +486,40 @@ header.NavBar {
             margin-bottom: 0px !important;
         }
     }
+
+    .FriendIndicator, .IncidentReportIndicator, .NotificationIndicator {
+        .count {
+            // This offsets the baseline padding added to the count so things center correctly.
+            margin-bottom: -0.2rem;
+        }
+    }
+
+
+    .ChatList {
+        themed background-color navbar-highlight-background-color
+        padding: 0.5rem;
+        height: "calc(100vh - %s)" % navbar-height;
+        max-height: "calc(100vh - %s)" % navbar-height;
+        width: 15rem;
+        .channels {
+            margin-top: 0.5rem;
+        }
+        .channel {
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+            height: 1.2rem;
+
+            .channel-name {
+                display: inline-flex;
+                align-items: center;
+                align-content: center;
+                .fa-trophy, .icon {
+                    margin-right: 0.5rem;
+                }
+            }
+        }
+    }
+
 }
 
 button.theme-button {

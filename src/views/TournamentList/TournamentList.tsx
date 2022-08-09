@@ -29,6 +29,7 @@ import { TOURNAMENT_TYPE_NAMES, shortRankRestrictionText } from "Tournament";
 import tooltip from "tooltip";
 import { Toggle } from "Toggle";
 import { IdType } from "src/lib/types";
+import { useUser } from "hooks";
 
 interface TournamentListProperties {
     phase: "open" | "active" | "finished";
@@ -38,21 +39,23 @@ interface TournamentListProperties {
     group?: IdType;
 }
 
-type TabValues = "schedule" | "live" | "archive" | "correspondence";
+type TabValues = "my-tournaments" | "schedule" | "live" | "archive" | "correspondence";
 
 export function TournamentListMainView(): JSX.Element {
     const [tab, _setTab] = React.useState<TabValues>(preferences.get("tournaments-tab"));
     const [show_all, setShowAll] = React.useState<boolean>(preferences.get("tournaments-show-all"));
+    const user = useUser();
 
     React.useEffect(() => {
         window.document.title = _("Tournaments");
-    });
+    }, []);
 
     const setTab = (tab: TabValues) => {
         preferences.set("tournaments-tab", tab);
         _setTab(tab);
     };
 
+    const setMyTournaments = () => setTab("my-tournaments");
     const setTabArchive = () => setTab("archive");
     const setTabSchedule = () => setTab("schedule");
     const setTabLive = () => setTab("live");
@@ -93,7 +96,16 @@ export function TournamentListMainView(): JSX.Element {
                     <h2>
                         <i className="fa fa-trophy"></i> {_("Tournaments")}
                     </h2>
-                    <div>
+                    <div className="tabs-container">
+                        {!user.anonymous && (
+                            <span
+                                className={"tab" + (tab === "my-tournaments" ? " active" : "")}
+                                onClick={setMyTournaments}
+                            >
+                                <i className="fa fa-home"></i>
+                                {_("My Tournaments")}
+                            </span>
+                        )}
                         <span
                             className={"tab" + (tab === "schedule" ? " active" : "")}
                             onClick={setTabSchedule}
@@ -126,6 +138,7 @@ export function TournamentListMainView(): JSX.Element {
                 </div>
                 <hr />
 
+                {tab === "my-tournaments" && <MyTournaments />}
                 {tab === "schedule" && <Schedule />}
                 {tab === "live" && (
                     <div>
@@ -154,6 +167,92 @@ export function TournamentListMainView(): JSX.Element {
     );
 }
 
+function MyTournaments(): JSX.Element {
+    return (
+        <div className="TournamentList">
+            <PaginatedTable
+                className="TournamentList-table"
+                name="game-history"
+                source={`me/tournaments/`}
+                //filter={filter}
+                orderBy={["-ended", "-started", "time_start"]}
+                columns={[
+                    {
+                        header: _("Tournament"),
+                        className: () => "name",
+                        render: (tournament: rest_api.Tournament) => (
+                            <div className="tournament-name">
+                                <i
+                                    className={
+                                        timeIcon(tournament.time_per_move) +
+                                        (tournament.group ? " group-tourny" : " site-tourny")
+                                    }
+                                />
+                                {tournament.group ? (
+                                    <Link to={`/group/${tournament.group.id}`}>
+                                        <img
+                                            src={mk32icon(tournament.icon)}
+                                            data-title={tournament.group.name}
+                                            onMouseOver={tooltip}
+                                            onMouseOut={tooltip}
+                                            onMouseMove={tooltip}
+                                        />
+                                    </Link>
+                                ) : (
+                                    <img
+                                        src={tournament.icon}
+                                        data-title={_("OGS Site Wide Tournament")}
+                                        onMouseOver={tooltip}
+                                        onMouseOut={tooltip}
+                                        onMouseMove={tooltip}
+                                    />
+                                )}
+                                <Link to={`/tournament/${tournament.id}`}>{tournament.name}</Link>
+                            </div>
+                        ),
+                    },
+
+                    {
+                        header: _("When"),
+                        className: "nobr",
+                        render: (tournament) =>
+                            tournament.ended
+                                ? when(tournament.started) + " - " + when(tournament.ended)
+                                : tournament.started
+                                ? when(tournament.started)
+                                : when(tournament.time_start),
+                    },
+                    {
+                        header: _("Time Control"),
+                        className: "nobr",
+                        render: (tournament) =>
+                            shortShortTimeControl(tournament.time_control_parameters),
+                    },
+                    {
+                        header: _("Size"),
+                        className: "nobr",
+                        render: (tournament) => `${tournament.board_size}x${tournament.board_size}`,
+                    },
+                    {
+                        header: _("Players"),
+                        className: "nobr",
+                        render: (tournament) => tournament.player_count,
+                    },
+                    {
+                        header: _("Ranks"),
+                        className: "nobr",
+                        render: (tournament) =>
+                            shortRankRestrictionText(
+                                tournament.min_ranking,
+                                tournament.max_ranking,
+                            ),
+                    },
+                ]}
+            />
+        </div>
+    );
+}
+
 function Schedule(): JSX.Element {
     const [schedules, setSchedules] = React.useState([]);
 
@@ -166,7 +265,7 @@ function Schedule(): JSX.Element {
                 setSchedules(res.results);
             })
             .catch(errorAlerter);
-    });
+    }, []);
 
     return (
         <div className="TournamentList-Schedule">

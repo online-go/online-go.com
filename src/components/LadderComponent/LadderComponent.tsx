@@ -16,51 +16,45 @@
  */
 
 import * as React from "react";
-import { OgsResizeDetector } from "OgsResizeDetector";
 import { _ } from "translate";
 import { Player } from "Player";
 import { PaginatedTable } from "PaginatedTable";
+import { useResizeDetector } from "react-resize-detector";
 
 interface LadderComponentProperties {
     ladderId: number;
 }
 
-export class LadderComponent extends React.PureComponent<LadderComponentProperties> {
-    onResize = () => {
-        this.forceUpdate();
-    };
+export function LadderComponent({ ladderId }: LadderComponentProperties): JSX.Element {
+    const { ref } = useResizeDetector();
 
-    render() {
-        return (
-            <div className="LadderComponent">
-                <OgsResizeDetector handleWidth handleHeight onResize={() => this.onResize()} />
-
-                <PaginatedTable
-                    className="ladder"
-                    name="ladder"
-                    source={`ladders/${this.props.ladderId}/players?no_challenge_information=1`}
-                    pageSize={10}
-                    hidePageControls={true}
-                    uiPushProps={{
-                        event: "players-updated",
-                        channel: `ladder-${this.props.ladderId}`,
-                    }}
-                    columns={[
-                        { header: _("Rank"), className: "rank-column", render: (lp) => lp.rank },
-                        {
-                            header: _("Player"),
-                            className: "player-column",
-                            render: (lp) => (
-                                <div className="player-challenge-container">
-                                    <div className="primary-player">
-                                        <Player flag user={lp.player} />
-                                    </div>
+    return (
+        <div className="LadderComponent" ref={ref}>
+            <PaginatedTable
+                className="ladder"
+                name="ladder"
+                source={`ladders/${ladderId}/players?no_challenge_information=1`}
+                pageSize={10}
+                hidePageControls={true}
+                uiPushProps={{
+                    event: "players-updated",
+                    channel: `ladder-${ladderId}`,
+                }}
+                columns={[
+                    { header: _("Rank"), className: "rank-column", render: (lp) => lp.rank },
+                    {
+                        header: _("Player"),
+                        className: "player-column",
+                        render: (lp) => (
+                            <div className="player-challenge-container">
+                                <div className="primary-player">
+                                    <Player flag user={lp.player} />
                                 </div>
-                            ),
-                        },
-                    ]}
-                />
-            </div>
-        );
-    }
+                            </div>
+                        ),
+                    },
+                ]}
+            />
+        </div>
+    );
 }
