@@ -344,10 +344,10 @@ export function EXV6NavBar(): JSX.Element {
                 </section>
             ) : (
                 <section className="right">
+                    <TurnIndicator />
                     {!preferences.get("hide-incident-reports") && <IncidentReportTracker />}
                     {/* <ChatIndicator /> */}
                     {preferences.get("show-tournament-indicator") && <TournamentIndicator />}
-                    <TurnIndicator />
                     <FriendIndicator />
                     <NotificationIndicator onClick={toggleNotifications} />
                     <span className="icon-container" onClick={toggleRightNav}
