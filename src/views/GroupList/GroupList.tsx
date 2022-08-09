@@ -16,106 +16,90 @@
  */
 
 import * as React from "react";
-import * as data from "data";
 import { Link } from "react-router-dom";
 import { _ } from "translate";
 import { PaginatedTable } from "PaginatedTable";
 import { SearchInput } from "misc-ui";
 import { navigateTo } from "misc";
+import { useUser } from "hooks";
 
-interface GroupListState {
-    name_contains_filter: string;
-}
+export function GroupList(): JSX.Element {
+    const user = useUser();
+    const [name_contains_filter, setNameContainsFilter] = React.useState("");
 
-export class GroupList extends React.PureComponent<{}, GroupListState> {
-    constructor(props) {
-        super(props);
-        this.state = {
-            name_contains_filter: "",
-        };
-    }
-    componentDidMount() {
+    React.useEffect(() => {
         window.document.title = _("Groups");
-    }
+    }, []);
 
-    render() {
-        const user = data.get("user");
-        return (
-            <div className="page-width">
-                <div className="GroupList">
-                    <div className="page-nav">
-                        <h2>
-                            <i className="fa fa-users"></i> {_("Groups")}
-                        </h2>
-                        <div>
-                            {(!user.anonymous || null) && (
-                                <Link className="primary" to="/group/create">
-                                    <i className="fa fa-plus-square"></i> {_("New group")}
-                                </Link>
-                            )}
+    return (
+        <div className="page-width">
+            <div className="GroupList">
+                <div className="page-nav">
+                    <h2>
+                        <i className="fa fa-users"></i> {_("Groups")}
+                    </h2>
+                    <div>
+                        {(!user.anonymous || null) && (
+                            <Link className="primary" to="/group/create">
+                                <i className="fa fa-plus-square"></i> {_("New group")}
+                            </Link>
+                        )}
 
-                            <SearchInput
-                                placeholder={_("Search")}
-                                onChange={(event) => {
-                                    this.setState({
-                                        name_contains_filter: (
-                                            event.target as HTMLInputElement
-                                        ).value.trim(),
-                                    });
-                                }}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="group-list-container">
-                        <PaginatedTable
-                            className=""
-                            name="game-history"
-                            source={`groups/`}
-                            orderBy={["-member_count"]}
-                            filter={{
-                                ...(this.state.name_contains_filter !== "" && {
-                                    name__icontains: this.state.name_contains_filter,
-                                }),
+                        <SearchInput
+                            placeholder={_("Search")}
+                            onChange={(event) => {
+                                setNameContainsFilter(event.target.value.trim());
                             }}
-                            onRowClick={(row, ev) => navigateTo(`/group/${row.id}`, ev)}
-                            columns={[
-                                {
-                                    header: "",
-                                    className: "group-icon-header",
-                                    render: (X) => (
-                                        <img
-                                            className="group-icon"
-                                            src={X.icon}
-                                            width="64"
-                                            height="64"
-                                        />
-                                    ),
-                                },
-                                {
-                                    header: _("Group"),
-                                    className: () => "name",
-                                    render: (X) => (
-                                        <div className="group-name">
-                                            <div>
-                                                <div style={{ fontWeight: "bold" }}>{X.name}</div>
-                                                <div style={{ fontStyle: "italic" }}>
-                                                    {X.summary}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ),
-                                },
-                                {
-                                    header: _("Members"),
-                                    className: () => "member-count",
-                                    render: (X) => X.member_count,
-                                },
-                            ]}
                         />
                     </div>
                 </div>
+
+                <div className="group-list-container">
+                    <PaginatedTable
+                        className=""
+                        name="game-history"
+                        source={`groups/`}
+                        orderBy={["-member_count"]}
+                        filter={{
+                            ...(name_contains_filter !== "" && {
+                                name__icontains: name_contains_filter,
+                            }),
+                        }}
+                        onRowClick={(row, ev) => navigateTo(`/group/${row.id}`, ev)}
+                        columns={[
+                            {
+                                header: "",
+                                className: "group-icon-header",
+                                render: (X) => (
+                                    <img
+                                        className="group-icon"
+                                        src={X.icon}
+                                        width="64"
+                                        height="64"
+                                    />
+                                ),
+                            },
+                            {
+                                header: _("Group"),
+                                className: () => "name",
+                                render: (X) => (
+                                    <div className="group-name">
+                                        <div>
+                                            <div style={{ fontWeight: "bold" }}>{X.name}</div>
+                                            <div style={{ fontStyle: "italic" }}>{X.summary}</div>
+                                        </div>
+                                    </div>
+                                ),
+                            },
+                            {
+                                header: _("Members"),
+                                className: () => "member-count",
+                                render: (X) => X.member_count,
+                            },
+                        ]}
+                    />
+                </div>
             </div>
-        );
-    }
+        </div>
+    );
 }
