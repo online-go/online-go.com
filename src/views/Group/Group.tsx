@@ -454,7 +454,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             .then((res) => {
                 console.log(res);
                 this.setState({
-                    invite_result: interpolate(_("Player invited: {{username}}"), { username }),
+                    invite_result: interpolate(_("Invited {{username}}"), { username }),
                 });
             })
             .catch((res) => {
