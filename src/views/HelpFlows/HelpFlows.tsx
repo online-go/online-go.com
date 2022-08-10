@@ -16,17 +16,32 @@
  */
 
 import React from "react";
+import * as DynamicHelp from "react-dynamic-help";
+
+import * as data from "data";
 
 import { GuestUserIntroEXV6 } from "./GuestUserIntroEXV6";
 import { GuestUserIntroOldNav } from "./GuestUserIntroOldNav";
 
 /**
- * This component is just a handy wrapper for all the Help Flows
- * (technically they _can_ be instantiated direct into the HelpProvider, but this encapsulation is tidier!)
+ * This component is a handy wrapper for all the Help Flows, and reset of them when the person logs out.
  *
  */
 
 export function HelpFlows(): JSX.Element {
+    const { resetFlows } = React.useContext(DynamicHelp.Api);
+
+    React.useEffect(() => {
+        if (resetFlows) {
+            data.watch("config.user", (user) => {
+                if (user?.anonymous) {
+                    console.log("Resetting help on anonymous user", user);
+                    resetFlows();
+                }
+            });
+        }
+    }, [resetFlows]);
+
     return (
         <>
             <GuestUserIntroEXV6 />
