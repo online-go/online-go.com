@@ -25,21 +25,54 @@ interface InfoBallProps {
 }
 
 export function InfoBall({ children, className }: InfoBallProps): JSX.Element {
+    /* The force hide system is to prevent the info box being held open on a
+     * mobile device when the details popup is clicked. The expected behavior
+     * is to close, and while show does set to close, because the users input
+     * focus is now over the details box, the :hover takes over and keeps it
+     * open. */
     const [show, setShow] = React.useState(false);
+    const [forceHide, setForceHide] = React.useState(false);
 
     if (!className) {
         className = "fa fa-info-circle";
     }
     return (
         <span
-            className={"InfoBall" + (show ? " force-show-details" : "")}
+            className={
+                "InfoBall" +
+                (show ? " force-show-details" : "") +
+                (forceHide ? " force-hide-details" : "")
+            }
             onClick={() => {
                 setShow(!show);
             }}
         >
-            <i className={className} />
-            <div className="details">{children}</div>
-            {show ? <div className="backdrop" onClick={() => setShow(false)} /> : null}
+            <i
+                className={className}
+                onMouseEnter={() => {
+                    setForceHide(false);
+                }}
+            />
+            <div
+                className="details"
+                onClick={(event) => {
+                    setShow(false);
+                    setForceHide(true);
+                    event.stopPropagation();
+                    return false;
+                }}
+            >
+                {children}
+            </div>
+            {show ? (
+                <div
+                    className="backdrop"
+                    onClick={(event) => {
+                        setShow(false);
+                        event.stopPropagation();
+                    }}
+                />
+            ) : null}
         </span>
     );
 }
