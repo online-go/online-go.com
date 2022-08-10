@@ -1209,6 +1209,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         );
         worst_move_list.sort((a, b) => a.move_number - b.move_number);
 
+        const show_become_supporter_text =
+            !user.anonymous && !user.supporter && !user.is_moderator && !user.professional;
+
         return (
             <div className="AIReview">
                 <UIPush
@@ -1466,6 +1469,18 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                         >
                                             {_("Full AI Review")}
                                         </button>
+                                        {(show_become_supporter_text || null) && (
+                                            <div
+                                                className="fakelink become-a-site-supporter-line"
+                                                onClick={() =>
+                                                    this.startNewAIReview("full", "katago")
+                                                }
+                                            >
+                                                {_(
+                                                    "Become a site supporter today for in-depth interactive AI reviews",
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
