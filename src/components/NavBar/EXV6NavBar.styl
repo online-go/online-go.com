@@ -36,6 +36,11 @@ header.NavBar {
         //themed color supporter-gold
         color: supporter-gold;
     }
+    .left, .right, .center {
+        flex: 1rem;
+        flex-grow: 1;
+        flex-shrink: 0;
+    }
 
     /* desktop / wide screens */
     @media (min-width: (hamburger-cutoff + 1px)) {
@@ -110,6 +115,21 @@ header.NavBar {
                 display: none;
             }
         }
+        .OmniSearch-container {
+            display: none !important;
+        }
+
+        &.hamburger-expanded {
+            .OmniSearch-container  {
+                display: inline-flex !important;
+            }
+            .ogs-nav-logo {
+                display: none;
+            }
+             .right {
+                display: none;
+            }
+        }
 
         &.hamburger-expanded .left {
             display: inline-flex !important;
@@ -129,6 +149,7 @@ header.NavBar {
                 display: none;
             }
 
+            /*
             .OmniSearch-container {
                 padding-top: 0.2rem;
                 order: 1;
@@ -174,6 +195,7 @@ header.NavBar {
 
                 }
             }
+            */
 
             .Menu {
                 order: 2;
@@ -430,37 +452,6 @@ header.NavBar {
         z-index: z.nav-menu.menu;
         box-shadow: -2px 2px 1px 0px rgba(0, 0, 0, 0.16);
     }
-    .OmniSearch-container {
-        position: relative;
-        height: navbar-height;
-        display: inline-flex;
-        align-items: center;
-        padding-left: 0.5rem;
-        padding-bottom: 0.1rem;
-
-        .fa-search {
-            margin-right: 0.3rem;
-        }
-
-        .OmniSearch-input {
-            width: 7rem;
-        }
-
-        .OmniSearch {
-            position: absolute;
-            //top: navbar-height;
-            //top: -0.15rem;
-            //top: 0;
-            top: navbar-height;
-            //left: navbar-width;
-
-            width: navbar-width;
-            themed background-color navbar-highlight-background-color
-            box-shadow: 2px 2px 1px 0px rgba(0, 0, 0, 0.16);
-            z-index: z.nav-menu.menu;
-            max-height: "calc(100vh - %s)" % navbar-height;
-        }
-    }
 
 
     .FriendList {
@@ -521,6 +512,54 @@ header.NavBar {
     }
 
 }
+
+.OmniSearch-container {
+    position: relative;
+    height: navbar-height;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: 0.5rem;
+    padding-bottom: 0.1rem;
+    flex-grow: 1;
+    flex-shrink: 0;
+    min-width: 7rem;
+
+    .OmniSearch-input-container {
+        display: inline-flex;
+        align-items: center;
+        max-width: 20rem;
+        position: relative;
+    }
+
+    .fa-search {
+        margin-right: 0.3rem;
+        position: absolute;
+        left: 0.2rem;
+    }
+
+    .OmniSearch-input {
+        flex: 1;
+        //width: 100%;
+        padding-left: 1.5rem;
+    }
+
+    .OmniSearch {
+        position: absolute;
+        //top: navbar-height;
+        //top: -0.15rem;
+        //top: 0;
+        top: navbar-height;
+        //left: navbar-width;
+
+        width: navbar-width;
+        themed background-color navbar-highlight-background-color
+        box-shadow: 2px 2px 1px 0px rgba(0, 0, 0, 0.16);
+        z-index: z.nav-menu.menu;
+        max-height: "calc(100vh - %s)" % navbar-height;
+    }
+}
+
 
 button.theme-button {
     cursor: pointer;
