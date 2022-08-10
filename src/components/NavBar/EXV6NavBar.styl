@@ -234,6 +234,11 @@ header.NavBar {
             display: inline-flex;
             align-items: center;
             padding-left: 0.5rem;
+
+            a {
+                display: inline-flex;
+                align-items: center;
+            }
         }
     }
 
@@ -465,7 +470,7 @@ header.NavBar {
     }
 
     .FriendIndicator, .IncidentReportIndicator, .NotificationIndicator, .TournamentIndicator {
-        .count {
+        .count, .time {
             // This offsets the baseline padding added to the count so things center correctly.
             margin-bottom: -0.2rem;
         }

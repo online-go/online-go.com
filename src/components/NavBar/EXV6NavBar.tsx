@@ -139,9 +139,15 @@ export function EXV6NavBar(): JSX.Element {
 
     return (
         <header className={"NavBar" + (hamburger_expanded ? " hamburger-expanded" : "")}>
-            <span className="hamburger" onClick={toggleHamburgerExpanded}>
-                {hamburger_expanded ? <i className="fa fa-times" /> : <i className="fa fa-bars" />}
-                <span className="ogs-nav-logo" />
+            <span className="hamburger">
+                {hamburger_expanded ? (
+                    <i className="fa fa-times" onClick={toggleHamburgerExpanded} />
+                ) : (
+                    <i className="fa fa-bars" onClick={toggleHamburgerExpanded} />
+                )}
+                <Link to="/">
+                    <span className="ogs-nav-logo" />
+                </Link>
             </span>
 
             <nav className="left">
