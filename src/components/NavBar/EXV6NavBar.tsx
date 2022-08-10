@@ -268,6 +268,22 @@ export function EXV6NavBar(): JSX.Element {
                         </Link>
                     )}
                 </Menu>
+
+                <Menu title={_("Settings")} to="/settings" className="mobile-only">
+                    <Link to={`/user/view/${user.id}`}>
+                        <PlayerIcon user={user} size={16} />
+                        {_("Profile")}
+                    </Link>
+
+                    <Link to="/user/settings" ref={settingsNavLink}>
+                        <i className="fa fa-gear"></i>
+                        {_("Settings")}
+                    </Link>
+                    <span className="fakelink" onClick={logout}>
+                        <i className="fa fa-power-off"></i>
+                        {_("Sign out")}
+                    </span>
+                </Menu>
             </nav>
 
             <section className="center OmniSearch-container">
@@ -386,11 +402,12 @@ interface MenuProps {
     title: string;
     to?: string;
     children: React.ReactNode;
+    className?: string;
 }
 
-function Menu({ title, to, children }: MenuProps): JSX.Element {
+function Menu({ title, to, children, className }: MenuProps): JSX.Element {
     return (
-        <section className="Menu">
+        <section className={"Menu " + (className || "")}>
             {to ? (
                 <Link to={to} className="Menu-title">
                     {title}
