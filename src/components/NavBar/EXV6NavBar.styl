@@ -44,6 +44,10 @@ header.NavBar {
         flex-shrink: 0;
     }
 
+    .mobile-only {
+        display: none !important;
+    }
+
     /* desktop / wide screens */
     @media (min-width: (hamburger-cutoff + 1px)) {
 
@@ -114,6 +118,14 @@ header.NavBar {
     @media only screen and (max-width: hamburger-cutoff) {
         .left {
             display: none !important;
+        }
+
+        .Menu.mobile-only {
+            display: flex !important;
+
+            img.PlayerIcon {
+                margin-left: 0.5rem;
+            }
         }
 
         .icon-container {
