@@ -27,6 +27,8 @@ header.NavBar {
     display: flex;
     margin-bottom: 0.2rem;
     height: navbar-height;
+    width: 100vw;
+    max-width: 100vw;
     user-select: none;
     themed background-color navbar-background-color
     box-shadow: 2px 2px 2px 0px rgba(0, 0, 0, 0.16);
@@ -100,6 +102,14 @@ header.NavBar {
         }
     }
 
+    @media only screen and (max-width: 400px) {
+        .FriendIndicator, .IncidentReportIndicator, .TournamentIndicator, .TurnIndicator, .NotificationIndicator, .ChatIndicator {
+            padding-left: 0.4rem !important;
+            padding-right: 0.4rem !important;
+        }
+    }
+
+
     /* mobile */
     @media only screen and (max-width: hamburger-cutoff) {
         .left {
@@ -117,6 +127,16 @@ header.NavBar {
         }
         .OmniSearch-container {
             display: none !important;
+        }
+        .right {
+            flex: 0rem;
+        }
+        .center {
+            flex: 0rem;
+        }
+        .TurnIndicator {
+            padding-left: 0 !important;
+            flex-basis: 2rem;
         }
 
         &.hamburger-expanded {
@@ -289,8 +309,10 @@ header.NavBar {
             }
 
             img.PlayerIcon {
-                height: navbar-height;
-                width: navbar-height;
+                //height: navbar-height;
+                //width: navbar-height;
+                height: 2rem;
+                width: 2rem;
                 pointer-events: none;
                 margin-right: 0.5rem;
             }
@@ -430,7 +452,7 @@ header.NavBar {
         }
     }
 
-    .FriendIndicator, .IncidentReportIndicator, .NotificationIndicator {
+    .FriendIndicator, .IncidentReportIndicator, .NotificationIndicator, .TournamentIndicator {
         .count {
             // This offsets the baseline padding added to the count so things center correctly.
             margin-bottom: -0.2rem;
