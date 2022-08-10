@@ -30,6 +30,7 @@ import { useUser } from "hooks";
 import { image_resizer } from "image_resizer";
 import { Flag } from "Flag";
 import { toast } from "toast";
+import { InfoBall } from "InfoBall";
 import { pgettext, sorted_locale_countries, _ } from "translate";
 
 export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
@@ -290,27 +291,48 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
             <div className="row">
                 <div className="left">
                     <dl>
-                        <dt>{_("Username")}</dt>
+                        <dt>
+                            {_("Username")}
+                            <InfoBall>
+                                {pgettext(
+                                    "This is an explanation for what 'Username' is",
+                                    "This is what other players will know you as. You may change your username once every 30 days.",
+                                )}
+                            </InfoBall>
+                        </dt>
                         <dd>
                             <div>
                                 <input
                                     value={username}
                                     onChange={(ev) => setUsername(ev.target.value)}
                                 />
-
-                                <div className="explanation">
-                                    <i className="fa fa-info-circle" />
-                                    <i>
-                                        {pgettext(
-                                            "This is an explanation for what 'Username' is",
-                                            "This is what other players will know you as. You may change your username once every 30 days.",
-                                        )}
-                                    </i>
-                                </div>
                             </div>
                         </dd>
 
-                        <dt>{_("Name")}</dt>
+                        <dt>{_("Password")}</dt>
+                        <dd className="password-update" ref={passwordEntry}>
+                            <div>
+                                <input
+                                    type="password"
+                                    placeholder={_("Enter a new password")}
+                                    value={password1}
+                                    onChange={(ev) => setPassword1(ev.target.value)}
+                                />
+                            </div>
+                            <div>
+                                <input
+                                    placeholder={_("(again)")}
+                                    type="password"
+                                    value={password2}
+                                    onChange={(ev) => setPassword2(ev.target.value)}
+                                />
+                            </div>
+                        </dd>
+
+                        <dt>
+                            {_("Name")}
+                            <InfoBall>{_("Providing your real name is optional.")}</InfoBall>
+                        </dt>
                         <dd>
                             <div>
                                 <input
@@ -336,33 +358,16 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
                                 />{" "}
                                 <label htmlFor="real-name-is-private">{_("Hide real name")}</label>
                             </div>
-
-                            <div className="explanation">
-                                <i className="fa fa-info-circle" />
-                                <i>{_("Providing your real name is optional.")}</i>
-                            </div>
                         </dd>
 
-                        <dt>{_("Password")}</dt>
-                        <dd className="password-update" ref={passwordEntry}>
-                            <div>
-                                <input
-                                    type="password"
-                                    value={password1}
-                                    onChange={(ev) => setPassword1(ev.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <input
-                                    placeholder={_("(again)")}
-                                    type="password"
-                                    value={password2}
-                                    onChange={(ev) => setPassword2(ev.target.value)}
-                                />
-                            </div>
-                        </dd>
-
-                        <dt>{_("Email address")}</dt>
+                        <dt>
+                            {_("Email address")}
+                            <InfoBall>
+                                {_(
+                                    'Providing your email address is optional. Your email address is used for sending things like password reset requests and turn notifications. Notification emails may be turned off under "Email Notifications".',
+                                )}
+                            </InfoBall>
+                        </dt>
                         <dd>
                             <input
                                 type="email"
@@ -370,13 +375,8 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
                                 value={email}
                                 onChange={(ev) => setEmail(ev.target.value)}
                             />
-                            <div className="explanation">
-                                <i className="fa fa-info-circle" />
-                                <i>
-                                    {_(
-                                        'Providing your email address is optional. We will never sell your email address to third parties. Your email address is used for sending things like password reset requests and turn notifications. Notification emails may be turned off under "Email Notifications".',
-                                    )}
-                                </i>
+                            <div style={{ marginTop: "0.5rem" }}>
+                                <i>We will never sell your email address.</i>
                             </div>
 
                             {email && !email_changed && !email_validated && (
