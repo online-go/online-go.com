@@ -139,9 +139,15 @@ export function EXV6NavBar(): JSX.Element {
 
     return (
         <header className={"NavBar" + (hamburger_expanded ? " hamburger-expanded" : "")}>
-            <span className="hamburger" onClick={toggleHamburgerExpanded}>
-                {hamburger_expanded ? <i className="fa fa-times" /> : <i className="fa fa-bars" />}
-                <span className="ogs-nav-logo" />
+            <span className="hamburger">
+                {hamburger_expanded ? (
+                    <i className="fa fa-times" onClick={toggleHamburgerExpanded} />
+                ) : (
+                    <i className="fa fa-bars" onClick={toggleHamburgerExpanded} />
+                )}
+                <Link to="/">
+                    <span className="ogs-nav-logo" />
+                </Link>
             </span>
 
             <nav className="left">
@@ -269,66 +275,84 @@ export function EXV6NavBar(): JSX.Element {
                     )}
                 </Menu>
 
-                <section className="OmniSearch-container">
-                    <div className="OmniSearch-input-container">
-                        <i className="fa fa-search" />
-                        <input
-                            type="search"
-                            className="OmniSearch-input"
-                            value={search}
-                            autoComplete="off"
-                            onChange={(ev) => setSearch(ev.target.value)}
-                            onKeyUp={(ev) => {
-                                if (ev.key === "Escape") {
-                                    setSearch("");
-                                }
-                            }}
-                            onFocus={() => setFocus(true)}
-                            onBlur={() => setFocus(false)}
-                            placeholder={_("Search")}
-                        />
-                    </div>
-                    {(focus || omniMouseOver || null) && (
-                        <OmniSearch
-                            search={search}
-                            onMouseOver={() => setOmniMouseOver(true)}
-                            onMouseOut={() => setOmniMouseOver(false)}
-                        />
-                    )}
-                </section>
+                <Menu title={_("Settings")} to="/settings" className="mobile-only">
+                    <Link to={`/user/view/${user.id}`}>
+                        <PlayerIcon user={user} size={16} />
+                        {_("Profile")}
+                    </Link>
+
+                    <Link to="/user/settings" ref={settingsNavLink}>
+                        <i className="fa fa-gear"></i>
+                        {_("Settings")}
+                    </Link>
+                    <span className="fakelink" onClick={logout}>
+                        <i className="fa fa-power-off"></i>
+                        {_("Sign out")}
+                    </span>
+                </Menu>
             </nav>
 
-            {user.anonymous ? (
-                <section className="right">
-                    <i className="fa fa-adjust" onClick={toggleTheme} />
-                    <LanguagePicker />
-                    {(show_signin || null) && (
-                        <Link className="sign-in" to={"/sign-in#" + location.pathname}>
-                            {_("Sign In")}
-                        </Link>
-                    )}
-                </section>
-            ) : (
-                <section className="right">
-                    <TurnIndicator />
-                    {!preferences.get("hide-incident-reports") && <IncidentReportTracker />}
-                    <ChatIndicator />
-                    {preferences.get("show-tournament-indicator") && <TournamentIndicator />}
-                    <FriendIndicator />
-                    <NotificationIndicator onClick={toggleNotifications} />
-                    <span
-                        className="icon-container"
-                        onClick={toggleRightNav}
-                        ref={toggleRightNavButton}
-                    >
-                        <PlayerIcon user={user} size={64} />
-                        <span className="username">
-                            {user.username}
-                            <i className="fa fa-caret-down" />
+            <section className="center OmniSearch-container">
+                <div className="OmniSearch-input-container">
+                    <i className="fa fa-search" />
+                    <input
+                        type="text"
+                        className="OmniSearch-input"
+                        value={search}
+                        autoComplete="off"
+                        onChange={(ev) => setSearch(ev.target.value)}
+                        onKeyUp={(ev) => {
+                            if (ev.key === "Escape") {
+                                setSearch("");
+                            }
+                        }}
+                        onFocus={() => setFocus(true)}
+                        onBlur={() => setFocus(false)}
+                        placeholder={_("Search")}
+                    />
+                </div>
+                {(focus || omniMouseOver || null) && (
+                    <OmniSearch
+                        search={search}
+                        onMouseOver={() => setOmniMouseOver(true)}
+                        onMouseOut={() => setOmniMouseOver(false)}
+                    />
+                )}
+            </section>
+
+            <section className="right">
+                {user.anonymous ? (
+                    <>
+                        <i className="fa fa-adjust" onClick={toggleTheme} />
+                        <LanguagePicker />
+                        {(show_signin || null) && (
+                            <Link className="sign-in" to={"/sign-in#" + location.pathname}>
+                                {_("Sign In")}
+                            </Link>
+                        )}
+                    </>
+                ) : (
+                    <>
+                        <TurnIndicator />
+                        {!preferences.get("hide-incident-reports") && <IncidentReportTracker />}
+                        <ChatIndicator />
+                        {preferences.get("show-tournament-indicator") && <TournamentIndicator />}
+                        <FriendIndicator />
+                        <NotificationIndicator onClick={toggleNotifications} />
+                        <span
+                            className="icon-container"
+                            onClick={toggleRightNav}
+                            ref={toggleRightNavButton}
+                        >
+                            <PlayerIcon user={user} size={64} />
+                            <span className="username">
+                                {user.username}
+                                <i className="fa fa-caret-down" />
+                            </span>
                         </span>
-                    </span>
-                </section>
-            )}
+                    </>
+                )}
+            </section>
 
             <div
                 className={
@@ -384,11 +408,12 @@ interface MenuProps {
     title: string;
     to?: string;
     children: React.ReactNode;
+    className?: string;
 }
 
-function Menu({ title, to, children }: MenuProps): JSX.Element {
+function Menu({ title, to, children, className }: MenuProps): JSX.Element {
     return (
-        <section className="Menu">
+        <section className={"Menu " + (className || "")}>
             {to ? (
                 <Link to={to} className="Menu-title">
                     {title}

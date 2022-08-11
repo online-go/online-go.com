@@ -37,6 +37,7 @@ export function OmniSearch(props: OmniSearchProperties): JSX.Element {
     const [omnisearch_players, setOmnisearchPlayers] = React.useState([]);
     const [omnisearch_groups, setOmnisearchGroups] = React.useState([]);
     const [omnisearch_tournaments, setOmnisearchTournaments] = React.useState([]);
+    const [omnisearch_games, setOmnisearchGames] = React.useState([]);
 
     const omnisearch_result_count =
         omnisearch_players.length +
@@ -55,6 +56,7 @@ export function OmniSearch(props: OmniSearchProperties): JSX.Element {
                 setOmnisearchPlayers([]);
                 setOmnisearchTournaments([]);
                 setOmnisearchGroups([]);
+                setOmnisearchGames([]);
 
                 get("ui/omniSearch", { q: q.trim() })
                     .then((res) => {
@@ -63,6 +65,7 @@ export function OmniSearch(props: OmniSearchProperties): JSX.Element {
                         setOmnisearchPlayers(res.players);
                         setOmnisearchTournaments(res.tournaments);
                         setOmnisearchGroups(res.groups);
+                        setOmnisearchGames(res.games);
                     })
                     .catch(ignore);
 
@@ -137,6 +140,16 @@ export function OmniSearch(props: OmniSearchProperties): JSX.Element {
                         <div className="result" key={e.id}>
                             <img src={e.icon} />
                             <Link to={`/tournament/${e.id}`}>{e.name}</Link>
+                        </div>
+                    ))}
+                </div>
+            )}
+            {(omnisearch_games.length || null) && (
+                <div className="results">
+                    <h3>{_("Games")}</h3>
+                    {omnisearch_games.map((e) => (
+                        <div className="result" key={e.id}>
+                            <Link to={`/game/${e.id}`}>{e.name}</Link>
                         </div>
                     ))}
                 </div>

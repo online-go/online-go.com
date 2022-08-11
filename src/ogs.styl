@@ -84,6 +84,7 @@ z = {
         container      : 2010,
     },
     popover            : 5000,
+    infoball           : 5010,
     report             : 6000,
     swal               : 10000,
     challenge-link     : 10010,  // We have to say "Challenge Link Copied" over the top of "Challenge Created"
@@ -436,6 +437,31 @@ accessible.strong-loss                        = accessible.loss
 
 accessible.weak-win                           = darken(accessible.win, 35%)
 accessible.weak-loss                          = darken(accessible.loss, 35%)
+
+
+:root {
+    --primary: light.primary;
+    --danger: light.danger;
+    --success: light.success;
+    --info: light.info;
+    --reject: light.reject;
+}
+
+body.accessible {
+    --primary: accessible.primary;
+    --danger: accessible.danger;
+    --success: accessible.success;
+    --info: accessible.info;
+    --reject: accessible.reject;
+}
+body.dark {
+    --primary: dark.primary;
+    --danger: dark.danger;
+    --success: dark.success;
+    --info: dark.info;
+    --reject: dark.reject;
+}
+
 
 
 /************/

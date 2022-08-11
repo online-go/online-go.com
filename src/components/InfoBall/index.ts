@@ -15,29 +15,4 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// In here we customize dynamic help items instantiated by <HelpFlows>
-
-.rdh-help-item.rdh-help-item-custom {
-    z-index: z.dynamic-help;
-    themed background-color help-popup-bg
-    themed border-color help-popup-bg
-    themed color colored-background-fg
-    padding: 0.2rem;
-    font-size: 1.0rem;
-    box-shadow: 0 0.2rem 0.5rem 0.2rem rgba(0,0,0,0.2);
-}
-
-.rdh-help-item>.rdh-popup-dismissers {
-    themed-darken color colored-background-fg 10%
-    cursor: pointer;
-    margin-top: 0.7rem;
-    font-size: 0.9rem;
-}
-
-.rdh-target-highlight {
-    box-shadow: 0 0 2px 2px var(--primary) !important;
-}
-
-#help-for-profile-edit-page, #help-for-profile-edit-page-exv6 {
-    max-width: 15rem;
-}
+export * from "./InfoBall";
