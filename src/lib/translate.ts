@@ -500,6 +500,9 @@ export function setCurrentLanguage(language_code: string) {
         "Enter the label you want to add to the board": _(
             "Enter the label you want to add to the board",
         ),
+        "The game would be repeating with that move, please play somewhere else first": _(
+            "The game would be repeating with that move, please play somewhere else first",
+        ),
         Error: _("Error"),
         "Self-capture is not allowed": _("Self-capture is not allowed"),
 
