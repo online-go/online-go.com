@@ -54,17 +54,8 @@ export function GuestUserIntroEXV6(): JSX.Element {
                 <div>{_("You can enter your new password here.")} </div>
             </HelpItem>
 
-            <HelpItem target="profile-edit-link" position="top-centre" anchor="bottom-left">
+            <HelpItem target="username-edit" position="top-centre" anchor="bottom-left">
                 <div>{_("You can also change your username, here.")} </div>
-            </HelpItem>
-
-            <HelpItem
-                target="profile-edit-page"
-                position="bottom-right"
-                anchor="bottom-left"
-                id="help-for-profile-edit-page-exv6"
-            >
-                <div>{_("In here you can change your profile appearance, then click 'Save'.")}</div>
             </HelpItem>
         </HelpFlow>
     );

@@ -24,23 +24,45 @@ import { GuestUserIntroEXV6 } from "./GuestUserIntroEXV6";
 import { GuestUserIntroOldNav } from "./GuestUserIntroOldNav";
 
 /**
- * This component is a handy wrapper for all the Help Flows, and reset of them when the person logs out.
+ * This component is a handy wrapper for all the Help Flows, and reset on login/logout
  *
+ * When the logged-in user changes, we have to wait till we see the new state loaded, then update the help system with it
  */
 
 export function HelpFlows(): JSX.Element {
-    const { resetFlows } = React.useContext(DynamicHelp.Api);
+    const { enableHelp } = React.useContext(DynamicHelp.Api);
 
     React.useEffect(() => {
-        if (resetFlows) {
-            data.watch("config.user", (user) => {
-                if (user?.anonymous) {
-                    console.log("Resetting help on anonymous user", user);
-                    resetFlows();
-                }
-            });
-        }
-    }, [resetFlows]);
+        const updateHelpState = () => {
+            data.unwatch("rdh-system-state", updateHelpState);
+            const user = data.get("config.user");
+            if (!user?.anonymous) {
+                enableHelp(true);
+            } else {
+                enableHelp(false);
+            }
+        };
+        const updateHelpWhenStateArrives = () => {
+            data.watch(
+                "rdh-system-state",
+                updateHelpState,
+                /* call undefined */ false,
+                /* dont call immediately */ true,
+            );
+        };
+
+        data.watch(
+            "config.user",
+            updateHelpWhenStateArrives,
+            /* call undefined */ false,
+            /* dont call immediately */ true,
+        );
+
+        return () => {
+            data.unwatch("rdh-system-state", updateHelpState);
+            data.unwatch("config.user", updateHelpWhenStateArrives);
+        };
+    }, [enableHelp]);
 
     return (
         <>
