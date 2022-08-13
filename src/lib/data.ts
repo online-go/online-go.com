@@ -527,6 +527,7 @@ let currently_synchronizing = false;
 let need_another_synchronization_call = false;
 
 function remote_sync() {
+    console.log("REMOTE sync");
     const user = store["config.user"];
     if (!user || user.anonymous) {
         return;
@@ -534,6 +535,7 @@ function remote_sync() {
 
     if (currently_synchronizing) {
         need_another_synchronization_call = true;
+        console.log("REMOTE SYNC Waiting");
         return;
     }
 
@@ -649,8 +651,10 @@ function load_from_local_storage_and_sync() {
                 const key = full_key.substr(store_prefix.length);
                 try {
                     remote_store[key] = JSON.parse(localStorage.getItem(full_key)) as RemoteKV;
-                    store[key] = remote_store[key].value;
-                    emitForKey(key as keyof DataSchema);
+                    if (remote_store[key].replication !== Replication.LOCAL_OVERWRITES_REMOTE) {
+                        store[key] = remote_store[key].value;
+                        emitForKey(key as keyof DataSchema);
+                    }
                 } catch (e) {
                     console.error(`Error loading remote storage key ${full_key}, removing`, e);
                     localStorage.removeItem(full_key);
@@ -681,4 +685,11 @@ function load_from_local_storage_and_sync() {
     }
 }
 
+// Here we load from local storage but don't actually sync because we're not connected yet
+load_from_local_storage_and_sync();
+
+// The immediate call to load_from_local_storage_and_sync doesn't appear to do anything, because
+//  1) loaded_user_id is set from the previous call (directly above), so the call bails immediately
+//  2) the socket isn't connected yet
+// There may be some subtle reason why it's needed again here though...
 watch("config.user", load_from_local_storage_and_sync);
