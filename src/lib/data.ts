@@ -527,7 +527,6 @@ let currently_synchronizing = false;
 let need_another_synchronization_call = false;
 
 function remote_sync() {
-    console.log("REMOTE sync");
     const user = store["config.user"];
     if (!user || user.anonymous) {
         return;
@@ -535,7 +534,6 @@ function remote_sync() {
 
     if (currently_synchronizing) {
         need_another_synchronization_call = true;
-        console.log("REMOTE SYNC Waiting");
         return;
     }
 
