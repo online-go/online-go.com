@@ -649,7 +649,7 @@ function load_from_local_storage_and_sync() {
                 const key = full_key.substr(store_prefix.length);
                 try {
                     remote_store[key] = JSON.parse(localStorage.getItem(full_key)) as RemoteKV;
-                    if (remote_store[key].replication !== Replication.LOCAL_OVERWRITES_REMOTE) {
+                    if (remote_store[key].replication === Replication.REMOTE_OVERWRITES_LOCAL) {
                         store[key] = remote_store[key].value;
                         emitForKey(key as keyof DataSchema);
                     }
