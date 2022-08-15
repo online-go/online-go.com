@@ -16,34 +16,37 @@
  */
 
 import * as React from "react";
-import { Link } from "react-router-dom";
-
 import * as data from "data";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { _, pgettext } from "translate";
 import { Card } from "material";
 import { errorAlerter } from "misc";
 import { post } from "requests";
 import { get_ebi } from "SignIn";
+import { useUser } from "hooks";
 import cached from "cached";
 
 import { SocialLoginButtons } from "SocialLoginButtons";
 
-export class Register extends React.PureComponent<{}, any> {
-    ref_username = React.createRef<HTMLInputElement>();
-    ref_email = React.createRef<HTMLInputElement>();
-    ref_password = React.createRef<HTMLInputElement>();
+export function Register(): JSX.Element {
+    const navigate = useNavigate();
+    const user = useUser();
+    const ref_username = React.useRef<HTMLInputElement>(null);
+    const ref_email = React.useRef<HTMLInputElement>();
+    const ref_password = React.useRef<HTMLInputElement>();
+    const [error, setError] = React.useState<string>(null);
 
-    constructor(props) {
-        super(props);
-        this.state = {};
+    if (!user.anonymous) {
+        navigate("/");
     }
 
-    register = (event) => {
+    const register = (event) => {
         const actually_register = () => {
             post("/api/v0/register", {
-                username: this.ref_username.current.value.trim(),
-                password: this.ref_password.current.value,
-                email: this.ref_email.current.value.trim(),
+                username: ref_username.current.value.trim(),
+                password: ref_password.current.value,
+                email: ref_email.current.value.trim(),
                 ebi: get_ebi(),
             })
                 .then((config) => {
@@ -78,26 +81,26 @@ export class Register extends React.PureComponent<{}, any> {
         };
 
         const focus_empty = (focus_email?: boolean) => {
-            if (this.ref_username.current.value.trim() === "" || !this.validateUsername()) {
-                this.ref_username.current.focus();
+            if (ref_username.current.value.trim() === "" || !validateUsername()) {
+                ref_username.current.focus();
                 return true;
             }
 
-            if (this.ref_username.current.value.trim() === "") {
-                this.ref_username.current.focus();
+            if (ref_username.current.value.trim() === "") {
+                ref_username.current.focus();
                 return true;
             }
 
-            if (this.ref_password.current.value.trim() === "") {
-                this.ref_password.current.focus();
+            if (ref_password.current.value.trim() === "") {
+                ref_password.current.focus();
                 return true;
             }
             if (
                 focus_email &&
-                this.ref_email.current.value.trim() === "" &&
-                this.ref_email.current !== document.activeElement
+                ref_email.current.value.trim() === "" &&
+                ref_email.current !== document.activeElement
             ) {
-                this.ref_email.current.focus();
+                ref_email.current.focus();
                 return true;
             }
 
@@ -126,102 +129,98 @@ export class Register extends React.PureComponent<{}, any> {
         }
     };
 
-    validateUsername = () => {
-        if (/@/.test(this.ref_username.current.value)) {
-            $(this.ref_username.current).addClass("validation-error");
-            this.setState({
-                error: _(
+    const validateUsername = () => {
+        if (/@/.test(ref_username.current.value)) {
+            $(ref_username.current).addClass("validation-error");
+            setError(
+                _(
                     "Your username will be publically visible, please do not use your email address here.",
                 ),
-            });
-            this.ref_username.current.focus();
+            );
+            ref_username.current.focus();
             return false;
         } else {
-            if ($(this.ref_username.current).hasClass("validation-error")) {
-                $(this.ref_username.current).removeClass("validation-error");
-                this.setState({ error: null });
+            if ($(ref_username.current).hasClass("validation-error")) {
+                $(ref_username.current).removeClass("validation-error");
+                setError(null);
             }
         }
         return true;
     };
 
-    render() {
-        return (
-            <div id="Register">
-                <div>
-                    <Card>
-                        <h2>{_("Welcome new player!")}</h2>
-                        <form name="login" autoComplete="on">
-                            <label htmlFor="username">
-                                {_("Username") /* translators: New account registration */}
-                            </label>
-                            <input
-                                className="boxed"
-                                id="username"
-                                autoFocus
-                                ref={this.ref_username}
-                                name="username"
-                                onKeyPress={this.register}
-                                onChange={this.validateUsername}
-                            />
-                            {this.state.error && (
-                                <div className="error-message">{this.state.error}</div>
-                            )}
-                            <label htmlFor="password">
-                                {_("Password") /* translators: New account registration */}
-                            </label>
-                            <input
-                                className="boxed"
-                                id="password"
-                                ref={this.ref_password}
-                                type="password"
-                                name="password"
-                                onKeyPress={this.register}
-                            />
-                            <label htmlFor="email">
-                                {_("Email (optional)") /* translators: New account registration */}
-                            </label>
-                            <input
-                                className="boxed"
-                                id="email"
-                                ref={this.ref_email}
-                                type="email"
-                                name="email"
-                                onKeyPress={this.register}
-                            />
-                            <div style={{ textAlign: "right", marginBottom: "1.0rem" }}>
-                                <button className="primary" onClick={this.register}>
-                                    <i className="fa fa-sign-in" />
-                                    {pgettext(
-                                        "This is the button they press to register with OGS",
-                                        "Register",
-                                    )}
-                                </button>
-                            </div>
-                        </form>
-
-                        <hr />
-                        <span>
-                            {
-                                _(
-                                    "or sign in using another account:",
-                                ) /* translators: username or password, or sign in with social authentication */
-                            }
-                        </span>
-
-                        <SocialLoginButtons />
-                    </Card>
-
-                    <div className="signin-option">
-                        <h3>{_("Already have an account?")} </h3>
-                        <div>
-                            <Link to="/sign-in" className="btn primary">
-                                <b>{_("Sign-in here!")}</b>
-                            </Link>
+    return (
+        <div id="Register">
+            <div>
+                <Card>
+                    <h2>{_("Welcome new player!")}</h2>
+                    <form name="login" autoComplete="on">
+                        <label htmlFor="username">
+                            {_("Username") /* translators: New account registration */}
+                        </label>
+                        <input
+                            className="boxed"
+                            id="username"
+                            autoFocus
+                            ref={ref_username}
+                            name="username"
+                            onKeyPress={register}
+                            onChange={validateUsername}
+                        />
+                        {error && <div className="error-message">{error}</div>}
+                        <label htmlFor="password">
+                            {_("Password") /* translators: New account registration */}
+                        </label>
+                        <input
+                            className="boxed"
+                            id="password"
+                            ref={ref_password}
+                            type="password"
+                            name="password"
+                            onKeyPress={register}
+                        />
+                        <label htmlFor="email">
+                            {_("Email (optional)") /* translators: New account registration */}
+                        </label>
+                        <input
+                            className="boxed"
+                            id="email"
+                            ref={ref_email}
+                            type="email"
+                            name="email"
+                            onKeyPress={register}
+                        />
+                        <div style={{ textAlign: "right", marginBottom: "1.0rem" }}>
+                            <button className="primary" onClick={register}>
+                                <i className="fa fa-sign-in" />
+                                {pgettext(
+                                    "This is the button they press to register with OGS",
+                                    "Register",
+                                )}
+                            </button>
                         </div>
+                    </form>
+
+                    <hr />
+                    <span>
+                        {
+                            _(
+                                "or sign in using another account:",
+                            ) /* translators: username or password, or sign in with social authentication */
+                        }
+                    </span>
+
+                    <SocialLoginButtons />
+                </Card>
+
+                <div className="signin-option">
+                    <h3>{_("Already have an account?")} </h3>
+                    <div>
+                        <Link to="/sign-in" className="btn primary">
+                            <b>{_("Sign-in here!")}</b>
+                        </Link>
                     </div>
                 </div>
             </div>
-        );
-    }
+        </div>
+    );
 }
