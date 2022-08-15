@@ -390,7 +390,7 @@ export function GameDock({
                     <i className="fa fa-sitemap"></i> {_("Analyze game")}
                 </a>
             )}
-            {((!review_id && user_is_player && phase !== "finished") || null) && (
+            {((!review_id && user_is_player && phase !== "finished" && !engine.rengo) || null) && (
                 <a
                     style={{
                         visibility:
@@ -398,11 +398,7 @@ export function GameDock({
                                 ? "visible"
                                 : "hidden",
                     }}
-                    className={
-                        phase !== "finished" && (goban.isAnalysisDisabled() || engine.rengo)
-                            ? "disabled"
-                            : ""
-                    }
+                    className={phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""}
                     onClick={onConditionalMovesClicked}
                 >
                     <i className="fa fa-exchange"></i> {_("Plan conditional moves")}
