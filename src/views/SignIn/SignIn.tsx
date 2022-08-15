@@ -18,12 +18,14 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import * as data from "data";
+import { useNavigate } from "react-router-dom";
 import { _ } from "translate";
 import { Card } from "material";
 import { errorAlerter } from "misc";
 import { post } from "requests";
 import cached from "cached";
 import { Md5 } from "ts-md5/dist/md5";
+import { useUser } from "hooks";
 
 import { SocialLoginButtons } from "SocialLoginButtons";
 
@@ -74,21 +76,23 @@ export function get_ebi() {
     return bid + "." + screen_dims + "." + plugin_hash + "." + user_agent_hash + "." + tzoffset;
 }
 
-export class SignIn extends React.PureComponent<{}, any> {
-    ref_username = React.createRef<HTMLInputElement>();
-    ref_password = React.createRef<HTMLInputElement>();
+export function SignIn(): JSX.Element {
+    const user = useUser();
+    const navigate = useNavigate();
+    const ref_username = React.useRef<HTMLInputElement>(null);
+    const ref_password = React.useRef<HTMLInputElement>(null);
 
-    constructor(props) {
-        super(props);
-        this.state = {};
-        this.login = this.login.bind(this);
+    if (!user.anonymous) {
+        navigate("/");
     }
 
-    login(event) {
+    const login = (
+        event: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLInputElement>,
+    ) => {
         const actually_login = () => {
             post("/api/v0/login", {
-                username: this.ref_username.current.value.trim(),
-                password: this.ref_password.current.value,
+                username: ref_username.current.value.trim(),
+                password: ref_password.current.value,
                 ebi: get_ebi(),
             })
                 .then((config) => {
@@ -129,12 +133,12 @@ export class SignIn extends React.PureComponent<{}, any> {
         };
 
         const focus_empty = () => {
-            if (this.ref_username.current.value.trim() === "") {
-                this.ref_username.current.focus();
+            if (ref_username.current.value.trim() === "") {
+                ref_username.current.focus();
                 return true;
             }
-            if (this.ref_password.current.value.trim() === "") {
-                this.ref_password.current.focus();
+            if (ref_password.current.value.trim() === "") {
+                ref_password.current.focus();
                 return true;
             }
 
@@ -149,7 +153,7 @@ export class SignIn extends React.PureComponent<{}, any> {
             actually_login();
         }
         if (event.type === "keypress") {
-            if (event.charCode === 13) {
+            if ((event as any).charCode === 13) {
                 event.preventDefault();
                 if (focus_empty()) {
                     return false;
@@ -158,12 +162,12 @@ export class SignIn extends React.PureComponent<{}, any> {
             }
         }
 
-        if (event.type === "click" || event.charCode === 13) {
+        if (event.type === "click" || (event as any).charCode === 13) {
             return false;
         }
-    }
+    };
 
-    resetPassword = () => {
+    const resetPassword = () => {
         void alert
             .fire({
                 text: _("What is your username?"),
@@ -193,67 +197,63 @@ export class SignIn extends React.PureComponent<{}, any> {
             });
     };
 
-    render() {
-        return (
-            <div id="SignIn">
-                <div>
-                    <Card>
-                        <h2>{_("Sign in")}</h2>
-                        <form name="login" autoComplete="on">
-                            <label htmlFor="username">
-                                {_("Username") /* translators: Provide username to sign in with */}
-                            </label>
-                            <input
-                                className="boxed"
-                                id="username"
-                                autoFocus
-                                ref={this.ref_username}
-                                name="username"
-                                onKeyPress={this.login}
-                                autoCapitalize="off"
-                            />
-                            <label htmlFor="password">
-                                {_("Password") /* translators: Provide password to sign in with */}
-                            </label>
-                            <input
-                                className="boxed"
-                                id="password"
-                                ref={this.ref_password}
-                                type="password"
-                                name="password"
-                                onKeyPress={this.login}
-                            />
-                            <div className="form-actions">
-                                <a onClick={this.resetPassword}>{_("Forgot password?")}</a>
-                                <button className="primary" onClick={this.login}>
-                                    <i className="fa fa-sign-in" /> {_("Sign in")}
-                                </button>
-                            </div>
-                        </form>
-
-                        <hr />
-                        <span>
-                            {
-                                _(
-                                    "or sign in using another account:",
-                                ) /* translators: username or password, or sign in with social authentication */
-                            }
-                        </span>
-                        <SocialLoginButtons next_url={window.location.hash.substring(1)} />
-                    </Card>
-
-                    <div className="registration">
-                        <h3>{_("New to Online-Go?")} </h3>
-                        <div>
-                            <Link to="/register" className="btn primary">
-                                <b>
-                                    {_("Register here!") /* translators: register for an account */}
-                                </b>
-                            </Link>
+    return (
+        <div id="SignIn">
+            <div>
+                <Card>
+                    <h2>{_("Sign in")}</h2>
+                    <form name="login" autoComplete="on">
+                        <label htmlFor="username">
+                            {_("Username") /* translators: Provide username to sign in with */}
+                        </label>
+                        <input
+                            className="boxed"
+                            id="username"
+                            autoFocus
+                            ref={ref_username}
+                            name="username"
+                            onKeyPress={login}
+                            autoCapitalize="off"
+                        />
+                        <label htmlFor="password">
+                            {_("Password") /* translators: Provide password to sign in with */}
+                        </label>
+                        <input
+                            className="boxed"
+                            id="password"
+                            ref={ref_password}
+                            type="password"
+                            name="password"
+                            onKeyPress={login}
+                        />
+                        <div className="form-actions">
+                            <a onClick={resetPassword}>{_("Forgot password?")}</a>
+                            <button className="primary" onClick={login}>
+                                <i className="fa fa-sign-in" /> {_("Sign in")}
+                            </button>
                         </div>
+                    </form>
+
+                    <hr />
+                    <span>
+                        {
+                            _(
+                                "or sign in using another account:",
+                            ) /* translators: username or password, or sign in with social authentication */
+                        }
+                    </span>
+                    <SocialLoginButtons next_url={window.location.hash.substring(1)} />
+                </Card>
+
+                <div className="registration">
+                    <h3>{_("New to Online-Go?")} </h3>
+                    <div>
+                        <Link to="/register" className="btn primary">
+                            <b>{_("Register here!") /* translators: register for an account */}</b>
+                        </Link>
                     </div>
                 </div>
             </div>
-        );
-    }
+        </div>
+    );
 }
