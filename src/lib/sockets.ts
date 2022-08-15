@@ -62,8 +62,10 @@ if (
     ai_host = "https://beta-ai.online-go.com";
 } else if (window.location.hostname.indexOf("online-go.com") >= 0) {
     ai_host = "https://ai.online-go.com";
-} else {
+} else if (window.location.hostname.indexOf("ogs") >= 0) {
     ai_host = `${window.location.protocol}//ai-${window.location.hostname}`;
+} else {
+    ai_host = null;
 }
 
 export const ai_socket = ai_host ? io(ai_host, ai_config) : io(ai_config);
