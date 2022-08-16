@@ -130,8 +130,12 @@ export function EXV6NavBar(): JSX.Element {
     //const valid_user = user.anonymous ? null : user;
 
     // Don't show the signin link at the top if they arrived to the welcome page
-    // because the welcome page has special treatment of signin that takes them
-    // to the challenge that they accepted via a challenge link.
+    // (aka ChallengeLinkLanding)
+    // because that page has special treatment of signin, which takes them
+    // to the challenge that they accepted via a challenge link, after logging them in.
+    // We don't want to offer them a way of bailing out and signing in outside that.
+    // (If they manually navigate away, it's no real harm, it's just that they won't
+    //  get taken to the challenge they were in the middle of accepting).
 
     const show_signin =
         !window.location.pathname.includes("/welcome") && // a challenge link page is being shown
