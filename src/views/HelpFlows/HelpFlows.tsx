@@ -20,8 +20,12 @@ import * as DynamicHelp from "react-dynamic-help";
 
 import * as data from "data";
 
+import { TypedEventEmitter } from "TypedEventEmitter";
+
 import { GuestUserIntroEXV6 } from "./GuestUserIntroEXV6";
 import { GuestUserIntroOldNav } from "./GuestUserIntroOldNav";
+
+const events = new TypedEventEmitter<any>();
 
 /**
  * This component is a handy wrapper for all the Help Flows, and reset on login/logout
@@ -34,7 +38,6 @@ export function HelpFlows(): JSX.Element {
 
     React.useEffect(() => {
         const updateHelpState = () => {
-            data.unwatch("rdh-system-state", updateHelpState);
             const user = data.get("config.user");
             if (!user?.anonymous) {
                 enableHelp(true);
@@ -42,25 +45,11 @@ export function HelpFlows(): JSX.Element {
                 enableHelp(false);
             }
         };
-        const updateHelpWhenStateArrives = () => {
-            data.watch(
-                "rdh-system-state",
-                updateHelpState,
-                /* call undefined */ false,
-                /* dont call immediately */ true,
-            );
-        };
 
-        data.watch(
-            "config.user",
-            updateHelpWhenStateArrives,
-            /* call undefined */ false,
-            /* dont call immediately */ true,
-        );
+        events.on("remote_data_sync_complete", updateHelpState);
 
         return () => {
-            data.unwatch("rdh-system-state", updateHelpState);
-            data.unwatch("config.user", updateHelpWhenStateArrives);
+            events.off("remote_data_sync_complete", updateHelpState);
         };
     }, [enableHelp]);
 

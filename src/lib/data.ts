@@ -606,6 +606,10 @@ socket.on("remote_storage/update", (row: RemoteKV) => {
     }
 });
 
+socket.on("remote_storage/sync_complete", () => {
+    event_emitter.emit("remote_data_sync_complete");
+});
+
 // Whenever we connect to the server, process anything pending in our WAL and synchronize
 socket.on("connect", () => {
     const user = store["config.user"];
