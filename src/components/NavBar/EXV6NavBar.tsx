@@ -138,6 +138,7 @@ export function EXV6NavBar(): JSX.Element {
     //  get taken to the challenge they were in the middle of accepting).
 
     const show_signin =
+        !window.location.pathname.includes("/sign-in") && // don't show the link to the page we're on
         !window.location.pathname.includes("/welcome") && // a challenge link page is being shown
         !window.location.hash.includes("/welcome"); // the signin with redirect to challenge accept
 
