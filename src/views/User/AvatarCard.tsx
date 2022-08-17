@@ -287,7 +287,7 @@ export function AvatarCard({
                     {pgettext("Bot AI engine", "Engine")}: {user.bot_ai}
                 </div>
             )}
-            {user.is_bot && (user as any).bot_owner !== 1 && (
+            {user.is_bot && (user as any)?.bot_owner?.id !== 1 && (
                 <div>
                     {_("Administrator")}:{" "}
                     {user.bot_owner ? (
