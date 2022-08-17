@@ -48,7 +48,7 @@ export function ChallengeLinkLanding(): JSX.Element {
 
     const navigate = useNavigate();
 
-    const { enableFlow } = React.useContext(DynamicHelp.Api);
+    const { triggerFlow } = React.useContext(DynamicHelp.Api);
 
     /* Actions */
 
@@ -85,9 +85,9 @@ export function ChallengeLinkLanding(): JSX.Element {
                     alert.close();
                     browserHistory.push(`/game/${challenge.game_id}`);
                     if (data.get("experiments.v6") === "enabled") {
-                        enableFlow("guest-user-intro-exv6");
+                        triggerFlow("guest-user-intro-exv6");
                     } else {
-                        enableFlow("guest-user-intro-old-nav");
+                        triggerFlow("guest-user-intro-old-nav");
                     }
                 })
                 .catch((err) => {

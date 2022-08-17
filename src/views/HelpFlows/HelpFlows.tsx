@@ -16,17 +16,43 @@
  */
 
 import React from "react";
+import * as DynamicHelp from "react-dynamic-help";
+
+import * as data from "data";
+
+import { TypedEventEmitter } from "TypedEventEmitter";
 
 import { GuestUserIntroEXV6 } from "./GuestUserIntroEXV6";
 import { GuestUserIntroOldNav } from "./GuestUserIntroOldNav";
 
+const events = new TypedEventEmitter<any>();
+
 /**
- * This component is just a handy wrapper for all the Help Flows
- * (technically they _can_ be instantiated direct into the HelpProvider, but this encapsulation is tidier!)
+ * This component is a handy wrapper for all the Help Flows, and reset on login/logout
  *
+ * When the logged-in user changes, we have to wait till we see the new state loaded, then update the help system with it
  */
 
 export function HelpFlows(): JSX.Element {
+    const { enableHelp } = React.useContext(DynamicHelp.Api);
+
+    React.useEffect(() => {
+        const updateHelpState = () => {
+            const user = data.get("config.user");
+            if (!user?.anonymous) {
+                enableHelp(true);
+            } else {
+                enableHelp(false);
+            }
+        };
+
+        events.on("remote_data_sync_complete", updateHelpState);
+
+        return () => {
+            events.off("remote_data_sync_complete", updateHelpState);
+        };
+    }, [enableHelp]);
+
     return (
         <>
             <GuestUserIntroEXV6 />

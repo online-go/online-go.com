@@ -21,6 +21,8 @@ import * as Sentry from "@sentry/browser";
 
 import { HelpProvider, HelpPopupDictionary } from "react-dynamic-help";
 
+import * as DynamicHelp from "react-dynamic-help";
+
 import { configure_goban } from "configure-goban";
 import {
     GoMath,
@@ -100,6 +102,7 @@ try {
 }
 
 import * as data from "data";
+
 import * as preferences from "preferences";
 
 try {
@@ -327,6 +330,28 @@ browserHistory.listen(({ action /*, location */ }) => {
 /*** Some finial initializations ***/
 init_tabcomplete();
 
+const debugDynamicHelp = data.get("debug-dynamic-help", false);
+
+const helpPopupDictionary: HelpPopupDictionary = {
+    "Don't show me these": pgettext(
+        "A button to turn off help popups completely",
+        "Don't show me these",
+    ),
+    Skip: pgettext("A button to dismiss a help popup", "Skip"),
+    OK: pgettext("A button to dismiss the last help popup", "OK"),
+};
+
+// Make help system use our server-based storage, to achieve logged-in-user-specific help state.
+const dynamicHelpStorage: DynamicHelp.DynamicHelpStorageAPI = {
+    saveState: (rdhState: string) => {
+        return data.set("rdh-system-state", rdhState, data.Replication.REMOTE_OVERWRITES_LOCAL);
+    },
+    getState: (defaultValue?: string) => {
+        const newstate = data.get("rdh-system-state", defaultValue);
+        return newstate;
+    },
+};
+
 /* Initialization done, render!! */
 const svg_loader = document.getElementById("loading-svg-container");
 svg_loader.parentNode.removeChild(svg_loader);
@@ -343,20 +368,13 @@ function ForceReactUpdateWrapper(props): JSX.Element {
 
 const react_root = ReactDOM.createRoot(document.getElementById("main-content"));
 
-const debugDynamicHelp = data.get("debug-dynamic-help", false);
-
-const helpPopupDictionary: HelpPopupDictionary = {
-    "Don't show me these": pgettext(
-        "A button to turn off help popups completely",
-        "Don't show me these",
-    ),
-    Skip: pgettext("A button to dismiss a help popup", "Skip"),
-    OK: pgettext("A button to dismiss the last help popup", "OK"),
-};
-
 react_root.render(
     <React.StrictMode>
-        <HelpProvider debug={debugDynamicHelp} dictionary={helpPopupDictionary}>
+        <HelpProvider
+            debug={debugDynamicHelp}
+            dictionary={helpPopupDictionary}
+            storageApi={dynamicHelpStorage}
+        >
             <ForceReactUpdateWrapper>{routes}</ForceReactUpdateWrapper>
             <HelpFlows />
         </HelpProvider>

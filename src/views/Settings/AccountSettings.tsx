@@ -36,7 +36,7 @@ import { pgettext, sorted_locale_countries, _ } from "translate";
 export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
     const user = useUser();
 
-    const [username, setUsername] = React.useState(user.username);
+    const [username, _setUsername] = React.useState(user.username);
     const [first_name, setFirstName] = React.useState("");
     const [last_name, setLastName] = React.useState("");
     const [real_name_is_private, setRealNameIsPrivate] = React.useState(true);
@@ -66,10 +66,16 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
     signalUsed("account-settings-button"); // they have arrived here now, so they don't need to be told how to get here anymore
 
     const { ref: passwordEntry, used: signalPasswordTyping } = registerTargetItem("password-entry");
+    const { ref: usernameEntry, used: signalUsernameTyping } = registerTargetItem("username-edit");
 
     const setPassword1 = (password: string): void => {
         __setPassword1(password);
         signalPasswordTyping();
+    };
+
+    const setUsername = (username: string): void => {
+        _setUsername(username);
+        signalUsernameTyping();
     };
 
     React.useEffect(refreshAccountSettings, []);
@@ -291,7 +297,7 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
             <div className="row">
                 <div className="left">
                     <dl>
-                        <dt>
+                        <dt ref={usernameEntry}>
                             {_("Username")}
                             <InfoBall>
                                 {pgettext(

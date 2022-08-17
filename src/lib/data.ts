@@ -115,6 +115,8 @@ const defaults: Partial<DataSchema> = {};
 const store: Partial<DataSchema> = {};
 const event_emitter = new TypedEventEmitter<Events>();
 
+//  Note that as well as "without emit", this is "without remote storage" as well.
+// (you cant set-remote-storage-without-emit)
 export function setWithoutEmit<KeyT extends Extract<keyof DataSchema, string>>(
     key: KeyT,
     value: DataSchema[KeyT] | undefined,
@@ -380,7 +382,7 @@ interface RemoteKV {
     modified?: string;
 }
 
-let remote_store: { [key: string]: RemoteKV } = {};
+let remote_store: { [key in keyof DataSchema]?: RemoteKV } = {};
 let wal: { [key: string]: { key: string; value?: any; replication: Replication } } = {};
 let wal_currently_processing: { [k: string]: boolean } = {};
 let last_modified = "2000-01-01T00:00:00.000Z";
@@ -490,6 +492,7 @@ function _process_write_ahead_log(user_id: number): void {
                 // just dump this attempt from our wal so the client doesn't
                 // keep trying to send updates to the server which will never
                 // succeed.
+                console.error("... couldn't retry!");
             }
 
             if (wal[data_key].value !== kv.value || wal[data_key].replication !== kv.replication) {
@@ -574,6 +577,7 @@ ITC.register("remote_storage/sync_needed", () => {
 // for each key that's been updated since the timestamp we sent
 socket.on("remote_storage/update", (row: RemoteKV) => {
     const user = store["config.user"];
+
     if (!user || user.anonymous) {
         console.error(
             "User is not logged in but received remote_storage/update for some reason, ignoring",
@@ -600,6 +604,10 @@ socket.on("remote_storage/update", (row: RemoteKV) => {
         // evaluates to, emit an update for that data key
         emitForKey(row.key as keyof DataSchema);
     }
+});
+
+socket.on("remote_storage/sync_complete", () => {
+    event_emitter.emit("remote_data_sync_complete");
 });
 
 // Whenever we connect to the server, process anything pending in our WAL and synchronize
@@ -645,6 +653,10 @@ function load_from_local_storage_and_sync() {
                 const key = full_key.substr(store_prefix.length);
                 try {
                     remote_store[key] = JSON.parse(localStorage.getItem(full_key)) as RemoteKV;
+                    if (remote_store[key].replication === Replication.REMOTE_OVERWRITES_LOCAL) {
+                        store[key] = remote_store[key].value;
+                        emitForKey(key as keyof DataSchema);
+                    }
                 } catch (e) {
                     console.error(`Error loading remote storage key ${full_key}, removing`, e);
                     localStorage.removeItem(full_key);
@@ -675,5 +687,11 @@ function load_from_local_storage_and_sync() {
     }
 }
 
+// Here we load from local storage but don't actually sync because we're not connected yet
 load_from_local_storage_and_sync();
+
+// The immediate call to load_from_local_storage_and_sync doesn't appear to do anything, because
+//  1) loaded_user_id is set from the previous call (directly above), so the call bails immediately
+//  2) the socket isn't connected yet
+// There may be some subtle reason why it's needed again here though...
 watch("config.user", load_from_local_storage_and_sync);

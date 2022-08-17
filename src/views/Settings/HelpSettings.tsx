@@ -32,7 +32,7 @@ export function HelpSettings(): JSX.Element {
         getSystemStatus: helpSystemStatus,
     } = React.useContext(DynamicHelp.Api);
 
-    const availableHelp = getFlowInfo() as DynamicHelp.FlowState[];
+    const availableHelp = getFlowInfo() as DynamicHelp.FlowInfo[];
 
     const helpEnabled = helpSystemStatus().enabled;
 
@@ -40,8 +40,8 @@ export function HelpSettings(): JSX.Element {
     const [__helpEnabled, setRenderNewHelpState] = React.useState(helpEnabled);
 
     const toggleHelpEnabled = () => {
-        enableHelp(!helpEnabled);
-        setRenderNewHelpState(!helpEnabled);
+        enableHelp(!__helpEnabled);
+        setRenderNewHelpState(!__helpEnabled);
     };
 
     // we need a state to trigger re-reander after changing a flow visibility,
@@ -49,12 +49,12 @@ export function HelpSettings(): JSX.Element {
 
     const [reload, setReload] = React.useState(false);
 
-    const show = (flow: DynamicHelp.FlowState) => {
+    const show = (flow: DynamicHelp.FlowInfo) => {
         enableFlow(flow.id);
         setReload(true);
     };
 
-    const hide = (flow: DynamicHelp.FlowState) => {
+    const hide = (flow: DynamicHelp.FlowInfo) => {
         enableFlow(flow.id, false);
         setReload(true);
     };
@@ -75,7 +75,7 @@ export function HelpSettings(): JSX.Element {
                 {availableHelp.map((flow, index) => (
                     <PreferenceLine key={index} title={flow.description}>
                         <button onClick={() => show(flow)}>
-                            {pgettext("Press this button to show all the initial items", "Reset")}
+                            {pgettext("Press this button to show this help flow", "Show")}
                         </button>
                         <button onClick={() => hide(flow)}>
                             {pgettext("Press this button to hide this help flow", "Hide")}
@@ -88,8 +88,19 @@ export function HelpSettings(): JSX.Element {
                         </span>
                         <span>
                             {flow.visible
-                                ? pgettext("This help flow is showing its help items", "active")
-                                : pgettext("This help flow is not visible", "inactive")}
+                                ? pgettext(
+                                      "This help flow is showing its help items.  There is a comma because the 'seen' status follows after",
+                                      "active,",
+                                  )
+                                : pgettext(
+                                      "This help flow is not visible. There is a comma because the 'seen' status follows after",
+                                      "inactive,",
+                                  )}
+                        </span>
+                        <span>
+                            {flow.seen
+                                ? pgettext("This help flow has been seen", "seen")
+                                : pgettext("This help flow has not been seen", "not seen yet")}
                         </span>
                     </PreferenceLine>
                 ))}

@@ -227,6 +227,7 @@ export interface DataSchema
 
     "debug-dynamic-help": boolean;
     "help-system-enabled": boolean;
+    "rdh-system-state": string;
 
     // A challenge that the user accepted, but we didn't tell the server yet, because
     // we are busy getting them logged in first.
