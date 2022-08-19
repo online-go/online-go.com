@@ -496,7 +496,7 @@ export function PlayControls({
                 <div className="conditional-move-planner">
                     <div className="buttons">
                         <button className="primary" onClick={acceptConditionalMoves}>
-                            {_("Accept Conditional moves")}
+                            {_("Accept Conditional Moves")}
                         </button>
                         <button onClick={goban_setMode_play}>{_("Cancel")}</button>
                     </div>
