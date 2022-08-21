@@ -37,7 +37,6 @@ import { PlayerCacheEntry } from "player_cache";
 import { Link } from "react-router-dom";
 import { Resizable } from "Resizable";
 import { ChatMode } from "./GameChat";
-import { PersistentElement } from "PersistentElement";
 import { toast } from "toast";
 import { errorAlerter } from "misc";
 import { close_all_popovers } from "popover";
@@ -52,6 +51,7 @@ import {
 import { useGoban } from "./goban_context";
 import { is_valid_url } from "url_validation";
 import { enableTouchAction } from "./touch_actions";
+import { ConditionalMoveTreeDisplay } from "./ConditionalMoveTreeDisplay";
 
 interface PlayControlsProps {
     // Cancel buttons are in props because the Cancel Button is placed below
@@ -505,7 +505,7 @@ export function PlayControls({
                         <span className="move-current" onClick={goban_jumpToLastOfficialMove}>
                             {_("Current Move")}
                         </span>
-                        <PersistentElement elt={conditional_move_tree.current as HTMLElement} />
+                        <ConditionalMoveTreeDisplay tree={goban.conditional_tree} cpath="" />
                     </div>
                 </div>
             )}

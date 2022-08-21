@@ -1,4 +1,4 @@
-import { Goban } from "goban";
+import { Goban, GoConditionalMove } from "goban";
 import { PlayControls } from "./PlayControls";
 import { render, screen } from "@testing-library/react";
 import * as React from "react";
@@ -203,4 +203,47 @@ test("Renders Pass if it is the user's turn", () => {
     );
 
     expect(screen.getByText("Pass")).toBeDefined();
+});
+
+/**
+ * ```
+ * A19 B18
+ * ├── cc
+ * ├── dd ee
+ * │   └── ff gg
+ * └── hh ii
+ * jj kk
+ * ```
+ */
+function makeConditionalMoveTree() {
+    return GoConditionalMove.decode([
+        null,
+        {
+            aa: ["bb", { cc: [null, {}], dd: ["ee", { ff: ["gg", {}] }], hh: ["ii", {}] }],
+            jj: ["kk", {}],
+        },
+    ]);
+}
+
+test("Renders conditional moves", () => {
+    const goban = new Goban({
+        game_id: 1234,
+        moves: [],
+        players: {
+            // Since three moves have been played, it's white's turn
+            white: { id: 123, username: "test_user" },
+            black: { id: 456, username: "test_user2" },
+        },
+    });
+    goban.setMode("conditional");
+    goban.setConditionalTree(makeConditionalMoveTree());
+
+    render(
+        <WrapTest goban={goban}>
+            <PlayControls {...PLAY_CONTROLS_DEFAULTS} mode="conditional" />
+        </WrapTest>,
+    );
+
+    expect(screen.getByText("Conditional Move Planner")).toBeDefined();
+    expect(screen.getByText("A19")).toBeDefined();
 });
