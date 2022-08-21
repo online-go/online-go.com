@@ -89,6 +89,11 @@ interface PlayControlsProps {
     stopEstimatingScore: () => void;
 }
 
+const useConditionalMoveTree = generateGobanHook(
+    (goban) => goban.conditional_tree,
+    ["mode", "conditional-moves.updated"],
+);
+
 export function PlayControls({
     show_cancel,
     review_list,
@@ -182,38 +187,7 @@ export function PlayControls({
         goban.on("last_official_move", (move) => set_official_move_number(move.move_number));
     }, [goban]);
 
-    const conditional_move_tree = React.useRef<Element>();
-    // Since the values of conditional_move_list and selected_conditional_move are
-    // never accessed outside of createConditionalMoveTreeDisplay
-    const conditional_move_list = React.useRef<any[]>([]);
-    const selected_conditional_move = React.useRef<any>();
-    React.useEffect(() => {
-        conditional_move_tree.current = $("<div class='conditional-move-tree-container'/>")[0];
-
-        const sync_conditional_tree = () => {
-            if (goban.mode === "conditional") {
-                const tree = $(conditional_move_tree.current);
-                tree.empty();
-                selected_conditional_move.current = null;
-                conditional_move_list.current = [];
-                const elts = createConditionalMoveTreeDisplay(
-                    goban,
-                    selected_conditional_move,
-                    conditional_move_list,
-                    goban.conditional_tree,
-                    "",
-                    goban.conditional_starting_color === "black",
-                );
-                for (let i = 0; i < elts.length; ++i) {
-                    tree.append(elts[i]);
-                }
-            }
-        };
-
-        goban.on("load", () => sync_conditional_tree());
-        goban.on("mode", sync_conditional_tree);
-        goban.on("conditional-moves.updated", sync_conditional_tree);
-    }, [goban]);
+    const conditional_moves = useConditionalMoveTree(goban);
 
     const goban_setMode_play = () => {
         goban.setMode("play");
@@ -505,7 +479,7 @@ export function PlayControls({
                         <span className="move-current" onClick={goban_jumpToLastOfficialMove}>
                             {_("Current Move")}
                         </span>
-                        <ConditionalMoveTreeDisplay tree={goban.conditional_tree} cpath="" />
+                        <ConditionalMoveTreeDisplay tree={conditional_moves} cpath="" />
                     </div>
                 </div>
             )}
@@ -571,100 +545,6 @@ export function PlayControls({
             )}
         </div>
     );
-}
-
-function createConditionalMoveTreeDisplay(
-    goban: Goban,
-    selected_conditional_move: React.MutableRefObject<any | undefined>,
-    conditional_move_list: React.MutableRefObject<any[]>,
-    root: any,
-    cpath: string,
-    blacks_move: boolean,
-) {
-    const mkcb = (path: string) => {
-        return () => {
-            goban.jumpToLastOfficialMove();
-            goban.followConditionalPath(path);
-            goban.redraw();
-        };
-    };
-    const mkdelcb = (path: string) => {
-        return () => {
-            goban.jumpToLastOfficialMove();
-            goban.deleteConditionalPath(path);
-            goban.redraw();
-        };
-    };
-
-    const color1 = blacks_move ? "black" : "white";
-    const color2 = blacks_move ? "white" : "black";
-
-    let ret = null;
-    const ul = $("<ul>").addClass("tree");
-    if (root.move) {
-        if (cpath + root.move === goban.getCurrentConditionalPath()) {
-            selected_conditional_move.current = cpath + root.move;
-        }
-        conditional_move_list.current.push(cpath + root.move);
-
-        const mv = goban.engine.decodeMoves(root.move)[0];
-
-        const delete_icon = $("<i>")
-            .addClass("fa fa-times")
-            .addClass("delete-move")
-            .click(mkdelcb(cpath + root.move));
-
-        ret = [
-            $("<span>")
-                .addClass("entry")
-                .append($("<span>").addClass("stone " + color2))
-                .append($("<span>").html(goban.engine.prettyCoords(mv.x, mv.y)))
-                .addClass(cpath + root.move === goban.getCurrentConditionalPath() ? "selected" : "")
-                .click(mkcb(cpath + root.move)),
-        ];
-
-        if (cpath + root.move === goban.getCurrentConditionalPath()) {
-            // selected move
-            ret.push(delete_icon);
-        }
-        ret.push(ul);
-
-        cpath += root.move;
-    } else {
-        ret = [ul];
-    }
-
-    for (const ch in root.children) {
-        if (cpath + ch === goban.getCurrentConditionalPath()) {
-            selected_conditional_move.current = cpath + ch;
-        }
-        conditional_move_list.current.push(cpath + ch);
-
-        const li = $("<li>").addClass("move-row");
-        const mv = goban.engine.decodeMoves(ch)[0];
-        const span = $("<span>")
-            .addClass("entry")
-            .append($("<span>").addClass("stone " + color1))
-            .append($("<span>").html(goban.engine.prettyCoords(mv.x, mv.y)))
-            .addClass(cpath + ch === goban.getCurrentConditionalPath() ? "selected" : "")
-            .click(mkcb(cpath + ch));
-        li.append(span);
-
-        const elts = createConditionalMoveTreeDisplay(
-            goban,
-            selected_conditional_move,
-            conditional_move_list,
-            root.children[ch],
-            cpath + ch,
-            blacks_move,
-        );
-        for (let i = 0; i < elts.length; ++i) {
-            li.append(elts[i]);
-        }
-
-        ul.append(li);
-    }
-    return ret;
 }
 
 interface EstimateScoreProps {
