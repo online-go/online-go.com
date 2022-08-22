@@ -994,6 +994,11 @@ export function Game(): JSX.Element {
 
         bindAudioEvents(goban.current);
 
+        goban.current.on("submitting-move", () => {
+            // clear any pending "your move" notifications
+            notification_manager.clearTimecopNotification(game_id);
+        });
+
         goban.current.on("clock", (clock: JGOFClock) => {
             /* This is the code that draws the count down number on the "hover
              * stone" for the current player if they are running low on time */

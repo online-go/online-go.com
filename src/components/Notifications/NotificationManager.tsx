@@ -524,6 +524,18 @@ export class NotificationManager {
         }
         return true;
     }
+
+    // Clears the notifiction you get when you have some amount of
+    // time left to make your move. This is fine to call with a game
+    // that has no notification for it yet.
+    clearTimecopNotification(game_id: number) {
+        for (const n of this.ordered_notifications) {
+            if (n.game_id === game_id && n.type === "timecop") {
+                this.deleteNotification(n);
+                return;
+            }
+        }
+    }
 }
 
 export const notification_manager: NotificationManager = new NotificationManager();
