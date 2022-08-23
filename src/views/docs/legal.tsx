@@ -45,7 +45,7 @@ export const TermsOfService = () => (
             <div className="legal-paragraph">
                 By using our service you agree not to:
                 <ul>
-                    <li>Cheat at any games provided by Online-Go.com</li>
+                    <li>Cheat at any games provided by Online-Go.com.</li>
                     <li>Threaten, harass, or stalk other members.</li>
                     <li>
                         Upload, post, or otherwise make available any unlawful, harmful,
@@ -53,15 +53,15 @@ export const TermsOfService = () => (
                         hateful, or otherwise objectionable content on Online-Go.com or any service
                         which utilizes Online-Go.com Widgets or Software.
                     </li>
-                    <li>Impersonate any person or entity</li>
+                    <li>Impersonate any person or entity.</li>
                     <li>
                         Disrupt the normal flow of dialog or otherwise act in a manner that
                         negatively affects other users' ability to communicate through or use
-                        Services provided by Online-Go.com
+                        Services provided by Online-Go.com.
                     </li>
                     <li>
                         Intentionally or unintentionally violate any applicable local, state,
-                        national, or international law
+                        national, or international law.
                     </li>
                 </ul>
             </div>
@@ -260,14 +260,14 @@ export const TermsOfService = () => (
                 DATA OR OTHER INTANGIBLE LOSSES (EVEN IF ONLINE-GO.COM HAS BEEN ADVISED OF THE
                 POSSIBILITY OF SUCH DAMAGES), RESULTING FROM:
                 <ol>
-                    <li>THE USE OR THE INABILITY TO USE THE SERVICE</li>
+                    <li>THE USE OR THE INABILITY TO USE THE SERVICE.</li>
                     <li>
                         THE COST OF PROCUREMENT OF SUBSTITUTE GOODS AND SERVICES RESULTING FROM ANY
                         GOODS, DATA, INFORMATION OR SERVICES PURCHASED OR OBTAINED OR MESSAGES
-                        RECEIVED OR TRANSACTIONS ENTERED INTO THROUGH OR FROM THE SERVICE
+                        RECEIVED OR TRANSACTIONS ENTERED INTO THROUGH OR FROM THE SERVICE.
                     </li>
-                    <li>UNAUTHORIZED ACCESS TO OR ALTERATION OF YOUR TRANSMISSIONS OR DATA</li>
-                    <li>STATEMENTS OR CONDUCT OF ANY THIRD PARTY ON THE SERVICE </li>
+                    <li>UNAUTHORIZED ACCESS TO OR ALTERATION OF YOUR TRANSMISSIONS OR DATA.</li>
+                    <li>STATEMENTS OR CONDUCT OF ANY THIRD PARTY ON THE SERVICE. </li>
                     <li> ANY OTHER MATTER RELATING TO THE SERVICE.</li>
                 </ol>
                 YOU HEREBY ACKNOWLEDGE THAT THIS SECTION SHALL APPLY TO ALL CONTENTS ON ALL SERVERS
