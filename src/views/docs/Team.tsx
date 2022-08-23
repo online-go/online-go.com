@@ -70,11 +70,13 @@ export class Team extends React.PureComponent<{}, any> {
 
         const moderators = [
             { id: 784, country: ["ar"], languages: [es, en] }, //mlopezviedma
+            { id: 781, country: ["us"], languages: [en] }, //crocrobot
             { id: 69627, country: ["us"], languages: [cn, en] }, //xhu98
             { id: 4, country: ["us"], languages: [en] }, //matburt
             { id: 1, country: ["us"], languages: [en] }, //anoek
             { id: 52, country: ["de"], languages: [de, en] }, //trohde
             { id: 64817, country: ["us"], languages: [en] }, //mark5000
+            { id: 66091, country: ["de"], languages: [de, gb] }, //Revar Isavé
             { id: 441, country: ["ca"], languages: [en, fr] }, //VincentCB
             { id: 55415, country: ["se"], languages: [se, en] }, //entrpy
             { id: 360861, country: ["cz"], languages: [cz, en] }, //AdamR
