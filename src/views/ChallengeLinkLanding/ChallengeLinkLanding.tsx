@@ -73,7 +73,7 @@ export function ChallengeLinkLanding(): JSX.Element {
                     } else {
                         navigate(`/play#rengo:${challenge.challenge_id}`, { replace: true });
                     }
-                    // TBD: activate help item to tell newcomers when the game will actually start
+                    triggerFlow("guest-user-intro-rengo");
                 })
                 .catch((err: any) => {
                     alert.close();
@@ -83,7 +83,8 @@ export function ChallengeLinkLanding(): JSX.Element {
             post("challenges/%%/accept", challenge.challenge_id, {})
                 .then(() => {
                     alert.close();
-                    browserHistory.push(`/game/${challenge.game_id}`);
+                    window.location.pathname = `/game/${challenge.game_id}`;
+                    //browserHistory.push(`/game/${challenge.game_id}`);
                     if (data.get("experiments.v6") === "enabled") {
                         triggerFlow("guest-user-intro-exv6");
                     } else {
@@ -95,6 +96,7 @@ export function ChallengeLinkLanding(): JSX.Element {
                     errorAlerter(err);
                 });
         }
+
         data.set("pending_accepted_challenge", null);
     };
 

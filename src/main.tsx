@@ -344,10 +344,12 @@ const helpPopupDictionary: HelpPopupDictionary = {
 // Make help system use our server-based storage, to achieve logged-in-user-specific help state.
 const dynamicHelpStorage: DynamicHelp.DynamicHelpStorageAPI = {
     saveState: (rdhState: string) => {
+        console.log("< Writing rdh state", rdhState);
         return data.set("rdh-system-state", rdhState, data.Replication.REMOTE_OVERWRITES_LOCAL);
     },
     getState: (defaultValue?: string) => {
         const newstate = data.get("rdh-system-state", defaultValue);
+        console.log("> Fetched rdh state", newstate);
         return newstate;
     },
 };
@@ -369,16 +371,14 @@ function ForceReactUpdateWrapper(props): JSX.Element {
 const react_root = ReactDOM.createRoot(document.getElementById("main-content"));
 
 react_root.render(
-    <React.StrictMode>
-        <HelpProvider
-            debug={debugDynamicHelp}
-            dictionary={helpPopupDictionary}
-            storageApi={dynamicHelpStorage}
-        >
-            <ForceReactUpdateWrapper>{routes}</ForceReactUpdateWrapper>
-            <HelpFlows />
-        </HelpProvider>
-    </React.StrictMode>,
+    <HelpProvider
+        debug={debugDynamicHelp}
+        dictionary={helpPopupDictionary}
+        storageApi={dynamicHelpStorage}
+    >
+        <ForceReactUpdateWrapper>{routes}</ForceReactUpdateWrapper>
+        <HelpFlows />
+    </HelpProvider>,
 );
 
 window["data"] = data;

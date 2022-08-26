@@ -113,7 +113,8 @@ export enum Replication {
 
 const defaults: Partial<DataSchema> = {};
 const store: Partial<DataSchema> = {};
-const event_emitter = new TypedEventEmitter<Events>();
+
+export const event_emitter = new TypedEventEmitter<Events>();
 
 //  Note that as well as "without emit", this is "without remote storage" as well.
 // (you cant set-remote-storage-without-emit)
@@ -537,11 +538,13 @@ function remote_sync() {
         return;
     }
 
+    console.log("Activating Remote Sync...");
     currently_synchronizing = true;
     need_another_synchronization_call = false;
 
     socket.send("remote_storage/sync", last_modified, (ret) => {
         if (ret.error) {
+            console.log("Remote sync error!", user);
             console.error(ret.error);
         } else {
             // success
@@ -569,7 +572,6 @@ ITC.register("remote_storage/sync_needed", () => {
         );
         return;
     }
-
     remote_sync();
 });
 
@@ -607,6 +609,7 @@ socket.on("remote_storage/update", (row: RemoteKV) => {
 });
 
 socket.on("remote_storage/sync_complete", () => {
+    console.log(">>>>   R D S ");
     event_emitter.emit("remote_data_sync_complete");
 });
 
@@ -621,19 +624,27 @@ socket.on("connect", () => {
     // authentication handler which we need to trigger before we do anything.
     setTimeout(() => {
         _process_write_ahead_log(user.id);
+        console.log("Socket conneted remote sync underway...");
         remote_sync();
     }, 1);
 });
 
 function load_from_local_storage_and_sync() {
     const user = store["config.user"];
+    console.log(" L F L S A S ", user?.username);
+
     if (!user || user.anonymous) {
+        console.log(">>>>   UU R D S ");
+        event_emitter.emit("remote_data_sync_complete");
         return;
     }
 
     if (loaded_user_id === user.id) {
+        // this looks like a redundant call, we've been here before!
+        console.log("bailing");
         return;
     }
+
     loaded_user_id = user.id;
 
     remote_store = {};
@@ -684,13 +695,15 @@ function load_from_local_storage_and_sync() {
         // worry about syncing again here.
         _process_write_ahead_log(user.id);
         remote_sync();
+    } else {
+        console.log("skipping remote sync, not connected yet");
     }
 }
 
 // Here we load from local storage but don't actually sync because we're not connected yet
 load_from_local_storage_and_sync();
 
-// The immediate call to load_from_local_storage_and_sync doesn't appear to do anything, because
+// The immediate call to load_from_local_storage_and_sync, below, doesn't appear to do anything, because
 //  1) loaded_user_id is set from the previous call (directly above), so the call bails immediately
 //  2) the socket isn't connected yet
 // There may be some subtle reason why it's needed again here though...

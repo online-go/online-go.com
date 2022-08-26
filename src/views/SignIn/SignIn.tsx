@@ -111,6 +111,7 @@ export function SignIn(): JSX.Element {
                         return;
                     }
 
+                    console.log(">>>>   LOGIN", config);
                     data.set(cached.config, config);
 
                     if (window.location.hash && window.location.hash[1] === "/") {

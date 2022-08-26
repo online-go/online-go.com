@@ -20,12 +20,9 @@ import * as DynamicHelp from "react-dynamic-help";
 
 import * as data from "data";
 
-import { TypedEventEmitter } from "TypedEventEmitter";
-
 import { GuestUserIntroEXV6 } from "./GuestUserIntroEXV6";
 import { GuestUserIntroOldNav } from "./GuestUserIntroOldNav";
-
-const events = new TypedEventEmitter<any>();
+import { GuestUserIntroRengo } from "./GuestUserIntroRengo";
 
 /**
  * This component is a handy wrapper for all the Help Flows, and reset on login/logout
@@ -37,19 +34,25 @@ export function HelpFlows(): JSX.Element {
     const { enableHelp } = React.useContext(DynamicHelp.Api);
 
     React.useEffect(() => {
+        console.log(">>> Help flow useEffect");
+
         const updateHelpState = () => {
             const user = data.get("config.user");
             if (!user?.anonymous) {
+                console.log(" >>>   USER CHANGE", user.username, user.id);
                 enableHelp(true);
             } else {
+                console.log(" >>>   USER CHANGE: Anon");
                 enableHelp(false);
             }
         };
 
-        events.on("remote_data_sync_complete", updateHelpState);
+        console.log(">>> WATCH ON!");
+        data.event_emitter.on("remote_data_sync_complete", updateHelpState);
 
         return () => {
-            events.off("remote_data_sync_complete", updateHelpState);
+            console.log(">>> Watch OFF!");
+            data.event_emitter.off("remote_data_sync_complete", updateHelpState);
         };
     }, [enableHelp]);
 
@@ -58,6 +61,8 @@ export function HelpFlows(): JSX.Element {
             <GuestUserIntroEXV6 />
 
             <GuestUserIntroOldNav />
+
+            <GuestUserIntroRengo />
         </>
     );
 }
