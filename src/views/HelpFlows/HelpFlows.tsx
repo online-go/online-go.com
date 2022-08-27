@@ -31,27 +31,21 @@ import { GuestUserIntroRengo } from "./GuestUserIntroRengo";
  */
 
 export function HelpFlows(): JSX.Element {
-    const { enableHelp } = React.useContext(DynamicHelp.Api);
+    const { enableHelp, reloadUserState: reloadUserHelpState } = React.useContext(DynamicHelp.Api);
 
     React.useEffect(() => {
-        console.log(">>> Help flow useEffect");
-
         const updateHelpState = () => {
             const user = data.get("config.user");
             if (!user?.anonymous) {
-                console.log(" >>>   USER CHANGE", user.username, user.id);
-                enableHelp(true);
+                reloadUserHelpState();
             } else {
-                console.log(" >>>   USER CHANGE: Anon");
                 enableHelp(false);
             }
         };
 
-        console.log(">>> WATCH ON!");
         data.event_emitter.on("remote_data_sync_complete", updateHelpState);
 
         return () => {
-            console.log(">>> Watch OFF!");
             data.event_emitter.off("remote_data_sync_complete", updateHelpState);
         };
     }, [enableHelp]);

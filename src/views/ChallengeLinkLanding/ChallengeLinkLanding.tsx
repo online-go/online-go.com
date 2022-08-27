@@ -19,8 +19,6 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { alert } from "swal_config";
 
-import * as DynamicHelp from "react-dynamic-help";
-
 import * as data from "data";
 import { useUser } from "hooks";
 import { _, pgettext, interpolate } from "translate";
@@ -48,8 +46,6 @@ export function ChallengeLinkLanding(): JSX.Element {
 
     const navigate = useNavigate();
 
-    const { triggerFlow } = React.useContext(DynamicHelp.Api);
-
     /* Actions */
 
     const doAcceptance = (challenge: Challenge) => {
@@ -73,7 +69,7 @@ export function ChallengeLinkLanding(): JSX.Element {
                     } else {
                         navigate(`/play#rengo:${challenge.challenge_id}`, { replace: true });
                     }
-                    triggerFlow("guest-user-intro-rengo");
+                    // TBD: activate help item to tell newcomers when the game will actually start
                 })
                 .catch((err: any) => {
                     alert.close();
@@ -83,20 +79,13 @@ export function ChallengeLinkLanding(): JSX.Element {
             post("challenges/%%/accept", challenge.challenge_id, {})
                 .then(() => {
                     alert.close();
-                    window.location.pathname = `/game/${challenge.game_id}`;
-                    //browserHistory.push(`/game/${challenge.game_id}`);
-                    if (data.get("experiments.v6") === "enabled") {
-                        triggerFlow("guest-user-intro-exv6");
-                    } else {
-                        triggerFlow("guest-user-intro-old-nav");
-                    }
+                    navigate(`/game/${challenge.game_id}#challenge-link`, { replace: true });
                 })
                 .catch((err) => {
                     alert.close();
                     errorAlerter(err);
                 });
         }
-
         data.set("pending_accepted_challenge", null);
     };
 
@@ -107,6 +96,7 @@ export function ChallengeLinkLanding(): JSX.Element {
             set_logging_in(true);
             // We need to save the challenge info in this way for when we come back after logging in.
             data.set("pending_accepted_challenge", linked_challenge);
+            // Go to sign in, and come back to this page ("welcome") after signing in
             navigate("/sign-in#/welcome/accepted", { replace: true });
         }
     };
@@ -129,9 +119,11 @@ export function ChallengeLinkLanding(): JSX.Element {
         })
             .then((config) => {
                 data.set(cached.config, config);
-
-                doAcceptance(linked_challenge);
+                // This is the page reload required for a new registration
+                data.set("pending_accepted_challenge", linked_challenge);
+                window.location.assign("/welcome/accepted");
             })
+
             // note - no handling at the moment for the hopefully madly-unlikely duplicate username,
             // we just crash and burn here in that case, like any other error.
 
