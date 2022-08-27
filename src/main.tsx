@@ -319,7 +319,7 @@ const helpPopupDictionary: HelpPopupDictionary = {
 
 // Make help system use our server-based storage, to achieve logged-in-user-specific help state.
 
-// Note: possibly data.ts should take care of "whether REMOTE_OVERRIDES_LOCAL is ready"
+// Prevent writing back rdhState till remote data is loaded
 //  wait till remote data is loaded
 let storage_loaded = false;
 
@@ -339,7 +339,7 @@ const dynamicHelpStorage: DynamicHelp.DynamicHelpStorageAPI = {
             return data.set("rdh-system-state", rdhState, data.Replication.REMOTE_OVERWRITES_LOCAL);
         } else {
             debugDynamicHelp && console.log("NOT writing rdhState");
-            return "{}";
+            return rdhState;
         }
     },
     getState: (defaultValue?: string) => {
