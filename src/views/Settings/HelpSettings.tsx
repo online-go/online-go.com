@@ -40,8 +40,9 @@ export function HelpSettings(): JSX.Element {
     const [__helpEnabled, setRenderNewHelpState] = React.useState(helpEnabled);
 
     const toggleHelpEnabled = () => {
-        enableHelp(!__helpEnabled);
-        setRenderNewHelpState(!__helpEnabled);
+        const toggle_to = !__helpEnabled;
+        enableHelp(toggle_to);
+        setRenderNewHelpState(toggle_to);
     };
 
     // we need a state to trigger re-reander after changing a flow visibility,

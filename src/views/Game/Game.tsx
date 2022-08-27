@@ -16,6 +16,7 @@
  */
 
 import * as data from "data";
+import * as DynamicHelp from "react-dynamic-help";
 import * as preferences from "preferences";
 import * as React from "react";
 import { useParams, useLocation, useSearchParams } from "react-router-dom";
@@ -78,6 +79,8 @@ export function Game(): JSX.Element {
     const game_id = params.game_id ? parseInt(params.game_id) : 0;
     const review_id = params.review_id ? parseInt(params.review_id) : 0;
     const return_url = is_valid_url(searchParams.get("return")) ? searchParams.get("return") : null;
+
+    const { triggerFlow } = React.useContext(DynamicHelp.Api);
 
     /* Refs */
     const ref_move_tree_container = React.useRef<HTMLElement>();
@@ -1298,6 +1301,7 @@ export function Game(): JSX.Element {
                 })
                 .catch(ignore);
         }
+
         /*** END initialize ***/
 
         return () => {
@@ -1372,6 +1376,16 @@ export function Game(): JSX.Element {
         console.log(last_phase.current);
         last_phase.current = phase;
     }, [phase, return_url]);
+
+    React.useEffect(() => {
+        if (window.location.hash.includes("challenge-link")) {
+            if (data.get("experiments.v6") === "enabled") {
+                triggerFlow("guest-user-intro-exv6");
+            } else {
+                triggerFlow("guest-user-intro-old-nav");
+            }
+        }
+    });
 
     /**********/
     /* RENDER */

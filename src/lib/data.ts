@@ -113,7 +113,8 @@ export enum Replication {
 
 const defaults: Partial<DataSchema> = {};
 const store: Partial<DataSchema> = {};
-const event_emitter = new TypedEventEmitter<Events>();
+
+export const event_emitter = new TypedEventEmitter<Events>();
 
 //  Note that as well as "without emit", this is "without remote storage" as well.
 // (you cant set-remote-storage-without-emit)
@@ -688,10 +689,15 @@ function load_from_local_storage_and_sync() {
 }
 
 // Here we load from local storage but don't actually sync because we're not connected yet
-load_from_local_storage_and_sync();
 
-// The immediate call to load_from_local_storage_and_sync doesn't appear to do anything, because
-//  1) loaded_user_id is set from the previous call (directly above), so the call bails immediately
-//  2) the socket isn't connected yet
-// There may be some subtle reason why it's needed again here though...
-watch("config.user", load_from_local_storage_and_sync);
+// The sync comes later when the socket connects.
+
+// We don't call immediately, because we need to wait till main.tsx has loaded the correct config from cached.config
+// (until that happens, the `config` values in local storage are for the prior user)
+
+watch(
+    "user",
+    load_from_local_storage_and_sync,
+    /* call on undefined */ false,
+    /* don't call immediately */ true,
+);
