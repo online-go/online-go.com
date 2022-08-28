@@ -100,6 +100,8 @@
 import { TypedEventEmitter } from "TypedEventEmitter";
 import { DataSchema } from "data_schema";
 
+export const events = new TypedEventEmitter<never>();
+
 interface Events {
     [name: string]: any;
 }
@@ -114,7 +116,7 @@ export enum Replication {
 const defaults: Partial<DataSchema> = {};
 const store: Partial<DataSchema> = {};
 
-export const event_emitter = new TypedEventEmitter<Events>();
+const event_emitter = new TypedEventEmitter<Events>();
 
 //  Note that as well as "without emit", this is "without remote storage" as well.
 // (you cant set-remote-storage-without-emit)
@@ -608,7 +610,7 @@ socket.on("remote_storage/update", (row: RemoteKV) => {
 });
 
 socket.on("remote_storage/sync_complete", () => {
-    event_emitter.emit("remote_data_sync_complete");
+    events.emit("remote_data_sync_complete");
 });
 
 // Whenever we connect to the server, process anything pending in our WAL and synchronize

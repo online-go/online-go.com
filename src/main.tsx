@@ -323,7 +323,7 @@ const helpPopupDictionary: HelpPopupDictionary = {
 //  wait till remote data is loaded
 let storage_loaded = false;
 
-data.event_emitter.on("remote_data_sync_complete", () => {
+data.events.on("remote_data_sync_complete", () => {
     storage_loaded = true;
 });
 
