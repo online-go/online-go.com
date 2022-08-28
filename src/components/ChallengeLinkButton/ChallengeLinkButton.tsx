@@ -39,7 +39,7 @@ export function ChallengeLinkButton(props: ChallengeLinkButtonProps): JSX.Elemen
             onClick={(event) => copyChallengeLinkURL(event.target as HTMLElement, props.uuid)}
             className={full_class}
         >
-            <i className="fa fa-share" />
+            <i className="fa fa-share-square" />
         </button>
     );
 }
@@ -88,7 +88,7 @@ export function copyChallengeLinkURL(ack_target: HTMLElement, uuid: string): voi
 export function showChallengeLink(challenge_link: string, target: HTMLElement): void {
     popover({
         elt: (
-            <div className="challenge- link - copy">
+            <div className="challenge-link-copy">
                 {pgettext(
                     "This is the label for a link (URL) that they created",
                     "Invitation link:",
