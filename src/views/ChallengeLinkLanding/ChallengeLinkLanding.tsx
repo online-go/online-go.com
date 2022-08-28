@@ -65,11 +65,12 @@ export function ChallengeLinkLanding(): JSX.Element {
                 .then(() => {
                     alert.close();
                     if (challenge.invite_only) {
-                        navigate("/", { replace: true });
+                        navigate("/#challenge-link", { replace: true });
                     } else {
-                        navigate(`/play#rengo:${challenge.challenge_id}`, { replace: true });
+                        navigate(`/play#rengo:${challenge.challenge_id}:challenge-link`, {
+                            replace: true,
+                        });
                     }
-                    // TBD: activate help item to tell newcomers when the game will actually start
                 })
                 .catch((err: any) => {
                     alert.close();
