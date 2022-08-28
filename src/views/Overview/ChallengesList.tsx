@@ -92,7 +92,7 @@ export class ChallengesList extends React.PureComponent<{ onAccept: () => void }
                                         <FabX
                                             onClick={this.deleteChallenge.bind(this, challenge)}
                                         />
-                                        <h4>{profanity_filter(challenge.game.name)}</h4>
+                                        <h4>"{profanity_filter(challenge.game.name)}"</h4>
                                         <Player user={opponent} />
                                     </div>
                                 </div>

@@ -241,7 +241,7 @@ export function InviteList(): JSX.Element {
                         <Card key={challenge.challenge_id}>
                             <div className="name-and-buttons">
                                 <div className="name">
-                                    <h4>{profanity_filter(challenge.game_name)}</h4>
+                                    <h4>"{profanity_filter(challenge.game_name)}"</h4>
                                     <ChallengeLinkButton uuid={challenge.uuid} />
                                 </div>
                                 <div className="fab-section">
