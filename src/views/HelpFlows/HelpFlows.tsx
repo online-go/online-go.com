@@ -43,10 +43,10 @@ export function HelpFlows(): JSX.Element {
             }
         };
 
-        data.event_emitter.on("remote_data_sync_complete", updateHelpState);
+        data.events.on("remote_data_sync_complete", updateHelpState);
 
         return () => {
-            data.event_emitter.off("remote_data_sync_complete", updateHelpState);
+            data.events.off("remote_data_sync_complete", updateHelpState);
         };
     }, [enableHelp]);
 
