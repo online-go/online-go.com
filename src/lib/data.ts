@@ -106,10 +106,6 @@ interface DataEvents {
 
 export const events = new TypedEventEmitter<DataEvents>();
 
-interface Events {
-    [name: string]: any;
-}
-
 export enum Replication {
     NONE = 0x0, // No replication of this change
     LOCAL_OVERWRITES_REMOTE = 0x1, // Locally set data will overwrite remotely set data, but if not set will default to remotely set data
@@ -120,7 +116,7 @@ export enum Replication {
 const defaults: Partial<DataSchema> = {};
 const store: Partial<DataSchema> = {};
 
-const event_emitter = new TypedEventEmitter<Events>();
+const event_emitter = new TypedEventEmitter<DataSchema>();
 
 //  Note that as well as "without emit", this is "without remote storage" as well.
 // (you cant set-remote-storage-without-emit)
