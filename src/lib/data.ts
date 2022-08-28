@@ -100,7 +100,11 @@
 import { TypedEventEmitter } from "TypedEventEmitter";
 import { DataSchema } from "data_schema";
 
-export const events = new TypedEventEmitter<never>();
+interface DataEvents {
+    remote_data_sync_complete: never;
+}
+
+export const events = new TypedEventEmitter<DataEvents>();
 
 interface Events {
     [name: string]: any;
