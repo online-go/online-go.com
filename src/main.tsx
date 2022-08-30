@@ -111,24 +111,25 @@ try {
 } catch (e) {
     data.setDefault("theme", "light");
 }
-data.setDefault("config", {
-    user: {
-        anonymous: true,
-        id: 0,
-        username: "Guest",
-        ranking: -100,
-        country: "un",
-        pro: 0,
-    },
-});
-data.setDefault("config.user", {
+
+const default_user = {
     anonymous: true,
     id: 0,
     username: "Guest",
     ranking: -100,
     country: "un",
     pro: 0,
-});
+    supporter: false,
+    is_moderator: false,
+    is_superuser: false,
+    is_tournament_moderator: false,
+    can_create_tournaments: false,
+    tournament_admin: false,
+};
+
+data.setDefault("config", { user: default_user });
+
+data.setDefault("config.user", default_user);
 
 data.setDefault("config.cdn", window["cdn_service"]);
 data.setDefault(
@@ -171,42 +172,41 @@ moment.locale(getPreferredLanguage());
 setCurrentLanguage(getPreferredLanguage());
 
 /*** Load our config ***/
-data.watch(cached.config, (config) => {
+
+/* cached.config is supplied by the server and stored with `data.set()` in response to a login action (login, register),
+   after which a page-reload occurs (due to navigation to logged-in page) and that's where this is executed */
+
+const cached_config = data.get(cached.config);
+
+// If cached_config doesn't exist, then the user-defaults set further above (anonymous) will apply...
+
+if (cached_config) {
     /* We do a pass where we set everything, and then we 'set' everything
      * again to do the emits that we are expecting. Otherwise triggers
      * that are depending on other parts of the config will fire without
      * having up to date information (in particular user / auth stuff) */
-    for (const key in config) {
-        data.setWithoutEmit(`config.${key as keyof ConfigSchema}`, config[key]);
+    for (const key in cached_config) {
+        data.setWithoutEmit(`config.${key as keyof ConfigSchema}`, cached_config[key]);
     }
-    for (const key in config) {
-        data.set(`config.${key as keyof ConfigSchema}`, config[key]);
+    for (const key in cached_config) {
+        data.set(`config.${key as keyof ConfigSchema}`, cached_config[key]);
     }
-});
+}
 
-let last_username: string | null = null;
-data.watch("config.user", (user) => {
-    try {
-        Sentry.setUser({
-            id: user.id,
-            username: user.username,
-        });
-    } catch (e) {
-        console.error(e);
-    }
+const user = data.get("config.user"); // guaranteed to return anonymous by the defaults, unless they are logged in
 
-    player_cache.update(user);
-    data.set("user", user);
-    window["user"] = user;
+try {
+    Sentry.setUser({
+        id: user.id,
+        username: user.username,
+    });
+} catch (e) {
+    console.error(e);
+}
 
-    if (last_username && last_username !== user.username) {
-        last_username = user.username;
-        if (forceReactUpdate) {
-            forceReactUpdate();
-        }
-    }
-    last_username = user.username;
-});
+player_cache.update(user);
+data.set("user", user);
+window["user"] = user;
 
 /***
  * Setup a device UUID so we can logout other *devices* and not all other
@@ -235,42 +235,42 @@ try {
 let auth_connect_fn = () => {
     return;
 };
-data.watch("config.user", (user) => {
-    if (!user.anonymous) {
-        auth_connect_fn = (): void => {
-            sockets.socket.send("authenticate", {
-                auth: data.get("config.chat_auth"),
-                player_id: user.id,
-                username: user.username,
-                jwt: data.get("config.user_jwt"),
-                bid: get_bid(),
-                useragent: navigator.userAgent,
-                language: ogs_current_language,
-                language_version: ogs_language_version,
-                client_version: ogs_version,
-            });
-            sockets.socket.send("chat/connect", {
-                auth: data.get("config.chat_auth"),
-                player_id: user.id,
-                ranking: user.ranking,
-                username: user.username,
-                ui_class: user.ui_class,
-            });
-        };
-    } else if (user.id < 0) {
-        auth_connect_fn = (): void => {
-            sockets.socket.send("chat/connect", {
-                player_id: user.id,
-                ranking: user.ranking,
-                username: user.username,
-                ui_class: user.ui_class,
-            });
-        };
-    }
-    if (sockets.socket.connected) {
-        auth_connect_fn();
-    }
-});
+
+if (!user.anonymous) {
+    auth_connect_fn = (): void => {
+        sockets.socket.send("authenticate", {
+            auth: data.get("config.chat_auth"),
+            player_id: user.id,
+            username: user.username,
+            jwt: data.get("config.user_jwt"),
+            bid: get_bid(),
+            useragent: navigator.userAgent,
+            language: ogs_current_language,
+            language_version: ogs_language_version,
+            client_version: ogs_version,
+        });
+        sockets.socket.send("chat/connect", {
+            auth: data.get("config.chat_auth"),
+            player_id: user.id,
+            ranking: user.ranking,
+            username: user.username,
+            ui_class: user.ui_class,
+        });
+    };
+} else if (user.id < 0) {
+    auth_connect_fn = (): void => {
+        sockets.socket.send("chat/connect", {
+            player_id: user.id,
+            ranking: user.ranking,
+            username: user.username,
+            ui_class: user.ui_class,
+        });
+    };
+}
+if (sockets.socket.connected) {
+    auth_connect_fn();
+}
+
 sockets.socket.on("connect", () => {
     auth_connect_fn();
 });
@@ -294,30 +294,6 @@ sockets.socket.on("ERROR", errorAlerter);
 
 browserHistory.listen(({ action /*, location */ }) => {
     try {
-        // old google analytics history hook
-        /*
-        const cleaned_path = location.pathname.replace(/\/[0-9]+(\/.*)?/, "/ID");
-        let user_type = "error";
-        const user = data.get("user");
-
-        if (!user || user.anonymous) {
-            user_type = "anonymous";
-        } else if (user.supporter) {
-            user_type = "supporter";
-        } else {
-            user_type = "non-supporter";
-        }
-
-        if (gtag) {
-            window["gtag"]("config", "UA-37743954-2", {
-                page_path: cleaned_path,
-                custom_map: {
-                    dimension1: user_type,
-                },
-            });
-        }
-        */
-
         if (action !== history.Action.Replace) {
             window.document.title = "OGS";
         }
@@ -342,12 +318,33 @@ const helpPopupDictionary: HelpPopupDictionary = {
 };
 
 // Make help system use our server-based storage, to achieve logged-in-user-specific help state.
+
+// Prevent writing back rdhState till remote data is loaded
+//  wait till remote data is loaded
+let storage_loaded = false;
+
+data.events.on("remote_data_sync_complete", () => {
+    storage_loaded = true;
+});
+
+//  don't inherit old values
+if (user.anonymous) {
+    data.remove("rdh-system-state");
+}
+
 const dynamicHelpStorage: DynamicHelp.DynamicHelpStorageAPI = {
     saveState: (rdhState: string) => {
-        return data.set("rdh-system-state", rdhState, data.Replication.REMOTE_OVERWRITES_LOCAL);
+        if (storage_loaded) {
+            debugDynamicHelp && console.log("Writing rdhState", user.username, user.id, rdhState);
+            return data.set("rdh-system-state", rdhState, data.Replication.REMOTE_OVERWRITES_LOCAL);
+        } else {
+            debugDynamicHelp && console.log("NOT writing rdhState");
+            return rdhState;
+        }
     },
     getState: (defaultValue?: string) => {
         const newstate = data.get("rdh-system-state", defaultValue);
+        debugDynamicHelp && console.log("Read rdhState", user.username, user.id, newstate);
         return newstate;
     },
 };
@@ -355,16 +352,6 @@ const dynamicHelpStorage: DynamicHelp.DynamicHelpStorageAPI = {
 /* Initialization done, render!! */
 const svg_loader = document.getElementById("loading-svg-container");
 svg_loader.parentNode.removeChild(svg_loader);
-
-let forceReactUpdate: () => void;
-
-function ForceReactUpdateWrapper(props): JSX.Element {
-    const [update, setUpdate] = React.useState(1);
-    forceReactUpdate = () => {
-        setUpdate(update + 1);
-    };
-    return <React.Fragment key={update}>{props.children}</React.Fragment>;
-}
 
 const react_root = ReactDOM.createRoot(document.getElementById("main-content"));
 
@@ -375,7 +362,7 @@ react_root.render(
             dictionary={helpPopupDictionary}
             storageApi={dynamicHelpStorage}
         >
-            <ForceReactUpdateWrapper>{routes}</ForceReactUpdateWrapper>
+            {routes}
             <HelpFlows />
         </HelpProvider>
     </React.StrictMode>,

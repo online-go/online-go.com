@@ -204,14 +204,6 @@ data.watch("user", (user) => {
     }
 });
 
-/*
-data.watch("config.ogs", (settings) => {
-    if (settings && settings.channels) {
-        global_channels = settings.channels;
-    }
-});
-*/
-
 export function resolveChannelDisplayName(channel: string): string {
     if (channel === "shadowban") {
         return global_channels[channel];

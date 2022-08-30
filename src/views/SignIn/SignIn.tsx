@@ -110,9 +110,9 @@ export function SignIn(): JSX.Element {
                         window.location.pathname = config.redirect + (window.location.hash || "");
                         return;
                     }
-
                     data.set(cached.config, config);
 
+                    // Note: this causes a page reload, and the new user is set up from scratch in the process
                     if (window.location.hash && window.location.hash[1] === "/") {
                         const next_page = window.location.hash.substring(1);
                         window.location.pathname = next_page;
