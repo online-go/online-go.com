@@ -319,47 +319,49 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
                 />
             )}
             <div className="loading-overlay">{_("Loading")}</div>
-            <table className={extra_classes}>
-                <thead>
-                    <tr>
-                        {columns.map((column, idx) => (
-                            <th
-                                key={idx}
-                                className={cls(null, column)}
-                                {...column.headerProps}
-                                onClick={
-                                    column.orderBy
-                                        ? () => {
-                                              _sort(column.orderBy);
-                                          }
-                                        : null
-                                }
-                            >
-                                {getHeader(column.orderBy, column.header)}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows.map((row) => {
-                        const cols = columns.map((column, idx) => (
-                            <td key={idx} className={cls(row, column)} {...column.cellProps}>
-                                {column_render(column, row)}
-                            </td>
-                        ));
-                        if (props.onRowClick) {
-                            return (
-                                <tr key={row.id} onMouseUp={(ev) => props.onRowClick(row, ev)}>
-                                    {cols}
-                                </tr>
-                            );
-                        } else {
-                            return <tr key={row.id}>{cols}</tr>;
-                        }
-                    })}
-                    {blank_rows}
-                </tbody>
-            </table>
+            <div>
+                <table className={extra_classes}>
+                    <thead>
+                        <tr>
+                            {columns.map((column, idx) => (
+                                <th
+                                    key={idx}
+                                    className={cls(null, column)}
+                                    {...column.headerProps}
+                                    onClick={
+                                        column.orderBy
+                                            ? () => {
+                                                  _sort(column.orderBy);
+                                              }
+                                            : null
+                                    }
+                                >
+                                    {getHeader(column.orderBy, column.header)}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows.map((row) => {
+                            const cols = columns.map((column, idx) => (
+                                <td key={idx} className={cls(row, column)} {...column.cellProps}>
+                                    {column_render(column, row)}
+                                </td>
+                            ));
+                            if (props.onRowClick) {
+                                return (
+                                    <tr key={row.id} onMouseUp={(ev) => props.onRowClick(row, ev)}>
+                                        {cols}
+                                    </tr>
+                                );
+                            } else {
+                                return <tr key={row.id}>{cols}</tr>;
+                            }
+                        })}
+                        {blank_rows}
+                    </tbody>
+                </table>
+            </div>
             {(!props.hidePageControls || null) && (
                 <div className="page-controls">
                     <div className="left">
