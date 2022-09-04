@@ -171,8 +171,8 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, Chat
                             <i className="fa fa-comment" />
                             {" " +
                                 (this.state.notify_mentioned
-                                    ? _("unfollow mentioned")
-                                    : _("follow mentioned"))}
+                                    ? _("Unfollow Mentioned")
+                                    : _("Follow Mentioned"))}
                         </button>
                     )}
                     {this.state.subscribable && (
@@ -183,8 +183,8 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, Chat
                             <i className="fa fa-comment" />
                             {" " +
                                 (this.state.notify_unread
-                                    ? _("unfollow unread")
-                                    : _("follow unread"))}
+                                    ? _("Unfollow Unread")
+                                    : _("Follow Unread"))}
                         </button>
                     )}
                     {this.props.partFunc ? (
