@@ -36,10 +36,16 @@ header.NavBar {
         //themed color supporter-gold
         color: supporter-gold;
     }
-    .left, .right, .center {
+    .left, .right {
+        flex: 1rem;
+        flex-grow: 0;
+        flex-shrink: 0;
+    }
+    .center {
         flex: 1rem;
         flex-grow: 1;
         flex-shrink: 0;
+        flex-align: flex-start;
     }
 
     .mobile-only {
@@ -171,8 +177,8 @@ header.NavBar {
             left: 0;
             padding: 0;
             align-items: flex-start;
-            max-height: "calc(100vh - %s)" % navbar-height;
-            overflow-y: auto;
+            //max-height: "calc(100vh - %s)" % navbar-height;
+            //overflow-y: auto;
             z-index: z.nav-menu.menu;
 
             .ogs-nav-logo {
@@ -414,8 +420,6 @@ header.NavBar {
             display: flex;
             justify-content: space-around;
         }
-        .center {
-        }
 
         a, .fakelink {
             margin: 0.5rem;
@@ -507,9 +511,9 @@ header.NavBar {
     height: navbar-height;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
+    //justify-content: center;
     padding-left: 0.5rem;
-    padding-bottom: 0.1rem;
+    padding-bottom: 0;
     flex-grow: 1;
     flex-shrink: 0;
     min-width: 7rem;

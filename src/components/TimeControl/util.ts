@@ -580,6 +580,7 @@ export function isLiveGame(time_control) {
 }
 
 export function durationString(seconds: number): string {
+    seconds = Math.round(seconds);
     const weeks = Math.floor(seconds / (86400 * 7));
     seconds -= weeks * 86400 * 7;
     const days = Math.floor(seconds / 86400);
@@ -628,6 +629,7 @@ export function durationString(seconds: number): string {
 }
 
 export function daysOnlyDurationString(seconds): string {
+    seconds = Math.round(seconds);
     const days = Math.floor(seconds / 86400);
 
     let ret = "";
@@ -638,6 +640,7 @@ export function daysOnlyDurationString(seconds): string {
     return ret.trim();
 }
 export function shortDurationString(seconds) {
+    seconds = Math.round(seconds);
     const weeks = Math.floor(seconds / (86400 * 7));
     seconds -= weeks * 86400 * 7;
     const days = Math.floor(seconds / 86400);
