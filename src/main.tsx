@@ -19,10 +19,6 @@
 import "whatwg-fetch"; /* polyfills window.fetch */
 import * as Sentry from "@sentry/browser";
 
-import { HelpProvider, HelpPopupDictionary } from "react-dynamic-help";
-
-import * as DynamicHelp from "react-dynamic-help";
-
 import { configure_goban } from "configure-goban";
 import {
     GoMath,
@@ -32,6 +28,7 @@ import {
     ScoreEstimateResponse,
 } from "goban";
 
+import { OgsHelpProvider } from "OgsHelpProvider";
 import { HelpFlows } from "HelpFlows";
 import { sfx } from "sfx";
 import { post } from "requests";
@@ -150,7 +147,7 @@ import { routes } from "./routes";
 import { errorAlerter, uuid } from "misc";
 import { close_all_popovers } from "popover";
 import * as sockets from "sockets";
-import { _, setCurrentLanguage, pgettext } from "translate";
+import { _, setCurrentLanguage } from "translate";
 import { init_tabcomplete } from "tabcomplete";
 import * as player_cache from "player_cache";
 import { toast } from "toast";
@@ -306,48 +303,10 @@ browserHistory.listen(({ action /*, location */ }) => {
 /*** Some finial initializations ***/
 init_tabcomplete();
 
-const debugDynamicHelp = data.get("debug-dynamic-help", false);
-
-const helpPopupDictionary: HelpPopupDictionary = {
-    "Don't show me these": pgettext(
-        "A button to turn off help popups completely",
-        "Don't show me these",
-    ),
-    Skip: pgettext("A button to dismiss a help popup", "Skip"),
-    OK: pgettext("A button to dismiss the last help popup", "OK"),
-};
-
-// Make help system use our server-based storage, to achieve logged-in-user-specific help state.
-
-// Prevent writing back rdhState till remote data is loaded
-//  wait till remote data is loaded
-let storage_loaded = false;
-
-data.events.on("remote_data_sync_complete", () => {
-    storage_loaded = true;
-});
-
-//  don't inherit old values
+//  don't inherit old rdh values
 if (user.anonymous) {
     data.remove("rdh-system-state");
 }
-
-const dynamicHelpStorage: DynamicHelp.DynamicHelpStorageAPI = {
-    saveState: (rdhState: string) => {
-        if (storage_loaded) {
-            debugDynamicHelp && console.log("Writing rdhState", user.username, user.id, rdhState);
-            return data.set("rdh-system-state", rdhState, data.Replication.REMOTE_OVERWRITES_LOCAL);
-        } else {
-            debugDynamicHelp && console.log("NOT writing rdhState");
-            return rdhState;
-        }
-    },
-    getState: (defaultValue?: string) => {
-        const newstate = data.get("rdh-system-state", defaultValue);
-        debugDynamicHelp && console.log("Read rdhState", user.username, user.id, newstate);
-        return newstate;
-    },
-};
 
 /* Initialization done, render!! */
 const svg_loader = document.getElementById("loading-svg-container");
@@ -356,16 +315,10 @@ svg_loader.parentNode.removeChild(svg_loader);
 const react_root = ReactDOM.createRoot(document.getElementById("main-content"));
 
 react_root.render(
-    <React.StrictMode>
-        <HelpProvider
-            debug={debugDynamicHelp}
-            dictionary={helpPopupDictionary}
-            storageApi={dynamicHelpStorage}
-        >
-            {routes}
-            <HelpFlows />
-        </HelpProvider>
-    </React.StrictMode>,
+    <OgsHelpProvider>
+        {routes}
+        <HelpFlows />
+    </OgsHelpProvider>,
 );
 
 window["data"] = data;

@@ -36,13 +36,11 @@ export function HelpSettings(): JSX.Element {
 
     const helpEnabled = helpSystemStatus().enabled;
 
-    // a local state variable to make sure we re-render when enabled state changes
-    const [__helpEnabled, setRenderNewHelpState] = React.useState(helpEnabled);
+    const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
     const toggleHelpEnabled = () => {
-        const toggle_to = !__helpEnabled;
-        enableHelp(toggle_to);
-        setRenderNewHelpState(toggle_to);
+        enableHelp(!helpEnabled);
+        forceUpdate();
     };
 
     // we need a state to trigger re-reander after changing a flow visibility,
@@ -69,10 +67,10 @@ export function HelpSettings(): JSX.Element {
     return (
         <div>
             <PreferenceLine title={_("Show dynamic help.")}>
-                <Toggle checked={__helpEnabled} onChange={toggleHelpEnabled} />
+                <Toggle checked={helpEnabled} onChange={toggleHelpEnabled} />
             </PreferenceLine>
 
-            <div className={"help-detail-settings" + (__helpEnabled ? "" : " help-details-greyed")}>
+            <div className={"help-detail-settings" + (helpEnabled ? "" : " help-details-greyed")}>
                 {availableHelp.map((flow, index) => (
                     <PreferenceLine key={index} title={flow.description}>
                         <button onClick={() => show(flow)}>
