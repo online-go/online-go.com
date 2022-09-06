@@ -315,10 +315,12 @@ svg_loader.parentNode.removeChild(svg_loader);
 const react_root = ReactDOM.createRoot(document.getElementById("main-content"));
 
 react_root.render(
-    <OgsHelpProvider>
-        {routes}
-        <HelpFlows />
-    </OgsHelpProvider>,
+    <React.StrictMode>
+        <OgsHelpProvider>
+            {routes}
+            <HelpFlows />
+        </OgsHelpProvider>
+    </React.StrictMode>,
 );
 
 window["data"] = data;
