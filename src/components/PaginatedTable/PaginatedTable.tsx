@@ -168,6 +168,9 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
             })
             .catch((err) => {
                 console.error(err);
+                if (err.status === 404) {
+                    setPage(1);
+                }
                 setLoading(false);
                 if (load_again.current) {
                     load_again.current = false;
