@@ -24,6 +24,18 @@
     bottom: env(safe-area-inset-bottom);
     right: 0;
     left: 0;
+
+    .hidden, .hidden.active, .hidden:focus, .hidden:hover {
+        themed background-color hidden-bg
+    }
+
+    .malkovich, .malkovich.active, .malkovich:focus, .malkovich:hover {
+        themed background-color malkovich-bg
+    }
+
+    .personal, .personal.active, .personal:focus, .personal:hover {
+        themed background-color personal-bg
+    }
 }
 
 .Game.portrait.squashed {
@@ -35,6 +47,8 @@
     top: 0;
 }
 
+// Is this really intended as a global scope css directive?
+// I don't dare scope it for now, but it looks odd: if it's global, it should probably be in ogs.styl?
 .submit-button {
     white-space: nowrap;
 }

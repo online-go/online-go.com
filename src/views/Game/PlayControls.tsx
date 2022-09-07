@@ -1130,7 +1130,7 @@ function ShareAnalysisButton(props: ShareAnalysisButtonProperties): JSX.Element 
         case "personal":
             return (
                 <button
-                    className="sm {selected_chat_log}"
+                    className={`sm ${selected_chat_log}`}
                     type="button"
                     disabled={isUserAnonymous}
                     onClick={shareAnalysis}
