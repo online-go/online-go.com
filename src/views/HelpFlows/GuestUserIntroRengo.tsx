@@ -29,7 +29,11 @@ import { _ } from "translate";
 export function GuestUserIntroRengo(): JSX.Element {
     return (
         <HelpFlow id="guest-user-intro-rengo" description="Guest user introduction for Rengo">
-            <HelpItem target="active-rengo-management-pane" position={"bottom-centre"}>
+            <HelpItem
+                target="active-rengo-management-pane"
+                position={"bottom-right"}
+                anchor={"top-right"}
+            >
                 <div>{_("The organiser will start your Rengo game when it is ready")} </div>
             </HelpItem>
         </HelpFlow>
