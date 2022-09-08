@@ -18,6 +18,7 @@
 import * as React from "react";
 import * as DynamicHelp from "react-dynamic-help";
 import * as data from "data";
+import { cached } from "cached";
 import * as player_cache from "player_cache";
 import Dropzone from "react-dropzone";
 import { alert } from "swal_config";
@@ -269,6 +270,7 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
             };
             put("players/%%", user.id, data)
                 .then(() => {
+                    cached.refresh.config(() => window.location.reload());
                     toast(<span>{_("Account settings updated successfully!")}</span>, 5000);
                 })
                 .catch(errorAlerter);
