@@ -17,8 +17,9 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { _ } from "translate";
+import * as DynamicHelp from "react-dynamic-help";
 
+import { _ } from "translate";
 import * as data from "data";
 import * as preferences from "preferences";
 import cached from "cached";
@@ -71,6 +72,9 @@ interface OverviewState {
 export class OldOverview extends React.Component<{}, OverviewState> {
     private static defaultTitle = "OGS";
 
+    static contextType = DynamicHelp.Api;
+    declare context: React.ContextType<typeof DynamicHelp.Api>;
+
     constructor(props: {}) {
         super(props);
 
@@ -112,6 +116,13 @@ export class OldOverview extends React.Component<{}, OverviewState> {
         notification_manager.event_emitter.on("turn-count", this.setBoardsToMoveOn);
         data.watch("config.user", this.updateUser);
         this.refresh().then(ignore).catch(ignore);
+
+        if (window.location.hash.includes("challenge-link")) {
+            this.context.triggerFlow("guest-user-intro-rengo");
+            this.context.triggerFlow("guest-user-intro-old-nav");
+        } else {
+            console.log(">>> ", window.location.hash);
+        }
     }
 
     componentDidUpdate() {

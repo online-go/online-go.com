@@ -17,6 +17,8 @@
 
 import * as React from "react";
 import * as data from "data";
+import * as DynamicHelp from "react-dynamic-help";
+
 import * as preferences from "preferences";
 import * as player_cache from "player_cache";
 import * as rengo_utils from "rengo_utils";
@@ -71,6 +73,9 @@ export class Play extends React.Component<{}, PlayState> {
 
     seekgraph: SeekGraph;
     resize_check_interval;
+
+    static contextType = DynamicHelp.Api;
+    declare context: React.ContextType<typeof DynamicHelp.Api>;
 
     private list_freeze_timeout;
 
@@ -132,6 +137,14 @@ export class Play extends React.Component<{}, PlayState> {
             this.state.pending_challenges.length !== 0
         ) {
             this.updateChallenges(this.state.pending_challenges);
+        }
+        if (window.location.hash.includes("challenge-link")) {
+            this.context.triggerFlow("guest-user-intro-rengo");
+            if (data.get("experiments.v6") === "enabled") {
+                this.context.triggerFlow("guest-user-intro-exv6");
+            } else {
+                this.context.triggerFlow("guest-user-intro-old-nav");
+            }
         }
     }
 

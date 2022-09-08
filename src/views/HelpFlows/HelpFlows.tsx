@@ -22,6 +22,7 @@ import * as data from "data";
 
 import { GuestUserIntroEXV6 } from "./GuestUserIntroEXV6";
 import { GuestUserIntroOldNav } from "./GuestUserIntroOldNav";
+import { GuestUserIntroRengo } from "./GuestUserIntroRengo";
 
 /**
  * This component is a handy wrapper for all the Help Flows, and reset on login/logout
@@ -54,6 +55,8 @@ export function HelpFlows(): JSX.Element {
             <GuestUserIntroEXV6 />
 
             <GuestUserIntroOldNav />
+
+            <GuestUserIntroRengo />
         </>
     );
 }

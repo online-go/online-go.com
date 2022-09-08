@@ -1373,7 +1373,6 @@ export function Game(): JSX.Element {
                 }, 1500);
             }
         }
-        console.log(last_phase.current);
         last_phase.current = phase;
     }, [phase, return_url]);
 

@@ -17,6 +17,8 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
+import * as DynamicHelp from "react-dynamic-help";
+
 import { _ } from "translate";
 
 import * as data from "data";
@@ -50,6 +52,9 @@ interface OverviewState {
 }
 export class EXV6Overview extends React.Component<{}, OverviewState> {
     private static defaultTitle = "OGS";
+
+    static contextType = DynamicHelp.Api;
+    declare context: React.ContextType<typeof DynamicHelp.Api>;
 
     constructor(props: {}) {
         super(props);
@@ -96,6 +101,10 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
 
     componentDidUpdate() {
         this.setTitle();
+        if (window.location.hash.includes("challenge-link")) {
+            this.context.triggerFlow("guest-user-intro-rengo");
+            this.context.triggerFlow("guest-user-intro-exv6");
+        }
     }
 
     updateUser = (user: UserType) => {

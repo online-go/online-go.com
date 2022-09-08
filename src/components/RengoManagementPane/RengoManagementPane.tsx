@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as DynamicHelp from "react-dynamic-help";
 
 import { _, pgettext, interpolate } from "translate";
 
@@ -37,6 +38,10 @@ interface RengoManagementPaneProperties {
  * */
 
 export function RengoManagementPane(props: RengoManagementPaneProperties): JSX.Element {
+    const { registerTargetItem } = React.useContext(DynamicHelp.Api);
+
+    const { ref: rengoManagementPane } = registerTargetItem("active-rengo-management-pane");
+
     const rengoReadyToStart = (challenge): boolean => {
         return (
             challenge.rengo_black_team.length &&
@@ -66,7 +71,7 @@ export function RengoManagementPane(props: RengoManagementPaneProperties): JSX.E
         the_challenge.rengo_white_team.length;
 
     return (
-        <div className="RengoManagementPane">
+        <div className="RengoManagementPane" ref={rengoManagementPane}>
             {!the_challenge.rengo_auto_start && (
                 <div className="rengo-challenge-status">
                     {own_challenge && challenge_ready_to_start

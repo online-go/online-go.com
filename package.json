@@ -112,7 +112,7 @@
         "react-datetime": "^3.0.4",
         "react-dom": "^18.0.0",
         "react-dropzone": "^12.0.5",
-        "react-dynamic-help": "2.2.0",
+        "react-dynamic-help": "2.4.2",
         "react-linkify": "^1.0.0-alpha",
         "react-number-format": "^3.0.2",
         "react-resize-detector": "^7.1.1",
