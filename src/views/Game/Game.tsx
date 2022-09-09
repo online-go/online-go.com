@@ -215,7 +215,14 @@ export function Game(): JSX.Element {
         const last_estimate_move = stopEstimatingScore();
         stopAutoplay();
         checkAndEnterAnalysis(last_estimate_move);
+        const cur = goban.current.engine.cur_move;
         goban.current.showPrevious();
+        const prev = goban.current.engine.cur_move;
+
+        if (goban.current.isAnalysisDisabled()) {
+            prev.clearBranchesExceptFor(cur);
+        }
+
         goban.current.syncReviewMove();
         console.log("nav_prev", Date.now() - start);
     };
