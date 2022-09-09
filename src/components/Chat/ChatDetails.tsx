@@ -35,66 +35,55 @@ interface ChatDetailsProperties {
     subscribable?: boolean;
 }
 
-interface ChatDetailsState {
-    channelId: string;
-    subscribable: boolean;
-    notify_unread: boolean;
-    notify_mentioned: boolean;
-}
+export function ChatDetails(props: ChatDetailsProperties): JSX.Element {
+    const channel = props.chatChannelId;
 
-export class ChatDetails extends React.PureComponent<ChatDetailsProperties, ChatDetailsState> {
-    constructor(props) {
-        super(props);
-        const channel = this.props.chatChannelId;
-        if (channel) {
-            this.state = {
-                channelId: channel,
-                subscribable: props.subscribable,
-                notify_unread: false,
-                notify_mentioned: false,
-            };
-        }
-    }
+    const [channelId, setChannelId] = React.useState(channel);
+    const [subscribable, setSubscribable] = React.useState(props.subscribable);
+    const [notify_unread, setNotifyUnread] = React.useState(false);
+    const [notify_mentioned, setNotifyMentioned] = React.useState(false);
 
-    componentDidMount() {
-        watchChatSubscriptionChanged(this.onChatSubscriptionChanged);
-    }
+    React.useEffect(() => {
+        setChannelId(channel);
+        setSubscribable(props.subscribable);
+        setNotifyUnread(getUnreadChatPreference(channel));
+        setNotifyMentioned(getMentionedChatPreference(channel));
 
-    componentWillUnmount() {
-        unwatchChatSubscriptionChanged(this.onChatSubscriptionChanged);
-    }
+        const onChatSubscriptionChanged = () => {
+            setNotifyUnread(getUnreadChatPreference(channel));
+            setNotifyMentioned(getMentionedChatPreference(channel));
+        };
 
-    onChatSubscriptionChanged = () => {
-        this.setState({
-            notify_unread: getUnreadChatPreference(this.state.channelId),
-            notify_mentioned: getMentionedChatPreference(this.state.channelId),
-        });
-    };
+        watchChatSubscriptionChanged(onChatSubscriptionChanged);
+        return () => {
+            unwatchChatSubscriptionChanged(onChatSubscriptionChanged);
+        };
+    }, [channel, props.subscribable]);
 
-    close_all_modals_and_popovers = () => {
+    const close_all_modals_and_popovers = () => {
         close_all_popovers();
         close_friend_list();
     };
 
-    leave = (_ev) => {
-        const c = this.state.channelId;
-        this.props.partFunc(c, false, false);
-        this.close_all_modals_and_popovers();
+    const leave = (_ev) => {
+        const c = channelId;
+        props.partFunc(c, false, false);
+        close_all_modals_and_popovers();
     };
-    goToGroup = (ev) => {
-        this.close_all_modals_and_popovers();
+    const goToGroup = (ev) => {
+        close_all_modals_and_popovers();
 
-        const url: string = "/group/" + this.state.channelId.slice(6);
+        const url: string = "/group/" + channelId.slice(6);
         if (shouldOpenNewTab(ev)) {
             window.open(url, "_blank");
         } else {
             browserHistory.push(url);
         }
     };
-    goToTournament = (ev) => {
-        this.close_all_modals_and_popovers();
+    const goToTournament = (ev) => {
+        close_all_modals_and_popovers();
 
-        const url: string = "/tournament/" + this.state.channelId.slice(11);
+        const url: string = "/tournament/" + channelId.slice(11);
         if (shouldOpenNewTab(ev)) {
             window.open(url, "_blank");
         } else {
@@ -102,74 +91,69 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, Chat
         }
     };
 
-    toggleNewMessageNotification = () => {
+    const toggleNewMessageNotification = () => {
         const n_list: { [channel: string]: { [option: string]: boolean } } = data.get(
             "chat-indicator.chat-subscriptions",
             {},
         );
-        if (!(this.state.channelId in n_list)) {
-            n_list[this.state.channelId] = {};
+        if (!(channelId in n_list)) {
+            n_list[channelId] = {};
         }
-        if (this.state.notify_unread) {
-            n_list[this.state.channelId].unread = false;
+        if (notify_unread) {
+            n_list[channelId].unread = false;
         } else {
-            n_list[this.state.channelId].unread = true;
+            n_list[channelId].unread = true;
         }
         data.set("chat-indicator.chat-subscriptions", n_list);
     };
 
-    toggleMentionNotification = () => {
+    const toggleMentionNotification = () => {
         const n_list: { [channel: string]: { [option: string]: boolean } } = data.get(
             "chat-indicator.chat-subscriptions",
             {},
         );
-        if (!(this.state.channelId in n_list)) {
-            n_list[this.state.channelId] = {};
+        if (!(channelId in n_list)) {
+            n_list[channelId] = {};
         }
-        if (this.state.notify_mentioned) {
-            n_list[this.state.channelId].mentioned = false;
+        if (notify_mentioned) {
+            n_list[channelId].mentioned = false;
         } else {
-            n_list[this.state.channelId].mentioned = true;
+            n_list[channelId].mentioned = true;
         }
         data.set("chat-indicator.chat-subscriptions", n_list);
     };
 
-    render() {
-        const tournament_text = pgettext(
-            "Go to the main page for this tournament.",
-            "Tournament Page",
-        );
-        const leave_text = pgettext("Leave the selected channel.", "Leave channel");
+    const tournament_text = pgettext("Go to the main page for this tournament.", "Tournament Page");
+    const leave_text = pgettext("Leave the selected channel.", "Leave channel");
 
-        const group_url =
-            (this.state.channelId.startsWith("group-") || null) &&
-            "/group/" + this.state.channelId.slice(6);
+    const group_url = (channelId.startsWith("group-") || null) && "/group/" + channelId.slice(6);
 
-        return (
-            <div className="ChatDetails">
-                <div className="actions">
-                    {group_url && (
-                        <div className="fakelink view-group" onClick={this.goToGroup}>
-                            {pgettext("Generic link text to go to a group page", "View group")}
-                        </div>
-                    )}
-                    {this.state.channelId.startsWith("tournament") && (
-                        <button
-                            className="xs noshadow"
-                            onAuxClick={this.goToTournament}
-                            onClick={this.goToTournament}
-                        >
-                            <i className="fa fa-trophy" /> {tournament_text}
-                        </button>
-                    )}
-                    <hr />
-                    {this.state.subscribable && (
+    return (
+        <div className="ChatDetails">
+            <div className="actions">
+                {group_url && (
+                    <div className="fakelink view-group" onClick={goToGroup}>
+                        {pgettext("Generic link text to go to a group page", "View group")}
+                    </div>
+                )}
+                {channelId.startsWith("tournament") && (
+                    <button
+                        className="xs noshadow"
+                        onAuxClick={goToTournament}
+                        onClick={goToTournament}
+                    >
+                        <i className="fa fa-trophy" /> {tournament_text}
+                    </button>
+                )}
+                <hr />
+                {subscribable && (
+                    <div>
                         <div>
                             <input
                                 type="checkbox"
                                 id="notify_mentioned"
-                                checked={this.state.notify_mentioned}
-                                onChange={this.toggleMentionNotification}
+                                checked={notify_mentioned}
+                                onChange={toggleMentionNotification}
                             />
                             <label htmlFor="notify_mentioned">
                                 {pgettext(
@@ -178,31 +162,28 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, Chat
                                 )}
                             </label>
                         </div>
-                    )}
-                    {this.state.subscribable && (
-                        <div>
-                            <input
-                                type="checkbox"
-                                id="notify_unread"
-                                checked={this.state.notify_unread}
-                                onChange={this.toggleNewMessageNotification}
-                            />
-                            <label htmlFor="notify_unread">
-                                {pgettext(
-                                    "Don't notify on unread messages in a chat channel",
-                                    "Highlight on unread messages",
-                                )}
-                            </label>
-                        </div>
-                    )}
-                    <hr />
-                    {this.props.partFunc ? (
-                        <button className="xs noshadow reject" onClick={this.leave}>
-                            <i className="fa fa-times" /> {leave_text}
-                        </button>
-                    ) : null}
-                </div>
+
+                        <input
+                            type="checkbox"
+                            id="notify_unread"
+                            checked={notify_unread}
+                            onChange={toggleNewMessageNotification}
+                        />
+                        <label htmlFor="notify_unread">
+                            {pgettext(
+                                "Don't notify on unread messages in a chat channel",
+                                "Highlight on unread messages",
+                            )}
+                        </label>
+                    </div>
+                )}
+                <hr />
+                {props.partFunc ? (
+                    <button className="xs noshadow reject" onClick={leave}>
+                        <i className="fa fa-times" /> {leave_text}
+                    </button>
+                ) : null}
             </div>
-        );
-    }
+        </div>
+    );
 }
