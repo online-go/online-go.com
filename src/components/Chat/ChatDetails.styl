@@ -22,21 +22,25 @@
     themed background-color shade4
     themed border-color shade3
     themed color fg
-    max-width: 130px;
     padding: 0.1rem;
 
     .actions {
         margin-top: 0.1rem;
-        display: flex;
-        flex-wrap: wrap;
+        display: inline-flex;
+        flex-direction: column;
         justify-content: space-between;
 
         > button {
-            min-width: 98%;
-            text-align: left;
+            min-width: 15rem;
+            text-align: center;
+            font-size: 0.8rem;
             .fa, .ogs-goban {
                 padding-right: 0.1rem;
             }
+        }
+
+        .view-group {
+            text-align: right;
         }
     }
 }

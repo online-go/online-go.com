@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { browserHistory } from "ogsHistory";
-import { _, pgettext } from "translate";
+import { pgettext } from "translate";
 import { shouldOpenNewTab } from "misc";
 import { close_all_popovers } from "popover";
 import { close_friend_list } from "FriendList/close_friend_list";
@@ -135,24 +135,23 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, Chat
     };
 
     render() {
-        const group_text = pgettext("Go to the main page for this group.", "Group Page");
         const tournament_text = pgettext(
             "Go to the main page for this tournament.",
             "Tournament Page",
         );
-        const leave_text = pgettext("Leave the selected channel.", "Leave Channel");
+        const leave_text = pgettext("Leave the selected channel.", "Leave channel");
+
+        const group_url =
+            (this.state.channelId.startsWith("group-") || null) &&
+            "/group/" + this.state.channelId.slice(6);
 
         return (
             <div className="ChatDetails">
                 <div className="actions">
-                    {this.state.channelId.startsWith("group") && (
-                        <button
-                            className="xs noshadow"
-                            onAuxClick={this.goToGroup}
-                            onClick={this.goToGroup}
-                        >
-                            <i className="fa fa-users" /> {group_text}
-                        </button>
+                    {group_url && (
+                        <div className="fakelink view-group" onClick={this.goToGroup}>
+                            {pgettext("Generic link text to go to a group page", "View group")}
+                        </div>
                     )}
                     {this.state.channelId.startsWith("tournament") && (
                         <button
@@ -163,30 +162,40 @@ export class ChatDetails extends React.PureComponent<ChatDetailsProperties, Chat
                             <i className="fa fa-trophy" /> {tournament_text}
                         </button>
                     )}
+                    <hr />
                     {this.state.subscribable && (
-                        <button
-                            className={"xs noshadow "} // + this.state.notify_mentioned ? "active" : "inactive"}
-                            onClick={this.toggleMentionNotification}
-                        >
-                            <i className="fa fa-comment" />
-                            {" " +
-                                (this.state.notify_mentioned
-                                    ? _("unfollow mentioned")
-                                    : _("follow mentioned"))}
-                        </button>
+                        <div>
+                            <input
+                                type="checkbox"
+                                id="notify_mentioned"
+                                checked={this.state.notify_mentioned}
+                                onChange={this.toggleMentionNotification}
+                            />
+                            <label htmlFor="notify_mentioned">
+                                {pgettext(
+                                    "Don't notify on unread @user mentions in a chat channel",
+                                    "Highlight when mentioned",
+                                )}
+                            </label>
+                        </div>
                     )}
                     {this.state.subscribable && (
-                        <button
-                            className={"xs noshadow "} // + this.state.notify_unread ? "active" : "inactive"}
-                            onClick={this.toggleNewMessageNotification}
-                        >
-                            <i className="fa fa-comment" />
-                            {" " +
-                                (this.state.notify_unread
-                                    ? _("unfollow unread")
-                                    : _("follow unread"))}
-                        </button>
+                        <div>
+                            <input
+                                type="checkbox"
+                                id="notify_unread"
+                                checked={this.state.notify_unread}
+                                onChange={this.toggleNewMessageNotification}
+                            />
+                            <label htmlFor="notify_unread">
+                                {pgettext(
+                                    "Don't notify on unread messages in a chat channel",
+                                    "Highlight on unread messages",
+                                )}
+                            </label>
+                        </div>
                     )}
+                    <hr />
                     {this.props.partFunc ? (
                         <button className="xs noshadow reject" onClick={this.leave}>
                             <i className="fa fa-times" /> {leave_text}

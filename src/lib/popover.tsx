@@ -119,6 +119,7 @@ export function popover(config: PopoverConfig): PopOver {
         const rectangle = config.below.getBoundingClientRect();
         x = rectangle.left + window.scrollX;
         x = Math.min(x, bounds.x - minWidth);
+        console.log(bounds.x, x, minWidth);
 
         y = rectangle.bottom + window.scrollY;
 

@@ -283,7 +283,7 @@ function ChannelTopic({
                     />
                 ),
                 below: event.currentTarget,
-                minWidth: 130,
+                minWidth: 250,
             });
         },
         [channel, partChannel],
