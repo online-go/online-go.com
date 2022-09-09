@@ -286,7 +286,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
                 />
             ),
             below: event.currentTarget,
-            minWidth: 250,
+            minWidth: 200,
         });
     };
 

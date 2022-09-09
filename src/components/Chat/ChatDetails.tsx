@@ -16,9 +16,7 @@
  */
 
 import * as React from "react";
-import { browserHistory } from "ogsHistory";
 import { pgettext } from "translate";
-import { shouldOpenNewTab } from "misc";
 import { close_all_popovers } from "popover";
 import { close_friend_list } from "FriendList/close_friend_list";
 import * as data from "data";
@@ -65,33 +63,13 @@ export function ChatDetails(props: ChatDetailsProperties): JSX.Element {
         close_friend_list();
     };
 
-    const leave = (_ev) => {
+    const leave = () => {
         const c = channelId;
         props.partFunc(c, false, false);
         close_all_modals_and_popovers();
     };
-    const goToGroup = (ev) => {
-        close_all_modals_and_popovers();
 
-        const url: string = "/group/" + channelId.slice(6);
-        if (shouldOpenNewTab(ev)) {
-            window.open(url, "_blank");
-        } else {
-            browserHistory.push(url);
-        }
-    };
-    const goToTournament = (ev) => {
-        close_all_modals_and_popovers();
-
-        const url: string = "/tournament/" + channelId.slice(11);
-        if (shouldOpenNewTab(ev)) {
-            window.open(url, "_blank");
-        } else {
-            browserHistory.push(url);
-        }
-    };
-
-    const toggleNewMessageNotification = () => {
+    const setNotify = (level: "none" | "mentioned" | "all") => {
         const n_list: { [channel: string]: { [option: string]: boolean } } = data.get(
             "chat-indicator.chat-subscriptions",
             {},
@@ -99,82 +77,94 @@ export function ChatDetails(props: ChatDetailsProperties): JSX.Element {
         if (!(channelId in n_list)) {
             n_list[channelId] = {};
         }
-        if (notify_unread) {
+        if (level === "none") {
+            n_list[channelId].mentioned = false;
             n_list[channelId].unread = false;
-        } else {
+        } else if (level === "mentioned") {
+            n_list[channelId].mentioned = true;
+            n_list[channelId].unread = false;
+        } else if (level === "all") {
+            n_list[channelId].mentioned = true;
             n_list[channelId].unread = true;
         }
         data.set("chat-indicator.chat-subscriptions", n_list);
     };
 
-    const toggleMentionNotification = () => {
-        const n_list: { [channel: string]: { [option: string]: boolean } } = data.get(
-            "chat-indicator.chat-subscriptions",
-            {},
-        );
-        if (!(channelId in n_list)) {
-            n_list[channelId] = {};
-        }
-        if (notify_mentioned) {
-            n_list[channelId].mentioned = false;
-        } else {
-            n_list[channelId].mentioned = true;
-        }
-        data.set("chat-indicator.chat-subscriptions", n_list);
-    };
-
-    const tournament_text = pgettext("Go to the main page for this tournament.", "Tournament Page");
     const leave_text = pgettext("Leave the selected channel.", "Leave channel");
 
     const group_url = (channelId.startsWith("group-") || null) && "/group/" + channelId.slice(6);
+    const tournament_url =
+        (channelId.startsWith("tournament-") || null) && "/tournament/" + channelId.slice(11);
 
     return (
         <div className="ChatDetails">
             <div className="actions">
-                {group_url && (
-                    <div className="fakelink view-group" onClick={goToGroup}>
-                        {pgettext("Generic link text to go to a group page", "View group")}
-                    </div>
-                )}
-                {channelId.startsWith("tournament") && (
-                    <button
-                        className="xs noshadow"
-                        onAuxClick={goToTournament}
-                        onClick={goToTournament}
-                    >
-                        <i className="fa fa-trophy" /> {tournament_text}
-                    </button>
-                )}
+                <div className="details-title">
+                    <h6>
+                        <span>
+                            {pgettext(
+                                "When should a chat message cause the channel name to be highlighted",
+                                "Notification settings",
+                            )}
+                        </span>
+                        <a
+                            href={group_url || tournament_url || "#"}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            <i className="fa fa-external-link" />
+                        </a>
+                    </h6>
+                </div>
                 <hr />
                 {subscribable && (
                     <div>
-                        <div>
-                            <input
-                                type="checkbox"
-                                id="notify_mentioned"
-                                checked={notify_mentioned}
-                                onChange={toggleMentionNotification}
-                            />
-                            <label htmlFor="notify_mentioned">
+                        <div className="notify-option">
+                            <label htmlFor="notify_all">
                                 {pgettext(
-                                    "Don't notify on unread @user mentions in a chat channel",
-                                    "Highlight when mentioned",
+                                    "Notify the user when any new chats are sent to the channel",
+                                    "All messages",
                                 )}
                             </label>
+                            <input
+                                type="radio"
+                                id="notify_all"
+                                name="notify"
+                                checked={notify_unread}
+                                onChange={() => setNotify("all")}
+                            />
+                        </div>
+                        <div className="notify-option">
+                            <label htmlFor="notify_mentioned">
+                                {pgettext(
+                                    "Notify the user when any new chats are sent to the channel that include @username",
+                                    "Only @mentions",
+                                )}
+                            </label>
+                            <input
+                                type="radio"
+                                id="notify_mentioned"
+                                name="notify"
+                                checked={notify_mentioned && !notify_unread}
+                                onChange={() => setNotify("mentioned")}
+                            />
                         </div>
 
-                        <input
-                            type="checkbox"
-                            id="notify_unread"
-                            checked={notify_unread}
-                            onChange={toggleNewMessageNotification}
-                        />
-                        <label htmlFor="notify_unread">
-                            {pgettext(
-                                "Don't notify on unread messages in a chat channel",
-                                "Highlight on unread messages",
-                            )}
-                        </label>
+                        <div className="notify-option">
+                            <label htmlFor="notify_none">
+                                {pgettext(
+                                    "Don't notify the user when any chats are snet to the channel",
+                                    "Nothing",
+                                )}
+                            </label>
+                            <input
+                                type="radio"
+                                id="notify_none"
+                                name="notify"
+                                checked={!notify_unread && !notify_mentioned}
+                                onChange={() => setNotify("none")}
+                            />
+                        </div>
                     </div>
                 )}
                 <hr />
