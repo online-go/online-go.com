@@ -99,75 +99,76 @@ export function ChatDetails(props: ChatDetailsProperties): JSX.Element {
     return (
         <div className="ChatDetails">
             <div className="actions">
-                <div className="details-title">
-                    <h6>
-                        <span>
+                {Boolean(group_url) && (
+                    <a href={group_url} target="_blank" rel="noopener noreferrer">
+                        View Group <i className="fa fa-external-link" />
+                    </a>
+                )}
+                {Boolean(tournament_url) && (
+                    <a href={tournament_url} target="_blank" rel="noopener noreferrer">
+                        View Tournament <i className="fa fa-external-link" />
+                    </a>
+                )}
+                {Boolean(group_url || tournament_url) && <hr />}
+                {subscribable && (
+                    <>
+                        <h4>
                             {pgettext(
                                 "When should a chat message cause the channel name to be highlighted",
-                                "Notification settings",
+                                "Notification Settings",
                             )}
-                        </span>
-                        <a
-                            href={group_url || tournament_url || "#"}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            <i className="fa fa-external-link" />
-                        </a>
-                    </h6>
-                </div>
-                <hr />
-                {subscribable && (
-                    <div>
-                        <div className="notify-option">
-                            <label htmlFor="notify_all">
-                                {pgettext(
-                                    "Notify the user when any new chats are sent to the channel",
-                                    "All messages",
-                                )}
-                            </label>
-                            <input
-                                type="radio"
-                                id="notify_all"
-                                name="notify"
-                                checked={notify_unread}
-                                onChange={() => setNotify("all")}
-                            />
-                        </div>
-                        <div className="notify-option">
-                            <label htmlFor="notify_mentioned">
-                                {pgettext(
-                                    "Notify the user when any new chats are sent to the channel that include @username",
-                                    "Only @mentions",
-                                )}
-                            </label>
-                            <input
-                                type="radio"
-                                id="notify_mentioned"
-                                name="notify"
-                                checked={notify_mentioned && !notify_unread}
-                                onChange={() => setNotify("mentioned")}
-                            />
-                        </div>
+                        </h4>
+                        <div>
+                            <div className="notify-option">
+                                <label htmlFor="notify_all">
+                                    {pgettext(
+                                        "Notify the user when any new chats are sent to the channel",
+                                        "All messages",
+                                    )}
+                                </label>
+                                <input
+                                    type="radio"
+                                    id="notify_all"
+                                    name="notify"
+                                    checked={notify_unread}
+                                    onChange={() => setNotify("all")}
+                                />
+                            </div>
+                            <div className="notify-option">
+                                <label htmlFor="notify_mentioned">
+                                    {pgettext(
+                                        "Notify the user when any new chats are sent to the channel that include @username",
+                                        "Only @mentions",
+                                    )}
+                                </label>
+                                <input
+                                    type="radio"
+                                    id="notify_mentioned"
+                                    name="notify"
+                                    checked={notify_mentioned && !notify_unread}
+                                    onChange={() => setNotify("mentioned")}
+                                />
+                            </div>
 
-                        <div className="notify-option">
-                            <label htmlFor="notify_none">
-                                {pgettext(
-                                    "Don't notify the user when any chats are snet to the channel",
-                                    "Nothing",
-                                )}
-                            </label>
-                            <input
-                                type="radio"
-                                id="notify_none"
-                                name="notify"
-                                checked={!notify_unread && !notify_mentioned}
-                                onChange={() => setNotify("none")}
-                            />
+                            <div className="notify-option">
+                                <label htmlFor="notify_none">
+                                    {pgettext(
+                                        "Don't notify the user when any chats are snet to the channel",
+                                        "Nothing",
+                                    )}
+                                </label>
+                                <input
+                                    type="radio"
+                                    id="notify_none"
+                                    name="notify"
+                                    checked={!notify_unread && !notify_mentioned}
+                                    onChange={() => setNotify("none")}
+                                />
+                            </div>
                         </div>
-                    </div>
+                        <hr />
+                    </>
                 )}
-                <hr />
                 {props.partFunc ? (
                     <button className="xs noshadow reject" onClick={leave}>
                         <i className="fa fa-times" /> {leave_text}
