@@ -99,24 +99,20 @@ export function ChatDetails(props: ChatDetailsProperties): JSX.Element {
     return (
         <div className="ChatDetails">
             <div className="actions">
-                <div className="details-title">
-                    <h6>
-                        <span>
-                            {pgettext(
-                                "When should a chat message cause the channel name to be highlighted",
-                                "Notification settings",
-                            )}
-                        </span>
-                        <a
-                            href={group_url || tournament_url || "#"}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            <i className="fa fa-external-link" />
-                        </a>
-                    </h6>
-                </div>
+                <a
+                    href={group_url || tournament_url || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    View Group <i className="fa fa-external-link" />
+                </a>
                 <hr />
+                <h4>
+                    {pgettext(
+                        "When should a chat message cause the channel name to be highlighted",
+                        "Notification Settings",
+                    )}
+                </h4>
                 {subscribable && (
                     <div>
                         <div className="notify-option">
