@@ -569,6 +569,9 @@ interface ReviewComment {
 let orig_move: MoveTree = null;
 let stashed_pen_marks = null; //goban.pen_marks;
 let orig_marks: unknown[] = null;
+// We want to style chat variations that are selected via URL (?var_id=...) differently
+// than variations that are just selected via click
+let at_least_one_variation_clicked = false;
 
 function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
     const body = line.body;
@@ -636,9 +639,14 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
         try {
             switch (body.type) {
                 case "analysis": {
+                    const selected_class =
+                        !at_least_one_variation_clicked && is_variation_selected_in_url
+                            ? " url-selected"
+                            : "";
+
                     if (!preferences.get("variations-in-chat-enabled")) {
                         return (
-                            <span>
+                            <span className={selected_class}>
                                 {_("Variation") +
                                     ": " +
                                     (body.name ? profanity_filter(body.name) : "<error>")}
@@ -665,11 +673,12 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                     const onClick = () => {
                         setVariation(goban, body);
                         setSearchParams([["var_id", line.chat_id]]);
+                        at_least_one_variation_clicked = true;
                     };
 
                     return (
                         <span
-                            className="variation"
+                            className={"variation" + selected_class}
                             onMouseEnter={onEnter}
                             onMouseLeave={onLeave}
                             onClick={onClick}
