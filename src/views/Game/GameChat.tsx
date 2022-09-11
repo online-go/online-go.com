@@ -573,47 +573,22 @@ let orig_marks: unknown[] = null;
 function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
     const body = line.body;
     const goban = useGoban();
-    const [search_params, setSearchParams] = useSearchParams();
 
-    const is_selected_in_url = React.useMemo(() => {
-        for (const [key, value] of search_params) {
-            if (key === "var_id" && value === line.chat_id) {
-                return true;
-            }
-        }
-        return false;
-    }, [search_params]);
+    const [search_params, setSearchParams] = useSearchParams();
+    const is_selected_in_url = line.chat_id === search_params.get("var_id");
 
     React.useEffect(() => {
-        if (is_selected_in_url && typeof line.body !== "string" && line.body.type === "analysis") {
-            console.log("hello");
-            const body = line.body;
-            const setVariation = () => {
-                leaveVariation(goban);
-                goban.setMode("analyze");
-                enterVariation(goban, body, () => leaveVariation(goban));
-                game_control.in_pushed_analysis = false;
-                goban.updateTitleAndStonePlacement();
-                goban.syncReviewMove();
-                goban.redraw();
+        if (is_selected_in_url && isAnalysisComment(body)) {
+            const onLoad = () => {
+                setVariation(goban, body);
             };
-            goban.on("load", setVariation);
+            onLoad();
+            goban.on("load", onLoad);
             return () => {
-                goban.off("load", setVariation);
+                goban.off("load", onLoad);
             };
         }
-    }, [is_selected_in_url]);
-
-    if (is_selected_in_url && typeof line.body !== "string" && line.body.type === "analysis") {
-        console.log("hello");
-        leaveVariation(goban);
-        goban.setMode("analyze");
-        enterVariation(goban, line.body, () => leaveVariation(goban));
-        game_control.in_pushed_analysis = false;
-        goban.updateTitleAndStonePlacement();
-        goban.syncReviewMove();
-        goban.redraw();
-    }
+    }, [goban, is_selected_in_url]);
 
     const highlight_position = (event: React.MouseEvent<HTMLSpanElement>) => {
         const pos = parsePosition((event.target as HTMLSpanElement).innerText, goban);
@@ -684,17 +659,11 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                     };
 
                     const onEnter = () => {
-                        enterVariation(goban, body, onLeave);
+                        enterVariation(goban, body);
                     };
 
                     const onClick = () => {
-                        onLeave();
-                        goban.setMode("analyze");
-                        onEnter();
-                        game_control.in_pushed_analysis = false;
-                        goban.updateTitleAndStonePlacement();
-                        goban.syncReviewMove();
-                        goban.redraw();
+                        setVariation(goban, body);
                         setSearchParams([["var_id", line.chat_id]]);
                     };
 
@@ -808,9 +777,9 @@ function leaveVariation(goban: GobanCore) {
     }
 }
 
-function enterVariation(goban: GobanCore, body: AnalysisComment, onLeave: () => void) {
+function enterVariation(goban: GobanCore, body: AnalysisComment) {
     game_control.in_pushed_analysis = true;
-    game_control.onPushAnalysisLeft = onLeave;
+    game_control.onPushAnalysisLeft = () => leaveVariation(goban);
 
     const turn =
         "branch_move" in body
@@ -838,4 +807,20 @@ function enterVariation(goban: GobanCore, body: AnalysisComment, onLeave: () => 
     }
 
     goban.redraw();
+}
+
+function setVariation(goban: GobanCore, body: AnalysisComment) {
+    leaveVariation(goban);
+    goban.setMode("analyze");
+    enterVariation(goban, body);
+    game_control.in_pushed_analysis = false;
+    goban.updateTitleAndStonePlacement();
+    goban.syncReviewMove();
+    goban.redraw();
+}
+
+function isAnalysisComment(
+    body: string | ReviewComment | AnalysisComment,
+): body is AnalysisComment {
+    return typeof body !== "string" && body.type === "analysis";
 }
