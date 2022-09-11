@@ -575,10 +575,10 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
     const goban = useGoban();
 
     const [search_params, setSearchParams] = useSearchParams();
-    const is_selected_in_url = line.chat_id === search_params.get("var_id");
+    const is_variation_selected_in_url = line.chat_id === search_params.get("var_id");
 
     React.useEffect(() => {
-        if (is_selected_in_url && isAnalysisComment(body)) {
+        if (is_variation_selected_in_url && isAnalysisComment(body)) {
             const onLoad = () => {
                 setVariation(goban, body);
             };
@@ -588,7 +588,7 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                 goban.off("load", onLoad);
             };
         }
-    }, [goban, is_selected_in_url]);
+    }, [goban, is_variation_selected_in_url]);
 
     const highlight_position = (event: React.MouseEvent<HTMLSpanElement>) => {
         const pos = parsePosition((event.target as HTMLSpanElement).innerText, goban);
