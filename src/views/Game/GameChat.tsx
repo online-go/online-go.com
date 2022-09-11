@@ -20,7 +20,7 @@ import * as preferences from "preferences";
 import * as React from "react";
 import * as moment from "moment";
 import { LineText } from "misc-ui";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { _, pgettext, interpolate } from "translate";
 import { Player } from "Player";
 import { profanity_filter } from "profanity_filter";
@@ -573,6 +573,47 @@ let orig_marks: unknown[] = null;
 function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
     const body = line.body;
     const goban = useGoban();
+    const [search_params, setSearchParams] = useSearchParams();
+
+    const is_selected_in_url = React.useMemo(() => {
+        for (const [key, value] of search_params) {
+            if (key === "var_id" && value === line.chat_id) {
+                return true;
+            }
+        }
+        return false;
+    }, [search_params]);
+
+    React.useEffect(() => {
+        if (is_selected_in_url && typeof line.body !== "string" && line.body.type === "analysis") {
+            console.log("hello");
+            const body = line.body;
+            const setVariation = () => {
+                leaveVariation(goban);
+                goban.setMode("analyze");
+                enterVariation(goban, body, () => leaveVariation(goban));
+                game_control.in_pushed_analysis = false;
+                goban.updateTitleAndStonePlacement();
+                goban.syncReviewMove();
+                goban.redraw();
+            };
+            goban.on("load", setVariation);
+            return () => {
+                goban.off("load", setVariation);
+            };
+        }
+    }, [is_selected_in_url]);
+
+    if (is_selected_in_url && typeof line.body !== "string" && line.body.type === "analysis") {
+        console.log("hello");
+        leaveVariation(goban);
+        goban.setMode("analyze");
+        enterVariation(goban, line.body, () => leaveVariation(goban));
+        game_control.in_pushed_analysis = false;
+        goban.updateTitleAndStonePlacement();
+        goban.syncReviewMove();
+        goban.redraw();
+    }
 
     const highlight_position = (event: React.MouseEvent<HTMLSpanElement>) => {
         const pos = parsePosition((event.target as HTMLSpanElement).innerText, goban);
@@ -639,49 +680,11 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                     }
 
                     const onLeave = () => {
-                        if (game_control.in_pushed_analysis) {
-                            game_control.in_pushed_analysis = false;
-                            delete game_control.onPushAnalysisLeft;
-                            goban.engine.jumpTo(orig_move);
-                            (orig_move as any).marks = orig_marks;
-                            goban.pen_marks = stashed_pen_marks;
-                            if (goban.pen_marks.length === 0) {
-                                goban.disablePen();
-                            }
-                            goban.redraw();
-                        }
+                        leaveVariation(goban);
                     };
 
                     const onEnter = () => {
-                        game_control.in_pushed_analysis = true;
-                        game_control.onPushAnalysisLeft = onLeave;
-
-                        const turn =
-                            "branch_move" in body
-                                ? body.branch_move - 1
-                                : body.from; /* branch_move exists in old games, and was +1 from our current counting */
-                        const moves = body.moves;
-
-                        orig_move = goban.engine.cur_move;
-                        if (orig_move) {
-                            orig_marks = (orig_move as any).marks;
-                            orig_move.clearMarks();
-                        } else {
-                            orig_marks = null;
-                        }
-                        goban.engine.followPath(parseInt(turn as any), moves);
-
-                        if (body.marks) {
-                            goban.setMarks(body.marks);
-                        }
-                        stashed_pen_marks = goban.pen_marks;
-                        if (body.pen_marks) {
-                            goban.pen_marks = [].concat(body.pen_marks);
-                        } else {
-                            goban.pen_marks = [];
-                        }
-
-                        goban.redraw();
+                        enterVariation(goban, body, onLeave);
                     };
 
                     const onClick = () => {
@@ -692,6 +695,7 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
                         goban.updateTitleAndStonePlacement();
                         goban.syncReviewMove();
                         goban.redraw();
+                        setSearchParams([["var_id", line.chat_id]]);
                     };
 
                     return (
@@ -788,4 +792,50 @@ function ChatLogToggleButton(props: ChatLogToggleButtonProperties): JSX.Element 
             />
         </button>
     );
+}
+
+function leaveVariation(goban: GobanCore) {
+    if (game_control.in_pushed_analysis) {
+        game_control.in_pushed_analysis = false;
+        delete game_control.onPushAnalysisLeft;
+        goban.engine.jumpTo(orig_move);
+        (orig_move as any).marks = orig_marks;
+        goban.pen_marks = stashed_pen_marks;
+        if (goban.pen_marks.length === 0) {
+            goban.disablePen();
+        }
+        goban.redraw();
+    }
+}
+
+function enterVariation(goban: GobanCore, body: AnalysisComment, onLeave: () => void) {
+    game_control.in_pushed_analysis = true;
+    game_control.onPushAnalysisLeft = onLeave;
+
+    const turn =
+        "branch_move" in body
+            ? body.branch_move - 1
+            : body.from; /* branch_move exists in old games, and was +1 from our current counting */
+    const moves = body.moves;
+
+    orig_move = goban.engine.cur_move;
+    if (orig_move) {
+        orig_marks = (orig_move as any).marks;
+        orig_move.clearMarks();
+    } else {
+        orig_marks = null;
+    }
+    goban.engine.followPath(parseInt(turn as any), moves);
+
+    if (body.marks) {
+        goban.setMarks(body.marks);
+    }
+    stashed_pen_marks = goban.pen_marks;
+    if (body.pen_marks) {
+        goban.pen_marks = [].concat(body.pen_marks);
+    } else {
+        goban.pen_marks = [];
+    }
+
+    goban.redraw();
 }
