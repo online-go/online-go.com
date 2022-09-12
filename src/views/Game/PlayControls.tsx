@@ -248,6 +248,8 @@ export function PlayControls({
     const user_is_player = useUserIsParticipant(goban);
     const cur_move_number = useCurrentMoveNumber(goban);
 
+    const goban_setModeDeferredPlay = useSetModeDeferredPlay(goban);
+
     return (
         <div className="play-controls">
             <div className="game-action-buttons">
@@ -522,13 +524,7 @@ export function PlayControls({
                 null) && (
                 <div className="analyze-mode-buttons">
                     <span>
-                        <button
-                            className="sm primary bold"
-                            onClick={() => {
-                                enableTouchAction();
-                                goban.setModeDeferred("play");
-                            }}
-                        >
+                        <button className="sm primary bold" onClick={goban_setModeDeferredPlay}>
                             {_("Back to Game")}
                         </button>
                     </span>
@@ -618,10 +614,7 @@ export function AnalyzeButtonBar({
         forceUpdate(Math.random());
     };
 
-    const goban_setModeDeferredPlay = () => {
-        enableTouchAction();
-        goban.setModeDeferred("play");
-    };
+    const goban_setModeDeferredPlay = useSetModeDeferredPlay(goban);
 
     const clearAnalysisDrawing = () => {
         goban.syncReviewMove({ clearpen: true });
@@ -1159,4 +1152,15 @@ function stoneRemovalAccepted(goban: Goban, color: PlayerColor) {
         return undefined;
     }
     return engine.players[color].accepted_stones === engine.getStoneRemovalString();
+}
+
+function useSetModeDeferredPlay(goban: GobanCore) {
+    const [search_params, setSearchParams] = useSearchParams();
+    return () => {
+        enableTouchAction();
+        goban.setModeDeferred("play");
+        // If we have clicked a variation, it shows up in the URL bar.  After leaving, we clear it.
+        search_params.delete("var_id");
+        setSearchParams(search_params);
+    };
 }
