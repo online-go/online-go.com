@@ -72,11 +72,12 @@ export function EXV6NavBar(): JSX.Element {
     const location = useLocation();
 
     const [search, setSearch] = React.useState<string>("");
-    const [focus, setFocus] = React.useState<boolean>(false);
+    const [search_focus, setSearchFocus] = React.useState<boolean>(false);
     const [omniMouseOver, setOmniMouseOver] = React.useState<boolean>(false);
     const [right_nav_active, setRightNavActive] = React.useState(false);
     const [notifications_active, setNotificationsActive] = React.useState(false);
     const [hamburger_expanded, setHamburgerExpanded] = React.useState(false);
+    const search_input = React.useRef<HTMLInputElement>(null);
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
 
@@ -298,24 +299,31 @@ export function EXV6NavBar(): JSX.Element {
 
             <section className="center OmniSearch-container">
                 <div className="OmniSearch-input-container">
-                    <i className="fa fa-search" />
+                    <i
+                        className="fa fa-search"
+                        onClick={() => {
+                            (search_input.current as HTMLInputElement).focus();
+                        }}
+                    />
                     <input
                         type="text"
                         className="OmniSearch-input"
+                        ref={search_input}
                         value={search}
                         autoComplete="off"
                         onChange={(ev) => setSearch(ev.target.value)}
                         onKeyUp={(ev) => {
                             if (ev.key === "Escape") {
                                 setSearch("");
+                                (ev.target as HTMLInputElement).blur();
                             }
                         }}
-                        onFocus={() => setFocus(true)}
-                        onBlur={() => setFocus(false)}
+                        onFocus={() => setSearchFocus(true)}
+                        onBlur={() => setSearchFocus(false)}
                         placeholder={_("Search")}
                     />
                 </div>
-                {(focus || omniMouseOver || null) && (
+                {(search_focus || omniMouseOver || null) && (
                     <OmniSearch
                         search={search}
                         onMouseOver={() => setOmniMouseOver(true)}
@@ -324,7 +332,7 @@ export function EXV6NavBar(): JSX.Element {
                 )}
             </section>
 
-            <section className="right">
+            <section className={`right ${search_focus ? "search-focused" : ""}`}>
                 {user.anonymous ? (
                     <>
                         <i className="fa fa-adjust" onClick={toggleTheme} />

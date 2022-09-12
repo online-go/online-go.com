@@ -110,10 +110,10 @@ header.NavBar {
         }
     }
 
-    @media only screen and (max-width: 400px) {
+    @media only screen and (max-width: 600px) {
         .FriendIndicator, .IncidentReportIndicator, .TournamentIndicator, .TurnIndicator, .NotificationIndicator, .ChatIndicator {
-            padding-left: 0.4rem !important;
-            padding-right: 0.4rem !important;
+            padding-left: 0.3rem !important;
+            padding-right: 0.3rem !important;
         }
     }
 
@@ -141,17 +141,42 @@ header.NavBar {
                 display: none;
             }
         }
+        .ogs-nav-logo {
+            height: 1.5rem;
+            width: 4.0rem !important;
+            margin-right: 0 !important;
+        }
         .OmniSearch-container {
-            display: none !important;
+            //display: none !important;
+            display: inline-flex !important;
+            min-width: 2.0rem;
+            &:focus-within {
+                width: calc(100vw - 5rem) !important;
+                //min-width: calc(100vw - 10rem) !important;
+                max-width: auto;
+                margin-right: 0.5rem;
+                .OmniSearch-input-container {
+                    max-width: 100%;
+                }
+            }
+
+            .fa-search {
+                font-size: 1.2rem;
+            }
         }
         .right {
             flex: 0rem;
+            &.search-focused {
+                display: none;
+                @media only screen {
+                    display: inline-flex;
+                }
+            }
         }
         .center {
             flex: 0rem;
         }
         .TurnIndicator {
-            padding-left: 0 !important;
             flex-basis: 2rem;
         }
         .TournamentIndicator.hidden-on-mobile {
@@ -229,6 +254,14 @@ header.NavBar {
                     themed-important background-color navbar-background-color
                     padding-left: 2rem;
                 }
+            }
+        }
+    }
+
+    @media only screen and (min-width: 528px) {
+        .right {
+            &.search-focused {
+                display: inline-flex !important;
             }
         }
     }
@@ -534,6 +567,7 @@ header.NavBar {
         margin-right: 0.3rem;
         position: absolute;
         left: 0.2rem;
+        cursor: pointer;
     }
 
     .OmniSearch-input {
