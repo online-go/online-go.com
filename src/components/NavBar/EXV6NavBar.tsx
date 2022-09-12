@@ -21,7 +21,6 @@ import { Link, useLocation } from "react-router-dom";
 import * as DynamicHelp from "react-dynamic-help";
 
 import * as data from "data";
-import * as preferences from "preferences";
 
 import { _ } from "translate";
 import { PlayerIcon } from "PlayerIcon";
@@ -339,7 +338,7 @@ export function EXV6NavBar(): JSX.Element {
                 ) : (
                     <>
                         <TurnIndicator />
-                        {!preferences.get("hide-incident-reports") && <IncidentReportTracker />}
+                        <IncidentReportTracker />
                         <ChatIndicator />
                         <TournamentIndicator />
                         <FriendIndicator />

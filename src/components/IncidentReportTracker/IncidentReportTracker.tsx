@@ -22,6 +22,7 @@ import { socket } from "sockets";
 import { post } from "requests";
 import * as data from "data";
 import * as preferences from "preferences";
+import { usePreference } from "preferences";
 import { Player } from "Player";
 import { ignore, errorAlerter } from "misc";
 import * as moment from "moment";
@@ -77,6 +78,7 @@ export function IncidentReportTracker(): JSX.Element {
     const [show_incident_list, setShowIncidentList] = React.useState(false);
     const [reports, setReports] = React.useState<Report[]>([]);
     const [normal_ct, setNormalCt] = React.useState(0);
+    const [hide_icon] = usePreference("hide-incident-reports");
 
     React.useEffect(() => {
         const connect_fn = () => {
@@ -276,6 +278,10 @@ export function IncidentReportTracker(): JSX.Element {
             report.moderator === null ||
             report.moderator.id === user.id,
     );
+
+    if (hide_icon) {
+        return null;
+    }
 
     return (
         <>

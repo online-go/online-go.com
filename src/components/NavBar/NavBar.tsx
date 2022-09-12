@@ -39,7 +39,6 @@ import { TournamentIndicator } from "Announcements";
 import { FriendIndicator } from "FriendList";
 import { Player } from "Player";
 import * as player_cache from "player_cache";
-import * as preferences from "preferences";
 import { ChatIndicator } from "Chat";
 import { logout } from "auth";
 import { Experiment, Variant, Default } from "Experiment";
@@ -293,7 +292,7 @@ function OldNavBar(): JSX.Element {
                 </section>
             ) : (
                 <section className="right">
-                    {!preferences.get("hide-incident-reports") && <IncidentReportTracker />}
+                    <IncidentReportTracker />
                     <TournamentIndicator />
                     <ChatIndicator />
                     <FriendIndicator />
