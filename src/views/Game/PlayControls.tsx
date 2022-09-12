@@ -1161,6 +1161,6 @@ function useSetModeDeferredPlay(goban: GobanCore) {
         goban.setModeDeferred("play");
         // If we have clicked a variation, it shows up in the URL bar.  After leaving, we clear it.
         search_params.delete("var_id");
-        setSearchParams(search_params);
+        setSearchParams(search_params, { replace: true });
     };
 }
