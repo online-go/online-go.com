@@ -294,7 +294,7 @@ function OldNavBar(): JSX.Element {
             ) : (
                 <section className="right">
                     {!preferences.get("hide-incident-reports") && <IncidentReportTracker />}
-                    {preferences.get("show-tournament-indicator") && <TournamentIndicator />}
+                    <TournamentIndicator />
                     <ChatIndicator />
                     <FriendIndicator />
                     <TurnIndicator />

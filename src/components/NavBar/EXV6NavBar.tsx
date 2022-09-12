@@ -341,7 +341,7 @@ export function EXV6NavBar(): JSX.Element {
                         <TurnIndicator />
                         {!preferences.get("hide-incident-reports") && <IncidentReportTracker />}
                         <ChatIndicator />
-                        {preferences.get("show-tournament-indicator") && <TournamentIndicator />}
+                        <TournamentIndicator />
                         <FriendIndicator />
                         <NotificationIndicator onClick={toggleNotifications} />
                         <span

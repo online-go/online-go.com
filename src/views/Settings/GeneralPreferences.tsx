@@ -54,6 +54,9 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
     const [show_tournament_indicator, setShowTournamentIndicator] = usePreference(
         "show-tournament-indicator",
     );
+    const [show_tournament_indicator_on_mobile, setShowTournamentIndicatorOnMobile] = usePreference(
+        "show-tournament-indicator-on-mobile",
+    );
     const [hide_ranks, setHideRanks] = usePreference("hide-ranks");
     const [rating_graph_always_use, setAlwaysUse] = usePreference("rating-graph-always-use");
     const [rating_graph_plot_by_games, setPlotByGames] = usePreference(
@@ -181,7 +184,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
 
     // Render...
     return (
-        <div>
+        <div className="GeneralPreferences">
             <PreferenceLine title={_("Language")}>
                 <PreferenceDropdown
                     value={current_language}
@@ -259,7 +262,13 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
             )}
 
             <PreferenceLine title={_("Show tournament indicator")}>
+                <i className="fa fa-desktop" />{" "}
                 <Toggle checked={show_tournament_indicator} onChange={setShowTournamentIndicator} />
+                <i className="fa fa-mobile" />{" "}
+                <Toggle
+                    checked={show_tournament_indicator_on_mobile}
+                    onChange={setShowTournamentIndicatorOnMobile}
+                />
             </PreferenceLine>
 
             <PreferenceLine title={_("Hide ranks and ratings")}>

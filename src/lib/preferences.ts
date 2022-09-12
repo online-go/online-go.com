@@ -79,7 +79,8 @@ export const defaults = {
     "show-offline-friends": true,
     "show-ratings-in-rating-grid": false,
 
-    "show-tournament-indicator": true,
+    "show-tournament-indicator": true, // implicitly on desktop
+    "show-tournament-indicator-on-mobile": false,
     "show-variation-move-numbers": false,
 
     "sound-voice-countdown-main": false,
