@@ -245,12 +245,15 @@ export function usePreference<KeyT extends ValidPreference>(
         set(key, v);
     };
 
-    // TODO: maybe add a watcher here for if a different component updates the value?
-    // Something like...
-    //
-    // React.useEffect(() => {
-    //     watch(key, stateSetter);
-    // }
+    React.useEffect(() => {
+        const cb = (v: PreferencesType[KeyT]) => {
+            stateSetter(v);
+        };
+        watch(key, cb);
+        return () => {
+            unwatch(key, cb);
+        };
+    }, [key]);
 
     return [value, setStateAndPreference];
 }
