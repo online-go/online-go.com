@@ -672,7 +672,7 @@ function MarkupChatLine({ line }: { line: ChatLine }): JSX.Element {
 
                     const onClick = () => {
                         setVariation(goban, body);
-                        setSearchParams([["var_id", line.chat_id]]);
+                        setSearchParams([["var_id", line.chat_id]], { replace: true });
                         at_least_one_variation_clicked = true;
                     };
 
