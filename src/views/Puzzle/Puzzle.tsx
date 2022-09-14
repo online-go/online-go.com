@@ -1062,6 +1062,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                                         <option value={9}>{_("9x9")}</option>
                                         <option value={7}>{_("7x7")}</option>
                                         <option value={5}>{_("5x5")}</option>
+                                        <option value={4}>{_("4x4")}</option>
                                     </select>
 
                                     <select
