@@ -152,8 +152,12 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): JSX.Eleme
                     <button
                         className="sm primary bold submit-button"
                         id="game-submit-move"
-                        disabled={submitting_move}
-                        onClick={() => goban.submit_move()}
+                        disabled={submitting_move || !goban.submit_move}
+                        onClick={() => {
+                            if (goban.submit_move) {
+                                goban.submit_move();
+                            }
+                        }}
                     >
                         {_("Submit Move")}
                     </button>
