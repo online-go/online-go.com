@@ -59,16 +59,7 @@ try {
         dsn: "https://f8e3b8de571e412b98ff8f98e12c7f58@o589780.ingest.sentry.io/5750726",
         autoSessionTracking: false,
         release: ogs_version || "dev",
-        whitelistUrls: [
-            "online-go.com",
-            "online-baduk.com",
-            "online-weiqi.com",
-            "online-covay.com",
-            "online-igo.com",
-            "cdn.online-go.com",
-            "beta.online-go.com",
-            "dev.beta.online-go.com",
-        ],
+        allowUrls: ["online-go.com", "kidsgoserver.com", "beta.online-go.com", "baduk.com"],
         environment: sentry_env,
         integrations: [
             new Sentry.Integrations.GlobalHandlers({

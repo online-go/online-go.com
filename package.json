@@ -80,7 +80,7 @@
     "dependencies": {
         "@dnd-kit/core": "^6.0.3",
         "@dnd-kit/sortable": "^7.0.0",
-        "@sentry/browser": "^6.16.1",
+        "@sentry/browser": "^7.13.0",
         "@types/d3": "^5.7.2",
         "@types/howler": "^2.2.2",
         "@types/jquery": "^2.0.34",
