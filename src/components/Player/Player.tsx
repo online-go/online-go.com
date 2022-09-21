@@ -81,7 +81,7 @@ export function Player(props: PlayerProperties): JSX.Element {
     //const navigate = useNavigate();
 
     const [is_online, set_is_online] = React.useState<boolean>(false);
-    const [player, set_player] = React.useState<PlayerObjectType>(
+    const [player, set_player] = React.useState<PlayerObjectType | null>(
         typeof props.user === "object" ? props.user : null,
     );
     const [has_notes, set_has_notes] = React.useState<boolean>(
@@ -181,10 +181,14 @@ export function Player(props: PlayerProperties): JSX.Element {
     }, [player_id, typeof props.user === "object" && props.user.username]);
 
     const display_details = (event: React.MouseEvent) => {
+        if (!player) {
+            return;
+        }
+
         if (
             props.nolink ||
-            !(player.id || player.player_id) ||
             player.anonymous ||
+            !(player.id || player.player_id) ||
             (player.id || player.player_id) < 0
         ) {
             return;
