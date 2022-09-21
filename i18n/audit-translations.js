@@ -92,11 +92,13 @@ function main() {
                     //exit_code = 1;
                 } else if (missing > 0) {
                     console.log(`MISSING ${lang}: ${missing} missing`);
+                    /*
                     if (missing < 10) {
                         for (let str of missing_strings) {
                             console.log(`    ${str}`);
                         }
                     }
+                    */
                 } else {
                     console.log(`GOOD ${lang}`);
                 }
