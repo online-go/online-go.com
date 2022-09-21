@@ -56,11 +56,15 @@ export function Clock({
         };
     });
 
-    if (!clock || !goban) {
+    if (!clock || !goban || !goban?.engine?.time_control) {
         return null;
     }
 
-    const time_control: JGOFTimeControl = goban.engine.time_control;
+    const time_control: JGOFTimeControl = goban?.engine?.time_control;
+
+    if (!time_control) {
+        return null;
+    }
 
     if (color === "stone-removal") {
         return <span> ({prettyTime(clock.stone_removal_time_left)})</span>;
