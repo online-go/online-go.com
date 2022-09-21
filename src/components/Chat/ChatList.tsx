@@ -219,7 +219,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
     };
 
     goToChannel = (ev) => {
-        setActiveChannel($(ev.target).attr("data-channel"));
+        setActiveChannel(ev.currentTarget.getAttribute("data-channel"));
         if (ev && shouldOpenNewTab(ev)) {
             window.open("/chat");
         } else {
@@ -437,7 +437,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
                                     ? "channel active"
                                     : "channel") + chan_class("tournament-" + chan.id)
                             }
-                            data-channel={"tournaments-" + chan.id}
+                            data-channel={"tournament-" + chan.id}
                             onClick={this.goToChannel}
                         >
                             <span className="channel-name" data-channel={"tournament-" + chan.id}>
