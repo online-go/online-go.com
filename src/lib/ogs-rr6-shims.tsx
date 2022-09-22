@@ -21,6 +21,7 @@
 import React from "react";
 import { useLocation, useParams } from "react-router-dom";
 
+declare const globalThis: any;
 // Types derived heavily from @types/react-router-dom, with some fields we don't use eliminated
 
 export interface StaticContext {
