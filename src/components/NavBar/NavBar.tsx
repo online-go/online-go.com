@@ -223,7 +223,7 @@ function OldNavBar(): JSX.Element {
     const valid_user = user.anonymous ? null : user;
     const anon = user.anonymous;
 
-    const show_debug = data.get("user").is_superuser;
+    const show_debug = data.get("user")?.is_superuser;
     const debug = data.get("debug", false);
 
     let omnisearch_searching = false;
