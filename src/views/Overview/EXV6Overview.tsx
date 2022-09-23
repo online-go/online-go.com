@@ -53,7 +53,7 @@ interface OverviewState {
 export class EXV6Overview extends React.Component<{}, OverviewState> {
     private static defaultTitle = "OGS";
 
-    static contextType: ReturnType<typeof React.createContext> = DynamicHelp.Api;
+    static contextType: React.Context<DynamicHelp.AppApi> = DynamicHelp.Api;
     declare context: React.ContextType<typeof DynamicHelp.Api>;
 
     constructor(props: {}) {

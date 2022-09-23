@@ -74,7 +74,7 @@ export class Play extends React.Component<{}, PlayState> {
     seekgraph: SeekGraph;
     resize_check_interval;
 
-    static contextType: ReturnType<typeof React.createContext> = DynamicHelp.Api;
+    static contextType: React.Context<DynamicHelp.AppApi> = DynamicHelp.Api;
     declare context: React.ContextType<typeof DynamicHelp.Api>;
 
     private list_freeze_timeout;
