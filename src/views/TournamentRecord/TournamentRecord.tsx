@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import { _ } from "translate";
+import { useParams } from "react-router-dom";
 import { abort_requests_in_flight, del, put, post, get } from "requests";
 import { Markdown } from "Markdown";
 import { PaginatedTable, PaginatedTableRef } from "PaginatedTable";
@@ -24,14 +25,11 @@ import { Player } from "Player";
 import { ignore, errorAlerter, dup } from "misc";
 import { rankString, allRanks } from "rank_utils";
 import { createDemoBoard } from "ChallengeModal";
-import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
 
 window["dup"] = dup;
 
 import { alert } from "swal_config";
 const ranks = allRanks();
-
-type TournamentRecordProperties = RouteComponentProps<{ tournament_record_id: string }>;
 
 interface Round {
     updated: boolean;
@@ -55,73 +53,84 @@ interface TournamentRecordState {
     editable_by_current_user?: boolean;
 }
 
-class _TournamentRecord extends React.PureComponent<
-    TournamentRecordProperties,
-    TournamentRecordState
-> {
-    loaded_state: any = {};
-    player_table_ref = React.createRef<PaginatedTableRef>();
+export function TournamentRecord(): JSX.Element {
+    const params = useParams<"tournament_record_id">();
+    const tournament_record_id = parseInt(params.tournament_record_id);
 
-    constructor(props) {
-        super(props);
+    const [, refresh] = React.useState(0);
+    const [editing, setEditing] = React.useState(false);
+    const [loading, setLoading] = React.useState(true);
+    const [name, setName] = React.useState("");
+    const [new_round_name, setNewRoundName] = React.useState("");
+    const [rounds, setRounds] = React.useState([]);
+    const [new_player_name, setNewPlayerName] = React.useState("");
+    const [new_player_rank, setNewPlayerRank] = React.useState(1037);
+    const [description, setDescription] = React.useState("");
+    const [location, setLocation] = React.useState("");
+    const [players, setPlayers] = React.useState([]);
+    const [editable_by_current_user, setEditableByCurrentUser] = React.useState(false);
 
-        const tournament_record_id = parseInt(this.props.match.params.tournament_record_id) || 0;
+    const player_table_ref = React.useRef<PaginatedTableRef>(null);
+    const loaded_state = React.useRef<Partial<TournamentRecordState>>({});
 
-        this.state = {
-            editing: false,
-            tournament_record_id: tournament_record_id,
-            loading: true,
-            name: "",
-            new_round_name: "",
-            rounds: [],
-            new_player_name: "",
-            new_player_rank: 1037,
-        };
-    }
-
-    componentDidMount() {
-        if (this.state.tournament_record_id) {
-            this.resolve();
+    React.useEffect(() => {
+        if (tournament_record_id) {
+            resolve();
         }
-    }
 
-    componentWillUnmount() {
-        this.abort_requests();
-    }
+        return () => {
+            abort_requests();
+        };
+    }, [tournament_record_id]);
 
-    abort_requests() {
-        abort_requests_in_flight(`tournament_records/${this.state.tournament_record_id}`);
-    }
+    const setFromLoadedState = () => {
+        if (!loaded_state.current) {
+            return;
+        }
 
-    resolve() {
-        this.abort_requests();
+        setLoading(loaded_state.current.loading);
+        setEditing(loaded_state.current.editing);
+        setName(loaded_state.current.name);
+        setRounds(loaded_state.current.rounds);
+        setDescription(loaded_state.current.description);
+        setLocation(loaded_state.current.location);
+        setPlayers(loaded_state.current.players);
+        setEditableByCurrentUser(loaded_state.current.editable_by_current_user);
+    };
 
-        get(`tournament_records/${this.state.tournament_record_id}`)
+    const abort_requests = () => {
+        abort_requests_in_flight(`tournament_records/${tournament_record_id}`);
+    };
+
+    const resolve = () => {
+        abort_requests();
+
+        get(`tournament_records/${tournament_record_id}`)
             .then((res) => {
                 res.loading = false;
                 res.editing = false;
-                this.loaded_state = dup(res);
-                this.setState(res);
+                loaded_state.current = dup(res);
+                setFromLoadedState();
             })
             .catch(errorAlerter);
-    }
-
-    startEditing = () => {
-        this.setState({ editing: true });
     };
 
-    save = () => {
-        put(`tournament_records/${this.state.tournament_record_id}`, {
-            name: this.state.name,
-            description: this.state.description,
-            location: this.state.location,
+    const startEditing = () => {
+        setEditing(true);
+    };
+
+    const save = () => {
+        put(`tournament_records/${tournament_record_id}`, {
+            name: name,
+            description: description,
+            location: location,
         })
             .then(ignore)
             .catch(errorAlerter);
 
-        for (const round of this.state.rounds) {
+        for (const round of rounds) {
             if (round.updated) {
-                put(`tournament_records/${this.state.tournament_record_id}/round/${round.id}`, {
+                put(`tournament_records/${tournament_record_id}/round/${round.id}`, {
                     name: round.name,
                 })
                     .then(ignore)
@@ -129,55 +138,48 @@ class _TournamentRecord extends React.PureComponent<
             }
         }
 
-        this.loaded_state.editing = false;
-        this.loaded_state.name = this.state.name;
-        this.loaded_state.rounds = dup(this.state.rounds);
-        this.loaded_state.description = this.state.description;
-        this.setState({ editing: false });
+        loaded_state.current.editing = false;
+        loaded_state.current.name = name;
+        loaded_state.current.rounds = dup(rounds);
+        loaded_state.current.description = description;
+        setEditing(false);
+        refresh(Math.random());
     };
 
-    cancel = () => {
-        this.loaded_state.editing = false;
-        this.setState(this.loaded_state);
+    const cancel = () => {
+        loaded_state.current.editing = false;
+        setFromLoadedState();
     };
 
-    setName = (ev) => {
-        this.setState({ name: ev.target.value });
+    const setRoundName = (idx: number, ev: React.ChangeEvent<HTMLInputElement>) => {
+        const new_rounds = dup(rounds);
+        new_rounds[idx].name = ev.target.value;
+        new_rounds[idx].updated = true;
+        setRounds(new_rounds);
     };
-    setDescription = (ev) => {
-        this.setState({ description: ev.target.value });
-    };
-    setNewRoundName = (ev) => {
-        this.setState({ new_round_name: ev.target.value });
-    };
-    setRoundName(idx, ev) {
-        const rounds = dup(this.state.rounds);
-        rounds[idx].name = ev.target.value;
-        rounds[idx].updated = true;
-        this.setState({ rounds });
-    }
 
-    addRound = () => {
-        if (this.state.new_round_name.trim().length < 2) {
+    const addRound = () => {
+        if (new_round_name.trim().length < 2) {
             $(".round-name-editor").focus();
             return;
         }
 
-        post(`tournament_records/${this.state.tournament_record_id}/rounds`, {
-            name: this.state.new_round_name,
+        post(`tournament_records/${tournament_record_id}/rounds`, {
+            name: new_round_name,
             notes: "",
         })
             .then((res) => {
-                const rounds = dup(this.state.rounds);
-                rounds.unshift(res);
-                this.setState({ rounds });
+                const new_rounds = dup(rounds);
+                new_rounds.unshift(res);
+                setRounds(new_rounds);
+                setNewRoundName("");
             })
             .catch(errorAlerter);
     };
 
-    addPlayer = () => {
-        const name = this.state.new_player_name;
-        const rank = this.state.new_player_rank;
+    const addPlayer = () => {
+        const name = new_player_name;
+        const rank = new_player_rank;
 
         if (name.trim().length < 2) {
             $(".new-player-name").focus();
@@ -186,15 +188,16 @@ class _TournamentRecord extends React.PureComponent<
 
         const new_player = { name, rank };
 
-        post(`tournament_records/${this.state.tournament_record_id}/players/`, new_player)
+        post(`tournament_records/${tournament_record_id}/players/`, new_player)
             .then((res) => {
-                this.state.players.push(res);
-                this.player_table_ref.current?.refresh();
+                players.push(res);
+                player_table_ref.current?.refresh();
+                setNewPlayerName("");
             })
             .catch(errorAlerter);
     };
 
-    removePlayer(player: any) {
+    const removePlayer = (player: any) => {
         void alert
             .fire({
                 title: "Really remove player?",
@@ -203,18 +206,16 @@ class _TournamentRecord extends React.PureComponent<
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    del(
-                        `tournament_records/${this.state.tournament_record_id}/players/${player.id}`,
-                    )
+                    del(`tournament_records/${tournament_record_id}/players/${player.id}`)
                         .then(() => {
-                            this.player_table_ref.current?.refresh();
+                            player_table_ref.current?.refresh();
                         })
                         .catch(errorAlerter);
                 }
             });
-    }
+    };
 
-    deleteEntry(round, entry) {
+    const deleteEntry = (round: Round, entry) => {
         alert
             .fire({
                 text: "Are you sure you wish to delete this entry? The original game or review content will not be affected, but the entry will be removed from this list of game in this round.",
@@ -228,19 +229,17 @@ class _TournamentRecord extends React.PureComponent<
                             break;
                         }
                     }
-                    this.forceUpdate();
+                    refresh(Math.random());
 
-                    del(
-                        `tournament_records/${this.state.tournament_record_id}/rounds/${round.id}/${entry.id}`,
-                    )
+                    del(`tournament_records/${tournament_record_id}/rounds/${round.id}/${entry.id}`)
                         .then(ignore)
                         .catch(errorAlerter);
                 }
             })
             .catch(errorAlerter);
-    }
+    };
 
-    deleteRound(round: Round) {
+    const deleteRound = (round: Round) => {
         void alert
             .fire({
                 title: _("Are you sure you wish to delete this round?"),
@@ -249,22 +248,22 @@ class _TournamentRecord extends React.PureComponent<
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    del(`tournament_records/${this.state.tournament_record_id}/round/${round.id}/`)
+                    del(`tournament_records/${tournament_record_id}/round/${round.id}/`)
                         .then(() => {
-                            for (let i = 0; i < this.state.rounds.length; ++i) {
-                                if (this.state.rounds[i].id === round.id) {
-                                    this.state.rounds.splice(i, 1);
+                            for (let i = 0; i < rounds.length; ++i) {
+                                if (rounds[i].id === round.id) {
+                                    rounds.splice(i, 1);
                                     break;
                                 }
                             }
-                            this.forceUpdate();
+                            refresh(Math.random());
                         })
                         .catch(errorAlerter);
                 }
             });
-    }
+    };
 
-    linkGame(round: Round) {
+    const linkGame = (round: Round) => {
         void alert
             .fire({
                 text: _("Please provide the link to the game, review, or demo board"),
@@ -273,285 +272,261 @@ class _TournamentRecord extends React.PureComponent<
             })
             .then(({ value: url, isConfirmed }) => {
                 if (isConfirmed) {
-                    post(
-                        `tournament_records/${this.state.tournament_record_id}/round/${round.id}/`,
-                        {
-                            url,
-                            notes: "",
-                        },
-                    )
+                    post(`tournament_records/${tournament_record_id}/round/${round.id}/`, {
+                        url,
+                        notes: "",
+                    })
                         .then((res) => {
                             round.entries.unshift(res);
-                            this.forceUpdate();
+                            refresh(Math.random());
                         })
                         .catch(errorAlerter);
                 }
             });
-    }
-
-    recordGame(round: Round) {
-        createDemoBoard(this.state.players, this.state.tournament_record_id, round.id);
-    }
-
-    setNewPlayerName = (ev) => {
-        this.setState({ new_player_name: ev.target.value });
     };
 
-    setNewPlayerRank = (ev) => {
-        this.setState({ new_player_rank: parseInt(ev.target.value) });
+    const recordGame = (round: Round) => {
+        createDemoBoard(players, tournament_record_id, round.id);
     };
 
-    render() {
-        const editing = this.state.editing || null;
-        const editable = this.state.editable_by_current_user || null;
+    const editable = editable_by_current_user || null;
 
-        if (this.state.loading) {
-            return <div id="TournamentRecord">{_("Loading...")}</div>;
-        }
+    if (loading) {
+        return <div id="TournamentRecord">{_("Loading...")}</div>;
+    }
 
-        return (
-            <div id="TournamentRecord">
-                <div className="space-between center">
-                    {editing ? (
-                        <input
-                            type="text"
-                            className="name-editor"
-                            onChange={this.setName}
-                            placeholder={_("Name")}
-                            value={this.state.name}
-                        />
-                    ) : (
-                        <h1 className="name">{this.state.name}</h1>
-                    )}
+    return (
+        <div id="TournamentRecord">
+            <div className="space-between center">
+                {editing ? (
+                    <input
+                        type="text"
+                        className="name-editor"
+                        onChange={(ev) => setName(ev.target.value)}
+                        placeholder={_("Name")}
+                        value={name}
+                    />
+                ) : (
+                    <h1 className="name">{name}</h1>
+                )}
 
-                    {((!editing && editable) || null) && (
-                        <button onClick={this.startEditing} className="danger xs">
-                            {_("Edit")}
-                        </button>
-                    )}
-                    {((editing && editable) || null) && (
-                        <div>
-                            <button onClick={this.save} className="primary xs">
-                                {_("Save")}
-                            </button>
-                            <button onClick={this.cancel} className="default xs">
-                                {_("Cancel")}
-                            </button>
-                        </div>
-                    )}
-                </div>
-
-                <div className="space-between">
-                    {editing ? (
-                        <textarea
-                            className="description-editor"
-                            rows={15}
-                            onChange={this.setDescription}
-                            placeholder={_("Description")}
-                            value={this.state.description}
-                        />
-                    ) : (
-                        <Markdown source={this.state.description} />
-                    )}
-
+                {((!editing && editable) || null) && (
+                    <button onClick={startEditing} className="danger xs">
+                        {_("Edit")}
+                    </button>
+                )}
+                {((editing && editable) || null) && (
                     <div>
-                        <h3>{_("Players")}</h3>
-
-                        <PaginatedTable
-                            className="TournamentRecord-table"
-                            ref={this.player_table_ref}
-                            name="game-history"
-                            source={`tournament_records/${this.props.match.params.tournament_record_id}/players`}
-                            orderBy={["-rank", "name"]}
-                            columns={[
-                                {
-                                    header: "",
-                                    className: () => "player",
-                                    render: (p) => <span>{p.name}</span>,
-                                },
-
-                                {
-                                    header: "",
-                                    className: () => "rank",
-                                    render: (p) => <span>[{rankString(p.rank)}]</span>,
-                                },
-
-                                {
-                                    header: "",
-                                    className: () => "rank",
-                                    render: (p) =>
-                                        editable && (
-                                            <i
-                                                className="fa fa-trash"
-                                                onClick={() => this.removePlayer(p)}
-                                            />
-                                        ),
-                                },
-                            ]}
-                        />
-
-                        {editable && (
-                            <div className="add-player">
-                                <input
-                                    type="text"
-                                    className="new-player-name"
-                                    onChange={this.setNewPlayerName}
-                                    value={this.state.new_player_name}
-                                    placeholder="Player name"
-                                />
-
-                                <select
-                                    value={this.state.new_player_rank}
-                                    onChange={this.setNewPlayerRank}
-                                    className="challenge-dropdown form-control"
-                                >
-                                    {ranks.map((r, idx) => (
-                                        <option key={idx} value={r.rank}>
-                                            {r.label}
-                                        </option>
-                                    ))}
-                                </select>
-
-                                <button onClick={this.addPlayer} className="default xs">
-                                    {_("Add player")}
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <div className="hr" />
-
-                <h1>{_("Rounds")}</h1>
-
-                {editable && (
-                    <div className="round-line">
-                        <input
-                            type="text"
-                            className="round-name-editor"
-                            onChange={this.setNewRoundName}
-                            placeholder={_("Round name")}
-                            value={this.state.new_round_name}
-                        />
-                        <button onClick={this.addRound} className="default xs">
-                            {_("Add round")}
+                        <button onClick={save} className="primary xs">
+                            {_("Save")}
+                        </button>
+                        <button onClick={cancel} className="default xs">
+                            {_("Cancel")}
                         </button>
                     </div>
                 )}
-                {this.state.rounds.map((round, idx) => (
-                    <div key={round.id} className="round">
-                        <div className="space-between center round-name">
-                            {editing ? (
-                                <input
-                                    type="text"
-                                    className="round-name-editor"
-                                    onChange={(ev) => this.setRoundName(idx, ev)}
-                                    placeholder={_("Name")}
-                                    value={round.name}
-                                />
-                            ) : (
-                                <h3>{round.name}</h3>
-                            )}
-
-                            {editable && (
-                                <div>
-                                    <button
-                                        onClick={() => this.recordGame(round)}
-                                        className="default xs"
-                                    >
-                                        {_("Record game")}
-                                    </button>
-                                    <button
-                                        onClick={() => this.linkGame(round)}
-                                        className="default xs"
-                                    >
-                                        {_("Link game")}
-                                    </button>
-                                    {editing && (
-                                        <button
-                                            onClick={() => this.deleteRound(round)}
-                                            className="default xs"
-                                        >
-                                            {_("Remove round")}
-                                        </button>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                        <Markdown source={round.notes} />
-
-                        <div className="round-entries-container">
-                            <table className="round-entries">
-                                <tbody>
-                                    {round.entries.map((entry) => (
-                                        <tr key={entry.id} className="round-entry">
-                                            {editable && (
-                                                <td>
-                                                    <i
-                                                        className="fa fa-trash"
-                                                        onClick={() =>
-                                                            this.deleteEntry(round, entry)
-                                                        }
-                                                    />
-                                                </td>
-                                            )}
-                                            <td>
-                                                <a className="name" href={entry.url}>
-                                                    {entry.name}
-                                                </a>
-                                            </td>
-                                            <td>
-                                                <Player user={entry.white} disable-cache-update />
-                                            </td>
-                                            <td>
-                                                <Player user={entry.black} disable-cache-update />
-                                            </td>
-                                            <td>
-                                                {(entry.game_id || null) && (
-                                                    <a
-                                                        className="sgf"
-                                                        href={`/api/v1/games/${entry.game_id}/sgf?without-comments=1`}
-                                                    >
-                                                        {_("SGF")}
-                                                    </a>
-                                                )}
-                                                {(entry.review_id || null) && (
-                                                    <a
-                                                        className="sgf"
-                                                        href={`/api/v1/reviews/${entry.review_id}/sgf?without-comments=1`}
-                                                    >
-                                                        {_("SGF")}
-                                                    </a>
-                                                )}
-                                            </td>
-                                            <td>
-                                                {(entry.game_id || null) && (
-                                                    <a
-                                                        className="sgf with-comments"
-                                                        href={`/api/v1/games/${entry.game_id}/sgf`}
-                                                    >
-                                                        {_("SGF with comments")}
-                                                    </a>
-                                                )}
-                                                {(entry.review_id || null) && (
-                                                    <a
-                                                        className="sgf with-comments"
-                                                        href={`/api/v1/reviews/${entry.review_id}/sgf`}
-                                                    >
-                                                        {_("SGF with comments")}
-                                                    </a>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                ))}
             </div>
-        );
-    }
-}
 
-export const TournamentRecord = rr6ClassShim(_TournamentRecord);
+            <div className="space-between">
+                {editing ? (
+                    <textarea
+                        className="description-editor"
+                        rows={15}
+                        onChange={(ev) => setDescription(ev.target.value)}
+                        placeholder={_("Description")}
+                        value={description}
+                    />
+                ) : (
+                    <Markdown source={description} />
+                )}
+
+                <div>
+                    <h3>{_("Players")}</h3>
+
+                    <PaginatedTable
+                        className="TournamentRecord-table"
+                        ref={player_table_ref}
+                        name="game-history"
+                        source={`tournament_records/${tournament_record_id}/players`}
+                        orderBy={["-rank", "name"]}
+                        columns={[
+                            {
+                                header: "",
+                                className: () => "player",
+                                render: (p) => <span>{p.name}</span>,
+                            },
+
+                            {
+                                header: "",
+                                className: () => "rank",
+                                render: (p) => <span>[{rankString(p.rank)}]</span>,
+                            },
+
+                            {
+                                header: "",
+                                className: () => "rank",
+                                render: (p) =>
+                                    editable && (
+                                        <i
+                                            className="fa fa-trash"
+                                            onClick={() => removePlayer(p)}
+                                        />
+                                    ),
+                            },
+                        ]}
+                    />
+
+                    {editable && (
+                        <div className="add-player">
+                            <input
+                                type="text"
+                                className="new-player-name"
+                                onChange={(ev) => setNewPlayerName(ev.target.value)}
+                                value={new_player_name}
+                                placeholder="Player name"
+                            />
+
+                            <select
+                                value={new_player_rank}
+                                onChange={(ev) => setNewPlayerRank(parseInt(ev.target.value))}
+                                className="challenge-dropdown form-control"
+                            >
+                                {ranks.map((r, idx) => (
+                                    <option key={idx} value={r.rank}>
+                                        {r.label}
+                                    </option>
+                                ))}
+                            </select>
+
+                            <button onClick={addPlayer} className="default xs">
+                                {_("Add player")}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <div className="hr" />
+
+            <h1>{_("Rounds")}</h1>
+
+            {editable && (
+                <div className="round-line">
+                    <input
+                        type="text"
+                        className="round-name-editor"
+                        onChange={(ev) => setNewRoundName(ev.target.value)}
+                        placeholder={_("Round name")}
+                        value={new_round_name}
+                    />
+                    <button onClick={addRound} className="default xs">
+                        {_("Add round")}
+                    </button>
+                </div>
+            )}
+            {rounds.map((round, idx) => (
+                <div key={round.id} className="round">
+                    <div className="space-between center round-name">
+                        {editing ? (
+                            <input
+                                type="text"
+                                className="round-name-editor"
+                                onChange={(ev) => setRoundName(idx, ev)}
+                                placeholder={_("Name")}
+                                value={round.name}
+                            />
+                        ) : (
+                            <h3>{round.name}</h3>
+                        )}
+
+                        {editable && (
+                            <div>
+                                <button onClick={() => recordGame(round)} className="default xs">
+                                    {_("Record game")}
+                                </button>
+                                <button onClick={() => linkGame(round)} className="default xs">
+                                    {_("Link game")}
+                                </button>
+                                {editing && (
+                                    <button
+                                        onClick={() => deleteRound(round)}
+                                        className="default xs"
+                                    >
+                                        {_("Remove round")}
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                    <Markdown source={round.notes} />
+
+                    <div className="round-entries-container">
+                        <table className="round-entries">
+                            <tbody>
+                                {round.entries.map((entry) => (
+                                    <tr key={entry.id} className="round-entry">
+                                        {editable && (
+                                            <td>
+                                                <i
+                                                    className="fa fa-trash"
+                                                    onClick={() => deleteEntry(round, entry)}
+                                                />
+                                            </td>
+                                        )}
+                                        <td>
+                                            <a className="name" href={entry.url}>
+                                                {entry.name}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <Player user={entry.white} disable-cache-update />
+                                        </td>
+                                        <td>
+                                            <Player user={entry.black} disable-cache-update />
+                                        </td>
+                                        <td>
+                                            {(entry.game_id || null) && (
+                                                <a
+                                                    className="sgf"
+                                                    href={`/api/v1/games/${entry.game_id}/sgf?without-comments=1`}
+                                                >
+                                                    {_("SGF")}
+                                                </a>
+                                            )}
+                                            {(entry.review_id || null) && (
+                                                <a
+                                                    className="sgf"
+                                                    href={`/api/v1/reviews/${entry.review_id}/sgf?without-comments=1`}
+                                                >
+                                                    {_("SGF")}
+                                                </a>
+                                            )}
+                                        </td>
+                                        <td>
+                                            {(entry.game_id || null) && (
+                                                <a
+                                                    className="sgf with-comments"
+                                                    href={`/api/v1/games/${entry.game_id}/sgf`}
+                                                >
+                                                    {_("SGF with comments")}
+                                                </a>
+                                            )}
+                                            {(entry.review_id || null) && (
+                                                <a
+                                                    className="sgf with-comments"
+                                                    href={`/api/v1/reviews/${entry.review_id}/sgf`}
+                                                >
+                                                    {_("SGF with comments")}
+                                                </a>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}

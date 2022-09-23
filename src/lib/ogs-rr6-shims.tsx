@@ -21,7 +21,6 @@
 import React from "react";
 import { useLocation, useParams } from "react-router-dom";
 
-declare const globalThis: any;
 // Types derived heavily from @types/react-router-dom, with some fields we don't use eliminated
 
 export interface StaticContext {
@@ -49,7 +48,7 @@ export function rr6ClassShim(Class: React.ComponentType<any>): (props: any) => J
         const path = pathname + search + hash;
 
         const match = {
-            url: globalThis.location.origin + path,
+            url: window.location.origin + path,
             path,
             params,
         };

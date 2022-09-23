@@ -18,8 +18,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { LoadingPage } from "Loading";
-import { Link } from "react-router-dom";
-import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
+import { Link, useParams } from "react-router-dom";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext, interpolate } from "translate";
 import { abort_requests_in_flight, del, put, post, get } from "requests";
@@ -47,231 +46,197 @@ import { openMergeReportModal } from "MergeReportModal";
 import * as d3 from "d3";
 import Dropzone from "react-dropzone";
 import { alert } from "swal_config";
+import { useUser } from "hooks";
+import { PlayerCacheEntry } from "player_cache";
 
 let logspam_debounce: any;
 
 const ranks = amateurRanks();
 
-type TournamentProperties = RouteComponentProps<{
-    tournament_id: string;
-    group_id: string;
-}>;
+interface TournamentInterface {
+    id: number;
+    name: string;
+    director: player_cache.PlayerCacheEntry;
+    time_start: string;
 
-interface TournamentState {
-    new_tournament_group_id: number;
-    tournament_id: number;
-    loading: boolean;
-    info_loaded: boolean;
-    tournament: {
-        id: number;
-        name: string;
-        director: player_cache.PlayerCacheEntry;
-        time_start: string;
-
-        board_size: string | number;
-        rules: GoEngineRules;
-        description: string;
-        handicap: string;
-        time_control_parameters: TimeControl;
-        tournament_type: string;
-        min_ranking: number | string;
-        max_ranking: number | string;
-        analysis_enabled: boolean;
-        exclude_provisional: boolean;
-        auto_start_on_max: boolean;
-        exclusivity: string;
-        first_pairing_method: string;
-        subsequent_pairing_method: string;
-        players_start: number;
-        settings: {
-            lower_bar: string;
-            upper_bar: string;
-            num_rounds: string;
-            group_size: string;
-            maximum_players: number | string;
-        };
-        lead_time_seconds: number;
-        base_points: number;
-        started?: string;
-        ended?: string;
-        player_is_member_of_group?: boolean;
-        is_open?: boolean;
-        can_administer?: boolean;
-        start_waiting?: boolean;
-        group?: any;
-        opengotha_standings?: boolean;
+    board_size: string | number;
+    rules: GoEngineRules;
+    description: string;
+    handicap: string;
+    time_control_parameters: TimeControl;
+    tournament_type: string;
+    min_ranking: number | string;
+    max_ranking: number | string;
+    analysis_enabled: boolean;
+    exclude_provisional: boolean;
+    auto_start_on_max: boolean;
+    exclusivity: string;
+    first_pairing_method: string;
+    subsequent_pairing_method: string;
+    players_start: number;
+    settings: {
+        lower_bar: string;
+        upper_bar: string;
+        num_rounds: string;
+        group_size: string;
+        maximum_players: number | string;
     };
-    rounds: any[];
-    editing: boolean;
-    raw_rounds: any[];
-    selected_round: number | string;
-    sorted_players: any[];
-    players: {};
-    is_joined?: boolean;
-    invite_result: any;
-    elimination_tree: any;
-    use_elimination_trees?: boolean;
-    user_to_invite?: player_cache.PlayerCacheEntry;
-    group?: { id: number };
+    lead_time_seconds: number;
+    base_points: number;
+    started?: string;
+    ended?: string;
+    player_is_member_of_group?: boolean;
+    is_open?: boolean;
+    can_administer?: boolean;
+    start_waiting?: boolean;
+    group?: any;
+    opengotha_standings?: boolean;
 }
 
-function sortDropoutsToBottom(player_a, player_b) {
-    // Sorting the players structure from a group array
-    // "bottom" is greater than "top" of the display list.
-    const a = player_a.player;
-    const b = player_b.player;
+//class _Tournament extends React.PureComponent<TournamentProperties, TournamentState> {
+export function Tournament(): JSX.Element {
+    const user = useUser();
+    const params = useParams<{ tournament_id: string; group_id: string }>();
+    const tournament_id = parseInt(params.tournament_id) || 0;
+    const new_tournament_group_id = parseInt(params.group_id) || 0;
 
-    if (
-        a.notes !== "Resigned" &&
-        a.notes !== "Disqualified" &&
-        (b.notes === "Resigned" || b.notes === "Disqualified")
-    ) {
-        return -1;
-    }
-    if (
-        b.notes !== "Resigned" &&
-        b.notes !== "Disqualified" &&
-        (a.notes === "Resigned" || a.notes === "Disqualified")
-    ) {
-        return 1;
-    }
-    return b.points - a.points;
-}
+    const ref_tournament_name = React.useRef<HTMLInputElement>();
+    const ref_description = React.useRef<HTMLTextAreaElement>();
+    const ref_max_players = React.useRef<HTMLInputElement>();
 
-/* TODO: Implement me TD Options */
+    const elimination_tree_container = React.useRef<HTMLDivElement>(document.createElement("div"));
 
-class _Tournament extends React.PureComponent<TournamentProperties, TournamentState> {
-    ref_tournament_name = React.createRef<HTMLInputElement>();
-    ref_description = React.createRef<HTMLTextAreaElement>();
-    ref_max_players = React.createRef<HTMLInputElement>();
+    const elimination_tree = React.useRef(
+        document.createElementNS("http://www.w3.org/2000/svg", "svg"),
+    );
 
-    elimination_tree_container = $(`<div class="tournament-elimination-container">`);
-    elimination_tree = $(`<svg xmlns="http://www.w3.org/2000/svg">`);
+    const [, _refresh] = React.useState(0);
+    const refresh = () => _refresh(Math.random());
+    const [loading, setLoading] = React.useState(true);
+    const [info_loaded, setInfoLoaded] = React.useState(false);
+    const tournament_ref = React.useRef<TournamentInterface>({
+        id: tournament_id,
+        name: "",
+        // TODO: replace {} with something that makes type sense. -bpj
+        director: tournament_id === 0 ? data.get("user") : ({} as any),
+        time_start: moment(new Date()).add(1, "hour").startOf("hour").format(),
 
-    constructor(props) {
-        super(props);
+        board_size: "19",
+        rules: "japanese",
+        description: "",
+        handicap: "0",
+        time_control_parameters: {
+            system: "fischer",
+            speed: "correspondence",
+            initial_time: 3 * 86400,
+            max_time: 7 * 86400,
+            time_increment: 86400,
+        } as TimeControl,
+        tournament_type: "mcmahon",
+        min_ranking: "5",
+        max_ranking: "38",
+        analysis_enabled: true,
+        exclude_provisional: true,
+        auto_start_on_max: false,
+        //scheduled_rounds: true,
+        exclusivity: "open",
+        first_pairing_method: "slide",
+        subsequent_pairing_method: "slaughter",
+        players_start: 4,
+        settings: {
+            lower_bar: "10",
+            upper_bar: "20",
+            num_rounds: "3",
+            group_size: "3",
+            maximum_players: 100,
+        },
+        lead_time_seconds: 1800,
+        base_points: 10.0,
+    });
+    const [rounds, setRounds] = React.useState<any[]>([]);
+    const [editing, setEditing] = React.useState(tournament_id === 0);
+    const [raw_rounds, setRawRounds] = React.useState<any[]>([]);
+    const [selected_round_idx, setSelectedRoundIdx] = React.useState<
+        number | "standings" | "roster"
+    >(0);
+    const [sorted_players, setSortedPlayers] = React.useState<any[]>([]);
+    const [players, setPlayers] = React.useState({});
+    const [is_joined, setIsJoined] = React.useState(false);
+    const [invite_result, setInviteResult] = React.useState(null);
+    const [use_elimination_trees, setUseEliminationTrees] = React.useState(false);
+    const [user_to_invite, setUserToInvite] = React.useState<PlayerCacheEntry>(null);
 
-        const tournament_id = parseInt(this.props.match.params.tournament_id) || 0;
+    const tournament = tournament_ref.current;
 
-        this.state = {
-            new_tournament_group_id: parseInt(this.props.match.params.group_id) || 0,
-            tournament_id: tournament_id,
-            loading: true,
-            info_loaded: false,
-            tournament: {
-                id: tournament_id,
-                name: "",
-                // TODO: replace {} with something that makes type sense. -bpj
-                director: tournament_id === 0 ? data.get("user") : ({} as any),
-                time_start: moment(new Date()).add(1, "hour").startOf("hour").format(),
+    // This sets up our manual elimination tree containers, this is a pretty
+    // legacy way of doing things
+    React.useEffect(() => {
+        elimination_tree_container.current.className = "tournament-elimination-container";
+        elimination_tree_container.current.append(elimination_tree.current);
+    }, []);
 
-                board_size: "19",
-                rules: "japanese",
-                description: "",
-                handicap: "0",
-                time_control_parameters: {
-                    system: "fischer",
-                    speed: "correspondence",
-                    initial_time: 3 * 86400,
-                    max_time: 7 * 86400,
-                    time_increment: 86400,
-                } as TimeControl,
-                tournament_type: "mcmahon",
-                min_ranking: "5",
-                max_ranking: "38",
-                analysis_enabled: true,
-                exclude_provisional: true,
-                auto_start_on_max: false,
-                //scheduled_rounds: true,
-                exclusivity: "open",
-                first_pairing_method: "slide",
-                subsequent_pairing_method: "slaughter",
-                players_start: 4,
-                settings: {
-                    lower_bar: "10",
-                    upper_bar: "20",
-                    num_rounds: "3",
-                    group_size: "3",
-                    maximum_players: 100,
-                },
-                lead_time_seconds: 1800,
-                base_points: 10.0,
-            },
-            rounds: [],
-            editing: tournament_id === 0,
-            raw_rounds: [],
-            //round_start_times: [],
-            selected_round: 0,
-            sorted_players: [],
-            players: {},
-            is_joined: null,
-            invite_result: null,
-            elimination_tree: null,
-        };
-
-        // eslint-disable-next-line no-constant-condition
-        if (false) {
-            // This is just for quick testing when I'm working on a particular
-            // part of the tournament testing process. This is never intended
-            // for production.
-            this.state.tournament.name = "Culture: join 4";
-            this.state.tournament.time_start = moment(new Date()).add(1, "minute").format();
-            this.state.tournament.rules = "japanese";
-            this.state.tournament.description =
+    // this is so anoek (user id 1) can quickly test tournaments
+    React.useEffect(() => {
+        if (user.id === 1 && tournament_id === 0) {
+            tournament_ref.current.name = "Culture: join 4";
+            tournament_ref.current.time_start = moment(new Date()).add(1, "minute").format();
+            tournament_ref.current.rules = "japanese";
+            tournament_ref.current.description =
                 "Aliquam dolor blanditiis voluptatem et harum officiis atque. Eum eos aut consequatur quis sunt. Minima nisi aut ratione. Consequatur deleniti vitae minima exercitationem illum debitis debitis sunt. Culpa officia voluptates quos sit. Reprehenderit fuga ad quo ipsam assumenda nihil quos qui.";
-            this.state.tournament.tournament_type = "opengotha";
-            this.state.tournament.first_pairing_method = "opengotha";
-            this.state.tournament.subsequent_pairing_method = "opengotha";
+            tournament_ref.current.tournament_type = "elimination";
+            tournament_ref.current.first_pairing_method = "slide";
+            tournament_ref.current.subsequent_pairing_method = "slaughter";
+            // tournament_ref.current.tournament_type = "opengotha";
+            // tournament_ref.current.first_pairing_method = "opengotha";
+            // tournament_ref.current.subsequent_pairing_method = "opengotha";
+            refresh();
         }
+    }, [tournament_id]);
 
-        this.elimination_tree_container.append(this.elimination_tree);
-    }
-    componentDidMount() {
-        setExtraActionCallback(this.renderExtraPlayerActions);
+    React.useEffect(() => {
+        setExtraActionCallback(renderExtraPlayerActions);
         window.document.title = _("Tournament");
-        if (this.state.tournament_id) {
-            this.resolve(this.state.tournament_id);
+        if (tournament_id) {
+            resolve();
         }
-        if (this.state.new_tournament_group_id) {
-            get("groups/%%", this.state.new_tournament_group_id)
+        if (new_tournament_group_id) {
+            get("groups/%%", new_tournament_group_id)
                 .then((group) => {
-                    this.setState({
-                        tournament: Object.assign({}, this.state.tournament, { group: group }),
-                    });
+                    tournament_ref.current.group = group;
+                    refresh();
                 })
                 .catch(errorAlerter);
         }
-    }
-    componentWillUnmount() {
-        this.abort_requests();
-        setExtraActionCallback(null);
-    }
-    componentDidUpdate() {
-        if (this.state.tournament_id !== (parseInt(this.props.match.params.tournament_id) || 0)) {
-            this.setState({ tournament_id: parseInt(this.props.match.params.tournament_id) || 0 });
-            this.resolve(parseInt(this.props.match.params.tournament_id) || 0);
-        }
-    }
-    abort_requests() {
-        abort_requests_in_flight(`tournaments/${this.state.tournament_id}`);
-        abort_requests_in_flight(`tournaments/${this.state.tournament_id}/rounds`);
-        abort_requests_in_flight(`tournaments/${this.state.tournament_id}/players/all`);
-    }
-    resolve(tournament_id: number) {
-        this.abort_requests();
 
-        const tournament_info_promise = get("tournaments/%%", tournament_id).then((tournament) => {
-            this.setState({ tournament, info_loaded: true });
-            return tournament;
+        return () => {
+            abort_requests();
+            setExtraActionCallback(null);
+        };
+    }, [tournament_id]);
+
+    const abort_requests = () => {
+        abort_requests_in_flight(`tournaments/${tournament_id}`);
+        abort_requests_in_flight(`tournaments/${tournament_id}/rounds`);
+        abort_requests_in_flight(`tournaments/${tournament_id}/players/all`);
+    };
+    const resolve = () => {
+        abort_requests();
+
+        const tournament_info_promise = get("tournaments/%%", tournament_id).then((t) => {
+            tournament_ref.current = t;
+            setInfoLoaded(true);
+            refresh();
+            return t;
         });
 
         Promise.all([
             tournament_info_promise,
             get("tournaments/%%/rounds", tournament_id),
-            this.refreshPlayerList(tournament_id),
+            refreshPlayerList(),
         ])
             .then((res) => {
                 const tournament = res[0];
+                tournament_ref.current = tournament;
                 let rounds = res[1];
                 const raw_rounds = res[1];
                 const players = res[2];
@@ -290,39 +255,34 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
                     tournament.tournament_type === "double_elimination"
                 ) {
                     use_elimination_trees = true;
-                    setTimeout(() => this.updateEliminationTrees(), 1);
+                    setTimeout(() => updateEliminationTrees(), 1);
                 } else {
-                    rounds = rounds.map((r) => this.groupify(r, players));
-                    this.linkPlayersToRoundMatches(rounds, players);
+                    rounds = rounds.map((r) => groupify(r, players));
+                    linkPlayersToRoundMatches(rounds, players);
                 }
 
-                this.setState({
-                    loading: false,
-                    tournament: tournament,
-                    raw_rounds: raw_rounds,
-                    rounds: rounds,
-                    //selected_round: rounds.length - 1,
-                    selected_round:
-                        tournament.ended &&
+                setLoading(false);
+                tournament_ref.current = tournament;
+                setRawRounds(raw_rounds);
+                setRounds(rounds);
+                setSelectedRound(
+                    tournament.ended &&
                         tournament.tournament_type === "opengotha" &&
                         tournament.opengotha_standings
-                            ? "standings"
-                            : (tournament.settings.active_round || 1) - 1,
-                    use_elimination_trees: use_elimination_trees,
-                });
+                        ? "standings"
+                        : (tournament.settings.active_round || 1) - 1,
+                );
+                setUseEliminationTrees(use_elimination_trees);
             })
             .catch(errorAlerter);
-    }
-    reloadTournament = () => {
-        this.resolve(this.state.tournament_id);
     };
-    refreshPlayerList = (tournament_id?) => {
-        if (typeof tournament_id !== "number") {
-            tournament_id = this.state.tournament_id;
-        }
+    const reloadTournament = () => {
+        resolve();
+    };
+    const refreshPlayerList = () => {
         const user = data.get("user");
-
         const ret = get("tournaments/%%/players/all", tournament_id);
+
         ret.then((players) => {
             for (const id in players) {
                 const p = players[id];
@@ -347,29 +307,26 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
 
             const sorted = Object.keys(players)
                 .map((id) => players[id])
-                .sort(this.compareUserRank);
+                .sort(compareUserRank);
 
-            const new_state: any = {
-                sorted_players: sorted,
-                players: players,
-                is_joined:
-                    user.id in players &&
+            setSortedPlayers(sorted);
+            setPlayers(players);
+            setIsJoined(
+                user.id in players &&
                     !players[user.id].disqualified &&
                     !players[user.id].resigned &&
                     !players[user.id].eliminated,
-            };
-
-            if (this.state.rounds.length) {
-                new_state.rounds = this.state.rounds.map((r) => this.groupify(r, players));
+            );
+            if (rounds.length) {
+                setRounds(rounds.map((r) => groupify(r, players)));
             }
 
-            this.setState(new_state);
-            //this.linkPlayersToRoundMatches(this.state.rounds, players);
-            setTimeout(() => this.updateEliminationTrees(), 1);
+            //linkPlayersToRoundMatches(rounds, players);
+            setTimeout(() => updateEliminationTrees(), 1);
         }).catch(errorAlerter);
         return ret;
     };
-    linkPlayersToRoundMatches(rounds, players) {
+    const linkPlayersToRoundMatches = (rounds, players) => {
         for (const round of rounds) {
             if (!round.groupify) {
                 for (const match of round.matches) {
@@ -379,8 +336,8 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
                 }
             }
         }
-    }
-    compareUserRank = (a, b) => {
+    };
+    const compareUserRank = (a, b) => {
         if (!a && !b) {
             return 0;
         }
@@ -391,8 +348,8 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
             return 1;
         }
 
-        const pa = this.state.players[a.id];
-        const pb = this.state.players[b.id];
+        const pa = players[a.id];
+        const pb = players[b.id];
         if (!pa && !pb) {
             return 0;
         }
@@ -437,7 +394,7 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
         return 0;
     };
 
-    startTournament = () => {
+    const startTournament = () => {
         void alert
             .fire({
                 text: _("Start this tournament now?"),
@@ -446,13 +403,13 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    post("tournaments/%%/start", this.state.tournament.id, {})
+                    post("tournaments/%%/start", tournament.id, {})
                         .then(ignore)
                         .catch(errorAlerter);
                 }
             });
     };
-    deleteTournament = () => {
+    const deleteTournament = () => {
         void alert
             .fire({
                 text: _("Delete this tournament?"),
@@ -461,7 +418,7 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    del("tournaments/%%", this.state.tournament.id)
+                    del("tournaments/%%", tournament.id)
                         .then(() => {
                             browserHistory.push("/");
                         })
@@ -469,7 +426,7 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
                 }
             });
     };
-    endTournament = () => {
+    const endTournament = () => {
         void alert
             .fire({
                 text: _("End this tournament?"),
@@ -478,52 +435,51 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    post("tournaments/%%/end", this.state.tournament.id, {})
+                    post("tournaments/%%/end", tournament.id, {})
                         .then(() => {
-                            this.reloadTournament();
+                            reloadTournament();
                         })
                         .catch(errorAlerter);
                 }
             });
     };
-    setUserToInvite = (user) => {
-        this.setState({ user_to_invite: user });
-    };
-    inviteUser = () => {
-        const username = this.state.user_to_invite.username;
-        post("tournaments/%%/players", this.state.tournament_id, { username })
+    const inviteUser = () => {
+        if (!user_to_invite) {
+            return;
+        }
+
+        const username = user_to_invite.username;
+        post("tournaments/%%/players", tournament_id, { username })
             .then((res) => {
                 console.log(res);
-                this.setState({
-                    invite_result: interpolate(_("Invited {{username}}"), { username }),
-                });
+                setInviteResult(interpolate(_("Invited {{username}}"), { username }));
             })
             .catch((res) => {
                 try {
                     _("Player already has an outstanding invite"); /* for translations */
                     _("Player is already participating in this tournament"); /* for translations */
-                    this.setState({ invite_result: _(JSON.parse(res.responseText).error) });
+                    setInviteResult(_(JSON.parse(res.responseText).error));
                 } catch (e) {
                     console.error(res);
                     console.error(e);
                 }
             });
     };
-    joinTournament = () => {
-        post("tournaments/%%/players", this.state.tournament_id, {})
+    const joinTournament = () => {
+        post("tournaments/%%/players", tournament_id, {})
             .then(() => {
-                this.setState({ is_joined: true });
+                setIsJoined(true);
             })
             .catch(errorAlerter);
     };
-    partTournament = () => {
-        post("tournaments/%%/players", this.state.tournament_id, { delete: true })
+    const partTournament = () => {
+        post("tournaments/%%/players", tournament_id, { delete: true })
             .then(() => {
-                this.setState({ is_joined: false });
+                setIsJoined(false);
             })
             .catch(errorAlerter);
     };
-    resign = () => {
+    const resign = () => {
         alert
             .fire({
                 text: _(
@@ -534,16 +490,12 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    this.partTournament();
+                    partTournament();
                 }
             })
             .catch(errorAlerter);
     };
-    updateEliminationTrees() {
-        const tournament = this.state.tournament;
-        const rounds = this.state.rounds;
-        const players = this.state.players;
-
+    const updateEliminationTrees = () => {
         if (
             tournament.tournament_type === "elimination" ||
             tournament.tournament_type === "double_elimination"
@@ -552,8 +504,7 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
                 return;
             }
 
-            const elimination_tree = this.elimination_tree[0];
-            const container = this.elimination_tree_container;
+            const container = elimination_tree_container.current;
             const lastbucket = {};
             let lastcurbucket = {};
             let curbucket = {};
@@ -594,7 +545,6 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
                 for (let match_num = 0; match_num < round.matches.length; ++match_num) {
                     const match = round.matches[match_num];
                     const matchdiv = $("<div>").addClass("matchdiv");
-
                     const black = $("<div>")
                         .addClass("black")
                         .addClass("elimination-player-" + match.black);
@@ -656,7 +606,7 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
                     curbucket[match.black] = obj;
                     curbucket[match.white] = obj;
 
-                    container.append(matchdiv);
+                    container.appendChild(matchdiv[0]);
                 }
                 for (let bye_num = 0; bye_num < round.byes.length; ++bye_num) {
                     const bye = round.byes[bye_num];
@@ -686,7 +636,7 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
                     curbucket[bye] = obj;
                     all_objects.push(obj);
 
-                    container.append(byediv);
+                    container.appendChild(byediv[0]);
                 }
 
                 for (const k in curbucket) {
@@ -950,7 +900,7 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
                 void alert.fire("Warning: " + not_laid_out + " matches not laid out");
             }
 
-            const svg = d3.select(elimination_tree);
+            const svg = d3.select(elimination_tree.current);
             svg.attr("width", svg_extents.x);
             svg.attr("height", svg_extents.y);
 
@@ -1047,8 +997,8 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
                 drawLines(lastcurbucket[k]);
             }
         }
-    }
-    groupify(round, players) {
+    };
+    const groupify = (round, players) => {
         try {
             const match_map = {};
             const result_map = {};
@@ -1155,16 +1105,16 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
 
             let max_len = 0;
             for (let i = 0; i < groups.length; ++i) {
-                groups[i].players = groups[i].players.sort(this.compareUserRank);
+                groups[i].players = groups[i].players.sort(compareUserRank);
                 max_len = Math.max(max_len, groups[i].players.length);
             }
             groups = groups.sort((a, b) => {
-                return this.compareUserRank(a.players[0], b.players[0]);
+                return compareUserRank(a.players[0], b.players[0]);
             });
             matches = matches.sort((a, b) => {
-                return this.compareUserRank(a.player, b.player);
+                return compareUserRank(a.player, b.player);
             });
-            byes = byes.sort(this.compareUserRank);
+            byes = byes.sort(compareUserRank);
 
             //console.log("Byes: ", byes);
 
@@ -1175,7 +1125,7 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
                 }
             }
 
-            broken_list = broken_list.sort(this.compareUserRank);
+            broken_list = broken_list.sort(compareUserRank);
             const broken_players = {};
             for (let i = 0; i < broken_list.length; ++i) {
                 broken_players[broken_list[i].player.id] = broken_list[i].player;
@@ -1208,61 +1158,61 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
                 throw e;
             }, 1);
         }
-    }
-    setSelectedRound = (selected_round: number) => {
-        this.setState({ selected_round: selected_round });
+    };
+    const setSelectedRound = (idx: number | "standings" | "roster") => {
+        setSelectedRoundIdx(idx);
     };
 
-    startEditing = () => this.setState({ editing: true });
-    save = () => {
-        const tournament: any = dup(this.state.tournament);
+    const startEditing = () => setEditing(true);
+    const save = () => {
+        const tournament: any = dup(tournament_ref.current);
+        const group = tournament.group;
 
         tournament.name = tournament.name.trim();
         tournament.description = tournament.description.trim();
 
         if (tournament.name.length < 5) {
-            this.ref_tournament_name.current.focus();
+            ref_tournament_name.current.focus();
             void alert.fire(_("Please provide a name for the tournament"));
             return;
         }
 
         if (tournament.description.length < 5) {
-            this.ref_description.current.focus();
+            ref_description.current.focus();
             void alert.fire(_("Please provide a description for the tournament"));
             return;
         }
 
         const max_players = parseInt(tournament.settings.maximum_players);
         if (max_players > 10 && tournament.tournament_type === "roundrobin") {
-            this.ref_max_players.current.focus();
+            ref_max_players.current.focus();
             void alert.fire(_("Round Robin tournaments are limited to a maximum of 10 players"));
             return;
         }
         if (max_players < 2) {
-            this.ref_max_players.current.focus();
+            ref_max_players.current.focus();
             void alert.fire(_("You need at least two players in a tournament"));
             return;
         }
 
         tournament.time_start = moment(new Date(tournament.time_start)).utc().format();
-        tournament.group =
-            this.state.new_tournament_group_id || (this.state.group && this.state.group.id);
+        tournament.group = new_tournament_group_id || (group && group.id);
         if (!tournament.group) {
             delete tournament.group;
         }
         tournament.time_control_parameters.time_control = tournament.time_control_parameters.system;
 
         delete tournament.settings.active_round;
-        //tournament.round_start_times = this.state.round_start_times;
+        //tournament.round_start_times = round_start_times;
 
         const onError = (err: any) => {
-            this.setState({ editing: true });
+            setEditing(true);
             errorAlerter(err);
         };
 
-        if (this.state.tournament.id) {
-            put(`tournaments/${this.state.tournament.id}`, tournament)
-                .then(() => this.resolve(this.state.tournament_id))
+        if (tournament.id) {
+            put(`tournaments/${tournament.id}`, tournament)
+                .then(() => resolve())
                 .catch(onError);
         } else {
             post("tournaments/", tournament)
@@ -1270,37 +1220,20 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
                 .catch(onError);
         }
 
-        this.setState({ editing: false });
+        setEditing(false);
     };
-    setTournamentName = (ev) =>
-        this.setState({
-            tournament: Object.assign({}, this.state.tournament, { name: ev.target.value }),
-        });
-    setStartTime = (t) => {
+    const setTournamentName = (ev) => {
+        tournament_ref.current.name = ev.target.value;
+        refresh();
+    };
+    const setStartTime = (t) => {
         if (t && t.format) {
-            this.setState({
-                tournament: Object.assign({}, this.state.tournament, { time_start: t.format() }),
-            });
+            tournament_ref.current.time_start = t.format();
+            refresh();
         }
     };
-    /*
-    setRoundStartTime  = (idx, t)  => {
-        if (t && t.format) {
-            let arr = dup(this.state.round_start_times);
-            arr[idx] = t.format();
-            this.setState({round_start_times: arr});
-        }
-    }
-    getRoundStartTime  = (idx) => {
-        if (idx < this.state.round_start_times.length) {
-            return new Date(this.state.round_start_times[idx]);
-        } else {
-            //return new Date();
-            return null;
-        }
-    }
-    */
-    setTournamentType = (ev) => {
+
+    const setTournamentType = (ev) => {
         const update: any = {
             tournament_type: ev.target.value,
         };
@@ -1310,1829 +1243,122 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
             update.rules = "aga";
         } else {
             if (
-                this.state.tournament.first_pairing_method === "opengotha" ||
-                this.state.tournament.subsequent_pairing_method === "opengotha"
+                tournament.first_pairing_method === "opengotha" ||
+                tournament.subsequent_pairing_method === "opengotha"
             ) {
                 update.first_pairing_method = "slide";
                 update.subsequent_pairing_method = "slaughter";
             }
         }
-        this.setState({ tournament: Object.assign({}, this.state.tournament, update) });
+        tournament_ref.current = Object.assign(tournament_ref.current, update);
+        refresh();
     };
-    setLowerBar = (ev) => {
-        const newSettings = Object.assign({}, this.state.tournament.settings, {
+    const setLowerBar = (ev) => {
+        const newSettings = Object.assign({}, tournament.settings, {
             lower_bar: ev.target.value,
         });
-        this.setState({
-            tournament: Object.assign({}, this.state.tournament, { settings: newSettings }),
-        });
+        tournament_ref.current.settings = newSettings;
+        refresh();
     };
-    setUpperBar = (ev) => {
-        const newSettings = Object.assign({}, this.state.tournament.settings, {
+    const setUpperBar = (ev) => {
+        const newSettings = Object.assign({}, tournament.settings, {
             upper_bar: ev.target.value,
         });
-        this.setState({
-            tournament: Object.assign({}, this.state.tournament, { settings: newSettings }),
-        });
+        tournament_ref.current.settings = newSettings;
+        refresh();
     };
-    setPlayersStart = (ev) =>
-        this.setState({
-            tournament: Object.assign({}, this.state.tournament, {
-                players_start: ev.target.value,
-            }),
-        });
-    setMaximumPlayers = (ev) => {
-        const newSettings = Object.assign({}, this.state.tournament.settings, {
-            maximum_players: ev.target.value,
-        });
-        this.setState({
-            tournament: Object.assign({}, this.state.tournament, { settings: newSettings }),
-        });
+    const setPlayersStart = (ev) => {
+        tournament_ref.current.players_start = ev.target.value;
+        refresh();
     };
-    setAutoStartOnMax = (ev) =>
-        this.setState({
-            tournament: Object.assign({}, this.state.tournament, {
-                auto_start_on_max: ev.target.checked,
-            }),
-        });
-    setFirstPairingMethod = (ev) => {
+    const setMaximumPlayers = (ev) => {
+        tournament_ref.current.settings.maximum_players = ev.target.value;
+        refresh();
+    };
+    const setAutoStartOnMax = (ev) => {
+        tournament_ref.current.auto_start_on_max = ev.target.checked;
+        refresh();
+    };
+    const setFirstPairingMethod = (ev) => {
         const update: any = {
             first_pairing_method: ev.target.value,
         };
         if (
             ev.target.value === "opengotha" ||
-            this.state.tournament.subsequent_pairing_method === "opengotha"
+            tournament.subsequent_pairing_method === "opengotha"
         ) {
             update.subsequent_pairing_method = ev.target.value;
         }
-        this.setState({ tournament: Object.assign({}, this.state.tournament, update) });
+        tournament_ref.current = Object.assign(tournament_ref.current, update);
+        refresh();
     };
 
-    setSubsequentPairingMethod = (ev) => {
+    const setSubsequentPairingMethod = (ev) => {
         const update: any = {
             subsequent_pairing_method: ev.target.value,
         };
-        if (
-            ev.target.value === "opengotha" ||
-            this.state.tournament.first_pairing_method === "opengotha"
-        ) {
+        if (ev.target.value === "opengotha" || tournament.first_pairing_method === "opengotha") {
             update.first_pairing_method = ev.target.value;
         }
-        this.setState({ tournament: Object.assign({}, this.state.tournament, update) });
+        tournament_ref.current = Object.assign(tournament_ref.current, update);
+        refresh();
     };
-    setTournamentExclusivity = (ev) =>
-        this.setState({
-            tournament: Object.assign({}, this.state.tournament, { exclusivity: ev.target.value }),
-        });
-
-    setNumberOfRounds = (ev) => {
-        const newSettings = Object.assign({}, this.state.tournament.settings, {
-            num_rounds: ev.target.value,
-        });
-        this.setState({
-            tournament: Object.assign({}, this.state.tournament, { settings: newSettings }),
-        });
-    };
-    setGroupSize = (ev) => {
-        const newSettings = Object.assign({}, this.state.tournament.settings, {
-            group_size: ev.target.value,
-        });
-        this.setState({
-            tournament: Object.assign({}, this.state.tournament, { settings: newSettings }),
-        });
-    };
-    setRules = (ev) =>
-        this.setState({
-            tournament: Object.assign({}, this.state.tournament, { rules: ev.target.value }),
-        });
-    setHandicap = (ev) =>
-        this.setState({
-            tournament: Object.assign({}, this.state.tournament, { handicap: ev.target.value }),
-        });
-    setBoardSize = (ev) =>
-        this.setState({
-            tournament: Object.assign({}, this.state.tournament, { board_size: ev.target.value }),
-        });
-    setAnalysisEnabled = (ev) =>
-        this.setState({
-            tournament: Object.assign({}, this.state.tournament, {
-                analysis_enabled: ev.target.checked,
-            }),
-        });
-    setMinRank = (ev) =>
-        this.setState({
-            tournament: Object.assign({}, this.state.tournament, { min_ranking: ev.target.value }),
-        });
-    setMaxRank = (ev) =>
-        this.setState({
-            tournament: Object.assign({}, this.state.tournament, { max_ranking: ev.target.value }),
-        });
-    setExcludeProvisionalPlayers = (ev) =>
-        this.setState({
-            tournament: Object.assign({}, this.state.tournament, {
-                exclude_provisional: !ev.target.checked,
-            }),
-        });
-    //setScheduledRounds = (ev) => this.setState({tournament: Object.assign({}, this.state.tournament, {scheduled_rounds: ev.target.checked})});
-    setDescription = (ev) =>
-        this.setState({
-            tournament: Object.assign({}, this.state.tournament, { description: ev.target.value }),
-        });
-    setTimeControl = (tc) => {
-        console.log(tc);
-        this.setState({
-            tournament: Object.assign({}, this.state.tournament, { time_control_parameters: tc }),
-        });
-    };
-    updateNotes = (data) => {
-        const newSettings = Object.assign({}, this.state.tournament.settings, data);
-        this.setState({
-            tournament: Object.assign({}, this.state.tournament, { settings: newSettings }),
-        });
+    const setTournamentExclusivity = (ev) => {
+        tournament_ref.current.exclusivity = ev.target.checked;
+        refresh();
     };
 
-    render() {
-        try {
-            const editing = this.state.editing;
-            const loading = this.state.loading;
-            const info_loaded = this.state.info_loaded;
-            const user = data.get("user");
-            const tournament = this.state.tournament;
-            const players = this.state.players;
-            const rounds = this.state.rounds;
-            const selected_round =
-                rounds && rounds.length > this.state.selected_round
-                    ? this.state.rounds[this.state.selected_round]
-                    : null;
-            const raw_selected_round =
-                rounds && rounds.length > this.state.selected_round
-                    ? this.state.raw_rounds[this.state.selected_round]
-                    : null;
-            window["tournament"] = tournament;
+    const setNumberOfRounds = (ev) => {
+        tournament_ref.current.settings.num_rounds = ev.target.value;
+        refresh();
+    };
+    const setGroupSize = (ev) => {
+        tournament_ref.current.settings.group_size = ev.target.value;
+        refresh();
+    };
+    const setRules = (ev) => {
+        tournament_ref.current.rules = ev.target.value;
+        refresh();
+    };
+    const setHandicap = (ev) => {
+        tournament_ref.current.handicap = ev.target.value;
+        refresh();
+    };
+    const setBoardSize = (ev) => {
+        tournament_ref.current.board_size = ev.target.value;
+        refresh();
+    };
+    const setAnalysisEnabled = (ev) => {
+        tournament_ref.current.analysis_enabled = ev.target.checked;
+        refresh();
+    };
+    const setMinRank = (ev) => {
+        tournament_ref.current.min_ranking = ev.target.value;
+        refresh();
+    };
+    const setMaxRank = (ev) => {
+        tournament_ref.current.max_ranking = ev.target.value;
+        refresh();
+    };
+    const setExcludeProvisionalPlayers = (ev) => {
+        tournament_ref.current.exclude_provisional = !ev.target.checked;
+        refresh();
+    };
+    const setDescription = (ev) => {
+        tournament_ref.current.description = ev.target.value;
+        refresh();
+    };
+    const setTimeControl = (tc: TimeControl) => {
+        tournament_ref.current.time_control_parameters = tc;
+        refresh();
+    };
+    const updateNotes = (data: { [k: string]: any }) => {
+        const newSettings = Object.assign({}, tournament.settings, data);
+        tournament_ref.current.settings = newSettings;
+        refresh();
+    };
 
-            let tournament_time_start_text = "";
-            if (tournament.time_start) {
-                tournament_time_start_text = moment(new Date(tournament.time_start)).format("LLLL");
-                if (tournament.auto_start_on_max) {
-                    tournament_time_start_text = interpolate(
-                        _(
-                            "Start time: {{time}} or when tournament is full",
-                        ) /* translators: Tournament starts at the designated time or when full */,
-                        { time: tournament_time_start_text },
-                    );
-                } else {
-                    tournament_time_start_text = interpolate(
-                        _(
-                            "Start time: {{time}}",
-                        ) /* translators: Tournament starts at the designated time */,
-                        { time: tournament_time_start_text },
-                    );
-                }
-            }
-
-            let date_text = "";
-            if (tournament.started) {
-                if (tournament.ended) {
-                    const started = new Date(tournament.started).toLocaleDateString();
-                    const ended = new Date(tournament.ended).toLocaleDateString();
-                    if (started !== ended) {
-                        date_text = started + " - " + ended;
-                    } else {
-                        date_text =
-                            new Date(tournament.started).toLocaleString() +
-                            " - " +
-                            new Date(tournament.ended).toLocaleTimeString();
-                    }
-                } else {
-                    date_text += new Date(tournament.started).toLocaleString();
-                }
-            }
-
-            const time_control_text = timeControlDescription(tournament.time_control_parameters);
-
-            const tournament_type_name =
-                TOURNAMENT_TYPE_NAMES[tournament.tournament_type] || "(Unknown)";
-            const tournament_rules_name = rulesText(tournament.rules);
-            const first_pairing_method_text =
-                TOURNAMENT_PAIRING_METHODS[tournament.first_pairing_method] || "(Unknown)";
-            const subsequent_pairing_method_text =
-                TOURNAMENT_PAIRING_METHODS[tournament.subsequent_pairing_method] || "(Unknown)";
-            const handicap_text = handicapText(tournament.handicap);
-            const rank_restriction_text = rankRestrictionText(
-                tournament.min_ranking,
-                tournament.max_ranking,
-            );
-            const provisional_players_text = tournament.exclude_provisional
-                ? _("Not allowed")
-                : _("Allowed");
-            const analysis_mode_text = tournament.analysis_enabled
-                ? _("Allowed")
-                : _("Not allowed");
-            const cdn_release = data.get("config.cdn_release");
-            //let scheduled_rounds_text = tournament.scheduled_rounds ? pgettext("In a tournament, rounds will be scheduled to start at specific times", "Rounds are scheduled") : pgettext("In a tournament, the next round will start when the last finishes", "Rounds will automatically start when the last round finishes");
-
-            let min_bar = "";
-            let max_bar = "";
-            let num_rounds = 0;
-            let group_size = 0;
-            try {
-                min_bar = rankString(parseInt(tournament.settings.lower_bar));
-                max_bar = rankString(parseInt(tournament.settings.upper_bar));
-            } catch (e) {
-                // ignore error
-            }
-            try {
-                num_rounds = parseInt(tournament.settings.num_rounds);
-            } catch (e) {
-                // ignore error
-            }
-            try {
-                group_size = parseInt(tournament.settings.group_size);
-            } catch (e) {
-                // ignore error
-            }
-
-            let tournament_exclusivity = "";
-            switch (tournament.exclusivity) {
-                case "open":
-                    tournament_exclusivity = pgettext("Open tournament", "Open");
-                    break;
-                case "group":
-                    tournament_exclusivity = pgettext("Group tournament", "Members only");
-                    break;
-                case "invite":
-                    tournament_exclusivity = pgettext("Group tournament", "Invite only");
-                    break;
-            }
-
-            /* TODO */
-            //let is_joined = user && (user.id in players) && !players[global_user.id].disqualified && !players[global_user.id].resigned && !players[global_user.id].eliminated;
-            //let is_joined = false;
-            let can_join = true;
-            let cant_join_reason = "";
-
-            if (user.anonymous) {
-                can_join = false;
-                cant_join_reason = _("You must sign in to join this tournament.");
-            } else if (
-                tournament.exclusivity === "group" &&
-                !tournament.player_is_member_of_group
-            ) {
-                can_join = false;
-                cant_join_reason = _("You must be a member of the group to join this tournament");
-            } else if (!tournament.is_open || tournament.exclusivity === "invite") {
-                can_join = false;
-                cant_join_reason = _("This is a closed tournament, you must be invited to join.");
-            } else if (tournament.exclude_provisional && user.provisional > 0) {
-                can_join = false;
-                cant_join_reason = _(
-                    "This tournament is closed to provisional players. You need to establish your rank by playing ranked games before you can join this tournament.",
-                );
-            } else if (bounded_rank(user) < tournament.min_ranking) {
-                can_join = false;
-                cant_join_reason = _("Your rank is too low to join this tournament.");
-            } else if (bounded_rank(user) > tournament.max_ranking) {
-                can_join = false;
-                cant_join_reason = _("Your rank is too high to join this tournament");
-            }
-
-            const time_per_move = computeAverageMoveTime(tournament.time_control_parameters);
-
-            if (
-                tournament.tournament_type === "elimination" ||
-                tournament.tournament_type === "double_elimination"
-            ) {
-                setTimeout(() => this.updateEliminationTrees(), 1);
-            }
-
-            const opengotha = this.state.tournament.tournament_type === "opengotha";
-            const has_fixed_number_of_rounds =
-                tournament.tournament_type === "mcmahon" ||
-                tournament.tournament_type === "s_mcmahon" ||
-                tournament.tournament_type === "opengotha" ||
-                null;
-
-            if (!this.state.info_loaded && !this.state.editing) {
-                return <LoadingPage />;
-            }
-
-            return (
-                <div className="Tournament page-width">
-                    <UIPush
-                        event="players-updated"
-                        channel={`tournament-${this.state.tournament_id}`}
-                        action={this.reloadTournament}
-                    />
-                    <UIPush
-                        event="reload-tournament"
-                        channel={`tournament-${this.state.tournament_id}`}
-                        action={this.reloadTournament}
-                    />
-                    <UIPush
-                        event="update-round-notes"
-                        channel={`tournament-${this.state.tournament_id}`}
-                        action={this.updateNotes}
-                    />
-
-                    <div className="top-details">
-                        <div>
-                            {!editing ? (
-                                <h2>
-                                    <i className="fa fa-trophy"></i> {tournament.name}
-                                </h2>
-                            ) : (
-                                <input
-                                    ref={this.ref_tournament_name}
-                                    className="fill big"
-                                    value={tournament.name}
-                                    placeholder={_("Tournament Name")}
-                                    onChange={this.setTournamentName}
-                                />
-                            )}
-
-                            {editing && tournament.tournament_type === "opengotha" && (
-                                <h3>
-                                    Please note, the OpenGotha tournament is a manually managed
-                                    tournament. Please read the{" "}
-                                    <a
-                                        href="https://github.com/online-go/online-go.com/wiki/OpenGotha-Tournaments"
-                                        target="_blank"
-                                    >
-                                        documentation
-                                    </a>{" "}
-                                    before creating this type of tournament.{" "}
-                                    <i>
-                                        This is a new tournament type, please report any issues
-                                        experience.
-                                    </i>
-                                </h3>
-                            )}
-
-                            {tournament.tournament_type === "opengotha" &&
-                                tournament.can_administer &&
-                                tournament.started &&
-                                !tournament.ended && (
-                                    <button className="reject xs" onClick={this.endTournament}>
-                                        {_("End Tournament")}
-                                    </button>
-                                )}
-
-                            {tournament.tournament_type === "opengotha" && (
-                                <OpenGothaTournamentUploadDownload
-                                    tournament={tournament}
-                                    reloadCallback={this.reloadTournament}
-                                />
-                            )}
-
-                            {!editing && info_loaded && (
-                                <div>
-                                    {(((data.get("user").is_tournament_moderator ||
-                                        data.get("user").id === tournament.director.id) &&
-                                        !tournament.started &&
-                                        !tournament.start_waiting) ||
-                                        null) && (
-                                        <button className="xs" onClick={this.startEditing}>
-                                            {_("Edit Tournament")}
-                                        </button>
-                                    )}
-
-                                    {((tournament.started == null && tournament.can_administer) ||
-                                        null) && (
-                                        <button
-                                            className="danger xs"
-                                            onClick={this.startTournament}
-                                        >
-                                            {tournament.tournament_type === "opengotha"
-                                                ? pgettext(
-                                                      "Close tournament registration",
-                                                      "Close registration",
-                                                  )
-                                                : _("Start Tournament Now")}
-                                        </button>
-                                    )}
-                                    {((tournament.started == null && tournament.can_administer) ||
-                                        null) && (
-                                        <button
-                                            className="reject xs"
-                                            onClick={this.deleteTournament}
-                                        >
-                                            {_("End Tournament")}
-                                        </button>
-                                    )}
-
-                                    {((tournament.started &&
-                                        !tournament.ended &&
-                                        this.state.is_joined) ||
-                                        null) && (
-                                        <button className="reject xs" onClick={this.resign}>
-                                            {_("Resign from Tournament")}
-                                        </button>
-                                    )}
-                                </div>
-                            )}
-
-                            {info_loaded && (!tournament.started || null) && (
-                                <h4>{tournament_time_start_text}</h4>
-                            )}
-                            {!editing && info_loaded && <h4>{date_text}</h4>}
-                            {editing && (
-                                <div className="form-group" style={{ marginTop: "1rem" }}>
-                                    <label className="control-label" htmlFor="start-time">
-                                        <span>
-                                            {
-                                                _(
-                                                    "Start time",
-                                                ) /* translators: When the tournament starts */
-                                            }
-                                            :{" "}
-                                        </span>
-                                    </label>
-                                    <div className="controls">
-                                        <div className="checkbox">
-                                            <Datetime
-                                                onChange={this.setStartTime}
-                                                value={new Date(tournament.time_start)}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                            {!editing && info_loaded && (
-                                <p>
-                                    <b>{_("Clock:")}</b> {time_control_text}
-                                </p>
-                            )}
-                            {editing && (
-                                <TimeControlPicker
-                                    value={tournament.time_control_parameters}
-                                    onChange={this.setTimeControl}
-                                />
-                            )}
-                            {!editing ? (
-                                <Markdown source={tournament.description} />
-                            ) : (
-                                <textarea
-                                    ref={this.ref_description}
-                                    rows={7}
-                                    className="fill"
-                                    value={tournament.description}
-                                    placeholder={_("Description")}
-                                    onChange={this.setDescription}
-                                />
-                            )}
-                        </div>
-                        <div className="top-right-details">
-                            <table>
-                                <tbody>
-                                    {(tournament.group || null) && (
-                                        <tr>
-                                            <th>{_("Group")}</th>
-                                            <td>
-                                                <Link to={`/group/${tournament.group.id}`}>
-                                                    {tournament.group.name}
-                                                </Link>
-                                            </td>
-                                        </tr>
-                                    )}
-                                    {(tournament.group || null) && (
-                                        <tr>
-                                            <th>{_("Tournament Director")}</th>
-                                            <td>
-                                                <Player user={tournament.director} />
-                                            </td>
-                                        </tr>
-                                    )}
-
-                                    <tr>
-                                        <th>{_("Exclusivity")}</th>
-                                        <td>
-                                            {!editing ? (
-                                                tournament_exclusivity
-                                            ) : (
-                                                <select
-                                                    className="tournament-dropdown form-control"
-                                                    value={tournament.exclusivity}
-                                                    onChange={this.setTournamentExclusivity}
-                                                >
-                                                    <option value="open">
-                                                        {pgettext("Open tournament", "Open")}
-                                                    </option>
-                                                    <option value="group">
-                                                        {pgettext(
-                                                            "Group tournament",
-                                                            "Members only",
-                                                        )}
-                                                    </option>
-                                                    <option value="invite">
-                                                        {pgettext(
-                                                            "Group tournament",
-                                                            "Invite only",
-                                                        )}
-                                                    </option>
-                                                </select>
-                                            )}
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <th>{_("Tournament Type")}</th>
-                                        <td>
-                                            {!editing ? (
-                                                tournament_type_name
-                                            ) : (
-                                                <select
-                                                    id="tournament-type"
-                                                    value={this.state.tournament.tournament_type}
-                                                    onChange={this.setTournamentType}
-                                                    disabled={this.state.tournament.id > 0}
-                                                >
-                                                    <option value="mcmahon">{_("McMahon")}</option>
-                                                    <option value="s_mcmahon">
-                                                        {_("Simultaneous McMahon")}
-                                                    </option>
-                                                    <option value="roundrobin">
-                                                        {_("Round Robin")}
-                                                    </option>
-                                                    <option value="swiss">{_("Swiss")}</option>
-                                                    <option value="elimination">
-                                                        {_("Single Elimination")}
-                                                    </option>
-                                                    <option value="double_elimination">
-                                                        {_("Double Elimination")}
-                                                    </option>
-                                                    <option value="opengotha">
-                                                        {pgettext(
-                                                            "Tournament type where the tournament director does all pairing with the OpenGotha software",
-                                                            "OpenGotha",
-                                                        )}{" "}
-                                                        (beta)
-                                                    </option>
-                                                </select>
-                                            )}
-                                        </td>
-                                    </tr>
-
-                                    {(tournament.tournament_type === "mcmahon" ||
-                                        tournament.tournament_type === "s_mcmahon" ||
-                                        null) && (
-                                        <tr>
-                                            <th>{_("McMahon Bars")}</th>
-                                            <td>
-                                                {!editing ? (
-                                                    <span>
-                                                        {min_bar} - {max_bar}
-                                                    </span>
-                                                ) : (
-                                                    <span>
-                                                        <select
-                                                            className="rank-selection"
-                                                            value={tournament.settings.lower_bar}
-                                                            onChange={this.setLowerBar}
-                                                        >
-                                                            {ranks.map((r, idx) => (
-                                                                <option key={idx} value={r.rank}>
-                                                                    {r.label}
-                                                                </option>
-                                                            ))}
-                                                        </select>
-                                                        -
-                                                        <select
-                                                            className="rank-selection"
-                                                            value={tournament.settings.upper_bar}
-                                                            onChange={this.setUpperBar}
-                                                        >
-                                                            {ranks.map((r, idx) => (
-                                                                <option key={idx} value={r.rank}>
-                                                                    {r.label}
-                                                                </option>
-                                                            ))}
-                                                        </select>
-                                                    </span>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    )}
-
-                                    {tournament.tournament_type !== "opengotha" && (
-                                        <tr>
-                                            <th>{_("Players")}</th>
-                                            <td>
-                                                {editing ? (
-                                                    <span>
-                                                        <input
-                                                            type="number"
-                                                            value={tournament.players_start}
-                                                            onChange={this.setPlayersStart}
-                                                        />
-                                                        -
-                                                        <input
-                                                            ref={this.ref_max_players}
-                                                            type="number"
-                                                            value={
-                                                                tournament.settings.maximum_players
-                                                            }
-                                                            onChange={this.setMaximumPlayers}
-                                                        />
-                                                    </span>
-                                                ) : !tournament.started ? (
-                                                    <span>
-                                                        {tournament.players_start}
-                                                        {!tournament.settings.maximum_players
-                                                            ? "+"
-                                                            : tournament.settings.maximum_players >
-                                                              tournament.players_start
-                                                            ? "-" +
-                                                              tournament.settings.maximum_players
-                                                            : ""}
-                                                    </span>
-                                                ) : (
-                                                    <span>
-                                                        {this.state.sorted_players.length} (was{" "}
-                                                        {tournament.players_start}
-                                                        {!tournament.settings.maximum_players
-                                                            ? "+"
-                                                            : tournament.settings.maximum_players >
-                                                              tournament.players_start
-                                                            ? "-" +
-                                                              tournament.settings.maximum_players
-                                                            : ""}
-                                                        )
-                                                    </span>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    )}
-                                    {tournament.tournament_type !== "opengotha" && (
-                                        <tr>
-                                            <th>
-                                                <label htmlFor="autostart">
-                                                    {_("Start when full")}
-                                                </label>
-                                            </th>
-                                            <td>
-                                                {!editing ? (
-                                                    <span>
-                                                        {tournament.auto_start_on_max
-                                                            ? _("Yes")
-                                                            : _("No")}
-                                                    </span>
-                                                ) : (
-                                                    <input
-                                                        type="checkbox"
-                                                        id="autostart"
-                                                        checked={tournament.auto_start_on_max}
-                                                        onChange={this.setAutoStartOnMax}
-                                                    />
-                                                )}
-                                            </td>
-                                        </tr>
-                                    )}
-                                    {tournament.tournament_type !== "roundrobin" &&
-                                        tournament.tournament_type !== "opengotha" && (
-                                            <tr>
-                                                <th>{_("Initial Pairing Method")}</th>
-                                                <td>
-                                                    {!editing ? (
-                                                        <span>{first_pairing_method_text}</span>
-                                                    ) : (
-                                                        <select
-                                                            value={tournament.first_pairing_method}
-                                                            onChange={this.setFirstPairingMethod}
-                                                        >
-                                                            <option
-                                                                disabled={opengotha}
-                                                                value="random"
-                                                            >
-                                                                {pgettext(
-                                                                    "Tournament type",
-                                                                    "Random",
-                                                                )}
-                                                            </option>
-                                                            <option
-                                                                disabled={opengotha}
-                                                                value="slaughter"
-                                                            >
-                                                                {pgettext(
-                                                                    "Tournament type",
-                                                                    "Slaughter",
-                                                                )}
-                                                            </option>
-                                                            <option
-                                                                disabled={opengotha}
-                                                                value="slide"
-                                                            >
-                                                                {pgettext(
-                                                                    "Tournament type",
-                                                                    "Slide",
-                                                                )}
-                                                            </option>
-                                                            <option
-                                                                disabled={opengotha}
-                                                                value="strength"
-                                                            >
-                                                                {pgettext(
-                                                                    "Tournament type",
-                                                                    "Strength",
-                                                                )}
-                                                            </option>
-                                                            <option
-                                                                disabled={!opengotha}
-                                                                value="opengotha"
-                                                            >
-                                                                {pgettext(
-                                                                    "Tournament director will pair opponents with OpenGotha",
-                                                                    "OpenGotha",
-                                                                )}
-                                                            </option>
-                                                        </select>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        )}
-                                    {tournament.tournament_type !== "roundrobin" &&
-                                        tournament.tournament_type !== "opengotha" && (
-                                            <tr>
-                                                <th>{_("Subsequent Pairing Method")}</th>
-                                                <td>
-                                                    {!editing ? (
-                                                        <span>
-                                                            {subsequent_pairing_method_text}
-                                                        </span>
-                                                    ) : (
-                                                        <select
-                                                            value={
-                                                                tournament.subsequent_pairing_method
-                                                            }
-                                                            onChange={
-                                                                this.setSubsequentPairingMethod
-                                                            }
-                                                        >
-                                                            <option
-                                                                disabled={opengotha}
-                                                                value="random"
-                                                            >
-                                                                {pgettext(
-                                                                    "Tournament type",
-                                                                    "Random",
-                                                                )}
-                                                            </option>
-                                                            <option
-                                                                disabled={opengotha}
-                                                                value="slaughter"
-                                                            >
-                                                                {pgettext(
-                                                                    "Tournament type",
-                                                                    "Slaughter",
-                                                                )}
-                                                            </option>
-                                                            <option
-                                                                disabled={opengotha}
-                                                                value="slide"
-                                                            >
-                                                                {pgettext(
-                                                                    "Tournament type",
-                                                                    "Slide",
-                                                                )}
-                                                            </option>
-                                                            <option
-                                                                disabled={opengotha}
-                                                                value="strength"
-                                                            >
-                                                                {pgettext(
-                                                                    "Tournament type",
-                                                                    "Strength",
-                                                                )}
-                                                            </option>
-                                                            <option
-                                                                disabled={!opengotha}
-                                                                value="opengotha"
-                                                            >
-                                                                {pgettext(
-                                                                    "Tournament director will pair opponents with OpenGotha",
-                                                                    "OpenGotha",
-                                                                )}
-                                                            </option>
-                                                        </select>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        )}
-                                    {has_fixed_number_of_rounds && (
-                                        <tr>
-                                            <th>{_("Number of Rounds")}</th>
-                                            <td>
-                                                {!editing ? (
-                                                    num_rounds
-                                                ) : (
-                                                    <select
-                                                        value={tournament.settings.num_rounds}
-                                                        onChange={this.setNumberOfRounds}
-                                                    >
-                                                        {(tournament.tournament_type === "opengotha"
-                                                            ? [
-                                                                  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-                                                                  12,
-                                                              ]
-                                                            : [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-                                                        ).map((v) => (
-                                                            <option key={v} value={v}>
-                                                                {v}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    )}
-                                    {(tournament.tournament_type === "s_mcmahon" || null) && (
-                                        <tr>
-                                            <th>{_("Minimum Group Size")}</th>
-                                            <td>
-                                                {!editing ? (
-                                                    group_size
-                                                ) : (
-                                                    <select
-                                                        value={tournament.settings.group_size}
-                                                        onChange={this.setGroupSize}
-                                                    >
-                                                        {[3, 4, 5].map((v) => (
-                                                            <option key={v} value={v}>
-                                                                {v}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    )}
-                                    <tr>
-                                        <th>{_("Rules")}</th>
-                                        <td>
-                                            {!editing ? (
-                                                tournament_rules_name
-                                            ) : (
-                                                <select
-                                                    value={tournament.rules}
-                                                    onChange={this.setRules}
-                                                >
-                                                    <option value="aga">{_("AGA")}</option>
-                                                    <option value="japanese">
-                                                        {_("Japanese")}
-                                                    </option>
-                                                    <option value="chinese">{_("Chinese")}</option>
-                                                    <option value="korean">{_("Korean")}</option>
-                                                    <option value="ing">{_("Ing SST")}</option>
-                                                    <option value="nz">{_("New Zealand")}</option>
-                                                </select>
-                                            )}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>{_("Board Size")}</th>
-                                        <td>
-                                            {!editing ? (
-                                                `${tournament.board_size}x${tournament.board_size}`
-                                            ) : (
-                                                <select
-                                                    value={tournament.board_size}
-                                                    onChange={this.setBoardSize}
-                                                >
-                                                    <option value="19">19x19</option>
-                                                    <option value="13">13x13</option>
-                                                    <option value="9">9x9</option>
-                                                </select>
-                                            )}
-                                        </td>
-                                    </tr>
-                                    {(tournament.tournament_type !== "opengotha" || null) && (
-                                        <tr>
-                                            <th>{_("Handicap")}</th>
-                                            <td>
-                                                {!editing ? (
-                                                    handicap_text
-                                                ) : (
-                                                    <select
-                                                        value={tournament.handicap}
-                                                        onChange={this.setHandicap}
-                                                    >
-                                                        <option value="0">{_("None")}</option>
-                                                        <option value="-1">{_("Automatic")}</option>
-                                                    </select>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    )}
-                                    <tr>
-                                        <th>
-                                            <label htmlFor="analysis">
-                                                {_("Conditional Moves & Analysis")}
-                                            </label>
-                                        </th>
-                                        <td>
-                                            {!editing ? (
-                                                analysis_mode_text
-                                            ) : (
-                                                <input
-                                                    type="checkbox"
-                                                    id="analysis"
-                                                    checked={tournament.analysis_enabled}
-                                                    onChange={this.setAnalysisEnabled}
-                                                />
-                                            )}
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <th>{_("Rank Restriction")}</th>
-                                        <td>
-                                            {!editing ? (
-                                                <span>{rank_restriction_text}</span>
-                                            ) : (
-                                                <span>
-                                                    <select
-                                                        className="rank-selection"
-                                                        value={tournament.min_ranking}
-                                                        onChange={this.setMinRank}
-                                                    >
-                                                        {ranks.map((r, idx) => (
-                                                            <option key={idx} value={r.rank}>
-                                                                {r.label}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                    -
-                                                    <select
-                                                        className="rank-selection"
-                                                        value={tournament.max_ranking}
-                                                        onChange={this.setMaxRank}
-                                                    >
-                                                        {ranks.map((r, idx) => (
-                                                            <option key={idx} value={r.rank}>
-                                                                {r.label}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </span>
-                                            )}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>
-                                            <label htmlFor="provisional">
-                                                {_("Provisional Players")}
-                                            </label>
-                                        </th>
-                                        <td>
-                                            {!editing ? (
-                                                provisional_players_text
-                                            ) : (
-                                                <input
-                                                    type="checkbox"
-                                                    id="provisional"
-                                                    checked={!tournament.exclude_provisional}
-                                                    onChange={this.setExcludeProvisionalPlayers}
-                                                />
-                                            )}
-                                        </td>
-                                    </tr>
-                                    {/*
-                        {has_fixed_number_of_rounds &&
-                            <React.Fragment>
-                                <tr>
-
-                                    <th>
-                                        <label
-                                            htmlFor="scheduled_rounds"
-                                            title={_("When selected, rounds will have a set start time. Otherwise rounds will automatically start when the last round ends.")}>
-                                                {pgettext("When selected, rounds will have a set start time. Otherwise rounds will automatically start when the last round ends.", "Scheduled rounds")}
-                                        </label>
-                                    </th>
-                                    <td>
-                                        {!editing
-                                            ? scheduled_rounds_text
-                                            : <input type="checkbox" id="scheduled_rounds" checked={tournament.scheduled_rounds} onChange={this.setScheduledRounds} />
-                                        }
-                                    </td>
-                                </tr>
-                            </React.Fragment>
-                        }
-                        {has_fixed_number_of_rounds && this.state.tournament.scheduled_rounds &&
-                            <React.Fragment>
-                                {(new Array(parseInt(tournament.settings.num_rounds))).fill(0).map((elt:any, idx:number) => (
-                                    <tr key={idx}>
-                                        <th>
-                                            {interpolate(pgettext("Tournament round number. The {{num}} is placeholder text, please leave it as {{num}}", "Round {{num}}"), {num: idx + 1})}
-                                        </th>
-                                        <td>
-                                            <Datetime
-                                                inputProps={{
-                                                    placeholder: pgettext("Time a tournament round starts", "Round start time")
-                                                }}
-                                                onChange={(d) => this.setRoundStartTime(idx, d)} value={this.getRoundStartTime(idx)}/>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </React.Fragment>
-                        }
-                        */}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {editing && (
-                        <div style={{ textAlign: "center", marginTop: "3rem" }}>
-                            <button className="primary" onClick={this.save}>
-                                {tournament.id === 0
-                                    ? _("Create Tournament")
-                                    : _("Save Tournament")}
-                            </button>
-                        </div>
-                    )}
-
-                    {!loading && tournament.tournament_type !== "opengotha" && tournament.ended && (
-                        <div className="final-results">
-                            <h2>{_("Final results")}:</h2>
-                            {Object.keys(players)
-                                .map((id) => players[id])
-                                .filter((p) => p.rank > 0 && p.rank <= 3)
-                                .sort((a, b) => (a.rank > b.rank ? 1 : -1))
-                                .map((player) => (
-                                    <div key={player.id}>
-                                        <span className="final-results-place">
-                                            <img
-                                                className="trophy"
-                                                src={`${cdn_release}/img/trophies/${trophyFilename(
-                                                    tournament,
-                                                    player.rank,
-                                                )}`}
-                                                title=""
-                                            />
-                                            {nthPlace(player.rank)}
-                                        </span>
-                                        <Player icon user={player} />
-                                    </div>
-                                ))}
-                        </div>
-                    )}
-
-                    {info_loaded && (
-                        <EmbeddedChatCard
-                            channel={`tournament-${this.state.tournament_id}`}
-                            updateTitle={false}
-                        />
-                    )}
-
-                    {info_loaded && loading && <LoadingPage />}
-
-                    {!loading && !tournament.started && (
-                        <div className={"bottom-details not-started"}>
-                            {(!tournament.start_waiting || null) && (
-                                <div className="signup-area" style={{ textAlign: "center" }}>
-                                    {(tournament.time_start || null) && (
-                                        <h3>
-                                            {interpolate(
-                                                _("Tournament starts {{relative_time_from_now}}"),
-                                                {
-                                                    relative_time_from_now: fromNow(
-                                                        tournament.time_start,
-                                                    ),
-                                                },
-                                            )}
-                                        </h3>
-                                    )}
-
-                                    {this.state.is_joined != null && (
-                                        <p style={{ marginTop: "6em" }}>
-                                            {((!this.state.is_joined && can_join) || null) && (
-                                                <button
-                                                    className="btn raise btn-primary"
-                                                    onClick={this.joinTournament}
-                                                >
-                                                    {_("Join this tournament!")}
-                                                </button>
-                                            )}
-                                            {((!this.state.is_joined && !can_join) || null) && (
-                                                <span>{cant_join_reason}</span>
-                                            )}
-                                            {(this.state.is_joined || null) && (
-                                                <button
-                                                    className="btn raise btn-danger"
-                                                    onClick={this.partTournament}
-                                                >
-                                                    {_("Drop out from tournament")}
-                                                </button>
-                                            )}
-                                        </p>
-                                    )}
-
-                                    {((this.state.is_joined && time_per_move < 3600) || null) && (
-                                        <h4 style={{ marginTop: "3em" }}>
-                                            {_(
-                                                "You must be on this page when the tournament begins or you will be removed from the tournament",
-                                            )}
-                                        </h4>
-                                    )}
-                                </div>
-                            )}
-                            {(tournament.start_waiting || null) && (
-                                <div className="signup-area" style={{ textAlign: "center" }}>
-                                    <p style={{ marginTop: "6em" }}>
-                                        <span>{_("Tournament is starting")}</span>
-                                    </p>
-                                </div>
-                            )}
-                            <div className="player-list">
-                                {(tournament.exclusivity !== "invite" ||
-                                    data.get("user").is_tournament_moderator ||
-                                    tournament.director.id === data.get("user").id ||
-                                    null) && (
-                                    <div className="invite-input">
-                                        <div
-                                            className="input-group"
-                                            id="tournament-invite-user-container"
-                                        >
-                                            <PlayerAutocomplete onComplete={this.setUserToInvite} />
-                                            <button
-                                                className="btn primary xs"
-                                                type="button"
-                                                disabled={this.state.user_to_invite == null}
-                                                onClick={this.inviteUser}
-                                            >
-                                                {_("Invite")}
-                                            </button>
-                                        </div>
-                                        <div className="bold">{this.state.invite_result}</div>
-                                        <div id="tournament-invite-result"></div>
-                                    </div>
-                                )}
-                                {(this.state.sorted_players.length > 0 || null) && (
-                                    <Card>
-                                        {this.state.sorted_players.map((player) => (
-                                            <div key={player.id}>
-                                                <Player icon user={player} />
-                                            </div>
-                                        ))}
-                                    </Card>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {!loading && tournament.started && tournament.tournament_type === "opengotha" && (
-                        <div className="bottom-details">
-                            <div className="results">
-                                <div>
-                                    <div className="roster-rounds-line">
-                                        {tournament.opengotha_standings ? (
-                                            <button
-                                                className={
-                                                    this.state.selected_round === "standings"
-                                                        ? "primary"
-                                                        : "default"
-                                                }
-                                                onClick={() =>
-                                                    this.setState({ selected_round: "standings" })
-                                                }
-                                            >
-                                                {pgettext("Tournament standings", "Standings")}
-                                            </button>
-                                        ) : (
-                                            <button
-                                                className={
-                                                    this.state.selected_round === "roster"
-                                                        ? "primary"
-                                                        : "default"
-                                                }
-                                                onClick={() =>
-                                                    this.setState({ selected_round: "roster" })
-                                                }
-                                            >
-                                                {pgettext(
-                                                    "Tournament participant roster",
-                                                    "Roster",
-                                                )}
-                                            </button>
-                                        )}
-                                        <Steps
-                                            completed={this.state.rounds.length}
-                                            total={this.state.rounds.length}
-                                            selected={this.state.selected_round as number}
-                                            onChange={this.setSelectedRound}
-                                        />
-                                    </div>
-                                    {this.state.selected_round === "roster" ? (
-                                        <OpenGothaRoster
-                                            tournament={tournament}
-                                            players={this.state.sorted_players}
-                                        />
-                                    ) : this.state.selected_round === "standings" ? (
-                                        <OpenGothaStandings tournament={tournament} />
-                                    ) : (
-                                        <OpenGothaTournamentRound
-                                            tournament={tournament}
-                                            roundNotes={
-                                                tournament.settings[
-                                                    "notes-round-" +
-                                                        ((this.state.selected_round as number) + 1)
-                                                ] || ""
-                                            }
-                                            selectedRound={
-                                                (this.state.selected_round as number) + 1
-                                            }
-                                            players={this.state.sorted_players}
-                                            rounds={this.state.rounds}
-                                        />
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {!loading && tournament.started && tournament.tournament_type !== "opengotha" && (
-                        <div className="bottom-details">
-                            <div className="results">
-                                {this.state.use_elimination_trees ? (
-                                    <PersistentElement
-                                        elt={this.elimination_tree_container[0] as HTMLDivElement}
-                                    />
-                                ) : (
-                                    <div>
-                                        {this.state.rounds.length > 1 && (
-                                            <Steps
-                                                completed={this.state.rounds.length}
-                                                total={this.state.rounds.length}
-                                                selected={this.state.selected_round as number}
-                                                onChange={this.setSelectedRound}
-                                            />
-                                        )}
-
-                                        {!selected_round &&
-                                            tournament.group &&
-                                            tournament.group.hide_details && (
-                                                <div className="hide-details-note">
-                                                    {_(
-                                                        "This tournament is part of a group that hides group activity and details, as such you must be a member of the group to see the tournament results.",
-                                                    )}
-                                                </div>
-                                            )}
-
-                                        {/* Round robin / simul style groups */}
-                                        {((selected_round && selected_round.groupify) || null) && (
-                                            <div>
-                                                {selected_round.groups.map((group, idx) => {
-                                                    // (if we had ramda library, we'd use that non-mutating sort instead of this funky spread-copy...)
-
-                                                    const sorted_players = [...group.players]
-                                                        .filter((p) => p.player)
-                                                        .sort(sortDropoutsToBottom);
-
-                                                    return (
-                                                        <div key={idx} className="round-group">
-                                                            <table>
-                                                                <tbody>
-                                                                    <tr>
-                                                                        {(tournament.ended ||
-                                                                            null) && (
-                                                                            <th className="rank">
-                                                                                {_("Rank")}
-                                                                            </th>
-                                                                        )}
-                                                                        <th>{_("Player")}</th>
-                                                                        {sorted_players.map(
-                                                                            (opponent, idx) => (
-                                                                                <th
-                                                                                    key={idx}
-                                                                                    className="rotated-title"
-                                                                                >
-                                                                                    {(opponent.player ||
-                                                                                        null) && (
-                                                                                        <span className="rotated">
-                                                                                            <Player
-                                                                                                user={
-                                                                                                    opponent.player
-                                                                                                }
-                                                                                                icon
-                                                                                            ></Player>
-                                                                                        </span>
-                                                                                    )}
-                                                                                </th>
-                                                                            ),
-                                                                        )}
-                                                                        <th className="rotated-title">
-                                                                            <span className="rotated">
-                                                                                {_("Points")}
-                                                                            </span>
-                                                                        </th>
-                                                                        {(tournament.ended ||
-                                                                            null) && (
-                                                                            <th className="rotated-title">
-                                                                                <span className="rotated">
-                                                                                    &Sigma;{" "}
-                                                                                    {_(
-                                                                                        "Opponent Scores",
-                                                                                    )}
-                                                                                </span>
-                                                                            </th>
-                                                                        )}
-                                                                        {(tournament.ended ||
-                                                                            null) && (
-                                                                            <th className="rotated-title">
-                                                                                <span className="rotated">
-                                                                                    &Sigma;{" "}
-                                                                                    {_(
-                                                                                        "Defeated Scores",
-                                                                                    )}
-                                                                                </span>
-                                                                            </th>
-                                                                        )}
-                                                                        <th></th>
-                                                                    </tr>
-                                                                    {sorted_players.map(
-                                                                        (player, idx) => {
-                                                                            player = player.player;
-                                                                            return (
-                                                                                <tr key={idx}>
-                                                                                    {(tournament.ended ||
-                                                                                        null) && (
-                                                                                        <td className="rank">
-                                                                                            {
-                                                                                                player.rank
-                                                                                            }
-                                                                                        </td>
-                                                                                    )}
-
-                                                                                    <th className="player">
-                                                                                        <Player
-                                                                                            user={
-                                                                                                player
-                                                                                            }
-                                                                                            icon
-                                                                                        />
-                                                                                    </th>
-                                                                                    {sorted_players.map(
-                                                                                        (
-                                                                                            opponent,
-                                                                                            idx,
-                                                                                        ) => (
-                                                                                            <td
-                                                                                                key={
-                                                                                                    idx
-                                                                                                }
-                                                                                                className={
-                                                                                                    "result " +
-                                                                                                    selected_round
-                                                                                                        .colors[
-                                                                                                        player.id +
-                                                                                                            "x" +
-                                                                                                            opponent.id
-                                                                                                    ]
-                                                                                                }
-                                                                                            >
-                                                                                                <Link
-                                                                                                    to={`/game/${
-                                                                                                        selected_round
-                                                                                                            .game_ids[
-                                                                                                            player.id +
-                                                                                                                "x" +
-                                                                                                                opponent.id
-                                                                                                        ]
-                                                                                                    }`}
-                                                                                                >
-                                                                                                    {
-                                                                                                        selected_round
-                                                                                                            .results[
-                                                                                                            player.id +
-                                                                                                                "x" +
-                                                                                                                opponent.id
-                                                                                                        ]
-                                                                                                    }
-                                                                                                </Link>
-                                                                                            </td>
-                                                                                        ),
-                                                                                    )}
-                                                                                    <td className="points">
-                                                                                        {
-                                                                                            player.points
-                                                                                        }
-                                                                                    </td>
-                                                                                    {(tournament.ended ||
-                                                                                        null) && (
-                                                                                        <td className="points">
-                                                                                            {
-                                                                                                player.sos
-                                                                                            }
-                                                                                        </td>
-                                                                                    )}
-                                                                                    {(tournament.ended ||
-                                                                                        null) && (
-                                                                                        <td className="points">
-                                                                                            {
-                                                                                                player.sodos
-                                                                                            }
-                                                                                        </td>
-                                                                                    )}
-                                                                                    <td className="notes">
-                                                                                        {
-                                                                                            player.notes
-                                                                                        }
-                                                                                    </td>
-                                                                                </tr>
-                                                                            );
-                                                                        },
-                                                                    )}
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-
-                                        {/* Pair matches */}
-                                        {((selected_round &&
-                                            !selected_round.groupify &&
-                                            tournament.tournament_type !== "s_title") ||
-                                            null) && (
-                                            <div className="round-group">
-                                                <table>
-                                                    <tbody>
-                                                        <tr>
-                                                            {(tournament.ended || null) && (
-                                                                <th>{_("Rank")}</th>
-                                                            )}
-                                                            <th>{_("Player")}</th>
-                                                            <th>{_("Opponent")}</th>
-                                                            <th>{_("Result")}</th>
-                                                            <th>{_("Points")}</th>
-                                                            {(tournament.ended || null) && (
-                                                                <th className="rotated-title">
-                                                                    <span className="rotated">
-                                                                        &Sigma;{" "}
-                                                                        {_("Opponent Scores")}
-                                                                    </span>
-                                                                </th>
-                                                            )}
-                                                            {(tournament.ended || null) && (
-                                                                <th className="rotated-title">
-                                                                    <span className="rotated">
-                                                                        &Sigma;{" "}
-                                                                        {_("Defeated Scores")}
-                                                                    </span>
-                                                                </th>
-                                                            )}
-                                                            <th></th>
-                                                        </tr>
-                                                        {selected_round.matches.map((m, idx) => {
-                                                            const pxo =
-                                                                (m.player &&
-                                                                    m.opponent &&
-                                                                    `${m.player.id}x${m.opponent.id}`) ||
-                                                                "error-invalid-player-or-opponent";
-                                                            if (
-                                                                pxo ===
-                                                                "error-invalid-player-or-opponent"
-                                                            ) {
-                                                                if (!logspam_debounce) {
-                                                                    logspam_debounce = setTimeout(
-                                                                        () => {
-                                                                            console.error(
-                                                                                "invalid player or opponent",
-                                                                                m,
-                                                                                selected_round.matches,
-                                                                                selected_round,
-                                                                            );
-                                                                            logspam_debounce =
-                                                                                undefined;
-                                                                        },
-                                                                        10,
-                                                                    );
-                                                                }
-                                                            }
-
-                                                            return (
-                                                                <tr key={idx}>
-                                                                    {(tournament.ended || null) && (
-                                                                        <td className="rank">
-                                                                            {m.player?.rank}
-                                                                        </td>
-                                                                    )}
-                                                                    {(m.player || null) && (
-                                                                        <td className="player">
-                                                                            <Player
-                                                                                user={m.player}
-                                                                                icon
-                                                                            />
-                                                                        </td>
-                                                                    )}
-                                                                    {(m.opponent || null) && (
-                                                                        <td className="player">
-                                                                            <Player
-                                                                                user={m.opponent}
-                                                                                icon
-                                                                            />
-                                                                        </td>
-                                                                    )}
-
-                                                                    <td
-                                                                        className={
-                                                                            "result " +
-                                                                            selected_round.colors[
-                                                                                pxo
-                                                                            ]
-                                                                        }
-                                                                    >
-                                                                        <Link
-                                                                            to={`/game/${selected_round.game_ids[pxo]}`}
-                                                                        >
-                                                                            {
-                                                                                selected_round
-                                                                                    .results[pxo]
-                                                                            }
-                                                                        </Link>
-                                                                    </td>
-
-                                                                    <td className="points">
-                                                                        {m.player &&
-                                                                            m.player.points}
-                                                                    </td>
-                                                                    {(tournament.ended || null) && (
-                                                                        <td className="points">
-                                                                            {m.player &&
-                                                                                m.player.sos}
-                                                                        </td>
-                                                                    )}
-                                                                    {(tournament.ended || null) && (
-                                                                        <td className="points">
-                                                                            {m.player &&
-                                                                                m.player.sodos}
-                                                                        </td>
-                                                                    )}
-                                                                    <td className="notes">
-                                                                        {m.player && m.player.notes}
-                                                                    </td>
-                                                                </tr>
-                                                            );
-                                                        })}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        )}
-
-                                        {/* Case for busted tournaments that have random matches that they shouldn't have but do */}
-                                        {((selected_round && selected_round.broken_list.length) ||
-                                            null) && (
-                                            <div className="round-group">
-                                                <h2>{_("Other Matches")}</h2>
-                                                <table>
-                                                    <tbody>
-                                                        <tr>
-                                                            {(tournament.ended || null) && (
-                                                                <th>{_("Rank")}</th>
-                                                            )}
-                                                            <th>{_("Player")}</th>
-                                                            <th>{_("Opponent")}</th>
-                                                            <th>{_("Result")}</th>
-                                                            <th>{_("Points")}</th>
-                                                            {(tournament.ended || null) && (
-                                                                <th className="rotated-title">
-                                                                    <span className="rotated">
-                                                                        &Sigma;{" "}
-                                                                        {_("Opponent Scores")}
-                                                                    </span>
-                                                                </th>
-                                                            )}
-                                                            {(tournament.ended || null) && (
-                                                                <th className="rotated-title">
-                                                                    <span className="rotated">
-                                                                        &Sigma;{" "}
-                                                                        {_("Defeated Scores")}
-                                                                    </span>
-                                                                </th>
-                                                            )}
-                                                            <th></th>
-                                                        </tr>
-                                                        {selected_round.broken_list.map(
-                                                            (m, idx) => {
-                                                                return (
-                                                                    <tr key={idx}>
-                                                                        {(tournament.ended ||
-                                                                            null) && (
-                                                                            <td className="rank">
-                                                                                {m.player.rank}
-                                                                            </td>
-                                                                        )}
-                                                                        {(m.player || null) && (
-                                                                            <td className="player">
-                                                                                <Player
-                                                                                    user={m.player}
-                                                                                    icon
-                                                                                />
-                                                                            </td>
-                                                                        )}
-                                                                        {(m.opponent || null) && (
-                                                                            <td className="player">
-                                                                                <Player
-                                                                                    user={
-                                                                                        m.opponent
-                                                                                    }
-                                                                                    icon
-                                                                                />
-                                                                            </td>
-                                                                        )}
-
-                                                                        <td
-                                                                            className={
-                                                                                "result " +
-                                                                                selected_round
-                                                                                    .colors[
-                                                                                    m.player.id +
-                                                                                        "x" +
-                                                                                        m.opponent
-                                                                                            .id
-                                                                                ]
-                                                                            }
-                                                                        >
-                                                                            <Link
-                                                                                to={`/game/${
-                                                                                    selected_round
-                                                                                        .game_ids[
-                                                                                        m.player
-                                                                                            .id +
-                                                                                            "x" +
-                                                                                            m
-                                                                                                .opponent
-                                                                                                .id
-                                                                                    ]
-                                                                                }`}
-                                                                            >
-                                                                                {
-                                                                                    selected_round
-                                                                                        .results[
-                                                                                        m.player
-                                                                                            .id +
-                                                                                            "x" +
-                                                                                            m
-                                                                                                .opponent
-                                                                                                .id
-                                                                                    ]
-                                                                                }
-                                                                            </Link>
-                                                                        </td>
-
-                                                                        <td className="points">
-                                                                            {m.player.points}
-                                                                        </td>
-                                                                        {(tournament.ended ||
-                                                                            null) && (
-                                                                            <td className="points">
-                                                                                {m.player.sos}
-                                                                            </td>
-                                                                        )}
-                                                                        {(tournament.ended ||
-                                                                            null) && (
-                                                                            <td className="points">
-                                                                                {m.player.sodos}
-                                                                            </td>
-                                                                        )}
-                                                                        <td className="notes">
-                                                                            {m.player.notes}
-                                                                        </td>
-                                                                    </tr>
-                                                                );
-                                                            },
-                                                        )}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        )}
-
-                                        {/* Byes */}
-                                        {((selected_round && selected_round.byes.length) ||
-                                            null) && (
-                                            <div className="round-group">
-                                                <h2>
-                                                    {_("Byes") /*translators: Tournament byes */}
-                                                </h2>
-                                                <table>
-                                                    <tbody>
-                                                        <tr>
-                                                            {(tournament.ended || null) && (
-                                                                <th>{_("Rank")}</th>
-                                                            )}
-                                                            <th>{_("Player")}</th>
-                                                            <th>{_("Points")}</th>
-                                                            {(tournament.ended || null) && (
-                                                                <th className="rotated-title">
-                                                                    <span className="rotated">
-                                                                        &Sigma;{" "}
-                                                                        {_("Opponent Scores")}
-                                                                    </span>
-                                                                </th>
-                                                            )}
-                                                            {(tournament.ended || null) && (
-                                                                <th className="rotated-title">
-                                                                    <span className="rotated">
-                                                                        &Sigma;{" "}
-                                                                        {_("Defeated Scores")}
-                                                                    </span>
-                                                                </th>
-                                                            )}
-                                                            <th></th>
-                                                        </tr>
-                                                        {selected_round.byes.map((player, idx) => {
-                                                            if (!player) {
-                                                                return <tr key={idx} />;
-                                                            }
-                                                            return (
-                                                                <tr key={idx}>
-                                                                    {(tournament.ended || null) && (
-                                                                        <td className="rank">
-                                                                            {player.rank}
-                                                                        </td>
-                                                                    )}
-                                                                    <td className="player">
-                                                                        <Player
-                                                                            user={player}
-                                                                            icon
-                                                                        />
-                                                                    </td>
-                                                                    <td className="points">
-                                                                        {player.points}
-                                                                    </td>
-                                                                    {((player &&
-                                                                        tournament.ended) ||
-                                                                        null) && (
-                                                                        <td className="points">
-                                                                            {player.sos}
-                                                                        </td>
-                                                                    )}
-                                                                    {(tournament.ended || null) && (
-                                                                        <td className="points">
-                                                                            {player.sodos}
-                                                                        </td>
-                                                                    )}
-                                                                    <td className="notes">
-                                                                        {player.notes}
-                                                                    </td>
-                                                                </tr>
-                                                            );
-                                                        })}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        )}
-
-                                        {/* Old title tournaments */}
-                                        {(tournament.tournament_type === "s_title" || null) && (
-                                            <div style={{ textAlign: "center" }}>
-                                                <div style={{ display: "inline-block" }}>
-                                                    <h3>
-                                                        {(rounds[0].matches[0].player || null) && (
-                                                            <Player
-                                                                user={rounds[0].matches[0].player}
-                                                                icon
-                                                            />
-                                                        )}{" "}
-                                                        vs.{" "}
-                                                        {(rounds[0].matches[0].opponent ||
-                                                            null) && (
-                                                            <Player
-                                                                user={rounds[0].matches[0].opponent}
-                                                                icon
-                                                            />
-                                                        )}
-                                                    </h3>
-
-                                                    {raw_selected_round.matches.map((m, idx) => (
-                                                        <MiniGoban
-                                                            key={idx}
-                                                            id={m.gameid}
-                                                            width={tournament.board_size as number}
-                                                            height={tournament.board_size as number}
-                                                            black={players[m.black]}
-                                                            white={players[m.white]}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
-        } catch (e) {
-            setTimeout(() => {
-                throw e;
-            }, 1);
-            return null;
-        }
-    }
-
-    kick(player_id: number) {
+    const kick = (player_id: number) => {
         const user = player_cache.lookup(player_id);
 
         void alert
@@ -3145,7 +1371,7 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    post("tournaments/%%/players", this.state.tournament.id, {
+                    post("tournaments/%%/players", tournament.id, {
                         delete: true,
                         player_id: user.id,
                     })
@@ -3155,8 +1381,8 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
             });
 
         close_all_popovers();
-    }
-    adjustPoints(player_id: number) {
+    };
+    const adjustPoints = (player_id: number) => {
         const user = player_cache.lookup(player_id);
 
         alert
@@ -3178,7 +1404,7 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
                 const adjustments = {};
                 adjustments[user.id] = v;
 
-                put("tournaments/%%/players", this.state.tournament.id, {
+                put("tournaments/%%/players", tournament.id, {
                     adjust: adjustments,
                 })
                     .then(ignore)
@@ -3186,8 +1412,8 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
             })
             .catch(ignore);
         close_all_popovers();
-    }
-    disqualify(player_id: number) {
+    };
+    const disqualify = (player_id: number) => {
         const user = player_cache.lookup(player_id);
 
         void alert
@@ -3198,7 +1424,7 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    put("tournaments/%%/players", this.state.tournament.id, {
+                    put("tournaments/%%/players", tournament.id, {
                         disqualify: user.id,
                     })
                         .then(ignore)
@@ -3207,43 +1433,1490 @@ class _Tournament extends React.PureComponent<TournamentProperties, TournamentSt
             });
 
         close_all_popovers();
-    }
+    };
 
-    renderExtraPlayerActions = (player_id: number) => {
+    const renderExtraPlayerActions = (player_id: number) => {
         const user = data.get("user");
         if (
             !(
                 user.is_tournament_moderator ||
-                (this.state.tournament.director && this.state.tournament.director.id === user.id)
+                (tournament.director && tournament.director.id === user.id)
             )
         ) {
             return null;
         }
 
-        if (!this.state.tournament.started) {
+        if (!tournament.started) {
             return (
                 <div className="actions">
-                    <button className="reject xs" onClick={() => this.kick(player_id)}>
+                    <button className="reject xs" onClick={() => kick(player_id)}>
                         {_("Kick")}
                     </button>
                 </div>
             );
-        } else if (!this.state.tournament.ended) {
+        } else if (!tournament.ended) {
             return (
                 <div className="actions">
-                    <button className="primary xs" onClick={() => this.adjustPoints(player_id)}>
+                    <button className="primary xs" onClick={() => adjustPoints(player_id)}>
                         {_("Adjust Points")}
                     </button>
-                    <button className="reject xs" onClick={() => this.disqualify(player_id)}>
+                    <button className="reject xs" onClick={() => disqualify(player_id)}>
                         {_("Disqualify")}
                     </button>
                 </div>
             );
         }
     };
-}
 
-export const Tournament = rr6ClassShim(_Tournament);
+    const selected_round =
+        rounds && rounds.length > selected_round_idx ? rounds[selected_round_idx] : null;
+    const raw_selected_round =
+        rounds && rounds.length > selected_round ? raw_rounds[selected_round] : null;
+    window["tournament"] = tournament;
+
+    let tournament_time_start_text = "";
+    if (tournament.time_start) {
+        tournament_time_start_text = moment(new Date(tournament.time_start)).format("LLLL");
+        if (tournament.auto_start_on_max) {
+            tournament_time_start_text = interpolate(
+                _(
+                    "Start time: {{time}} or when tournament is full",
+                ) /* translators: Tournament starts at the designated time or when full */,
+                { time: tournament_time_start_text },
+            );
+        } else {
+            tournament_time_start_text = interpolate(
+                _(
+                    "Start time: {{time}}",
+                ) /* translators: Tournament starts at the designated time */,
+                { time: tournament_time_start_text },
+            );
+        }
+    }
+
+    let date_text = "";
+    if (tournament.started) {
+        if (tournament.ended) {
+            const started = new Date(tournament.started).toLocaleDateString();
+            const ended = new Date(tournament.ended).toLocaleDateString();
+            if (started !== ended) {
+                date_text = started + " - " + ended;
+            } else {
+                date_text =
+                    new Date(tournament.started).toLocaleString() +
+                    " - " +
+                    new Date(tournament.ended).toLocaleTimeString();
+            }
+        } else {
+            date_text += new Date(tournament.started).toLocaleString();
+        }
+    }
+
+    const time_control_text = timeControlDescription(tournament.time_control_parameters);
+
+    const tournament_type_name = TOURNAMENT_TYPE_NAMES[tournament.tournament_type] || "(Unknown)";
+    const tournament_rules_name = rulesText(tournament.rules);
+    const first_pairing_method_text =
+        TOURNAMENT_PAIRING_METHODS[tournament.first_pairing_method] || "(Unknown)";
+    const subsequent_pairing_method_text =
+        TOURNAMENT_PAIRING_METHODS[tournament.subsequent_pairing_method] || "(Unknown)";
+    const handicap_text = handicapText(tournament.handicap);
+    const rank_restriction_text = rankRestrictionText(
+        tournament.min_ranking,
+        tournament.max_ranking,
+    );
+    const provisional_players_text = tournament.exclude_provisional
+        ? _("Not allowed")
+        : _("Allowed");
+    const analysis_mode_text = tournament.analysis_enabled ? _("Allowed") : _("Not allowed");
+    const cdn_release = data.get("config.cdn_release");
+    //let scheduled_rounds_text = tournament.scheduled_rounds ? pgettext("In a tournament, rounds will be scheduled to start at specific times", "Rounds are scheduled") : pgettext("In a tournament, the next round will start when the last finishes", "Rounds will automatically start when the last round finishes");
+
+    let min_bar = "";
+    let max_bar = "";
+    let num_rounds = 0;
+    let group_size = 0;
+    try {
+        min_bar = rankString(parseInt(tournament.settings.lower_bar));
+        max_bar = rankString(parseInt(tournament.settings.upper_bar));
+    } catch (e) {
+        // ignore error
+    }
+    try {
+        num_rounds = parseInt(tournament.settings.num_rounds);
+    } catch (e) {
+        // ignore error
+    }
+    try {
+        group_size = parseInt(tournament.settings.group_size);
+    } catch (e) {
+        // ignore error
+    }
+
+    let tournament_exclusivity = "";
+    switch (tournament.exclusivity) {
+        case "open":
+            tournament_exclusivity = pgettext("Open tournament", "Open");
+            break;
+        case "group":
+            tournament_exclusivity = pgettext("Group tournament", "Members only");
+            break;
+        case "invite":
+            tournament_exclusivity = pgettext("Group tournament", "Invite only");
+            break;
+    }
+
+    /* TODO */
+    //let is_joined = user && (user.id in players) && !players[global_user.id].disqualified && !players[global_user.id].resigned && !players[global_user.id].eliminated;
+    //let is_joined = false;
+    let can_join = true;
+    let cant_join_reason = "";
+
+    if (user.anonymous) {
+        can_join = false;
+        cant_join_reason = _("You must sign in to join this tournament.");
+    } else if (tournament.exclusivity === "group" && !tournament.player_is_member_of_group) {
+        can_join = false;
+        cant_join_reason = _("You must be a member of the group to join this tournament");
+    } else if (!tournament.is_open || tournament.exclusivity === "invite") {
+        can_join = false;
+        cant_join_reason = _("This is a closed tournament, you must be invited to join.");
+    } else if (tournament.exclude_provisional && user.provisional > 0) {
+        can_join = false;
+        cant_join_reason = _(
+            "This tournament is closed to provisional players. You need to establish your rank by playing ranked games before you can join this tournament.",
+        );
+    } else if (bounded_rank(user) < tournament.min_ranking) {
+        can_join = false;
+        cant_join_reason = _("Your rank is too low to join this tournament.");
+    } else if (bounded_rank(user) > tournament.max_ranking) {
+        can_join = false;
+        cant_join_reason = _("Your rank is too high to join this tournament");
+    }
+
+    const time_per_move = computeAverageMoveTime(tournament.time_control_parameters);
+
+    if (
+        tournament.tournament_type === "elimination" ||
+        tournament.tournament_type === "double_elimination"
+    ) {
+        setTimeout(() => updateEliminationTrees(), 1);
+    }
+
+    const opengotha = tournament.tournament_type === "opengotha";
+    const has_fixed_number_of_rounds =
+        tournament.tournament_type === "mcmahon" ||
+        tournament.tournament_type === "s_mcmahon" ||
+        tournament.tournament_type === "opengotha" ||
+        null;
+
+    if (!info_loaded && !editing) {
+        return <LoadingPage />;
+    }
+
+    return (
+        <div className="Tournament page-width">
+            <UIPush
+                event="players-updated"
+                channel={`tournament-${tournament_id}`}
+                action={reloadTournament}
+            />
+            <UIPush
+                event="reload-tournament"
+                channel={`tournament-${tournament_id}`}
+                action={reloadTournament}
+            />
+            <UIPush
+                event="update-round-notes"
+                channel={`tournament-${tournament_id}`}
+                action={updateNotes}
+            />
+
+            <div className="top-details">
+                <div>
+                    {!editing ? (
+                        <h2>
+                            <i className="fa fa-trophy"></i> {tournament.name}
+                        </h2>
+                    ) : (
+                        <input
+                            ref={ref_tournament_name}
+                            className="fill big"
+                            value={tournament.name}
+                            placeholder={_("Tournament Name")}
+                            onChange={setTournamentName}
+                        />
+                    )}
+
+                    {editing && tournament.tournament_type === "opengotha" && (
+                        <h3>
+                            Please note, the OpenGotha tournament is a manually managed tournament.
+                            Please read the{" "}
+                            <a
+                                href="https://github.com/online-go/online-go.com/wiki/OpenGotha-Tournaments"
+                                target="_blank"
+                            >
+                                documentation
+                            </a>{" "}
+                            before creating this type of tournament.{" "}
+                            <i>
+                                This is a new tournament type, please report any issues experience.
+                            </i>
+                        </h3>
+                    )}
+
+                    {tournament.tournament_type === "opengotha" &&
+                        tournament.can_administer &&
+                        tournament.started &&
+                        !tournament.ended && (
+                            <button className="reject xs" onClick={endTournament}>
+                                {_("End Tournament")}
+                            </button>
+                        )}
+
+                    {tournament.tournament_type === "opengotha" && (
+                        <OpenGothaTournamentUploadDownload
+                            tournament={tournament}
+                            reloadCallback={reloadTournament}
+                        />
+                    )}
+
+                    {!editing && info_loaded && (
+                        <div>
+                            {(((data.get("user").is_tournament_moderator ||
+                                data.get("user").id === tournament.director.id) &&
+                                !tournament.started &&
+                                !tournament.start_waiting) ||
+                                null) && (
+                                <button className="xs" onClick={startEditing}>
+                                    {_("Edit Tournament")}
+                                </button>
+                            )}
+
+                            {((tournament.started == null && tournament.can_administer) ||
+                                null) && (
+                                <button className="danger xs" onClick={startTournament}>
+                                    {tournament.tournament_type === "opengotha"
+                                        ? pgettext(
+                                              "Close tournament registration",
+                                              "Close registration",
+                                          )
+                                        : _("Start Tournament Now")}
+                                </button>
+                            )}
+                            {((tournament.started == null && tournament.can_administer) ||
+                                null) && (
+                                <button className="reject xs" onClick={deleteTournament}>
+                                    {_("End Tournament")}
+                                </button>
+                            )}
+
+                            {((tournament.started && !tournament.ended && is_joined) || null) && (
+                                <button className="reject xs" onClick={resign}>
+                                    {_("Resign from Tournament")}
+                                </button>
+                            )}
+                        </div>
+                    )}
+
+                    {info_loaded && (!tournament.started || null) && (
+                        <h4>{tournament_time_start_text}</h4>
+                    )}
+                    {!editing && info_loaded && <h4>{date_text}</h4>}
+                    {editing && (
+                        <div className="form-group" style={{ marginTop: "1rem" }}>
+                            <label className="control-label" htmlFor="start-time">
+                                <span>
+                                    {_("Start time") /* translators: When the tournament starts */}:{" "}
+                                </span>
+                            </label>
+                            <div className="controls">
+                                <div className="checkbox">
+                                    <Datetime
+                                        onChange={setStartTime}
+                                        value={new Date(tournament.time_start)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {!editing && info_loaded && (
+                        <p>
+                            <b>{_("Clock:")}</b> {time_control_text}
+                        </p>
+                    )}
+                    {editing && (
+                        <TimeControlPicker
+                            value={tournament.time_control_parameters}
+                            onChange={setTimeControl}
+                        />
+                    )}
+                    {!editing ? (
+                        <Markdown source={tournament.description} />
+                    ) : (
+                        <textarea
+                            ref={ref_description}
+                            rows={7}
+                            className="fill"
+                            value={tournament.description}
+                            placeholder={_("Description")}
+                            onChange={setDescription}
+                        />
+                    )}
+                </div>
+                <div className="top-right-details">
+                    <table>
+                        <tbody>
+                            {(tournament.group || null) && (
+                                <tr>
+                                    <th>{_("Group")}</th>
+                                    <td>
+                                        <Link to={`/group/${tournament.group.id}`}>
+                                            {tournament.group.name}
+                                        </Link>
+                                    </td>
+                                </tr>
+                            )}
+                            {(tournament.group || null) && (
+                                <tr>
+                                    <th>{_("Tournament Director")}</th>
+                                    <td>
+                                        <Player user={tournament.director} />
+                                    </td>
+                                </tr>
+                            )}
+
+                            <tr>
+                                <th>{_("Exclusivity")}</th>
+                                <td>
+                                    {!editing ? (
+                                        tournament_exclusivity
+                                    ) : (
+                                        <select
+                                            className="tournament-dropdown form-control"
+                                            value={tournament.exclusivity}
+                                            onChange={setTournamentExclusivity}
+                                        >
+                                            <option value="open">
+                                                {pgettext("Open tournament", "Open")}
+                                            </option>
+                                            <option value="group">
+                                                {pgettext("Group tournament", "Members only")}
+                                            </option>
+                                            <option value="invite">
+                                                {pgettext("Group tournament", "Invite only")}
+                                            </option>
+                                        </select>
+                                    )}
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th>{_("Tournament Type")}</th>
+                                <td>
+                                    {!editing ? (
+                                        tournament_type_name
+                                    ) : (
+                                        <select
+                                            id="tournament-type"
+                                            value={tournament.tournament_type}
+                                            onChange={setTournamentType}
+                                            disabled={tournament.id > 0}
+                                        >
+                                            <option value="mcmahon">{_("McMahon")}</option>
+                                            <option value="s_mcmahon">
+                                                {_("Simultaneous McMahon")}
+                                            </option>
+                                            <option value="roundrobin">{_("Round Robin")}</option>
+                                            <option value="swiss">{_("Swiss")}</option>
+                                            <option value="elimination">
+                                                {_("Single Elimination")}
+                                            </option>
+                                            <option value="double_elimination">
+                                                {_("Double Elimination")}
+                                            </option>
+                                            <option value="opengotha">
+                                                {pgettext(
+                                                    "Tournament type where the tournament director does all pairing with the OpenGotha software",
+                                                    "OpenGotha",
+                                                )}{" "}
+                                                (beta)
+                                            </option>
+                                        </select>
+                                    )}
+                                </td>
+                            </tr>
+
+                            {(tournament.tournament_type === "mcmahon" ||
+                                tournament.tournament_type === "s_mcmahon" ||
+                                null) && (
+                                <tr>
+                                    <th>{_("McMahon Bars")}</th>
+                                    <td>
+                                        {!editing ? (
+                                            <span>
+                                                {min_bar} - {max_bar}
+                                            </span>
+                                        ) : (
+                                            <span>
+                                                <select
+                                                    className="rank-selection"
+                                                    value={tournament.settings.lower_bar}
+                                                    onChange={setLowerBar}
+                                                >
+                                                    {ranks.map((r, idx) => (
+                                                        <option key={idx} value={r.rank}>
+                                                            {r.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                -
+                                                <select
+                                                    className="rank-selection"
+                                                    value={tournament.settings.upper_bar}
+                                                    onChange={setUpperBar}
+                                                >
+                                                    {ranks.map((r, idx) => (
+                                                        <option key={idx} value={r.rank}>
+                                                            {r.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </span>
+                                        )}
+                                    </td>
+                                </tr>
+                            )}
+
+                            {tournament.tournament_type !== "opengotha" && (
+                                <tr>
+                                    <th>{_("Players")}</th>
+                                    <td>
+                                        {editing ? (
+                                            <span>
+                                                <input
+                                                    type="number"
+                                                    value={tournament.players_start}
+                                                    onChange={setPlayersStart}
+                                                />
+                                                -
+                                                <input
+                                                    ref={ref_max_players}
+                                                    type="number"
+                                                    value={tournament.settings.maximum_players}
+                                                    onChange={setMaximumPlayers}
+                                                />
+                                            </span>
+                                        ) : !tournament.started ? (
+                                            <span>
+                                                {tournament.players_start}
+                                                {!tournament.settings.maximum_players
+                                                    ? "+"
+                                                    : tournament.settings.maximum_players >
+                                                      tournament.players_start
+                                                    ? "-" + tournament.settings.maximum_players
+                                                    : ""}
+                                            </span>
+                                        ) : (
+                                            <span>
+                                                {sorted_players.length} (was{" "}
+                                                {tournament.players_start}
+                                                {!tournament.settings.maximum_players
+                                                    ? "+"
+                                                    : tournament.settings.maximum_players >
+                                                      tournament.players_start
+                                                    ? "-" + tournament.settings.maximum_players
+                                                    : ""}
+                                                )
+                                            </span>
+                                        )}
+                                    </td>
+                                </tr>
+                            )}
+                            {tournament.tournament_type !== "opengotha" && (
+                                <tr>
+                                    <th>
+                                        <label htmlFor="autostart">{_("Start when full")}</label>
+                                    </th>
+                                    <td>
+                                        {!editing ? (
+                                            <span>
+                                                {tournament.auto_start_on_max ? _("Yes") : _("No")}
+                                            </span>
+                                        ) : (
+                                            <input
+                                                type="checkbox"
+                                                id="autostart"
+                                                checked={tournament.auto_start_on_max}
+                                                onChange={setAutoStartOnMax}
+                                            />
+                                        )}
+                                    </td>
+                                </tr>
+                            )}
+                            {tournament.tournament_type !== "roundrobin" &&
+                                tournament.tournament_type !== "opengotha" && (
+                                    <tr>
+                                        <th>{_("Initial Pairing Method")}</th>
+                                        <td>
+                                            {!editing ? (
+                                                <span>{first_pairing_method_text}</span>
+                                            ) : (
+                                                <select
+                                                    value={tournament.first_pairing_method}
+                                                    onChange={setFirstPairingMethod}
+                                                >
+                                                    <option disabled={opengotha} value="random">
+                                                        {pgettext("Tournament type", "Random")}
+                                                    </option>
+                                                    <option disabled={opengotha} value="slaughter">
+                                                        {pgettext("Tournament type", "Slaughter")}
+                                                    </option>
+                                                    <option disabled={opengotha} value="slide">
+                                                        {pgettext("Tournament type", "Slide")}
+                                                    </option>
+                                                    <option disabled={opengotha} value="strength">
+                                                        {pgettext("Tournament type", "Strength")}
+                                                    </option>
+                                                    <option disabled={!opengotha} value="opengotha">
+                                                        {pgettext(
+                                                            "Tournament director will pair opponents with OpenGotha",
+                                                            "OpenGotha",
+                                                        )}
+                                                    </option>
+                                                </select>
+                                            )}
+                                        </td>
+                                    </tr>
+                                )}
+                            {tournament.tournament_type !== "roundrobin" &&
+                                tournament.tournament_type !== "opengotha" && (
+                                    <tr>
+                                        <th>{_("Subsequent Pairing Method")}</th>
+                                        <td>
+                                            {!editing ? (
+                                                <span>{subsequent_pairing_method_text}</span>
+                                            ) : (
+                                                <select
+                                                    value={tournament.subsequent_pairing_method}
+                                                    onChange={setSubsequentPairingMethod}
+                                                >
+                                                    <option disabled={opengotha} value="random">
+                                                        {pgettext("Tournament type", "Random")}
+                                                    </option>
+                                                    <option disabled={opengotha} value="slaughter">
+                                                        {pgettext("Tournament type", "Slaughter")}
+                                                    </option>
+                                                    <option disabled={opengotha} value="slide">
+                                                        {pgettext("Tournament type", "Slide")}
+                                                    </option>
+                                                    <option disabled={opengotha} value="strength">
+                                                        {pgettext("Tournament type", "Strength")}
+                                                    </option>
+                                                    <option disabled={!opengotha} value="opengotha">
+                                                        {pgettext(
+                                                            "Tournament director will pair opponents with OpenGotha",
+                                                            "OpenGotha",
+                                                        )}
+                                                    </option>
+                                                </select>
+                                            )}
+                                        </td>
+                                    </tr>
+                                )}
+                            {has_fixed_number_of_rounds && (
+                                <tr>
+                                    <th>{_("Number of Rounds")}</th>
+                                    <td>
+                                        {!editing ? (
+                                            num_rounds
+                                        ) : (
+                                            <select
+                                                value={tournament.settings.num_rounds}
+                                                onChange={setNumberOfRounds}
+                                            >
+                                                {(tournament.tournament_type === "opengotha"
+                                                    ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+                                                    : [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+                                                ).map((v) => (
+                                                    <option key={v} value={v}>
+                                                        {v}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        )}
+                                    </td>
+                                </tr>
+                            )}
+                            {(tournament.tournament_type === "s_mcmahon" || null) && (
+                                <tr>
+                                    <th>{_("Minimum Group Size")}</th>
+                                    <td>
+                                        {!editing ? (
+                                            group_size
+                                        ) : (
+                                            <select
+                                                value={tournament.settings.group_size}
+                                                onChange={setGroupSize}
+                                            >
+                                                {[3, 4, 5].map((v) => (
+                                                    <option key={v} value={v}>
+                                                        {v}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        )}
+                                    </td>
+                                </tr>
+                            )}
+                            <tr>
+                                <th>{_("Rules")}</th>
+                                <td>
+                                    {!editing ? (
+                                        tournament_rules_name
+                                    ) : (
+                                        <select value={tournament.rules} onChange={setRules}>
+                                            <option value="aga">{_("AGA")}</option>
+                                            <option value="japanese">{_("Japanese")}</option>
+                                            <option value="chinese">{_("Chinese")}</option>
+                                            <option value="korean">{_("Korean")}</option>
+                                            <option value="ing">{_("Ing SST")}</option>
+                                            <option value="nz">{_("New Zealand")}</option>
+                                        </select>
+                                    )}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>{_("Board Size")}</th>
+                                <td>
+                                    {!editing ? (
+                                        `${tournament.board_size}x${tournament.board_size}`
+                                    ) : (
+                                        <select
+                                            value={tournament.board_size}
+                                            onChange={setBoardSize}
+                                        >
+                                            <option value="19">19x19</option>
+                                            <option value="13">13x13</option>
+                                            <option value="9">9x9</option>
+                                        </select>
+                                    )}
+                                </td>
+                            </tr>
+                            {(tournament.tournament_type !== "opengotha" || null) && (
+                                <tr>
+                                    <th>{_("Handicap")}</th>
+                                    <td>
+                                        {!editing ? (
+                                            handicap_text
+                                        ) : (
+                                            <select
+                                                value={tournament.handicap}
+                                                onChange={setHandicap}
+                                            >
+                                                <option value="0">{_("None")}</option>
+                                                <option value="-1">{_("Automatic")}</option>
+                                            </select>
+                                        )}
+                                    </td>
+                                </tr>
+                            )}
+                            <tr>
+                                <th>
+                                    <label htmlFor="analysis">
+                                        {_("Conditional Moves & Analysis")}
+                                    </label>
+                                </th>
+                                <td>
+                                    {!editing ? (
+                                        analysis_mode_text
+                                    ) : (
+                                        <input
+                                            type="checkbox"
+                                            id="analysis"
+                                            checked={tournament.analysis_enabled}
+                                            onChange={setAnalysisEnabled}
+                                        />
+                                    )}
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <th>{_("Rank Restriction")}</th>
+                                <td>
+                                    {!editing ? (
+                                        <span>{rank_restriction_text}</span>
+                                    ) : (
+                                        <span>
+                                            <select
+                                                className="rank-selection"
+                                                value={tournament.min_ranking}
+                                                onChange={setMinRank}
+                                            >
+                                                {ranks.map((r, idx) => (
+                                                    <option key={idx} value={r.rank}>
+                                                        {r.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            -
+                                            <select
+                                                className="rank-selection"
+                                                value={tournament.max_ranking}
+                                                onChange={setMaxRank}
+                                            >
+                                                {ranks.map((r, idx) => (
+                                                    <option key={idx} value={r.rank}>
+                                                        {r.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </span>
+                                    )}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <label htmlFor="provisional">{_("Provisional Players")}</label>
+                                </th>
+                                <td>
+                                    {!editing ? (
+                                        provisional_players_text
+                                    ) : (
+                                        <input
+                                            type="checkbox"
+                                            id="provisional"
+                                            checked={!tournament.exclude_provisional}
+                                            onChange={setExcludeProvisionalPlayers}
+                                        />
+                                    )}
+                                </td>
+                            </tr>
+                            {/*
+                        {has_fixed_number_of_rounds &&
+                            <React.Fragment>
+                                <tr>
+
+                                    <th>
+                                        <label
+                                            htmlFor="scheduled_rounds"
+                                            title={_("When selected, rounds will have a set start time. Otherwise rounds will automatically start when the last round ends.")}>
+                                                {pgettext("When selected, rounds will have a set start time. Otherwise rounds will automatically start when the last round ends.", "Scheduled rounds")}
+                                        </label>
+                                    </th>
+                                    <td>
+                                        {!editing
+                                            ? scheduled_rounds_text
+                                            : <input type="checkbox" id="scheduled_rounds" checked={tournament.scheduled_rounds} onChange={setScheduledRounds} />
+                                        }
+                                    </td>
+                                </tr>
+                            </React.Fragment>
+                        }
+                        {has_fixed_number_of_rounds && tournament.scheduled_rounds &&
+                            <React.Fragment>
+                                {(new Array(parseInt(tournament.settings.num_rounds))).fill(0).map((elt:any, idx:number) => (
+                                    <tr key={idx}>
+                                        <th>
+                                            {interpolate(pgettext("Tournament round number. The {{num}} is placeholder text, please leave it as {{num}}", "Round {{num}}"), {num: idx + 1})}
+                                        </th>
+                                        <td>
+                                            <Datetime
+                                                inputProps={{
+                                                    placeholder: pgettext("Time a tournament round starts", "Round start time")
+                                                }}
+                                                onChange={(d) => setRoundStartTime(idx, d)} value={getRoundStartTime(idx)}/>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </React.Fragment>
+                        }
+                        */}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {editing && (
+                <div style={{ textAlign: "center", marginTop: "3rem" }}>
+                    <button className="primary" onClick={save}>
+                        {tournament.id === 0 ? _("Create Tournament") : _("Save Tournament")}
+                    </button>
+                </div>
+            )}
+
+            {!loading && tournament.tournament_type !== "opengotha" && tournament.ended && (
+                <div className="final-results">
+                    <h2>{_("Final results")}:</h2>
+                    {Object.keys(players)
+                        .map((id) => players[id])
+                        .filter((p) => p.rank > 0 && p.rank <= 3)
+                        .sort((a, b) => (a.rank > b.rank ? 1 : -1))
+                        .map((player) => (
+                            <div key={player.id}>
+                                <span className="final-results-place">
+                                    <img
+                                        className="trophy"
+                                        src={`${cdn_release}/img/trophies/${trophyFilename(
+                                            tournament,
+                                            player.rank,
+                                        )}`}
+                                        title=""
+                                    />
+                                    {nthPlace(player.rank)}
+                                </span>
+                                <Player icon user={player} />
+                            </div>
+                        ))}
+                </div>
+            )}
+
+            {info_loaded && (
+                <EmbeddedChatCard channel={`tournament-${tournament_id}`} updateTitle={false} />
+            )}
+
+            {info_loaded && loading && <LoadingPage />}
+
+            {!loading && !tournament.started && (
+                <div className={"bottom-details not-started"}>
+                    {(!tournament.start_waiting || null) && (
+                        <div className="signup-area" style={{ textAlign: "center" }}>
+                            {(tournament.time_start || null) && (
+                                <h3>
+                                    {interpolate(
+                                        _("Tournament starts {{relative_time_from_now}}"),
+                                        {
+                                            relative_time_from_now: fromNow(tournament.time_start),
+                                        },
+                                    )}
+                                </h3>
+                            )}
+
+                            {is_joined != null && (
+                                <p style={{ marginTop: "6em" }}>
+                                    {((!is_joined && can_join) || null) && (
+                                        <button
+                                            className="btn raise btn-primary"
+                                            onClick={joinTournament}
+                                        >
+                                            {_("Join this tournament!")}
+                                        </button>
+                                    )}
+                                    {((!is_joined && !can_join) || null) && (
+                                        <span>{cant_join_reason}</span>
+                                    )}
+                                    {(is_joined || null) && (
+                                        <button
+                                            className="btn raise btn-danger"
+                                            onClick={partTournament}
+                                        >
+                                            {_("Drop out from tournament")}
+                                        </button>
+                                    )}
+                                </p>
+                            )}
+
+                            {((is_joined && time_per_move < 3600) || null) && (
+                                <h4 style={{ marginTop: "3em" }}>
+                                    {_(
+                                        "You must be on this page when the tournament begins or you will be removed from the tournament",
+                                    )}
+                                </h4>
+                            )}
+                        </div>
+                    )}
+                    {(tournament.start_waiting || null) && (
+                        <div className="signup-area" style={{ textAlign: "center" }}>
+                            <p style={{ marginTop: "6em" }}>
+                                <span>{_("Tournament is starting")}</span>
+                            </p>
+                        </div>
+                    )}
+                    <div className="player-list">
+                        {(tournament.exclusivity !== "invite" ||
+                            data.get("user").is_tournament_moderator ||
+                            tournament.director.id === data.get("user").id ||
+                            null) && (
+                            <div className="invite-input">
+                                <div className="input-group" id="tournament-invite-user-container">
+                                    <PlayerAutocomplete onComplete={setUserToInvite} />
+                                    <button
+                                        className="btn primary xs"
+                                        type="button"
+                                        disabled={user_to_invite == null}
+                                        onClick={inviteUser}
+                                    >
+                                        {_("Invite")}
+                                    </button>
+                                </div>
+                                <div className="bold">{invite_result}</div>
+                                <div id="tournament-invite-result"></div>
+                            </div>
+                        )}
+                        {(sorted_players.length > 0 || null) && (
+                            <Card>
+                                {sorted_players.map((player) => (
+                                    <div key={player.id}>
+                                        <Player icon user={player} />
+                                    </div>
+                                ))}
+                            </Card>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {!loading && tournament.started && tournament.tournament_type === "opengotha" && (
+                <div className="bottom-details">
+                    <div className="results">
+                        <div>
+                            <div className="roster-rounds-line">
+                                {tournament.opengotha_standings ? (
+                                    <button
+                                        className={
+                                            selected_round === "standings" ? "primary" : "default"
+                                        }
+                                        onClick={() => setSelectedRound("standings")}
+                                    >
+                                        {pgettext("Tournament standings", "Standings")}
+                                    </button>
+                                ) : (
+                                    <button
+                                        className={
+                                            selected_round === "roster" ? "primary" : "default"
+                                        }
+                                        onClick={() => setSelectedRound("roster")}
+                                    >
+                                        {pgettext("Tournament participant roster", "Roster")}
+                                    </button>
+                                )}
+                                <Steps
+                                    completed={rounds.length}
+                                    total={rounds.length}
+                                    selected={selected_round as number}
+                                    onChange={setSelectedRound}
+                                />
+                            </div>
+                            {selected_round === "roster" ? (
+                                <OpenGothaRoster tournament={tournament} players={sorted_players} />
+                            ) : selected_round === "standings" ? (
+                                <OpenGothaStandings tournament={tournament} />
+                            ) : (
+                                <OpenGothaTournamentRound
+                                    tournament={tournament}
+                                    roundNotes={
+                                        tournament.settings[
+                                            "notes-round-" + ((selected_round as number) + 1)
+                                        ] || ""
+                                    }
+                                    selectedRound={(selected_round as number) + 1}
+                                    players={sorted_players}
+                                    rounds={rounds}
+                                />
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {!loading && tournament.started && tournament.tournament_type !== "opengotha" && (
+                <div className="bottom-details">
+                    <div className="results">
+                        {use_elimination_trees ? (
+                            <PersistentElement elt={elimination_tree_container.current} />
+                        ) : (
+                            <div>
+                                {rounds.length > 1 && (
+                                    <Steps
+                                        completed={rounds.length}
+                                        total={rounds.length}
+                                        selected={selected_round as number}
+                                        onChange={setSelectedRound}
+                                    />
+                                )}
+
+                                {!selected_round &&
+                                    tournament.group &&
+                                    tournament.group.hide_details && (
+                                        <div className="hide-details-note">
+                                            {_(
+                                                "This tournament is part of a group that hides group activity and details, as such you must be a member of the group to see the tournament results.",
+                                            )}
+                                        </div>
+                                    )}
+
+                                {/* Round robin / simul style groups */}
+                                {((selected_round && selected_round.groupify) || null) && (
+                                    <div>
+                                        {selected_round.groups.map((group, idx) => {
+                                            // (if we had ramda library, we'd use that non-mutating sort instead of this funky spread-copy...)
+
+                                            const sorted_players = [...group.players]
+                                                .filter((p) => p.player)
+                                                .sort(sortDropoutsToBottom);
+
+                                            return (
+                                                <div key={idx} className="round-group">
+                                                    <table>
+                                                        <tbody>
+                                                            <tr>
+                                                                {(tournament.ended || null) && (
+                                                                    <th className="rank">
+                                                                        {_("Rank")}
+                                                                    </th>
+                                                                )}
+                                                                <th>{_("Player")}</th>
+                                                                {sorted_players.map(
+                                                                    (opponent, idx) => (
+                                                                        <th
+                                                                            key={idx}
+                                                                            className="rotated-title"
+                                                                        >
+                                                                            {(opponent.player ||
+                                                                                null) && (
+                                                                                <span className="rotated">
+                                                                                    <Player
+                                                                                        user={
+                                                                                            opponent.player
+                                                                                        }
+                                                                                        icon
+                                                                                    ></Player>
+                                                                                </span>
+                                                                            )}
+                                                                        </th>
+                                                                    ),
+                                                                )}
+                                                                <th className="rotated-title">
+                                                                    <span className="rotated">
+                                                                        {_("Points")}
+                                                                    </span>
+                                                                </th>
+                                                                {(tournament.ended || null) && (
+                                                                    <th className="rotated-title">
+                                                                        <span className="rotated">
+                                                                            &Sigma;{" "}
+                                                                            {_("Opponent Scores")}
+                                                                        </span>
+                                                                    </th>
+                                                                )}
+                                                                {(tournament.ended || null) && (
+                                                                    <th className="rotated-title">
+                                                                        <span className="rotated">
+                                                                            &Sigma;{" "}
+                                                                            {_("Defeated Scores")}
+                                                                        </span>
+                                                                    </th>
+                                                                )}
+                                                                <th></th>
+                                                            </tr>
+                                                            {sorted_players.map((player, idx) => {
+                                                                player = player.player;
+                                                                return (
+                                                                    <tr key={idx}>
+                                                                        {(tournament.ended ||
+                                                                            null) && (
+                                                                            <td className="rank">
+                                                                                {player.rank}
+                                                                            </td>
+                                                                        )}
+
+                                                                        <th className="player">
+                                                                            <Player
+                                                                                user={player}
+                                                                                icon
+                                                                            />
+                                                                        </th>
+                                                                        {sorted_players.map(
+                                                                            (opponent, idx) => (
+                                                                                <td
+                                                                                    key={idx}
+                                                                                    className={
+                                                                                        "result " +
+                                                                                        selected_round
+                                                                                            .colors[
+                                                                                            player.id +
+                                                                                                "x" +
+                                                                                                opponent.id
+                                                                                        ]
+                                                                                    }
+                                                                                >
+                                                                                    <Link
+                                                                                        to={`/game/${
+                                                                                            selected_round
+                                                                                                .game_ids[
+                                                                                                player.id +
+                                                                                                    "x" +
+                                                                                                    opponent.id
+                                                                                            ]
+                                                                                        }`}
+                                                                                    >
+                                                                                        {
+                                                                                            selected_round
+                                                                                                .results[
+                                                                                                player.id +
+                                                                                                    "x" +
+                                                                                                    opponent.id
+                                                                                            ]
+                                                                                        }
+                                                                                    </Link>
+                                                                                </td>
+                                                                            ),
+                                                                        )}
+                                                                        <td className="points">
+                                                                            {player.points}
+                                                                        </td>
+                                                                        {(tournament.ended ||
+                                                                            null) && (
+                                                                            <td className="points">
+                                                                                {player.sos}
+                                                                            </td>
+                                                                        )}
+                                                                        {(tournament.ended ||
+                                                                            null) && (
+                                                                            <td className="points">
+                                                                                {player.sodos}
+                                                                            </td>
+                                                                        )}
+                                                                        <td className="notes">
+                                                                            {player.notes}
+                                                                        </td>
+                                                                    </tr>
+                                                                );
+                                                            })}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+
+                                {/* Pair matches */}
+                                {((selected_round &&
+                                    !selected_round.groupify &&
+                                    tournament.tournament_type !== "s_title") ||
+                                    null) && (
+                                    <div className="round-group">
+                                        <table>
+                                            <tbody>
+                                                <tr>
+                                                    {(tournament.ended || null) && (
+                                                        <th>{_("Rank")}</th>
+                                                    )}
+                                                    <th>{_("Player")}</th>
+                                                    <th>{_("Opponent")}</th>
+                                                    <th>{_("Result")}</th>
+                                                    <th>{_("Points")}</th>
+                                                    {(tournament.ended || null) && (
+                                                        <th className="rotated-title">
+                                                            <span className="rotated">
+                                                                &Sigma; {_("Opponent Scores")}
+                                                            </span>
+                                                        </th>
+                                                    )}
+                                                    {(tournament.ended || null) && (
+                                                        <th className="rotated-title">
+                                                            <span className="rotated">
+                                                                &Sigma; {_("Defeated Scores")}
+                                                            </span>
+                                                        </th>
+                                                    )}
+                                                    <th></th>
+                                                </tr>
+                                                {selected_round.matches.map((m, idx) => {
+                                                    const pxo =
+                                                        (m.player &&
+                                                            m.opponent &&
+                                                            `${m.player.id}x${m.opponent.id}`) ||
+                                                        "error-invalid-player-or-opponent";
+                                                    if (
+                                                        pxo === "error-invalid-player-or-opponent"
+                                                    ) {
+                                                        if (!logspam_debounce) {
+                                                            logspam_debounce = setTimeout(() => {
+                                                                console.error(
+                                                                    "invalid player or opponent",
+                                                                    m,
+                                                                    selected_round.matches,
+                                                                    selected_round,
+                                                                );
+                                                                logspam_debounce = undefined;
+                                                            }, 10);
+                                                        }
+                                                    }
+
+                                                    return (
+                                                        <tr key={idx}>
+                                                            {(tournament.ended || null) && (
+                                                                <td className="rank">
+                                                                    {m.player?.rank}
+                                                                </td>
+                                                            )}
+                                                            {(m.player || null) && (
+                                                                <td className="player">
+                                                                    <Player user={m.player} icon />
+                                                                </td>
+                                                            )}
+                                                            {(m.opponent || null) && (
+                                                                <td className="player">
+                                                                    <Player
+                                                                        user={m.opponent}
+                                                                        icon
+                                                                    />
+                                                                </td>
+                                                            )}
+
+                                                            <td
+                                                                className={
+                                                                    "result " +
+                                                                    selected_round.colors[pxo]
+                                                                }
+                                                            >
+                                                                <Link
+                                                                    to={`/game/${selected_round.game_ids[pxo]}`}
+                                                                >
+                                                                    {selected_round.results[pxo]}
+                                                                </Link>
+                                                            </td>
+
+                                                            <td className="points">
+                                                                {m.player && m.player.points}
+                                                            </td>
+                                                            {(tournament.ended || null) && (
+                                                                <td className="points">
+                                                                    {m.player && m.player.sos}
+                                                                </td>
+                                                            )}
+                                                            {(tournament.ended || null) && (
+                                                                <td className="points">
+                                                                    {m.player && m.player.sodos}
+                                                                </td>
+                                                            )}
+                                                            <td className="notes">
+                                                                {m.player && m.player.notes}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+
+                                {/* Case for busted tournaments that have random matches that they shouldn't have but do */}
+                                {((selected_round && selected_round.broken_list.length) ||
+                                    null) && (
+                                    <div className="round-group">
+                                        <h2>{_("Other Matches")}</h2>
+                                        <table>
+                                            <tbody>
+                                                <tr>
+                                                    {(tournament.ended || null) && (
+                                                        <th>{_("Rank")}</th>
+                                                    )}
+                                                    <th>{_("Player")}</th>
+                                                    <th>{_("Opponent")}</th>
+                                                    <th>{_("Result")}</th>
+                                                    <th>{_("Points")}</th>
+                                                    {(tournament.ended || null) && (
+                                                        <th className="rotated-title">
+                                                            <span className="rotated">
+                                                                &Sigma; {_("Opponent Scores")}
+                                                            </span>
+                                                        </th>
+                                                    )}
+                                                    {(tournament.ended || null) && (
+                                                        <th className="rotated-title">
+                                                            <span className="rotated">
+                                                                &Sigma; {_("Defeated Scores")}
+                                                            </span>
+                                                        </th>
+                                                    )}
+                                                    <th></th>
+                                                </tr>
+                                                {selected_round.broken_list.map((m, idx) => {
+                                                    return (
+                                                        <tr key={idx}>
+                                                            {(tournament.ended || null) && (
+                                                                <td className="rank">
+                                                                    {m.player.rank}
+                                                                </td>
+                                                            )}
+                                                            {(m.player || null) && (
+                                                                <td className="player">
+                                                                    <Player user={m.player} icon />
+                                                                </td>
+                                                            )}
+                                                            {(m.opponent || null) && (
+                                                                <td className="player">
+                                                                    <Player
+                                                                        user={m.opponent}
+                                                                        icon
+                                                                    />
+                                                                </td>
+                                                            )}
+
+                                                            <td
+                                                                className={
+                                                                    "result " +
+                                                                    selected_round.colors[
+                                                                        m.player.id +
+                                                                            "x" +
+                                                                            m.opponent.id
+                                                                    ]
+                                                                }
+                                                            >
+                                                                <Link
+                                                                    to={`/game/${
+                                                                        selected_round.game_ids[
+                                                                            m.player.id +
+                                                                                "x" +
+                                                                                m.opponent.id
+                                                                        ]
+                                                                    }`}
+                                                                >
+                                                                    {
+                                                                        selected_round.results[
+                                                                            m.player.id +
+                                                                                "x" +
+                                                                                m.opponent.id
+                                                                        ]
+                                                                    }
+                                                                </Link>
+                                                            </td>
+
+                                                            <td className="points">
+                                                                {m.player.points}
+                                                            </td>
+                                                            {(tournament.ended || null) && (
+                                                                <td className="points">
+                                                                    {m.player.sos}
+                                                                </td>
+                                                            )}
+                                                            {(tournament.ended || null) && (
+                                                                <td className="points">
+                                                                    {m.player.sodos}
+                                                                </td>
+                                                            )}
+                                                            <td className="notes">
+                                                                {m.player.notes}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+
+                                {/* Byes */}
+                                {((selected_round && selected_round.byes.length) || null) && (
+                                    <div className="round-group">
+                                        <h2>{_("Byes") /*translators: Tournament byes */}</h2>
+                                        <table>
+                                            <tbody>
+                                                <tr>
+                                                    {(tournament.ended || null) && (
+                                                        <th>{_("Rank")}</th>
+                                                    )}
+                                                    <th>{_("Player")}</th>
+                                                    <th>{_("Points")}</th>
+                                                    {(tournament.ended || null) && (
+                                                        <th className="rotated-title">
+                                                            <span className="rotated">
+                                                                &Sigma; {_("Opponent Scores")}
+                                                            </span>
+                                                        </th>
+                                                    )}
+                                                    {(tournament.ended || null) && (
+                                                        <th className="rotated-title">
+                                                            <span className="rotated">
+                                                                &Sigma; {_("Defeated Scores")}
+                                                            </span>
+                                                        </th>
+                                                    )}
+                                                    <th></th>
+                                                </tr>
+                                                {selected_round.byes.map((player, idx) => {
+                                                    if (!player) {
+                                                        return <tr key={idx} />;
+                                                    }
+                                                    return (
+                                                        <tr key={idx}>
+                                                            {(tournament.ended || null) && (
+                                                                <td className="rank">
+                                                                    {player.rank}
+                                                                </td>
+                                                            )}
+                                                            <td className="player">
+                                                                <Player user={player} icon />
+                                                            </td>
+                                                            <td className="points">
+                                                                {player.points}
+                                                            </td>
+                                                            {((player && tournament.ended) ||
+                                                                null) && (
+                                                                <td className="points">
+                                                                    {player.sos}
+                                                                </td>
+                                                            )}
+                                                            {(tournament.ended || null) && (
+                                                                <td className="points">
+                                                                    {player.sodos}
+                                                                </td>
+                                                            )}
+                                                            <td className="notes">
+                                                                {player.notes}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+
+                                {/* Old title tournaments */}
+                                {(tournament.tournament_type === "s_title" || null) && (
+                                    <div style={{ textAlign: "center" }}>
+                                        <div style={{ display: "inline-block" }}>
+                                            <h3>
+                                                {(rounds[0].matches[0].player || null) && (
+                                                    <Player
+                                                        user={rounds[0].matches[0].player}
+                                                        icon
+                                                    />
+                                                )}{" "}
+                                                vs.{" "}
+                                                {(rounds[0].matches[0].opponent || null) && (
+                                                    <Player
+                                                        user={rounds[0].matches[0].opponent}
+                                                        icon
+                                                    />
+                                                )}
+                                            </h3>
+
+                                            {raw_selected_round.matches.map((m, idx) => (
+                                                <MiniGoban
+                                                    key={idx}
+                                                    id={m.gameid}
+                                                    width={tournament.board_size as number}
+                                                    height={tournament.board_size as number}
+                                                    black={players[m.black]}
+                                                    white={players[m.white]}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
 
 function OpenGothaRoster({ players }: { tournament: any; players: Array<any> }): JSX.Element {
     window["players"] = players;
@@ -3680,4 +3353,26 @@ function trophyFilename(tournament, rank) {
         case 3:
             return `bronze_tourn_${size}.png`;
     }
+}
+function sortDropoutsToBottom(player_a, player_b) {
+    // Sorting the players structure from a group array
+    // "bottom" is greater than "top" of the display list.
+    const a = player_a.player;
+    const b = player_b.player;
+
+    if (
+        a.notes !== "Resigned" &&
+        a.notes !== "Disqualified" &&
+        (b.notes === "Resigned" || b.notes === "Disqualified")
+    ) {
+        return -1;
+    }
+    if (
+        b.notes !== "Resigned" &&
+        b.notes !== "Disqualified" &&
+        (a.notes === "Resigned" || a.notes === "Disqualified")
+    ) {
+        return 1;
+    }
+    return b.points - a.points;
 }

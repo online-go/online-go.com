@@ -119,6 +119,7 @@ export function PlayControls({
     const engine = goban.engine;
     const [searchParams] = useSearchParams();
     const return_url = is_valid_url(searchParams.get("return")) ? searchParams.get("return") : null;
+    const [stone_removal_accept_disabled, setStoneRemovalAcceptDisabled] = React.useState(false);
 
     const user_is_active_player = [engine.players.black.id, engine.players.white.id].includes(
         user.id,
@@ -139,11 +140,10 @@ export function PlayControls({
                 }
 
                 // TODO: Convert this way old jquery crap to React
-                const gsra = $("#game-stone-removal-accept");
-                gsra.prop("disabled", true);
+                setStoneRemovalAcceptDisabled(true);
                 stone_removal_accept_timeout.current = setTimeout(
                     () => {
-                        gsra.prop("disabled", false);
+                        setStoneRemovalAcceptDisabled(false);
                         stone_removal_accept_timeout.current = null;
                     },
                     device.is_mobile ? 3000 : 1500,
@@ -392,11 +392,13 @@ export function PlayControls({
                     <div>
                         {(user_is_active_player || user.is_moderator || null) && ( // moderators see the button, with its timer, but can't press it
                             <button
-                                id="game-stone-removal-accept"
                                 className={
                                     user.is_moderator && !user_is_active_player ? "" : "primary"
                                 }
-                                disabled={user.is_moderator && !user_is_active_player}
+                                disabled={
+                                    (user.is_moderator && !user_is_active_player) ||
+                                    stone_removal_accept_disabled
+                                }
                                 onClick={onStoneRemovalAccept}
                             >
                                 {_("Accept removed stones")}
