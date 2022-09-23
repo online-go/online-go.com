@@ -1021,7 +1021,17 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             this.doPass();
         } else {
             const location = this.goban.engine.decodeMoves(placement)[0];
-            this.goban.engine.place(location.x, location.y);
+            try {
+                // Sometimes we get ahead of ourselves and try stomping stones
+                // down on top of eachother. This happens sometimes if we hit
+                // the forward button really fast. It'd probably be better to
+                // handle that better, so I'll open an issue for that but for
+                // now I'm catching the error so it doesn't clutter up the sentry
+                // logs anymore.
+                this.goban.engine.place(location.x, location.y);
+            } catch (e) {
+                console.warn(e);
+            }
             this.onBoardUpdate();
         }
     };
