@@ -1023,6 +1023,10 @@ export function Game(): JSX.Element {
                 return;
             }
 
+            if (!goban.current) {
+                return;
+            }
+
             if (user.id.toString() !== clock.current_player_id) {
                 goban.current.setByoYomiLabel(null);
                 return;
@@ -1332,6 +1336,7 @@ export function Game(): JSX.Element {
             } catch (e) {
                 console.error(e.stack);
             }
+            goban.current.removeAllListeners();
             goban.current = null;
             if (resize_debounce.current) {
                 clearTimeout(resize_debounce.current);
