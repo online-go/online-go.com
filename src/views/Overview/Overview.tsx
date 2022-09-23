@@ -72,7 +72,7 @@ interface OverviewState {
 export class OldOverview extends React.Component<{}, OverviewState> {
     private static defaultTitle = "OGS";
 
-    static contextType: ReturnType<typeof React.createContext> = DynamicHelp.Api;
+    static contextType = DynamicHelp.Api;
     declare context: React.ContextType<typeof DynamicHelp.Api>;
 
     constructor(props: {}) {
