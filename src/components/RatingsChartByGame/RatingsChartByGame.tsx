@@ -440,6 +440,10 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                 const n = Math.round(x0);
                 const d = self.game_entries[n];
 
+                if (!d) {
+                    return;
+                }
+
                 self.helperText.text(
                     interpolate(
                         self.shouldDisplayRankInformation()
