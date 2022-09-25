@@ -49,7 +49,7 @@ export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, 
 
     saveNotes = () => {
         const user = data.get("config.user");
-        const notes = this.state.notes.trim();
+        const notes = this.state.notes?.trim();
         if (notes) {
             data.set(
                 `player-notes.${user.id}.${this.props.playerId}`,
