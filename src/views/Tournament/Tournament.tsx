@@ -1397,9 +1397,25 @@ export function Tournament(): JSX.Element {
                 ),
                 showCancelButton: true,
                 focusCancel: true,
+                inputValidator: (value): string => {
+                    const f = parseFloat(value);
+                    if (isNaN(f)) {
+                        return "Enter the number of points for the adjustment";
+                    }
+
+                    const frac = f - Math.floor(f);
+
+                    if (frac < 0.0001) {
+                        return undefined;
+                    }
+                    if (frac < 0.5001 && frac > 0.4999) {
+                        return undefined;
+                    }
+                    return "Enter a whole or half number of points for the adjustment";
+                },
             })
             .then(({ value }) => {
-                const v = parseInt(value);
+                const v = parseFloat(value);
                 if (!v) {
                     return;
                 }
