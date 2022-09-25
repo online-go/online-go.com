@@ -166,7 +166,7 @@ export function Tournament(): JSX.Element {
     const [use_elimination_trees, setUseEliminationTrees] = React.useState(false);
     const [user_to_invite, setUserToInvite] = React.useState<PlayerCacheEntry>(null);
 
-    const tournament = tournament_ref.current;
+    //const tournament = tournament_ref.current;
 
     // This sets up our manual elimination tree containers, this is a pretty
     // legacy way of doing things
@@ -262,7 +262,7 @@ export function Tournament(): JSX.Element {
                 }
 
                 setLoading(false);
-                tournament_ref.current = tournament;
+                tournament_ref.current = { ...tournament_ref.current, ...tournament };
                 setRawRounds(raw_rounds);
                 setRounds(rounds);
                 setSelectedRound(
@@ -403,7 +403,7 @@ export function Tournament(): JSX.Element {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    post("tournaments/%%/start", tournament.id, {})
+                    post("tournaments/%%/start", tournament_ref.current.id, {})
                         .then(ignore)
                         .catch(errorAlerter);
                 }
@@ -418,7 +418,7 @@ export function Tournament(): JSX.Element {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    del("tournaments/%%", tournament.id)
+                    del("tournaments/%%", tournament_ref.current.id)
                         .then(() => {
                             browserHistory.push("/");
                         })
@@ -435,7 +435,7 @@ export function Tournament(): JSX.Element {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    post("tournaments/%%/end", tournament.id, {})
+                    post("tournaments/%%/end", tournament_ref.current.id, {})
                         .then(() => {
                             reloadTournament();
                         })
@@ -497,8 +497,8 @@ export function Tournament(): JSX.Element {
     };
     const updateEliminationTrees = () => {
         if (
-            tournament.tournament_type === "elimination" ||
-            tournament.tournament_type === "double_elimination"
+            tournament_ref.current.tournament_type === "elimination" ||
+            tournament_ref.current.tournament_type === "double_elimination"
         ) {
             if (Object.keys(players).length === 0 || rounds.length === 0) {
                 return;
@@ -1243,8 +1243,8 @@ export function Tournament(): JSX.Element {
             update.rules = "aga";
         } else {
             if (
-                tournament.first_pairing_method === "opengotha" ||
-                tournament.subsequent_pairing_method === "opengotha"
+                tournament_ref.current.first_pairing_method === "opengotha" ||
+                tournament_ref.current.subsequent_pairing_method === "opengotha"
             ) {
                 update.first_pairing_method = "slide";
                 update.subsequent_pairing_method = "slaughter";
@@ -1254,14 +1254,14 @@ export function Tournament(): JSX.Element {
         refresh();
     };
     const setLowerBar = (ev) => {
-        const newSettings = Object.assign({}, tournament.settings, {
+        const newSettings = Object.assign({}, tournament_ref.current.settings, {
             lower_bar: ev.target.value,
         });
         tournament_ref.current.settings = newSettings;
         refresh();
     };
     const setUpperBar = (ev) => {
-        const newSettings = Object.assign({}, tournament.settings, {
+        const newSettings = Object.assign({}, tournament_ref.current.settings, {
             upper_bar: ev.target.value,
         });
         tournament_ref.current.settings = newSettings;
@@ -1285,7 +1285,7 @@ export function Tournament(): JSX.Element {
         };
         if (
             ev.target.value === "opengotha" ||
-            tournament.subsequent_pairing_method === "opengotha"
+            tournament_ref.current.subsequent_pairing_method === "opengotha"
         ) {
             update.subsequent_pairing_method = ev.target.value;
         }
@@ -1297,7 +1297,10 @@ export function Tournament(): JSX.Element {
         const update: any = {
             subsequent_pairing_method: ev.target.value,
         };
-        if (ev.target.value === "opengotha" || tournament.first_pairing_method === "opengotha") {
+        if (
+            ev.target.value === "opengotha" ||
+            tournament_ref.current.first_pairing_method === "opengotha"
+        ) {
             update.first_pairing_method = ev.target.value;
         }
         tournament_ref.current = Object.assign(tournament_ref.current, update);
@@ -1353,7 +1356,7 @@ export function Tournament(): JSX.Element {
         refresh();
     };
     const updateNotes = (data: { [k: string]: any }) => {
-        const newSettings = Object.assign({}, tournament.settings, data);
+        const newSettings = Object.assign({}, tournament_ref.current.settings, data);
         tournament_ref.current.settings = newSettings;
         refresh();
     };
@@ -1371,7 +1374,7 @@ export function Tournament(): JSX.Element {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    post("tournaments/%%/players", tournament.id, {
+                    post("tournaments/%%/players", tournament_ref.current.id, {
                         delete: true,
                         player_id: user.id,
                     })
@@ -1404,7 +1407,7 @@ export function Tournament(): JSX.Element {
                 const adjustments = {};
                 adjustments[user.id] = v;
 
-                put("tournaments/%%/players", tournament.id, {
+                put("tournaments/%%/players", tournament_ref.current.id, {
                     adjust: adjustments,
                 })
                     .then(ignore)
@@ -1424,7 +1427,7 @@ export function Tournament(): JSX.Element {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    put("tournaments/%%/players", tournament.id, {
+                    put("tournaments/%%/players", tournament_ref.current.id, {
                         disqualify: user.id,
                     })
                         .then(ignore)
@@ -1437,6 +1440,7 @@ export function Tournament(): JSX.Element {
 
     const renderExtraPlayerActions = (player_id: number) => {
         const user = data.get("user");
+        const tournament = tournament_ref.current;
         if (
             !(
                 user.is_tournament_moderator ||
@@ -1468,6 +1472,7 @@ export function Tournament(): JSX.Element {
         }
     };
 
+    const tournament = tournament_ref.current;
     const selected_round =
         rounds && rounds.length > selected_round_idx ? rounds[selected_round_idx] : null;
     const raw_selected_round =
