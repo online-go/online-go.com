@@ -177,8 +177,8 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
                 for (const collection_id in collections) {
                     const collection = collections[collection_id];
-                    collection.collections.sort((a, b) => a.name.localeCompare(b));
-                    collection.games.sort((a, b) => a.name.localeCompare(b));
+                    collection.collections.sort((a, b) => a.name.localeCompare(b.name));
+                    collection.games.sort((a, b) => a.name.localeCompare(b.name));
                 }
 
                 const ct = (collection) => {
