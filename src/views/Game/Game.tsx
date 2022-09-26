@@ -177,6 +177,10 @@ export function Game(): JSX.Element {
 
     /*** Common stuff ***/
     const nav_up = () => {
+        if (goban.current.mode === "conditional") {
+            return;
+        }
+
         const start = Date.now();
         checkAndEnterAnalysis();
         goban.current.prevSibling();
@@ -184,6 +188,10 @@ export function Game(): JSX.Element {
         console.log("up", Date.now() - start);
     };
     const nav_down = () => {
+        if (goban.current.mode === "conditional") {
+            return;
+        }
+
         const start = Date.now();
         checkAndEnterAnalysis();
         goban.current.nextSibling();
