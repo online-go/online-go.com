@@ -39,7 +39,7 @@ dev-put: push-cdn
 dev-del:
 	curl -X DELETE $(INDEX_HEADERS)  http://localhost:1080/_index
 
-beta-put: sync-translations audit-translations push-cdn 
+beta-put: sync-translations audit-translations push-cdn upload-sentry-source-maps
 	OGS_VERSION_HASH=$(OGS_VERSION_HASH) VENDOR_HASH=$(VENDOR_HASH) npm run minify-index --silent | curl -X PUT $(INDEX_HEADERS) -d @- https://beta.online-go.com/_index
 	make beta-notify-slack
 
@@ -99,6 +99,11 @@ prepare-cdn-files: purge-cdn-files dist/ogs.min.js dist/vendor.min.js dist/ogs.$
 	find deployment-staging-area/ | grep \\.bak$$ | xargs rm -f
 	find deployment-staging-area/ | grep \\.xcf$$ | xargs rm -f
 	find deployment-staging-area/ | grep \\.dat$$ | xargs rm -f
+
+upload-sentry-source-maps:
+	sentry-cli releases --org online-gocom --project online-gocom new $(VERSION)
+	sentry-cli releases --org online-gocom --project online-gocom files $(VERSION) upload-sourcemaps --ignore locale deployment-staging-area/$(RELEASE)/
+	sentry-cli releases --org online-gocom --project online-gocom finalize $(VERSION)
 
 purge-cdn-files:
 	rm -Rf deployment-staging-area
