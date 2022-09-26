@@ -64,7 +64,6 @@ export class Team extends React.PureComponent<{}, any> {
         const se = getLanguageFlag("swedish", country, "se");
         const cz = getLanguageFlag("czech", country, "cz");
         const nl = getLanguageFlag("netherlands", country, "nl");
-        const fi = getLanguageFlag("finnish", country, "fi");
         const it = getLanguageFlag("italian", country, "it");
         const eng = "_England";
 
@@ -85,7 +84,6 @@ export class Team extends React.PureComponent<{}, any> {
             { id: 683917, country: ["us"], languages: [en, cn] }, //RubyMineshaft
             { id: 497519, country: ["un"], languages: [eng] }, //Kosh
             { id: 427361, country: ["ie"], languages: [en] }, //shinuito
-            { id: 85719, country: ["fi"], languages: [fi, gb] }, //KoBa
             { id: 695886, country: ["de"], languages: [de, en] }, //KAOSkonfused
             { id: 483146, country: ["gb"], languages: [en, fr] }, //teapoweredrobot
             { id: 76618, country: ["us"], languages: [en] }, //yebellz
