@@ -153,6 +153,12 @@ export function GameDock({
         );
     };
 
+    const [paused, set_paused] = React.useState(Boolean(goban.pause_control?.paused));
+    React.useEffect(() => {
+        goban.on("load", () => set_paused(Boolean(goban.pause_control?.paused)));
+        goban.on("paused", set_paused);
+    }, [goban]);
+
     const [volume, set_volume] = React.useState(sfx.getVolume("master"));
     const volume_sound_debounce = React.useRef<any>();
 
@@ -405,7 +411,7 @@ export function GameDock({
                 </a>
             )}
             {((!review_id && (user_is_player || mod) && phase !== "finished") || null) && (
-                <a onClick={onPauseClicked}>
+                <a onClick={onPauseClicked} className={paused ? "disabled" : ""}>
                     <i className="fa fa-pause"></i> {_("Pause game")}
                 </a>
             )}
