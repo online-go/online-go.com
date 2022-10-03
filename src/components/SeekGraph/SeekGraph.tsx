@@ -29,6 +29,7 @@ import { getRelativeEventPosition, errorAlerter } from "misc";
 import { rankString, bounded_rank } from "rank_utils";
 import { kb_bind, kb_unbind } from "KBShortcut";
 import { Player } from "Player";
+import { validateCanvas } from "goban";
 import * as player_cache from "player_cache";
 
 import { nominateForRengoChallenge } from "rengo_utils";
@@ -357,6 +358,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         return ret;
     }
     redraw() {
+        validateCanvas(this.canvas[0]);
         const ctx = this.canvas[0].getContext("2d");
         const w = this.canvas.width();
         const h = this.canvas.height();

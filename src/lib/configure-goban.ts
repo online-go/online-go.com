@@ -17,6 +17,7 @@
 
 import * as preferences from "preferences";
 import * as data from "data";
+import * as Sentry from "@sentry/browser";
 import { get_clock_drift, get_network_latency, socket } from "sockets";
 import { current_language } from "translate";
 import { Goban, GoEngine, GoThemes } from "goban";
@@ -111,6 +112,27 @@ export function configure_goban() {
             if (!chat_input.attr("disabled")) {
                 const txt = (chat_input.val().trim() + " " + coordinates).trim();
                 chat_input.val(txt);
+            }
+        },
+
+        canvasAllocationErrorHandler: (
+            note: string | null,
+            total_allocations_made: number,
+            error?: Error,
+        ) => {
+            if (total_allocations_made === 88) {
+                console.error(
+                    "Canvas allocation error: note=",
+                    note,
+                    " total_allocations_made=",
+                    total_allocations_made,
+                    " error=",
+                    error,
+                );
+                Sentry.captureException(new Error("Canvas allocation failed"));
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
             }
         },
 

@@ -39,6 +39,7 @@ import { bot_count } from "bots";
 import { SupporterGoals } from "SupporterGoals";
 import { CreatedChallengeInfo } from "types";
 import { ChallengeLinkButton } from "ChallengeLinkButton";
+import { allocateCanvasOrError } from "goban";
 
 import { alert } from "swal_config";
 import { Size } from "src/lib/types";
@@ -98,7 +99,7 @@ export class Play extends React.Component<{}, PlayState> {
             pending_challenges: [], // challenges received while frozen
             show_in_rengo_management_pane: [],
         };
-        this.canvas = document.createElement("canvas");
+        this.canvas = allocateCanvasOrError();
         this.list_freeze_timeout = null;
     }
 

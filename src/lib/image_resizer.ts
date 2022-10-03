@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { allocateCanvasOrError, validateCanvas } from "goban";
+
 export function image_resizer(file: File, max_width: number, max_height?: number): Promise<File> {
     if (!max_height) {
         max_height = max_width;
@@ -25,7 +27,7 @@ export function image_resizer(file: File, max_width: number, max_height?: number
 
     const reader = new FileReader();
     const image = new Image();
-    const canvas = document.createElement("canvas");
+    const canvas = allocateCanvasOrError();
     const dataURItoBlob = (dataURI: string) => {
         const bytes =
             dataURI.split(",")[0].indexOf("base64") >= 0
@@ -57,6 +59,7 @@ export function image_resizer(file: File, max_width: number, max_height?: number
 
         canvas.width = width;
         canvas.height = height;
+        validateCanvas(canvas);
         canvas.getContext("2d").drawImage(image, 0, 0, width, height);
         const dataUrl = canvas.toDataURL("image/png");
         const blob: any = dataURItoBlob(dataUrl);
