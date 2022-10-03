@@ -33,6 +33,8 @@ data.setDefault("custom.board", "#DCB35C");
 data.setDefault("custom.line", "#000000");
 data.setDefault("custom.url", "");
 
+const boot_time = Date.now();
+
 export function configure_goban() {
     Goban.setHooks({
         defaultConfig: () => {
@@ -120,16 +122,18 @@ export function configure_goban() {
             total_allocations_made: number,
             error?: Error,
         ) => {
-            if (total_allocations_made === 88) {
-                console.error(
-                    "Canvas allocation error: note=",
-                    note,
-                    " total_allocations_made=",
-                    total_allocations_made,
-                    " error=",
-                    error,
-                );
-                Sentry.captureException(new Error("Canvas allocation failed"));
+            console.error(
+                "Canvas allocation error: note=",
+                note,
+                " total_allocations_made=",
+                total_allocations_made,
+                " error=",
+                error,
+                " uptime=",
+                Date.now() - boot_time,
+            );
+            Sentry.captureException(new Error("Canvas allocation failed"));
+            if (Date.now() - boot_time > 10000) {
                 setTimeout(() => {
                     window.location.reload();
                 }, 1000);
