@@ -136,14 +136,14 @@ interface NumCapturesProps {
     score: PlayerScore;
     color: "black" | "white";
     zen_mode: boolean;
-    estimating_score: boolean;
+    hidden: boolean;
 }
-function NumCapturesText({ color, score, zen_mode, estimating_score }: NumCapturesProps) {
+function NumCapturesText({ color, score, zen_mode, hidden }: NumCapturesProps) {
     const num_prisoners = score.prisoners;
     const prisoner_color = color === "black" ? "white" : "black";
     const prisoner_img_src = data.get("config.cdn_release") + "/img/" + prisoner_color + ".png";
     return (
-        <div className={"captures" + (estimating_score ? " hidden" : "")}>
+        <div className={"captures" + (hidden ? " hidden" : "")}>
             <span className="num-captures-container">
                 <span className="num-captures-count">{num_prisoners}</span>
                 {(!zen_mode || null) && (
@@ -281,22 +281,20 @@ function PlayerCard({
                 }
                 onClick={onScoreClick}
             >
-                {show_points && (
-                    <div className={"points" + (estimating_score ? " hidden" : "")}>
+                {show_points && !estimating_score && (
+                    <div className="points">
                         {interpolate(_("{{total}} {{unit}}"), {
                             total: score.total,
                             unit: ngettext("point", "points", score.total),
                         })}
                     </div>
                 )}
-                {!show_points && (
-                    <NumCapturesText
-                        score={score}
-                        color={color}
-                        zen_mode={zen_mode}
-                        estimating_score={estimating_score}
-                    />
-                )}
+                <NumCapturesText
+                    score={score}
+                    color={color}
+                    zen_mode={zen_mode}
+                    hidden={show_points && !estimating_score}
+                />
                 {!show_points && <div className="komi">{komiString(score.komi)}</div>}
                 <div id={`${color}-score-details`} className="score-details">
                     <ScorePopup goban={goban} color={color} show={show_score_breakdown} />
