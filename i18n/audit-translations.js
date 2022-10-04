@@ -28,7 +28,7 @@ async function main() {
         await fs.promises.readFile("./autotranslations.json", "utf-8"),
     );
     const languages = JSON.parse(await fs.promises.readFile("./languages.json", "utf-8"));
-    let progress = {};
+    let translations_missing = {};
     let vandalized_languages = {};
     let autotranslations_needed = {};
 
@@ -123,13 +123,13 @@ async function main() {
             console.log(`GOOD ${lang}`);
         }
 
-        progress[lang] = missing;
+        translations_missing[lang] = missing;
 
         if (vandalizations === 0) {
             let data = await fs.promises.readFile(`./locale/${lang}.js`, "utf8");
             if (/window.ogs_missing_translation_count = [0-9]+;/.test(data)) {
                 //console.log("Replace missing")
-                data.replace(
+                data = data.replace(
                     /window.ogs_missing_translation_count = [0-9]+;/,
                     `window.ogs_missing_translation_count = ${missing};`,
                 );
@@ -141,7 +141,7 @@ async function main() {
         }
     }
 
-    await fs.promises.writeFile("./locale/translation_progress.json", JSON.stringify(progress));
+    await fs.promises.writeFile("./locale/translations_missing.json", JSON.stringify(translations_missing, null, 4));
 
     if (deepl_translator && googleTranslate) {
         if (Object.keys(vandalized_languages).length > 0) {

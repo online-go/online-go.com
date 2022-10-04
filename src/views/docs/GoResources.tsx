@@ -76,7 +76,7 @@ export const GoResources = () => {
                 </div>
 
                 <div style={{ textAlign: "center" }}>
-                    <i>{"Note: links are randomly ordered"}</i>
+                    <i>{_("Note: links are randomly ordered")}</i>
                 </div>
 
                 <div className="multi-columns">

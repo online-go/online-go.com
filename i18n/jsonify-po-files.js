@@ -3,12 +3,16 @@
 const fs = require("fs");
 const PO = require("pofile");
 
-main();
-
 async function main() {
     const countries = JSON.parse(await fs.promises.readFile("./build/countries.json", "utf-8"));
     const ui_keys = JSON.parse(await fs.promises.readFile("./build/ogs-ui-keys.json", "utf-8"));
     const languages = JSON.parse(await fs.promises.readFile("./languages.json", "utf-8"));
+    const missing = fs.existsSync("./locale/translations_missing.json")
+        ? JSON.parse(await fs.promises.readFile("./locale/translations_missing.json", "utf-8"))
+        : {};
+    const autotranslations = fs.existsSync("./autotranslations.json")
+        ? JSON.parse(await fs.promises.readFile("./autotranslations.json", "utf-8"))
+        : {};
 
     for (let lang in languages) {
         console.log(`Processing ${lang}`);
@@ -26,14 +30,23 @@ async function main() {
                 continue;
             }
 
-            let skip = false;
+            let missing = false;
             for (let msg of item.msgstr) {
                 if (msg.trim() === "") {
-                    skip = true;
+                    missing = true;
                     break;
                 }
             }
-            if (!skip) {
+
+            if (missing) {
+                if (item.msgid in autotranslations[lang]) {
+                    result[key] = [autotranslations[lang][item.msgid]];
+                } else {
+                    console.log(`Missing translation for ${key}`);
+                }
+            }
+
+            if (!missing) {
                 result[key] = item.msgstr;
             }
         }
@@ -54,7 +67,8 @@ async function main() {
             `./locale/${lang}.js`,
             `window.ogs_languages = ${JSON.stringify(languages)};\n` +
                 `(window.ogs_locales = window.ogs_locales || {})['${lang}'] = ${json};\n` +
-                `(window.ogs_countries = window.ogs_countries || {})['${lang}'] = ${country_json};\n`,
+                `(window.ogs_countries = window.ogs_countries || {})['${lang}'] = ${country_json};\n` +
+                `window.ogs_missing_translation_count = ${missing?.[lang] || 0};\n`,
         );
     }
 }
