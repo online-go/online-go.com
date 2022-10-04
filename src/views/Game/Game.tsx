@@ -491,11 +491,7 @@ export function Game(): JSX.Element {
         if (ai_review_enabled) {
             goban.current.setHeatmap(null);
             goban.current.setColoredCircles(null);
-            let move_tree = goban.current.engine.move_tree;
-            while (move_tree.next(true)) {
-                move_tree = move_tree.next(true);
-                move_tree.clearMarks();
-            }
+            goban.current.engine.move_tree.traverse((node: MoveTree) => node.clearMarks());
             goban.current.redraw();
         }
         set_ai_review_enabled(!ai_review_enabled);
