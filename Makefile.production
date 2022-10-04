@@ -74,7 +74,8 @@ push-cdn: prepare-cdn-files
 	gsutil -m setmeta -h "Content-Type:audio/webm" 'gs://ogs-site-files/$(RELEASE)/sound/*.webm'
 
 sync-translations:
-	cd i18n/locale/; ssh pootle@45.76.254.197 "bash -c 'cd online-go.com/i18n/locale; tar jcf - *'" | tar jxf -
+	cd i18n/build/; ssh pootle@pootle "bash -c 'cd online-go.com/i18n/build; tar jcf - *'" | tar jxf -
+	cd i18n/locale/; ssh pootle@pootle "bash -c 'cd online-go.com/i18n/locale; tar jcf - *'" | tar jxf -
 
 audit-translations:
 	cd i18n; node audit-translations.js

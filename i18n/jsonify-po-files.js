@@ -51,7 +51,7 @@ async function main() {
             }
         }
 
-        let json = JSON.stringify(result);
+        let json = JSON.stringify(result, undefined, 1);
 
         let country_map = {};
         for (let cc in countries["en"]) {
@@ -65,7 +65,7 @@ async function main() {
 
         await fs.promises.writeFile(
             `./locale/${lang}.js`,
-            `window.ogs_languages = ${JSON.stringify(languages)};\n` +
+            `window.ogs_languages = ${JSON.stringify(languages, undefined, 4)};\n` +
                 `(window.ogs_locales = window.ogs_locales || {})['${lang}'] = ${json};\n` +
                 `(window.ogs_countries = window.ogs_countries || {})['${lang}'] = ${country_json};\n` +
                 `window.ogs_missing_translation_count = ${missing?.[lang] || 0};\n`,
