@@ -211,11 +211,12 @@ async function main() {
                 let results = [];
 
                 if (lang in deeplSupportedLanguages) {
+                    console.log(`Deepl translating ${strs.length} strings`);
                     results = (await deepl_translator.translateText(strs, "en", lang)).map(
                         (r) => r.text,
                     );
                 }
-                if (lang in googleSupportedLanguages) {
+                else if (lang in googleSupportedLanguages) {
                     const todo = strs.map((s) => s);
 
                     while (todo.length > 0) {
