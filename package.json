@@ -25,6 +25,7 @@
         "defaults"
     ],
     "devDependencies": {
+        "@google-cloud/translate": "^7.0.3",
         "@testing-library/react": "^13.2.0",
         "@types/jest": "^26.0.15",
         "@typescript-eslint/eslint-plugin": "^5.38.0",
@@ -35,6 +36,7 @@
         "circular-dependency-plugin": "^5.2.2",
         "css-what": "^6.1.0",
         "cssnano": "^5.1.13",
+        "deepl-node": "^1.7.0",
         "eslint": "^8.23.1",
         "eslint-config-prettier": "^8.5.0",
         "eslint-plugin-import": "^2.26.0",
