@@ -29,6 +29,7 @@ import Dropzone from "react-dropzone";
 import { DropzoneRef } from "react-dropzone";
 import * as moment from "moment";
 import { IdType } from "src/lib/types";
+import { openSGFPasteModal } from "SGFPasteModal";
 
 type LibraryPlayerProperties = RouteComponentProps<{
     player_id: string;
@@ -205,6 +206,22 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
             Promise.all(
                 files.map((file) => post("me/games/sgf/%%", this.state.collection_id, file)),
             )
+                .then(() => {
+                    this.refresh(this.props.match.params.player_id).then(ignore).catch(ignore);
+                })
+                .catch(errorAlerter);
+        } else {
+            console.log("Not uploading selected files since we're not on our own library page");
+        }
+    };
+
+    uploadSGFText = (text: string) => {
+        if (parseInt(this.props.match.params.player_id) === data.get("user").id) {
+            const file = new File([text], "pasted.sgf", {
+                type: "application/x-go-sgf",
+                lastModified: new Date().getTime(),
+            });
+            post("me/games/sgf/%%", this.state.collection_id, file)
                 .then(() => {
                     this.refresh(this.props.match.params.player_id).then(ignore).catch(ignore);
                 })
@@ -396,6 +413,14 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                                 onClick={() => this.dropzone.open()}
                                             >
                                                 {_("Upload")}
+                                            </button>
+                                            <button
+                                                className="primary"
+                                                onClick={() =>
+                                                    openSGFPasteModal(this.uploadSGFText)
+                                                }
+                                            >
+                                                {_("Paste SGF")}
                                             </button>
                                         </div>
                                     )}
