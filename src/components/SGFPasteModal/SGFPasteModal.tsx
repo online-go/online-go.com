@@ -36,33 +36,46 @@ export class SGFPasteModal extends Modal<Events, SGFPasteModalProperties, any> {
     }
 
     updateFilename = (ev) => {
-        this.setState({ filenameOverride: ev.target.value });
+        this.setState({ filenameOverride: this.sanitizeFilename(ev.target.value) });
     };
 
     updateData = (ev) => {
         const data = ev.target.value;
-        const gameNameRegex = /GN\[([\w\s]+)\]/;
-        const matches = gameNameRegex.exec(data);
-        if (matches) {
-            const name = matches[1] + ".sgf";
-            this.setState({ defaultFilename: name });
-        } else {
-            this.setState({ defaultFilename: _("pasted.sgf") });
-        }
+        const filename = this.extractFilename(data);
+        this.setState({ defaultFilename: this.sanitizeFilename(filename) });
         this.setState({ rawSGF: data });
     };
 
     uploadSGF = () => {
-        let filename = this.state.defaultFilename;
-        if (this.state.filenameOverride) {
-            filename = this.state.filenameOverride;
-            if (!filename.endsWith(".sgf")) {
-                filename += ".sgf";
-            }
+        let filename = this.state.filenameOverride || this.state.defaultFilename;
+        if (!filename.endsWith(".sgf")) {
+            filename += ".sgf";
         }
         this.props.onUpload(this.state.rawSGF, filename);
         this.close();
     };
+
+    extractFilename = (sgfData: string) => {
+        const gameNameMatch = this.getSGFPropertyRegex("GN").exec(sgfData);
+        if (gameNameMatch) {
+            return `${gameNameMatch[1]}.sgf"`;
+        }
+        const playerBlackMatch = this.getSGFPropertyRegex("PB").exec(sgfData);
+        const playerWhiteMatch = this.getSGFPropertyRegex("PW").exec(sgfData);
+        if (playerBlackMatch && playerWhiteMatch) {
+            return `${playerBlackMatch[1]} ${_("vs")} ${playerWhiteMatch[1]}.sgf`;
+        }
+        return _("pasted.sgf");
+    };
+
+    sanitizeFilename = (filename: string) => {
+        return filename.replace(/[:<>\n\r\\|\\?\\*\\"\/\\]/g, "");
+    };
+
+    // Using [^\\]]+? to non-greedily match more than one of anything but the ']' character ensures
+    // that an empty property like "GN[]" is *not* matched, and that something like GN[]PB[name]
+    // doesn't result in "]PB[name" as a match.
+    getSGFPropertyRegex = (property: string) => new RegExp(`${property}\\[([^\\]]+?)\\]`);
 
     render() {
         return (
