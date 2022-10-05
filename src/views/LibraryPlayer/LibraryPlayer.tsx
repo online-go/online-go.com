@@ -46,6 +46,11 @@ interface Collection {
     game_ct?: number;
 }
 
+interface GameSortMode {
+    label: string;
+    sort: (a, b) => any;
+}
+
 interface LibraryPlayerState {
     player_id: IdType;
     collection_id: string;
@@ -53,6 +58,8 @@ interface LibraryPlayerState {
     games_checked: {};
     new_collection_name: string;
     new_collection_private: boolean;
+    sort_index: number;
+    sort_descending: boolean;
 }
 
 class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, LibraryPlayerState> {
@@ -68,8 +75,16 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
             games_checked: {},
             new_collection_name: "",
             new_collection_private: false,
+            sort_index: 0,
+            sort_descending: false,
         };
     }
+
+    sortModes: GameSortMode[] = [
+        { label: _("name"), sort: (a, b) => a.name.localeCompare(b.name) },
+        { label: _("date added"), sort: (a, b) => Date.parse(a.created) - Date.parse(b.created) },
+        { label: _("game date"), sort: (a, b) => Date.parse(a.started) - Date.parse(b.started) },
+    ];
 
     componentDidMount() {
         this.refresh(this.state.player_id).then(ignore).catch(ignore);
@@ -107,7 +122,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
         promise
             .then((library) => {
-                const collections = {};
+                const collections: { [id: number]: Collection } = {};
 
                 const root = {
                     id: 0,
@@ -178,7 +193,10 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                 for (const collection_id in collections) {
                     const collection = collections[collection_id];
                     collection.collections.sort((a, b) => a.name.localeCompare(b.name));
-                    collection.games.sort((a, b) => a.name.localeCompare(b.name));
+                    if (collection_id === this.state.collection_id) {
+                        const sort = this.sortModes[this.state.sort_index].sort;
+                        collection.games.sort(sort);
+                    }
                 }
 
                 const ct = (collection) => {
@@ -198,6 +216,34 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
         return promise;
     }
+
+    sortGames = (ev) => {
+        const idx = ev.target.options.selectedIndex;
+        this.applySort(
+            this.state.collections[this.state.collection_id].games,
+            idx,
+            this.state.sort_descending,
+        );
+        this.setState({ sort_index: idx });
+    };
+
+    toggleSortDirection = () => {
+        const descending = !this.state.sort_descending;
+        this.applySort(
+            this.state.collections[this.state.collection_id].games,
+            this.state.sort_index,
+            descending,
+        );
+        this.setState({ sort_descending: descending });
+    };
+
+    applySort = (games, sortIdx, descending) => {
+        const sort = this.sortModes[sortIdx].sort;
+        games.sort(sort);
+        if (descending) {
+            games.reverse();
+        }
+    };
 
     uploadSGFs = (files) => {
         if (parseInt(this.props.match.params.player_id) === data.get("user").id) {
@@ -440,15 +486,40 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
                                     <div className="games">
                                         {owner && (collection.games.length > 0 || null) && (
-                                            <div className="game-entry">
-                                                <span className="select">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={all_games_checked}
-                                                        onChange={this.toggleAllGamesChecked}
-                                                    />
-                                                </span>
-                                            </div>
+                                            <>
+                                                <div className="sort-heading">
+                                                    <label htmlFor="sort">Sort by:</label>
+                                                    <select
+                                                        name="sort"
+                                                        onChange={this.sortGames}
+                                                        value={this.state.sort_index}
+                                                    >
+                                                        {this.sortModes.map((mode, idx) => (
+                                                            <option key={idx} value={idx}>
+                                                                {mode.label}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    <i
+                                                        className={
+                                                            "fa fa-sort-" +
+                                                            (this.state.sort_descending
+                                                                ? "down"
+                                                                : "up")
+                                                        }
+                                                        onClick={this.toggleSortDirection}
+                                                    ></i>
+                                                </div>
+                                                <div className="game-entry">
+                                                    <span className="select">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={all_games_checked}
+                                                            onChange={this.toggleAllGamesChecked}
+                                                        />
+                                                    </span>
+                                                </div>
+                                            </>
                                         )}
                                         {collection.games.map((game) => (
                                             <div key={game.game_id} className="game-entry">
