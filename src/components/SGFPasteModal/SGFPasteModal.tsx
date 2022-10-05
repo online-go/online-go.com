@@ -22,39 +22,73 @@ import { Modal, openModal } from "Modal";
 interface Events {}
 
 interface SGFPasteModalProperties {
-    onUpload: (rawSGF: string) => void;
+    onUpload: (rawSGF: string, filename: string) => void;
 }
 
 export class SGFPasteModal extends Modal<Events, SGFPasteModalProperties, any> {
     constructor(props) {
         super(props);
         this.state = {
+            defaultFilename: _("pasted.sgf"),
+            filenameOverride: undefined,
             rawSGF: undefined,
         };
     }
 
+    updateFilename = (ev) => {
+        this.setState({ filenameOverride: ev.target.value });
+    };
+
     updateData = (ev) => {
-        this.setState({ rawSGF: ev.target.value });
+        const data = ev.target.value;
+        const gameNameRegex = /GN\[([\w\s]+)\]/;
+        const matches = gameNameRegex.exec(data);
+        if (matches) {
+            const name = matches[1] + ".sgf";
+            this.setState({ defaultFilename: name });
+        } else {
+            this.setState({ defaultFilename: _("pasted.sgf") });
+        }
+        this.setState({ rawSGF: data });
     };
 
     uploadSGF = () => {
-        this.props.onUpload(this.state.rawSGF);
+        let filename = this.state.defaultFilename;
+        if (this.state.filenameOverride) {
+            filename = this.state.filenameOverride;
+            if (!filename.endsWith(".sgf")) {
+                filename += ".sgf";
+            }
+        }
+        this.props.onUpload(this.state.rawSGF, filename);
         this.close();
     };
 
     render() {
         return (
             <div className="Modal SGFPasteModal">
+                <div className="filename">
+                    <textarea
+                        rows={1}
+                        placeholder={this.state.defaultFilename}
+                        value={this.state.filenameOverride}
+                        onChange={this.updateFilename}
+                    />
+                </div>
                 <div className="body">
                     <textarea
-                        placeholder={_("Enter SGF data here")}
+                        placeholder={_("Paste SGF data here")}
                         value={this.state.rawSGF}
                         onChange={this.updateData}
                     />
                 </div>
                 <div className="buttons">
                     <button onClick={this.close}>{_("Cancel")}</button>
-                    <button className="primary bold" onClick={this.uploadSGF}>
+                    <button
+                        className="primary bold"
+                        onClick={this.uploadSGF}
+                        disabled={!this.state.rawSGF}
+                    >
                         {_("Upload")}
                     </button>
                 </div>
@@ -63,7 +97,7 @@ export class SGFPasteModal extends Modal<Events, SGFPasteModalProperties, any> {
     }
 }
 
-export function openSGFPasteModal(onUpload: (rawSGF: string) => void) {
+export function openSGFPasteModal(onUpload: (rawSGF: string, filename: string) => void) {
     // Note: this modal is deliberately not fastDismiss, because we don't want to accidentally dismiss while drag-selecting a large area of text.
     return openModal(<SGFPasteModal onUpload={onUpload} />);
 }

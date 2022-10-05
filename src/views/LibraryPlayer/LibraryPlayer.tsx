@@ -215,9 +215,9 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         }
     };
 
-    uploadSGFText = (text: string) => {
+    uploadSGFText = (text: string, filename: string) => {
         if (parseInt(this.props.match.params.player_id) === data.get("user").id) {
-            const file = new File([text], "pasted.sgf", {
+            const file = new File([text], filename, {
                 type: "application/x-go-sgf",
                 lastModified: new Date().getTime(),
             });
