@@ -134,10 +134,27 @@ export function configure_goban() {
             );
             Sentry.captureException(new Error("Canvas allocation failed"));
             if (Date.now() - boot_time > 10000) {
+                /*
                 setTimeout(() => {
-                    window.location.reload();
                 }, 1000);
+                */
+                alert(
+                    "A canvas allocation device limit has been reached, we are reloading the page now.",
+                );
+                window.location.reload();
+            } else {
+                console.error("Canvas allocation error: too early to automatically reload");
             }
+            throw new Error(
+                "Canvas allocation limit reached: note=" +
+                    note +
+                    " total_allocations_made=" +
+                    total_allocations_made +
+                    " error=" +
+                    error +
+                    " uptime=" +
+                    (Date.now() - boot_time),
+            );
         },
 
         /*
