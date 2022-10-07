@@ -139,14 +139,6 @@ export class Play extends React.Component<{}, PlayState> {
         ) {
             this.updateChallenges(this.state.pending_challenges);
         }
-        if (window.location.hash.includes("challenge-link")) {
-            this.context.triggerFlow("guest-user-intro-rengo");
-            if (data.get("experiments.v6") === "enabled") {
-                this.context.triggerFlow("guest-user-intro-exv6");
-            } else {
-                this.context.triggerFlow("guest-user-intro-old-nav");
-            }
-        }
     }
 
     onResize = () => {

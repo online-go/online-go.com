@@ -31,14 +31,17 @@ import { GuestUserIntroRengo } from "./GuestUserIntroRengo";
  */
 
 export function HelpFlows(): JSX.Element {
-    const { enableHelp, reloadUserState: reloadUserHelpState } = React.useContext(DynamicHelp.Api);
+    const {
+        enableHelp,
+        triggerFlow,
+        getSystemStatus: helpSystemStatus,
+    } = React.useContext(DynamicHelp.Api);
 
+    // Turn off RDH when they log out.
     React.useEffect(() => {
         const updateHelpState = () => {
             const user = data.get("config.user");
-            if (!user?.anonymous) {
-                reloadUserHelpState();
-            } else {
+            if (user?.anonymous) {
                 enableHelp(false);
             }
         };
@@ -49,6 +52,25 @@ export function HelpFlows(): JSX.Element {
             data.events.off("remote_data_sync_complete", updateHelpState);
         };
     }, [enableHelp]);
+
+    React.useEffect(() => {
+        if (helpSystemStatus().initialized) {
+            const linked_challenge = data.get("challenge_link_registration", null);
+            if (linked_challenge) {
+                if (linked_challenge.rengo) {
+                    triggerFlow("guest-user-intro-rengo");
+                }
+
+                if (data.get("experiments.v6") === "enabled") {
+                    triggerFlow("guest-user-intro-exv6");
+                    console.log("**** Triggered??");
+                } else {
+                    triggerFlow("guest-user-intro-old-nav");
+                }
+                data.set("challenge_link_registration", null);
+            }
+        }
+    });
 
     return (
         <>
