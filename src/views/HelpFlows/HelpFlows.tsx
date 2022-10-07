@@ -63,7 +63,6 @@ export function HelpFlows(): JSX.Element {
 
                 if (data.get("experiments.v6") === "enabled") {
                     triggerFlow("guest-user-intro-exv6");
-                    console.log("**** Triggered??");
                 } else {
                     triggerFlow("guest-user-intro-old-nav");
                 }
