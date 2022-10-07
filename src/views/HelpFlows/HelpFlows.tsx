@@ -53,6 +53,8 @@ export function HelpFlows(): JSX.Element {
         };
     }, [enableHelp]);
 
+    // Here is the place to do login-time help flow actions: after help system is ready
+
     React.useEffect(() => {
         if (helpSystemStatus().initialized) {
             const linked_challenge = data.get("challenge_link_registration", null);
