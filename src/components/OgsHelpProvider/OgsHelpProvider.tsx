@@ -52,10 +52,12 @@ export function OgsHelpProvider(props: OgsHelpProviderProps): JSX.Element {
 
     // Prevent writing back rdhState till remote data is loaded
 
-    data.events.on("remote_data_sync_complete", () => {
-        debugDynamicHelp && console.log("Telling RDH: Storage loaded");
-        setStorageLoaded(true);
-    });
+    React.useEffect(() => {
+        data.events.on("remote_data_sync_complete", () => {
+            debugDynamicHelp && console.log("Telling RDH: Storage loaded");
+            setStorageLoaded(true);
+        });
+    }, []);
 
     // TBD should memo this
     const dynamicHelpStorage: DynamicHelp.DynamicHelpStorageAPI = {
