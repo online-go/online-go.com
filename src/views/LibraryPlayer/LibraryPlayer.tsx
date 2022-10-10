@@ -410,6 +410,9 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
             }
         }
 
+        const hasGames: boolean = collection.games.length > 0;
+        const hasCollections: boolean = collection.collections.length > 0;
+
         return (
             <div className="LibraryPlayer container">
                 <div className="space-between">
@@ -497,7 +500,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                         </div>
                                     )}
 
-                                    {(collection.collections.length > 0 || null) && (
+                                    {hasCollections && (
                                         <div className="collections">
                                             {collection.collections.map((collection, idx) => (
                                                 <div
@@ -533,11 +536,11 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                             ))}
                                         </div>
                                     )}
-                                    {(collection.collections.length > 0 || null) && <hr />}
+                                    {hasCollections && <hr />}
 
                                     <div className="games">
-                                        {this.renderColumnHeaders(owner)}
-                                        {owner && (collection.games.length > 0 || null) && (
+                                        {hasGames && this.renderColumnHeaders(owner)}
+                                        {owner && hasGames && (
                                             <div className="game-entry">
                                                 <span className="select">
                                                     <input
@@ -596,9 +599,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                         ))}
                                     </div>
 
-                                    {((collection.games.length === 0 &&
-                                        collection.collections.length === 0) ||
-                                        null) && (
+                                    {!(hasCollections || hasGames) && (
                                         <div className="empty-text">
                                             <h3>{_("This SGF collection is empty.")}</h3>
                                             {owner && (
