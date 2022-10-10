@@ -36,6 +36,9 @@ type LibraryPlayerProperties = RouteComponentProps<{
     collection_id: string;
 }>;
 
+type SortOrder = "name" | "game_date" | "date_added";
+type Column = { label: string; sortable: boolean; order?: SortOrder };
+
 interface Collection {
     id: number;
     name: string;
@@ -47,11 +50,6 @@ interface Collection {
     game_ct?: number;
 }
 
-interface GameSortMode {
-    label: string;
-    sort: (a, b) => any;
-}
-
 interface LibraryPlayerState {
     player_id: IdType;
     collection_id: string;
@@ -59,7 +57,7 @@ interface LibraryPlayerState {
     games_checked: {};
     new_collection_name: string;
     new_collection_private: boolean;
-    sort_index: number;
+    sort_order: SortOrder;
     sort_descending: boolean;
 }
 
@@ -76,15 +74,25 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
             games_checked: {},
             new_collection_name: "",
             new_collection_private: false,
-            sort_index: 0,
-            sort_descending: false,
+            sort_order: "date_added",
+            sort_descending: true,
         };
     }
 
-    sortModes: GameSortMode[] = [
-        { label: _("name"), sort: (a, b) => a.name.localeCompare(b.name) },
-        { label: _("date added"), sort: (a, b) => Date.parse(a.created) - Date.parse(b.created) },
-        { label: _("game date"), sort: (a, b) => Date.parse(a.started) - Date.parse(b.started) },
+    sortOrders: { [id in SortOrder]: any } = {
+        name: (a, b) => a.name.localeCompare(b.name),
+        game_date: (a, b) => Date.parse(a.started) - Date.parse(b.started),
+        date_added: (a, b) => Date.parse(a.started) - Date.parse(b.started),
+    };
+
+    columns: Column[] = [
+        { label: "", sortable: false }, // checkbox column
+        { label: _("Game Date"), sortable: true, order: "game_date" },
+        { label: _("Name"), sortable: true, order: "name" },
+        { label: _("Black"), sortable: false },
+        { label: _("White"), sortable: false },
+        { label: _("Result"), sortable: false },
+        { label: _("Date Added"), sortable: true, order: "date_added" },
     ];
 
     componentDidMount() {
@@ -194,10 +202,6 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                 for (const collection_id in collections) {
                     const collection = collections[collection_id];
                     collection.collections.sort((a, b) => a.name.localeCompare(b.name));
-                    if (collection_id === this.state.collection_id) {
-                        const sort = this.sortModes[this.state.sort_index].sort;
-                        collection.games.sort(sort);
-                    }
                 }
 
                 const ct = (collection) => {
@@ -218,30 +222,29 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         return promise;
     }
 
-    sortGames = (ev) => {
-        const idx = ev.target.options.selectedIndex;
-        this.applySort(
-            this.state.collections[this.state.collection_id].games,
-            idx,
-            this.state.sort_descending,
-        );
-        this.setState({ sort_index: idx });
+    setSortOrder = (order: SortOrder) => {
+        if (this.state.sort_order === order) {
+            this.toggleSortDirection();
+        } else {
+            this.setState({ sort_order: order });
+        }
+    };
+
+    getSortableClass = (order: SortOrder) => {
+        if (this.state.sort_order === order) {
+            return "sortable " + (this.state.sort_descending ? "sorted-desc" : "sorted-asc");
+        }
+        return "sortable";
     };
 
     toggleSortDirection = () => {
-        const descending = !this.state.sort_descending;
-        this.applySort(
-            this.state.collections[this.state.collection_id].games,
-            this.state.sort_index,
-            descending,
-        );
-        this.setState({ sort_descending: descending });
+        this.setState({ sort_descending: !this.state.sort_descending });
     };
 
-    applySort = (games, sortIdx, descending) => {
-        const sort = this.sortModes[sortIdx].sort;
+    applyCurrentSort = (games) => {
+        const sort = this.sortOrders[this.state.sort_order];
         games.sort(sort);
-        if (descending) {
+        if (this.state.sort_descending) {
             games.reverse();
         }
     };
@@ -353,6 +356,25 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         }
     };
 
+    renderColumnHeaders() {
+        return (
+            <div className="sort-header">
+                {this.columns.map((column) => (
+                    <span
+                        className={
+                            column.sortable ? this.getSortableClass(column.order) : undefined
+                        }
+                        onClick={
+                            column.sortable ? () => this.setSortOrder(column.order) : undefined
+                        }
+                    >
+                        {column.label}
+                    </span>
+                ))}
+            </div>
+        );
+    }
+
     render() {
         const owner = this.state.player_id === data.get("user").id || null;
         if (this.state.collections == null) {
@@ -361,6 +383,8 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
         const bread_crumbs = [];
         const collection = this.state.collections[this.state.collection_id];
+
+        this.applyCurrentSort(collection.games);
 
         if (!collection) {
             return (
@@ -512,29 +536,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                     <div className="games">
                                         {owner && (collection.games.length > 0 || null) && (
                                             <>
-                                                <div className="sort-heading">
-                                                    <label htmlFor="sort">Sort by:</label>
-                                                    <select
-                                                        name="sort"
-                                                        onChange={this.sortGames}
-                                                        value={this.state.sort_index}
-                                                    >
-                                                        {this.sortModes.map((mode, idx) => (
-                                                            <option key={idx} value={idx}>
-                                                                {mode.label}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                    <i
-                                                        className={
-                                                            "fa fa-sort-" +
-                                                            (this.state.sort_descending
-                                                                ? "down"
-                                                                : "up")
-                                                        }
-                                                        onClick={this.toggleSortDirection}
-                                                    ></i>
-                                                </div>
+                                                {this.renderColumnHeaders()}
                                                 <div className="game-entry">
                                                     <span className="select">
                                                         <input
@@ -564,28 +566,31 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                                         />
                                                     </span>
                                                 )}
-                                                <span className="date">
+                                                <span className="date-column">
                                                     {moment(game.started).format("ll")}
                                                 </span>
-                                                <span className="name">
+                                                <span className="name-column">
                                                     <Link to={`/game/${game.game_id}`}>
                                                         {game.name}
                                                     </Link>
                                                 </span>
-                                                <span className="black">
+                                                <span className="black-column">
                                                     <Player
                                                         user={game.black}
                                                         disableCacheUpdate={true}
                                                     />
                                                 </span>
-                                                <span className="white">
+                                                <span className="white-column">
                                                     <Player
                                                         user={game.white}
                                                         disableCacheUpdate={true}
                                                     />
                                                 </span>
-                                                <span className="outcome">
+                                                <span className="outcome-column">
                                                     {outcome_formatter(game)}
+                                                </span>
+                                                <span className="date-column">
+                                                    {moment(game.created).format("ll")}
                                                 </span>
                                             </div>
                                         ))}
