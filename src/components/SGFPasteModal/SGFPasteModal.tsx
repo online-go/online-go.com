@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
+import { pgettext, _ } from "translate";
 import { Modal, openModal } from "Modal";
 
 interface Events {}
@@ -26,10 +26,13 @@ interface SGFPasteModalProperties {
 }
 
 export class SGFPasteModal extends Modal<Events, SGFPasteModalProperties, any> {
+    static fallbackFilename: string =
+        pgettext("Fallback filename for pasted SGF data", "pasted") + ".sgf";
+
     constructor(props) {
         super(props);
         this.state = {
-            defaultFilename: _("pasted.sgf"),
+            defaultFilename: SGFPasteModal.fallbackFilename,
             filenameOverride: undefined,
             rawSGF: undefined,
         };
@@ -63,9 +66,9 @@ export class SGFPasteModal extends Modal<Events, SGFPasteModalProperties, any> {
         const playerBlackMatch = this.getSGFPropertyRegex("PB").exec(sgfData);
         const playerWhiteMatch = this.getSGFPropertyRegex("PW").exec(sgfData);
         if (playerBlackMatch && playerWhiteMatch) {
-            return `${playerBlackMatch[1]} ${_("vs")} ${playerWhiteMatch[1]}.sgf`;
+            return `${playerBlackMatch[1]} ${_("vs.")} ${playerWhiteMatch[1]}.sgf`;
         }
-        return _("pasted.sgf");
+        return SGFPasteModal.fallbackFilename;
     };
 
     sanitizeFilename = (filename: string) => {
