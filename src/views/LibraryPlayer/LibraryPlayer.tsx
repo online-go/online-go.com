@@ -82,7 +82,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
     sortOrders: { [id in SortOrder]: any } = {
         name: (a, b) => a.name.localeCompare(b.name),
         game_date: (a, b) => Date.parse(a.started) - Date.parse(b.started),
-        date_added: (a, b) => Date.parse(a.started) - Date.parse(b.started),
+        date_added: (a, b) => Date.parse(a.created) - Date.parse(b.created),
     };
 
     columns: Column[] = [
