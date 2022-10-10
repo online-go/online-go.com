@@ -65,9 +65,9 @@ export function ChallengeLinkLanding(): JSX.Element {
                 .then(() => {
                     alert.close();
                     if (challenge.invite_only) {
-                        navigate("/#challenge-link", { replace: true });
+                        navigate("/", { replace: true });
                     } else {
-                        navigate(`/play#rengo:${challenge.challenge_id}:challenge-link`, {
+                        navigate(`/play#rengo:${challenge.challenge_id}`, {
                             replace: true,
                         });
                     }
@@ -80,7 +80,7 @@ export function ChallengeLinkLanding(): JSX.Element {
             post("challenges/%%/accept", challenge.challenge_id, {})
                 .then(() => {
                     alert.close();
-                    navigate(`/game/${challenge.game_id}#challenge-link`, { replace: true });
+                    navigate(`/game/${challenge.game_id}`, { replace: true });
                 })
                 .catch((err) => {
                     alert.close();
@@ -107,6 +107,7 @@ export function ChallengeLinkLanding(): JSX.Element {
             "This needs to be a no-spaces honorific for a guest user",
             "HonouredGuest",
         );
+
         // naively uniquify... 6 lsbs of epoch... good enough?
         const new_username =
             new_username_root.replace(/\s+/g, "") + Date.now().toString().slice(-6);
@@ -120,8 +121,9 @@ export function ChallengeLinkLanding(): JSX.Element {
         })
             .then((config) => {
                 data.set(cached.config, config);
-                // This is the page reload required for a new registration
-                data.set("pending_accepted_challenge", linked_challenge);
+                // This is where we do the page reload required for a new registration
+                data.set("pending_accepted_challenge", linked_challenge); // cleared in doAcceptance
+                data.set("challenge_link_registration", linked_challenge); // cleared in HelpFlows, after triggering relevant help
                 window.location.assign("/welcome/accepted");
             })
 

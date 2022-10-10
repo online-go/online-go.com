@@ -233,6 +233,10 @@ export interface DataSchema
     // we are busy getting them logged in first.
     pending_accepted_challenge: Challenge;
 
+    // State tracking if we are processing a registration during challenge-link acceptance
+    // We need the Challenge info in this case, separately from pending_accepted_challenge.
+    challenge_link_registration: Challenge;
+
     [player_notes_key: `player-notes.${number}.${number}`]: string;
     [learning_hub_key: `learning-hub.${string}`]: { [page_number: number]: true };
     [moderator_join_game_publicly_key: `moderator.join-game-publicly.${string}`]: boolean;

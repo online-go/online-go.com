@@ -39,7 +39,7 @@ type OgsHelpProviderProps = {
 };
 
 /**
- * Implement an RDH HelpProvider that use OGS data storage
+ * Implement an RDH HelpProvider that uses OGS data storage
  */
 
 export function OgsHelpProvider(props: OgsHelpProviderProps): JSX.Element {
@@ -51,12 +51,13 @@ export function OgsHelpProvider(props: OgsHelpProviderProps): JSX.Element {
     // Make help system use our server-based storage, to achieve logged-in-user-specific help state.
 
     // Prevent writing back rdhState till remote data is loaded
-    //  wait till remote data is loaded
 
-    data.events.on("remote_data_sync_complete", () => {
-        debugDynamicHelp && console.log("Telling RHD: Storage loaded");
-        setStorageLoaded(true);
-    });
+    React.useEffect(() => {
+        data.events.on("remote_data_sync_complete", () => {
+            debugDynamicHelp && console.log("Telling RDH: Storage loaded");
+            setStorageLoaded(true);
+        });
+    }, []);
 
     // TBD should memo this
     const dynamicHelpStorage: DynamicHelp.DynamicHelpStorageAPI = {

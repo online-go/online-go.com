@@ -116,13 +116,6 @@ export class OldOverview extends React.Component<{}, OverviewState> {
         notification_manager.event_emitter.on("turn-count", this.setBoardsToMoveOn);
         data.watch("config.user", this.updateUser);
         this.refresh().then(ignore).catch(ignore);
-
-        if (window.location.hash.includes("challenge-link")) {
-            this.context.triggerFlow("guest-user-intro-rengo");
-            this.context.triggerFlow("guest-user-intro-old-nav");
-        } else {
-            console.log(">>> ", window.location.hash);
-        }
     }
 
     componentDidUpdate() {
