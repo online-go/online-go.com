@@ -5159,10 +5159,10 @@ glogg@^1.0.0:
   dependencies:
     sparkles "^1.0.0"
 
-goban@=0.5.109:
-  version "0.5.109"
-  resolved "https://registry.yarnpkg.com/goban/-/goban-0.5.109.tgz#0794415dd7451075ff61cff9cf90f11f7582f79e"
-  integrity sha512-i6uGjiaZrAo2Ve5Rb0hFxaLy46lKzh0HiqYZXc5Waockt1AltaIHv1uFuneJBHLiPimL4L67BzuS3XPa+eGK2w==
+goban@=0.5.112:
+  version "0.5.112"
+  resolved "https://registry.yarnpkg.com/goban/-/goban-0.5.112.tgz#938b2984ba527ec2ae4bc2d0d0bf9431dd6590a4"
+  integrity sha512-8cAMh4c+1WrNv+J8UAby9HMcOmkIxVxUKOfZ3jtgzeBNlMJYVLnRgnDjDm8YGtDRGiSDaSH1l9mmrN5Y+a/hPA==
 
 google-auth-library@^8.0.2:
   version "8.5.2"
@@ -8550,10 +8550,10 @@ react-dropzone@^12.0.5:
     file-selector "^0.5.0"
     prop-types "^15.8.1"
 
-react-dynamic-help@2.4.2:
-  version "2.4.2"
-  resolved "https://registry.yarnpkg.com/react-dynamic-help/-/react-dynamic-help-2.4.2.tgz#3e07cf350eb31a2de1d2b276bc5caf7025ebb187"
-  integrity sha512-j4fW+3FhTM5hkNFZMdahPiBN1lH5x/7RQIwBoiIlAQ/rJQBSupwdHZZcc2cuv3vZhcMDfu5QkUWDelJ9ZUgrIQ==
+react-dynamic-help@^2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/react-dynamic-help/-/react-dynamic-help-2.6.0.tgz#66ef0f99b00eaacec338c229e2bc7ee54a7626fe"
+  integrity sha512-v5cUAbJfDf5pCVrjtmKLL/hP37ef+Z+BoV8sBvoHcw1OeTyvNQovdB5a+OYTFssxbDa2JnDW9YVhVmh949alnA==
   dependencies:
     "@types/react" "^18.0.15"
 

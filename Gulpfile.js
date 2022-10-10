@@ -191,6 +191,7 @@ function dev_server(done) {
     let body_parser = require('body-parser');
     let http = require('http');
     var proxy = require('express-http-proxy');
+    let url = require('url');
     let devserver = express();
     devserver.use(body_parser.json())
     devserver.use(body_parser.text())
@@ -207,10 +208,24 @@ function dev_server(done) {
     devserver.use(express.static('dist'))
     devserver.use(express.static('assets'))
 
-    let backend_proxy = (prefix) => proxy(server_url, {
+    // Based on https://github.com/villadora/express-http-proxy/issues/127
+    const isMultipartRequest = (req) => {
+        const contentTypeHeader = req.headers["content-type"];
+        return contentTypeHeader && contentTypeHeader.indexOf("multipart") > -1;
+      };
+
+
+    let proxy_wrapper = (host, options) => (req, res, next) => {
+        return proxy(server_url, {
+            parseReqBody: !isMultipartRequest(req),
+            ...options
+          })(req, res, next);
+    }
+
+    let backend_proxy = (prefix) => proxy_wrapper(server_url, {
         https: use_https,
         proxyReqPathResolver: function(req) {
-            let path = prefix + require('url').parse(req.url).path;
+            let path = prefix + url.parse(req.url).path;
             console.log('-->', path);
             return path;
         }

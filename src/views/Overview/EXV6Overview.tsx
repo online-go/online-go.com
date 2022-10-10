@@ -101,10 +101,6 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
 
     componentDidUpdate() {
         this.setTitle();
-        if (window.location.hash.includes("challenge-link")) {
-            this.context.triggerFlow("guest-user-intro-rengo");
-            this.context.triggerFlow("guest-user-intro-exv6");
-        }
     }
 
     updateUser = (user: UserType) => {
