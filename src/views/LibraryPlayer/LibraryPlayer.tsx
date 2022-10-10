@@ -37,7 +37,7 @@ type LibraryPlayerProperties = RouteComponentProps<{
 }>;
 
 type SortOrder = "name" | "game_date" | "date_added";
-type Column = { label: string; sortable: boolean; order?: SortOrder };
+type Column = { title: string; sortable: boolean; order?: SortOrder; ownerOnly?: boolean };
 
 interface Collection {
     id: number;
@@ -86,13 +86,13 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
     };
 
     columns: Column[] = [
-        { label: "", sortable: false }, // checkbox column
-        { label: _("Game Date"), sortable: true, order: "game_date" },
-        { label: _("Name"), sortable: true, order: "name" },
-        { label: _("Black"), sortable: false },
-        { label: _("White"), sortable: false },
-        { label: _("Result"), sortable: false },
-        { label: _("Date Added"), sortable: true, order: "date_added" },
+        { title: "", sortable: false, ownerOnly: true }, // checkbox column
+        { title: _("Game Date"), sortable: true, order: "game_date" },
+        { title: _("Name"), sortable: true, order: "name" },
+        { title: _("Black"), sortable: false },
+        { title: _("White"), sortable: false },
+        { title: _("Result"), sortable: false },
+        { title: _("Date Added"), sortable: true, order: "date_added" },
     ];
 
     componentDidMount() {
@@ -356,21 +356,23 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         }
     };
 
-    renderColumnHeaders() {
+    renderColumnHeaders(owner: boolean) {
         return (
             <div className="sort-header">
-                {this.columns.map((column) => (
-                    <span
-                        className={
-                            column.sortable ? this.getSortableClass(column.order) : undefined
-                        }
-                        onClick={
-                            column.sortable ? () => this.setSortOrder(column.order) : undefined
-                        }
-                    >
-                        {column.label}
-                    </span>
-                ))}
+                {this.columns
+                    .filter((col) => owner || !col.ownerOnly)
+                    .map((column) => (
+                        <span
+                            className={
+                                column.sortable ? this.getSortableClass(column.order) : undefined
+                            }
+                            onClick={
+                                column.sortable ? () => this.setSortOrder(column.order) : undefined
+                            }
+                        >
+                            {column.title}
+                        </span>
+                    ))}
             </div>
         );
     }
@@ -534,19 +536,17 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                     {(collection.collections.length > 0 || null) && <hr />}
 
                                     <div className="games">
+                                        {this.renderColumnHeaders(owner)}
                                         {owner && (collection.games.length > 0 || null) && (
-                                            <>
-                                                {this.renderColumnHeaders()}
-                                                <div className="game-entry">
-                                                    <span className="select">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={all_games_checked}
-                                                            onChange={this.toggleAllGamesChecked}
-                                                        />
-                                                    </span>
-                                                </div>
-                                            </>
+                                            <div className="game-entry">
+                                                <span className="select">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={all_games_checked}
+                                                        onChange={this.toggleAllGamesChecked}
+                                                    />
+                                                </span>
+                                            </div>
                                         )}
                                         {collection.games.map((game) => (
                                             <div key={game.game_id} className="game-entry">
