@@ -410,17 +410,17 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                         <div className="upload-button">
                                             <button
                                                 className="primary"
-                                                onClick={() => this.dropzone.open()}
-                                            >
-                                                {_("Upload")}
-                                            </button>
-                                            <button
-                                                className="primary"
                                                 onClick={() =>
                                                     openSGFPasteModal(this.uploadSGFText)
                                                 }
                                             >
                                                 {_("Paste SGF")}
+                                            </button>
+                                            <button
+                                                className="primary"
+                                                onClick={() => this.dropzone.open()}
+                                            >
+                                                {_("Upload")}
                                             </button>
                                         </div>
                                     )}
