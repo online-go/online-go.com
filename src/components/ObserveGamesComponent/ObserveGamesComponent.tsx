@@ -446,6 +446,10 @@ export class ObserveGamesComponent extends React.PureComponent<
                         "friend_games_only",
                         pgettext("Filter games list", "Friend games only"),
                     )}
+                    {this.filterOption(
+                        "malk_only",
+                        pgettext("Filter games list", "Malkovich games only"),
+                    )}
                 </div>
 
                 <div className="filter-group">
