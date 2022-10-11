@@ -155,25 +155,27 @@ export class GobanLineSummary extends React.Component<
     }
 
     render() {
-        let player;
-        let opponent;
+        let opponent: UserType;
         let player_color: string;
         let opponent_color: string;
 
+        let displayMode: "opponent-only" | "both-players" | "left-rengo";
+
         switch (playerColor(this.props)) {
             case "black":
-                player = this.props.black;
                 opponent = this.props.white;
                 player_color = "black";
                 opponent_color = "white";
+                displayMode = "opponent-only";
                 break;
             case "white":
-                player = this.props.white;
                 opponent = this.props.black;
                 player_color = "white";
                 opponent_color = "black";
+                displayMode = "opponent-only";
                 break;
             default:
+                displayMode = this.props.rengo_teams ? "left-rengo" : "both-players";
                 break;
         }
 
@@ -189,42 +191,45 @@ export class GobanLineSummary extends React.Component<
                 <div className="move-number">{this.state.move_number}</div>
                 <div className="game-name">{this.state.game_name}</div>
 
-                {player && (
-                    <div className="player">
-                        <Player user={opponent} fakelink rank />
-                    </div>
-                )}
-                {player && (
-                    <div>
-                        <Clock goban={this.goban} color={player_color as "black" | "white"} />
-                    </div>
-                )}
-                {player && (
-                    <div>
-                        <Clock goban={this.goban} color={opponent_color as "black" | "white"} />
-                    </div>
+                {displayMode === "opponent-only" && (
+                    <>
+                        <div className="player">
+                            <Player user={opponent} fakelink rank />
+                        </div>
+                        <div>
+                            <Clock goban={this.goban} color={player_color as "black" | "white"} />
+                        </div>
+                        <div>
+                            <Clock goban={this.goban} color={opponent_color as "black" | "white"} />
+                        </div>
+                    </>
                 )}
 
-                {!player && (
-                    <div className="player">
-                        <Player user={this.props.black} fakelink rank />
-                    </div>
+                {displayMode === "both-players" && (
+                    <>
+                        <div className="player">
+                            <Player user={this.props.black} fakelink rank />
+                        </div>
+                        <div>
+                            <Clock goban={this.goban} color="black" />
+                        </div>
+                        <div className="player">
+                            <Player user={this.props.white} fakelink />
+                        </div>
+                        <div>
+                            <Clock goban={this.goban} color="white" />
+                        </div>
+                    </>
                 )}
-                {!player && (
-                    <div>
-                        <Clock goban={this.goban} color="black" />
-                    </div>
+
+                {displayMode === "left-rengo" && (
+                    <>
+                        <td colSpan={3} className="left-rengo">
+                            {/* {_("You have resigned from or timed out of this rengo game")} */}
+                        </td>
+                    </>
                 )}
-                {!player && (
-                    <div className="player">
-                        <Player user={this.props.white} fakelink />
-                    </div>
-                )}
-                {!player && (
-                    <div>
-                        <Clock goban={this.goban} color="white" />
-                    </div>
-                )}
+
                 <div className="size">{this.props.width + "x" + this.props.height}</div>
             </Link>
         );
