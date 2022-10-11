@@ -49,7 +49,7 @@
         display: table;
     }
 
-    .collection-entry, .game-entry {
+    .collection-entry, .game-entry, .sort-header {
         display: table-row;
 
         span {
@@ -57,6 +57,33 @@
             padding-right: 1.0rem;
         }
     }
+
+    .sort-header {
+        font-weight: 700;
+    }
+
+    .sortable {
+        cursor: pointer;
+    }
+
+    .sortable:after {
+        display: inline-block;
+        width: 0.8rem;
+        font-size: 0.7rem;
+        margin-left: 0.2rem;
+        margin-bottom: 0.2rem;
+        font-family: 'FontAwesome';
+        content: " ";
+    }
+
+    .sortable.sorted-asc:after {
+        content: fa-sort-asc-content;
+    }
+
+    .sortable.sorted-desc:after {
+        content: fa-sort-desc-content;
+    }
+
     .private-lock {
         //cursor: pointer;
         width: 2rem;
@@ -71,19 +98,19 @@
     }
 
 
-    .date {
+    .date-column {
         min-width: 10rem;
     }
     .collection {
         padding-left: 2rem;
     }
-    .collection, .name {
+    .collection, .name-column {
         min-width: 12rem;
     }
-    .black, .white {
+    .black-column, .white-column {
         min-width: 6rem;
     }
-    .outcome {
+    .outcome-column {
         min-width: 5rem;
     }
 
@@ -110,4 +137,5 @@
     .upload-button {
         float: right;
     }
+
 }

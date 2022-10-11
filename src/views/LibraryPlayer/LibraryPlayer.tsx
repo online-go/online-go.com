@@ -30,11 +30,15 @@ import { DropzoneRef } from "react-dropzone";
 import * as moment from "moment";
 import { IdType } from "src/lib/types";
 import { openSGFPasteModal } from "SGFPasteModal";
+import * as preferences from "preferences";
 
 type LibraryPlayerProperties = RouteComponentProps<{
     player_id: string;
     collection_id: string;
 }>;
+
+type SortOrder = "name" | "game_date" | "date_added";
+type Column = { title: string; sortable: boolean; order?: SortOrder; ownerOnly?: boolean };
 
 interface Collection {
     id: number;
@@ -54,6 +58,8 @@ interface LibraryPlayerState {
     games_checked: {};
     new_collection_name: string;
     new_collection_private: boolean;
+    sort_order: SortOrder;
+    sort_descending: boolean;
 }
 
 class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, LibraryPlayerState> {
@@ -69,8 +75,26 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
             games_checked: {},
             new_collection_name: "",
             new_collection_private: false,
+            sort_order: preferences.get("sgf.sort-order") as SortOrder,
+            sort_descending: preferences.get("sgf.sort-descending"),
         };
     }
+
+    sortOrders: { [id in SortOrder]: any } = {
+        name: (a, b) => a.name.localeCompare(b.name),
+        game_date: (a, b) => Date.parse(a.started) - Date.parse(b.started),
+        date_added: (a, b) => Date.parse(a.created) - Date.parse(b.created),
+    };
+
+    columns: Column[] = [
+        { title: "", sortable: false, ownerOnly: true }, // checkbox column
+        { title: _("Game Date"), sortable: true, order: "game_date" },
+        { title: _("Name"), sortable: true, order: "name" },
+        { title: _("Black"), sortable: false },
+        { title: _("White"), sortable: false },
+        { title: _("Result"), sortable: false },
+        { title: _("Date Added"), sortable: true, order: "date_added" },
+    ];
 
     componentDidMount() {
         this.refresh(this.state.player_id).then(ignore).catch(ignore);
@@ -108,7 +132,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
         promise
             .then((library) => {
-                const collections = {};
+                const collections: { [id: number]: Collection } = {};
 
                 const root = {
                     id: 0,
@@ -179,7 +203,6 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                 for (const collection_id in collections) {
                     const collection = collections[collection_id];
                     collection.collections.sort((a, b) => a.name.localeCompare(b.name));
-                    collection.games.sort((a, b) => a.name.localeCompare(b.name));
                 }
 
                 const ct = (collection) => {
@@ -199,6 +222,36 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
         return promise;
     }
+
+    setSortOrder = (order: SortOrder) => {
+        if (this.state.sort_order === order) {
+            this.toggleSortDirection();
+        } else {
+            this.setState({ sort_order: order });
+            preferences.set("sgf.sort-order", order);
+        }
+    };
+
+    getSortableClass = (order: SortOrder) => {
+        if (this.state.sort_order === order) {
+            return "sortable " + (this.state.sort_descending ? "sorted-desc" : "sorted-asc");
+        }
+        return "sortable";
+    };
+
+    toggleSortDirection = () => {
+        const descending = !this.state.sort_descending;
+        this.setState({ sort_descending: descending });
+        preferences.set("sgf.sort-descending", descending);
+    };
+
+    applyCurrentSort = (games) => {
+        const sort = this.sortOrders[this.state.sort_order];
+        games.sort(sort);
+        if (this.state.sort_descending) {
+            games.reverse();
+        }
+    };
 
     uploadSGFs = (files) => {
         if (parseInt(this.props.match.params.player_id) === data.get("user").id) {
@@ -307,6 +360,28 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         }
     };
 
+    renderColumnHeaders(owner: boolean) {
+        return (
+            <div className="sort-header">
+                {this.columns
+                    .filter((col) => owner || !col.ownerOnly)
+                    .map((column) => (
+                        <span
+                            key={column.title}
+                            className={
+                                column.sortable ? this.getSortableClass(column.order) : undefined
+                            }
+                            onClick={
+                                column.sortable ? () => this.setSortOrder(column.order) : undefined
+                            }
+                        >
+                            {column.title}
+                        </span>
+                    ))}
+            </div>
+        );
+    }
+
     render() {
         const owner = this.state.player_id === data.get("user").id || null;
         if (this.state.collections == null) {
@@ -315,6 +390,8 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
         const bread_crumbs = [];
         const collection = this.state.collections[this.state.collection_id];
+
+        this.applyCurrentSort(collection.games);
 
         if (!collection) {
             return (
@@ -337,6 +414,9 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                 break;
             }
         }
+
+        const hasGames: boolean = collection.games.length > 0;
+        const hasCollections: boolean = collection.collections.length > 0;
 
         return (
             <div className="LibraryPlayer container">
@@ -425,11 +505,11 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                         </div>
                                     )}
 
-                                    {(collection.collections.length > 0 || null) && (
+                                    {hasCollections && (
                                         <div className="collections">
-                                            {collection.collections.map((collection, idx) => (
+                                            {collection.collections.map((collection) => (
                                                 <div
-                                                    key={idx}
+                                                    key={collection.id}
                                                     className="collection-entry"
                                                     onClick={this.setCollection.bind(
                                                         this,
@@ -461,10 +541,11 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                             ))}
                                         </div>
                                     )}
-                                    {(collection.collections.length > 0 || null) && <hr />}
+                                    {hasCollections && <hr />}
 
                                     <div className="games">
-                                        {owner && (collection.games.length > 0 || null) && (
+                                        {hasGames && this.renderColumnHeaders(owner)}
+                                        {owner && hasGames && (
                                             <div className="game-entry">
                                                 <span className="select">
                                                     <input
@@ -493,36 +574,37 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                                         />
                                                     </span>
                                                 )}
-                                                <span className="date">
+                                                <span className="date-column">
                                                     {moment(game.started).format("ll")}
                                                 </span>
-                                                <span className="name">
+                                                <span className="name-column">
                                                     <Link to={`/game/${game.game_id}`}>
                                                         {game.name}
                                                     </Link>
                                                 </span>
-                                                <span className="black">
+                                                <span className="black-column">
                                                     <Player
                                                         user={game.black}
                                                         disableCacheUpdate={true}
                                                     />
                                                 </span>
-                                                <span className="white">
+                                                <span className="white-column">
                                                     <Player
                                                         user={game.white}
                                                         disableCacheUpdate={true}
                                                     />
                                                 </span>
-                                                <span className="outcome">
+                                                <span className="outcome-column">
                                                     {outcome_formatter(game)}
+                                                </span>
+                                                <span className="date-column">
+                                                    {moment(game.created).format("ll")}
                                                 </span>
                                             </div>
                                         ))}
                                     </div>
 
-                                    {((collection.games.length === 0 &&
-                                        collection.collections.length === 0) ||
-                                        null) && (
+                                    {!(hasCollections || hasGames) && (
                                         <div className="empty-text">
                                             <h3>{_("This SGF collection is empty.")}</h3>
                                             {owner && (

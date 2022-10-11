@@ -129,6 +129,9 @@ export const defaults = {
     "game-history-ranked-filter": "all",
 
     "help-system-enabled": true,
+
+    "sgf.sort-order": "date_added",
+    "sgf.sort-descending": true,
 };
 
 defaults["profanity-filter"][current_language] = true;
