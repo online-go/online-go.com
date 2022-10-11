@@ -30,6 +30,7 @@ import { DropzoneRef } from "react-dropzone";
 import * as moment from "moment";
 import { IdType } from "src/lib/types";
 import { openSGFPasteModal } from "SGFPasteModal";
+import * as preferences from "preferences";
 
 type LibraryPlayerProperties = RouteComponentProps<{
     player_id: string;
@@ -74,8 +75,8 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
             games_checked: {},
             new_collection_name: "",
             new_collection_private: false,
-            sort_order: "date_added",
-            sort_descending: true,
+            sort_order: preferences.get("sgf.sort-order") as SortOrder,
+            sort_descending: preferences.get("sgf.sort-descending"),
         };
     }
 
@@ -227,6 +228,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
             this.toggleSortDirection();
         } else {
             this.setState({ sort_order: order });
+            preferences.set("sgf.sort-order", order);
         }
     };
 
@@ -238,7 +240,9 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
     };
 
     toggleSortDirection = () => {
-        this.setState({ sort_descending: !this.state.sort_descending });
+        const descending = !this.state.sort_descending;
+        this.setState({ sort_descending: descending });
+        preferences.set("sgf.sort-descending", descending);
     };
 
     applyCurrentSort = (games) => {
@@ -363,6 +367,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                     .filter((col) => owner || !col.ownerOnly)
                     .map((column) => (
                         <span
+                            key={column.title}
                             className={
                                 column.sortable ? this.getSortableClass(column.order) : undefined
                             }
@@ -502,9 +507,9 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
                                     {hasCollections && (
                                         <div className="collections">
-                                            {collection.collections.map((collection, idx) => (
+                                            {collection.collections.map((collection) => (
                                                 <div
-                                                    key={idx}
+                                                    key={collection.id}
                                                     className="collection-entry"
                                                     onClick={this.setCollection.bind(
                                                         this,
