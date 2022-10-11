@@ -39,6 +39,10 @@ async function main() {
             }
 
             if (missing) {
+                if (!(lang in autotranslations)) {
+                    autotranslations[lang] = {};
+                    console.error("Missing autotranslations for " + lang);
+                }
                 if (item.msgid in autotranslations[lang]) {
                     result[key] = [autotranslations[lang][item.msgid]];
                 } else {
