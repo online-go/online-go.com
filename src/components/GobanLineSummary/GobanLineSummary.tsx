@@ -159,7 +159,7 @@ export class GobanLineSummary extends React.Component<
         let player_color: string;
         let opponent_color: string;
 
-        let displayMode: "opponent-only" | "both-players" | "left-rengo";
+        let displayMode: "opponent-only" | "both-players" | "dropped-rengo";
 
         switch (playerColor(this.props)) {
             case "black":
@@ -175,7 +175,7 @@ export class GobanLineSummary extends React.Component<
                 displayMode = "opponent-only";
                 break;
             default:
-                displayMode = this.props.rengo_teams ? "left-rengo" : "both-players";
+                displayMode = this.props.rengo_teams ? "dropped-rengo" : "both-players";
                 break;
         }
 
@@ -222,11 +222,13 @@ export class GobanLineSummary extends React.Component<
                     </>
                 )}
 
-                {displayMode === "left-rengo" && (
+                {displayMode === "dropped-rengo" && (
                     <>
-                        <td colSpan={3} className="left-rengo">
-                            {/* {_("You have resigned from or timed out of this rengo game")} */}
-                        </td>
+                        {/* It would be nice to use <td colSpan={3}>, but we're not using a true table
+                        and React complains about sticking a <td> inside an <a> element */}
+                        <div></div>
+                        <div></div>
+                        <div></div>
                     </>
                 )}
 
