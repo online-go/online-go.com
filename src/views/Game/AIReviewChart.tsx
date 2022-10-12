@@ -25,6 +25,8 @@ import { PersistentElement } from "PersistentElement";
 import { deepCompare } from "misc";
 import { JGOFAIReview } from "goban";
 
+window["d3"] = d3;
+
 interface AIReviewChartProperties {
     entries: Array<AIReviewEntry>;
     ai_review: JGOFAIReview;
@@ -213,9 +215,9 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
                 this.cursor_crosshair?.style("display", "none");
                 this.full_crosshair?.style("display", "none");
             })
-            .on("mousemove", function () {
+            .on("mousemove", function (event) {
                 // eslint-disable-next-line @typescript-eslint/no-invalid-this
-                const x0 = self.x.invert(d3.mouse(this as d3.ContainerElement)[0]);
+                const x0 = self.x.invert(d3.pointer(event, this as d3.ContainerElement)[0]);
 
                 let i = bisector(self.props.entries, x0, 1);
                 let d0 = self.props.entries[i - 1];
@@ -251,12 +253,12 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
                     }
                 }
             })
-            .on("mousedown", function () {
+            .on("mousedown", function (event) {
                 mouse_down = true;
                 last_move = -1;
 
                 // eslint-disable-next-line @typescript-eslint/no-invalid-this
-                const x0 = self.x.invert(d3.mouse(this as d3.ContainerElement)[0]);
+                const x0 = self.x.invert(d3.pointer(event, this as d3.ContainerElement)[0]);
 
                 let i = bisector(self.props.entries, x0, 1);
                 let d0 = self.props.entries[i - 1];
@@ -365,7 +367,9 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
         ]);
 
         if (use_score_safe) {
-            this.y.domain(d3.extent(d3.merge([entries, variation_entries]), (e) => e.score));
+            this.y.domain(
+                d3.extent(d3.merge([entries, variation_entries]), (e: AIReviewEntry) => e.score),
+            );
         } else {
             this.y.domain([0, 100]);
         }

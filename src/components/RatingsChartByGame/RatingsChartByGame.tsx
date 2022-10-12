@@ -432,10 +432,10 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
                 window.clearTimeout(this.hover_timer);
                 self.hover_timer = window.setTimeout(this.restorePie.bind(self), pie_restore_delay);
             })
-            .on("mousemove", function () {
+            .on("mousemove", function (event) {
                 // 'this' is the mouse area, in this context
                 // eslint-disable-next-line @typescript-eslint/no-invalid-this
-                const x0 = self.ratings_x.invert(d3.mouse(this as d3.ContainerElement)[0]);
+                const x0 = self.ratings_x.invert(d3.pointer(event, this as d3.ContainerElement)[0]);
 
                 const n = Math.round(x0);
                 const d = self.game_entries[n];
@@ -625,7 +625,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         if (!this.state.nodata && this.game_entries) {
             this.subselect_chart.datum(this.game_entries).attr("d", this.subselect_area as any);
 
-            this.onSubselectBrush();
+            this.onSubselectBrush(null);
         }
     };
 
@@ -845,8 +845,8 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         }
     };
 
-    onSubselectBrush = () => {
-        this.subselect_extents = (d3.event && d3.event.selection) || this.subselect_x.range();
+    onSubselectBrush = (event) => {
+        this.subselect_extents = (event && event.selection) || this.subselect_x.range();
         this.subselect_extents = this.subselect_extents.map(
             this.subselect_x.invert,
             this.subselect_x,

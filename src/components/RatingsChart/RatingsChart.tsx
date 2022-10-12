@@ -342,9 +342,11 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
                         this.dateLegend.style("display", "none");
                         this.setState({ hovered_month: null });
                     })
-                    .on("mousemove", function () {
-                        // eslint-disable-next-line @typescript-eslint/no-invalid-this
-                        const x0 = self.ratings_x.invert(d3.mouse(this as d3.ContainerElement)[0]);
+                    .on("mousemove", function (event) {
+                        const x0 = self.ratings_x.invert(
+                            // eslint-disable-next-line @typescript-eslint/no-invalid-this
+                            d3.pointer(event, this as d3.ContainerElement)[0],
+                        );
 
                         let d = null;
 
@@ -512,9 +514,9 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
                 this.horizontalCrosshairLine.style("display", "none");
                 this.setState({ hovered_date: null });
             })
-            .on("mousemove", function () {
+            .on("mousemove", function (event) {
                 // eslint-disable-next-line @typescript-eslint/no-invalid-this
-                const x0 = self.ratings_x.invert(d3.mouse(this as d3.ContainerElement)[0]);
+                const x0 = self.ratings_x.invert(d3.pointer(event, this as d3.ContainerElement)[0]);
 
                 const i = date_bisector(self.games_by_day, x0, 1);
                 const d0 = self.games_by_day[i - 1];
@@ -700,7 +702,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
         if (this.games_by_day) {
             this.timeline_chart.datum(this.games_by_day).attr("d", this.timeline_area as any);
 
-            this.onTimelineBrush();
+            this.onTimelineBrush(null);
         }
     };
 
@@ -1093,8 +1095,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
         return this.graph_width * (days_in_month / days_in_range);
     }
 
-    onTimelineBrush = () => {
-        this.date_extents = (d3.event && d3.event.selection) || this.timeline_x.range();
+    onTimelineBrush = (event) => {
+        this.date_extents = (event && event.selection) || this.timeline_x.range();
         this.date_extents = this.date_extents.map(this.timeline_x.invert, this.timeline_x);
         this.date_extents[0].setHours(0, 0, 0, 0); /* start of day */
         this.date_extents[1].setHours(23, 59, 59, 0); /* end of day   */
