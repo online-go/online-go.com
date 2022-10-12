@@ -16,8 +16,9 @@
  */
 
 /// <reference path="../typings_manual/index.d.ts" />
-import "whatwg-fetch"; /* polyfills window.fetch */
 import * as Sentry from "@sentry/browser";
+import { apply_polyfills } from "polyfills";
+apply_polyfills();
 
 import { configure_goban } from "configure-goban";
 import {
