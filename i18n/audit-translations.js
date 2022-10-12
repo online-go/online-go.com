@@ -141,7 +141,10 @@ async function main() {
         }
     }
 
-    await fs.promises.writeFile("./locale/translations_missing.json", JSON.stringify(translations_missing, null, 4));
+    await fs.promises.writeFile(
+        "./locale/translations_missing.json",
+        JSON.stringify(translations_missing, null, 4),
+    );
 
     if (deepl_translator && googleTranslate) {
         if (Object.keys(vandalized_languages).length > 0) {
@@ -198,7 +201,8 @@ async function main() {
         }
 
         for (let lang in autotranslations_needed) {
-            if (lang in deeplSupportedLanguages || lang in googleSupportedLanguages) {
+            const zh_lang = lang.replace("zh-tw", "zh-TW").replace("zh-cn", "zh-CN");
+            if (lang in deeplSupportedLanguages || zh_lang in googleSupportedLanguages) {
                 if (!(lang in autotranslations)) {
                     autotranslations[lang] = {};
                 }
@@ -215,8 +219,11 @@ async function main() {
                     results = (await deepl_translator.translateText(strs, "en", lang)).map(
                         (r) => r.text,
                     );
-                }
-                else if (lang in googleSupportedLanguages) {
+                } else if (
+                    lang in googleSupportedLanguages ||
+                    zh_lang in googleSupportedLanguages
+                ) {
+                    const lang_to_use = lang in googleSupportedLanguages ? lang : zh_lang;
                     const todo = strs.map((s) => s);
 
                     while (todo.length > 0) {
@@ -230,7 +237,7 @@ async function main() {
                             contents: batch,
                             mimeType: "text/plain",
                             sourceLanguageCode: "en",
-                            targetLanguageCode: lang,
+                            targetLanguageCode: lang_to_use,
                         });
 
                         for (let i = 0; i < batch.length; i++) {
@@ -248,6 +255,14 @@ async function main() {
                 }
             } else {
                 console.error("Failed to find a translator for " + lang);
+                console.info(
+                    "Deepl supported languages: " +
+                        JSON.stringify(Object.keys(deeplSupportedLanguages), undefined, 4),
+                );
+                console.info(
+                    "Google supported languages: " +
+                        JSON.stringify(Object.keys(googleSupportedLanguages), undefined, 4),
+                );
             }
         }
 
@@ -259,8 +274,7 @@ async function main() {
             "./autotranslations.json",
             JSON.stringify(autotranslations, undefined, 4),
         );
-    }
-    else {
+    } else {
         console.log("No autotranslation support on this system, skipping autotranslations");
     }
 }
