@@ -33,8 +33,6 @@ data.setDefault("custom.board", "#DCB35C");
 data.setDefault("custom.line", "#000000");
 data.setDefault("custom.url", "");
 
-const boot_time = Date.now();
-
 export function configure_goban() {
     Goban.setHooks({
         defaultConfig: () => {
@@ -130,7 +128,7 @@ export function configure_goban() {
                 " error=",
                 error,
                 " uptime=",
-                Date.now() - boot_time,
+                performance.now(),
                 " black theme: ",
                 preferences.get("goban-theme-black"),
                 " white theme: ",
@@ -144,7 +142,7 @@ export function configure_goban() {
                         " total_allocations_made=" +
                         total_allocations_made +
                         " uptime=" +
-                        (Date.now() - boot_time) +
+                        performance.now() +
                         " black theme: " +
                         preferences.get("goban-theme-black") +
                         " white theme: " +
@@ -153,7 +151,7 @@ export function configure_goban() {
             );
             preferences.set("goban-theme-black", "Plain");
             preferences.set("goban-theme-white", "Plain");
-            if (Date.now() - boot_time > 10000) {
+            if (performance.now() > 10000) {
                 /*
                 setTimeout(() => {
                 }, 1000);
@@ -173,7 +171,7 @@ export function configure_goban() {
                     " error=" +
                     error +
                     " uptime=" +
-                    (Date.now() - boot_time),
+                    performance.now(),
             );
         },
 
