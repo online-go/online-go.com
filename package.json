@@ -48,7 +48,7 @@
         "express": "^4.17.1",
         "express-http-proxy": "^1.6.0",
         "fork-ts-checker-webpack-plugin": "^6.3.4",
-        "goban": "=0.5.112",
+        "goban": "=0.5.114",
         "gulp": "^4.0.2",
         "gulp-clean-css": "^4.3.0",
         "gulp-eslint-new": "^1.4.4",
