@@ -21,6 +21,11 @@ const w = window as { [key: string]: any }; // Add index signature
 export let current_language: string = (w["ogs_current_language"] as string) || "en";
 //export let languages: { [key: string]: string } = w["ogs_languages"] || { 'en': 'English' };
 export const languages: { [key: string]: string } = w["supported_languages"] || { en: "English" };
+
+if (window.location.hostname === "online-go.com") {
+    delete languages["debug"];
+}
+
 export const countries: { [key: string]: { [key: string]: string } } = w["ogs_countries"] || {
     en: { us: "United States" },
 };
