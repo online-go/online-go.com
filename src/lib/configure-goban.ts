@@ -131,15 +131,35 @@ export function configure_goban() {
                 error,
                 " uptime=",
                 Date.now() - boot_time,
+                " black theme: ",
+                preferences.get("goban-theme-black"),
+                " white theme: ",
+                preferences.get("goban-theme-white"),
             );
-            Sentry.captureException(new Error("Canvas allocation failed"));
+            Sentry.captureException(
+                new Error(
+                    "Canvas allocation failed: " +
+                        " note=" +
+                        note +
+                        " total_allocations_made=" +
+                        total_allocations_made +
+                        " uptime=" +
+                        (Date.now() - boot_time) +
+                        " black theme: " +
+                        preferences.get("goban-theme-black") +
+                        " white theme: " +
+                        preferences.get("goban-theme-white"),
+                ),
+            );
+            preferences.set("goban-theme-black", "Plain");
+            preferences.set("goban-theme-white", "Plain");
             if (Date.now() - boot_time > 10000) {
                 /*
                 setTimeout(() => {
                 }, 1000);
                 */
                 alert(
-                    "A canvas allocation device limit has been reached, we are reloading the page now.",
+                    "A canvas allocation device limit has been reached, we are changing the stone theme to be plain stones and reloading the page now to help prevent visual glitches.",
                 );
                 window.location.reload();
             } else {
