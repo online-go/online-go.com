@@ -17,6 +17,14 @@ const googleTranslate = keys
 
 let limit = 1;
 
+/* We use emoji as placeholders for our auto-translations because the
+ * translators don't seem to disturb them as they are likely to do with
+ * numbers, symbols, and everything else we tried. */
+const emoji =
+    "😀😃😄😁😆😅😂🤣🥲🥹☺️😊😇🙂🙃😉😌😍🥰😘😗😙😚😋😛😝😜🤪🤨🧐🤓😎🥸🤩🥳😏😒😞😔😟😕🙁☹️😣😖😫😩🥺😢😭😮💨😤😠😡🤬🤯😳🥵🥶😱😨😰😥😓🫣🤗🫡🤔🫢🤭🤫🤥😶😶🌫️😐😑😬🫠🙄😯😦😧😮😲🥱😴🤤😪😵😵💫🫥🤐🥴🤢🤮🤧😷🤒🤕🤑🤠😈👿👹👺🤡💩👻💀☠️👽👾🤖🎃😺😸😹😻😼😽🙀😿😾" +
+    "👋🤚🖐✋🖖👌🤌🤏✌️🤞🫰🤟🤘🤙🫵🫱🫲🫳🫴👈👉👆🖕👇☝️👍👎✊👊🤛🤜👏🫶🙌👐🤲🤝🙏✍️💅🤳💪🦾🦵🦿🦶👣👂🦻👃🫀🫁🧠🦷🦴👀👁👅👄🫦💋🩸" +
+    "👶👧🧒👦👩🧑👨👩🦱🧑🦱👨🦱👩🦰🧑🦰👨🦰👱♀️👱👱♂️👩🦳🧑🦳👨🦳👩🦲🧑🦲👨🦲🧔♀️🧔🧔♂️👵🧓👴👲👳♀️👳👳";
+
 async function main() {
     //const countries = JSON.parse(await fs.promises.readFile("./build/countries.json", "utf-8"));
     //const ui_keys = JSON.parse(await fs.promises.readFile("./build/ogs-ui-keys.json", "utf-8"));
@@ -27,10 +35,20 @@ async function main() {
     const autotranslations = JSON.parse(
         await fs.promises.readFile("./autotranslations.json", "utf-8"),
     );
-    const languages = JSON.parse(await fs.promises.readFile("./languages.json", "utf-8"));
+    let languages = JSON.parse(await fs.promises.readFile("./languages.json", "utf-8"));
     let translations_missing = {};
     let vandalized_languages = {};
     let autotranslations_needed = {};
+
+    /*
+    languages = {
+        tr: "Türkçe",
+        el: "hwat",
+        "he": "עִבְרִית",
+        "eu": "eu",
+        ja: "ja",
+    };
+    */
 
     for (let lang in languages) {
         let conv = lang.replace(/([a-z]+)-([a-zA-Z]+)/, (_, a, b) => `${a}_${b.toUpperCase()}`);
@@ -158,8 +176,8 @@ async function main() {
         }
 
         let num_placeholders = 0;
-        const placeholder_a_to_n = { "%s": "8888888", "%d": "9999999" };
-        const placeholder_n_to_a = { 8888888: "%s", 9999999: "%d" };
+        const placeholder_a_to_n = { "%s": "🙈", "%d": "🙉" };
+        const placeholder_n_to_a = { "🙈": "%s", "🙉": "%d" };
 
         for (let lang in autotranslations_needed) {
             for (let str in autotranslations_needed[lang]) {
@@ -170,8 +188,17 @@ async function main() {
                     if (label_replacements) {
                         for (let replacement of label_replacements) {
                             if (!(replacement in placeholder_a_to_n)) {
-                                let zeropadded = ("987654321000" + num_placeholders).slice(-8);
-                                let k = `${zeropadded}`;
+                                if (emoji.length <= num_placeholders) {
+                                    throw new Error(
+                                        "Didn't have enough emoji for our placeholders",
+                                    );
+                                }
+                                // 2 bytes per unicode character, and use the
+                                // code point stuff to reconstruct the string
+                                // since indexing doesn't work as you'd hope
+                                // here.
+                                let k = String.fromCodePoint(emoji.codePointAt(2 * num_placeholders));
+                                //console.log(k);
                                 placeholder_a_to_n[replacement] = k;
                                 placeholder_n_to_a[k] = replacement;
                                 num_placeholders++;
