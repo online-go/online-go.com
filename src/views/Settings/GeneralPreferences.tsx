@@ -275,7 +275,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
                 <Toggle checked={hide_ranks} onChange={setHideRanks} />
             </PreferenceLine>
 
-            <PreferenceLine title={"Enable experimental interface changes"}>
+            <PreferenceLine title={_("Enable experimental interface changes")}>
                 <Toggle
                     checked={enable_v6}
                     onChange={(tf) => {

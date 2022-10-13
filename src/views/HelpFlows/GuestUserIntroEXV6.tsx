@@ -19,7 +19,7 @@ import React from "react";
 
 import { HelpFlow, HelpItem } from "react-dynamic-help";
 
-import { _ } from "translate";
+import { _, pgettext } from "translate";
 
 /**
  * A help flow intended for guests who arrived on a Challenge Link
@@ -32,7 +32,10 @@ export function GuestUserIntroEXV6(): JSX.Element {
             id="guest-user-intro-exv6"
             showInitially={false}
             debug={false}
-            description="Guest user introduction (for new Nav)"
+            description={pgettext(
+                "Name of a dynamic help flow",
+                "Guest user introduction (for new Nav)",
+            )}
         >
             <HelpItem target="toggle-right-nav" position={"bottom-left"}>
                 <div>{_("To set your password, click here")} </div>
