@@ -19,7 +19,7 @@ import React from "react";
 
 import { HelpFlow, HelpItem } from "react-dynamic-help";
 
-import { _ } from "translate";
+import { _, pgettext } from "translate";
 
 /**
  * A help flow intended for guests who arrived on a Challenge Link for a Rengo game
@@ -28,7 +28,13 @@ import { _ } from "translate";
 
 export function GuestUserIntroRengo(): JSX.Element {
     return (
-        <HelpFlow id="guest-user-intro-rengo" description="Guest user introduction for Rengo">
+        <HelpFlow
+            id="guest-user-intro-rengo"
+            description={pgettext(
+                "Name of a dynamic help flow",
+                "Guest user introduction for Rengo",
+            )}
+        >
             <HelpItem
                 target="active-rengo-management-pane"
                 position={"bottom-right"}
