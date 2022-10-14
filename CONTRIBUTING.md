@@ -1,6 +1,6 @@
 # Development Environment
 
-Getting setup is easy, you'll need to have [node.js](https://nodejs.org/) installed,
+Getting setup is easy, you'll need to have [Node.js](https://nodejs.org/) installed,
 then simply clone the repository and within the working directory run the following:
 
 ```
@@ -13,7 +13,7 @@ npx husky install
 npm run dev
 ```
 
-If you're on linux, you can simply type `make` and it will do all this for you as well.
+If you're on Linux, you can simply type `make` and it will do all this for you as well.
 
 Once running, you can then navigate to [http://dev.beta.online-go.com:8080/](http://dev.beta.online-go.com:8080/)
 which loads the interface from your local server that you just started with gulp, and
@@ -37,6 +37,7 @@ connects to the beta server for testing.
     - If you haven't done so, [set up git](https://help.github.com/articles/set-up-git/).
 2. Clone the repository to your computer. (Found in step 2 of "keeping your fork synced" in the fork a repo help article.)
     - To ensure you track the latest updates, you will want to configure git to sync your fork with the original online-go repository. (See step 3 in the same article.)
+    - You may need to install [Git LFS](https://git-lfs.github.com/) if your clone doesn't complete.
 3. [Create a branch](https://help.github.com/articles/creating-and-deleting-branches-within-your-repository/) on your local machine. Name it something that makes sense for your updates.
     - This could also be done from the [git bash command line](https://github.com/Kunena/Kunena-Forum/wiki/Create-a-new-branch-with-git-and-manage-branches).
     - If you used the first method, you will need to ensure you [pull down your project's remote branches](https://stackify.com/git-checkout-remote-branch/).
@@ -52,7 +53,7 @@ connects to the beta server for testing.
 
 ## Technologies Utilized
 
-This project is largely built with Typescript and React. If you are unfamiliar with these, please take a few minutes to familiarize yourself.
+This project is largely built with TypeScript and React. If you are unfamiliar with these, please take a few minutes to familiarize yourself.
 
 -   [React](https://reactjs.org/)
--   [Typescript](https://www.typescriptlang.org/)
+-   [TypeScript](https://www.typescriptlang.org/)
