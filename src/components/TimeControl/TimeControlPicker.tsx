@@ -38,25 +38,25 @@ export class TimeControlPicker extends React.PureComponent<
 > {
     time_control: TimeControl;
 
-    constructor(props) {
+    constructor(props: TimeControlPickerProperties) {
         super(props);
 
         const speed = data.get("time_control.speed", "correspondence") || "correspondence";
-        const system =
-            this.props.force_system ||
-            ((data.get("time_control.system", "fischer") || "fischer") as TimeControlSystem);
+        const system: TimeControlSystem =
+            this.props.force_system || data.get("time_control.system", "fischer") || "fischer";
 
         this.state = Object.assign(
             recallTimeControlSettings(speed, system),
             this.props.value || {},
         );
 
+        // TODO: Fix rematch bug (caused by overwriting speed)
         this.state = Object.assign(this.state, makeTimeControlParameters(this.state), { speed });
         this.time_control = makeTimeControlParameters(this.state);
     }
 
     componentDidUpdate(prev_props: TimeControlPickerProperties) {
-        let update: TimeControl;
+        let update: TimeControl | undefined;
         // console.log("Timepicker props", next_props);
         if (
             prev_props?.value !== this.props.value ||
@@ -86,16 +86,18 @@ export class TimeControlPicker extends React.PureComponent<
         }
     }
 
-    syncTimeControl(update: any) {
-        const tc = Object.assign({}, this.state, update);
+    syncTimeControl(update: Partial<TimeControl>) {
+        // This should be 'TimeControl', but there are currently some
+        // not-trivial-to-fix type errors that arise
+        const tc: any = Object.assign({}, this.state, update);
 
-        const options = time_options[tc.speed];
+        const options = time_options[tc.speed as Speed];
 
-        function goodChoice(arr) {
+        function goodChoice(arr: Array<{ time: number }>) {
             return arr[Math.round(arr.length / 2)].time;
         }
-        function findIndex(arr, time) {
-            time = parseInt(time);
+        function findIndex(arr: Array<{ time: number }>, time: number) {
+            time = parseInt(time as any);
             for (let i = 0; i < arr.length; ++i) {
                 if (arr[i].time === time) {
                     return i;
@@ -159,14 +161,14 @@ export class TimeControlPicker extends React.PureComponent<
         }
     }
 
-    setSpeedBracket = (bracket) => {
+    setSpeedBracket = (bracket: Speed) => {
         this.syncTimeControl(
             Object.assign({}, recallTimeControlSettings(bracket, this.state.system), {
                 speed: bracket,
             }),
         );
     };
-    setTimeControlSystem = (time_control_system) => {
+    setTimeControlSystem = (time_control_system: TimeControlSystem) => {
         if (!this.props.force_system) {
             this.syncTimeControl(
                 Object.assign(
@@ -180,25 +182,33 @@ export class TimeControlPicker extends React.PureComponent<
         }
     };
 
-    update_speed_bracket = (ev) => this.setSpeedBracket((ev.target as HTMLSelectElement).value);
-    update_time_control_system = (ev) =>
-        this.setTimeControlSystem((ev.target as HTMLSelectElement).value);
-    update_initial_time = (ev) => this.syncTimeControl({ initial_time: parseInt(ev.target.value) });
-    update_time_increment = (ev) =>
+    update_speed_bracket = (ev: React.ChangeEvent<HTMLSelectElement>) =>
+        this.setSpeedBracket(ev.target.value as Speed);
+    update_time_control_system = (ev: React.ChangeEvent<HTMLSelectElement>) =>
+        this.setTimeControlSystem(ev.target.value as TimeControlSystem);
+    update_initial_time = (ev: React.ChangeEvent<HTMLSelectElement>) =>
+        this.syncTimeControl({ initial_time: parseInt(ev.target.value) });
+    update_time_increment = (ev: React.ChangeEvent<HTMLSelectElement>) =>
         this.syncTimeControl({ time_increment: parseInt(ev.target.value) });
-    update_max_time = (ev) => this.syncTimeControl({ max_time: parseInt(ev.target.value) });
-    update_per_move = (ev) => this.syncTimeControl({ per_move: parseInt(ev.target.value) });
-    update_main_time = (ev) => this.syncTimeControl({ main_time: parseInt(ev.target.value) });
+    update_max_time = (ev: React.ChangeEvent<HTMLSelectElement>) =>
+        this.syncTimeControl({ max_time: parseInt(ev.target.value) });
+    update_per_move = (ev: React.ChangeEvent<HTMLSelectElement>) =>
+        this.syncTimeControl({ per_move: parseInt(ev.target.value) });
+    update_main_time = (ev: React.ChangeEvent<HTMLSelectElement>) =>
+        this.syncTimeControl({ main_time: parseInt(ev.target.value) });
     //update_main_time            = (ev)=>this.syncTimeControl({main_time: ev.target.value});
-    update_period_time = (ev) => this.syncTimeControl({ period_time: parseInt(ev.target.value) });
-    update_periods = (ev) =>
+    update_period_time = (ev: React.ChangeEvent<HTMLSelectElement>) =>
+        this.syncTimeControl({ period_time: parseInt(ev.target.value) });
+    update_periods = (ev: React.ChangeEvent<HTMLInputElement>) =>
         this.syncTimeControl({
-            periods: ev.target.value,
+            periods: ev.target.value as any,
         });
     //update_period_time          = (ev)=>this.syncTimeControl({period_time: ev.target.value});
-    update_stones_per_period = (ev) => this.syncTimeControl({ stones_per_period: ev.target.value });
-    update_total_time = (ev) => this.syncTimeControl({ total_time: parseInt(ev.target.value) });
-    update_pause_on_weekends = (ev) =>
+    update_stones_per_period = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.syncTimeControl({ stones_per_period: ev.target.value as any });
+    update_total_time = (ev: React.ChangeEvent<HTMLSelectElement>) =>
+        this.syncTimeControl({ total_time: parseInt(ev.target.value) });
+    update_pause_on_weekends = (ev: React.ChangeEvent<HTMLInputElement>) =>
         this.syncTimeControl({ pause_on_weekends: ev.target.checked });
 
     saveSettings() {
@@ -756,6 +766,9 @@ function recallTimeControlSettings(speed: Speed, time_control_system: TimeContro
     );
 }
 
+// TODO: Guard against invalid combinations, such as
+// { speed: "live", time_control_system: "none" }
+// Currently, this causes a ts-strict implicit any error.
 function numericInputOnBlur(
     sender: React.FocusEvent<HTMLInputElement, Element>,
     speed: Speed,
@@ -763,8 +776,8 @@ function numericInputOnBlur(
     propertyName: string,
 ) {
     const num = sender.target.valueAsNumber;
-    const min = default_time_options[speed][time_control_system][`${propertyName}_min`];
-    const max = default_time_options[speed][time_control_system][`${propertyName}_max`];
+    const min: number = default_time_options[speed][time_control_system][`${propertyName}_min`];
+    const max: number = default_time_options[speed][time_control_system][`${propertyName}_max`];
 
     if (isNaN(num)) {
         sender.target.value = default_time_options[speed][time_control_system][`${propertyName}`];
