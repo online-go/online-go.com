@@ -645,7 +645,7 @@ function canChallengeTooltip(obj: any): string {
             case 0x002:
                 return pgettext(
                     "Can't challenge player in ladder because: ",
-                    "Player is a lower rank than you",
+                    "Their ladder position is lower than yours",
                 );
             case 0x003:
                 return pgettext(
@@ -655,7 +655,7 @@ function canChallengeTooltip(obj: any): string {
             case 0x004:
                 return pgettext(
                     "Can't challenge player in ladder because: ",
-                    "Your ladder position is too high",
+                    "Their ladder position is too high",
                 );
             case 0x005:
                 return interpolate(
