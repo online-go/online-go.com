@@ -106,7 +106,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
         },
     }));
 
-    React.useEffect(refresh, [order_by, page, page_size, filter, load_again_refresh]);
+    React.useEffect(refresh, [order_by, page, page_size, filter, load_again_refresh, props.source]);
 
     React.useEffect(() => {
         mounted.current = true;
@@ -116,7 +116,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
     }, []);
 
     function refresh(force: boolean = false) {
-        const cur = [order_by, page, page_size, filter, load_again_refresh];
+        const cur = [order_by, page, page_size, filter, load_again_refresh, props.source];
         const last = last_loaded.current;
         if (!force && last.length && softEquals(last, cur)) {
             return;
