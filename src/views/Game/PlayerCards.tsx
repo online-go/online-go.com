@@ -346,7 +346,7 @@ function PlayerFlag({ player_id }: { player_id: number }): JSX.Element {
     }, [player_id]);
 
     if (country) {
-        return <Flag country={country} />;
+        return <Flag country={country} big />;
     }
     return null;
 }
