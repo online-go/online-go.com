@@ -34,6 +34,10 @@ export function ActiveDroppedGameList(props: ActiveDroppedGameListProps): JSX.El
     const { activeGames, droppedGames } = splitDroppedRengo(props.games, props.user.id);
     const hasActiveGames: boolean = activeGames.length !== 0;
     const hasDroppedGames: boolean = droppedGames.length !== 0;
+
+    const [collapsed, setCollapsed] = React.useState(false);
+    const collapseIcon = collapsed ? "fa fa-angle-down" : "fa fa-angle-up";
+
     return (
         <>
             {hasActiveGames && (
@@ -51,15 +55,20 @@ export function ActiveDroppedGameList(props: ActiveDroppedGameListProps): JSX.El
             {((!hasActiveGames && props.noActiveGamesView) || null) && props.noActiveGamesView}
             {hasDroppedGames && (
                 <div className="dropped-games">
-                    <h2>
-                        {_("Dropped Games")} ({droppedGames.length})
-                    </h2>
-                    <GameList
-                        list={droppedGames}
-                        player={props.user}
-                        forceList={true}
-                        lineSummaryMode={"dropped-rengo"}
-                    />
+                    <div className="dropped-games-header">
+                        <h2>
+                            {_("Dropped Games")} ({droppedGames.length})
+                        </h2>
+                        <i className={collapseIcon} onClick={() => setCollapsed(!collapsed)}></i>
+                    </div>
+                    {!collapsed && (
+                        <GameList
+                            list={droppedGames}
+                            player={props.user}
+                            forceList={true}
+                            lineSummaryMode={"dropped-rengo"}
+                        />
+                    )}
                 </div>
             )}
         </>
