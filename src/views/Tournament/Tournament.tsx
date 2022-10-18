@@ -1307,7 +1307,7 @@ export function Tournament(): JSX.Element {
         refresh();
     };
     const setTournamentExclusivity = (ev) => {
-        tournament_ref.current.exclusivity = ev.target.checked;
+        tournament_ref.current.exclusivity = ev.target.value;
         refresh();
     };
 
