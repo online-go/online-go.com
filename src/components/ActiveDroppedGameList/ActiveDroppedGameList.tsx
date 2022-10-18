@@ -16,7 +16,6 @@
  */
 
 import * as React from "react";
-import { splitDroppedRengo } from "game_utils";
 import { _ } from "translate";
 import { GameList } from "GameList";
 
@@ -65,4 +64,30 @@ export function ActiveDroppedGameList(props: ActiveDroppedGameListProps): JSX.El
             )}
         </>
     );
+}
+
+function splitDroppedRengo(games: any[], playerId: number) {
+    const active = [];
+    const dropped = [];
+    const isPlayer = (player) => player.id === playerId;
+    const isActivePlayer = (game) => {
+        if (game.json?.rengo === true) {
+            return (
+                game.json.rengo_teams.black.some(isPlayer) ||
+                game.json.rengo_teams.white.some(isPlayer)
+            );
+        }
+        return game.black.id === playerId || game.white.id === playerId;
+    };
+    games.forEach((game) => {
+        if (isActivePlayer(game)) {
+            active.push(game);
+        } else {
+            dropped.push(game);
+        }
+    });
+    return {
+        activeGames: active,
+        droppedGames: dropped,
+    };
 }
