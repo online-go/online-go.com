@@ -42,7 +42,11 @@ export function ActiveDroppedGameList(props: ActiveDroppedGameListProps): JSX.El
                     <h2>
                         {_("Active Games")} ({activeGames.length})
                     </h2>
-                    <GameList list={activeGames} player={props.user} />
+                    <GameList
+                        list={activeGames}
+                        player={props.user}
+                        lineSummaryMode={"opponent-only"}
+                    />
                 </div>
             )}
             {((!hasActiveGames && props.noActiveGamesView) || null) && props.noActiveGamesView}
@@ -51,7 +55,12 @@ export function ActiveDroppedGameList(props: ActiveDroppedGameListProps): JSX.El
                     <h2>
                         {_("Dropped Games")} ({droppedGames.length})
                     </h2>
-                    <GameList list={droppedGames} player={props.user} forceList={true} />
+                    <GameList
+                        list={droppedGames}
+                        player={props.user}
+                        forceList={true}
+                        lineSummaryMode={"dropped-rengo"}
+                    />
                 </div>
             )}
         </>

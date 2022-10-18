@@ -54,14 +54,7 @@ interface GameListProps {
     miniGobanProps?: any;
     namesByGobans?: boolean;
     forceList?: boolean;
-}
-
-interface LineSummaryTableProps extends GameListProps {
-    list: GameType[];
-    player?: { id: number };
-    disableSort: boolean;
-    currentSort: SortOrder | DescendingSortOrder;
-    onSort: (sortBy: SortOrder) => void;
+    lineSummaryMode: LineSummaryTableMode;
 }
 
 type SortOrder = "clock" | "move-number" | "name" | "opponent" | "opponent-clock" | "size";
@@ -239,6 +232,7 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                     onSort={this.sortBy}
                     currentSort={this.state.sort_order}
                     player={this.props.player}
+                    lineSummaryMode={this.props.lineSummaryMode}
                 ></LineSummaryTable>
             );
         } else {
@@ -247,8 +241,20 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
     }
 }
 
+export type LineSummaryTableMode = "both-players" | "opponent-only" | "dropped-rengo";
+
+interface LineSummaryTableProps extends GameListProps {
+    list: GameType[];
+    lineSummaryMode: LineSummaryTableMode;
+    player?: { id: number };
+    disableSort: boolean;
+    currentSort: SortOrder | DescendingSortOrder;
+    onSort: (sortBy: SortOrder) => void;
+}
+
 function LineSummaryTable({
     list,
+    lineSummaryMode,
     player,
     disableSort,
     currentSort,
@@ -265,42 +271,9 @@ function LineSummaryTable({
         return sortable + currentlySorting;
     };
 
-    return (
-        <div className="GameList GobanLineSummaryContainer">
-            {player ? (
-                <div className="GobanLineSummaryContainerHeader">
-                    <div
-                        onClick={() => onSort("move-number")}
-                        className={getHeaderClassName("move-number")}
-                    >
-                        {pgettext("Game list move number", "Move")}
-                    </div>
-                    <div
-                        onClick={() => onSort("name")}
-                        className={getHeaderClassName("name") + " text-align-left"}
-                    >
-                        {_("Game")}
-                    </div>
-                    <div
-                        onClick={() => onSort("opponent")}
-                        className={getHeaderClassName("opponent") + " text-align-left"}
-                    >
-                        {_("Opponent")}
-                    </div>
-                    <div onClick={() => onSort("clock")} className={getHeaderClassName("clock")}>
-                        {_("Clock")}
-                    </div>
-                    <div
-                        onClick={() => onSort("opponent-clock")}
-                        className={getHeaderClassName("opponent-clock")}
-                    >
-                        {_("Opponent's Clock")}
-                    </div>
-                    <div onClick={() => onSort("size")} className={getHeaderClassName("size")}>
-                        {_("Size")}
-                    </div>
-                </div>
-            ) : (
+    const renderHeader = (): JSX.Element => {
+        if (lineSummaryMode === "both-players") {
+            return (
                 <div className="GobanLineSummaryContainerHeader">
                     <div>{pgettext("Game list move number", "Move")}</div>
                     <div>{_("Game")}</div>
@@ -310,7 +283,54 @@ function LineSummaryTable({
                     <div></div>
                     <div className="text-align-left">{_("Size")}</div>
                 </div>
-            )}
+            );
+        }
+        return (
+            <div className="GobanLineSummaryContainerHeader">
+                <div
+                    onClick={() => onSort("move-number")}
+                    className={getHeaderClassName("move-number")}
+                >
+                    {pgettext("Game list move number", "Move")}
+                </div>
+                <div
+                    onClick={() => onSort("name")}
+                    className={getHeaderClassName("name") + " text-align-left"}
+                >
+                    {_("Game")}
+                </div>
+                {lineSummaryMode === "opponent-only" && (
+                    <>
+                        <div
+                            onClick={() => onSort("opponent")}
+                            className={getHeaderClassName("opponent") + " text-align-left"}
+                        >
+                            {_("Opponent")}
+                        </div>
+                        <div
+                            onClick={() => onSort("clock")}
+                            className={getHeaderClassName("clock")}
+                        >
+                            {_("Clock")}
+                        </div>
+                        <div
+                            onClick={() => onSort("opponent-clock")}
+                            className={getHeaderClassName("opponent-clock")}
+                        >
+                            {_("Opponent's Clock")}
+                        </div>
+                    </>
+                )}
+                <div onClick={() => onSort("size")} className={getHeaderClassName("size")}>
+                    {_("Size")}
+                </div>
+            </div>
+        );
+    };
+
+    return (
+        <div className="GameList GobanLineSummaryContainer">
+            {renderHeader()}
             {list.map((game) => (
                 <GobanLineSummary
                     key={game.id}
@@ -322,6 +342,7 @@ function LineSummaryTable({
                     width={game.width}
                     height={game.height}
                     rengo_teams={game.json?.rengo_teams}
+                    lineSummaryMode={lineSummaryMode}
                 />
             ))}
         </div>
