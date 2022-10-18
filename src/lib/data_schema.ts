@@ -237,6 +237,9 @@ export interface DataSchema
     // We need the Challenge info in this case, separately from pending_accepted_challenge.
     challenge_link_registration: Challenge;
 
+    // An online-league match that the user wants to start, but we need to get them logged in first
+    pending_league_match: rest_api.MatchDetails;
+
     [player_notes_key: `player-notes.${number}.${number}`]: string;
     [learning_hub_key: `learning-hub.${string}`]: { [page_number: number]: true };
     [moderator_join_game_publicly_key: `moderator.join-game-publicly.${string}`]: boolean;

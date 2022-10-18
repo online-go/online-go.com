@@ -24,6 +24,7 @@ declare namespace rest_api {
         white_invite: string; // URL
         spectator_link: string; // URL
         league: string; // acronym/name
+        challenge: number; // pk
         game: number; // pk
         finished: boolean;
     }
