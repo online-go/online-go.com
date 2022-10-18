@@ -56,6 +56,8 @@ import { LearningHub } from "LearningHub";
 import { User, UserByName } from "User";
 import { Settings } from "Settings";
 import { Styling } from "Styling";
+import { OnlineLeagueLanding } from "OnlineLeagueLanding";
+import { OnlineLeagueGame } from "OnlineLeagueGame";
 import { AnnouncementCenter } from "AnnouncementCenter";
 import { VerifyEmail } from "VerifyEmail";
 import { global_channels } from "chat_manager";
@@ -221,10 +223,6 @@ export const routes = (
                 <Route path="/supporter" element={<Supporter />} />
                 <Route path="/support" element={<Supporter />} />
                 <Route path="/donate" element={<Supporter />} />
-                {/*
-            <Route path="/library" component={Library}/>
-            <Route path="/library/game-history" component={LibraryGameHistory}/>
-            */}
                 <Route path="/library/:player_id/:collection_id" element={<LibraryPlayer />} />
                 <Route path="/library/:player_id" element={<LibraryPlayer />} />
                 <Route path="/groups" element={<GroupList />} />
@@ -261,6 +259,8 @@ export const routes = (
                 <Route path="/puzzle/:puzzle_id" element={<Puzzle />} />
                 <Route path="/puzzle-collections/:player_id" element={<PuzzleCollectionList />} />
                 <Route path="/puzzle-collection/:collection_id" element={<PuzzleCollection />} />
+                <Route path="/online-league/league-player" element={<OnlineLeagueLanding />} />
+                <Route path="/online-league/league-game/:game_id" element={<OnlineLeagueGame />} />
                 <Route path="/developer" element={<Developer />} />
                 <Route path="/admin/merchant_log" element={<MerchantLog />} />
                 <Route path="/admin/firewall" element={<Firewall />} />
