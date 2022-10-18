@@ -27,7 +27,6 @@ import cached from "cached";
 
 import { post, get, abort_requests_in_flight } from "requests";
 
-import { GameList } from "GameList";
 import { errorAlerter, ignore } from "misc";
 import { DismissableNotification } from "DismissableNotification";
 import { ChallengesList } from "./ChallengesList";
@@ -37,6 +36,7 @@ import { ActiveAnnouncements } from "Announcements";
 import { ActiveTournamentList, Group } from "src/lib/types";
 import { DismissableMessages } from "DismissableMessages";
 import { EmailBanner } from "EmailBanner";
+import { ActiveDroppedGameList } from "ActiveDroppedGameList";
 
 declare let ogs_missing_translation_count: number;
 
@@ -126,6 +126,19 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
         data.unwatch("config.user", this.updateUser);
     }
 
+    noActiveGames(): JSX.Element {
+        return (
+            <div className="no-active-games">
+                <div style={{ marginBottom: "1rem" }}>
+                    {_("You're not currently playing any games.")}
+                </div>
+                <Link to="/play" className="btn primary">
+                    {_("Find a game")}
+                </Link>
+            </div>
+        );
+    }
+
     render() {
         const user = this.state.user;
 
@@ -150,31 +163,12 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
                             </DismissableNotification>
                         )}
 
-                        {((this.state.resolved && this.state.overview.active_games.length) ||
-                            null) && (
-                            <div className="active-games">
-                                <h2>
-                                    {_("Active Games")} ({this.state.overview.active_games.length})
-                                </h2>
-                                <GameList
-                                    list={this.state.overview.active_games}
-                                    player={user}
-                                    emptyMessage={_(
-                                        'You\'re not currently playing any games. Start a new game with the "Create a new game" or "Look for open games" buttons above.',
-                                    )}
-                                />
-                            </div>
-                        )}
-                        {((this.state.resolved && this.state.overview.active_games.length === 0) ||
-                            null) && (
-                            <div className="no-active-games">
-                                <div style={{ marginBottom: "1rem" }}>
-                                    {_("You're not currently playing any games.")}
-                                </div>
-                                <Link to="/play" className="btn primary">
-                                    {_("Find a game")}
-                                </Link>
-                            </div>
+                        {this.state.resolved && (
+                            <ActiveDroppedGameList
+                                games={this.state.overview.active_games}
+                                user={user}
+                                noActiveGamesView={this.noActiveGames()}
+                            ></ActiveDroppedGameList>
                         )}
                     </div>
                 </div>
