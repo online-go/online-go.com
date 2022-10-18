@@ -210,7 +210,6 @@ export function ChallengeLinkLanding(): JSX.Element {
         }
     });
 
-    //const too_late = linked_challenge
     const user = useUser();
     const logged_in = !user.anonymous;
 
