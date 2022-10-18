@@ -37,21 +37,26 @@ export function OnlineLeagueGame(): JSX.Element {
     const [target_match, set_target_match] = React.useState<rest_api.MatchDetails>(null);
 
     /* Fetch related game info */
-    React.useEffect(() => {
-        get(`online_league/match/${linked_challenge_id}`)
-            .then((match: rest_api.MatchDetails) => {
-                if (match.game) {
-                    navigate(`/game/${match.game}`, { replace: true });
-                } else {
-                    set_target_match(match);
-                    set_loading(false);
-                }
-            })
-            .catch((err: any) => {
-                alert.close();
-                errorAlerter(err);
-            });
-    }, []);
+    React.useEffect(
+        () => {
+            get(`online_league/match/${linked_challenge_id}`)
+                .then((match: rest_api.MatchDetails) => {
+                    if (match.game) {
+                        navigate(`/game/${match.game}`, { replace: true });
+                    } else {
+                        set_target_match(match);
+                        set_loading(false);
+                    }
+                })
+                .catch((err: any) => {
+                    alert.close();
+                    errorAlerter(err);
+                });
+        },
+        [
+            /* once */
+        ],
+    );
 
     /* Render */
     return (
