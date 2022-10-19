@@ -20,7 +20,7 @@ import * as preferences from "preferences";
 
 let binding_id = 0;
 
-class Binding {
+export class Binding {
     id: number;
     shortcut: string;
     fn: (evt: any) => void;
