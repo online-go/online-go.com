@@ -34,13 +34,14 @@ export function OnlineLeagueGame(): JSX.Element {
 
     /* State */
     const [loading, set_loading] = React.useState(true);
-    const [target_match, set_target_match] = React.useState<rest_api.MatchDetails>(null);
+    const [target_match, set_target_match] =
+        React.useState<rest_api.online_league.MatchDetails>(null);
 
     /* Fetch related game info */
     React.useEffect(
         () => {
             get(`online_league/match/${linked_challenge_id}`)
-                .then((match: rest_api.MatchDetails) => {
+                .then((match: rest_api.online_league.MatchDetails) => {
                     if (match.game) {
                         navigate(`/game/${match.game}`, { replace: true });
                     } else {

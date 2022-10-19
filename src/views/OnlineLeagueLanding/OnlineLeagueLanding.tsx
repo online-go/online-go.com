@@ -22,7 +22,7 @@ import { alert } from "swal_config";
 import * as data from "data";
 import { useUser } from "hooks";
 import { _, pgettext } from "translate";
-import { get } from "requests";
+import { get, put } from "requests";
 import { errorAlerter } from "misc";
 import { browserHistory } from "ogsHistory";
 // import { get_ebi } from "SignIn";
@@ -30,6 +30,7 @@ import { browserHistory } from "ogsHistory";
 
 //import { Card } from "material";
 import { LoadingPage } from "Loading";
+
 //import { Player } from "Player";
 
 // type Challenge = socket_api.seekgraph_global.Challenge;
@@ -40,7 +41,7 @@ export function OnlineLeagueLanding(): JSX.Element {
     /* State */
     const [loading, set_loading] = React.useState(true);
     const [logging_in, set_logging_in] = React.useState<boolean>(false);
-    const [match, set_match] = React.useState<rest_api.MatchDetails>(null);
+    const [match, set_match] = React.useState<rest_api.online_league.MatchStatus>(null);
 
     //const [linked_challenge, set_linked_challenge] = React.useState<Challenge>(null);
     //const [logging_in, set_logging_in] = React.useState<boolean>(false);
@@ -79,28 +80,60 @@ export function OnlineLeagueLanding(): JSX.Element {
 
     React.useEffect(() => {
         console.log("*** OLL effect...");
-        if (logged_in && (pending_match || match)) {
-            // We've already fetched the match details, and logged them in, so we're ready to proceed
-            if (pending_match) {
-                set_match(pending_match);
-                data.set("pending_league_match", null);
-            }
-            set_loading(false);
+        if (logged_in && linked_challenge_key && side && !match) {
+            // easiest case: they are logged in already!
 
-            console.log("Do the stuff now (TBD");
-        } else if (!match) {
+            // no matter what, make sure this is clean
+            // (defend against wierd user reloads, stale data whatever...)
+            data.set("pending_league_match", null);
+
+            console.log("Logged-in user arrived!  Sending PUT...");
+            put(`online_league/commence?side=${side}&id=${linked_challenge_key}`, {})
+                .then((match) => {
+                    set_loading(false);
+                    set_match(match);
+                    console.log("updated match", match);
+                })
+                .catch((err) => {
+                    alert.close();
+                    errorAlerter(err);
+                });
+        } else if (logged_in && pending_match && !match) {
+            // This means that they arrived back here after logging in...
+            console.log("Logged them in, now getting on with pending match");
+            set_match(pending_match);
+        } else if (logged_in && match && pending_match) {
+            data.set("pending_league_match", null);
+            console.log("sending PUT");
+            put(`online_league/commence?side=${match.side}&id=${match.player_key}`, {})
+                .then((match) => {
+                    set_loading(false);
+                    set_match(match);
+                    console.log("updated match", match);
+                })
+                .catch((err) => {
+                    alert.close();
+                    errorAlerter(err);
+                });
+        } else if (!logged_in && !logging_in) {
+            // no matter what, make sure this is clean
             data.set("pending_league_match", null);
 
             if (!linked_challenge_key || !side) {
                 console.log(
-                    "Unexpected arrival at OnlineLeagueLanding: missing linked challenge player key or side!",
+                    "Unexpected arrival at OnlineLeagueLanding: missing player-key/side params!",
                 );
                 browserHistory.push("/");
             }
 
+            set_logging_in(true);
+
+            // This is needed simply to display the match information on the login options page
+            // It also makes it handy to store and forward the relevant information (via `data`) to use
+            // when they come back afeter login.
             get(`online_league/commence?side=${side}&id=${linked_challenge_key}`)
-                .then((match: rest_api.MatchDetails) => {
-                    set_match(match);
+                .then((match: rest_api.online_league.MatchStatus) => {
+                    set_match(match); // contains match details for later use, and display on login options screen
                     set_loading(false); // This will cause us to ask them to log in, if necessary
                     console.log(match);
                 })
@@ -108,15 +141,17 @@ export function OnlineLeagueLanding(): JSX.Element {
                     alert.close();
                     errorAlerter(err);
                 });
+        } else {
+            console.log("Nothing to do in OLL useEffect", logged_in, logging_in, match);
         }
-    }, []);
+    }, [match, logged_in, logging_in]);
 
-    console.log("*** OLL render....");
+    console.log("*** OLL render....", match);
     /* Render */
     return (
         <div id="OnlineLeagueLanding">
             <h2>
-                {logged_in || logging_in
+                {logged_in
                     ? "" /* this vertical space intentionally left blank! */
                     : _("Welcome to OGS!")}
             </h2>

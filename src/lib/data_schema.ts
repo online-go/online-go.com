@@ -238,7 +238,7 @@ export interface DataSchema
     challenge_link_registration: Challenge;
 
     // An online-league match that the user wants to start, but we need to get them logged in first
-    pending_league_match: rest_api.MatchDetails;
+    pending_league_match: rest_api.online_league.MatchStatus;
 
     [player_notes_key: `player-notes.${number}.${number}`]: string;
     [learning_hub_key: `learning-hub.${string}`]: { [page_number: number]: true };
