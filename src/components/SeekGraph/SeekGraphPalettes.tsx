@@ -34,22 +34,22 @@ export interface SeekGraphColorPalette {
 
 export class SeekGraphPalettes {
     static readonly DARK: SeekGraphColorPalette = {
-        size19: { fill: "#00aa30", stroke: "#00ff00" },
-        size13: { fill: "#f000d0", stroke: "#ff60dd" },
-        size9: { fill: "#009090", stroke: "#00ffff" },
-        sizeOther: { fill: "#d06000", stroke: "#ff9000" },
+        size19: { fill: "#00aa30aa", stroke: "#00ff00" },
+        size13: { fill: "#f000d0aa", stroke: "#ff60dd" },
+        size9: { fill: "#009090aa", stroke: "#00ffff" },
+        sizeOther: { fill: "#d06000aa", stroke: "#ff9000" },
         // UNRANKED: { fill: "#d06000", stroke: "#ff9000" },
-        ineligible: { fill: "#bbb", stroke: "#aaa" },
-        user: { fill: "#ed1f1f", stroke: "#e25551" },
+        ineligible: { fill: "#6b6b6baa", stroke: "#bbb" },
+        user: { fill: "#ed1f1faa", stroke: "#e37495" },
     };
     static readonly LIGHT: SeekGraphColorPalette = {
-        size19: { fill: "#00ff00", stroke: "#00aa30" },
-        size13: { fill: "#ff60dd", stroke: "#f000d0" },
-        size9: { fill: "#00ffff", stroke: "#009090" },
-        sizeOther: { fill: "#ff9000", stroke: "#d06000" },
+        size19: { fill: "#00ff00aa", stroke: "#00aa30" },
+        size13: { fill: "#ff60ddaa", stroke: "#f000d0" },
+        size9: { fill: "#00ffffaa", stroke: "#009090" },
+        sizeOther: { fill: "#ff9000aa", stroke: "#d06000" },
         // UNRANKED: { fill: "#d06000", stroke: "#ff9000" },
-        ineligible: { fill: "#aaa", stroke: "#bbb" },
-        user: { fill: "#e25551", stroke: "#ed1f1f" },
+        ineligible: { fill: "#bbbbbbaa", stroke: "#6b6b6b" },
+        user: { fill: "#e37495aa", stroke: "#ed1f1f" },
     };
     static readonly ACCESSIBLE: SeekGraphColorPalette = {
         size19: { fill: "#00aa30", stroke: "#00ff00" },
@@ -57,8 +57,8 @@ export class SeekGraphPalettes {
         size9: { fill: "#009090", stroke: "#00ffff" },
         sizeOther: { fill: "#d06000", stroke: "#ff9000" },
         // UNRANKED: { fill: "#d06000", stroke: "#ff9000" },
-        ineligible: { fill: "#bbb", stroke: "#aaa" },
-        user: { fill: "#ed1f1f", stroke: "#e25551" },
+        ineligible: { fill: "#6b6b6b", stroke: "#bbb" },
+        user: { fill: "#ed1f1f", stroke: "#e37495" },
     };
 
     static getPalette(siteTheme: string): SeekGraphColorPalette {
