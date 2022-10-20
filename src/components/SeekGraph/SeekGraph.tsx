@@ -325,7 +325,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         this.list_hits = new_list;
         if (this.list_hits.length) {
             this.moveChallengeList(ev);
-        } else {
+        } else if (this.list_open) {
             this.closeChallengeList();
         }
     };
@@ -465,6 +465,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             const style = SeekGraphPalettes.getStyle(C, palette);
             if (C.ranked) {
                 this.drawChallengeSquare(cx, cy, this.square_size, style, ctx);
+            } else if (C.rengo) {
+                this.drawChallengeCircle(cx, cy, this.square_size / 2, style, ctx);
             } else {
                 this.drawChallengeTriangle(cx, cy, this.square_size / 2, style, ctx);
             }
@@ -695,31 +697,39 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             return;
         }
 
-        const pos = getRelativeEventPosition(ev);
-        const offset = $(ev.target).offset();
-        pos.x += offset.left + 10;
-        pos.y += offset.top + 5;
+        // If the list is randomly not showing when mousing over a certain spot, the following scenario is a likely culprit:
+        // 1. The list is positioned somewhere on screen
+        // 2. The list position is adjusted so the list doesn't go off the bottom or edge of the graph/window
+        // 3. This repositioning causes the list to intersect the current pointer position
+        // 4. This causes the "mouseout" event, which triggers closing the list
+        // The above was occurring for long lists on the bottom right of the seek graph (and was fixed),
+        // but this function should probably be improved further
 
-        const win_top = window.pageYOffset || document.documentElement.scrollTop;
-        const win_left = window.pageXOffset || document.documentElement.scrollLeft;
+        const pointerPos: Point = getRelativeEventPosition(ev);
+        const listAnchor: Point = Object.assign({}, pointerPos);
+
+        const offset = $(ev.target).offset();
+        listAnchor.x += offset.left + 10;
+        listAnchor.y += offset.top + 5;
+
+        const win_top = window.scrollY || document.documentElement.scrollTop;
+        const win_left = window.scrollX || document.documentElement.scrollLeft;
         const win_right = $(window).width() + win_left;
         const win_bottom = $(window).height() + win_top - 5;
 
         const list_width = this.$list.width();
         const list_height = this.$list.height();
 
-        if (pos.x + list_width > win_right) {
-            pos.x -= list_width + 10;
+        if (listAnchor.x + list_width > win_right) {
+            listAnchor.x -= list_width + 20;
         }
 
-        if (pos.y + list_height > win_bottom) {
-            pos.y = win_bottom - list_height;
+        if (listAnchor.y + list_height > win_bottom) {
+            listAnchor.y = win_bottom - list_height;
         }
 
-        pos.x = Math.max(0, pos.x);
-        pos.y = Math.min(pos.y, win_bottom + list_height);
-
-        this.$list.css({ left: pos.x, top: pos.y });
+        listAnchor.x = Math.max(0, listAnchor.x);
+        this.$list.css({ left: listAnchor.x, top: listAnchor.y });
     }
     popupChallengeList(ev) {
         if (this.list_open) {
