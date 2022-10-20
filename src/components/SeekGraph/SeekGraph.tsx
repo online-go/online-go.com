@@ -35,6 +35,7 @@ import * as player_cache from "player_cache";
 import { nominateForRengoChallenge } from "rengo_utils";
 import { alert } from "swal_config";
 import { Socket } from "socket.io-client";
+import { SeekGraphPalettes, SeekGraphColorPalette, ChallengePointStyle } from "./SeekGraphPalettes";
 
 type Challenge = socket_api.seekgraph_global.Challenge;
 interface AnchoredChallenge extends Challenge {
@@ -60,41 +61,6 @@ interface Events {
 interface SeekGraphConfig {
     canvas: HTMLCanvasElement;
     show_live_games?: boolean;
-}
-
-interface ChallengePointStyle {
-    fill: string;
-    stroke: string;
-}
-
-class ChallengePointStyles {
-    static readonly SIZE_19: ChallengePointStyle = { fill: "#00aa30", stroke: "#00ff00" };
-    static readonly SIZE_13: ChallengePointStyle = { fill: "#f000d0", stroke: "#ff60dd" };
-    static readonly SIZE_9: ChallengePointStyle = { fill: "#009090", stroke: "#00ffff" };
-    static readonly SIZE_OTHER: ChallengePointStyle = { fill: "#d06000", stroke: "#ff9000" };
-    // static readonly UNRANKED: ChallengePointStyle = { fill: "#d06000", stroke: "#ff9000" };
-    static readonly INELIGIBLE: ChallengePointStyle = { fill: "#bbb", stroke: "#aaa" };
-    static readonly USER: ChallengePointStyle = { fill: "#ed1f1f", stroke: "#e25551" };
-
-    static getStyle(challenge: Challenge): ChallengePointStyle {
-        if (challenge.user_challenge) {
-            return ChallengePointStyles.USER;
-        }
-        if (challenge.eligible === false) {
-            return ChallengePointStyles.INELIGIBLE;
-        }
-
-        if (challenge.width === 19) {
-            return ChallengePointStyles.SIZE_19;
-        }
-        if (challenge.width === 13) {
-            return ChallengePointStyles.SIZE_13;
-        }
-        if (challenge.width === 9) {
-            return ChallengePointStyles.SIZE_9;
-        }
-        return ChallengePointStyles.SIZE_OTHER;
-    }
 }
 
 const MAX_RATIO = 0.99;
@@ -251,6 +217,10 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         $(document).on("touchend", this.onTouchEnd);
         $(document).on("touchstart touchmove", this.onTouchStartMove);
+
+        data.watch("theme", () => {
+            this.redraw();
+        });
     }
 
     userRank() {
@@ -452,8 +422,11 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         const ctx = this.canvas.getContext("2d");
 
         ctx.clearRect(0, 0, this.width, this.height);
+
+        const siteTheme = data.get("theme");
+        const palette = SeekGraphPalettes.getPalette(siteTheme);
         this.drawAxes(ctx);
-        this.drawLegend(ctx);
+        this.drawLegend(ctx, palette);
 
         const plot_ct = {};
         // this.challenge_points = {};
@@ -489,7 +462,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             }
             const _ct = ++plot_ct[plot_ct_pos];
 
-            const style = ChallengePointStyles.getStyle(C);
+            const style = SeekGraphPalettes.getStyle(C, palette);
             if (C.ranked) {
                 this.drawChallengeSquare(cx, cy, this.square_size, style, ctx);
             } else {
@@ -693,26 +666,18 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.restore();
     }
 
-    drawLegend(ctx: CanvasRenderingContext2D) {
-        const legendKeys = [
-            ChallengePointStyles.SIZE_19,
-            ChallengePointStyles.SIZE_13,
-            ChallengePointStyles.SIZE_9,
-            ChallengePointStyles.SIZE_OTHER,
-            ChallengePointStyles.USER,
-            ChallengePointStyles.INELIGIBLE,
-        ];
+    drawLegend(ctx: CanvasRenderingContext2D, palette: SeekGraphColorPalette) {
+        const count = Object.keys(palette).length;
         const legendGap = 5;
         const y = this.height - this.legend_size / 2;
-        const legendWidth =
-            this.square_size * legendKeys.length + legendGap * (legendKeys.length - 1);
+        const legendWidth = this.square_size * count + legendGap * (count - 1);
         const legendStartX = this.padding + (this.width - this.padding) / 2 - legendWidth / 2;
 
         let x = legendStartX;
-        legendKeys.forEach((style) => {
-            this.drawChallengeCircle(x, y, this.square_size / 2, style, ctx);
+        for (const style in palette) {
+            this.drawChallengeCircle(x, y, this.square_size / 2, palette[style], ctx);
             x += this.square_size + legendGap;
-        });
+        }
     }
 
     xCoordinate(timeRatio: number): number {
