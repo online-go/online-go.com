@@ -63,6 +63,7 @@ export function OnlineLeagueLanding(): JSX.Element {
         console.log("Sending them to register");
         set_logging_in(true);
         data.set("pending_league_match", match);
+        navigate("/register#/online-league/league-player", { replace: true });
     };
 
     const jumpToGame = (details) => {
@@ -88,8 +89,8 @@ export function OnlineLeagueLanding(): JSX.Element {
     const user = useUser();
     const logged_in = !user.anonymous;
 
-    const doPlayerIsHereAction = () => {
-        put(`online_league/commence?side=${side}&id=${linked_challenge_key}`, {})
+    const doPlayerIsHereAction = (player_side, key) => {
+        put(`online_league/commence?side=${player_side}&id=${key}`, {})
             .then((matchStatus) => {
                 set_loading(false);
                 if (matchStatus.started) {
@@ -116,7 +117,7 @@ export function OnlineLeagueLanding(): JSX.Element {
             data.set("pending_league_match", null);
 
             console.log("Logged-in user arrived!  Telling server...");
-            doPlayerIsHereAction();
+            doPlayerIsHereAction(side, linked_challenge_key);
         }
         // See if that they arrived back here after logging in...
         else if (logged_in && pending_match && !match) {
@@ -127,7 +128,7 @@ export function OnlineLeagueLanding(): JSX.Element {
         else if (logged_in && match && pending_match) {
             data.set("pending_league_match", null);
             console.log("after logging in, telling server...");
-            doPlayerIsHereAction();
+            doPlayerIsHereAction(match.side, match.player_key);
         }
         // If they're not logged in, we have to get them logged in before doing anything else
         else if (!logged_in && !logging_in) {
