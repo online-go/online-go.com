@@ -30,6 +30,7 @@ import { browserHistory } from "ogsHistory";
 
 //import { Card } from "material";
 import { LoadingPage } from "Loading";
+import { UIPush } from "UIPush";
 
 //import { Player } from "Player";
 
@@ -64,6 +65,11 @@ export function OnlineLeagueLanding(): JSX.Element {
         data.set("pending_league_match", match);
     };
 
+    const jumpToGame = (gameId: number) => {
+        console.log("OOL Game started!", gameId);
+        navigate(`/game/${gameId}`, { replace: true });
+    };
+
     // ... we need to:
     //  - get the linked online league challenge
     //  - create an OGS one if this is the first person to arrive
@@ -78,6 +84,24 @@ export function OnlineLeagueLanding(): JSX.Element {
     const user = useUser();
     const logged_in = !user.anonymous;
 
+    const doPlayerIsHereAction = () => {
+        put(`online_league/commence?side=${side}&id=${linked_challenge_key}`, {})
+            .then((matchStatus) => {
+                set_loading(false);
+                if (matchStatus.started) {
+                    console.log("OOL game started!", matchStatus);
+                    navigate(`/game/${matchStatus.game}`, { replace: true });
+                } else {
+                    set_match(matchStatus);
+                    console.log("updated match", matchStatus);
+                }
+            })
+            .catch((err) => {
+                alert.close();
+                errorAlerter(err);
+            });
+    };
+
     React.useEffect(() => {
         console.log("*** OLL effect...");
         if (logged_in && linked_challenge_key && side && !match) {
@@ -87,35 +111,22 @@ export function OnlineLeagueLanding(): JSX.Element {
             // (defend against wierd user reloads, stale data whatever...)
             data.set("pending_league_match", null);
 
-            console.log("Logged-in user arrived!  Sending PUT...");
-            put(`online_league/commence?side=${side}&id=${linked_challenge_key}`, {})
-                .then((match) => {
-                    set_loading(false);
-                    set_match(match);
-                    console.log("updated match", match);
-                })
-                .catch((err) => {
-                    alert.close();
-                    errorAlerter(err);
-                });
-        } else if (logged_in && pending_match && !match) {
-            // This means that they arrived back here after logging in...
+            console.log("Logged-in user arrived!  Telling server...");
+            doPlayerIsHereAction();
+        }
+        // See if that they arrived back here after logging in...
+        else if (logged_in && pending_match && !match) {
             console.log("Logged them in, now getting on with pending match");
             set_match(pending_match);
-        } else if (logged_in && match && pending_match) {
+        }
+        // Maybe we set match from pending_match, so we can get on with whatever next...
+        else if (logged_in && match && pending_match) {
             data.set("pending_league_match", null);
-            console.log("sending PUT");
-            put(`online_league/commence?side=${match.side}&id=${match.player_key}`, {})
-                .then((match) => {
-                    set_loading(false);
-                    set_match(match);
-                    console.log("updated match", match);
-                })
-                .catch((err) => {
-                    alert.close();
-                    errorAlerter(err);
-                });
-        } else if (!logged_in && !logging_in) {
+            console.log("after logging in, telling server...");
+            doPlayerIsHereAction();
+        }
+        // If they're not logged in, we have to get them logged in before doing anything else
+        else if (!logged_in && !logging_in) {
             // no matter what, make sure this is clean
             data.set("pending_league_match", null);
 
@@ -190,6 +201,7 @@ export function OnlineLeagueLanding(): JSX.Element {
             {((!loading && logged_in) || null) && (
                 <div className="unstarted-match">
                     <div>{_("Waiting for your opponent...")}</div>
+                    <UIPush event="online-league-game-commencement" action={jumpToGame} />
                 </div>
             )}
         </div>

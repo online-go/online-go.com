@@ -23,6 +23,8 @@ declare namespace rest_api {
             league: string; // acronym/name
             player_key: string; // shortuuid
             side: string; // black or white
+            started: boolean;
+            game: number; // pk
         }
 
         //  /api/v1/online_league/match
