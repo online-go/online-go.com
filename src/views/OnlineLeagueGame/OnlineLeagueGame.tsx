@@ -16,14 +16,16 @@
  */
 
 import * as React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { alert } from "swal_config";
 
-import { _ } from "translate";
+import { _, interpolate } from "translate";
 import { get } from "requests";
 import { errorAlerter } from "misc";
+import { useUser } from "hooks";
 
 import { LoadingPage } from "Loading";
+import { UIPush } from "UIPush";
 
 // Users are intended to arrive here via an online-league spectate URL that provides
 // the Online League challenge ID
@@ -34,17 +36,29 @@ export function OnlineLeagueGame(): JSX.Element {
 
     /* State */
     const [loading, set_loading] = React.useState(true);
-    const [target_match, set_target_match] = React.useState<rest_api.MatchDetails>(null);
+    const [target_match, set_target_match] =
+        React.useState<rest_api.online_league.MatchDetails>(null);
+
+    const jumpToGame = (details) => {
+        console.log("OOL Game started...", details);
+        const { matchId, gameId } = details;
+        if (matchId === target_match.id) {
+            navigate(`/game/${gameId}`, { replace: true });
+        } else {
+            console.log("... but it's not the one we're after.");
+        }
+    };
 
     /* Fetch related game info */
     React.useEffect(
         () => {
             get(`online_league/match/${linked_challenge_id}`)
-                .then((match: rest_api.MatchDetails) => {
-                    if (match.game) {
+                .then((match: rest_api.online_league.MatchDetails) => {
+                    if (match.game && match.started) {
                         navigate(`/game/${match.game}`, { replace: true });
                     } else {
                         set_target_match(match);
+                        console.log("Watching for", match);
                         set_loading(false);
                     }
                 })
@@ -58,6 +72,9 @@ export function OnlineLeagueGame(): JSX.Element {
         ],
     );
 
+    const user = useUser();
+    const logged_in = !user.anonymous;
+
     /* Render */
     return (
         <div id="OnlineLeagueGame">
@@ -68,6 +85,22 @@ export function OnlineLeagueGame(): JSX.Element {
                         {target_match.league} Match {target_match.id}
                     </h2>
                     <div>{_("That game hasn't started yet!")}</div>
+                    <div>{_("... stay on this page to be taken to the game when it starts.")}</div>
+                    <LoadingPage slow /> {/* persuade them that there is life :) */}
+                    <UIPush event="online-league-game-commencement" action={jumpToGame} />
+                    {(!logged_in || null) && (
+                        <div className="membership-drive">
+                            <Link to={`/sign-in#${window.location.pathname}`}>
+                                {_("Log in or sign up")}
+                            </Link>
+                            <span>
+                                {interpolate(
+                                    _("{{login}} to be taken to the game when it starts"),
+                                    { login: "" },
+                                )}
+                            </span>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

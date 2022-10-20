@@ -20,11 +20,21 @@ import * as React from "react";
 interface LoadingProps {
     large?: boolean;
     small?: boolean;
+    slow?: boolean;
 }
 
+// This shenanigans is to allow the caller to select classes via props.
+// if there's a better way, please do tell :)
 export function Loading(props: LoadingProps): JSX.Element {
     return (
-        <span className={"Loading" + (props.small ? " small" : "") + (props.large ? " large" : "")}>
+        <span
+            className={
+                "Loading" +
+                (props.small ? " small" : "") +
+                (props.large ? " large" : "") +
+                (props.slow ? " slow" : "")
+            }
+        >
             <span className="loading-spinner" />
         </span>
     );
