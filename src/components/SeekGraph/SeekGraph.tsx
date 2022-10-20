@@ -890,6 +890,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
             let details_html =
                 ", " +
+                (C.rengo ? _("Rengo") + ", " : "") +
                 (C.ranked ? _("Ranked") : _("Unranked")) +
                 ", " +
                 C.width +
