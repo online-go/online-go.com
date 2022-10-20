@@ -16,12 +16,13 @@
  */
 
 import * as React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { alert } from "swal_config";
 
-import { _ } from "translate";
+import { _, interpolate } from "translate";
 import { get } from "requests";
 import { errorAlerter } from "misc";
+import { useUser } from "hooks";
 
 import { LoadingPage } from "Loading";
 import { UIPush } from "UIPush";
@@ -71,6 +72,9 @@ export function OnlineLeagueGame(): JSX.Element {
         ],
     );
 
+    const user = useUser();
+    const logged_in = !user.anonymous;
+
     /* Render */
     return (
         <div id="OnlineLeagueGame">
@@ -81,7 +85,22 @@ export function OnlineLeagueGame(): JSX.Element {
                         {target_match.league} Match {target_match.id}
                     </h2>
                     <div>{_("That game hasn't started yet!")}</div>
+                    <div>{_("... stay on this page to be taken to the game when it starts.")}</div>
                     <UIPush event="online-league-game-commencement" action={jumpToGame} />
+
+                    {(!logged_in || null) && (
+                        <div className="membership-drive">
+                            <Link to={`/sign-in#${window.location.pathname}`}>
+                                {_("Log in or sign up")}
+                            </Link>
+                            <span>
+                                {interpolate(
+                                    _("{{login}} to be taken to the game when it starts"),
+                                    { login: "" },
+                                )}
+                            </span>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
