@@ -393,6 +393,7 @@ export class ObserveGamesComponent extends React.PureComponent<
                     miniGobanProps={this.props.miniGobanProps}
                     namesByGobans={this.props.namesByGobans}
                     forceList={this.state.force_list}
+                    lineSummaryMode={"both-players"}
                 />
             </div>
         );

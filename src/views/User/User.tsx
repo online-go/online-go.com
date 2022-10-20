@@ -29,7 +29,6 @@ import * as preferences from "preferences";
 import * as player_cache from "player_cache";
 
 import { Card } from "material";
-import { GameList } from "GameList";
 
 import { ModTools } from "./ModTools";
 import { GameHistoryTable } from "./GameHistoryTable";
@@ -55,6 +54,7 @@ import { AchievementList } from "Achievements";
 import { VersusCard } from "./VersusCard";
 import { AvatarCard, AvatarCardEditableFields } from "./AvatarCard";
 import { ActivityCard } from "./ActivityCard";
+import { ActiveDroppedGameList } from "ActiveDroppedGameList";
 
 type RatingsSpeed = "overall" | "blitz" | "live" | "correspondence";
 type RatingsSize = 0 | 9 | 13 | 19;
@@ -437,13 +437,11 @@ export function User(props: { user_id?: number }): JSX.Element {
                         </Card>
                     )}
 
-                    {active_games && active_games.length > 0 && (
-                        <>
-                            <h2>
-                                {_("Active Games")} ({active_games.length})
-                            </h2>
-                            <GameList list={active_games} player={user} />
-                        </>
+                    {active_games && (
+                        <ActiveDroppedGameList
+                            games={active_games}
+                            user={user}
+                        ></ActiveDroppedGameList>
                     )}
 
                     <div className="row">

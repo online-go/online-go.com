@@ -54,6 +54,7 @@ interface GameListProps {
     miniGobanProps?: any;
     namesByGobans?: boolean;
     forceList?: boolean;
+    lineSummaryMode: LineSummaryTableMode;
 }
 
 type SortOrder = "clock" | "move-number" | "name" | "opponent" | "opponent-clock" | "size";
@@ -71,301 +72,314 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
         };
     }
 
-    sortBy(name: SortOrder) {
-        return () => {
-            if (this.state.sort_order === name) {
-                this.setState({ sort_order: ("-" + name) as DescendingSortOrder });
-            } else {
-                this.setState({ sort_order: name });
-            }
-        };
+    sortBy = (sort: SortOrder) => {
+        if (this.state.sort_order === sort) {
+            this.setState({ sort_order: ("-" + sort) as DescendingSortOrder });
+        } else {
+            this.setState({ sort_order: sort });
+        }
+    };
+
+    applyCurrentSort(games: GameType[]) {
+        switch (this.state.sort_order) {
+            case "-clock":
+            case "clock":
+                games.sort((a, b) => {
+                    try {
+                        const a_clock =
+                            a.goban && a.goban.last_clock ? a.goban.last_clock : a.json.clock;
+                        const b_clock =
+                            b.goban && b.goban.last_clock ? b.goban.last_clock : b.json.clock;
+
+                        /* not my move? push to bottom (or top) */
+                        if (
+                            a_clock.current_player === this.props.player.id &&
+                            b_clock.current_player !== this.props.player.id
+                        ) {
+                            return -1;
+                        }
+                        if (
+                            b_clock.current_player === this.props.player.id &&
+                            a_clock.current_player !== this.props.player.id
+                        ) {
+                            return 1;
+                        }
+
+                        return a_clock.expiration - b_clock.expiration || a.id - b.id;
+                    } catch (e) {
+                        console.error(a, b, e);
+                        return 0;
+                    }
+                });
+                break;
+
+            case "-opponent-clock":
+            case "opponent-clock":
+                games.sort((a, b) => {
+                    try {
+                        const a_clock =
+                            a.goban && a.goban.last_clock ? a.goban.last_clock : a.json.clock;
+                        const b_clock =
+                            b.goban && b.goban.last_clock ? b.goban.last_clock : b.json.clock;
+
+                        /* not my move? push to bottom (or top) */
+                        if (
+                            a_clock.current_player === this.props.player.id &&
+                            b_clock.current_player !== this.props.player.id
+                        ) {
+                            return 1;
+                        }
+                        if (
+                            b_clock.current_player === this.props.player.id &&
+                            a_clock.current_player !== this.props.player.id
+                        ) {
+                            return -1;
+                        }
+
+                        return a_clock.expiration - b_clock.expiration || a.id - b.id;
+                    } catch (e) {
+                        console.error(a, b, e);
+                        return 0;
+                    }
+                });
+                break;
+
+            case "-name":
+            case "name":
+                games.sort((a, b) => {
+                    try {
+                        return a.name.localeCompare(b.name) || a.id - b.id;
+                    } catch (e) {
+                        console.error(a, b, e);
+                        return 0;
+                    }
+                });
+                break;
+
+            case "-opponent":
+            case "opponent":
+                // TODO: this is old code that doesn't always work for rengo games
+                games.sort((a, b) => {
+                    try {
+                        const a_opponent = a.black.id === this.props.player.id ? a.white : a.black;
+                        const b_opponent = b.black.id === this.props.player.id ? b.white : b.black;
+                        return (
+                            a_opponent.username.localeCompare(b_opponent.username) || a.id - b.id
+                        );
+                    } catch (e) {
+                        console.error(a, b, e);
+                        return 0;
+                    }
+                });
+                break;
+
+            case "-move-number":
+            case "move-number":
+                games.sort((a, b) => {
+                    try {
+                        const a_move_num = a.goban
+                            ? a.goban.engine.getMoveNumber()
+                            : a.json.moves.length;
+                        const b_move_num = b.goban
+                            ? b.goban.engine.getMoveNumber()
+                            : b.json.moves.length;
+
+                        return a_move_num - b_move_num || a.id - b.id;
+                    } catch (e) {
+                        console.error(a, b, e);
+                        return 0;
+                    }
+                });
+                break;
+
+            case "-size":
+            case "size":
+                games.sort((a, b) => {
+                    try {
+                        // sort by number of intersection
+                        // for non-square boards with the same number of intersections, the wider board is concidered larger
+                        const a_size = a.width * a.height * 100 + a.width;
+                        const b_size = b.width * b.height * 100 + b.width;
+
+                        return a_size - b_size || a.id - b.id;
+                    } catch (e) {
+                        console.error(a, b, e);
+                        return 0;
+                    }
+                });
+                break;
+        }
+
+        if (this.state.sort_order[0] === "-") {
+            games.reverse();
+        }
     }
 
     render() {
-        const lst = this.props.list.slice(0);
+        const games: GameType[] = this.props.list.slice(0);
+
         if (!this.props.disableSort) {
-            switch (this.state.sort_order) {
-                case "-clock":
-                case "clock":
-                    lst.sort((a, b) => {
-                        try {
-                            const a_clock =
-                                a.goban && a.goban.last_clock ? a.goban.last_clock : a.json.clock;
-                            const b_clock =
-                                b.goban && b.goban.last_clock ? b.goban.last_clock : b.json.clock;
-
-                            /* not my move? push to bottom (or top) */
-                            if (
-                                a_clock.current_player === this.props.player.id &&
-                                b_clock.current_player !== this.props.player.id
-                            ) {
-                                return -1;
-                            }
-                            if (
-                                b_clock.current_player === this.props.player.id &&
-                                a_clock.current_player !== this.props.player.id
-                            ) {
-                                return 1;
-                            }
-
-                            return a_clock.expiration - b_clock.expiration || a.id - b.id;
-                        } catch (e) {
-                            console.error(a, b, e);
-                            return 0;
-                        }
-                    });
-                    break;
-
-                case "-opponent-clock":
-                case "opponent-clock":
-                    lst.sort((a, b) => {
-                        try {
-                            const a_clock =
-                                a.goban && a.goban.last_clock ? a.goban.last_clock : a.json.clock;
-                            const b_clock =
-                                b.goban && b.goban.last_clock ? b.goban.last_clock : b.json.clock;
-
-                            /* not my move? push to bottom (or top) */
-                            if (
-                                a_clock.current_player === this.props.player.id &&
-                                b_clock.current_player !== this.props.player.id
-                            ) {
-                                return 1;
-                            }
-                            if (
-                                b_clock.current_player === this.props.player.id &&
-                                a_clock.current_player !== this.props.player.id
-                            ) {
-                                return -1;
-                            }
-
-                            return a_clock.expiration - b_clock.expiration || a.id - b.id;
-                        } catch (e) {
-                            console.error(a, b, e);
-                            return 0;
-                        }
-                    });
-                    break;
-
-                case "-name":
-                case "name":
-                    lst.sort((a, b) => {
-                        try {
-                            return a.name.localeCompare(b.name) || a.id - b.id;
-                        } catch (e) {
-                            console.error(a, b, e);
-                            return 0;
-                        }
-                    });
-                    break;
-
-                case "-opponent":
-                case "opponent":
-                    lst.sort((a, b) => {
-                        try {
-                            const a_opponent =
-                                a.black.id === this.props.player.id ? a.white : a.black;
-                            const b_opponent =
-                                b.black.id === this.props.player.id ? b.white : b.black;
-                            return (
-                                a_opponent.username.localeCompare(b_opponent.username) ||
-                                a.id - b.id
-                            );
-                        } catch (e) {
-                            console.error(a, b, e);
-                            return 0;
-                        }
-                    });
-                    break;
-
-                case "-move-number":
-                case "move-number":
-                    lst.sort((a, b) => {
-                        try {
-                            const a_move_num = a.goban
-                                ? a.goban.engine.getMoveNumber()
-                                : a.json.moves.length;
-                            const b_move_num = b.goban
-                                ? b.goban.engine.getMoveNumber()
-                                : b.json.moves.length;
-
-                            return a_move_num - b_move_num || a.id - b.id;
-                        } catch (e) {
-                            console.error(a, b, e);
-                            return 0;
-                        }
-                    });
-                    break;
-
-                case "-size":
-                case "size":
-                    lst.sort((a, b) => {
-                        try {
-                            // sort by number of intersection
-                            // for non-square boards with the same number of intersections, the wider board is concidered larger
-                            const a_size = a.width * a.height * 100 + a.width;
-                            const b_size = b.width * b.height * 100 + b.width;
-
-                            return a_size - b_size || a.id - b.id;
-                        } catch (e) {
-                            console.error(a, b, e);
-                            return 0;
-                        }
-                    });
-                    break;
-            }
-
-            if (this.state.sort_order[0] === "-") {
-                lst.reverse();
-            }
+            this.applyCurrentSort(games);
         }
 
-        if (lst.length === 0) {
+        if (games.length === 0) {
             return <div className="container">{this.props.emptyMessage || ""}</div>;
-        } else if (this.props.forceList || lst.length > preferences.get("game-list-threshold")) {
-            const sortable = this.props.disableSort && this.props.player ? "" : " sortable ";
-            const sort_order = this.state.sort_order;
-            const move_number_sort =
-                sort_order === "move-number"
-                    ? "sorted-desc"
-                    : sort_order === "-move-number"
-                    ? "sorted-asc"
-                    : "";
-            const game_sort =
-                sort_order === "name" ? "sorted-desc" : sort_order === "-name" ? "sorted-asc" : "";
-            const opponent_sort =
-                sort_order === "opponent"
-                    ? "sorted-desc"
-                    : sort_order === "-opponent"
-                    ? "sorted-asc"
-                    : "";
-            const clock_sort =
-                sort_order === "clock"
-                    ? "sorted-desc"
-                    : sort_order === "-clock"
-                    ? "sorted-asc"
-                    : "";
-            const opponent_clock_sort =
-                sort_order === "opponent-clock"
-                    ? "sorted-desc"
-                    : sort_order === "-opponent-clock"
-                    ? "sorted-asc"
-                    : "";
-            const size =
-                sort_order === "size" ? "sorted-desc" : sort_order === "-size" ? "sorted-asc" : "";
-
+        } else if (this.props.forceList || games.length > preferences.get("game-list-threshold")) {
             return (
-                <div className="GameList GobanLineSummaryContainer">
-                    {this.props.player ? (
-                        <div className="GobanLineSummaryContainerHeader">
-                            <div
-                                onClick={this.sortBy("move-number")}
-                                className={sortable + move_number_sort}
-                            >
-                                {pgettext("Game list move number", "Move")}
-                            </div>
-                            <div
-                                onClick={this.sortBy("name")}
-                                className={sortable + game_sort + " text-align-left"}
-                            >
-                                {_("Game")}
-                            </div>
-                            <div
-                                onClick={this.sortBy("opponent")}
-                                className={sortable + opponent_sort + " text-align-left"}
-                            >
-                                {_("Opponent")}
-                            </div>
-                            <div onClick={this.sortBy("clock")} className={sortable + clock_sort}>
-                                {_("Clock")}
-                            </div>
-                            <div
-                                onClick={this.sortBy("opponent-clock")}
-                                className={sortable + opponent_clock_sort}
-                            >
-                                {_("Opponent's Clock")}
-                            </div>
-                            <div onClick={this.sortBy("size")} className={sortable + size}>
-                                {_("Size")}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="GobanLineSummaryContainerHeader">
-                            <div>{pgettext("Game list move number", "Move")}</div>
-                            <div>{_("Game")}</div>
-                            <div className="text-align-left">{_("Black")}</div>
-                            <div></div>
-                            <div className="text-align-left">{_("White")}</div>
-                            <div></div>
-                            <div className="text-align-left">{_("Size")}</div>
-                        </div>
-                    )}
-                    {lst.map((game) => (
-                        <GobanLineSummary
-                            key={game.id}
-                            id={game.id}
-                            black={game.black}
-                            white={game.white}
-                            player={this.props.player}
-                            gobanref={(goban) => (game.goban = goban)}
-                            width={game.width}
-                            height={game.height}
-                            rengo_teams={game.json?.rengo_teams}
-                        />
-                    ))}
-                </div>
+                <LineSummaryTable
+                    list={games}
+                    disableSort={this.props.disableSort}
+                    onSort={this.sortBy}
+                    currentSort={this.state.sort_order}
+                    player={this.props.player}
+                    lineSummaryMode={this.props.lineSummaryMode}
+                ></LineSummaryTable>
             );
         } else {
-            if (this.props.namesByGobans) {
-                return (
-                    <div className="GameList">
-                        {lst.map((game) => {
-                            return (
-                                <div className="goban-with-names" key={game.id}>
-                                    <div className="names">
-                                        <div>
-                                            <Player
-                                                user={game.black}
-                                                disableCacheUpdate
-                                                noextracontrols
-                                            />
-                                        </div>
-                                        <div>
-                                            <Player
-                                                user={game.white}
-                                                disableCacheUpdate
-                                                noextracontrols
-                                            />
-                                        </div>
-                                    </div>
-                                    <MiniGoban
-                                        id={game.id}
-                                        width={game.width}
-                                        height={game.height}
-                                        {...(this.props.miniGobanProps || {})}
-                                    />
-                                </div>
-                            );
-                        })}
-                    </div>
-                );
-            } else {
-                return (
-                    <div className="GameList">
-                        {lst.map((game) => {
-                            return (
-                                <MiniGoban
-                                    key={game.id}
-                                    id={game.id}
-                                    width={game.width}
-                                    height={game.height}
-                                    {...(this.props.miniGobanProps || {})}
-                                />
-                            );
-                        })}
-                    </div>
-                );
-            }
+            return MiniGobanList(games, this.props.namesByGobans, this.props.miniGobanProps);
         }
     }
+}
+
+export type LineSummaryTableMode = "both-players" | "opponent-only" | "dropped-rengo";
+
+interface LineSummaryTableProps extends GameListProps {
+    list: GameType[];
+    lineSummaryMode: LineSummaryTableMode;
+    player?: { id: number };
+    disableSort: boolean;
+    currentSort: SortOrder | DescendingSortOrder;
+    onSort: (sortBy: SortOrder) => void;
+}
+
+function LineSummaryTable({
+    list,
+    lineSummaryMode,
+    player,
+    disableSort,
+    currentSort,
+    onSort,
+}: LineSummaryTableProps): JSX.Element {
+    const getHeaderClassName = (sortOrder: SortOrder) => {
+        const sortable = disableSort && player ? "" : "sortable";
+        let currentlySorting = "";
+        if (currentSort === sortOrder) {
+            currentlySorting = " sorted-asc";
+        } else if (currentSort === `-${sortOrder}`) {
+            currentlySorting = " sorted-desc";
+        }
+        return sortable + currentlySorting;
+    };
+
+    const renderHeader = (): JSX.Element => {
+        if (lineSummaryMode === "both-players") {
+            return (
+                <div className="GobanLineSummaryContainerHeader">
+                    <div>{pgettext("Game list move number", "Move")}</div>
+                    <div>{_("Game")}</div>
+                    <div className="text-align-left">{_("Black")}</div>
+                    <div></div>
+                    <div className="text-align-left">{_("White")}</div>
+                    <div></div>
+                    <div className="text-align-left">{_("Size")}</div>
+                </div>
+            );
+        }
+        return (
+            <div className="GobanLineSummaryContainerHeader">
+                <div
+                    onClick={() => onSort("move-number")}
+                    className={getHeaderClassName("move-number")}
+                >
+                    {pgettext("Game list move number", "Move")}
+                </div>
+                <div
+                    onClick={() => onSort("name")}
+                    className={getHeaderClassName("name") + " text-align-left"}
+                >
+                    {_("Game")}
+                </div>
+                {lineSummaryMode === "opponent-only" && (
+                    <>
+                        <div
+                            onClick={() => onSort("opponent")}
+                            className={getHeaderClassName("opponent") + " text-align-left"}
+                        >
+                            {_("Opponent")}
+                        </div>
+                        <div
+                            onClick={() => onSort("clock")}
+                            className={getHeaderClassName("clock")}
+                        >
+                            {_("Clock")}
+                        </div>
+                        <div
+                            onClick={() => onSort("opponent-clock")}
+                            className={getHeaderClassName("opponent-clock")}
+                        >
+                            {_("Opponent's Clock")}
+                        </div>
+                    </>
+                )}
+                <div onClick={() => onSort("size")} className={getHeaderClassName("size")}>
+                    {_("Size")}
+                </div>
+            </div>
+        );
+    };
+
+    return (
+        <div className="GameList GobanLineSummaryContainer">
+            {renderHeader()}
+            {list.map((game) => (
+                <GobanLineSummary
+                    key={game.id}
+                    id={game.id}
+                    black={game.black}
+                    white={game.white}
+                    player={player}
+                    gobanref={(goban) => (game.goban = goban)}
+                    width={game.width}
+                    height={game.height}
+                    rengo_teams={game.json?.rengo_teams}
+                    lineSummaryMode={lineSummaryMode}
+                />
+            ))}
+        </div>
+    );
+}
+
+function MiniGobanList(games: GameType[], withNames: boolean, miniGobanProps?): JSX.Element {
+    return (
+        <div className="GameList">
+            {games.map((game) => {
+                const miniGoban = (
+                    <MiniGoban
+                        key={!withNames ? game.id : undefined}
+                        id={game.id}
+                        width={game.width}
+                        height={game.height}
+                        {...(miniGobanProps || {})}
+                    />
+                );
+                if (withNames) {
+                    return (
+                        <div className="goban-with-names" key={game.id}>
+                            <div className="names">
+                                <div>
+                                    <Player user={game.black} disableCacheUpdate noextracontrols />
+                                </div>
+                                <div>
+                                    <Player user={game.white} disableCacheUpdate noextracontrols />
+                                </div>
+                            </div>
+                            {miniGoban}
+                        </div>
+                    );
+                } else {
+                    return miniGoban;
+                }
+            })}
+        </div>
+    );
 }
