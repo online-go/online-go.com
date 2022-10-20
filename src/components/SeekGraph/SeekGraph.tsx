@@ -398,9 +398,10 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             return ret;
         }
 
+        const hitTolerance = 1.25 * this.square_size;
         for (const id in this.challenges) {
             const C = this.challenges[id];
-            if (dist(C, pos) < this.square_size * 2) {
+            if (dist(C, pos) < hitTolerance) {
                 ret.push(C);
             }
         }
@@ -715,7 +716,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         const win_top = window.scrollY || document.documentElement.scrollTop;
         const win_left = window.scrollX || document.documentElement.scrollLeft;
         const win_right = $(window).width() + win_left;
-        const win_bottom = $(window).height() + win_top - 5;
+        const win_bottom = $(window).height() + win_top;
 
         const list_width = this.$list.width();
         const list_height = this.$list.height();
@@ -725,7 +726,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
 
         if (listAnchor.y + list_height > win_bottom) {
-            listAnchor.y = win_bottom - list_height;
+            listAnchor.y = win_bottom - list_height - 5;
         }
 
         listAnchor.x = Math.max(0, listAnchor.x);
