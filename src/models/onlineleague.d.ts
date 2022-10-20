@@ -38,6 +38,7 @@ declare namespace rest_api {
             spectator_link: string; // URL
             league: string; // acronym/name
             game: number | null; // pk for Game
+            started: boolean;
             finished: boolean;
         }
     }

@@ -65,9 +65,13 @@ export function OnlineLeagueLanding(): JSX.Element {
         data.set("pending_league_match", match);
     };
 
-    const jumpToGame = (gameId: number) => {
-        console.log("OOL Game started!", gameId);
-        navigate(`/game/${gameId}`, { replace: true });
+    const jumpToGame = (details) => {
+        console.log("OOL Game started...", details);
+        if (details.gameId === match.game) {
+            navigate(`/game/${details.gameId}`, { replace: true });
+        } else {
+            console.log("... but it's not ours.");
+        }
     };
 
     // ... we need to:
