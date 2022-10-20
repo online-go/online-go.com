@@ -52,13 +52,13 @@ export class SeekGraphPalettes {
         user: { fill: "#e37495aa", stroke: "#ed1f1f" },
     };
     static readonly ACCESSIBLE: SeekGraphColorPalette = {
-        size19: { fill: "#00aa30", stroke: "#00ff00" },
-        size13: { fill: "#f000d0", stroke: "#ff60dd" },
-        size9: { fill: "#009090", stroke: "#00ffff" },
-        sizeOther: { fill: "#d06000", stroke: "#ff9000" },
+        size19: { fill: "#02a172aa", stroke: "#02a172" },
+        size13: { fill: "#cc73a8aa", stroke: "#cc73a8" },
+        size9: { fill: "#55b2ebaa", stroke: "#55b2eb" },
+        sizeOther: { fill: "#d55b00aa", stroke: "#d55b00" },
         // UNRANKED: { fill: "#d06000", stroke: "#ff9000" },
-        ineligible: { fill: "#6b6b6b", stroke: "#bbb" },
-        user: { fill: "#ed1f1f", stroke: "#e37495" },
+        ineligible: { fill: "#bbbbbbaa", stroke: "#bbb" },
+        user: { fill: "#e6a100aa", stroke: "#e6a100" },
     };
 
     static getPalette(siteTheme: string): SeekGraphColorPalette {
