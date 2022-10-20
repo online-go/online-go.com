@@ -26,7 +26,7 @@ import * as data from "data";
 import { openGameAcceptModal } from "GameAcceptModal";
 import { shortDurationString, shortShortTimeControl, timeControlSystemText } from "TimeControl";
 import { getRelativeEventPosition, errorAlerter } from "misc";
-import { rankString, bounded_rank } from "rank_utils";
+import { rankString, bounded_rank, MaxRank } from "rank_utils";
 import { kb_bind, kb_unbind, Binding } from "KBShortcut";
 import { Player } from "Player";
 import { validateCanvas } from "goban";
@@ -43,6 +43,11 @@ interface AnchoredChallenge extends Challenge {
     joined_rengo?: boolean;
 }
 
+interface Point {
+    x: number;
+    y: number;
+}
+
 interface SeekGraphModal {
     modal: JQuery;
     binding: Binding;
@@ -52,14 +57,74 @@ interface Events {
     challenges: Challenge[];
 }
 
-const MAX_RATIO = 0.99;
-
 interface SeekGraphConfig {
     canvas: HTMLCanvasElement;
     show_live_games?: boolean;
 }
 
-function dist(C: AnchoredChallenge, pos) {
+interface ChallengePointStyle {
+    fill: string;
+    stroke: string;
+}
+
+class ChallengePointStyles {
+    static readonly SIZE_19: ChallengePointStyle = { fill: "#00aa30", stroke: "#00ff00" };
+    static readonly SIZE_13: ChallengePointStyle = { fill: "#f000d0", stroke: "#ff60dd" };
+    static readonly SIZE_9: ChallengePointStyle = { fill: "#009090", stroke: "#00ffff" };
+    static readonly SIZE_OTHER: ChallengePointStyle = { fill: "#d06000", stroke: "#ff9000" };
+    // static readonly UNRANKED: ChallengePointStyle = { fill: "#d06000", stroke: "#ff9000" };
+    static readonly INELIGIBLE: ChallengePointStyle = { fill: "#bbb", stroke: "#aaa" };
+    static readonly USER: ChallengePointStyle = { fill: "#ed1f1f", stroke: "#e25551" };
+
+    static getStyle(challenge: Challenge): ChallengePointStyle {
+        if (challenge.user_challenge) {
+            return ChallengePointStyles.USER;
+        }
+        if (challenge.eligible === false) {
+            return ChallengePointStyles.INELIGIBLE;
+        }
+
+        if (challenge.width === 19) {
+            return ChallengePointStyles.SIZE_19;
+        }
+        if (challenge.width === 13) {
+            return ChallengePointStyles.SIZE_13;
+        }
+        if (challenge.width === 9) {
+            return ChallengePointStyles.SIZE_9;
+        }
+        return ChallengePointStyles.SIZE_OTHER;
+    }
+}
+
+const MAX_RATIO = 0.99;
+
+function rankRatio(rank: number): number {
+    return Math.min(MAX_RATIO, (rank + 1) / (MaxRank + 1));
+}
+
+function timeRatio(tpm: number): number {
+    let time_ratio = 0;
+    let last_tpm = 0;
+    for (let i = 0; i < SeekGraph.time_columns.length; ++i) {
+        const col = SeekGraph.time_columns[i];
+        if (tpm <= col.time_per_move) {
+            if (tpm === 0) {
+                time_ratio = col.ratio;
+                break;
+            }
+
+            const alpha = (tpm - last_tpm) / (-last_tpm + col.time_per_move);
+            time_ratio = lerp(time_ratio, col.ratio, alpha);
+            break;
+        }
+        last_tpm = col.time_per_move;
+        time_ratio = col.ratio;
+    }
+    return time_ratio;
+}
+
+function dist(C: AnchoredChallenge, pos: Point) {
     const dx = C.x - pos.x;
     const dy = C.y - pos.y;
     return Math.sqrt(dx * dx + dy * dy);
@@ -68,7 +133,16 @@ function dist(C: AnchoredChallenge, pos) {
 function lerp(v1: number, v2: number, alpha: number) {
     return (1.0 - alpha) * v1 + alpha * v2;
 }
-function list_hit_sorter(A: Challenge, B: Challenge) {
+
+/** Most important/relevant challenges will come first */
+function priority_sort(A: Challenge, B: Challenge) {
+    if (A.user_challenge && !B.user_challenge) {
+        return -1;
+    }
+    if (!A.user_challenge && B.user_challenge) {
+        return 1;
+    }
+
     if (A.eligible && !B.eligible) {
         return -1;
     }
@@ -140,13 +214,14 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     connected: boolean = false;
     // This is treated as an array later because that is what TypedEventEmitter expects.
     // Perhaps this should be changed to an array as well.
-    challenges: { [id: number]: Challenge } = {};
+    challenges: { [id: number]: AnchoredChallenge } = {};
     // live_games: any = {};
     list_hits: Array<AnchoredChallenge> = [];
     // challenge_points: any = {};
     square_size = 8;
     text_size = 10;
     padding = 14;
+    legend_size = 26;
     list_locked: boolean = false;
     modal?: SeekGraphModal = null;
     $list: JQuery;
@@ -185,6 +260,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
         return bounded_rank(user);
     }
+
     onConnect = () => {
         this.connected = true;
         this.socket.send("seek_graph/connect", { channel: "global" });
@@ -258,21 +334,21 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         this.emit("challenges", this.challenges as Challenge[]);
     };
 
-    onTouchEnd = (ev) => {
+    onTouchEnd = (ev: JQueryEventObject) => {
         if (ev.target === this.canvas) {
             this.onPointerDown(ev);
         }
     };
-    onTouchStartMove = (ev) => {
+    onTouchStartMove = (ev: JQueryEventObject) => {
         if (ev.target === this.canvas) {
             this.onPointerMove(ev);
             ev.preventDefault();
             return false;
         }
     };
-    onPointerMove = (ev) => {
+    onPointerMove = (ev: JQueryEventObject) => {
         const new_list = this.getHits(ev);
-        new_list.sort(list_hit_sorter);
+        new_list.sort(priority_sort);
         if (!lists_are_equal(new_list, this.list_hits)) {
             this.closeChallengeList();
         }
@@ -283,9 +359,9 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             this.closeChallengeList();
         }
     };
-    onPointerDown = (ev) => {
+    onPointerDown = (ev: JQueryEventObject) => {
         const new_list = this.getHits(ev);
-        new_list.sort(list_hit_sorter);
+        new_list.sort(priority_sort);
         if (!lists_are_equal(new_list, this.list_hits)) {
             this.list_locked = false;
             this.closeChallengeList();
@@ -344,7 +420,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         $(document).off("touchstart touchmove", this.onTouchStartMove);
     }
 
-    getHits(ev) {
+    getHits(ev: JQueryEventObject) {
         const pos = getRelativeEventPosition(ev);
         const ret = [];
 
@@ -370,15 +446,14 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         return ret;
     }
+
     redraw() {
         validateCanvas(this.canvas);
         const ctx = this.canvas.getContext("2d");
-        const w = this.$canvas.width();
-        const h = this.$canvas.height();
-        const padding = this.padding;
 
-        ctx.clearRect(0, 0, w, h);
-        this.drawAxes();
+        ctx.clearRect(0, 0, this.width, this.height);
+        this.drawAxes(ctx);
+        this.drawLegend(ctx);
 
         const plot_ct = {};
         // this.challenge_points = {};
@@ -387,30 +462,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         for (const id in this.challenges) {
             sorted.push(this.challenges[id]);
         }
-        sorted.sort((A, B) => {
-            if (A.eligible && !B.eligible) {
-                return 1;
-            }
-            if (!A.eligible && B.eligible) {
-                return -1;
-            }
-
-            if (A.user_challenge && !B.user_challenge) {
-                return 1;
-            }
-            if (!A.user_challenge && B.user_challenge) {
-                return -1;
-            }
-
-            if (A.ranked && !B.ranked) {
-                return 1;
-            }
-            if (!A.ranked && B.ranked) {
-                return -1;
-            }
-
-            return B.challenge_id - A.challenge_id;
-        });
+        sorted.sort(priority_sort);
+        sorted.reverse(); // Draw highest-priority games last
         // if (this.show_live_games) {
         //     for (const id in this.live_games) {
         //         sorted.push(this.live_games[id]);
@@ -421,28 +474,11 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         for (let j = 0; j < sorted.length; ++j) {
             const C = sorted[j];
 
-            const rank_ratio = Math.min(MAX_RATIO, (C.rank + 1) / 40);
+            const rank_ratio = rankRatio(C.rank);
+            const time_ratio = timeRatio(C.time_per_move);
 
-            let time_ratio = 0;
-            let last_tpm = 0;
-            for (let i = 0; i < SeekGraph.time_columns.length; ++i) {
-                const col = SeekGraph.time_columns[i];
-                if (C.time_per_move <= col.time_per_move) {
-                    if (C.time_per_move === 0) {
-                        time_ratio = col.ratio;
-                        break;
-                    }
-
-                    const alpha = (C.time_per_move - last_tpm) / (-last_tpm + col.time_per_move);
-                    time_ratio = lerp(time_ratio, col.ratio, alpha);
-                    break;
-                }
-                last_tpm = col.time_per_move;
-                time_ratio = col.ratio;
-            }
-
-            const cx = Math.round(padding + (w - padding) * time_ratio);
-            const cy = Math.round(h - (padding + (h - padding) * rank_ratio));
+            const cx = this.xCoordinate(time_ratio);
+            const cy = this.yCoordinate(rank_ratio);
 
             C.x = cx;
             C.y = cy;
@@ -451,64 +487,76 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             if (!(plot_ct_pos in plot_ct)) {
                 plot_ct[plot_ct_pos] = 0;
             }
-            const ct = ++plot_ct[plot_ct_pos];
+            const _ct = ++plot_ct[plot_ct_pos];
 
-            /* Draw */
-            let d = this.square_size;
-            let sx = cx - d / 2 + 0.5;
-            let sy = cy - d / 2 + 0.5;
-            ctx.save();
-            ctx.beginPath();
-            ctx.strokeStyle = "#000";
-            // Unused live_game property
-            // if (C.live_game) {
-            //     ctx.fillStyle = "#4140FF";
-            //     ctx.strokeStyle = "#58E0FF";
-            // } else
-            if (C.eligible) {
-                if (C.ranked) {
-                    if (C.width === 19) {
-                        ctx.fillStyle = "#00aa30";
-                        ctx.strokeStyle = "#00ff00";
-                    } else if (C.width === 13) {
-                        ctx.fillStyle = "#f000d0";
-                        ctx.strokeStyle = "#ff60dd";
-                    } else {
-                        ctx.fillStyle = "#009090";
-                        ctx.strokeStyle = "#00ffff";
-                    }
-                } else {
-                    ctx.fillStyle = "#d06000";
-                    ctx.strokeStyle = "#ff9000";
-                }
-                ctx.fillRect(sx, sy, d, d);
-            } else if (ct === 1) {
-                if (C.user_challenge) {
-                    ctx.fillStyle = "#E25551";
-                    ctx.strokeStyle = "#bbb";
-                } else {
-                    ctx.fillStyle = "#bbbbbb";
-                    ctx.strokeStyle = "#bbb";
-                }
-                ctx.fillRect(sx, sy, d, d);
+            const style = ChallengePointStyles.getStyle(C);
+            if (C.ranked) {
+                this.drawChallengeSquare(cx, cy, this.square_size, style, ctx);
+            } else {
+                this.drawChallengeTriangle(cx, cy, this.square_size / 2, style, ctx);
             }
-            if (ct > 1) {
-                const cc = Math.min(this.width < 200 ? 2 : 4, ct - 1);
-                sx -= cc;
-                sy -= cc;
-                d += cc * 2;
-            }
-            if (!C.eligible) {
-                ctx.strokeStyle = "#bbb";
-            }
-            if (C.eligible /* || C.live_game */) {
-                ctx.strokeRect(sx, sy, d, d);
-            }
-            ctx.restore();
         }
 
         //console.log("Redrawing seekgraph");
     }
+
+    /**  Draws a square centered on the point (x,y) **/
+    drawChallengeSquare(
+        x: number,
+        y: number,
+        size: number,
+        style: ChallengePointStyle,
+        ctx: CanvasRenderingContext2D,
+    ) {
+        ctx.save();
+        ctx.fillStyle = style.fill;
+        ctx.strokeStyle = style.stroke;
+        const sx = x - size / 2;
+        const sy = y - size / 2;
+        ctx.fillRect(sx, sy, size, size);
+        ctx.strokeRect(sx, sy, size, size);
+        ctx.restore();
+    }
+
+    /**  Draws a circle centered on the point (x,y) **/
+    drawChallengeCircle(
+        x: number,
+        y: number,
+        radius: number,
+        style: ChallengePointStyle,
+        ctx: CanvasRenderingContext2D,
+    ) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.fillStyle = style.fill;
+        ctx.strokeStyle = style.stroke;
+        ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    /**  Draws a triangle centered on the point (x,y) **/
+    drawChallengeTriangle(
+        x: number,
+        y: number,
+        size: number,
+        style: ChallengePointStyle,
+        ctx: CanvasRenderingContext2D,
+    ) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.fillStyle = style.fill;
+        ctx.strokeStyle = style.stroke;
+        ctx.moveTo(x, y - size);
+        ctx.lineTo(x + 0.866 * size, y + 0.5 * size);
+        ctx.lineTo(x - 0.866 * size, y + 0.5 * size);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+    }
+
     resize(w, h) {
         this.width = w;
         this.height = h;
@@ -522,20 +570,32 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
 
         this.square_size = Math.max(Math.round(Math.min(w, h) / 100) * 2, 4);
-        this.$canvas.attr("width", w).attr("height", h);
+
+        // See https://coderwall.com/p/vmkk6a/how-to-make-the-canvas-not-look-like-crap-on-retina
+        // and https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
+        // Instead of scaling based on devicePixelRatio, I just scale by 2 always, which seems to
+        // improve the quality of rendering even on MDPI devices and prevents needing the half-point
+        // adjustment trick used previously (https://stackoverflow.com/questions/39943737/html5-canvas-translate0-5-0-5-not-fixing-line-blurryness)
+        this.canvas.style.width = w + "px";
+        this.canvas.style.height = h + "px";
+        const scale = 2;
+        this.canvas.width = w * scale;
+        this.canvas.height = h * scale;
+        this.canvas.getContext("2d").scale(scale, scale);
 
         this.redraw();
     }
-    drawAxes() {
-        const ctx = this.canvas.getContext("2d");
-        const w = this.$canvas.width();
-        const h = this.$canvas.height();
+
+    drawAxes(ctx: CanvasRenderingContext2D) {
+        const w = this.width;
+        const h = this.height;
         if (w < 30 || h < 30) {
             return;
         }
 
         ctx.font = "bold " + this.text_size + "px Verdana,Courier,Arial,serif";
         const padding = this.padding;
+        const bottomPadding = padding + this.legend_size;
         ctx.strokeStyle = "#666666";
         ctx.lineWidth = 1;
 
@@ -548,9 +608,9 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.fillStyle = axis_color;
         const word = _("Rank");
         const metrics = ctx.measureText(word);
-        const yy = h / 2 + metrics.width / 2;
+        const yy = (h - bottomPadding) / 2 + metrics.width / 2;
 
-        ctx.translate(padding - 4 + 0.5, yy + 0.5);
+        ctx.translate(padding - 4, yy);
         ctx.rotate(-Math.PI / 2);
         ctx.fillText(word, 0, 0);
 
@@ -558,29 +618,29 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         /* base rank line */
         ctx.beginPath();
-        ctx.moveTo(padding + 0.5, h - padding + 0.5);
-        ctx.lineTo(padding + 0.5, 0);
+        ctx.moveTo(padding, h - bottomPadding);
+        ctx.lineTo(padding, 0);
         ctx.stroke();
 
         /* player rank line */
         if (!data.get("user").anonymous) {
-            const rank_ratio = Math.min(MAX_RATIO, (this.userRank() + 1) / 40);
-            const cy = Math.round(h - (padding + (h - padding) * rank_ratio));
+            const rank_ratio = rankRatio(this.userRank());
+            const cy = this.yCoordinate(rank_ratio);
             ctx.beginPath();
             ctx.strokeStyle = "#ccccff";
-            ctx.moveTo(padding + 0.5, cy + 0.5);
-            ctx.lineTo(w, cy + 0.5);
+            ctx.moveTo(padding, cy);
+            ctx.lineTo(w, cy);
             ctx.stroke();
         }
 
         /* Time */
-        const blitz_line = Math.round(SeekGraph.blitz_line_ratio * (w - padding) + padding);
-        const live_line = Math.round(SeekGraph.live_line_ratio * (w - padding) + padding);
+        const blitz_line = this.xCoordinate(SeekGraph.blitz_line_ratio);
+        const live_line = this.xCoordinate(SeekGraph.live_line_ratio);
 
         /* primary line */
         ctx.beginPath();
-        ctx.moveTo(padding + 0.5, h - padding + 0.5);
-        ctx.lineTo(w, h - padding + 0.5);
+        ctx.moveTo(padding, h - bottomPadding);
+        ctx.lineTo(w, h - bottomPadding);
         ctx.strokeStyle = "#666666";
         ctx.lineWidth = 1;
         ctx.stroke();
@@ -588,10 +648,10 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         /* blitz and live lines */
         ctx.save();
         ctx.beginPath();
-        ctx.moveTo(padding + 0.5 + blitz_line, h - padding + 0.5);
-        ctx.lineTo(padding + 0.5 + blitz_line, 0);
-        ctx.moveTo(padding + 0.5 + live_line, h - padding + 0.5);
-        ctx.lineTo(padding + 0.5 + live_line, 0);
+        ctx.moveTo(padding + blitz_line, h - bottomPadding);
+        ctx.lineTo(padding + blitz_line, 0);
+        ctx.moveTo(padding + live_line, h - bottomPadding);
+        ctx.lineTo(padding + live_line, 0);
         ctx.strokeStyle = "#aaaaaa";
         try {
             ctx.setLineDash([2, 3]);
@@ -604,16 +664,20 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.save();
         try {
             ctx.fillStyle = axis_color;
+            let metrics = ctx.measureText(""); // string passed here doesn't matter since font attributes are invariant
+            const fontHeight = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
+            const baseline = h - bottomPadding + fontHeight;
+
             let word = _("Blitz");
-            let metrics = ctx.measureText(word);
-            ctx.fillText(word, padding + (blitz_line - metrics.width) / 2, h - 2);
+            metrics = ctx.measureText(word);
+            ctx.fillText(word, padding + (blitz_line - metrics.width) / 2, baseline);
 
             word = _("Normal");
             metrics = ctx.measureText(word);
             ctx.fillText(
                 word,
                 padding + blitz_line + (live_line - blitz_line - metrics.width) / 2,
-                h - 2,
+                baseline,
             );
 
             word = _("Long");
@@ -621,12 +685,43 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             ctx.fillText(
                 word,
                 padding + live_line + (w - live_line - padding - metrics.width) / 2,
-                h - 2,
+                baseline,
             );
         } catch (e) {
             // ignore error
         }
         ctx.restore();
+    }
+
+    drawLegend(ctx: CanvasRenderingContext2D) {
+        const legendKeys = [
+            ChallengePointStyles.SIZE_19,
+            ChallengePointStyles.SIZE_13,
+            ChallengePointStyles.SIZE_9,
+            ChallengePointStyles.SIZE_OTHER,
+            ChallengePointStyles.USER,
+            ChallengePointStyles.INELIGIBLE,
+        ];
+        const legendGap = 5;
+        const y = this.height - this.legend_size / 2;
+        const legendWidth =
+            this.square_size * legendKeys.length + legendGap * (legendKeys.length - 1);
+        const legendStartX = this.padding + (this.width - this.padding) / 2 - legendWidth / 2;
+
+        let x = legendStartX;
+        legendKeys.forEach((style) => {
+            this.drawChallengeCircle(x, y, this.square_size / 2, style, ctx);
+            x += this.square_size + legendGap;
+        });
+    }
+
+    xCoordinate(timeRatio: number): number {
+        return this.padding + (this.width - this.padding) * timeRatio;
+    }
+
+    yCoordinate(rankRatio: number): number {
+        const bottomPadding = this.legend_size + this.padding;
+        return this.height - (bottomPadding + (this.height - bottomPadding) * rankRatio);
     }
 
     moveChallengeList(ev) {
