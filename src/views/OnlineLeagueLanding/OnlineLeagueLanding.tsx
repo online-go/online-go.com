@@ -206,6 +206,8 @@ export function OnlineLeagueLanding(): JSX.Element {
             {((!loading && logged_in) || null) && (
                 <div className="unstarted-match">
                     <div>{_("Waiting for your opponent...")}</div>
+                    <div>{_("... stay on this page to be taken to the game when it starts.")}</div>
+                    <LoadingPage slow /> {/* persuade them that we're alive :) */}
                     <UIPush event="online-league-game-commencement" action={jumpToGame} />
                 </div>
             )}

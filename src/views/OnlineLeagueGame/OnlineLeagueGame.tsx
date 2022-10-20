@@ -86,8 +86,8 @@ export function OnlineLeagueGame(): JSX.Element {
                     </h2>
                     <div>{_("That game hasn't started yet!")}</div>
                     <div>{_("... stay on this page to be taken to the game when it starts.")}</div>
+                    <LoadingPage slow /> {/* persuade them that there is life :) */}
                     <UIPush event="online-league-game-commencement" action={jumpToGame} />
-
                     {(!logged_in || null) && (
                         <div className="membership-drive">
                             <Link to={`/sign-in#${window.location.pathname}`}>
