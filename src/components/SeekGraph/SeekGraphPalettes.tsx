@@ -31,6 +31,10 @@ export interface SeekGraphColorPalette {
     ineligible: ChallengePointStyle;
     user: ChallengePointStyle;
     legend: ChallengePointStyle;
+    textColor: string;
+    axisColor: string;
+    rankLineColor: string;
+    timeLineColor: string;
 }
 
 export class SeekGraphPalettes {
@@ -43,6 +47,10 @@ export class SeekGraphPalettes {
         ineligible: { fill: "#6b6b6baa", stroke: "#bbb" },
         user: { fill: "#ed1f1faa", stroke: "#e37495" },
         legend: { fill: "#FFFFFFAA", stroke: "#FFF" },
+        textColor: "#dddddd",
+        axisColor: "#666666",
+        rankLineColor: "#ccccff",
+        timeLineColor: "#aaaaaa",
     };
     static readonly LIGHT: SeekGraphColorPalette = {
         size19: { fill: "#00ff00aa", stroke: "#00aa30" },
@@ -53,6 +61,10 @@ export class SeekGraphPalettes {
         ineligible: { fill: "#bbbbbbaa", stroke: "#6b6b6b" },
         user: { fill: "#e37495aa", stroke: "#ed1f1f" },
         legend: { fill: "#222222AA", stroke: "#222" },
+        textColor: "#000000",
+        axisColor: "#666666",
+        rankLineColor: "#ccccff",
+        timeLineColor: "#aaaaaa",
     };
     static readonly ACCESSIBLE: SeekGraphColorPalette = {
         size19: { fill: "#02a172aa", stroke: "#02a172" },
@@ -63,6 +75,10 @@ export class SeekGraphPalettes {
         ineligible: { fill: "#bbbbbbaa", stroke: "#bbb" },
         user: { fill: "#e6a100aa", stroke: "#e6a100" },
         legend: { fill: "#FFFFFFAA", stroke: "#FFF" },
+        textColor: "#dddddd",
+        axisColor: "#666666",
+        rankLineColor: "#ccccff",
+        timeLineColor: "#aaaaaa",
     };
 
     static getPalette(siteTheme: string): SeekGraphColorPalette {

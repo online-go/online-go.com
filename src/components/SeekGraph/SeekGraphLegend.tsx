@@ -64,13 +64,23 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
         );
     };
 
-    const sizeFilters = [
+    const legendItemNoToggle = (text: string, icon: JSX.Element): JSX.Element => {
+        return (
+            <>
+                {icon}
+                <label htmlFor={text}>{text}</label>
+            </>
+        );
+    };
+
+    const leftColumn = [
         legendItem(_("19x19"), BoardSizeLegendIcon(currentPalette.size19), "show19x19"),
         legendItem(_("13x13"), BoardSizeLegendIcon(currentPalette.size13), "show13x13"),
         legendItem(_("9x9"), BoardSizeLegendIcon(currentPalette.size9), "show9x9"),
         legendItem(_("Other"), BoardSizeLegendIcon(currentPalette.sizeOther), "showOtherSizes"),
+        legendItemNoToggle(_("My challenges"), BoardSizeLegendIcon(currentPalette.user)),
     ];
-    const typeFilters = [
+    const rightColumn = [
         legendItem(
             _("Ranked"),
             LegendIcon((ctx) =>
@@ -115,6 +125,16 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
             BoardSizeLegendIcon(currentPalette.ineligible),
             "showIneligible",
         ),
+        legendItemNoToggle(
+            _("My rank"),
+            LegendIcon((ctx) => {
+                ctx.beginPath();
+                ctx.moveTo(0, ICON_CENTER.y);
+                ctx.lineTo(ICON_WIDTH, ICON_CENTER.y);
+                ctx.strokeStyle = currentPalette.rankLineColor;
+                ctx.stroke();
+            }),
+        ),
     ];
 
     return (
@@ -128,10 +148,10 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
                         </tr>
                     </thead>
                     <tbody>
-                        {[0, 1, 2, 3].map((i) => (
+                        {[0, 1, 2, 3, 4].map((i) => (
                             <tr>
-                                <td>{sizeFilters[i]}</td>
-                                <td>{typeFilters[i]}</td>
+                                <td>{leftColumn[i]}</td>
+                                <td>{rightColumn[i]}</td>
                             </tr>
                         ))}
                     </tbody>

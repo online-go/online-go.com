@@ -35,7 +35,7 @@ import * as player_cache from "player_cache";
 import { nominateForRengoChallenge } from "rengo_utils";
 import { alert } from "swal_config";
 import { Socket } from "socket.io-client";
-import { SeekGraphPalettes } from "./SeekGraphPalettes";
+import { SeekGraphColorPalette, SeekGraphPalettes } from "./SeekGraphPalettes";
 import * as SeekGraphSymbols from "./SeekGraphSymbols";
 
 import { Challenge, ChallengeFilter, shouldDisplayChallenge } from "challenge_utils";
@@ -419,7 +419,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         const siteTheme = data.get("theme");
         const palette = SeekGraphPalettes.getPalette(siteTheme);
-        this.drawAxes(ctx);
+        this.drawAxes(ctx, palette);
 
         // const plot_ct = {};
         const sorted: AnchoredChallenge[] = Object.values(this.challenges)
@@ -488,7 +488,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         this.redraw();
     }
 
-    drawAxes(ctx: CanvasRenderingContext2D) {
+    drawAxes(ctx: CanvasRenderingContext2D, palette: SeekGraphColorPalette) {
         const w = this.width;
         const h = this.height;
         if (w < 30 || h < 30) {
@@ -497,16 +497,12 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         ctx.font = "bold " + this.text_size + "px Verdana,Courier,Arial,serif";
         const padding = this.padding;
-        ctx.strokeStyle = "#666666";
         ctx.lineWidth = 1;
-
-        // assumes "accessible" is similar to "dark"
-        const axis_color = $(document.body).hasClass("light") ? "#000000" : "#dddddd";
 
         /* Rank */
         ctx.save();
 
-        ctx.fillStyle = axis_color;
+        ctx.fillStyle = palette.textColor;
         const word = _("Rank");
         const metrics = ctx.measureText(word);
         const yy = (h - padding) / 2 + metrics.width / 2;
@@ -518,21 +514,11 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.restore();
 
         /* base rank line */
+        ctx.strokeStyle = palette.axisColor;
         ctx.beginPath();
         ctx.moveTo(padding, h - padding);
         ctx.lineTo(padding, 0);
         ctx.stroke();
-
-        /* player rank line */
-        if (!data.get("user").anonymous) {
-            const rank_ratio = rankRatio(this.userRank());
-            const cy = this.yCoordinate(rank_ratio);
-            ctx.beginPath();
-            ctx.strokeStyle = "#ccccff";
-            ctx.moveTo(padding, cy);
-            ctx.lineTo(w, cy);
-            ctx.stroke();
-        }
 
         /* Time */
         const blitz_line = this.xCoordinate(SeekGraph.blitz_line_ratio);
@@ -542,7 +528,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.beginPath();
         ctx.moveTo(padding, h - padding);
         ctx.lineTo(w, h - padding);
-        ctx.strokeStyle = "#666666";
+        ctx.strokeStyle = palette.axisColor;
         ctx.lineWidth = 1;
         ctx.stroke();
 
@@ -553,7 +539,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.lineTo(padding + blitz_line, 0);
         ctx.moveTo(padding + live_line, h - padding);
         ctx.lineTo(padding + live_line, 0);
-        ctx.strokeStyle = "#aaaaaa";
+        ctx.strokeStyle = palette.timeLineColor;
         try {
             ctx.setLineDash([2, 3]);
         } catch (e) {
@@ -562,9 +548,20 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.stroke();
         ctx.restore();
 
+        /* player rank line */
+        if (!data.get("user").anonymous) {
+            const rank_ratio = rankRatio(this.userRank());
+            const cy = this.yCoordinate(rank_ratio);
+            ctx.beginPath();
+            ctx.strokeStyle = palette.rankLineColor;
+            ctx.moveTo(padding, cy);
+            ctx.lineTo(w, cy);
+            ctx.stroke();
+        }
+
         ctx.save();
         try {
-            ctx.fillStyle = axis_color;
+            ctx.fillStyle = palette.textColor;
             let metrics = ctx.measureText(""); // string passed here doesn't matter since font attributes are invariant
             const fontHeight = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
             const baseline = h - padding + fontHeight;
