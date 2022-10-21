@@ -395,30 +395,15 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
     getHits(ev: JQueryEventObject) {
         const pos = getRelativeEventPosition(ev);
-        const ret = [];
 
         if (!pos) {
-            return ret;
+            return [];
         }
 
         const hitTolerance = 1.25 * this.square_size;
-        for (const id in this.challenges) {
-            const C = this.challenges[id];
-            if (dist(C, pos) < hitTolerance) {
-                ret.push(C);
-            }
-        }
-
-        // if (this.show_live_games) {
-        //     for (const id in this.live_games) {
-        //         const C = this.live_games[id];
-        //         if (dist(C, pos) < this.square_size * 2) {
-        //             ret.push(C);
-        //         }
-        //     }
-        // }
-
-        return ret;
+        return Object.values(this.challenges).filter((c: Challenge) => {
+            return dist(c, pos) < hitTolerance && shouldDisplayChallenge(c, this.challengeFilter);
+        });
     }
 
     setFilter(f: ChallengeFilter) {

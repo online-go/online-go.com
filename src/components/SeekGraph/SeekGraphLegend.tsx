@@ -52,6 +52,7 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
     ): JSX.Element => {
         return (
             <>
+                {icon}
                 <input
                     id={text}
                     type="checkbox"
@@ -59,7 +60,6 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
                     onChange={() => props.toggleHandler(filterKey)}
                 ></input>
                 <label htmlFor={text}>{text}</label>
-                {icon}
             </>
         );
     };
