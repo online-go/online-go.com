@@ -35,7 +35,8 @@ import * as player_cache from "player_cache";
 import { nominateForRengoChallenge } from "rengo_utils";
 import { alert } from "swal_config";
 import { Socket } from "socket.io-client";
-import { SeekGraphPalettes, SeekGraphColorPalette, ChallengePointStyle } from "./SeekGraphPalettes";
+import { SeekGraphPalettes } from "./SeekGraphPalettes";
+import * as SeekGraphSymbols from "./SeekGraphSymbols";
 
 type Challenge = socket_api.seekgraph_global.Challenge;
 interface AnchoredChallenge extends Challenge {
@@ -60,7 +61,6 @@ interface Events {
 
 interface SeekGraphConfig {
     canvas: HTMLCanvasElement;
-    show_live_games?: boolean;
 }
 
 const MAX_RATIO = 0.99;
@@ -187,7 +187,6 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     square_size = 8;
     text_size = 10;
     padding = 14;
-    legend_size = 26;
     list_locked: boolean = false;
     modal?: SeekGraphModal = null;
     $list: JQuery;
@@ -427,22 +426,11 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         const siteTheme = data.get("theme");
         const palette = SeekGraphPalettes.getPalette(siteTheme);
         this.drawAxes(ctx);
-        this.drawLegend(ctx, palette);
 
         const plot_ct = {};
-        // this.challenge_points = {};
-
-        const sorted: AnchoredChallenge[] = [];
-        for (const id in this.challenges) {
-            sorted.push(this.challenges[id]);
-        }
-        sorted.sort(priority_sort);
-        sorted.reverse(); // Draw highest-priority games last
-        // if (this.show_live_games) {
-        //     for (const id in this.live_games) {
-        //         sorted.push(this.live_games[id]);
-        //     }
-        // }
+        const sorted: AnchoredChallenge[] = Object.values(this.challenges)
+            .sort(priority_sort)
+            .reverse();
 
         /* Plot our challenges */
         for (let j = 0; j < sorted.length; ++j) {
@@ -465,106 +453,15 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
             const style = SeekGraphPalettes.getStyle(C, palette);
             if (C.ranked) {
-                this.drawChallengeSquare(cx, cy, this.square_size, style, ctx);
+                SeekGraphSymbols.drawChallengeSquare(cx, cy, this.square_size, style, ctx);
             } else if (C.rengo) {
-                this.drawChallengeCircle(cx, cy, this.square_size / 2, style, ctx);
+                SeekGraphSymbols.drawChallengeCircle(cx, cy, this.square_size / 2, style, ctx);
             } else {
-                this.drawChallengeTriangle(cx, cy, this.square_size, style, ctx);
+                SeekGraphSymbols.drawChallengeTriangle(cx, cy, this.square_size, style, ctx);
             }
         }
 
         //console.log("Redrawing seekgraph");
-    }
-
-    /**  Draws a square centered on the point (x,y) */
-    drawChallengeSquare(
-        x: number,
-        y: number,
-        size: number,
-        style: ChallengePointStyle,
-        ctx: CanvasRenderingContext2D,
-    ) {
-        ctx.save();
-        ctx.fillStyle = style.fill;
-        ctx.strokeStyle = style.stroke;
-        const sx = x - size / 2;
-        const sy = y - size / 2;
-        ctx.fillRect(sx, sy, size, size);
-        ctx.strokeRect(sx, sy, size, size);
-        ctx.restore();
-    }
-
-    /**  Draws a circle centered on the point (x,y) */
-    drawChallengeCircle(
-        x: number,
-        y: number,
-        radius: number,
-        style: ChallengePointStyle,
-        ctx: CanvasRenderingContext2D,
-    ) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.fillStyle = style.fill;
-        ctx.strokeStyle = style.stroke;
-        ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
-    }
-
-    /** Draws an equilateral triangle with side length 'size', centered vertically inside the square with side length 'size' centered on the point (x,y) */
-    drawChallengeTriangle(
-        x: number,
-        y: number,
-        size: number,
-        style: ChallengePointStyle,
-        ctx: CanvasRenderingContext2D,
-    ) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.fillStyle = style.fill;
-        ctx.strokeStyle = style.stroke;
-        // The difference in height between a unit square and a unit equilateral triangle is (2 - √3) / 2
-        // split this evenly to get ~0.067
-        const margin = 0.067 * size;
-        const s = size / 2;
-        ctx.moveTo(x, y - s + margin);
-        ctx.lineTo(x + s, y + s - margin);
-        ctx.lineTo(x - s, y + s - margin);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
-    }
-
-    /** Draws a rounded rectangle with top left at the point (x,y) */
-    // Based on https://stackoverflow.com/questions/1255512/how-to-draw-a-rounded-rectangle-using-html-canvas
-    drawLegendKey(
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-        radius: number,
-        style: ChallengePointStyle,
-        ctx: CanvasRenderingContext2D,
-    ) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(x + radius, y);
-        ctx.lineTo(x + width - radius, y);
-        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-        ctx.lineTo(x + width, y + height - radius);
-        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-        ctx.lineTo(x + radius, y + height);
-        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-        ctx.lineTo(x, y + radius);
-        ctx.quadraticCurveTo(x, y, x + radius, y);
-        ctx.closePath();
-        ctx.fillStyle = style.fill;
-        ctx.strokeStyle = style.stroke;
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
     }
 
     resize(w, h) {
@@ -605,7 +502,6 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         ctx.font = "bold " + this.text_size + "px Verdana,Courier,Arial,serif";
         const padding = this.padding;
-        const bottomPadding = padding + this.legend_size;
         ctx.strokeStyle = "#666666";
         ctx.lineWidth = 1;
 
@@ -618,7 +514,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.fillStyle = axis_color;
         const word = _("Rank");
         const metrics = ctx.measureText(word);
-        const yy = (h - bottomPadding) / 2 + metrics.width / 2;
+        const yy = (h - padding) / 2 + metrics.width / 2;
 
         ctx.translate(padding - 4, yy);
         ctx.rotate(-Math.PI / 2);
@@ -628,7 +524,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         /* base rank line */
         ctx.beginPath();
-        ctx.moveTo(padding, h - bottomPadding);
+        ctx.moveTo(padding, h - padding);
         ctx.lineTo(padding, 0);
         ctx.stroke();
 
@@ -649,8 +545,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         /* primary line */
         ctx.beginPath();
-        ctx.moveTo(padding, h - bottomPadding);
-        ctx.lineTo(w, h - bottomPadding);
+        ctx.moveTo(padding, h - padding);
+        ctx.lineTo(w, h - padding);
         ctx.strokeStyle = "#666666";
         ctx.lineWidth = 1;
         ctx.stroke();
@@ -658,9 +554,9 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         /* blitz and live lines */
         ctx.save();
         ctx.beginPath();
-        ctx.moveTo(padding + blitz_line, h - bottomPadding);
+        ctx.moveTo(padding + blitz_line, h - padding);
         ctx.lineTo(padding + blitz_line, 0);
-        ctx.moveTo(padding + live_line, h - bottomPadding);
+        ctx.moveTo(padding + live_line, h - padding);
         ctx.lineTo(padding + live_line, 0);
         ctx.strokeStyle = "#aaaaaa";
         try {
@@ -676,7 +572,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             ctx.fillStyle = axis_color;
             let metrics = ctx.measureText(""); // string passed here doesn't matter since font attributes are invariant
             const fontHeight = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
-            const baseline = h - bottomPadding + fontHeight;
+            const baseline = h - padding + fontHeight;
 
             let word = _("Blitz");
             metrics = ctx.measureText(word);
@@ -703,39 +599,12 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.restore();
     }
 
-    drawLegend(ctx: CanvasRenderingContext2D, palette: SeekGraphColorPalette) {
-        const count = Object.keys(palette).length;
-        const ss = this.square_size;
-        const gap = 5;
-        const lw = ss * 2;
-        const lh = ss;
-        const lr = lh / 2;
-        const y = this.height - this.legend_size / 2;
-        const colorKeyWidth = lw * count + gap * (count - 1);
-        const shapeKeyWidth = 2 * gap + 3 * ss;
-        const legendWidth = shapeKeyWidth + colorKeyWidth;
-        const legendStartX = this.padding + (this.width - this.padding) / 2 - legendWidth / 2;
-
-        let x = legendStartX;
-        for (const style in palette) {
-            this.drawLegendKey(x, y - lh / 2, lw, lh, lr, palette[style], ctx);
-            x += lw + gap;
-        }
-        const allWhite = { fill: "#FFFFFFAA", stroke: "#FFF" };
-        this.drawChallengeSquare(x + ss / 2, y, ss, allWhite, ctx);
-        x += ss + gap;
-        this.drawChallengeTriangle(x + ss / 2, y, ss, allWhite, ctx);
-        x += ss + gap;
-        this.drawChallengeCircle(x + ss / 2, y, ss / 2, allWhite, ctx);
-    }
-
     xCoordinate(timeRatio: number): number {
         return this.padding + (this.width - this.padding) * timeRatio;
     }
 
     yCoordinate(rankRatio: number): number {
-        const bottomPadding = this.legend_size + this.padding;
-        return this.height - (bottomPadding + (this.height - bottomPadding) * rankRatio);
+        return this.height - (this.padding + (this.height - this.padding) * rankRatio);
     }
 
     moveChallengeList(ev) {

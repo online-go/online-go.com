@@ -46,6 +46,7 @@ import { Size } from "src/lib/types";
 
 import { RengoManagementPane } from "RengoManagementPane";
 import { RengoTeamManagementPane } from "RengoTeamManagementPane";
+import { SeekGraphLegend } from "SeekGraph";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
 export type Challenge = socket_api.seekgraph_global.Challenge;
@@ -55,18 +56,25 @@ interface PlayState {
     correspondence_list: Array<Challenge>;
     rengo_list: Array<Challenge>;
     showLoadingSpinnerForCorrespondence: boolean;
-    show_all_challenges: boolean;
-    show_ranked_challenges: boolean;
-    show_unranked_challenges: boolean;
-    show_19x19_challenges: boolean;
-    show_13x13_challenges: boolean;
-    show_9x9_challenges: boolean;
-    show_other_boardsize_challenges: boolean;
+    filter: ChallengeFilter;
     automatch_size_options: Size[];
     freeze_challenge_list: boolean; // Don't change the challenge list while they are trying to point the mouse at it
     pending_challenges: Array<Challenge>; // challenges received while frozen
     show_in_rengo_management_pane: number[]; // a challenge_ids for challenges to show with pane open in the rengo challenge list
 }
+
+export interface ChallengeFilter {
+    showIneligible: boolean;
+    showRanked: boolean;
+    showUnranked: boolean;
+    show19x19: boolean;
+    show13x13: boolean;
+    show9x9: boolean;
+    showOtherSizes: boolean;
+    showRengo: boolean;
+}
+
+export type ChallengeFilterKey = keyof ChallengeFilter;
 
 export class Play extends React.Component<{}, PlayState> {
     ref_container: HTMLDivElement;
@@ -80,20 +88,31 @@ export class Play extends React.Component<{}, PlayState> {
 
     private list_freeze_timeout;
 
+    static filterPreferenceMapping: Map<ChallengeFilterKey, preferences.ValidPreference> = new Map([
+        ["showIneligible", "show-all-challenges"],
+        ["showRanked", "show-ranked-challenges"],
+        ["showUnranked", "show-unranked-challenges"],
+        ["show19x19", "show-19x19-challenges"],
+        ["show13x13", "show-13x13-challenges"],
+        ["show9x9", "show-9x9-challenges"],
+        ["showOtherSizes", "show-other-boardsize-challenges"],
+        ["showRengo", "show-rengo-challenges"],
+    ]);
+
     constructor(props) {
         super(props);
+
+        const filter = {};
+        Play.filterPreferenceMapping.forEach((pref, key) => {
+            filter[key] = preferences.get(pref);
+        });
+
         this.state = {
             live_list: [],
             correspondence_list: [],
             rengo_list: [],
             showLoadingSpinnerForCorrespondence: false,
-            show_all_challenges: preferences.get("show-all-challenges"),
-            show_ranked_challenges: preferences.get("show-ranked-challenges"),
-            show_unranked_challenges: preferences.get("show-unranked-challenges"),
-            show_19x19_challenges: preferences.get("show-19x19-challenges"),
-            show_13x13_challenges: preferences.get("show-13x13-challenges"),
-            show_9x9_challenges: preferences.get("show-9x9-challenges"),
-            show_other_boardsize_challenges: preferences.get("show-other-boardsize-challenges"),
+            filter: filter as ChallengeFilter,
             automatch_size_options: data.get("automatch.size_options", ["9x9", "13x13", "19x19"]),
             freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
             pending_challenges: [], // challenges received while frozen
@@ -349,49 +368,17 @@ export class Play extends React.Component<{}, PlayState> {
         this.setState({ automatch_size_options: size_options });
     }
 
-    toggleShowAllChallenges = () => {
-        preferences.set("show-all-challenges", !this.state.show_all_challenges);
-        this.setState({ show_all_challenges: !this.state.show_all_challenges });
-    };
-
-    toggleShowUnrankedChallenges = () => {
-        preferences.set("show-unranked-challenges", !this.state.show_unranked_challenges);
-        this.setState({ show_unranked_challenges: !this.state.show_unranked_challenges });
-    };
-
-    toggleShowRankedChallenges = () => {
-        preferences.set("show-ranked-challenges", !this.state.show_ranked_challenges);
-        this.setState({ show_ranked_challenges: !this.state.show_ranked_challenges });
-    };
-
-    toggleShow19x19Challenges = () => {
-        preferences.set("show-19x19-challenges", !this.state.show_19x19_challenges);
-        this.setState({ show_19x19_challenges: !this.state.show_19x19_challenges });
-    };
-
-    toggleShow13x13Challenges = () => {
-        preferences.set("show-13x13-challenges", !this.state.show_13x13_challenges);
-        this.setState({ show_13x13_challenges: !this.state.show_13x13_challenges });
-    };
-
-    toggleShow9x9Challenges = () => {
-        preferences.set("show-9x9-challenges", !this.state.show_9x9_challenges);
-        this.setState({ show_9x9_challenges: !this.state.show_9x9_challenges });
-    };
-
-    toggleShowOtherBoardsizeChallenges = () => {
-        preferences.set(
-            "show-other-boardsize-challenges",
-            !this.state.show_other_boardsize_challenges,
-        );
-        this.setState({
-            show_other_boardsize_challenges: !this.state.show_other_boardsize_challenges,
-        });
+    toggleFilterHandler = (key: ChallengeFilterKey) => {
+        const newValue = !this.state.filter[key];
+        const newFilter = { ...this.state.filter };
+        newFilter[key] = newValue;
+        preferences.set(Play.filterPreferenceMapping.get(key), newValue);
+        this.setState({ filter: newFilter });
     };
 
     anyChallengesToShow = (challenge_list: Challenge[]): boolean => {
         return (
-            (this.state.show_all_challenges && (challenge_list.length as any)) ||
+            (this.state.filter.showIneligible && (challenge_list.length as any)) ||
             challenge_list.reduce((prev, current) => {
                 return prev || current.eligible || current.user_challenge;
             }, false)
@@ -476,6 +463,11 @@ export class Play extends React.Component<{}, PlayState> {
                         </Card>
                     </div>
                 </div>
+
+                <SeekGraphLegend
+                    filter={this.state.filter}
+                    toggleHandler={this.toggleFilterHandler}
+                ></SeekGraphLegend>
 
                 <div id="challenge-list-container">
                     <div id="challenge-list-inner-container">
@@ -602,60 +594,6 @@ export class Play extends React.Component<{}, PlayState> {
                             </table>
                         </div>
                     </div>
-                </div>
-
-                <div className="showall-selector">
-                    <input
-                        id="show-all-challenges"
-                        type="checkbox"
-                        checked={this.state.show_all_challenges}
-                        onChange={this.toggleShowAllChallenges}
-                    />
-                    <label htmlFor="show-all-challenges">{_("Show ineligible challenges")}</label>
-                    <br></br>
-                    <input
-                        id="show-ranked-challenges"
-                        type="checkbox"
-                        checked={this.state.show_ranked_challenges}
-                        onChange={this.toggleShowRankedChallenges}
-                    />
-                    <label htmlFor="show-ranked-challenges">{_("Ranked")}</label>
-                    <input
-                        id="show-unranked-challenges"
-                        type="checkbox"
-                        checked={this.state.show_unranked_challenges}
-                        onChange={this.toggleShowUnrankedChallenges}
-                    />
-                    <label htmlFor="show-unranked-challenges">{_("Unranked")}</label>
-                    <br></br>
-                    <input
-                        id="show-19x19-challenges"
-                        type="checkbox"
-                        checked={this.state.show_19x19_challenges}
-                        onChange={this.toggleShow19x19Challenges}
-                    />
-                    <label htmlFor="show-19x19-challenges">{_("19x19")}</label>
-                    <input
-                        id="show-13x13-challenges"
-                        type="checkbox"
-                        checked={this.state.show_13x13_challenges}
-                        onChange={this.toggleShow13x13Challenges}
-                    />
-                    <label htmlFor="show-13x13-challenges">{_("13x13")}</label>
-                    <input
-                        id="show-9x9-challenges"
-                        type="checkbox"
-                        checked={this.state.show_9x9_challenges}
-                        onChange={this.toggleShow9x9Challenges}
-                    />
-                    <label htmlFor="show-9x9-challenges">{_("9x9")}</label>
-                    <input
-                        id="show-other-boardsize-challenges"
-                        type="checkbox"
-                        checked={this.state.show_other_boardsize_challenges}
-                        onChange={this.toggleShowOtherBoardsizeChallenges}
-                    />
-                    <label htmlFor="show-other-boardsize-challenges">{_("Other boardsizes")}</label>
                 </div>
             </div>
         );
@@ -865,13 +803,13 @@ export class Play extends React.Component<{}, PlayState> {
     }
 
     visibleInChallengeList = (C) =>
-        (C.eligible || C.user_challenge || this.state.show_all_challenges) &&
-        ((this.state.show_unranked_challenges && !C.ranked) ||
-            (this.state.show_ranked_challenges && C.ranked)) &&
-        ((this.state.show_19x19_challenges && C.width === 19 && C.height === 19) ||
-            (this.state.show_13x13_challenges && C.width === 13 && C.height === 13) ||
-            (this.state.show_9x9_challenges && C.width === 9 && C.height === 9) ||
-            (this.state.show_other_boardsize_challenges &&
+        (C.eligible || C.user_challenge || this.state.filter.showIneligible) &&
+        ((this.state.filter.showUnranked && !C.ranked) ||
+            (this.state.filter.showRanked && C.ranked)) &&
+        ((this.state.filter.show19x19 && C.width === 19 && C.height === 19) ||
+            (this.state.filter.show13x13 && C.width === 13 && C.height === 13) ||
+            (this.state.filter.show9x9 && C.width === 9 && C.height === 9) ||
+            (this.state.filter.showOtherSizes &&
                 (C.width !== C.height || (C.width !== 19 && C.width !== 13 && C.width !== 9))));
 
     suspectChallengeIcon = (C: Challenge): JSX.Element =>
@@ -923,7 +861,7 @@ export class Play extends React.Component<{}, PlayState> {
             return (
                 <div className="ineligible">
                     {
-                        this.state.show_all_challenges
+                        this.state.filter.showIneligible
                             ? _(
                                   "(none)",
                               ) /* translators: There are no challenges in the system, nothing to list here */
@@ -1079,7 +1017,7 @@ export class Play extends React.Component<{}, PlayState> {
                     <td colSpan={9}>
                         <div className="ineligible">
                             {
-                                this.state.show_all_challenges
+                                this.state.filter.showIneligible
                                     ? _(
                                           "(none)",
                                       ) /* translators: There are no challenges in the system, nothing to list here */
@@ -1137,7 +1075,7 @@ export class Play extends React.Component<{}, PlayState> {
                 <tr className="ineligible" key="corre-ineligible">
                     <td style={{ textAlign: "center" }}>
                         {
-                            this.state.show_all_challenges
+                            this.state.filter.showIneligible
                                 ? _(
                                       "(none)",
                                   ) /* translators: There are no challenges in the system, nothing to list here */

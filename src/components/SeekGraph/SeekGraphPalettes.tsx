@@ -30,6 +30,7 @@ export interface SeekGraphColorPalette {
     // UNRANKED: ChallengePointStyle;
     ineligible: ChallengePointStyle;
     user: ChallengePointStyle;
+    legend: ChallengePointStyle;
 }
 
 export class SeekGraphPalettes {
@@ -41,6 +42,7 @@ export class SeekGraphPalettes {
         // UNRANKED: { fill: "#d06000", stroke: "#ff9000" },
         ineligible: { fill: "#6b6b6baa", stroke: "#bbb" },
         user: { fill: "#ed1f1faa", stroke: "#e37495" },
+        legend: { fill: "#FFFFFFAA", stroke: "#FFF" },
     };
     static readonly LIGHT: SeekGraphColorPalette = {
         size19: { fill: "#00ff00aa", stroke: "#00aa30" },
@@ -50,6 +52,7 @@ export class SeekGraphPalettes {
         // UNRANKED: { fill: "#d06000", stroke: "#ff9000" },
         ineligible: { fill: "#bbbbbbaa", stroke: "#6b6b6b" },
         user: { fill: "#e37495aa", stroke: "#ed1f1f" },
+        legend: { fill: "#222222AA", stroke: "#222" },
     };
     static readonly ACCESSIBLE: SeekGraphColorPalette = {
         size19: { fill: "#02a172aa", stroke: "#02a172" },
@@ -59,6 +62,7 @@ export class SeekGraphPalettes {
         // UNRANKED: { fill: "#d06000", stroke: "#ff9000" },
         ineligible: { fill: "#bbbbbbaa", stroke: "#bbb" },
         user: { fill: "#e6a100aa", stroke: "#e6a100" },
+        legend: { fill: "#FFFFFFAA", stroke: "#FFF" },
     };
 
     static getPalette(siteTheme: string): SeekGraphColorPalette {

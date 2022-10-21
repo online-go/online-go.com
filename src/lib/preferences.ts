@@ -75,6 +75,7 @@ export const defaults = {
     "show-13x13-challenges": true,
     "show-9x9-challenges": true,
     "show-other-boardsize-challenges": true,
+    "show-rengo-challenges": true,
     "show-move-numbers": true,
     "show-offline-friends": true,
     "show-ratings-in-rating-grid": false,
