@@ -26,7 +26,7 @@ import { OgsResizeDetector } from "OgsResizeDetector";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext } from "translate";
 import { Card } from "material";
-import { SeekGraph } from "SeekGraph";
+import { SeekGraph, SeekGraphLegend } from "SeekGraph";
 import { PersistentElement } from "PersistentElement";
 import { isLiveGame, shortShortTimeControl, usedForCheating } from "TimeControl";
 import { challenge, challengeComputer } from "ChallengeModal";
@@ -46,10 +46,14 @@ import { Size } from "src/lib/types";
 
 import { RengoManagementPane } from "RengoManagementPane";
 import { RengoTeamManagementPane } from "RengoTeamManagementPane";
-import { SeekGraphLegend } from "SeekGraph";
+import {
+    Challenge,
+    ChallengeFilter,
+    ChallengeFilterKey,
+    shouldDisplayChallenge,
+} from "challenge_utils";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
-export type Challenge = socket_api.seekgraph_global.Challenge;
 
 interface PlayState {
     live_list: Array<Challenge>;
@@ -62,19 +66,6 @@ interface PlayState {
     pending_challenges: Array<Challenge>; // challenges received while frozen
     show_in_rengo_management_pane: number[]; // a challenge_ids for challenges to show with pane open in the rengo challenge list
 }
-
-export interface ChallengeFilter {
-    showIneligible: boolean;
-    showRanked: boolean;
-    showUnranked: boolean;
-    show19x19: boolean;
-    show13x13: boolean;
-    show9x9: boolean;
-    showOtherSizes: boolean;
-    showRengo: boolean;
-}
-
-export type ChallengeFilterKey = keyof ChallengeFilter;
 
 export class Play extends React.Component<{}, PlayState> {
     ref_container: HTMLDivElement;
@@ -126,6 +117,7 @@ export class Play extends React.Component<{}, PlayState> {
         window.document.title = _("Play");
         this.seekgraph = new SeekGraph({
             canvas: this.canvas,
+            filter: this.state.filter,
         });
         this.onResize();
         this.seekgraph.on("challenges", this.updateChallenges);
@@ -372,6 +364,9 @@ export class Play extends React.Component<{}, PlayState> {
         const newValue = !this.state.filter[key];
         const newFilter = { ...this.state.filter };
         newFilter[key] = newValue;
+        if (this.seekgraph) {
+            this.seekgraph.setFilter(newFilter);
+        }
         preferences.set(Play.filterPreferenceMapping.get(key), newValue);
         this.setState({ filter: newFilter });
     };
@@ -802,16 +797,6 @@ export class Play extends React.Component<{}, PlayState> {
         }
     }
 
-    visibleInChallengeList = (C) =>
-        (C.eligible || C.user_challenge || this.state.filter.showIneligible) &&
-        ((this.state.filter.showUnranked && !C.ranked) ||
-            (this.state.filter.showRanked && C.ranked)) &&
-        ((this.state.filter.show19x19 && C.width === 19 && C.height === 19) ||
-            (this.state.filter.show13x13 && C.width === 13 && C.height === 13) ||
-            (this.state.filter.show9x9 && C.width === 9 && C.height === 9) ||
-            (this.state.filter.showOtherSizes &&
-                (C.width !== C.height || (C.width !== 19 && C.width !== 13 && C.width !== 9))));
-
     suspectChallengeIcon = (C: Challenge): JSX.Element =>
         /* Mark eligible suspect games with a warning icon and warning explanation popup.
            We do let users see the warning for their own challenges. */
@@ -874,7 +859,7 @@ export class Play extends React.Component<{}, PlayState> {
         }
 
         return challenge_list.map((C) =>
-            this.visibleInChallengeList(C) ? (
+            shouldDisplayChallenge(C, this.state.filter) ? (
                 <div key={C.challenge_id} className={"challenge-row"}>
                     <span className={"cell"} style={{ textAlign: "center" }}>
                         {user.is_moderator && (
@@ -1088,7 +1073,7 @@ export class Play extends React.Component<{}, PlayState> {
             ) : (
                 props.challenge_list.map(
                     (C) =>
-                        (this.visibleInChallengeList(C) || null) && (
+                        (shouldDisplayChallenge(C, this.state.filter) || null) && (
                             <React.Fragment key={C.challenge_id}>
                                 <this.rengoListItem C={C} user={props.user} />
                                 {(this.state.show_in_rengo_management_pane.includes(

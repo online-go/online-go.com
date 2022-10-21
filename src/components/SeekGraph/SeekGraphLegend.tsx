@@ -26,7 +26,7 @@ import {
 } from "./SeekGraphSymbols";
 import { ChallengePointStyle, SeekGraphColorPalette, SeekGraphPalettes } from "./SeekGraphPalettes";
 import * as data from "data";
-import { ChallengeFilter, ChallengeFilterKey } from "src/views/Play";
+import { ChallengeFilter, ChallengeFilterKey } from "challenge_utils";
 // import { SeekGraph } from "./SeekGraph";
 // import { SeekGraphColorPalette } from "./SeekGraphPalettes";
 

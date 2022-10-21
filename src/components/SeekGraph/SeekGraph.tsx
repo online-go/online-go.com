@@ -38,7 +38,8 @@ import { Socket } from "socket.io-client";
 import { SeekGraphPalettes } from "./SeekGraphPalettes";
 import * as SeekGraphSymbols from "./SeekGraphSymbols";
 
-type Challenge = socket_api.seekgraph_global.Challenge;
+import { Challenge, ChallengeFilter, shouldDisplayChallenge } from "challenge_utils";
+
 interface AnchoredChallenge extends Challenge {
     x?: number;
     y?: number;
@@ -61,6 +62,7 @@ interface Events {
 
 interface SeekGraphConfig {
     canvas: HTMLCanvasElement;
+    filter: ChallengeFilter;
 }
 
 const MAX_RATIO = 0.99;
@@ -181,6 +183,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     // This is treated as an array later because that is what TypedEventEmitter expects.
     // Perhaps this should be changed to an array as well.
     challenges: { [id: number]: AnchoredChallenge } = {};
+    challengeFilter: ChallengeFilter;
     // live_games: any = {};
     list_hits: Array<AnchoredChallenge> = [];
     // challenge_points: any = {};
@@ -202,6 +205,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         // this.show_live_games = config.show_live_games;
         this.socket = socket;
         this.list_hits = [];
+        this.challengeFilter = config.filter;
         this.redraw();
 
         if (this.socket.connected) {
@@ -417,6 +421,11 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         return ret;
     }
 
+    setFilter(f: ChallengeFilter) {
+        this.challengeFilter = f;
+        this.redraw();
+    }
+
     redraw() {
         validateCanvas(this.canvas);
         const ctx = this.canvas.getContext("2d");
@@ -427,8 +436,9 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         const palette = SeekGraphPalettes.getPalette(siteTheme);
         this.drawAxes(ctx);
 
-        const plot_ct = {};
+        // const plot_ct = {};
         const sorted: AnchoredChallenge[] = Object.values(this.challenges)
+            .filter((c) => shouldDisplayChallenge(c, this.challengeFilter))
             .sort(priority_sort)
             .reverse();
 
@@ -445,11 +455,11 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             C.x = cx;
             C.y = cy;
 
-            const plot_ct_pos = time_ratio + "," + rank_ratio;
-            if (!(plot_ct_pos in plot_ct)) {
-                plot_ct[plot_ct_pos] = 0;
-            }
-            const _ct = ++plot_ct[plot_ct_pos];
+            // const plot_ct_pos = time_ratio + "," + rank_ratio;
+            // if (!(plot_ct_pos in plot_ct)) {
+            //     plot_ct[plot_ct_pos] = 0;
+            // }
+            // const _ct = ++plot_ct[plot_ct_pos];
 
             const style = SeekGraphPalettes.getStyle(C, palette);
             if (C.ranked) {
