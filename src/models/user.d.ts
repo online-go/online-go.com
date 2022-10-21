@@ -154,6 +154,10 @@ declare namespace rest_api {
             name: string;
             icon: string; // URL
         }>;
+        online_leagues: Array<{
+            name: string;
+            membership_id: string;
+        }>;
         is_friend: boolean;
         friend_request_sent: boolean;
         friend_request_received: boolean;

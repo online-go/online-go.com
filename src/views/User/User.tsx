@@ -90,6 +90,8 @@ export function User(props: { user_id?: number }): JSX.Element {
     const [achievements, setAchievements] =
         React.useState<rest_api.FullPlayerDetail["achievements"]>();
     const [groups, setGroups] = React.useState<rest_api.FullPlayerDetail["groups"]>();
+    const [online_leagues, setOnlineLeagues] =
+        React.useState<rest_api.FullPlayerDetail["online_leagues"]>();
     const [tournaments, setTournaments] =
         React.useState<rest_api.FullPlayerDetail["tournaments"]>();
     const [titles, setTitles] = React.useState<rest_api.FullPlayerDetail["titles"]>();
@@ -156,6 +158,7 @@ export function User(props: { user_id?: number }): JSX.Element {
                     setLadders(response.ladders);
                     setTournaments(response.tournaments);
                     setGroups(response.groups);
+                    setOnlineLeagues(response.online_leagues);
                     setVs(response.vs);
 
                     window.document.title = response.user.username;
@@ -564,6 +567,7 @@ export function User(props: { user_id?: number }): JSX.Element {
                         ladders={ladders}
                         tournaments={tournaments}
                         groups={groups}
+                        online_leagues={online_leagues}
                     />
                 </div>
                 {/* end right col  */}
