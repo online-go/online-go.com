@@ -573,21 +573,21 @@ export class Play extends React.Component<{}, PlayState> {
 
                             <div style={{ marginTop: "2em" }}></div>
                         </div>
-                        <div id="challenge-list" onMouseMove={this.freezeChallenges}>
-                            <div className="challenge-row" style={{ marginTop: "1em" }}>
-                                <span className="cell break">{_("Rengo")}</span>
+                        {this.state.filter.showRengo && (
+                            <div id="challenge-list" onMouseMove={this.freezeChallenges}>
+                                <div className="challenge-row" style={{ marginTop: "1em" }}>
+                                    <span className="cell break">{_("Rengo")}</span>
+                                </div>
+                                <table id="rengo-table">
+                                    <thead>
+                                        {this.anyChallengesToShow(this.state.rengo_list)
+                                            ? this.rengoListHeaders()
+                                            : null}
+                                    </thead>
+                                    <tbody>{this.rengoList()}</tbody>
+                                </table>
                             </div>
-
-                            <table id="rengo-table">
-                                <thead>
-                                    {this.anyChallengesToShow(this.state.rengo_list)
-                                        ? this.rengoListHeaders()
-                                        : null}
-                                </thead>
-
-                                <tbody>{this.rengoList()}</tbody>
-                            </table>
-                        </div>
+                        )}
                     </div>
                 </div>
             </div>
