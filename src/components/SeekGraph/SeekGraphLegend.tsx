@@ -141,12 +141,6 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
         <div className="seek-graph-legend">
             <Card>
                 <table>
-                    <thead>
-                        <tr>
-                            <th>{_("Board Sizes")}</th>
-                            <th>{_("Game Types")}</th>
-                        </tr>
-                    </thead>
                     <tbody>
                         {[0, 1, 2, 3, 4].map((i) => (
                             <tr>

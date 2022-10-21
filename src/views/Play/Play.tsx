@@ -457,12 +457,11 @@ export class Play extends React.Component<{}, PlayState> {
                             </div>
                         </Card>
                     </div>
+                    <SeekGraphLegend
+                        filter={this.state.filter}
+                        toggleHandler={this.toggleFilterHandler}
+                    ></SeekGraphLegend>
                 </div>
-
-                <SeekGraphLegend
-                    filter={this.state.filter}
-                    toggleHandler={this.toggleFilterHandler}
-                ></SeekGraphLegend>
 
                 <div id="challenge-list-container">
                     <div id="challenge-list-inner-container">
@@ -542,8 +541,6 @@ export class Play extends React.Component<{}, PlayState> {
                                     <span className="cell"></span>
                                 </div>
                             ))}
-
-                            <div style={{ marginTop: "2em" }}></div>
 
                             <div className="custom-games-list-header-row">{_("Custom Games")}</div>
 
