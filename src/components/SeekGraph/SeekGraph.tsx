@@ -469,14 +469,14 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             } else if (C.rengo) {
                 this.drawChallengeCircle(cx, cy, this.square_size / 2, style, ctx);
             } else {
-                this.drawChallengeTriangle(cx, cy, this.square_size / 2, style, ctx);
+                this.drawChallengeTriangle(cx, cy, this.square_size, style, ctx);
             }
         }
 
         //console.log("Redrawing seekgraph");
     }
 
-    /**  Draws a square centered on the point (x,y) **/
+    /**  Draws a square centered on the point (x,y) */
     drawChallengeSquare(
         x: number,
         y: number,
@@ -494,7 +494,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.restore();
     }
 
-    /**  Draws a circle centered on the point (x,y) **/
+    /**  Draws a circle centered on the point (x,y) */
     drawChallengeCircle(
         x: number,
         y: number,
@@ -512,7 +512,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.restore();
     }
 
-    /**  Draws a triangle centered on the point (x,y) **/
+    /** Draws an equilateral triangle with side length 'size', centered vertically inside the square with side length 'size' centered on the point (x,y) */
     drawChallengeTriangle(
         x: number,
         y: number,
@@ -524,10 +524,44 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.beginPath();
         ctx.fillStyle = style.fill;
         ctx.strokeStyle = style.stroke;
-        ctx.moveTo(x, y - size);
-        ctx.lineTo(x + 0.866 * size, y + 0.5 * size);
-        ctx.lineTo(x - 0.866 * size, y + 0.5 * size);
+        // The difference in height between a unit square and a unit equilateral triangle is (2 - √3) / 2
+        // split this evenly to get ~0.067
+        const margin = 0.067 * size;
+        const s = size / 2;
+        ctx.moveTo(x, y - s + margin);
+        ctx.lineTo(x + s, y + s - margin);
+        ctx.lineTo(x - s, y + s - margin);
         ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    /** Draws a rounded rectangle with top left at the point (x,y) */
+    // Based on https://stackoverflow.com/questions/1255512/how-to-draw-a-rounded-rectangle-using-html-canvas
+    drawLegendKey(
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        radius: number,
+        style: ChallengePointStyle,
+        ctx: CanvasRenderingContext2D,
+    ) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+        ctx.fillStyle = style.fill;
+        ctx.strokeStyle = style.stroke;
         ctx.fill();
         ctx.stroke();
         ctx.restore();
@@ -671,16 +705,28 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
     drawLegend(ctx: CanvasRenderingContext2D, palette: SeekGraphColorPalette) {
         const count = Object.keys(palette).length;
-        const legendGap = 5;
+        const ss = this.square_size;
+        const gap = 5;
+        const lw = ss * 2;
+        const lh = ss;
+        const lr = lh / 2;
         const y = this.height - this.legend_size / 2;
-        const legendWidth = this.square_size * count + legendGap * (count - 1);
+        const colorKeyWidth = lw * count + gap * (count - 1);
+        const shapeKeyWidth = 2 * gap + 3 * ss;
+        const legendWidth = shapeKeyWidth + colorKeyWidth;
         const legendStartX = this.padding + (this.width - this.padding) / 2 - legendWidth / 2;
 
         let x = legendStartX;
         for (const style in palette) {
-            this.drawChallengeCircle(x, y, this.square_size / 2, palette[style], ctx);
-            x += this.square_size + legendGap;
+            this.drawLegendKey(x, y - lh / 2, lw, lh, lr, palette[style], ctx);
+            x += lw + gap;
         }
+        const allWhite = { fill: "#FFFFFFAA", stroke: "#FFF" };
+        this.drawChallengeSquare(x + ss / 2, y, ss, allWhite, ctx);
+        x += ss + gap;
+        this.drawChallengeTriangle(x + ss / 2, y, ss, allWhite, ctx);
+        x += ss + gap;
+        this.drawChallengeCircle(x + ss / 2, y, ss / 2, allWhite, ctx);
     }
 
     xCoordinate(timeRatio: number): number {
