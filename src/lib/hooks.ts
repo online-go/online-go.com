@@ -17,14 +17,30 @@
 
 import * as React from "react";
 import * as data from "data";
+import { DataSchema } from "./data_schema";
 
-export function useUser(): rest_api.UserConfig {
-    const [user, setUser] = React.useState<rest_api.UserConfig>(data.get("user"));
+/**
+ * React Hook that gives the value for a given key.  This should be preferred
+ * to data.get() when inside a React Functional Component.
+ *
+ * Note: this function may return undefined.  One can emulate data.get(key, default_value)
+ * by using null coalescing:
+ *
+ *     useData(key) ?? default_value;
+ */
+export function useData<KeyT extends Extract<keyof DataSchema, string>>(
+    key: KeyT,
+): DataSchema[KeyT] | undefined {
+    const [val, setVal] = React.useState<DataSchema[KeyT]>(data.get(key));
 
     React.useEffect(() => {
-        data.watch("user", setUser);
-        return () => data.unwatch("user", setUser);
+        data.watch(key, setVal);
+        return () => data.unwatch(key, setVal);
     }, []);
 
-    return user;
+    return val;
+}
+
+export function useUser(): rest_api.UserConfig {
+    return useData("user");
 }
