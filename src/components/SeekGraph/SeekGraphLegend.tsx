@@ -143,7 +143,7 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
                 <table>
                     <tbody>
                         {[0, 1, 2, 3, 4].map((i) => (
-                            <tr>
+                            <tr key={i}>
                                 <td>{leftColumn[i]}</td>
                                 <td>{rightColumn[i]}</td>
                             </tr>

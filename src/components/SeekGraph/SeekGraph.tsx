@@ -493,12 +493,13 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     drawAxes(ctx: CanvasRenderingContext2D, palette: SeekGraphColorPalette) {
         const w = this.width;
         const h = this.height;
+        const padding = this.padding;
+
         if (w < 30 || h < 30) {
             return;
         }
 
         ctx.font = "bold " + this.text_size + "px Verdana,Courier,Arial,serif";
-        const padding = this.padding;
         ctx.lineWidth = 1;
 
         /* Rank */
@@ -603,9 +604,12 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     }
 
     getFontHeight(ctx: CanvasRenderingContext2D) {
-        ctx.font = "bold " + this.text_size + "px Verdana,Courier,Arial,serif";
-        const metrics = ctx.measureText(""); // string passed here doesn't matter since font attributes are invariant
-        return metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
+        const metrics = ctx.measureText("ABCgy");
+        if (metrics.fontBoundingBoxAscent) {
+            return metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
+        }
+        // Firefox
+        return metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
     }
 
     moveChallengeList(ev) {
