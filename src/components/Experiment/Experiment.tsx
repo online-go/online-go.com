@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import * as data from "data";
+import { useData } from "hooks";
 import { Default } from "./Default";
 
 interface ExperimentProps {
@@ -29,19 +29,7 @@ export function Experiment({ name, children }: ExperimentProps): JSX.Element {
         throw new Error("Experiment must have exactly one Default child");
     }
 
-    const [selected, setSelected] = React.useState(data.get(`experiments.${name}`));
-
-    React.useEffect(() => {
-        const onChange = (value: string) => {
-            setSelected(value);
-        };
-
-        data.watch(`experiments.${name}`, onChange);
-
-        return () => {
-            data.unwatch(`experiments.${name}`, onChange);
-        };
-    }, [name]);
+    const selected = useData(`experiments.${name}`);
 
     const matching_child =
         children.find((x) => x.props?.value === selected) ||
