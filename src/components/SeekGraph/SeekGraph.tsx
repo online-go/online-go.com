@@ -465,10 +465,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         if (w < 200 || h < 100) {
             this.text_size = 7;
-            this.padding = this.text_size + 2;
         } else {
             this.text_size = 10;
-            this.padding = this.text_size + 4;
         }
 
         this.square_size = Math.max(Math.round(Math.min(w, h) / 100) * 2, 4);
@@ -483,7 +481,11 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         const scale = 2;
         this.canvas.width = w * scale;
         this.canvas.height = h * scale;
-        this.canvas.getContext("2d").scale(scale, scale);
+
+        const ctx = this.canvas.getContext("2d");
+        ctx.scale(scale, scale);
+
+        this.padding = this.getFontHeight(ctx) + 4;
 
         this.redraw();
     }
@@ -550,6 +552,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         /* player rank line */
         if (!data.get("user").anonymous) {
+            ctx.save();
             const rank_ratio = rankRatio(this.userRank());
             const cy = this.yCoordinate(rank_ratio);
             ctx.beginPath();
@@ -557,17 +560,17 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             ctx.moveTo(padding, cy);
             ctx.lineTo(w, cy);
             ctx.stroke();
+            ctx.restore();
         }
 
         ctx.save();
         try {
             ctx.fillStyle = palette.textColor;
-            let metrics = ctx.measureText(""); // string passed here doesn't matter since font attributes are invariant
-            const fontHeight = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
+            const fontHeight = this.getFontHeight(ctx);
             const baseline = h - padding + fontHeight;
 
             let word = _("Blitz");
-            metrics = ctx.measureText(word);
+            let metrics = ctx.measureText(word);
             ctx.fillText(word, padding + (blitz_line - metrics.width) / 2, baseline);
 
             word = _("Normal");
@@ -597,6 +600,12 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
     yCoordinate(rankRatio: number): number {
         return this.height - (this.padding + (this.height - this.padding) * rankRatio);
+    }
+
+    getFontHeight(ctx: CanvasRenderingContext2D) {
+        ctx.font = "bold " + this.text_size + "px Verdana,Courier,Arial,serif";
+        const metrics = ctx.measureText(""); // string passed here doesn't matter since font attributes are invariant
+        return metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
     }
 
     moveChallengeList(ev) {
