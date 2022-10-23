@@ -29,7 +29,7 @@ export function Experiment({ name, children }: ExperimentProps): JSX.Element {
         throw new Error("Experiment must have exactly one Default child");
     }
 
-    const selected = useData(`experiments.${name}`);
+    const [selected] = useData(`experiments.${name}`);
 
     const matching_child =
         children.find((x) => x.props?.value === selected) ||
