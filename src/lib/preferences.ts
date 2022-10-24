@@ -78,6 +78,7 @@ export const defaults = {
     "show-rengo-challenges": true,
     "show-move-numbers": true,
     "show-offline-friends": true,
+    "show-seek-graph": true,
     "show-ratings-in-rating-grid": false,
 
     "show-tournament-indicator": true, // implicitly on desktop

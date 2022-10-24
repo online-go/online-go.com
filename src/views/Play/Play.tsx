@@ -434,29 +434,34 @@ export class Play extends React.Component<{}, PlayState> {
             (uuid) => automatch_manager.active_correspondence_automatchers[uuid],
         );
         corr_automatchers.sort((a, b) => a.timestamp - b.timestamp);
+        const showSeekGraph = preferences.get("show-seek-graph");
 
         return (
             <div className="Play container">
                 <SupporterGoals />
                 <div className="row">
-                    <div className="col-sm-6">
+                    <div className="col-sm-6 play-column">
                         <Card>{this.automatchContainer()}</Card>
                     </div>
-                    <div className="col-sm-6">
-                        <Card>
-                            <div
-                                ref={(el) => (this.ref_container = el)}
-                                className="seek-graph-container"
-                            >
-                                <OgsResizeDetector
-                                    handleWidth
-                                    handleHeight
-                                    onResize={() => this.onResize()}
-                                />
-                                <PersistentElement elt={this.canvas} />
-                            </div>
-                        </Card>
-                    </div>
+                    {showSeekGraph && (
+                        <div className="col-sm-6 play-column">
+                            <Card>
+                                <div
+                                    ref={(el) => (this.ref_container = el)}
+                                    className="seek-graph-container"
+                                >
+                                    <OgsResizeDetector
+                                        handleWidth
+                                        handleHeight
+                                        onResize={() => this.onResize()}
+                                    />
+                                    <PersistentElement elt={this.canvas} />
+                                </div>
+                            </Card>
+                        </div>
+                    )}
+                </div>
+                <div className="row">
                     <SeekGraphLegend
                         filter={this.state.filter}
                         toggleHandler={this.toggleFilterHandler}

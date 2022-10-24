@@ -44,6 +44,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
     const [_desktop_notifications, setDesktopNotifications] =
         usePreference("desktop-notifications");
     const [show_offline_friends, setShowOfflineFriends] = usePreference("show-offline-friends");
+    const [show_seek_graph, setShowSeekGraph] = usePreference("show-seek-graph");
     const [unicode_filter_usernames, setUnicodeFilterUsernames] = usePreference("unicode-filter");
     const [translation_dialog_never_show, setTranslationDialogNeverShow] = usePreference(
         "translation-dialog-never-show",
@@ -232,6 +233,10 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
                         <i>{_("Desktop notifications are not supported by your browser")}</i>
                     </div>
                 )}
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Show seek graph")}>
+                <Toggle checked={show_seek_graph} onChange={setShowSeekGraph} />
             </PreferenceLine>
 
             <PreferenceLine title={_("Show offline friends on list")}>
