@@ -464,6 +464,7 @@ export class Play extends React.Component<{}, PlayState> {
                 <div className="row">
                     <SeekGraphLegend
                         filter={this.state.filter}
+                        showIcons={preferences.get("show-seek-graph")}
                         toggleHandler={this.toggleFilterHandler}
                     ></SeekGraphLegend>
                 </div>

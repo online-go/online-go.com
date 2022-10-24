@@ -190,6 +190,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     square_size = 8;
     text_size = 10;
     padding = 14;
+    legend_size = 25;
     list_locked: boolean = false;
     modal?: SeekGraphModal = null;
     $list: JQuery;
@@ -420,6 +421,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         const siteTheme = data.get("theme");
         const palette = SeekGraphPalettes.getPalette(siteTheme);
         this.drawAxes(ctx, palette);
+        this.drawLegend(ctx, palette);
 
         // const plot_ct = {};
         const sorted: AnchoredChallenge[] = Object.values(this.challenges)
@@ -508,7 +510,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.fillStyle = palette.textColor;
         const word = _("Rank");
         const metrics = ctx.measureText(word);
-        const yy = (h - padding) / 2 + metrics.width / 2;
+        const yy = this.yCoordinate(0.5) + metrics.width / 2;
 
         ctx.translate(padding - 4, yy);
         ctx.rotate(-Math.PI / 2);
@@ -520,7 +522,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.strokeStyle = palette.axisColor;
         ctx.beginPath();
         ctx.moveTo(padding, h - padding);
-        ctx.lineTo(padding, 0);
+        ctx.lineTo(padding, this.legend_size);
         ctx.stroke();
 
         /* Time */
@@ -539,9 +541,9 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.save();
         ctx.beginPath();
         ctx.moveTo(padding + blitz_line, h - padding);
-        ctx.lineTo(padding + blitz_line, 0);
+        ctx.lineTo(padding + blitz_line, this.legend_size);
         ctx.moveTo(padding + live_line, h - padding);
-        ctx.lineTo(padding + live_line, 0);
+        ctx.lineTo(padding + live_line, this.legend_size);
         ctx.strokeStyle = palette.timeLineColor;
         try {
             ctx.setLineDash([2, 3]);
@@ -595,12 +597,60 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.restore();
     }
 
+    drawLegend(ctx: CanvasRenderingContext2D, palette: SeekGraphColorPalette) {
+        const iconWidth = 20;
+        const iconHeight = this.square_size;
+        const iconGap = 5;
+        const spacing = 10;
+        const legendCenterY = this.legend_size / 2;
+        const myRank = _("My rank");
+        const myChallenges = _("My challenges");
+        const myRankMetrics = ctx.measureText(myRank);
+        const myChallengesMetrics = ctx.measureText(myChallenges);
+        const legendWidth =
+            2 * (iconWidth + iconGap) + myRankMetrics.width + myChallengesMetrics.width + spacing;
+        const legendStart = this.padding + (this.width - this.padding) / 2 - legendWidth / 2;
+
+        let x = legendStart;
+        ctx.save();
+        ctx.strokeStyle = palette.rankLineColor;
+        ctx.beginPath();
+        ctx.moveTo(x, legendCenterY);
+        ctx.lineTo(x + iconWidth, legendCenterY);
+        ctx.stroke();
+
+        x += iconWidth + iconGap;
+        ctx.fillStyle = palette.textColor;
+        ctx.font = this.text_size + "px Verdana,Courier,Arial,serif";
+        ctx.fillText(myRank, x, legendCenterY + myRankMetrics.actualBoundingBoxAscent / 2);
+
+        x += myRankMetrics.width + spacing;
+        SeekGraphSymbols.drawLegendKey(
+            x + iconWidth / 2,
+            legendCenterY,
+            iconWidth,
+            iconHeight,
+            iconHeight / 2,
+            palette.user,
+            ctx,
+        );
+
+        x += iconWidth + iconGap;
+        ctx.fillText(
+            myChallenges,
+            x,
+            legendCenterY + myChallengesMetrics.actualBoundingBoxAscent / 2,
+        );
+        ctx.restore();
+    }
+
     xCoordinate(timeRatio: number): number {
         return this.padding + (this.width - this.padding) * timeRatio;
     }
 
     yCoordinate(rankRatio: number): number {
-        return this.height - (this.padding + (this.height - this.padding) * rankRatio);
+        const usableHeight = this.height - this.padding - this.legend_size;
+        return this.height - (this.padding + usableHeight * rankRatio);
     }
 
     getFontHeight(ctx: CanvasRenderingContext2D) {

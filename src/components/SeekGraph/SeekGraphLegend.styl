@@ -16,11 +16,12 @@
  */
 
  .seek-graph-legend {
-    margin: 1rem auto;
-    display: flex;
+    margin: 1rem 0;
+    // display: flex;
+    width: 100%;
     
     canvas {
-        margin-right: 0.5rem;
+        margin-right: 2px;
         width: 20px;
         height: 10px;
     }
@@ -29,6 +30,33 @@
         padding: 0 1rem;
         vertical-align: middle;
     }
+
+    .legend-item {
+        margin: 0 5px;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+    }
+
+    @media (max-width:720px) {
+        .legend-group {
+            width: 50%;
+        }
+    }
+
+     @media (min-width:720px) {
+        .legend-group {
+            width: 100%;
+        }
+    }
     
+    .grid {
+        display: grid;
+        grid-template-columns: repeat( auto-fit, minmax(125px, 1fr) );
+        // display: flex;
+        // flex-wrap: wrap;
+        // align-items: center;
+        
+    }
     
 }

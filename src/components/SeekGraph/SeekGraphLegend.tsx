@@ -32,6 +32,7 @@ import { ChallengeFilter, ChallengeFilterKey } from "challenge_utils";
 
 interface SeekGraphLegendProps {
     filter: ChallengeFilter;
+    showIcons: boolean;
     toggleHandler: (key: ChallengeFilterKey) => void;
 }
 
@@ -40,19 +41,21 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
         SeekGraphPalettes.DARK,
     );
     React.useEffect(() => {
-        data.watch("theme", (theme) => {
+        const callback = (theme) => {
             setCurrentPalette(SeekGraphPalettes.getPalette(theme));
-        });
+        };
+        data.watch("theme", callback);
+        return () => data.unwatch("theme", callback);
     }, []);
 
     const legendItem = (
         text: string,
-        icon: JSX.Element,
+        iconCreator: () => JSX.Element,
         filterKey: ChallengeFilterKey,
     ): JSX.Element => {
         return (
-            <>
-                {icon}
+            <div className="legend-item">
+                {props.showIcons && iconCreator()}
                 <input
                     id={text}
                     type="checkbox"
@@ -60,96 +63,77 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
                     onChange={() => props.toggleHandler(filterKey)}
                 ></input>
                 <label htmlFor={text}>{text}</label>
-            </>
+            </div>
         );
     };
 
-    const legendItemNoToggle = (text: string, icon: JSX.Element): JSX.Element => {
-        return (
-            <>
-                {icon}
-                <label htmlFor={text}>{text}</label>
-            </>
-        );
-    };
-
-    const leftColumn = [
-        legendItem(_("19x19"), BoardSizeLegendIcon(currentPalette.size19), "show19x19"),
-        legendItem(_("13x13"), BoardSizeLegendIcon(currentPalette.size13), "show13x13"),
-        legendItem(_("9x9"), BoardSizeLegendIcon(currentPalette.size9), "show9x9"),
-        legendItem(_("Other"), BoardSizeLegendIcon(currentPalette.sizeOther), "showOtherSizes"),
-        legendItemNoToggle(_("My challenges"), BoardSizeLegendIcon(currentPalette.user)),
+    const group1 = [
+        legendItem(_("19x19"), () => BoardSizeLegendIcon(currentPalette.size19), "show19x19"),
+        legendItem(_("13x13"), () => BoardSizeLegendIcon(currentPalette.size13), "show13x13"),
+        legendItem(_("9x9"), () => BoardSizeLegendIcon(currentPalette.size9), "show9x9"),
+        legendItem(
+            _("Other"),
+            () => BoardSizeLegendIcon(currentPalette.sizeOther),
+            "showOtherSizes",
+        ),
     ];
-    const rightColumn = [
+    const group2 = [
         legendItem(
             _("Ranked"),
-            LegendIcon((ctx) =>
-                drawChallengeSquare(
-                    ICON_CENTER.x,
-                    ICON_CENTER.y,
-                    ICON_HEIGHT - 2,
-                    currentPalette.legend,
-                    ctx,
-                ),
-            ),
+            () =>
+                LegendIcon((ctx) => {
+                    return drawChallengeSquare(
+                        ICON_CENTER.x,
+                        ICON_CENTER.y,
+                        ICON_HEIGHT - 2,
+                        currentPalette.legend,
+                        ctx,
+                    );
+                }),
             "showRanked",
         ),
         legendItem(
             _("Unranked"),
-            LegendIcon((ctx) =>
-                drawChallengeTriangle(
-                    ICON_CENTER.x,
-                    ICON_CENTER.y,
-                    ICON_HEIGHT - 2,
-                    currentPalette.legend,
-                    ctx,
-                ),
-            ),
+            () =>
+                LegendIcon((ctx) => {
+                    return drawChallengeTriangle(
+                        ICON_CENTER.x,
+                        ICON_CENTER.y,
+                        ICON_HEIGHT - 2,
+                        currentPalette.legend,
+                        ctx,
+                    );
+                }),
             "showUnranked",
         ),
         legendItem(
             _("Rengo"),
-            LegendIcon((ctx) =>
-                drawChallengeCircle(
-                    ICON_CENTER.x,
-                    ICON_CENTER.y,
-                    (ICON_HEIGHT - 2) / 2,
-                    currentPalette.legend,
-                    ctx,
+            () =>
+                LegendIcon((ctx) =>
+                    drawChallengeCircle(
+                        ICON_CENTER.x,
+                        ICON_CENTER.y,
+                        (ICON_HEIGHT - 2) / 2,
+                        currentPalette.legend,
+                        ctx,
+                    ),
                 ),
-            ),
             "showRengo",
         ),
         legendItem(
             _("Ineligible"),
-            BoardSizeLegendIcon(currentPalette.ineligible),
+            () => BoardSizeLegendIcon(currentPalette.ineligible),
             "showIneligible",
-        ),
-        legendItemNoToggle(
-            _("My rank"),
-            LegendIcon((ctx) => {
-                ctx.beginPath();
-                ctx.moveTo(0, ICON_CENTER.y);
-                ctx.lineTo(ICON_WIDTH, ICON_CENTER.y);
-                ctx.strokeStyle = currentPalette.rankLineColor;
-                ctx.stroke();
-            }),
         ),
     ];
 
     return (
         <div className="seek-graph-legend">
             <Card>
-                <table>
-                    <tbody>
-                        {[0, 1, 2, 3, 4].map((i) => (
-                            <tr key={i}>
-                                <td>{leftColumn[i]}</td>
-                                <td>{rightColumn[i]}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <div className="row">
+                    <div className="legend-group grid">{group1}</div>
+                    <div className="legend-group grid">{group2}</div>
+                </div>
             </Card>
         </div>
     );
@@ -163,14 +147,16 @@ const ICON_SCALE = 2;
 function LegendIcon(draw: (ctx: CanvasRenderingContext2D) => void): JSX.Element {
     const canvas = React.useRef<HTMLCanvasElement>(null);
     React.useEffect(() => {
-        const ctx: CanvasRenderingContext2D = canvas.current.getContext("2d");
-        // ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.resetTransform();
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        // This gives higher quality rendering while allowing canvas drawing code to use the "true" dimensions
-        // The CSS width/height are set to half of the below width and height (20, 10)
-        ctx.scale(ICON_SCALE, ICON_SCALE);
-        draw(ctx);
+        const ctx: CanvasRenderingContext2D = canvas?.current?.getContext("2d");
+        if (ctx) {
+            // ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.resetTransform();
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            // This gives higher quality rendering while allowing canvas drawing code to use the "true" dimensions
+            // The CSS width/height are set to half of the below width and height (20, 10)
+            ctx.scale(ICON_SCALE, ICON_SCALE);
+            draw(ctx);
+        }
     });
     return (
         <canvas ref={canvas} width={ICON_WIDTH * ICON_SCALE} height={ICON_HEIGHT * ICON_SCALE} />
