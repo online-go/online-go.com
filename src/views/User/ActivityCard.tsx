@@ -46,9 +46,19 @@ interface ActivityCardProps {
         name: string;
         icon: string;
     }>;
+    online_leagues?: Array<{
+        name: string;
+        membership_id: string;
+    }>;
 }
 
-export function ActivityCard({ user, ladders, groups, tournaments }: ActivityCardProps) {
+export function ActivityCard({
+    user,
+    ladders,
+    groups,
+    tournaments,
+    online_leagues,
+}: ActivityCardProps) {
     return (
         <Card className="activity-card">
             <h4>
@@ -110,6 +120,23 @@ export function ActivityCard({ user, ladders, groups, tournaments }: ActivityCar
             ) : (
                 <div>
                     <div>{_("Not a member of any groups")}</div>
+                </div>
+            )}
+            <h4>{_("Online Leagues")}</h4>
+            {online_leagues?.length ? (
+                <div>
+                    <dl className="activity-dl">
+                        {online_leagues.map((league, idx) => (
+                            <dd key={idx}>
+                                {league.name}
+                                {(league.membership_id || null) && `: ${league.membership_id}`}
+                            </dd>
+                        ))}
+                    </dl>
+                </div>
+            ) : (
+                <div>
+                    <div>{_("Not a member of any online leagues")}</div>
                 </div>
             )}
         </Card>

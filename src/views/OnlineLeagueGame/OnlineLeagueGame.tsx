@@ -90,6 +90,7 @@ export function OnlineLeagueGame(): JSX.Element {
                     <UIPush event="online-league-game-commencement" action={jumpToGame} />
                     {(!logged_in || null) && (
                         <div className="membership-drive">
+                            {/* shenanigans to get a translated sentence with a link in it */}
                             <Link to={`/sign-in#${window.location.pathname}`}>
                                 {_("Log in or sign up")}
                             </Link>
