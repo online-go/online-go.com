@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022  Ben Jones
+ * Copyright (C) 2012-2022  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -15,16 +15,4 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-declare namespace rest_api {
-    interface MatchDetails {
-        id: number; // pk
-        black_member_id: string; // shortuuid
-        black_invite: string; // URL
-        white_member_id: string; // shortuuid
-        white_invite: string; // URL
-        spectator_link: string; // URL
-        league: string; // acronym/name
-        game: number; // pk
-        finished: boolean;
-    }
-}
+export * from "./ActiveDroppedGameList";

@@ -20,4 +20,21 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+
+    .login-options {
+        display: grid;
+        grid-template-columns: 1fr 0.4fr;
+        h3 {
+            grid-column: 1/span 2;
+        }
+        span {
+            justify-self: end;
+            align-self: center;
+            padding-right: 0.5rem;
+        }
+     }
+
+    div {
+        margin-bottom: 2rem;
+    }
 }

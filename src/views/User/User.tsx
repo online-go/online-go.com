@@ -29,7 +29,6 @@ import * as preferences from "preferences";
 import * as player_cache from "player_cache";
 
 import { Card } from "material";
-import { GameList } from "GameList";
 
 import { ModTools } from "./ModTools";
 import { GameHistoryTable } from "./GameHistoryTable";
@@ -55,6 +54,7 @@ import { AchievementList } from "Achievements";
 import { VersusCard } from "./VersusCard";
 import { AvatarCard, AvatarCardEditableFields } from "./AvatarCard";
 import { ActivityCard } from "./ActivityCard";
+import { ActiveDroppedGameList } from "ActiveDroppedGameList";
 
 type RatingsSpeed = "overall" | "blitz" | "live" | "correspondence";
 type RatingsSize = 0 | 9 | 13 | 19;
@@ -90,6 +90,8 @@ export function User(props: { user_id?: number }): JSX.Element {
     const [achievements, setAchievements] =
         React.useState<rest_api.FullPlayerDetail["achievements"]>();
     const [groups, setGroups] = React.useState<rest_api.FullPlayerDetail["groups"]>();
+    const [online_leagues, setOnlineLeagues] =
+        React.useState<rest_api.FullPlayerDetail["online_leagues"]>();
     const [tournaments, setTournaments] =
         React.useState<rest_api.FullPlayerDetail["tournaments"]>();
     const [titles, setTitles] = React.useState<rest_api.FullPlayerDetail["titles"]>();
@@ -156,6 +158,7 @@ export function User(props: { user_id?: number }): JSX.Element {
                     setLadders(response.ladders);
                     setTournaments(response.tournaments);
                     setGroups(response.groups);
+                    setOnlineLeagues(response.online_leagues);
                     setVs(response.vs);
 
                     window.document.title = response.user.username;
@@ -437,13 +440,11 @@ export function User(props: { user_id?: number }): JSX.Element {
                         </Card>
                     )}
 
-                    {active_games && active_games.length > 0 && (
-                        <>
-                            <h2>
-                                {_("Active Games")} ({active_games.length})
-                            </h2>
-                            <GameList list={active_games} player={user} />
-                        </>
+                    {active_games && (
+                        <ActiveDroppedGameList
+                            games={active_games}
+                            user={user}
+                        ></ActiveDroppedGameList>
                     )}
 
                     <div className="row">
@@ -566,6 +567,7 @@ export function User(props: { user_id?: number }): JSX.Element {
                         ladders={ladders}
                         tournaments={tournaments}
                         groups={groups}
+                        online_leagues={online_leagues}
                     />
                 </div>
                 {/* end right col  */}

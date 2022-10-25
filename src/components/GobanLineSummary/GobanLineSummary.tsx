@@ -24,6 +24,7 @@ import { rankString } from "rank_utils";
 import { Player } from "Player";
 import { Clock } from "Clock";
 import { GobanInfoStateBase } from "src/lib/types";
+import { LineSummaryTableMode } from "../GameList";
 
 interface UserType {
     id: number;
@@ -46,6 +47,7 @@ interface GobanLineSummaryProps {
         black: UserType[];
         white: UserType[];
     };
+    lineSummaryMode: LineSummaryTableMode;
 }
 
 interface GobanLineSummaryState extends GobanInfoStateBase {
@@ -155,26 +157,24 @@ export class GobanLineSummary extends React.Component<
     }
 
     render() {
-        let player;
-        let opponent;
-        let player_color: string;
-        let opponent_color: string;
+        let opponent: UserType;
+        let player_color: PlayerColor;
+        let opponent_color: PlayerColor;
 
-        switch (playerColor(this.props)) {
-            case "black":
-                player = this.props.black;
-                opponent = this.props.white;
-                player_color = "black";
-                opponent_color = "white";
-                break;
-            case "white":
-                player = this.props.white;
-                opponent = this.props.black;
-                player_color = "white";
-                opponent_color = "black";
-                break;
-            default:
-                break;
+        if (this.props.lineSummaryMode === "opponent-only") {
+            if (this.props.player == null) {
+                console.error(
+                    `You are using the line summary mode ${this.props.lineSummaryMode}, but the current player is undefined. This will cause display problems!`,
+                );
+            }
+            player_color = playerColor(this.props);
+            if (player_color == null) {
+                console.error(
+                    `You are using the line summary mode ${this.props.lineSummaryMode}, but the current player is not in the game ${this.state.game_name}. This will cause display problems!`,
+                );
+            }
+            opponent_color = player_color === "black" ? "white" : "black";
+            opponent = player_color === "black" ? this.props.white : this.props.black;
         }
 
         return (
@@ -189,49 +189,45 @@ export class GobanLineSummary extends React.Component<
                 <div className="move-number">{this.state.move_number}</div>
                 <div className="game-name">{this.state.game_name}</div>
 
-                {player && (
-                    <div className="player">
-                        <Player user={opponent} fakelink rank />
-                    </div>
-                )}
-                {player && (
-                    <div>
-                        <Clock goban={this.goban} color={player_color as "black" | "white"} />
-                    </div>
-                )}
-                {player && (
-                    <div>
-                        <Clock goban={this.goban} color={opponent_color as "black" | "white"} />
-                    </div>
+                {this.props.lineSummaryMode === "opponent-only" && (
+                    <>
+                        <div className="player">
+                            <Player user={opponent} fakelink rank />
+                        </div>
+                        <div>
+                            <Clock goban={this.goban} color={player_color} />
+                        </div>
+                        <div>
+                            <Clock goban={this.goban} color={opponent_color} />
+                        </div>
+                    </>
                 )}
 
-                {!player && (
-                    <div className="player">
-                        <Player user={this.props.black} fakelink rank />
-                    </div>
+                {this.props.lineSummaryMode === "both-players" && (
+                    <>
+                        <div className="player">
+                            <Player user={this.props.black} fakelink rank />
+                        </div>
+                        <div>
+                            <Clock goban={this.goban} color="black" />
+                        </div>
+                        <div className="player">
+                            <Player user={this.props.white} fakelink />
+                        </div>
+                        <div>
+                            <Clock goban={this.goban} color="white" />
+                        </div>
+                    </>
                 )}
-                {!player && (
-                    <div>
-                        <Clock goban={this.goban} color="black" />
-                    </div>
-                )}
-                {!player && (
-                    <div className="player">
-                        <Player user={this.props.white} fakelink />
-                    </div>
-                )}
-                {!player && (
-                    <div>
-                        <Clock goban={this.goban} color="white" />
-                    </div>
-                )}
+
                 <div className="size">{this.props.width + "x" + this.props.height}</div>
             </Link>
         );
     }
 }
 
-function playerColor(props: GobanLineSummaryProps): "black" | "white" | null {
+type PlayerColor = "black" | "white";
+function playerColor(props: GobanLineSummaryProps): PlayerColor | null {
     if (!props.player) {
         return null;
     }
