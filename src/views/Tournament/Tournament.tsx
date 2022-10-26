@@ -2395,7 +2395,9 @@ export function Tournament(): JSX.Element {
                                 {tournament.opengotha_standings ? (
                                     <button
                                         className={
-                                            selected_round === "standings" ? "primary" : "default"
+                                            selected_round_idx === "standings"
+                                                ? "primary"
+                                                : "default"
                                         }
                                         onClick={() => setSelectedRound("standings")}
                                     >
@@ -2404,7 +2406,7 @@ export function Tournament(): JSX.Element {
                                 ) : (
                                     <button
                                         className={
-                                            selected_round === "roster" ? "primary" : "default"
+                                            selected_round_idx === "roster" ? "primary" : "default"
                                         }
                                         onClick={() => setSelectedRound("roster")}
                                     >
@@ -2414,23 +2416,23 @@ export function Tournament(): JSX.Element {
                                 <Steps
                                     completed={rounds.length}
                                     total={rounds.length}
-                                    selected={selected_round as number}
+                                    selected={selected_round_idx as number}
                                     onChange={setSelectedRound}
                                 />
                             </div>
-                            {selected_round === "roster" ? (
+                            {selected_round_idx === "roster" ? (
                                 <OpenGothaRoster tournament={tournament} players={sorted_players} />
-                            ) : selected_round === "standings" ? (
+                            ) : selected_round_idx === "standings" ? (
                                 <OpenGothaStandings tournament={tournament} />
                             ) : (
                                 <OpenGothaTournamentRound
                                     tournament={tournament}
                                     roundNotes={
                                         tournament.settings[
-                                            "notes-round-" + ((selected_round as number) + 1)
+                                            "notes-round-" + ((selected_round_idx as number) + 1)
                                         ] || ""
                                     }
-                                    selectedRound={(selected_round as number) + 1}
+                                    selectedRound={(selected_round_idx as number) + 1}
                                     players={sorted_players}
                                     rounds={rounds}
                                 />
@@ -2451,7 +2453,7 @@ export function Tournament(): JSX.Element {
                                     <Steps
                                         completed={rounds.length}
                                         total={rounds.length}
-                                        selected={selected_round as number}
+                                        selected={selected_round_idx as number}
                                         onChange={setSelectedRound}
                                     />
                                 )}
