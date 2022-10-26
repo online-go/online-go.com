@@ -466,7 +466,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         this.width = w;
         this.height = h;
 
-        if (w < 200 || h < 100) {
+        if (w < 295 || h < 100) {
             this.text_size = 7;
         } else {
             this.text_size = 10;
@@ -575,11 +575,11 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             let metrics = ctx.measureText(word);
             ctx.fillText(word, padding + (blitz_line - padding - metrics.width) / 2, baseline);
 
-            word = _("Normal");
+            word = _("Live");
             metrics = ctx.measureText(word);
             ctx.fillText(word, blitz_line + (live_line - blitz_line - metrics.width) / 2, baseline);
 
-            word = _("Long");
+            word = _("Correspondence");
             metrics = ctx.measureText(word);
             ctx.fillText(word, live_line + (w - live_line - metrics.width) / 2, baseline);
         } catch (e) {
