@@ -36,6 +36,9 @@ export interface ChallengeFilter {
 export type ChallengeFilterKey = keyof ChallengeFilter;
 
 export function shouldDisplayChallenge(c: Challenge, filter: ChallengeFilter): boolean {
+    if (c.user_challenge) {
+        return true;
+    }
     const matchesSize =
         (filter.show19x19 && c.width === 19 && c.height === 19) ||
         (filter.show13x13 && c.width === 13 && c.height === 13) ||
@@ -46,7 +49,5 @@ export function shouldDisplayChallenge(c: Challenge, filter: ChallengeFilter): b
         (filter.showUnranked && !c.ranked && !c.rengo) ||
         (filter.showRanked && c.ranked) ||
         (filter.showRengo && c.rengo);
-    return (
-        (c.eligible || c.user_challenge || filter.showIneligible) && matchesRanked && matchesSize
-    );
+    return (c.eligible || filter.showIneligible) && matchesRanked && matchesSize;
 }
