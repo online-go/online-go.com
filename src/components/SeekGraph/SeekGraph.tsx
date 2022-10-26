@@ -29,7 +29,7 @@ import { getRelativeEventPosition, errorAlerter } from "misc";
 import { rankString, bounded_rank, MaxRank } from "rank_utils";
 import { kb_bind, kb_unbind, Binding } from "KBShortcut";
 import { Player } from "Player";
-import { validateCanvas } from "goban";
+import { computeAverageMoveTime, validateCanvas } from "goban";
 import * as player_cache from "player_cache";
 
 import { nominateForRengoChallenge } from "rengo_utils";
@@ -434,7 +434,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             const C = sorted[j];
 
             const rank_ratio = rankRatio(C.rank);
-            const time_ratio = timeRatio(C.time_per_move);
+            const tpm = computeAverageMoveTime(C.time_control_parameters, C.width, C.height);
+            const time_ratio = timeRatio(tpm);
 
             const cx = this.xCoordinate(time_ratio);
             const cy = this.yCoordinate(rank_ratio);
@@ -727,15 +728,16 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                     this.closeChallengeList();
                 }),
         );
-        if (first_hit.time_per_move) {
+        if (first_hit.time_control_parameters) {
+            const tpm = computeAverageMoveTime(
+                first_hit.time_control_parameters,
+                first_hit.width,
+                first_hit.height,
+            );
             header.append(
                 $("<span>")
                     .addClass("pull-right")
-                    .html(
-                        "~" +
-                            shortDurationString(first_hit.time_per_move).replace(/ /g, "") +
-                            "/move",
-                    ),
+                    .html("~" + shortDurationString(tpm).replace(/ /g, "") + "/move"),
             );
         } else {
             header.append($("<span>").addClass("pull-right").html(_("No time limit")));

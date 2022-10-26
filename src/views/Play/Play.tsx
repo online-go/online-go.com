@@ -215,7 +215,7 @@ export class Play extends React.Component<{}, PlayState> {
 
             if (C.rengo) {
                 rengo.push(C);
-            } else if (isLiveGame(C.time_control_parameters)) {
+            } else if (isLiveGame(C.time_control_parameters, C.width, C.height)) {
                 live.push(C);
             } else {
                 corr.push(C);
@@ -603,10 +603,10 @@ export class Play extends React.Component<{}, PlayState> {
         };
 
         const own_live_rengo_challenge = this.ownRengoChallengesPending().find((c) =>
-            isLiveGame(c.time_control_parameters),
+            isLiveGame(c.time_control_parameters, c.width, c.height),
         );
         const joined_live_rengo_challenge = this.joinedRengoChallengesPending().find((c) =>
-            isLiveGame(c.time_control_parameters),
+            isLiveGame(c.time_control_parameters, c.width, c.height),
         );
 
         const rengo_challenge_to_show = own_live_rengo_challenge || joined_live_rengo_challenge;
@@ -1022,10 +1022,10 @@ export class Play extends React.Component<{}, PlayState> {
         const user = data.get("user");
 
         const live_list = this.state.rengo_list.filter((c) =>
-            isLiveGame(c.time_control_parameters),
+            isLiveGame(c.time_control_parameters, c.width, c.height),
         );
         const corr_list = this.state.rengo_list.filter(
-            (c) => !isLiveGame(c.time_control_parameters),
+            (c) => !isLiveGame(c.time_control_parameters, c.width, c.height),
         );
 
         return (

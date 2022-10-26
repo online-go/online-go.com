@@ -456,7 +456,7 @@ function mk32icon(path) {
     return path.replace(/-[0-9]+.png/, "-32.png");
 }
 function speedIcon(e) {
-    const tpm = computeAverageMoveTime(e.time_control_parameters);
+    const tpm = computeAverageMoveTime(e.time_control_parameters, e.size, e.size);
     if (tpm === 0 || tpm > 3600) {
         return "ogs-turtle";
     }
