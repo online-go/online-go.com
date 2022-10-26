@@ -27,7 +27,7 @@ import { defaults as defaultPreferences, ValidPreference } from "./preferences";
 import { TimeControl, TimeControlTypes } from "src/components/TimeControl";
 import { AutomatchPreferences } from "src/components/AutomatchSettings";
 import { JosekiFilter } from "src/components/JosekiVariationFilter";
-import { Challenge } from "src/views/Play";
+import { Challenge } from "challenge_utils";
 
 interface CachedSchema {
     groups: GroupList;

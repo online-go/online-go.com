@@ -26,7 +26,7 @@ import { OgsResizeDetector } from "OgsResizeDetector";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext } from "translate";
 import { Card } from "material";
-import { SeekGraph } from "SeekGraph";
+import { SeekGraph, SeekGraphLegend } from "SeekGraph";
 import { PersistentElement } from "PersistentElement";
 import { isLiveGame, shortShortTimeControl, usedForCheating } from "TimeControl";
 import { challenge, challengeComputer } from "ChallengeModal";
@@ -46,22 +46,21 @@ import { Size } from "src/lib/types";
 
 import { RengoManagementPane } from "RengoManagementPane";
 import { RengoTeamManagementPane } from "RengoTeamManagementPane";
+import {
+    Challenge,
+    ChallengeFilter,
+    ChallengeFilterKey,
+    shouldDisplayChallenge,
+} from "challenge_utils";
 
 const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this period while they move their mouse on it
-export type Challenge = socket_api.seekgraph_global.Challenge;
 
 interface PlayState {
     live_list: Array<Challenge>;
     correspondence_list: Array<Challenge>;
     rengo_list: Array<Challenge>;
     showLoadingSpinnerForCorrespondence: boolean;
-    show_all_challenges: boolean;
-    show_ranked_challenges: boolean;
-    show_unranked_challenges: boolean;
-    show_19x19_challenges: boolean;
-    show_13x13_challenges: boolean;
-    show_9x9_challenges: boolean;
-    show_other_boardsize_challenges: boolean;
+    filter: ChallengeFilter;
     automatch_size_options: Size[];
     freeze_challenge_list: boolean; // Don't change the challenge list while they are trying to point the mouse at it
     pending_challenges: Array<Challenge>; // challenges received while frozen
@@ -80,20 +79,31 @@ export class Play extends React.Component<{}, PlayState> {
 
     private list_freeze_timeout;
 
+    static filterPreferenceMapping: Map<ChallengeFilterKey, preferences.ValidPreference> = new Map([
+        ["showIneligible", "show-all-challenges"],
+        ["showRanked", "show-ranked-challenges"],
+        ["showUnranked", "show-unranked-challenges"],
+        ["show19x19", "show-19x19-challenges"],
+        ["show13x13", "show-13x13-challenges"],
+        ["show9x9", "show-9x9-challenges"],
+        ["showOtherSizes", "show-other-boardsize-challenges"],
+        ["showRengo", "show-rengo-challenges"],
+    ]);
+
     constructor(props) {
         super(props);
+
+        const filter = {};
+        Play.filterPreferenceMapping.forEach((pref, key) => {
+            filter[key] = preferences.get(pref);
+        });
+
         this.state = {
             live_list: [],
             correspondence_list: [],
             rengo_list: [],
             showLoadingSpinnerForCorrespondence: false,
-            show_all_challenges: preferences.get("show-all-challenges"),
-            show_ranked_challenges: preferences.get("show-ranked-challenges"),
-            show_unranked_challenges: preferences.get("show-unranked-challenges"),
-            show_19x19_challenges: preferences.get("show-19x19-challenges"),
-            show_13x13_challenges: preferences.get("show-13x13-challenges"),
-            show_9x9_challenges: preferences.get("show-9x9-challenges"),
-            show_other_boardsize_challenges: preferences.get("show-other-boardsize-challenges"),
+            filter: filter as ChallengeFilter,
             automatch_size_options: data.get("automatch.size_options", ["9x9", "13x13", "19x19"]),
             freeze_challenge_list: false, // Don't change the challenge list while they are trying to point the mouse at it
             pending_challenges: [], // challenges received while frozen
@@ -107,6 +117,7 @@ export class Play extends React.Component<{}, PlayState> {
         window.document.title = _("Play");
         this.seekgraph = new SeekGraph({
             canvas: this.canvas,
+            filter: this.state.filter,
         });
         this.onResize();
         this.seekgraph.on("challenges", this.updateChallenges);
@@ -349,49 +360,20 @@ export class Play extends React.Component<{}, PlayState> {
         this.setState({ automatch_size_options: size_options });
     }
 
-    toggleShowAllChallenges = () => {
-        preferences.set("show-all-challenges", !this.state.show_all_challenges);
-        this.setState({ show_all_challenges: !this.state.show_all_challenges });
-    };
-
-    toggleShowUnrankedChallenges = () => {
-        preferences.set("show-unranked-challenges", !this.state.show_unranked_challenges);
-        this.setState({ show_unranked_challenges: !this.state.show_unranked_challenges });
-    };
-
-    toggleShowRankedChallenges = () => {
-        preferences.set("show-ranked-challenges", !this.state.show_ranked_challenges);
-        this.setState({ show_ranked_challenges: !this.state.show_ranked_challenges });
-    };
-
-    toggleShow19x19Challenges = () => {
-        preferences.set("show-19x19-challenges", !this.state.show_19x19_challenges);
-        this.setState({ show_19x19_challenges: !this.state.show_19x19_challenges });
-    };
-
-    toggleShow13x13Challenges = () => {
-        preferences.set("show-13x13-challenges", !this.state.show_13x13_challenges);
-        this.setState({ show_13x13_challenges: !this.state.show_13x13_challenges });
-    };
-
-    toggleShow9x9Challenges = () => {
-        preferences.set("show-9x9-challenges", !this.state.show_9x9_challenges);
-        this.setState({ show_9x9_challenges: !this.state.show_9x9_challenges });
-    };
-
-    toggleShowOtherBoardsizeChallenges = () => {
-        preferences.set(
-            "show-other-boardsize-challenges",
-            !this.state.show_other_boardsize_challenges,
-        );
-        this.setState({
-            show_other_boardsize_challenges: !this.state.show_other_boardsize_challenges,
-        });
+    toggleFilterHandler = (key: ChallengeFilterKey) => {
+        const newValue = !this.state.filter[key];
+        const newFilter = { ...this.state.filter };
+        newFilter[key] = newValue;
+        if (this.seekgraph) {
+            this.seekgraph.setFilter(newFilter);
+        }
+        preferences.set(Play.filterPreferenceMapping.get(key), newValue);
+        this.setState({ filter: newFilter });
     };
 
     anyChallengesToShow = (challenge_list: Challenge[]): boolean => {
         return (
-            (this.state.show_all_challenges && (challenge_list.length as any)) ||
+            (this.state.filter.showIneligible && (challenge_list.length as any)) ||
             challenge_list.reduce((prev, current) => {
                 return prev || current.eligible || current.user_challenge;
             }, false)
@@ -452,29 +434,39 @@ export class Play extends React.Component<{}, PlayState> {
             (uuid) => automatch_manager.active_correspondence_automatchers[uuid],
         );
         corr_automatchers.sort((a, b) => a.timestamp - b.timestamp);
+        const showSeekGraph = preferences.get("show-seek-graph");
 
         return (
             <div className="Play container">
                 <SupporterGoals />
                 <div className="row">
-                    <div className="col-sm-6">
+                    <div className="col-sm-6 play-column">
                         <Card>{this.automatchContainer()}</Card>
                     </div>
-                    <div className="col-sm-6">
-                        <Card>
-                            <div
-                                ref={(el) => (this.ref_container = el)}
-                                className="seek-graph-container"
-                            >
-                                <OgsResizeDetector
-                                    handleWidth
-                                    handleHeight
-                                    onResize={() => this.onResize()}
-                                />
-                                <PersistentElement elt={this.canvas} />
-                            </div>
-                        </Card>
-                    </div>
+                    {showSeekGraph && (
+                        <div className="col-sm-6 play-column">
+                            <Card>
+                                <div
+                                    ref={(el) => (this.ref_container = el)}
+                                    className="seek-graph-container"
+                                >
+                                    <OgsResizeDetector
+                                        handleWidth
+                                        handleHeight
+                                        onResize={() => this.onResize()}
+                                    />
+                                    <PersistentElement elt={this.canvas} />
+                                </div>
+                            </Card>
+                        </div>
+                    )}
+                </div>
+                <div className="row">
+                    <SeekGraphLegend
+                        filter={this.state.filter}
+                        showIcons={preferences.get("show-seek-graph")}
+                        toggleHandler={this.toggleFilterHandler}
+                    ></SeekGraphLegend>
                 </div>
 
                 <div id="challenge-list-container">
@@ -556,8 +548,6 @@ export class Play extends React.Component<{}, PlayState> {
                                 </div>
                             ))}
 
-                            <div style={{ marginTop: "2em" }}></div>
-
                             <div className="custom-games-list-header-row">{_("Custom Games")}</div>
 
                             <div className="challenge-row">
@@ -586,76 +576,22 @@ export class Play extends React.Component<{}, PlayState> {
 
                             <div style={{ marginTop: "2em" }}></div>
                         </div>
-                        <div id="challenge-list" onMouseMove={this.freezeChallenges}>
-                            <div className="challenge-row" style={{ marginTop: "1em" }}>
-                                <span className="cell break">{_("Rengo")}</span>
+                        {this.state.filter.showRengo && (
+                            <div id="challenge-list" onMouseMove={this.freezeChallenges}>
+                                <div className="challenge-row" style={{ marginTop: "1em" }}>
+                                    <span className="cell break">{_("Rengo")}</span>
+                                </div>
+                                <table id="rengo-table">
+                                    <thead>
+                                        {this.anyChallengesToShow(this.state.rengo_list)
+                                            ? this.rengoListHeaders()
+                                            : null}
+                                    </thead>
+                                    <tbody>{this.rengoList()}</tbody>
+                                </table>
                             </div>
-
-                            <table id="rengo-table">
-                                <thead>
-                                    {this.anyChallengesToShow(this.state.rengo_list)
-                                        ? this.rengoListHeaders()
-                                        : null}
-                                </thead>
-
-                                <tbody>{this.rengoList()}</tbody>
-                            </table>
-                        </div>
+                        )}
                     </div>
-                </div>
-
-                <div className="showall-selector">
-                    <input
-                        id="show-all-challenges"
-                        type="checkbox"
-                        checked={this.state.show_all_challenges}
-                        onChange={this.toggleShowAllChallenges}
-                    />
-                    <label htmlFor="show-all-challenges">{_("Show ineligible challenges")}</label>
-                    <br></br>
-                    <input
-                        id="show-ranked-challenges"
-                        type="checkbox"
-                        checked={this.state.show_ranked_challenges}
-                        onChange={this.toggleShowRankedChallenges}
-                    />
-                    <label htmlFor="show-ranked-challenges">{_("Ranked")}</label>
-                    <input
-                        id="show-unranked-challenges"
-                        type="checkbox"
-                        checked={this.state.show_unranked_challenges}
-                        onChange={this.toggleShowUnrankedChallenges}
-                    />
-                    <label htmlFor="show-unranked-challenges">{_("Unranked")}</label>
-                    <br></br>
-                    <input
-                        id="show-19x19-challenges"
-                        type="checkbox"
-                        checked={this.state.show_19x19_challenges}
-                        onChange={this.toggleShow19x19Challenges}
-                    />
-                    <label htmlFor="show-19x19-challenges">{_("19x19")}</label>
-                    <input
-                        id="show-13x13-challenges"
-                        type="checkbox"
-                        checked={this.state.show_13x13_challenges}
-                        onChange={this.toggleShow13x13Challenges}
-                    />
-                    <label htmlFor="show-13x13-challenges">{_("13x13")}</label>
-                    <input
-                        id="show-9x9-challenges"
-                        type="checkbox"
-                        checked={this.state.show_9x9_challenges}
-                        onChange={this.toggleShow9x9Challenges}
-                    />
-                    <label htmlFor="show-9x9-challenges">{_("9x9")}</label>
-                    <input
-                        id="show-other-boardsize-challenges"
-                        type="checkbox"
-                        checked={this.state.show_other_boardsize_challenges}
-                        onChange={this.toggleShowOtherBoardsizeChallenges}
-                    />
-                    <label htmlFor="show-other-boardsize-challenges">{_("Other boardsizes")}</label>
                 </div>
             </div>
         );
@@ -864,16 +800,6 @@ export class Play extends React.Component<{}, PlayState> {
         }
     }
 
-    visibleInChallengeList = (C) =>
-        (C.eligible || C.user_challenge || this.state.show_all_challenges) &&
-        ((this.state.show_unranked_challenges && !C.ranked) ||
-            (this.state.show_ranked_challenges && C.ranked)) &&
-        ((this.state.show_19x19_challenges && C.width === 19 && C.height === 19) ||
-            (this.state.show_13x13_challenges && C.width === 13 && C.height === 13) ||
-            (this.state.show_9x9_challenges && C.width === 9 && C.height === 9) ||
-            (this.state.show_other_boardsize_challenges &&
-                (C.width !== C.height || (C.width !== 19 && C.width !== 13 && C.width !== 9))));
-
     suspectChallengeIcon = (C: Challenge): JSX.Element =>
         /* Mark eligible suspect games with a warning icon and warning explanation popup.
            We do let users see the warning for their own challenges. */
@@ -923,7 +849,7 @@ export class Play extends React.Component<{}, PlayState> {
             return (
                 <div className="ineligible">
                     {
-                        this.state.show_all_challenges
+                        this.state.filter.showIneligible
                             ? _(
                                   "(none)",
                               ) /* translators: There are no challenges in the system, nothing to list here */
@@ -936,7 +862,7 @@ export class Play extends React.Component<{}, PlayState> {
         }
 
         return challenge_list.map((C) =>
-            this.visibleInChallengeList(C) ? (
+            shouldDisplayChallenge(C, this.state.filter) ? (
                 <div key={C.challenge_id} className={"challenge-row"}>
                     <span className={"cell"} style={{ textAlign: "center" }}>
                         {user.is_moderator && (
@@ -1079,7 +1005,7 @@ export class Play extends React.Component<{}, PlayState> {
                     <td colSpan={9}>
                         <div className="ineligible">
                             {
-                                this.state.show_all_challenges
+                                this.state.filter.showIneligible
                                     ? _(
                                           "(none)",
                                       ) /* translators: There are no challenges in the system, nothing to list here */
@@ -1137,7 +1063,7 @@ export class Play extends React.Component<{}, PlayState> {
                 <tr className="ineligible" key="corre-ineligible">
                     <td style={{ textAlign: "center" }}>
                         {
-                            this.state.show_all_challenges
+                            this.state.filter.showIneligible
                                 ? _(
                                       "(none)",
                                   ) /* translators: There are no challenges in the system, nothing to list here */
@@ -1150,7 +1076,7 @@ export class Play extends React.Component<{}, PlayState> {
             ) : (
                 props.challenge_list.map(
                     (C) =>
-                        (this.visibleInChallengeList(C) || null) && (
+                        (shouldDisplayChallenge(C, this.state.filter) || null) && (
                             <React.Fragment key={C.challenge_id}>
                                 <this.rengoListItem C={C} user={props.user} />
                                 {(this.state.show_in_rengo_management_pane.includes(

@@ -26,38 +26,91 @@ import * as data from "data";
 import { openGameAcceptModal } from "GameAcceptModal";
 import { shortDurationString, shortShortTimeControl, timeControlSystemText } from "TimeControl";
 import { getRelativeEventPosition, errorAlerter } from "misc";
-import { rankString, bounded_rank } from "rank_utils";
-import { kb_bind, kb_unbind } from "KBShortcut";
+import { rankString, bounded_rank, MaxRank } from "rank_utils";
+import { kb_bind, kb_unbind, Binding } from "KBShortcut";
 import { Player } from "Player";
 import { validateCanvas } from "goban";
 import * as player_cache from "player_cache";
 
 import { nominateForRengoChallenge } from "rengo_utils";
 import { alert } from "swal_config";
+import { Socket } from "socket.io-client";
+import { SeekGraphColorPalette, SeekGraphPalettes } from "./SeekGraphPalettes";
+import * as SeekGraphSymbols from "./SeekGraphSymbols";
 
-type Challenge = socket_api.seekgraph_global.Challenge;
+import { Challenge, ChallengeFilter, shouldDisplayChallenge } from "challenge_utils";
+
+interface AnchoredChallenge extends Challenge {
+    x?: number;
+    y?: number;
+    joined_rengo?: boolean;
+}
+
+interface Point {
+    x: number;
+    y: number;
+}
+
+interface SeekGraphModal {
+    modal: JQuery;
+    binding: Binding;
+}
 
 interface Events {
     challenges: Challenge[];
 }
 
-const MAX_RATIO = 0.99;
-
 interface SeekGraphConfig {
-    canvas: any;
-    show_live_games?: boolean;
+    canvas: HTMLCanvasElement;
+    filter: ChallengeFilter;
 }
 
-function dist(C, pos) {
-    const dx = C.cx - pos.x;
-    const dy = C.cy - pos.y;
+const MAX_RATIO = 0.99;
+
+function rankRatio(rank: number): number {
+    return Math.min(MAX_RATIO, (rank + 1) / (MaxRank + 1));
+}
+
+function timeRatio(tpm: number): number {
+    let time_ratio = 0;
+    let last_tpm = 0;
+    for (let i = 0; i < SeekGraph.time_columns.length; ++i) {
+        const col = SeekGraph.time_columns[i];
+        if (tpm <= col.time_per_move) {
+            if (tpm === 0) {
+                time_ratio = col.ratio;
+                break;
+            }
+
+            const alpha = (tpm - last_tpm) / (-last_tpm + col.time_per_move);
+            time_ratio = lerp(time_ratio, col.ratio, alpha);
+            break;
+        }
+        last_tpm = col.time_per_move;
+        time_ratio = col.ratio;
+    }
+    return time_ratio;
+}
+
+function dist(C: AnchoredChallenge, pos: Point) {
+    const dx = C.x - pos.x;
+    const dy = C.y - pos.y;
     return Math.sqrt(dx * dx + dy * dy);
 }
 
-function lerp(v1, v2, alpha) {
+function lerp(v1: number, v2: number, alpha: number) {
     return (1.0 - alpha) * v1 + alpha * v2;
 }
-function list_hit_sorter(A, B) {
+
+/** Most important/relevant challenges will come first */
+function priority_sort(A: Challenge, B: Challenge) {
+    if (A.user_challenge && !B.user_challenge) {
+        return -1;
+    }
+    if (!A.user_challenge && B.user_challenge) {
+        return 1;
+    }
+
     if (A.eligible && !B.eligible) {
         return -1;
     }
@@ -81,7 +134,7 @@ function list_hit_sorter(A, B) {
 
     return A.challenge_id - B.challenge_id;
 }
-function lists_are_equal(A, B) {
+function lists_are_equal(A: Challenge[], B: Challenge[]) {
     if (A.length !== B.length) {
         return false;
     }
@@ -122,33 +175,38 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         { ratio: 0.95, time_per_move: 604800 },
     ];
 
-    canvas: any;
-    show_live_games: boolean;
-    socket: any;
+    canvas: HTMLCanvasElement;
+    $canvas: JQuery;
+    // show_live_games: boolean;
+    socket: Socket;
     connected: boolean = false;
     // This is treated as an array later because that is what TypedEventEmitter expects.
     // Perhaps this should be changed to an array as well.
-    challenges: { [id: number]: Challenge } = {};
-    live_games: any = {};
-    list_hits: Array<any> = [];
-    challenge_points: any = {};
+    challenges: { [id: number]: AnchoredChallenge } = {};
+    challengeFilter: ChallengeFilter;
+    // live_games: any = {};
+    list_hits: Array<AnchoredChallenge> = [];
+    // challenge_points: any = {};
     square_size = 8;
     text_size = 10;
     padding = 14;
+    legend_size = 25;
     list_locked: boolean = false;
-    modal: any = null;
-    list;
+    modal?: SeekGraphModal = null;
+    $list: JQuery;
     list_open: boolean = false;
-    width;
-    height;
+    width: number;
+    height: number;
 
     constructor(config: SeekGraphConfig) {
         super();
 
-        this.canvas = $(config.canvas);
-        this.show_live_games = config.show_live_games;
+        this.canvas = config.canvas;
+        this.$canvas = $(config.canvas);
+        // this.show_live_games = config.show_live_games;
         this.socket = socket;
         this.list_hits = [];
+        this.challengeFilter = config.filter;
         this.redraw();
 
         if (this.socket.connected) {
@@ -157,12 +215,16 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
         this.socket.on("connect", this.onConnect);
         this.socket.on("seekgraph/global", this.onSeekgraphGlobal);
-        this.canvas.on("mousemove", this.onPointerMove);
-        this.canvas.on("mouseout", this.onPointerOut);
-        this.canvas.on("click", this.onPointerDown);
+        this.$canvas.on("mousemove", this.onPointerMove);
+        this.$canvas.on("mouseout", this.onPointerOut);
+        this.$canvas.on("click", this.onPointerDown);
 
         $(document).on("touchend", this.onTouchEnd);
         $(document).on("touchstart touchmove", this.onTouchStartMove);
+
+        data.watch("theme", () => {
+            this.redraw();
+        });
     }
 
     userRank() {
@@ -172,12 +234,13 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
         return bounded_rank(user);
     }
+
     onConnect = () => {
         this.connected = true;
         this.socket.send("seek_graph/connect", { channel: "global" });
-        if (this.show_live_games) {
-            this.connectToLiveGameList();
-        }
+        // if (this.show_live_games) {
+        //     this.connectToLiveGameList();
+        // }
     };
 
     onSeekgraphGlobal = (lst) => {
@@ -245,34 +308,34 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         this.emit("challenges", this.challenges as Challenge[]);
     };
 
-    onTouchEnd = (ev) => {
-        if (ev.target === this.canvas[0]) {
+    onTouchEnd = (ev: JQueryEventObject) => {
+        if (ev.target === this.canvas) {
             this.onPointerDown(ev);
         }
     };
-    onTouchStartMove = (ev) => {
-        if (ev.target === this.canvas[0]) {
+    onTouchStartMove = (ev: JQueryEventObject) => {
+        if (ev.target === this.canvas) {
             this.onPointerMove(ev);
             ev.preventDefault();
             return false;
         }
     };
-    onPointerMove = (ev) => {
+    onPointerMove = (ev: JQueryEventObject) => {
         const new_list = this.getHits(ev);
-        new_list.sort(list_hit_sorter);
+        new_list.sort(priority_sort);
         if (!lists_are_equal(new_list, this.list_hits)) {
             this.closeChallengeList();
         }
         this.list_hits = new_list;
         if (this.list_hits.length) {
             this.moveChallengeList(ev);
-        } else {
+        } else if (this.list_open) {
             this.closeChallengeList();
         }
     };
-    onPointerDown = (ev) => {
+    onPointerDown = (ev: JQueryEventObject) => {
         const new_list = this.getHits(ev);
-        new_list.sort(list_hit_sorter);
+        new_list.sort(priority_sort);
         if (!lists_are_equal(new_list, this.list_hits)) {
             this.list_locked = false;
             this.closeChallengeList();
@@ -301,25 +364,25 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
     };
 
-    connectToLiveGameList() {
-        this.socket.send("gamelist/subscribe", { gamelist: "gamelist/global" });
-    }
-    setShowLiveGames(tf) {
-        const changed = tf !== this.show_live_games;
-        this.show_live_games = tf;
-        if (changed) {
-            if (tf) {
-                this.connectToLiveGameList();
-            } else {
-                this.socket.send("gamelist/unsubscribe", {});
-            }
-            this.redraw();
-        }
-    }
+    // connectToLiveGameList() {
+    //     this.socket.send("gamelist/subscribe", { gamelist: "gamelist/global" });
+    // }
+    // setShowLiveGames(tf) {
+    //     const changed = tf !== this.show_live_games;
+    //     this.show_live_games = tf;
+    //     if (changed) {
+    //         if (tf) {
+    //             this.connectToLiveGameList();
+    //         } else {
+    //             this.socket.send("gamelist/unsubscribe", {});
+    //         }
+    //         this.redraw();
+    //     }
+    // }
     destroy() {
         this.list_locked = false;
         this.closeChallengeList();
-        this.setShowLiveGames(false);
+        // this.setShowLiveGames(false);
         if (this.connected) {
             this.socket.send("seek_graph/disconnect", { channel: "global" });
         }
@@ -331,253 +394,157 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         $(document).off("touchstart touchmove", this.onTouchStartMove);
     }
 
-    getHits(ev) {
+    getHits(ev: JQueryEventObject) {
         const pos = getRelativeEventPosition(ev);
-        const ret = [];
 
         if (!pos) {
-            return ret;
+            return [];
         }
 
-        for (const id in this.challenges) {
-            const C = this.challenges[id];
-            if (dist(C, pos) < this.square_size * 2) {
-                ret.push(C);
-            }
-        }
-
-        if (this.show_live_games) {
-            for (const id in this.live_games) {
-                const C = this.live_games[id];
-                if (dist(C, pos) < this.square_size * 2) {
-                    ret.push(C);
-                }
-            }
-        }
-
-        return ret;
-    }
-    redraw() {
-        validateCanvas(this.canvas[0]);
-        const ctx = this.canvas[0].getContext("2d");
-        const w = this.canvas.width();
-        const h = this.canvas.height();
-        const padding = this.padding;
-
-        ctx.clearRect(0, 0, w, h);
-        this.drawAxes();
-
-        const plot_ct = {};
-        this.challenge_points = {};
-
-        const sorted = [];
-        for (const id in this.challenges) {
-            sorted.push(this.challenges[id]);
-        }
-        sorted.sort((A, B) => {
-            if (A.eligible && !B.eligible) {
-                return 1;
-            }
-            if (!A.eligible && B.eligible) {
-                return -1;
-            }
-
-            if (A.user_challenge && !B.user_challenge) {
-                return 1;
-            }
-            if (!A.user_challenge && B.user_challenge) {
-                return -1;
-            }
-
-            if (A.ranked && !B.ranked) {
-                return 1;
-            }
-            if (!A.ranked && B.ranked) {
-                return -1;
-            }
-
-            return B.challenge_id - A.challenge_id;
+        const hitTolerance = 1.25 * this.square_size;
+        return Object.values(this.challenges).filter((c: Challenge) => {
+            return dist(c, pos) < hitTolerance && shouldDisplayChallenge(c, this.challengeFilter);
         });
-        if (this.show_live_games) {
-            for (const id in this.live_games) {
-                sorted.push(this.live_games[id]);
-            }
-        }
+    }
+
+    setFilter(f: ChallengeFilter) {
+        this.challengeFilter = f;
+        this.redraw();
+    }
+
+    redraw() {
+        validateCanvas(this.canvas);
+        const ctx = this.canvas.getContext("2d");
+
+        ctx.clearRect(0, 0, this.width, this.height);
+
+        const siteTheme = data.get("theme");
+        const palette = SeekGraphPalettes.getPalette(siteTheme);
+        this.drawAxes(ctx, palette);
+        this.drawLegend(ctx, palette);
+
+        // const plot_ct = {};
+        const sorted: AnchoredChallenge[] = Object.values(this.challenges)
+            .filter((c) => shouldDisplayChallenge(c, this.challengeFilter))
+            .sort(priority_sort)
+            .reverse();
 
         /* Plot our challenges */
         for (let j = 0; j < sorted.length; ++j) {
             const C = sorted[j];
 
-            const rank_ratio = Math.min(MAX_RATIO, (C.rank + 1) / 40);
+            const rank_ratio = rankRatio(C.rank);
+            const time_ratio = timeRatio(C.time_per_move);
 
-            let time_ratio = 0;
-            let last_tpm = 0;
-            for (let i = 0; i < SeekGraph.time_columns.length; ++i) {
-                const col = SeekGraph.time_columns[i];
-                if (C.time_per_move <= col.time_per_move) {
-                    if (C.time_per_move === 0) {
-                        time_ratio = col.ratio;
-                        break;
-                    }
+            const cx = this.xCoordinate(time_ratio);
+            const cy = this.yCoordinate(rank_ratio);
 
-                    const alpha = (C.time_per_move - last_tpm) / (-last_tpm + col.time_per_move);
-                    time_ratio = lerp(time_ratio, col.ratio, alpha);
-                    break;
-                }
-                last_tpm = col.time_per_move;
-                time_ratio = col.ratio;
-            }
+            C.x = cx;
+            C.y = cy;
 
-            const cx = Math.round(padding + (w - padding) * time_ratio);
-            const cy = Math.round(h - (padding + (h - padding) * rank_ratio));
+            // const plot_ct_pos = time_ratio + "," + rank_ratio;
+            // if (!(plot_ct_pos in plot_ct)) {
+            //     plot_ct[plot_ct_pos] = 0;
+            // }
+            // const _ct = ++plot_ct[plot_ct_pos];
 
-            C.cx = cx;
-            C.cy = cy;
-
-            const plot_ct_pos = time_ratio + "," + rank_ratio;
-            if (!(plot_ct_pos in plot_ct)) {
-                plot_ct[plot_ct_pos] = 0;
+            const style = SeekGraphPalettes.getStyle(C, palette);
+            if (C.ranked) {
+                SeekGraphSymbols.drawChallengeSquare(cx, cy, this.square_size, style, ctx);
+            } else if (C.rengo) {
+                SeekGraphSymbols.drawChallengeCircle(cx, cy, this.square_size / 2, style, ctx);
+            } else {
+                SeekGraphSymbols.drawChallengeTriangle(cx, cy, this.square_size, style, ctx);
             }
-            const ct = ++plot_ct[plot_ct_pos];
-
-            /* Draw */
-            let d = this.square_size;
-            let sx = cx - d / 2 + 0.5;
-            let sy = cy - d / 2 + 0.5;
-            ctx.save();
-            ctx.beginPath();
-            ctx.strokeStyle = "#000";
-            if (C.live_game) {
-                ctx.fillStyle = "#4140FF";
-                ctx.strokeStyle = "#58E0FF";
-            } else if (C.eligible) {
-                if (C.ranked) {
-                    if (C.width === 19) {
-                        ctx.fillStyle = "#00aa30";
-                        ctx.strokeStyle = "#00ff00";
-                    } else if (C.width === 13) {
-                        ctx.fillStyle = "#f000d0";
-                        ctx.strokeStyle = "#ff60dd";
-                    } else {
-                        ctx.fillStyle = "#009090";
-                        ctx.strokeStyle = "#00ffff";
-                    }
-                } else {
-                    ctx.fillStyle = "#d06000";
-                    ctx.strokeStyle = "#ff9000";
-                }
-                ctx.fillRect(sx, sy, d, d);
-            } else if (ct === 1) {
-                if (C.user_challenge) {
-                    ctx.fillStyle = "#E25551";
-                    ctx.strokeStyle = "#bbb";
-                } else {
-                    ctx.fillStyle = "#bbbbbb";
-                    ctx.strokeStyle = "#bbb";
-                }
-                ctx.fillRect(sx, sy, d, d);
-            }
-            if (ct > 1) {
-                const cc = Math.min(this.width < 200 ? 2 : 4, ct - 1);
-                sx -= cc;
-                sy -= cc;
-                d += cc * 2;
-            }
-            if (!C.eligible) {
-                ctx.strokeStyle = "#bbb";
-            }
-            if (C.eligible || C.live_game) {
-                ctx.strokeRect(sx, sy, d, d);
-            }
-            ctx.restore();
         }
 
         //console.log("Redrawing seekgraph");
     }
+
     resize(w, h) {
         this.width = w;
         this.height = h;
 
         if (w < 200 || h < 100) {
             this.text_size = 7;
-            this.padding = this.text_size + 2;
         } else {
             this.text_size = 10;
-            this.padding = this.text_size + 4;
         }
 
         this.square_size = Math.max(Math.round(Math.min(w, h) / 100) * 2, 4);
-        this.canvas.attr("width", w).attr("height", h);
+
+        // See https://coderwall.com/p/vmkk6a/how-to-make-the-canvas-not-look-like-crap-on-retina
+        // and https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
+        // Instead of scaling based on devicePixelRatio, I just scale by 2 always, which seems to
+        // improve the quality of rendering even on MDPI devices and prevents needing the half-point
+        // adjustment trick used previously (https://stackoverflow.com/questions/39943737/html5-canvas-translate0-5-0-5-not-fixing-line-blurryness)
+        this.canvas.style.width = w + "px";
+        this.canvas.style.height = h + "px";
+        const scale = 2;
+        this.canvas.width = w * scale;
+        this.canvas.height = h * scale;
+
+        const ctx = this.canvas.getContext("2d");
+        ctx.scale(scale, scale);
+
+        this.padding = this.getFontHeight(ctx) + 4;
 
         this.redraw();
     }
-    drawAxes() {
-        const ctx = this.canvas[0].getContext("2d");
-        const w = this.canvas.width();
-        const h = this.canvas.height();
+
+    drawAxes(ctx: CanvasRenderingContext2D, palette: SeekGraphColorPalette) {
+        const w = this.width;
+        const h = this.height;
+        const padding = this.padding;
+
         if (w < 30 || h < 30) {
             return;
         }
 
         ctx.font = "bold " + this.text_size + "px Verdana,Courier,Arial,serif";
-        const padding = this.padding;
-        ctx.strokeStyle = "#666666";
         ctx.lineWidth = 1;
-
-        // assumes "accessible" is similar to "dark"
-        const axis_color = $(document.body).hasClass("light") ? "#000000" : "#dddddd";
 
         /* Rank */
         ctx.save();
 
-        ctx.fillStyle = axis_color;
+        ctx.fillStyle = palette.textColor;
         const word = _("Rank");
         const metrics = ctx.measureText(word);
-        const yy = h / 2 + metrics.width / 2;
+        const yy = this.yCoordinate(0.5) + metrics.width / 2;
 
-        ctx.translate(padding - 4 + 0.5, yy + 0.5);
+        ctx.translate(padding - 4, yy);
         ctx.rotate(-Math.PI / 2);
         ctx.fillText(word, 0, 0);
 
         ctx.restore();
 
         /* base rank line */
+        ctx.strokeStyle = palette.axisColor;
         ctx.beginPath();
-        ctx.moveTo(padding + 0.5, h - padding + 0.5);
-        ctx.lineTo(padding + 0.5, 0);
+        ctx.moveTo(padding, h - padding);
+        ctx.lineTo(padding, this.legend_size);
         ctx.stroke();
 
-        /* player rank line */
-        if (!data.get("user").anonymous) {
-            const rank_ratio = Math.min(MAX_RATIO, (this.userRank() + 1) / 40);
-            const cy = Math.round(h - (padding + (h - padding) * rank_ratio));
-            ctx.beginPath();
-            ctx.strokeStyle = "#ccccff";
-            ctx.moveTo(padding + 0.5, cy + 0.5);
-            ctx.lineTo(w, cy + 0.5);
-            ctx.stroke();
-        }
-
         /* Time */
-        const blitz_line = Math.round(SeekGraph.blitz_line_ratio * (w - padding) + padding);
-        const live_line = Math.round(SeekGraph.live_line_ratio * (w - padding) + padding);
+        const blitz_line = this.xCoordinate(SeekGraph.blitz_line_ratio);
+        const live_line = this.xCoordinate(SeekGraph.live_line_ratio);
 
         /* primary line */
         ctx.beginPath();
-        ctx.moveTo(padding + 0.5, h - padding + 0.5);
-        ctx.lineTo(w, h - padding + 0.5);
-        ctx.strokeStyle = "#666666";
+        ctx.moveTo(padding, h - padding);
+        ctx.lineTo(w, h - padding);
+        ctx.strokeStyle = palette.axisColor;
         ctx.lineWidth = 1;
         ctx.stroke();
 
         /* blitz and live lines */
         ctx.save();
         ctx.beginPath();
-        ctx.moveTo(padding + 0.5 + blitz_line, h - padding + 0.5);
-        ctx.lineTo(padding + 0.5 + blitz_line, 0);
-        ctx.moveTo(padding + 0.5 + live_line, h - padding + 0.5);
-        ctx.lineTo(padding + 0.5 + live_line, 0);
-        ctx.strokeStyle = "#aaaaaa";
+        ctx.moveTo(padding + blitz_line, h - padding);
+        ctx.lineTo(padding + blitz_line, this.legend_size);
+        ctx.moveTo(padding + live_line, h - padding);
+        ctx.lineTo(padding + live_line, this.legend_size);
+        ctx.strokeStyle = palette.timeLineColor;
         try {
             ctx.setLineDash([2, 3]);
         } catch (e) {
@@ -586,19 +553,35 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.stroke();
         ctx.restore();
 
+        /* player rank line */
+        if (!data.get("user").anonymous) {
+            ctx.save();
+            const rank_ratio = rankRatio(this.userRank());
+            const cy = this.yCoordinate(rank_ratio);
+            ctx.beginPath();
+            ctx.strokeStyle = palette.rankLineColor;
+            ctx.moveTo(padding, cy);
+            ctx.lineTo(w, cy);
+            ctx.stroke();
+            ctx.restore();
+        }
+
         ctx.save();
         try {
-            ctx.fillStyle = axis_color;
+            ctx.fillStyle = palette.textColor;
+            const fontHeight = this.getFontHeight(ctx);
+            const baseline = h - padding + fontHeight;
+
             let word = _("Blitz");
             let metrics = ctx.measureText(word);
-            ctx.fillText(word, padding + (blitz_line - metrics.width) / 2, h - 2);
+            ctx.fillText(word, padding + (blitz_line - metrics.width) / 2, baseline);
 
             word = _("Normal");
             metrics = ctx.measureText(word);
             ctx.fillText(
                 word,
                 padding + blitz_line + (live_line - blitz_line - metrics.width) / 2,
-                h - 2,
+                baseline,
             );
 
             word = _("Long");
@@ -606,12 +589,77 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             ctx.fillText(
                 word,
                 padding + live_line + (w - live_line - padding - metrics.width) / 2,
-                h - 2,
+                baseline,
             );
         } catch (e) {
             // ignore error
         }
         ctx.restore();
+    }
+
+    drawLegend(ctx: CanvasRenderingContext2D, palette: SeekGraphColorPalette) {
+        const iconWidth = 20;
+        const iconHeight = this.square_size;
+        const iconGap = 5;
+        const spacing = 10;
+        const legendCenterY = this.legend_size / 2;
+        const myRank = _("My rank");
+        const myChallenges = _("My challenges");
+        const myRankMetrics = ctx.measureText(myRank);
+        const myChallengesMetrics = ctx.measureText(myChallenges);
+        const legendWidth =
+            2 * (iconWidth + iconGap) + myRankMetrics.width + myChallengesMetrics.width + spacing;
+        const legendStart = this.padding + (this.width - this.padding) / 2 - legendWidth / 2;
+
+        let x = legendStart;
+        ctx.save();
+        ctx.strokeStyle = palette.rankLineColor;
+        ctx.beginPath();
+        ctx.moveTo(x, legendCenterY);
+        ctx.lineTo(x + iconWidth, legendCenterY);
+        ctx.stroke();
+
+        x += iconWidth + iconGap;
+        ctx.fillStyle = palette.textColor;
+        ctx.font = this.text_size + "px Verdana,Courier,Arial,serif";
+        ctx.fillText(myRank, x, legendCenterY + myRankMetrics.actualBoundingBoxAscent / 2);
+
+        x += myRankMetrics.width + spacing;
+        SeekGraphSymbols.drawLegendKey(
+            x + iconWidth / 2,
+            legendCenterY,
+            iconWidth,
+            iconHeight,
+            iconHeight / 2,
+            palette.user,
+            ctx,
+        );
+
+        x += iconWidth + iconGap;
+        ctx.fillText(
+            myChallenges,
+            x,
+            legendCenterY + myChallengesMetrics.actualBoundingBoxAscent / 2,
+        );
+        ctx.restore();
+    }
+
+    xCoordinate(timeRatio: number): number {
+        return this.padding + (this.width - this.padding) * timeRatio;
+    }
+
+    yCoordinate(rankRatio: number): number {
+        const usableHeight = this.height - this.padding - this.legend_size;
+        return this.height - (this.padding + usableHeight * rankRatio);
+    }
+
+    getFontHeight(ctx: CanvasRenderingContext2D) {
+        const metrics = ctx.measureText("ABCgy");
+        if (metrics.fontBoundingBoxAscent) {
+            return metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
+        }
+        // Firefox
+        return metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
     }
 
     moveChallengeList(ev) {
@@ -620,31 +668,39 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             return;
         }
 
-        const pos = getRelativeEventPosition(ev);
+        // If the list is randomly not showing when mousing over a certain spot, the following scenario is a likely culprit:
+        // 1. The list is positioned somewhere on screen
+        // 2. The list position is adjusted so the list doesn't go off the bottom or edge of the graph/window
+        // 3. This repositioning causes the list to intersect the current pointer position
+        // 4. This causes the "mouseout" event, which triggers closing the list
+        // The above was occurring for long lists on the bottom right of the seek graph (and was fixed),
+        // but this function should probably be improved further
+
+        const pointerPos: Point = getRelativeEventPosition(ev);
+        const listAnchor: Point = Object.assign({}, pointerPos);
+
         const offset = $(ev.target).offset();
-        pos.x += offset.left + 10;
-        pos.y += offset.top + 5;
+        listAnchor.x += offset.left + 10;
+        listAnchor.y += offset.top + 5;
 
-        const win_top = window.pageYOffset || document.documentElement.scrollTop;
-        const win_left = window.pageXOffset || document.documentElement.scrollLeft;
+        const win_top = window.scrollY || document.documentElement.scrollTop;
+        const win_left = window.scrollX || document.documentElement.scrollLeft;
         const win_right = $(window).width() + win_left;
-        const win_bottom = $(window).height() + win_top - 5;
+        const win_bottom = $(window).height() + win_top;
 
-        const list_width = this.list.width();
-        const list_height = this.list.height();
+        const list_width = this.$list.width();
+        const list_height = this.$list.height();
 
-        if (pos.x + list_width > win_right) {
-            pos.x -= list_width + 10;
+        if (listAnchor.x + list_width > win_right) {
+            listAnchor.x -= list_width + 20;
         }
 
-        if (pos.y + list_height > win_bottom) {
-            pos.y = win_bottom - list_height;
+        if (listAnchor.y + list_height > win_bottom) {
+            listAnchor.y = win_bottom - list_height - 5;
         }
 
-        pos.x = Math.max(0, pos.x);
-        pos.y = Math.min(pos.y, win_bottom + list_height);
-
-        this.list.css({ left: pos.x, top: pos.y });
+        listAnchor.x = Math.max(0, listAnchor.x);
+        this.$list.css({ left: listAnchor.x, top: listAnchor.y });
     }
     popupChallengeList(ev) {
         if (this.list_open) {
@@ -656,12 +712,12 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             return;
         }
 
-        const list = (this.list = $("<div>").addClass("SeekGraph-challenge-list"));
+        const list = (this.$list = $("<div>").addClass("SeekGraph-challenge-list"));
 
         const first_hit = this.list_hits[0];
         const header = $("<div>").addClass("header");
         header.append(
-            $("<span>").html(rankString({ ranking: first_hit.rank, pro: first_hit.pro })),
+            $("<span>").html(rankString({ ranking: first_hit.rank, pro: Boolean(first_hit.pro) })),
         );
         header.append(
             $("<i>")
@@ -697,28 +753,29 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             if (C.eligible) {
                 e.addClass("eligible");
             }
-            if (!C.eligible && !C.live_game) {
+            if (!C.eligible /* && !C.live_game */) {
                 e.addClass("ineligible");
             }
-            if (C.live_game) {
-                e.addClass("live-game");
-            }
+            // if (C.live_game) {
+            //     e.addClass("live-game");
+            // }
             if (!C.user_challenge) {
                 e.addClass("user-challenge");
             }
 
-            if (C.live_game) {
-                const anchor = $("<span>")
-                    .addClass("fakelink")
-                    .click(() => {
-                        console.log("Should be closing challenge list");
-                        this.list_locked = false;
-                        this.closeChallengeList();
-                        browserHistory.push("/game/" + C.game_id);
-                    })
-                    .append($("<i>").addClass("fa fa-eye").attr("title", _("View Game")));
-                e.append(anchor);
-            } else if (C.eligible && !C.rengo) {
+            // if (C.live_game) {
+            //     const anchor = $("<span>")
+            //         .addClass("fakelink")
+            //         .click(() => {
+            //             console.log("Should be closing challenge list");
+            //             this.list_locked = false;
+            //             this.closeChallengeList();
+            //             browserHistory.push("/game/" + C.game_id);
+            //         })
+            //         .append($("<i>").addClass("fa fa-eye").attr("title", _("View Game")));
+            //     e.append(anchor);
+            // } else
+            if (C.eligible && !C.rengo) {
                 e.append(
                     $("<i>")
                         .addClass("fa fa-check-circle")
@@ -767,109 +824,109 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 e.append($("<i>").addClass("fa fa-circle"));
             }
 
-            if (C.live_game) {
-                /* I don't think this is used anymore, I think this was for showing ongoing live games */
-                const container = document.createElement("span");
-                const root = ReactDOM.createRoot(container);
-                e.append($(container));
-                root.render(
-                    <React.StrictMode>
-                        <Player
-                            user={{ id: 0, ranking: C.black_rank, username: C.black_username }}
-                            rank
-                            nolink
-                        />
-                        {" " + _("vs.") + " "}
-                        <Player
-                            user={{ id: 0, ranking: C.white_rank, username: C.white_username }}
-                            rank
-                            nolink
-                        />
-                    </React.StrictMode>,
-                );
-            } else {
-                const container = document.createElement("span");
-                const root = ReactDOM.createRoot(container);
-                e.append($(container));
-                const U = player_cache.lookup(C.user_id) || {
-                    user_id: C.user_id,
-                    ranking: C.rank,
-                    username: C.username,
-                };
-                root.render(
-                    <React.StrictMode>
-                        <Player user={U} rank disableCacheUpdate />
-                    </React.StrictMode>,
-                );
+            // if (C.live_game) {
+            //     /* I don't think this is used anymore, I think this was for showing ongoing live games */
+            //     const container = document.createElement("span");
+            //     const root = ReactDOM.createRoot(container);
+            //     e.append($(container));
+            //     root.render(
+            //         <React.StrictMode>
+            //             <Player
+            //                 user={{ id: 0, ranking: C.black_rank, username: C.black_username }}
+            //                 rank
+            //                 nolink
+            //             />
+            //             {" " + _("vs.") + " "}
+            //             <Player
+            //                 user={{ id: 0, ranking: C.white_rank, username: C.white_username }}
+            //                 rank
+            //                 nolink
+            //             />
+            //         </React.StrictMode>,
+            //     );
+            // } else {
+            const container = document.createElement("span");
+            const root = ReactDOM.createRoot(container);
+            e.append($(container));
+            const U = player_cache.lookup(C.user_id) || {
+                user_id: C.user_id,
+                ranking: C.rank,
+                username: C.username,
+            };
+            root.render(
+                <React.StrictMode>
+                    <Player user={U} rank disableCacheUpdate />
+                </React.StrictMode>,
+            );
 
-                let details_html =
-                    ", " +
-                    (C.ranked ? _("Ranked") : _("Unranked")) +
-                    ", " +
-                    C.width +
-                    "x" +
-                    C.height +
-                    (C.handicap === 0
-                        ? ", " + _("no handicap")
-                        : C.handicap < 0
-                        ? ""
-                        : interpolate(_(", %s handicap"), [C.handicap])) +
-                    (C.disable_analysis ? ", " + _("analysis disabled") : "");
-                if (C.challenger_color !== "automatic") {
-                    let yourcolor = "";
-                    if (C.challenger_color === "black") {
-                        yourcolor = _("white");
-                    } else if (C.challenger_color === "white") {
-                        yourcolor = _("black");
-                    } else {
-                        yourcolor = _(C.challenger_color);
-                    }
-
-                    details_html +=
-                        ", " + interpolate(pgettext("color", "you play as %s"), [yourcolor]);
+            let details_html =
+                ", " +
+                (C.rengo ? _("Rengo") + ", " : "") +
+                (C.ranked ? _("Ranked") : _("Unranked")) +
+                ", " +
+                C.width +
+                "x" +
+                C.height +
+                (C.handicap === 0
+                    ? ", " + _("no handicap")
+                    : C.handicap < 0
+                    ? ""
+                    : interpolate(_(", %s handicap"), [C.handicap])) +
+                (C.disable_analysis ? ", " + _("analysis disabled") : "");
+            if (C.challenger_color !== "automatic") {
+                let yourcolor = "";
+                if (C.challenger_color === "black") {
+                    yourcolor = _("white");
+                } else if (C.challenger_color === "white") {
+                    yourcolor = _("black");
+                } else {
+                    yourcolor = _(C.challenger_color);
                 }
 
-                if (C.time_control !== "none") {
-                    try {
-                        details_html +=
-                            ", " +
-                            interpolate(pgettext("time control", "%s %s timing"), [
-                                shortShortTimeControl(C.time_control_parameters),
-                                timeControlSystemText(C.time_control),
-                            ]);
-                    } catch (err) {
-                        // ignore error
-                    }
-                }
-
-                if (C.time_control_parameters.pause_on_weekends) {
-                    details_html += ", " + _("pause on weekends");
-                }
-
-                if (C.name.length > 3) {
-                    details_html += ', "' + $("<div>").text(C.name).html() + '"';
-                }
-
-                if (!data.get("user").anonymous) {
-                    if (C.min_rank > this.userRank()) {
-                        details_html +=
-                            ", <span class='cause'>" +
-                            interpolate(_("min. rank: %s"), [rankString(C.min_rank)]) +
-                            "</span>";
-                    } else if (C.max_rank < this.userRank()) {
-                        details_html +=
-                            ", <span class='cause'>" +
-                            interpolate(_("max. rank: %s"), [rankString(C.max_rank)]) +
-                            "</span>";
-                    } else if (C.ranked && Math.abs(this.userRank() - C.rank) > 9) {
-                        details_html +=
-                            ", <span class='cause'>" + _("rank difference more than 9") + "</span>";
-                    }
-                }
-
-                //console.log(C.ranked, Math.abs(this.userRank() - C.rank));
-                e.append($("<span>").addClass("details").html(details_html));
+                details_html +=
+                    ", " + interpolate(pgettext("color", "you play as %s"), [yourcolor]);
             }
+
+            if (C.time_control !== "none") {
+                try {
+                    details_html +=
+                        ", " +
+                        interpolate(pgettext("time control", "%s %s timing"), [
+                            shortShortTimeControl(C.time_control_parameters),
+                            timeControlSystemText(C.time_control),
+                        ]);
+                } catch (err) {
+                    // ignore error
+                }
+            }
+
+            if (C.time_control_parameters.pause_on_weekends) {
+                details_html += ", " + _("pause on weekends");
+            }
+
+            if (C.name.length > 3) {
+                details_html += ', "' + $("<div>").text(C.name).html() + '"';
+            }
+
+            if (!data.get("user").anonymous) {
+                if (C.min_rank > this.userRank()) {
+                    details_html +=
+                        ", <span class='cause'>" +
+                        interpolate(_("min. rank: %s"), [rankString(C.min_rank)]) +
+                        "</span>";
+                } else if (C.max_rank < this.userRank()) {
+                    details_html +=
+                        ", <span class='cause'>" +
+                        interpolate(_("max. rank: %s"), [rankString(C.max_rank)]) +
+                        "</span>";
+                } else if (C.ranked && Math.abs(this.userRank() - C.rank) > 9) {
+                    details_html +=
+                        ", <span class='cause'>" + _("rank difference more than 9") + "</span>";
+                }
+            }
+
+            //console.log(C.ranked, Math.abs(this.userRank() - C.rank));
+            e.append($("<span>").addClass("details").html(details_html));
 
             list.append(e);
         }
@@ -890,12 +947,12 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         }
 
         this.list_open = false;
-        this.list.remove();
+        this.$list.remove();
     }
 }
 
 /* Modal stuff  */
-function createModal(close_callback, priority) {
+function createModal(close_callback, priority): SeekGraphModal {
     let modal = null;
     function onClose() {
         close_callback();
@@ -915,7 +972,7 @@ function createModal(close_callback, priority) {
     return modal;
 }
 
-function removeModal(modal) {
+function removeModal(modal: SeekGraphModal) {
     kb_unbind(modal.binding);
     modal.modal.remove();
 }

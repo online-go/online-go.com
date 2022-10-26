@@ -16,3 +16,4 @@
  */
 
 export * from "./SeekGraph";
+export * from "./SeekGraphLegend";

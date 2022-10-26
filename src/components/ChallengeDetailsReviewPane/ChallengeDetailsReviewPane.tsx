@@ -19,7 +19,7 @@ import * as React from "react";
 import { pgettext, _ } from "translate";
 
 import { timeControlDescription, usedForCheating } from "TimeControl";
-import { yesno } from "misc";
+import { rulesText, yesno } from "misc";
 
 type Challenge = socket_api.seekgraph_global.Challenge;
 
@@ -85,6 +85,8 @@ export function ChallengeDetailsReviewPane(
                 <dd>{challenge.ranked ? _("Yes") : _("No")}</dd>
                 <dt>{_("Handicap")}</dt>
                 <dd>{handicapText(challenge.handicap)}</dd>
+                <dt>{_("Rules")}</dt>
+                <dd>{rulesText(challenge.rules)}</dd>
                 <dt>{_("Komi")}</dt>
                 <dd>
                     {challenge.komi ? (
