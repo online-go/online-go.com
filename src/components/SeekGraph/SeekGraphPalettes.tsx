@@ -99,14 +99,16 @@ export class SeekGraphPalettes {
             return palette.ineligible;
         }
 
-        if (challenge.width === 19) {
-            return palette.size19;
-        }
-        if (challenge.width === 13) {
-            return palette.size13;
-        }
-        if (challenge.width === 9) {
-            return palette.size9;
+        if (challenge.width === challenge.height) {
+            if (challenge.width === 19) {
+                return palette.size19;
+            }
+            if (challenge.width === 13) {
+                return palette.size13;
+            }
+            if (challenge.width === 9) {
+                return palette.size9;
+            }
         }
         return palette.sizeOther;
     }
