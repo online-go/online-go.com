@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { computeAverageMoveTime } from "goban";
+import { computeAverageMoveTime, JGOFTimeControl } from "goban";
 import { _, pgettext, ngettext, interpolate } from "translate";
 import { TimeControl, TimeControlTypes } from "./TimeControl";
 
@@ -240,8 +240,8 @@ export function parseIntWithDefaultValue(
     return Math.max(min, Math.min(max, parsedInt));
 }
 
-export function makeTimeControlParameters(tc: any): TimeControl {
-    const tpm = computeAverageMoveTime(tc);
+export function makeTimeControlParameters(tc: any, width?: number, height?: number): TimeControl {
+    const tpm = computeAverageMoveTime(tc, width, height);
     const speed: TimeControlTypes.TimeControlSpeed =
         tpm === 0 || tpm > 3600 ? "correspondence" : tpm < 10 ? "blitz" : "live";
 
@@ -574,8 +574,8 @@ export function validateTimeControl(tc: TimeControl): boolean {
             return !error;
     }
 }
-export function isLiveGame(time_control) {
-    const average_move_time = computeAverageMoveTime(time_control);
+export function isLiveGame(time_control: JGOFTimeControl, w?: number, h?: number) {
+    const average_move_time = computeAverageMoveTime(time_control, w, h);
     return average_move_time > 0 && average_move_time < 3600;
 }
 

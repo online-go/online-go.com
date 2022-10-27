@@ -664,7 +664,7 @@ export function lookingAtOurLiveGame(): boolean {
     return (
         goban &&
         goban.engine.phase !== "finished" &&
-        isLiveGame(goban.engine.time_control) &&
+        isLiveGame(goban.engine.time_control, goban.engine.width, goban.engine.height) &&
         goban.engine.isParticipant(player_id)
     );
 }

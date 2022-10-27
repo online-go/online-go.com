@@ -94,7 +94,10 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): JSX.Eleme
     };
 
     const pass = () => {
-        if (!isLiveGame(goban.engine.time_control) || !preferences.get("one-click-submit-live")) {
+        if (
+            !isLiveGame(goban.engine.time_control, goban.engine.width, goban.engine.height) ||
+            !preferences.get("one-click-submit-live")
+        ) {
             void alert
                 .fire({ text: _("Are you sure you want to pass?"), showCancelButton: true })
                 .then(({ value: accept }) => {

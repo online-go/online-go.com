@@ -154,8 +154,9 @@ export function Game(): JSX.Element {
                 goban.current.engine &&
                 goban.current.engine.playerNotToMove() === user.id
             ) {
+                const engine = goban.current.engine;
                 if (
-                    !isLiveGame(goban.current.engine.time_control) &&
+                    !isLiveGame(engine.time_control, engine.width, engine.height) &&
                     preferences.get("auto-advance-after-submit")
                 ) {
                     if (notification_manager.anyYourMove()) {
@@ -1151,7 +1152,7 @@ export function Game(): JSX.Element {
 
         goban.current.on("gamedata", (gamedata) => {
             try {
-                if (isLiveGame(gamedata.time_control)) {
+                if (isLiveGame(gamedata.time_control, gamedata.width, gamedata.height)) {
                     goban.current.one_click_submit = preferences.get("one-click-submit-live");
                     goban.current.double_click_submit = preferences.get("double-click-submit-live");
                 } else {

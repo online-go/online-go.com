@@ -247,7 +247,13 @@ class NotificationEntry extends React.Component<{ notification }, any> {
                                     post("me/challenges/%%/accept", notification.challenge_id, {})
                                         .then(() => {
                                             this.del();
-                                            if (isLiveGame(notification.time_control)) {
+                                            if (
+                                                isLiveGame(
+                                                    notification.time_control,
+                                                    notification.width,
+                                                    notification.height,
+                                                )
+                                            ) {
                                                 browserHistory.push(
                                                     "/game/" + notification.game_id,
                                                 );

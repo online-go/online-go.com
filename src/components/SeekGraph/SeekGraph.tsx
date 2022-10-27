@@ -29,7 +29,7 @@ import { getRelativeEventPosition, errorAlerter } from "misc";
 import { rankString, bounded_rank, MaxRank } from "rank_utils";
 import { kb_bind, kb_unbind, Binding } from "KBShortcut";
 import { Player } from "Player";
-import { validateCanvas } from "goban";
+import { computeAverageMoveTime, validateCanvas } from "goban";
 import * as player_cache from "player_cache";
 
 import { nominateForRengoChallenge } from "rengo_utils";
@@ -147,15 +147,14 @@ function lists_are_equal(A: Challenge[], B: Challenge[]) {
 }
 
 export class SeekGraph extends TypedEventEmitter<Events> {
-    static blitz_line_ratio = 0.1;
+    static blitz_line_ratio = 0.125;
     static live_line_ratio = 0.6;
     static time_columns = [
         { ratio: 0.97, time_per_move: 0 },
         { ratio: 0.000001, time_per_move: 1 },
 
         /* blitz */
-        { ratio: 0.04, time_per_move: 5 },
-        { ratio: 0.08, time_per_move: 10 },
+        { ratio: 0.125, time_per_move: 10 },
 
         /* live */
         { ratio: 0.2, time_per_move: 15 },
@@ -164,6 +163,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         { ratio: 0.35, time_per_move: 60 },
         { ratio: 0.4, time_per_move: 120 },
         { ratio: 0.5, time_per_move: 300 },
+        { ratio: 0.6, time_per_move: 3600 },
 
         /* long */
         { ratio: 0.65, time_per_move: 10800 },
@@ -434,7 +434,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             const C = sorted[j];
 
             const rank_ratio = rankRatio(C.rank);
-            const time_ratio = timeRatio(C.time_per_move);
+            const tpm = computeAverageMoveTime(C.time_control_parameters, C.width, C.height);
+            const time_ratio = timeRatio(tpm);
 
             const cx = this.xCoordinate(time_ratio);
             const cy = this.yCoordinate(rank_ratio);
@@ -465,7 +466,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         this.width = w;
         this.height = h;
 
-        if (w < 200 || h < 100) {
+        if (w < 295 || h < 100) {
             this.text_size = 7;
         } else {
             this.text_size = 10;
@@ -525,10 +526,6 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.lineTo(padding, this.legend_size);
         ctx.stroke();
 
-        /* Time */
-        const blitz_line = this.xCoordinate(SeekGraph.blitz_line_ratio);
-        const live_line = this.xCoordinate(SeekGraph.live_line_ratio);
-
         /* primary line */
         ctx.beginPath();
         ctx.moveTo(padding, h - padding);
@@ -538,12 +535,14 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         ctx.stroke();
 
         /* blitz and live lines */
+        const blitz_line = this.xCoordinate(SeekGraph.blitz_line_ratio);
+        const live_line = this.xCoordinate(SeekGraph.live_line_ratio);
         ctx.save();
         ctx.beginPath();
-        ctx.moveTo(padding + blitz_line, h - padding);
-        ctx.lineTo(padding + blitz_line, this.legend_size);
-        ctx.moveTo(padding + live_line, h - padding);
-        ctx.lineTo(padding + live_line, this.legend_size);
+        ctx.moveTo(blitz_line, h - padding);
+        ctx.lineTo(blitz_line, this.legend_size);
+        ctx.moveTo(live_line, h - padding);
+        ctx.lineTo(live_line, this.legend_size);
         ctx.strokeStyle = palette.timeLineColor;
         try {
             ctx.setLineDash([2, 3]);
@@ -574,23 +573,15 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
             let word = _("Blitz");
             let metrics = ctx.measureText(word);
-            ctx.fillText(word, padding + (blitz_line - metrics.width) / 2, baseline);
+            ctx.fillText(word, padding + (blitz_line - padding - metrics.width) / 2, baseline);
 
-            word = _("Normal");
+            word = _("Live");
             metrics = ctx.measureText(word);
-            ctx.fillText(
-                word,
-                padding + blitz_line + (live_line - blitz_line - metrics.width) / 2,
-                baseline,
-            );
+            ctx.fillText(word, blitz_line + (live_line - blitz_line - metrics.width) / 2, baseline);
 
-            word = _("Long");
+            word = _("Correspondence");
             metrics = ctx.measureText(word);
-            ctx.fillText(
-                word,
-                padding + live_line + (w - live_line - padding - metrics.width) / 2,
-                baseline,
-            );
+            ctx.fillText(word, live_line + (w - live_line - metrics.width) / 2, baseline);
         } catch (e) {
             // ignore error
         }
@@ -728,14 +719,15 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 }),
         );
         if (first_hit.time_per_move) {
+            const tpm = computeAverageMoveTime(
+                first_hit.time_control_parameters,
+                first_hit.width,
+                first_hit.height,
+            );
             header.append(
                 $("<span>")
                     .addClass("pull-right")
-                    .html(
-                        "~" +
-                            shortDurationString(first_hit.time_per_move).replace(/ /g, "") +
-                            "/move",
-                    ),
+                    .html("~" + shortDurationString(tpm).replace(/ /g, "") + "/move"),
             );
         } else {
             header.append($("<span>").addClass("pull-right").html(_("No time limit")));

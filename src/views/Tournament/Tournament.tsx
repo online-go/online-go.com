@@ -59,7 +59,7 @@ interface TournamentInterface {
     director: player_cache.PlayerCacheEntry;
     time_start: string;
 
-    board_size: string | number;
+    board_size: number;
     rules: GoEngineRules;
     description: string;
     handicap: string;
@@ -121,7 +121,7 @@ export function Tournament(): JSX.Element {
         director: tournament_id === 0 ? data.get("user") : ({} as any),
         time_start: moment(new Date()).add(1, "hour").startOf("hour").format(),
 
-        board_size: "19",
+        board_size: 19,
         rules: "japanese",
         description: "",
         handicap: "0",
@@ -1328,7 +1328,7 @@ export function Tournament(): JSX.Element {
         refresh();
     };
     const setBoardSize = (ev) => {
-        tournament_ref.current.board_size = ev.target.value;
+        tournament_ref.current.board_size = parseInt(ev.target.value);
         refresh();
     };
     const setAnalysisEnabled = (ev) => {
@@ -1615,7 +1615,11 @@ export function Tournament(): JSX.Element {
         cant_join_reason = _("Your rank is too high to join this tournament");
     }
 
-    const time_per_move = computeAverageMoveTime(tournament.time_control_parameters);
+    const time_per_move = computeAverageMoveTime(
+        tournament.time_control_parameters,
+        tournament.board_size,
+        tournament.board_size,
+    );
 
     if (
         tournament.tournament_type === "elimination" ||
@@ -1770,6 +1774,8 @@ export function Tournament(): JSX.Element {
                         <TimeControlPicker
                             value={tournament.time_control_parameters}
                             onChange={setTimeControl}
+                            boardWidth={tournament.board_size}
+                            boardHeight={tournament.board_size}
                         />
                     )}
                     {!editing ? (
@@ -2923,8 +2929,8 @@ export function Tournament(): JSX.Element {
                                                 <MiniGoban
                                                     key={idx}
                                                     id={m.gameid}
-                                                    width={tournament.board_size as number}
-                                                    height={tournament.board_size as number}
+                                                    width={tournament.board_size}
+                                                    height={tournament.board_size}
                                                     black={players[m.black]}
                                                     white={players[m.white]}
                                                 />

@@ -557,7 +557,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
         const challenge = this.getChallenge();
 
-        const live = isLiveGame(challenge.game.time_control_parameters); // save for after the post, below, when TimeControlPicker is gone
+        const live = isLiveGame(
+            challenge.game.time_control_parameters,
+            challenge.game.width,
+            challenge.game.height,
+        ); // save for after the post, below, when TimeControlPicker is gone
 
         let open_now = false;
         if (live && !this.state.challenge.invite_only) {
@@ -1294,6 +1298,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     <TimeControlPicker
                         value={this.state.initial_time_control}
                         ref={this.ref_time_control_picker}
+                        boardWidth={challenge.game.width}
+                        boardHeight={challenge.game.height}
                         force_system={
                             challenge.game.rengo && challenge.game.rengo_casual_mode
                                 ? "simple"
