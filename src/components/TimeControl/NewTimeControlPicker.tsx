@@ -127,46 +127,16 @@ export function NewTimeControlPicker(props: NewTimeControlPickerProperties): JSX
                 );
             });
             selectors.push(
-                <div
-                    id="challenge-canadian-stones-group"
-                    className="form-group challenge-time-group"
-                >
-                    <label
-                        id="challenge-canadian-stones-label"
-                        className=" control-label"
-                        htmlFor="challenge-canadian-stones"
-                    >
-                        {_("Stones per Period")}
-                    </label>
-                    <div className="controls">
-                        <div className="checkbox">
-                            <input
-                                type="number"
-                                id="challenge-canadian-stones"
-                                min={default_time_options[tc.speed].canadian.stones_per_period_min}
-                                max={default_time_options[tc.speed].canadian.stones_per_period_max}
-                                className="challenge-dropdown form-control"
-                                value={tc.stones_per_period}
-                                onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
-                                    const new_tc = updateProperty(
-                                        tc,
-                                        "stones_per_period",
-                                        parseInt(ev.target.value),
-                                    );
-                                    props.onChange(new_tc);
-                                }}
-                                onBlur={(sender) =>
-                                    numericInputOnBlur(
-                                        sender,
-                                        tc.speed,
-                                        tc.system,
-                                        "stones_per_period",
-                                    )
-                                }
-                            />
-                        </div>
-                    </div>
-                </div>,
+                <TimeControlPropertyInput
+                    tc={tc}
+                    id={"challenge-canadian-stones"}
+                    name={_("Stones per Period")}
+                    property={"stones_per_period"}
+                    min={default_time_options[tc.speed].canadian.stones_per_period_min}
+                    max={default_time_options[tc.speed].canadian.stones_per_period_max}
+                    valueGetter={(ev) => parseInt(ev.target.value)}
+                    onChange={props.onChange}
+                ></TimeControlPropertyInput>,
             );
             break;
         case "byoyomi":
@@ -183,38 +153,16 @@ export function NewTimeControlPicker(props: NewTimeControlPickerProperties): JSX
                 );
             });
             selectors.push(
-                <div id="challenge-periods-group" className="form-group challenge-time-group">
-                    <label
-                        id="challenge-periods-label"
-                        className=" control-label"
-                        htmlFor="challenge-periods"
-                    >
-                        {_("Periods")}
-                    </label>
-                    <div className="controls">
-                        <div className="checkbox">
-                            <input
-                                type="number"
-                                id="challenge-periods"
-                                min={default_time_options[tc.speed].byoyomi.periods_min}
-                                max={default_time_options[tc.speed].byoyomi.periods_max}
-                                className="challenge-dropdown form-control"
-                                value={tc.periods}
-                                onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
-                                    const new_tc = updateProperty(
-                                        tc,
-                                        "periods",
-                                        parseInt(ev.target.value),
-                                    );
-                                    props.onChange(new_tc);
-                                }}
-                                onBlur={(sender) =>
-                                    numericInputOnBlur(sender, tc.speed, tc.system, "periods")
-                                }
-                            />
-                        </div>
-                    </div>
-                </div>,
+                <TimeControlPropertyInput
+                    tc={tc}
+                    id={"challenge-periods-byoyomi"}
+                    name={_("Periods")}
+                    property={"periods"}
+                    min={default_time_options[tc.speed].byoyomi.periods_min}
+                    max={default_time_options[tc.speed].byoyomi.periods_max}
+                    valueGetter={(ev) => parseInt(ev.target.value)}
+                    onChange={props.onChange}
+                ></TimeControlPropertyInput>,
             );
             break;
         case "absolute":
@@ -275,6 +223,57 @@ function TimeControlPropertySelector<T extends TimeControl, U extends keyof T>(
                             ),
                         )}
                     </select>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+interface TimeControlPropertyInputProps<T extends TimeControl, U extends keyof T> {
+    tc: T;
+    id: string;
+    name: string;
+    property: U;
+    min: number;
+    max: number;
+    valueGetter: (ev: React.ChangeEvent<HTMLInputElement>) => T[U];
+    onChange: OnTimeControlChangeCallback;
+}
+
+function TimeControlPropertyInput<T extends TimeControl, U extends keyof T>(
+    props: TimeControlPropertyInputProps<T, U>,
+): JSX.Element {
+    return (
+        <div id={`${props.id}-group`} className="form-group challenge-time-group">
+            <label id={`${props.id}-label`} className=" control-label" htmlFor={props.id}>
+                {props.name}
+            </label>
+            <div className="controls">
+                <div className="checkbox">
+                    <input
+                        type="number"
+                        id={props.id}
+                        min={props.min}
+                        max={props.max}
+                        className="challenge-dropdown form-control"
+                        value={`${props.tc[props.property]}`}
+                        onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
+                            const new_tc = updateProperty(
+                                props.tc,
+                                props.property,
+                                props.valueGetter(ev),
+                            );
+                            props.onChange(new_tc);
+                        }}
+                        onBlur={(sender) =>
+                            numericInputOnBlur(
+                                sender,
+                                props.tc.speed,
+                                props.tc.system,
+                                props.property as string,
+                            )
+                        }
+                    />
                 </div>
             </div>
         </div>
