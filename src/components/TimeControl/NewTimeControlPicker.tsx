@@ -32,189 +32,207 @@ interface NewTimeControlPickerProperties {
     boardHeight?: number;
 }
 
+interface TimePropertyDescription<T extends TimeControl, U extends keyof T> {
+    property: U;
+    name: string;
+    id: string;
+}
+
+const fischerSelectors: TimePropertyDescription<
+    TimeControlTypes.Fischer,
+    keyof TimeControlTypes.Fischer
+>[] = [
+    { property: "initial_time", name: _("Initial Time"), id: "challenge-initial-time" },
+    { property: "time_increment", name: _("Time Increment"), id: "challenge-inc-time" },
+    { property: "max_time", name: _("Max Time"), id: "challenge-max-time" },
+];
+const simpleSelectors: TimePropertyDescription<
+    TimeControlTypes.Simple,
+    keyof TimeControlTypes.Simple
+>[] = [{ property: "per_move", name: _("Time per Move"), id: "challenge-per-move-time" }];
+const canadianSelectors: TimePropertyDescription<
+    TimeControlTypes.Canadian,
+    keyof TimeControlTypes.Canadian
+>[] = [
+    { property: "main_time", name: _("Main Time"), id: "challenge-main-time-canadian" },
+    {
+        property: "period_time",
+        name: _("Time per Period"),
+        id: "challenge-per-canadian-period-time",
+    },
+];
+const byoyomiSelectors: TimePropertyDescription<
+    TimeControlTypes.ByoYomi,
+    keyof TimeControlTypes.ByoYomi
+>[] = [
+    { property: "main_time", name: _("Main Time"), id: "challenge-main-time-byoyomi" },
+    {
+        property: "period_time",
+        name: _("Time per Period"),
+        id: "challenge-per-byoyomi-period-time",
+    },
+];
+const absoluteSelectors: TimePropertyDescription<
+    TimeControlTypes.Absolute,
+    keyof TimeControlTypes.Absolute
+>[] = [{ property: "total_time", name: _("Total Time"), id: "challenge-total-time" }];
+
 export function NewTimeControlPicker(props: NewTimeControlPickerProperties): JSX.Element {
     // const update = (property: keyof TimeControl) => {
     //     const new = updateProperty(props.timeControl, p)
     // }
     const tc = props.timeControl;
-    let selectors: JSX.Element;
+    let selectors: JSX.Element[];
+
     switch (tc.system) {
         case "fischer":
-            selectors = (
-                <>
-                    <TimeControlPropertySelector<TimeControlTypes.Fischer, "initial_time">
+            selectors = fischerSelectors.map((desc) => {
+                return (
+                    <TimeControlPropertySelector
                         tc={tc}
-                        id={"challenge-initial-time"}
-                        name={_("Initial Time")}
-                        property={"initial_time"}
+                        id={desc.id}
+                        name={desc.name}
+                        property={desc.property}
                         valueGetter={(ev) => parseInt(ev.target.value)}
                         onChange={props.onChange}
                     ></TimeControlPropertySelector>
-                    <TimeControlPropertySelector<TimeControlTypes.Fischer, "time_increment">
-                        tc={tc}
-                        id={"challenge-inc-time"}
-                        name={_("Time Increment")}
-                        property={"time_increment"}
-                        valueGetter={(ev) => parseInt(ev.target.value)}
-                        onChange={props.onChange}
-                    ></TimeControlPropertySelector>
-                    <TimeControlPropertySelector<TimeControlTypes.Fischer, "max_time">
-                        tc={tc}
-                        id={"challenge-max-time"}
-                        name={_("Max Time")}
-                        property={"max_time"}
-                        valueGetter={(ev) => parseInt(ev.target.value)}
-                        onChange={props.onChange}
-                    ></TimeControlPropertySelector>
-                </>
-            );
+                );
+            });
             break;
         case "simple":
-            selectors = (
-                <TimeControlPropertySelector
-                    tc={tc}
-                    id={"challenge-per-move-time"}
-                    name={_("Time per Move")}
-                    property={"per_move"}
-                    valueGetter={(ev) => parseInt(ev.target.value)}
-                    onChange={props.onChange}
-                ></TimeControlPropertySelector>
-            );
+            selectors = simpleSelectors.map((desc) => {
+                return (
+                    <TimeControlPropertySelector
+                        tc={tc}
+                        id={desc.id}
+                        name={desc.name}
+                        property={desc.property}
+                        valueGetter={(ev) => parseInt(ev.target.value)}
+                        onChange={props.onChange}
+                    ></TimeControlPropertySelector>
+                );
+            });
             break;
         case "canadian":
-            selectors = (
-                <>
+            selectors = canadianSelectors.map((desc) => {
+                return (
                     <TimeControlPropertySelector
                         tc={tc}
-                        id={"challenge-main-time-canadian"}
-                        name={_("Main Time")}
-                        property={"main_time"}
+                        id={desc.id}
+                        name={desc.name}
+                        property={desc.property}
                         valueGetter={(ev) => parseInt(ev.target.value)}
                         onChange={props.onChange}
                     ></TimeControlPropertySelector>
-                    <TimeControlPropertySelector
-                        tc={tc}
-                        id={"challenge-per-canadian-period-time"}
-                        name={_("Time per Period")}
-                        property={"period_time"}
-                        valueGetter={(ev) => parseInt(ev.target.value)}
-                        onChange={props.onChange}
-                    ></TimeControlPropertySelector>
-                    <div
-                        id="challenge-canadian-stones-group"
-                        className="form-group challenge-time-group"
+                );
+            });
+            selectors.push(
+                <div
+                    id="challenge-canadian-stones-group"
+                    className="form-group challenge-time-group"
+                >
+                    <label
+                        id="challenge-canadian-stones-label"
+                        className=" control-label"
+                        htmlFor="challenge-canadian-stones"
                     >
-                        <label
-                            id="challenge-canadian-stones-label"
-                            className=" control-label"
-                            htmlFor="challenge-canadian-stones"
-                        >
-                            {_("Stones per Period")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <input
-                                    type="number"
-                                    id="challenge-canadian-stones"
-                                    min={
-                                        default_time_options[tc.speed].canadian
-                                            .stones_per_period_min
-                                    }
-                                    max={
-                                        default_time_options[tc.speed].canadian
-                                            .stones_per_period_max
-                                    }
-                                    className="challenge-dropdown form-control"
-                                    value={tc.stones_per_period}
-                                    onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
-                                        const new_tc = updateProperty(
-                                            tc,
-                                            "stones_per_period",
-                                            parseInt(ev.target.value),
-                                        );
-                                        props.onChange(new_tc);
-                                    }}
-                                    onBlur={(sender) =>
-                                        numericInputOnBlur(
-                                            sender,
-                                            tc.speed,
-                                            tc.system,
-                                            "stones_per_period",
-                                        )
-                                    }
-                                />
-                            </div>
+                        {_("Stones per Period")}
+                    </label>
+                    <div className="controls">
+                        <div className="checkbox">
+                            <input
+                                type="number"
+                                id="challenge-canadian-stones"
+                                min={default_time_options[tc.speed].canadian.stones_per_period_min}
+                                max={default_time_options[tc.speed].canadian.stones_per_period_max}
+                                className="challenge-dropdown form-control"
+                                value={tc.stones_per_period}
+                                onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
+                                    const new_tc = updateProperty(
+                                        tc,
+                                        "stones_per_period",
+                                        parseInt(ev.target.value),
+                                    );
+                                    props.onChange(new_tc);
+                                }}
+                                onBlur={(sender) =>
+                                    numericInputOnBlur(
+                                        sender,
+                                        tc.speed,
+                                        tc.system,
+                                        "stones_per_period",
+                                    )
+                                }
+                            />
                         </div>
                     </div>
-                </>
+                </div>,
             );
             break;
         case "byoyomi":
-            selectors = (
-                <>
+            selectors = byoyomiSelectors.map((desc) => {
+                return (
                     <TimeControlPropertySelector
                         tc={tc}
-                        id={"challenge-main-time-byoyomi"}
-                        name={_("Main Time")}
-                        property={"main_time"}
+                        id={desc.id}
+                        name={desc.name}
+                        property={desc.property}
                         valueGetter={(ev) => parseInt(ev.target.value)}
                         onChange={props.onChange}
                     ></TimeControlPropertySelector>
-                    <TimeControlPropertySelector
-                        tc={tc}
-                        id={"challenge-per-period-time"}
-                        name={_("Main Time")}
-                        property={"period_time"}
-                        valueGetter={(ev) => parseInt(ev.target.value)}
-                        onChange={props.onChange}
-                    ></TimeControlPropertySelector>
-                    <div id="challenge-periods-group" className="form-group challenge-time-group">
-                        <label
-                            id="challenge-periods-label"
-                            className=" control-label"
-                            htmlFor="challenge-periods"
-                        >
-                            {_("Periods")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <input
-                                    type="number"
-                                    id="challenge-periods"
-                                    min={default_time_options[tc.speed].byoyomi.periods_min}
-                                    max={default_time_options[tc.speed].byoyomi.periods_max}
-                                    className="challenge-dropdown form-control"
-                                    value={tc.periods}
-                                    onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
-                                        const new_tc = updateProperty(
-                                            tc,
-                                            "periods",
-                                            parseInt(ev.target.value),
-                                        );
-                                        props.onChange(new_tc);
-                                    }}
-                                    onBlur={(sender) =>
-                                        numericInputOnBlur(sender, tc.speed, tc.system, "periods")
-                                    }
-                                />
-                            </div>
+                );
+            });
+            selectors.push(
+                <div id="challenge-periods-group" className="form-group challenge-time-group">
+                    <label
+                        id="challenge-periods-label"
+                        className=" control-label"
+                        htmlFor="challenge-periods"
+                    >
+                        {_("Periods")}
+                    </label>
+                    <div className="controls">
+                        <div className="checkbox">
+                            <input
+                                type="number"
+                                id="challenge-periods"
+                                min={default_time_options[tc.speed].byoyomi.periods_min}
+                                max={default_time_options[tc.speed].byoyomi.periods_max}
+                                className="challenge-dropdown form-control"
+                                value={tc.periods}
+                                onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
+                                    const new_tc = updateProperty(
+                                        tc,
+                                        "periods",
+                                        parseInt(ev.target.value),
+                                    );
+                                    props.onChange(new_tc);
+                                }}
+                                onBlur={(sender) =>
+                                    numericInputOnBlur(sender, tc.speed, tc.system, "periods")
+                                }
+                            />
                         </div>
                     </div>
-                </>
+                </div>,
             );
             break;
         case "absolute":
-            <TimeControlPropertySelector
-                tc={tc}
-                id={"challenge-total-time-time"}
-                name={_("Total Time")}
-                property={"total_time"}
-                valueGetter={(ev) => parseInt(ev.target.value)}
-                onChange={props.onChange}
-            ></TimeControlPropertySelector>;
+            selectors = absoluteSelectors.map((desc) => {
+                return (
+                    <TimeControlPropertySelector
+                        tc={tc}
+                        id={desc.id}
+                        name={desc.name}
+                        property={desc.property}
+                        valueGetter={(ev) => parseInt(ev.target.value)}
+                        onChange={props.onChange}
+                    ></TimeControlPropertySelector>
+                );
+            });
             break;
     }
-    return selectors;
+    return <>{selectors}</>;
 }
 
 interface TimeControlPropertySelectorProps<T extends TimeControl, U extends keyof T> {
