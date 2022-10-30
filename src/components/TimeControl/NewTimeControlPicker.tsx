@@ -27,7 +27,7 @@ type OnTimeControlChangeCallback = (tc: TimeControl) => void;
 
 interface NewTimeControlPickerProperties {
     timeControl: TimeControl;
-    onChange?: OnTimeControlChangeCallback;
+    onChange: OnTimeControlChangeCallback;
     boardWidth?: number;
     boardHeight?: number;
 }
@@ -36,96 +36,107 @@ interface TimePropertyDescription<T extends TimeControl, U extends keyof T> {
     property: U;
     name: string;
     id: string;
+    getter: (ev: React.ChangeEvent<HTMLSelectElement>) => T[U];
 }
 
+const numeric = (ev: React.ChangeEvent<HTMLSelectElement>) => parseInt(ev.target.value);
 const fischerSelectors: TimePropertyDescription<
     TimeControlTypes.Fischer,
     keyof TimeControlTypes.Fischer
 >[] = [
-    { property: "initial_time", name: _("Initial Time"), id: "challenge-initial-time" },
-    { property: "time_increment", name: _("Time Increment"), id: "challenge-inc-time" },
-    { property: "max_time", name: _("Max Time"), id: "challenge-max-time" },
+    {
+        property: "initial_time",
+        name: _("Initial Time"),
+        id: "challenge-initial-time",
+        getter: numeric,
+    },
+    {
+        property: "time_increment",
+        name: _("Time Increment"),
+        id: "challenge-inc-time",
+        getter: numeric,
+    },
+    { property: "max_time", name: _("Max Time"), id: "challenge-max-time", getter: numeric },
 ];
 const simpleSelectors: TimePropertyDescription<
     TimeControlTypes.Simple,
     keyof TimeControlTypes.Simple
->[] = [{ property: "per_move", name: _("Time per Move"), id: "challenge-per-move-time" }];
+>[] = [
+    {
+        property: "per_move",
+        name: _("Time per Move"),
+        id: "challenge-per-move-time",
+        getter: numeric,
+    },
+];
 const canadianSelectors: TimePropertyDescription<
     TimeControlTypes.Canadian,
     keyof TimeControlTypes.Canadian
 >[] = [
-    { property: "main_time", name: _("Main Time"), id: "challenge-main-time-canadian" },
+    {
+        property: "main_time",
+        name: _("Main Time"),
+        id: "challenge-main-time-canadian",
+        getter: numeric,
+    },
     {
         property: "period_time",
         name: _("Time per Period"),
         id: "challenge-per-canadian-period-time",
+        getter: numeric,
     },
 ];
 const byoyomiSelectors: TimePropertyDescription<
     TimeControlTypes.ByoYomi,
     keyof TimeControlTypes.ByoYomi
 >[] = [
-    { property: "main_time", name: _("Main Time"), id: "challenge-main-time-byoyomi" },
+    {
+        property: "main_time",
+        name: _("Main Time"),
+        id: "challenge-main-time-byoyomi",
+        getter: numeric,
+    },
     {
         property: "period_time",
         name: _("Time per Period"),
         id: "challenge-per-byoyomi-period-time",
+        getter: numeric,
     },
 ];
 const absoluteSelectors: TimePropertyDescription<
     TimeControlTypes.Absolute,
     keyof TimeControlTypes.Absolute
->[] = [{ property: "total_time", name: _("Total Time"), id: "challenge-total-time" }];
+>[] = [
+    { property: "total_time", name: _("Total Time"), id: "challenge-total-time", getter: numeric },
+];
 
 export function NewTimeControlPicker(props: NewTimeControlPickerProperties): JSX.Element {
-    // const update = (property: keyof TimeControl) => {
-    //     const new = updateProperty(props.timeControl, p)
-    // }
     const tc = props.timeControl;
-    let selectors: JSX.Element[];
-
+    const instantiate = <T extends TimeControl, U extends keyof T>(
+        desc: TimePropertyDescription<T, U>,
+        tc: T,
+    ) => {
+        return (
+            <TimeControlPropertySelector<T, U>
+                tc={tc}
+                id={desc.id}
+                name={desc.name}
+                property={desc.property}
+                valueGetter={desc.getter}
+                onChange={props.onChange}
+            ></TimeControlPropertySelector>
+        );
+    };
+    let selectors: JSX.Element[] = [];
     switch (tc.system) {
         case "fischer":
-            selectors = fischerSelectors.map((desc) => {
-                return (
-                    <TimeControlPropertySelector
-                        tc={tc}
-                        id={desc.id}
-                        name={desc.name}
-                        property={desc.property}
-                        valueGetter={(ev) => parseInt(ev.target.value)}
-                        onChange={props.onChange}
-                    ></TimeControlPropertySelector>
-                );
-            });
+            selectors = fischerSelectors.map((desc) => instantiate(desc, tc));
             break;
         case "simple":
-            selectors = simpleSelectors.map((desc) => {
-                return (
-                    <TimeControlPropertySelector
-                        tc={tc}
-                        id={desc.id}
-                        name={desc.name}
-                        property={desc.property}
-                        valueGetter={(ev) => parseInt(ev.target.value)}
-                        onChange={props.onChange}
-                    ></TimeControlPropertySelector>
-                );
-            });
+            selectors = simpleSelectors.map((desc) => instantiate(desc, tc));
             break;
         case "canadian":
-            selectors = canadianSelectors.map((desc) => {
-                return (
-                    <TimeControlPropertySelector
-                        tc={tc}
-                        id={desc.id}
-                        name={desc.name}
-                        property={desc.property}
-                        valueGetter={(ev) => parseInt(ev.target.value)}
-                        onChange={props.onChange}
-                    ></TimeControlPropertySelector>
-                );
-            });
+            selectors = canadianSelectors.map((desc) => instantiate(desc, tc));
             selectors.push(
                 <TimeControlPropertyInput
                     tc={tc}
@@ -140,18 +151,7 @@ export function NewTimeControlPicker(props: NewTimeControlPickerProperties): JSX
             );
             break;
         case "byoyomi":
-            selectors = byoyomiSelectors.map((desc) => {
-                return (
-                    <TimeControlPropertySelector
-                        tc={tc}
-                        id={desc.id}
-                        name={desc.name}
-                        property={desc.property}
-                        valueGetter={(ev) => parseInt(ev.target.value)}
-                        onChange={props.onChange}
-                    ></TimeControlPropertySelector>
-                );
-            });
+            selectors = byoyomiSelectors.map((desc) => instantiate(desc, tc));
             selectors.push(
                 <TimeControlPropertyInput
                     tc={tc}
@@ -166,21 +166,63 @@ export function NewTimeControlPicker(props: NewTimeControlPickerProperties): JSX
             );
             break;
         case "absolute":
-            selectors = absoluteSelectors.map((desc) => {
-                return (
-                    <TimeControlPropertySelector
-                        tc={tc}
-                        id={desc.id}
-                        name={desc.name}
-                        property={desc.property}
-                        valueGetter={(ev) => parseInt(ev.target.value)}
-                        onChange={props.onChange}
-                    ></TimeControlPropertySelector>
-                );
-            });
+            selectors = absoluteSelectors.map((desc) => instantiate(desc, tc));
             break;
     }
-    return <>{selectors}</>;
+
+    return (
+        <div className="TimeControlPicker">
+            {
+                <div className="form-group">
+                    <label className="control-label" htmlFor="challenge-speed">
+                        {_("Game Speed")}
+                    </label>
+                    <div className="controls">
+                        <div className="checkbox">
+                            <select
+                                id="challenge-speed"
+                                value={tc.speed}
+                                // onChange={this.update_speed_bracket}
+                                className="challenge-dropdown form-control"
+                                style={{ overflow: "hidden" }}
+                            >
+                                <option value="blitz">{_("Blitz")}</option>
+                                <option value="live">{_("Live")}</option>
+                                <option value="correspondence">{_("Correspondence")}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div className="form-group">
+                <label className="control-label" htmlFor="challenge-time-control">
+                    {_("Time Control")}
+                </label>
+                <div className="controls">
+                    <div className="checkbox">
+                        <select
+                            // disabled={!!this.props.force_system}
+                            value={tc.system}
+                            // onChange={this.update_time_control_system}
+                            id="challenge-time-control"
+                            className="challenge-dropdown form-control"
+                        >
+                            <option value="fischer">{_("Fischer")}</option>
+                            <option value="simple">{_("Simple")}</option>
+                            <option value="byoyomi">{_("Byo-Yomi")}</option>
+                            <option value="canadian">{_("Canadian")}</option>
+                            <option value="absolute">{_("Absolute")}</option>
+                            {(tc.speed === "correspondence" || null) && (
+                                <option value="none">{_("None")}</option>
+                            )}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            {selectors}
+        </div>
+    );
 }
 
 interface TimeControlPropertySelectorProps<T extends TimeControl, U extends keyof T> {
