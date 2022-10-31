@@ -19,154 +19,123 @@ import * as React from "react";
 import { _ } from "translate";
 
 import { TimeControl, TimeControlTypes } from "./TimeControl";
-import { time_options } from "./util";
+import { updateProperty, updateSpeed, updateSystem } from "./TimeControlUpdates";
+import { default_time_settings, getDefaultTimeControl, getTimeOptions } from "./util";
 
 type TimeControlSystem = TimeControlTypes.TimeControlSystem;
 type TimeControlSpeed = TimeControlTypes.TimeControlSpeed;
-type OnTimeControlChangeCallback = (tc: TimeControl) => void;
 
 interface NewTimeControlPickerProperties {
     timeControl: TimeControl;
-    onChange: OnTimeControlChangeCallback;
+    onChange: (tc: TimeControl) => void;
+    forceSystem?: TimeControlSystem;
     boardWidth?: number;
     boardHeight?: number;
 }
 
-interface TimePropertyDescription<T extends TimeControl, U extends keyof T> {
-    property: U;
-    name: string;
-    id: string;
-    getter: (ev: React.ChangeEvent<HTMLSelectElement>) => T[U];
-}
-
 const numeric = (ev: React.ChangeEvent<HTMLSelectElement>) => parseInt(ev.target.value);
-const fischerSelectors: TimePropertyDescription<
-    TimeControlTypes.Fischer,
-    keyof TimeControlTypes.Fischer
->[] = [
-    {
-        property: "initial_time",
-        name: _("Initial Time"),
-        id: "challenge-initial-time",
-        getter: numeric,
-    },
-    {
-        property: "time_increment",
-        name: _("Time Increment"),
-        id: "challenge-inc-time",
-        getter: numeric,
-    },
-    { property: "max_time", name: _("Max Time"), id: "challenge-max-time", getter: numeric },
-];
-const simpleSelectors: TimePropertyDescription<
-    TimeControlTypes.Simple,
-    keyof TimeControlTypes.Simple
->[] = [
-    {
-        property: "per_move",
-        name: _("Time per Move"),
-        id: "challenge-per-move-time",
-        getter: numeric,
-    },
-];
-const canadianSelectors: TimePropertyDescription<
-    TimeControlTypes.Canadian,
-    keyof TimeControlTypes.Canadian
->[] = [
-    {
-        property: "main_time",
-        name: _("Main Time"),
-        id: "challenge-main-time-canadian",
-        getter: numeric,
-    },
-    {
-        property: "period_time",
-        name: _("Time per Period"),
-        id: "challenge-per-canadian-period-time",
-        getter: numeric,
-    },
-];
-const byoyomiSelectors: TimePropertyDescription<
-    TimeControlTypes.ByoYomi,
-    keyof TimeControlTypes.ByoYomi
->[] = [
-    {
-        property: "main_time",
-        name: _("Main Time"),
-        id: "challenge-main-time-byoyomi",
-        getter: numeric,
-    },
-    {
-        property: "period_time",
-        name: _("Time per Period"),
-        id: "challenge-per-byoyomi-period-time",
-        getter: numeric,
-    },
-];
-const absoluteSelectors: TimePropertyDescription<
-    TimeControlTypes.Absolute,
-    keyof TimeControlTypes.Absolute
->[] = [
-    { property: "total_time", name: _("Total Time"), id: "challenge-total-time", getter: numeric },
-];
 
 export function NewTimeControlPicker(props: NewTimeControlPickerProperties): JSX.Element {
     const tc = props.timeControl;
-    const instantiate = <T extends TimeControl, U extends keyof T>(
-        desc: TimePropertyDescription<T, U>,
+
+    const onChangeProperty = <T extends TimeControl, U extends keyof T & string>(
+        tc: T,
+        property: U,
+        newValue: T[U],
+    ) => {
+        props.onChange(updateProperty(tc, property, newValue));
+    };
+    const onChangeSpeed = (speed: TimeControlSpeed) => {
+        props.onChange(updateSpeed(tc, speed));
+    };
+    const onChangeSystem = (system: TimeControlSystem) => {
+        props.onChange(updateSystem(tc, system));
+    };
+    const onChangePauseOnWeekends = (newValue: boolean) => {
+        props.onChange(updateProperty(tc, "pause_on_weekends", newValue));
+    };
+
+    const instantiate = <T extends TimeControl, U extends keyof T & string>(
+        property: U,
+        name: string,
+        id: string,
+        getter: (ev: React.ChangeEvent<HTMLSelectElement>) => T[U],
         tc: T,
     ) => {
         return (
             <TimeControlPropertySelector<T, U>
                 tc={tc}
-                id={desc.id}
-                name={desc.name}
-                property={desc.property}
-                valueGetter={desc.getter}
-                onChange={props.onChange}
+                id={id}
+                name={name}
+                property={property}
+                valueGetter={getter}
+                onChangeProperty={onChangeProperty}
             ></TimeControlPropertySelector>
         );
     };
+
+    if (props.forceSystem) {
+        onChangeSystem(props.forceSystem);
+    }
+
     let selectors: JSX.Element[] = [];
     switch (tc.system) {
         case "fischer":
-            selectors = fischerSelectors.map((desc) => instantiate(desc, tc));
+            selectors = [
+                instantiate("initial_time", _("Initial Time"), "tc-initial-time", numeric, tc),
+                instantiate("time_increment", _("Time Increment"), "tc-inc-time", numeric, tc),
+                instantiate("max_time", _("Max Time"), "tc-max-time", numeric, tc),
+            ];
             break;
         case "simple":
-            selectors = simpleSelectors.map((desc) => instantiate(desc, tc));
+            selectors = [instantiate("per_move", _("Time per Move"), "tc-per-move", numeric, tc)];
             break;
         case "canadian":
-            selectors = canadianSelectors.map((desc) => instantiate(desc, tc));
-            selectors.push(
+            selectors = [
+                instantiate("main_time", _("Main Time"), "tc-main-time-canadian", numeric, tc),
+                instantiate(
+                    "period_time",
+                    _("Time per Period"),
+                    "tc-per-period-canadian",
+                    numeric,
+                    tc,
+                ),
                 <TimeControlPropertyInput
                     tc={tc}
-                    id={"challenge-canadian-stones"}
+                    id={"tc-stones-per-period"}
                     name={_("Stones per Period")}
                     property={"stones_per_period"}
-                    min={default_time_options[tc.speed].canadian.stones_per_period_min}
-                    max={default_time_options[tc.speed].canadian.stones_per_period_max}
+                    min={default_time_settings[tc.speed].canadian.stones_per_period_min}
+                    max={default_time_settings[tc.speed].canadian.stones_per_period_max}
                     valueGetter={(ev) => parseInt(ev.target.value)}
-                    onChange={props.onChange}
+                    onChangeProperty={onChangeProperty}
                 ></TimeControlPropertyInput>,
-            );
+            ];
             break;
         case "byoyomi":
-            selectors = byoyomiSelectors.map((desc) => instantiate(desc, tc));
-            selectors.push(
+            selectors = [
+                instantiate("main_time", _("Main Time"), "tc-main-time-byoyomi", numeric, tc),
+                instantiate(
+                    "period_time",
+                    _("Time per Period"),
+                    "tc-per-period-byoyomi",
+                    numeric,
+                    tc,
+                ),
                 <TimeControlPropertyInput
                     tc={tc}
-                    id={"challenge-periods-byoyomi"}
+                    id={"tc-periods-byoyomi"}
                     name={_("Periods")}
                     property={"periods"}
-                    min={default_time_options[tc.speed].byoyomi.periods_min}
-                    max={default_time_options[tc.speed].byoyomi.periods_max}
+                    min={default_time_settings[tc.speed].byoyomi.periods_min}
+                    max={default_time_settings[tc.speed].byoyomi.periods_max}
                     valueGetter={(ev) => parseInt(ev.target.value)}
-                    onChange={props.onChange}
+                    onChangeProperty={onChangeProperty}
                 ></TimeControlPropertyInput>,
-            );
+            ];
             break;
         case "absolute":
-            selectors = absoluteSelectors.map((desc) => instantiate(desc, tc));
+            selectors = [instantiate("total_time", _("Total Time"), "tc-total-time", numeric, tc)];
             break;
     }
 
@@ -182,7 +151,9 @@ export function NewTimeControlPicker(props: NewTimeControlPickerProperties): JSX
                             <select
                                 id="challenge-speed"
                                 value={tc.speed}
-                                // onChange={this.update_speed_bracket}
+                                onChange={(ev) =>
+                                    onChangeSpeed(ev.target.value as TimeControlSpeed)
+                                }
                                 className="challenge-dropdown form-control"
                                 style={{ overflow: "hidden" }}
                             >
@@ -202,9 +173,9 @@ export function NewTimeControlPicker(props: NewTimeControlPickerProperties): JSX
                 <div className="controls">
                     <div className="checkbox">
                         <select
-                            // disabled={!!this.props.force_system}
+                            disabled={!!props.forceSystem}
                             value={tc.system}
-                            // onChange={this.update_time_control_system}
+                            onChange={(ev) => onChangeSystem(ev.target.value as TimeControlSystem)}
                             id="challenge-time-control"
                             className="challenge-dropdown form-control"
                         >
@@ -221,20 +192,41 @@ export function NewTimeControlPicker(props: NewTimeControlPickerProperties): JSX
                 </div>
             </div>
             {selectors}
+            {tc.speed === "correspondence" && tc.system !== "none" && (
+                <div
+                    id="challenge-pause-on-weekends-div"
+                    className="form-group"
+                    style={{ position: "relative" }}
+                >
+                    <label className="control-label" htmlFor="challenge-pause-on-weekends">
+                        {_("Pause on Weekends")}
+                    </label>
+                    <div className="controls">
+                        <div className="checkbox">
+                            <input
+                                checked={tc.pause_on_weekends}
+                                onChange={(ev) => onChangePauseOnWeekends(ev.target.checked)}
+                                id="challenge-pause-on-weekends"
+                                type="checkbox"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
 
-interface TimeControlPropertySelectorProps<T extends TimeControl, U extends keyof T> {
+interface TimeControlPropertySelectorProps<T extends TimeControl, U extends keyof T & string> {
     tc: T;
     id: string;
     name: string;
     property: U;
     valueGetter: (ev: React.ChangeEvent<HTMLSelectElement>) => T[U];
-    onChange: OnTimeControlChangeCallback;
+    onChangeProperty: (tc: T, property: U, newValue: T[U]) => void;
 }
 
-function TimeControlPropertySelector<T extends TimeControl, U extends keyof T>(
+function TimeControlPropertySelector<T extends TimeControl, U extends keyof T & string>(
     props: TimeControlPropertySelectorProps<T, U>,
 ): JSX.Element {
     return (
@@ -249,15 +241,10 @@ function TimeControlPropertySelector<T extends TimeControl, U extends keyof T>(
                         className="form-control time-spinner"
                         value={`${props.tc[props.property]}`}
                         onChange={(ev: React.ChangeEvent<HTMLSelectElement>) => {
-                            const new_tc = updateProperty(
-                                props.tc,
-                                props.property,
-                                props.valueGetter(ev),
-                            );
-                            props.onChange(new_tc);
+                            props.onChangeProperty(props.tc, props.property, props.valueGetter(ev));
                         }}
                     >
-                        {time_options[props.tc.speed][props.tc.system][props.property].map(
+                        {getTimeOptions(props.tc.speed, props.tc.system, props.property).map(
                             (it, idx) => (
                                 <option key={idx} value={it.time}>
                                     {it.label}
@@ -271,7 +258,7 @@ function TimeControlPropertySelector<T extends TimeControl, U extends keyof T>(
     );
 }
 
-interface TimeControlPropertyInputProps<T extends TimeControl, U extends keyof T> {
+interface TimeControlPropertyInputProps<T extends TimeControl, U extends keyof T & string> {
     tc: T;
     id: string;
     name: string;
@@ -279,10 +266,10 @@ interface TimeControlPropertyInputProps<T extends TimeControl, U extends keyof T
     min: number;
     max: number;
     valueGetter: (ev: React.ChangeEvent<HTMLInputElement>) => T[U];
-    onChange: OnTimeControlChangeCallback;
+    onChangeProperty: (tc: T, property: U, newValue: T[U]) => void;
 }
 
-function TimeControlPropertyInput<T extends TimeControl, U extends keyof T>(
+function TimeControlPropertyInput<T extends TimeControl, U extends keyof T & string>(
     props: TimeControlPropertyInputProps<T, U>,
 ): JSX.Element {
     return (
@@ -300,19 +287,14 @@ function TimeControlPropertyInput<T extends TimeControl, U extends keyof T>(
                         className="challenge-dropdown form-control"
                         value={`${props.tc[props.property]}`}
                         onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
-                            const new_tc = updateProperty(
-                                props.tc,
-                                props.property,
-                                props.valueGetter(ev),
-                            );
-                            props.onChange(new_tc);
+                            props.onChangeProperty(props.tc, props.property, props.valueGetter(ev));
                         }}
                         onBlur={(sender) =>
                             numericInputOnBlur(
                                 sender,
                                 props.tc.speed,
                                 props.tc.system,
-                                props.property as string,
+                                props.property,
                             )
                         }
                     />
@@ -322,138 +304,18 @@ function TimeControlPropertyInput<T extends TimeControl, U extends keyof T>(
     );
 }
 
-function updateProperty<T extends TimeControl, U extends keyof T>(
-    timeControl: T,
-    property: U,
-    newValue: T[U],
-): T {
-    const copy: T = Object.assign({}, timeControl);
-    copy[property] = newValue;
-    return copy;
-}
-
-const default_time_options = {
-    blitz: {
-        system: "byoyomi",
-
-        fischer: {
-            initial_time: 30,
-            time_increment: 10,
-            max_time: 60,
-            pause_on_weekends: false,
-        },
-        byoyomi: {
-            main_time: 30,
-            period_time: 5,
-            periods: 5,
-            periods_min: 1,
-            periods_max: 300,
-            pause_on_weekends: false,
-        },
-        canadian: {
-            main_time: 30,
-            period_time: 30,
-            stones_per_period: 5,
-            stones_per_period_min: 1,
-            stones_per_period_max: 50,
-            pause_on_weekends: false,
-        },
-        simple: {
-            per_move: 5,
-            pause_on_weekends: false,
-        },
-        absolute: {
-            total_time: 300,
-            pause_on_weekends: false,
-        },
-    },
-    live: {
-        system: "byoyomi",
-        pause_on_weekends: false,
-        fischer: {
-            initial_time: 120,
-            time_increment: 30,
-            max_time: 300,
-            pause_on_weekends: false,
-        },
-        byoyomi: {
-            main_time: 10 * 60,
-            period_time: 30,
-            periods: 5,
-            periods_min: 1,
-            periods_max: 300,
-            pause_on_weekends: false,
-        },
-        canadian: {
-            main_time: 10 * 60,
-            period_time: 180,
-            stones_per_period: 10,
-            stones_per_period_min: 1,
-            stones_per_period_max: 50,
-            pause_on_weekends: false,
-        },
-        simple: {
-            per_move: 60,
-            pause_on_weekends: false,
-        },
-        absolute: {
-            total_time: 900,
-            pause_on_weekends: false,
-        },
-    },
-    correspondence: {
-        system: "fischer",
-        fischer: {
-            initial_time: 3 * 86400,
-            time_increment: 86400,
-            max_time: 7 * 86400,
-            pause_on_weekends: true,
-        },
-        byoyomi: {
-            main_time: 7 * 86400,
-            period_time: 1 * 86400,
-            periods: 5,
-            periods_min: 1,
-            periods_max: 300,
-            pause_on_weekends: true,
-        },
-        canadian: {
-            main_time: 7 * 86400,
-            period_time: 7 * 86400,
-            stones_per_period: 10,
-            stones_per_period_min: 1,
-            stones_per_period_max: 50,
-            pause_on_weekends: true,
-        },
-        simple: {
-            per_move: 2 * 86400,
-            pause_on_weekends: true,
-        },
-        absolute: {
-            total_time: 28 * 86400,
-            pause_on_weekends: true,
-        },
-        none: {
-            pause_on_weekends: false,
-        },
-    },
-};
-
-// TODO: Guard against invalid combinations, such as
-// { speed: "live", time_control_system: "none" }
-// Currently, this causes a ts-strict implicit any error.
 function numericInputOnBlur(
     sender: React.FocusEvent<HTMLInputElement, Element>,
     speed: TimeControlSpeed,
-    time_control_system: TimeControlSystem,
+    system: TimeControlSystem,
     propertyName: string,
 ) {
     const num = sender.target.valueAsNumber;
-    const min: number = default_time_options[speed][time_control_system][`${propertyName}_min`];
-    const max: number = default_time_options[speed][time_control_system][`${propertyName}_max`];
+    const min: number = getDefaultTimeControl(speed, system)[`${propertyName}_min`];
+    const max: number = getDefaultTimeControl(speed, system)[`${propertyName}_max`];
 
     if (isNaN(num)) {
-        sender.target.value = default_time_options[speed][time_control_system][`${propertyName}`];
+        sender.target.value = getDefaultTimeControl(speed, system)[propertyName];
     } else if (num < min || num > max) {
         sender.target.value = Math.min(Math.max(num, min), max).toString();
     }
