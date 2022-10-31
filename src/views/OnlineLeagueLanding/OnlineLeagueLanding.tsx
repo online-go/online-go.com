@@ -102,8 +102,11 @@ export function OnlineLeagueLanding(): JSX.Element {
                 }
             })
             .catch((err) => {
+                // Note: some expected use-cases come through here, including a person trying to use the link of a cancelled game
+                // The server is expected to provide a sensible error message in those cases.
                 alert.close();
                 errorAlerter(err);
+                navigate("/", { replace: true });
             });
     };
 
