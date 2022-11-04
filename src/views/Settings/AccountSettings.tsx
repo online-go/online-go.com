@@ -94,7 +94,7 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
                 setCountry(settings.country);
                 setWebsite(settings.website);
                 setEmailValidated(settings.email_validated);
-                setEmailValidated(settings.email);
+                setEmail(settings.email);
                 setLoading(false);
             })
             .catch(errorLogger);
