@@ -1302,7 +1302,21 @@ export function Game(): JSX.Element {
                         goban_div.current.removeAttribute("data-tournament-id");
                     }
                 })
-                .catch(ignore);
+                .catch((e) => {
+                    if (e.statusText === "abort") {
+                        console.error("Error: abort", e);
+                        return;
+                    }
+                    if (e.statusText === "Not Found") {
+                        console.error("Error: not found, handled 10s later by socket.ts", e);
+                        return;
+                    }
+                    console.error(e);
+                    void alert.fire({
+                        title: "Failed to load game data: " + e.statusText,
+                        icon: "error",
+                    });
+                });
         }
 
         if (review_id) {
