@@ -81,9 +81,10 @@ export function OnlineLeagueGame(): JSX.Element {
             {(loading || null) && <LoadingPage />}
             {(!loading || null) && (
                 <div className="unstarted-match">
-                    <h2>
-                        {target_match.league} Match {target_match.id}
-                    </h2>
+                    <h2>{target_match.name}</h2>
+                    <div>
+                        ({target_match.league} Match {target_match.id})
+                    </div>
                     <div>{_("That game hasn't started yet!")}</div>
                     <div>{_("... stay on this page to be taken to the game when it starts.")}</div>
                     <LoadingPage slow /> {/* persuade them that there is life :) */}
