@@ -56,6 +56,7 @@ export const defaults = {
     "notify-on-incident-report": true,
     "hide-incident-reports": false,
     "hide-claimed-reports": false,
+    "hide-mod-tools": false,
     "observed-games-page-size": 9,
     "observed-games-viewing": "live",
     "observed-games-filter": {},
@@ -263,3 +264,4 @@ export function usePreference<KeyT extends ValidPreference>(
 
     return [value, setStateAndPreference];
 }
+
