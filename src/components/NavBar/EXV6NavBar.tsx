@@ -249,19 +249,22 @@ export function EXV6NavBar(): JSX.Element {
                         {_("SGF Library")}
                     </Link>
 
-                    {user.is_moderator && (
+                    {user.is_moderator && 
+                    !preferences.get("hide-mod-tools") && (
                         <Link className="admin-link" to="/moderator">
                             <i className="fa fa-gavel"></i>
                             {_("Moderator Center")}
                         </Link>
                     )}
-                    {user.is_moderator && (
+                    {user.is_moderator && 
+                    !preferences.get("hide-mod-tools") && (
                         <Link className="admin-link" to="/appeals-center">
                             <i className="fa fa-gavel"></i>
                             {_("Appeals Center")}
                         </Link>
                     )}
-                    {user.is_moderator && (
+                    {user.is_moderator && 
+                    !preferences.get("hide-mod-tools") && (
                         <Link className="admin-link" to="/admin/firewall">
                             <i className="fa fa-fire-extinguisher"></i>
                             Firewall
