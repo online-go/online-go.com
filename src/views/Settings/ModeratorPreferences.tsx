@@ -38,6 +38,7 @@ export function ModeratorPreferences(_props: SettingGroupPageProps): JSX.Element
     );
     const [hide_flags, setHideFlags] = usePreference("moderator.hide-flags");
     const [hide_profile, setHideProfile] = usePreference("moderator.hide-profile-information");
+    const [hide_mod_tools, setHideModTools] = usePreference("moderator.hide-mod-tools");
 
     const user = data.get("user");
 
@@ -67,6 +68,9 @@ export function ModeratorPreferences(_props: SettingGroupPageProps): JSX.Element
             </PreferenceLine>
             <PreferenceLine title="Hide moderator information on profile pages">
                 <Toggle checked={hide_profile} onChange={setHideProfile} />
+            </PreferenceLine>
+            <PreferenceLine title="Hide moderator tools">
+                <Toggle checked={hide_mod_tools} onChange={setHideModTools} />
             </PreferenceLine>
         </div>
     );
