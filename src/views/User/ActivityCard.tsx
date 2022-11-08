@@ -122,23 +122,24 @@ export function ActivityCard({
                     <div>{_("Not a member of any groups")}</div>
                 </div>
             )}
-            <h4>{_("Online Leagues")}</h4>
             {online_leagues?.length ? (
-                <div>
-                    <dl className="activity-dl">
-                        {online_leagues.map((league, idx) => (
-                            <dd key={idx}>
-                                {league.name}
-                                {(league.membership_id || null) && `: ${league.membership_id}`}
-                            </dd>
-                        ))}
-                    </dl>
-                </div>
-            ) : (
-                <div>
-                    <div>{_("Not a member of any online leagues")}</div>
-                </div>
-            )}
+                <>
+                    <h4>{_("Online Leagues")}</h4>
+                    <div>
+                        <dl className="activity-dl">
+                            {online_leagues.map((league, idx) => (
+                                <dd key={idx}>
+                                    {league.name}
+                                    {(league.membership_id || null) && `: ${league.membership_id}`}
+                                </dd>
+                            ))}
+                        </dl>
+                    </div>
+                    <div>
+                        <div>{_("Not a member of any online leagues")}</div>
+                    </div>
+                </>
+            ) : null}
         </Card>
     );
 }
