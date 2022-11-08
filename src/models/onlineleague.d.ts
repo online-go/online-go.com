@@ -20,6 +20,7 @@ declare namespace rest_api {
         // /api/vi/online_league/commence
         interface MatchStatus {
             id: number; // pk for OnlineLeagueChallenge
+            name: string; // the match "name", also set as the game "name"
             league: string; // acronym/name
             player_key: string; // shortuuid
             side: string; // black or white
@@ -31,6 +32,7 @@ declare namespace rest_api {
         //  /api/v1/online_league/matches
         interface MatchDetails {
             id: number; // pk for OnlineLeagueChallenge
+            name: string; // the match "name", also set as the game "name"
             black_member_id: string; // shortuuid
             black_invite: string; // URL
             white_member_id: string; // shortuuid

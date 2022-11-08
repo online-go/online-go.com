@@ -178,9 +178,12 @@ export function OnlineLeagueLanding(): JSX.Element {
             {(loading || null) && <LoadingPage />}
 
             {(!loading || null) && (
-                <h2>
-                    {match.league} Match {match.id}
-                </h2>
+                <React.Fragment>
+                    <h2>{match.name}</h2>
+                    <div>
+                        ({match.league} Match {match.id})
+                    </div>
+                </React.Fragment>
             )}
 
             {((!logged_in && !loading) || null) && (
