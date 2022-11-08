@@ -1462,8 +1462,6 @@ export function Game(): JSX.Element {
                         {((view_mode === "portrait" && !zen_mode) || null) && (
                             <GameDock
                                 annulled={annulled}
-                                review_id={review_id}
-                                game_id={game_id}
                                 selected_ai_review_uuid={selected_ai_review_uuid}
                                 tournament_id={tournament_id.current}
                                 ladder_id={ladder_id.current}
@@ -1515,8 +1513,6 @@ export function Game(): JSX.Element {
 
                             <GameDock
                                 annulled={annulled}
-                                review_id={review_id}
-                                game_id={game_id}
                                 selected_ai_review_uuid={selected_ai_review_uuid}
                                 tournament_id={tournament_id.current}
                                 ladder_id={ladder_id.current}

@@ -37,8 +37,6 @@ import { useGoban } from "./goban_context";
 
 interface DockProps {
     annulled: boolean;
-    review_id?: number;
-    game_id?: number;
     selected_ai_review_uuid: string | null;
     tournament_id?: number;
     ladder_id?: number;
@@ -59,8 +57,6 @@ interface DockProps {
 }
 export function GameDock({
     annulled,
-    review_id,
-    game_id,
     selected_ai_review_uuid,
     tournament_id,
     ladder_id,
@@ -92,13 +88,15 @@ export function GameDock({
     const unannulable = annulled && engine.config.ranked;
     const user_is_player = useUserIsParticipant(goban);
 
+    const review_id: number = goban.config.review_id;
+    const game_id = Number(goban.config.game_id);
+
     const review = !!review_id;
     const game = !!game_id;
     if (review) {
         superuser_ai_review_ready = false;
         mod = false;
         annul = false;
-        game_id = Number(goban.config.game_id);
     }
 
     let sgf_download_enabled = false;
@@ -108,20 +106,16 @@ export function GameDock({
         // ignore error
     }
 
-    const sgf_url = game_id
-        ? api1(`games/${game_id}/sgf`)
-        : api1(`reviews/${review_id}/sgf?without-comments=1`);
-    let sgf_with_comments_url: string | null = null;
-    let sgf_with_ai_review_url: string | null = null;
-    if (game_id) {
-        if (selected_ai_review_uuid) {
-            sgf_with_ai_review_url = api1(
-                `games/${game_id}/sgf?ai_review=${selected_ai_review_uuid}`,
-            );
-        }
-    } else {
-        sgf_with_comments_url = api1(`reviews/${review_id}/sgf`);
-    }
+    const sgf_url = review_id
+        ? api1(`reviews/${review_id}/sgf?without-comments=1`)
+        : api1(`games/${game_id}/sgf`);
+    const sgf_with_ai_review_url: string | null =
+        game_id && selected_ai_review_uuid
+            ? `games/${game_id}/sgf?ai_review=${selected_ai_review_uuid}`
+            : null;
+    const sgf_with_comments_url: string | null = review_id
+        ? api1(`reviews/${review_id}/sgf`)
+        : null;
 
     const openACL = () => {
         if (game_id) {
