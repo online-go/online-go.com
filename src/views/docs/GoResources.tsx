@@ -143,9 +143,9 @@ export const GoResources = () => {
                                 ]}
                                 editions={[
                                     {
-                                        title: "2019 Edition (pdf)",
+                                        title: "2022 Edition (pdf)",
                                         country: en,
-                                        href: "https://cdn.online-go.com/81_little_lions/Immanuel%20deVillers%20-%2081%20Little%20Lions%20-%20An%20Introduction%20to%20the%209x9%20Board%20for%20Advanced%20Beginners%20-%20Revised%20Edition%20(2019).pdf",
+                                        href: "https://cdn.online-go.com/81_little_lions/81_little_lions_an_introduction_to_the_9x9_board_for_advanced_beginners_2022.pdf",
                                     },
                                     {
                                         title: "2019 Edition (azw3)",
