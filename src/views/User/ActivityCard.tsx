@@ -135,9 +135,6 @@ export function ActivityCard({
                             ))}
                         </dl>
                     </div>
-                    <div>
-                        <div>{_("Not a member of any online leagues")}</div>
-                    </div>
                 </>
             ) : null}
         </Card>
