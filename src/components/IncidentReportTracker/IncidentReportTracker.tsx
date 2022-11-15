@@ -228,9 +228,15 @@ export function IncidentReportTracker(): JSX.Element {
                     return parseInt(b.id) - parseInt(a.id);
                 }
                 if (a.moderator && !b.moderator) {
+                    if (a.moderator.id === user.id) {
+                        return A_BEFORE_B;
+                    }
                     return B_BEFORE_A;
                 }
                 if (b.moderator && !a.moderator) {
+                    if (b.moderator.id === user.id) {
+                        return B_BEFORE_A;
+                    }
                     return A_BEFORE_B;
                 }
 
