@@ -35,7 +35,7 @@ export function VersusCard(props: VersusCardProps) {
 
     return (
         <Card>
-            <h5 style={{ textAlign: "center" }}>
+            <h5 style={{ textAlign: "center", overflowWrap: "anywhere" }}>
                 {interpolate(
                     "You have won {{vs.wins}} out of {{vs.total}} games against {{username}}",
                     {
