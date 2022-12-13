@@ -21,9 +21,6 @@ import { browserHistory } from "ogsHistory";
 import * as preferences from "preferences";
 import { alert } from "swal_config";
 
-import { Goban } from "goban";
-import { isLiveGame } from "TimeControl";
-
 export type Timeout = ReturnType<typeof setTimeout>;
 
 export function updateDup(obj: any, field: string, value: any) {
@@ -37,27 +34,6 @@ export function updateDup(obj: any, field: string, value: any) {
     return ret;
 }
 
-export function timeControlSystemText(system) {
-    if (!system) {
-        return "[unknown]";
-    }
-
-    switch (system.toLowerCase()) {
-        case "fischer":
-            return _("Fischer");
-        case "simple":
-            return _("Simple");
-        case "byoyomi":
-            return _("Byo-Yomi");
-        case "canadian":
-            return _("Canadian");
-        case "absolute":
-            return _("Absolute");
-        case "none":
-            return _("None");
-    }
-    return "[unknown]";
-}
 export function rulesText(rules) {
     if (!rules) {
         return "[unknown]";
@@ -651,22 +627,6 @@ export function getCurrentGameId() {
         return parseInt(m[2]);
     }
     return null;
-}
-
-export function lookingAtOurLiveGame(): boolean {
-    // Is the current page looking at a game we are live playing in...
-    const goban = window["global_goban"] as Goban;
-    if (!goban) {
-        return false;
-    }
-    const player_id = goban.config.player_id;
-
-    return (
-        goban &&
-        goban.engine.phase !== "finished" &&
-        isLiveGame(goban.engine.time_control, goban.engine.width, goban.engine.height) &&
-        goban.engine.isParticipant(player_id)
-    );
 }
 
 /* This code is hacked together from

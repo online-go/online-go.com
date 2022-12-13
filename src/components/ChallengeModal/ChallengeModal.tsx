@@ -37,11 +37,12 @@ import { CreatedChallengeInfo, RuleSet } from "types";
 import { errorLogger, errorAlerter, rulesText, dup } from "misc";
 import { PlayerIcon } from "PlayerIcon";
 import {
-    timeControlText,
     shortShortTimeControl,
     isLiveGame,
     getDefaultTimeControl,
     TimeControlTypes,
+    TimeControlPicker,
+    timeControlSystemText,
 } from "TimeControl";
 import { sfx } from "sfx";
 import * as preferences from "preferences";
@@ -61,8 +62,7 @@ import {
 import { copyChallengeLinkURL } from "ChallengeLinkButton";
 
 import { alert } from "swal_config";
-import { NewTimeControlPicker } from "../TimeControl/NewTimeControlPicker";
-import { getTimeControlSpeedWarning, updateSystem } from "../TimeControl/TimeControlUpdates";
+import { updateSystem, getTimeControlSpeedWarning } from "TimeControl/TimeControlUpdates";
 
 type ChallengeDetails = rest_api.ChallengeDetails;
 
@@ -1332,7 +1332,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                             </div>
                         </div>
                     )}
-                    <NewTimeControlPicker
+                    <TimeControlPicker
                         timeControl={this.state.time_control}
                         onChange={(tc) => {
                             console.log("Time control changed to ", tc);
@@ -1343,7 +1343,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         boardWidth={challenge.game.width}
                         boardHeight={challenge.game.height}
                         forceSystem={forceSystem}
-                    ></NewTimeControlPicker>
+                    ></TimeControlPicker>
                 </div>
 
                 <div className="right-pane pane form-horizontal">
@@ -1922,10 +1922,12 @@ export function challenge_text_description(challenge) {
 
     if (typeof time_control === "object") {
         if (time_control.time_control !== "none") {
+            // This is gross and still needs refactoring, but preserves the old behavior
+            const time_control_system = time_control.system || time_control.time_control;
             details_html +=
                 ", " +
                 interpolate(_("%s clock: %s"), [
-                    timeControlText(time_control),
+                    timeControlSystemText(time_control_system).toLocaleLowerCase(),
                     shortShortTimeControl(time_control),
                 ]);
         } else {

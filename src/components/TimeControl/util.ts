@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { computeAverageMoveTime, JGOFTimeControl } from "goban";
+import { computeAverageMoveTime, Goban, JGOFTimeControl } from "goban";
 import { _, pgettext, ngettext, interpolate } from "translate";
 import { TimeControl, TimeControlTypes } from "./TimeControl";
 
@@ -252,24 +252,25 @@ export function makeTimeControlParameters(tc: any, width?: number, height?: numb
     }
     throw new Error(`Invalid time control type: ${tc.system}`);
 }
-export function timeControlText(time_control) {
-    if (typeof time_control === "object") {
-        time_control = time_control.system || time_control.time_control;
+
+export function timeControlSystemText(system: TimeControlSystem) {
+    if (!system) {
+        return "[unknown]";
     }
 
-    switch (time_control) {
+    switch (system.toLowerCase()) {
         case "fischer":
-            return _("fischer");
-        case "none":
-            return _("none");
+            return _("Fischer");
         case "simple":
-            return _("simple");
-        case "canadian":
-            return _("canadian");
+            return _("Simple");
         case "byoyomi":
-            return _("byo-yomi");
+            return _("Byo-Yomi");
+        case "canadian":
+            return _("Canadian");
         case "absolute":
-            return _("absolute");
+            return _("Absolute");
+        case "none":
+            return _("None");
     }
     return "[unknown]";
 }
@@ -462,67 +463,29 @@ export function usedForCheating(time_control) {
     }
 }
 
-export function timeControlSystemText(system) {
-    switch (system) {
-        case "simple":
-            return pgettext("time control system", "simple");
-        case "fischer":
-            return pgettext("time control system", "fischer");
-        case "byoyomi":
-            return pgettext("time control system", "byo-yomi");
-        case "canadian":
-            return pgettext("time control system", "canadian byo-yomi");
-        case "absolute":
-            return pgettext("time control system", "absolute");
-        case "none":
-            return pgettext("time control system", "none");
-        default:
-            return "[error]";
+export function lookingAtOurLiveGame(): boolean {
+    // Is the current page looking at a game we are live playing in...
+    const goban = window["global_goban"] as Goban;
+    if (!goban) {
+        return false;
     }
-}
-export function validateTimeControl(tc: TimeControl): boolean {
-    let error = false;
+    const player_id = goban.config.player_id;
 
-    for (const k in tc) {
-        if (typeof tc[k] === "number" && isNaN(tc[k])) {
-            return false;
-        }
-    }
-
-    switch (tc.system) {
-        case "fischer":
-            error = error || tc.initial_time < 10;
-            error = error || tc.time_increment < 3;
-            error = error || tc.max_time < 10;
-            return !error;
-        case "byoyomi":
-            error = error || tc.main_time < 0;
-            error = error || tc.period_time < 3;
-            error = error || tc.periods < 1;
-            return !error;
-        case "simple":
-            error = error || tc.per_move < 3;
-            return !error;
-        case "canadian":
-            error = error || tc.main_time < 0;
-            error = error || tc.period_time < 3;
-            error = error || tc.stones_per_period < 1;
-            error = error || tc.period_time / tc.stones_per_period < 3;
-            return !error;
-        case "absolute":
-            error = error || tc.total_time < 60;
-            return !error;
-        case "none":
-            return !error;
-    }
+    return (
+        goban &&
+        goban.engine.phase !== "finished" &&
+        isLiveGame(goban.engine.time_control, goban.engine.width, goban.engine.height) &&
+        goban.engine.isParticipant(player_id)
+    );
 }
-export function isLiveGame(time_control: JGOFTimeControl, w?: number, h?: number) {
-    const average_move_time = computeAverageMoveTime(time_control, w, h);
-    return average_move_time > 0 && average_move_time < 3600;
+
+export function isLiveGame(time_control: JGOFTimeControl | TimeControl, w?: number, h?: number) {
+    const speed = classifyGameSpeed(time_control, w, h);
+    return speed === "live" || speed === "blitz";
 }
 
 export function classifyGameSpeed(
-    time_control: TimeControl,
+    time_control: TimeControl | JGOFTimeControl,
     w: number,
     h: number,
 ): TimeControlSpeed {

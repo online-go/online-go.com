@@ -1772,10 +1772,11 @@ export function Tournament(): JSX.Element {
                     )}
                     {editing && (
                         <TimeControlPicker
-                            value={tournament.time_control_parameters}
+                            timeControl={tournament.time_control_parameters}
                             onChange={setTimeControl}
                             boardWidth={tournament.board_size}
                             boardHeight={tournament.board_size}
+                            forceSystem={false}
                         />
                     )}
                     {!editing ? (

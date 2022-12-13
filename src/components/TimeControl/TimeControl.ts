@@ -29,16 +29,16 @@ export namespace TimeControlTypes {
     export const ALL_SYSTEMS: TimeControlSystem[] = [
         "fischer",
         "byoyomi",
-        "canadian",
         "simple",
+        "canadian",
         "absolute",
         "none",
     ];
     export const ALL_SYSTEMS_EXCEPT_NONE: TimeControlSystem[] = [
         "fischer",
         "byoyomi",
-        "canadian",
         "simple",
+        "canadian",
         "absolute",
     ];
 

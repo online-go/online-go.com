@@ -885,7 +885,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                         ", " +
                         interpolate(pgettext("time control", "%s %s timing"), [
                             shortShortTimeControl(C.time_control_parameters),
-                            timeControlSystemText(C.time_control),
+                            timeControlSystemText(C.time_control).toLocaleLowerCase(),
                         ]);
                 } catch (err) {
                     // ignore error
