@@ -26,7 +26,8 @@ import * as data from "data";
 import { _, interpolate, pgettext, npgettext } from "translate";
 import { get, put, post } from "requests";
 import { KBShortcut } from "KBShortcut";
-import { Goban, GoMath, GobanConfig } from "goban";
+import { GobanConfig, Goban } from "goban";
+import * as GoMath from "goban/src/GoMath";
 import { AutoTranslate } from "AutoTranslate";
 import { Markdown } from "Markdown";
 

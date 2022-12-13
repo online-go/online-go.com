@@ -15,7 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { GobanCanvasConfig, GoMath, PuzzleConfig, PuzzlePlacementSetting } from "goban";
+import { GobanCanvasConfig, PuzzleConfig, PuzzlePlacementSetting } from "goban";
+import * as GoMath from "goban/src/GoMath";
 import { errorAlerter, dup } from "misc";
 import { PuzzleTransform } from "./PuzzleTransform";
 import { _Puzzle } from "./Puzzle";

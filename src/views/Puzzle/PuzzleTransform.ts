@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { GoMath } from "goban";
+import * as GoMath from "goban/src/GoMath";
 
 export class TransformSettings {
     constructor(

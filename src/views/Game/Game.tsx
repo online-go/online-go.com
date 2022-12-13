@@ -31,7 +31,6 @@ import {
     Goban,
     GobanCanvas,
     GobanCanvasConfig,
-    GoMath,
     MoveTree,
     AudioClockEvent,
     GoEnginePhase,
@@ -39,6 +38,7 @@ import {
     GoConditionalMove,
     AnalysisTool,
 } from "goban";
+import * as GoMath from "goban/src/GoMath";
 import { isLiveGame } from "TimeControl";
 import { setExtraActionCallback, PlayerDetails } from "Player";
 import * as player_cache from "player_cache";

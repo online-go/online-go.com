@@ -17,7 +17,8 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { GoMath, PuzzleConfig } from "goban";
+import { PuzzleConfig } from "goban";
+import * as GoMath from "goban/src/GoMath";
 import { sfx } from "sfx";
 import { InstructionalGoban } from "./InstructionalGoban";
 import { browserHistory } from "ogsHistory";

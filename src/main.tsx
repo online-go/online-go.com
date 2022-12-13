@@ -22,12 +22,13 @@ apply_polyfills();
 
 import { configure_goban } from "configure-goban";
 import {
-    GoMath,
     init_score_estimator,
     set_remote_scorer,
     ScoreEstimateRequest,
     ScoreEstimateResponse,
 } from "goban";
+
+import * as GoMath from "goban/src/GoMath";
 
 import { OgsHelpProvider } from "OgsHelpProvider";
 import { HelpFlows } from "HelpFlows";

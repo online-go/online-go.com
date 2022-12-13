@@ -31,7 +31,6 @@ import { Errcode } from "Errcode";
 import { AIReviewChart } from "./AIReviewChart";
 import { Toggle } from "Toggle";
 import {
-    GoMath,
     MoveTree,
     JGOFAIReview,
     JGOFAIReviewMove,
@@ -42,6 +41,7 @@ import {
     AIReviewWorstMoveEntry,
     GobanCore,
 } from "goban";
+import * as GoMath from "goban/src/GoMath";
 import { game_control } from "./game_control";
 import { alert } from "swal_config";
 import { GobanContext } from "./goban_context";
