@@ -37,8 +37,8 @@ import {
     GobanModes,
     GoConditionalMove,
     AnalysisTool,
+    GoMath,
 } from "goban";
-import * as GoMath from "goban/src/GoMath";
 import { isLiveGame } from "TimeControl";
 import { setExtraActionCallback, PlayerDetails } from "Player";
 import * as player_cache from "player_cache";

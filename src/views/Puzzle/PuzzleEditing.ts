@@ -16,7 +16,7 @@
  */
 
 import { GobanCanvasConfig, PuzzleConfig, PuzzlePlacementSetting } from "goban";
-import * as GoMath from "goban/src/GoMath";
+import { GoMath } from "goban";
 import { errorAlerter, dup } from "misc";
 import { PuzzleTransform } from "./PuzzleTransform";
 import { _Puzzle } from "./Puzzle";

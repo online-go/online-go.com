@@ -26,9 +26,8 @@ import {
     set_remote_scorer,
     ScoreEstimateRequest,
     ScoreEstimateResponse,
+    GoMath,
 } from "goban";
-
-import * as GoMath from "goban/src/GoMath";
 
 import { OgsHelpProvider } from "OgsHelpProvider";
 import { HelpFlows } from "HelpFlows";

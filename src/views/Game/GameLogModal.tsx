@@ -21,7 +21,7 @@ import { _ } from "translate";
 import { openModal, Modal } from "Modal";
 import { Player } from "Player";
 import { socket } from "sockets";
-import * as GoMath from "goban/src/GoMath";
+import { GoMath } from "goban";
 
 interface Events {}
 
