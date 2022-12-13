@@ -19,7 +19,7 @@ import * as React from "react";
 import * as data from "data";
 import { _ } from "translate";
 
-import { time_options, makeTimeControlParameters } from "./util";
+import { time_options, default_time_settings, makeTimeControlParameters } from "./util";
 import { computeAverageMoveTime } from "goban";
 import { TimeControl, TimeControlTypes } from "./TimeControl";
 import { Speed } from "src/lib/types";
@@ -218,7 +218,7 @@ export class TimeControlPicker extends React.PureComponent<
         return makeTimeControlParameters(
             Object.assign(
                 {},
-                default_time_options[speed][time_control_system],
+                default_time_settings[speed][time_control_system],
                 data.get(`time_control.${speed}.${time_control_system}`),
                 { speed: speed },
                 { system: time_control_system },
@@ -538,8 +538,12 @@ export class TimeControlPicker extends React.PureComponent<
                                 <input
                                     type="number"
                                     id="challenge-periods"
-                                    min={default_time_options[this.state.speed].byoyomi.periods_min}
-                                    max={default_time_options[this.state.speed].byoyomi.periods_max}
+                                    min={
+                                        default_time_settings[this.state.speed].byoyomi.periods_min
+                                    }
+                                    max={
+                                        default_time_settings[this.state.speed].byoyomi.periods_max
+                                    }
                                     className="challenge-dropdown form-control"
                                     value={(this.state as TimeControlTypes.ByoYomi).periods}
                                     onChange={this.update_periods}
@@ -607,11 +611,11 @@ export class TimeControlPicker extends React.PureComponent<
                                     type="number"
                                     id="challenge-canadian-stones"
                                     min={
-                                        default_time_options[this.state.speed].canadian
+                                        default_time_settings[this.state.speed].canadian
                                             .stones_per_period_min
                                     }
                                     max={
-                                        default_time_options[this.state.speed].canadian
+                                        default_time_settings[this.state.speed].canadian
                                             .stones_per_period_max
                                     }
                                     className="challenge-dropdown form-control"
@@ -693,113 +697,6 @@ export class TimeControlPicker extends React.PureComponent<
     }
 }
 
-const default_time_options = {
-    blitz: {
-        system: "byoyomi",
-
-        fischer: {
-            initial_time: 30,
-            time_increment: 10,
-            max_time: 60,
-            pause_on_weekends: false,
-        },
-        byoyomi: {
-            main_time: 30,
-            period_time: 5,
-            periods: 5,
-            periods_min: 1,
-            periods_max: 300,
-            pause_on_weekends: false,
-        },
-        canadian: {
-            main_time: 30,
-            period_time: 30,
-            stones_per_period: 5,
-            stones_per_period_min: 1,
-            stones_per_period_max: 50,
-            pause_on_weekends: false,
-        },
-        simple: {
-            per_move: 5,
-            pause_on_weekends: false,
-        },
-        absolute: {
-            total_time: 300,
-            pause_on_weekends: false,
-        },
-    },
-    live: {
-        system: "byoyomi",
-        pause_on_weekends: false,
-        fischer: {
-            initial_time: 120,
-            time_increment: 30,
-            max_time: 300,
-            pause_on_weekends: false,
-        },
-        byoyomi: {
-            main_time: 10 * 60,
-            period_time: 30,
-            periods: 5,
-            periods_min: 1,
-            periods_max: 300,
-            pause_on_weekends: false,
-        },
-        canadian: {
-            main_time: 10 * 60,
-            period_time: 180,
-            stones_per_period: 10,
-            stones_per_period_min: 1,
-            stones_per_period_max: 50,
-            pause_on_weekends: false,
-        },
-        simple: {
-            per_move: 60,
-            pause_on_weekends: false,
-        },
-        absolute: {
-            total_time: 900,
-            pause_on_weekends: false,
-        },
-    },
-    correspondence: {
-        system: "fischer",
-        fischer: {
-            initial_time: 3 * 86400,
-            time_increment: 86400,
-            max_time: 7 * 86400,
-            pause_on_weekends: true,
-        },
-        byoyomi: {
-            main_time: 7 * 86400,
-            period_time: 1 * 86400,
-            periods: 5,
-            periods_min: 1,
-            periods_max: 300,
-            pause_on_weekends: true,
-        },
-        canadian: {
-            main_time: 7 * 86400,
-            period_time: 7 * 86400,
-            stones_per_period: 10,
-            stones_per_period_min: 1,
-            stones_per_period_max: 50,
-            pause_on_weekends: true,
-        },
-        simple: {
-            per_move: 2 * 86400,
-            pause_on_weekends: true,
-        },
-        absolute: {
-            total_time: 28 * 86400,
-            pause_on_weekends: true,
-        },
-        none: {
-            pause_on_weekends: false,
-        },
-    },
-};
-
 // TODO: Guard against invalid combinations, such as
 // { speed: "live", time_control_system: "none" }
 // Currently, this causes a ts-strict implicit any error.
@@ -810,11 +707,11 @@ function numericInputOnBlur(
     propertyName: string,
 ) {
     const num = sender.target.valueAsNumber;
-    const min: number = default_time_options[speed][time_control_system][`${propertyName}_min`];
-    const max: number = default_time_options[speed][time_control_system][`${propertyName}_max`];
+    const min: number = default_time_settings[speed][time_control_system][`${propertyName}_min`];
+    const max: number = default_time_settings[speed][time_control_system][`${propertyName}_max`];
 
     if (isNaN(num)) {
-        sender.target.value = default_time_options[speed][time_control_system][`${propertyName}`];
+        sender.target.value = default_time_settings[speed][time_control_system][`${propertyName}`];
     } else if (num < min || num > max) {
         sender.target.value = Math.min(Math.max(num, min), max).toString();
     }

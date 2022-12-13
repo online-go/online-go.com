@@ -36,7 +36,13 @@ import {
 import { CreatedChallengeInfo, RuleSet } from "types";
 import { errorLogger, errorAlerter, rulesText, dup } from "misc";
 import { PlayerIcon } from "PlayerIcon";
-import { timeControlText, shortShortTimeControl, isLiveGame, TimeControlPicker } from "TimeControl";
+import {
+    timeControlText,
+    shortShortTimeControl,
+    isLiveGame,
+    getDefaultTimeControl,
+    TimeControlTypes,
+} from "TimeControl";
 import { sfx } from "sfx";
 import * as preferences from "preferences";
 import { notification_manager } from "Notifications/NotificationManager";
@@ -55,6 +61,8 @@ import {
 import { copyChallengeLinkURL } from "ChallengeLinkButton";
 
 import { alert } from "swal_config";
+import { NewTimeControlPicker } from "../TimeControl/NewTimeControlPicker";
+import { getTimeControlSpeedWarning, updateSystem } from "../TimeControl/TimeControlUpdates";
 
 type ChallengeDetails = rest_api.ChallengeDetails;
 
@@ -119,7 +127,6 @@ const standard_board_sizes = {
 };
 
 export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any> {
-    ref_time_control_picker = React.createRef<TimeControlPicker>();
     constructor(props) {
         super(props);
 
@@ -191,7 +198,6 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     "custom",
                 restrict_rank: data.get("challenge.restrict_rank", false),
             },
-            //time_control: recallTimeControlSettings(speed),
             challenge: challenge,
 
             demo: data.get("demo.settings", {
@@ -215,6 +221,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             view_mode: goban_view_mode(),
             hide_preferred_settings_on_portrait: true,
             input_value_warning: false,
+            time_control: getDefaultTimeControl("correspondence", "byoyomi"),
         };
 
         if (this.props.playersList && this.props.playersList.length > 0) {
@@ -238,7 +245,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             }
 
             if (this.props.config.time_control) {
-                state.initial_time_control = this.props.config.time_control;
+                console.log(
+                    "Loading time control from config:",
+                    JSON.stringify(this.props.config.time_control),
+                );
+                state.time_control = this.props.config.time_control;
             }
         }
 
@@ -334,11 +345,17 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         });
     }
 
+    saveTimeControlSettings() {
+        const speed = this.state.time_control.speed as TimeControlTypes.TimeControlSpeed;
+        const system = this.state.time_control.system as TimeControlTypes.TimeControlSystem;
+        data.set(`time_control.speed`, speed);
+        data.set(`time_control.system`, system);
+        data.set(`time_control.${speed}.${system}`, this.state.time_control);
+    }
+
     saveSettings() {
         const next = this.next();
-        if (this.ref_time_control_picker.current) {
-            this.ref_time_control_picker.current.saveSettings();
-        }
+        this.saveTimeControlSettings();
         const speed = data.get("challenge.speed", "live");
         data.set(`challenge.challenge.${speed}`, next.challenge);
         data.set("challenge.bot", next.conf.bot_id);
@@ -380,7 +397,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         }
         this.setState({
             challenge: setting,
-            initial_time_control: JSON.parse(JSON.stringify(setting.game.time_control_parameters)),
+            time_control: JSON.parse(JSON.stringify(setting.game.time_control_parameters)),
             conf: Object.assign(this.state.conf, {
                 selected_board_size:
                     standard_board_sizes[`${setting.game.width}x${setting.game.height}`] ||
@@ -484,15 +501,14 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             challenge.max_ranking = 1000;
         }
 
-        challenge.game.time_control = this.ref_time_control_picker.current.time_control.system;
-        challenge.game.time_control_parameters = this.ref_time_control_picker.current.time_control;
+        challenge.game.time_control = this.state.time_control.system;
+        challenge.game.time_control_parameters = this.state.time_control;
 
         /* on our backend we still expect this to be named `time_control` for
          * old legacy reasons.. hopefully we can reconcile that someday */
         (challenge.game.time_control_parameters as any).time_control =
-            this.ref_time_control_picker.current.time_control.system;
-        challenge.game.pause_on_weekends =
-            this.ref_time_control_picker.current.time_control.pause_on_weekends;
+            this.state.time_control.system;
+        challenge.game.pause_on_weekends = this.state.time_control.pause_on_weekends;
 
         // Autostart only in casual mode
         challenge.rengo_auto_start =
@@ -558,10 +574,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         const challenge = this.getChallenge();
 
         const live = isLiveGame(
-            challenge.game.time_control_parameters,
+            this.state.time_control,
             challenge.game.width,
             challenge.game.height,
-        ); // save for after the post, below, when TimeControlPicker is gone
+        );
 
         let open_now = false;
         if (live && !this.state.challenge.invite_only) {
@@ -719,6 +735,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         ]);
     update_invite_only = (ev) => this.upstate("challenge.invite_only", ev);
     update_rengo = (ev) => {
+        this.forceTimeControlSystemIfNecessary(
+            ev.target.value,
+            this.state.challenge.game.rengo_casual_mode,
+        );
         this.upstate([
             ["challenge.game.rengo", ev],
             ["challenge.game.ranked", false],
@@ -726,6 +746,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         ]);
     };
     update_rengo_casual = (ev) => {
+        this.forceTimeControlSystemIfNecessary(this.state.challenge.game.rengo, ev.target.value);
         this.upstate("challenge.game.rengo_casual_mode", ev);
     };
 
@@ -816,6 +837,20 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         this.setState({
             selected_demo_player_white: idx,
         });
+    };
+
+    forceTimeControlSystemIfNecessary = (rengo: boolean, casual: boolean) => {
+        if (rengo && casual) {
+            const tc = updateSystem(
+                this.state.time_control,
+                "simple",
+                this.state.challenge.boardWidth,
+                this.state.challenge.boardHeight,
+            );
+            this.setState({
+                time_control: tc,
+            });
+        }
     };
 
     /* rendering  */
@@ -1262,6 +1297,8 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         const challenge = this.state.challenge;
         const conf = this.state.conf;
 
+        const forceSystem: boolean = challenge.game.rengo && challenge.game.rengo_casual_mode;
+
         return (
             <div
                 id="challenge-advanced-fields"
@@ -1295,17 +1332,18 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                             </div>
                         </div>
                     )}
-                    <TimeControlPicker
-                        value={this.state.initial_time_control}
-                        ref={this.ref_time_control_picker}
+                    <NewTimeControlPicker
+                        timeControl={this.state.time_control}
+                        onChange={(tc) => {
+                            console.log("Time control changed to ", tc);
+                            this.setState({
+                                time_control: tc,
+                            });
+                        }}
                         boardWidth={challenge.game.width}
                         boardHeight={challenge.game.height}
-                        force_system={
-                            challenge.game.rengo && challenge.game.rengo_casual_mode
-                                ? "simple"
-                                : undefined
-                        }
-                    />
+                        forceSystem={forceSystem}
+                    ></NewTimeControlPicker>
                 </div>
 
                 <div className="right-pane pane form-horizontal">
@@ -1574,6 +1612,12 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         const player = player_id && player_cache.lookup(player_id);
         const player_username = player ? player.username : "...";
 
+        const speed_warning = getTimeControlSpeedWarning(
+            this.state.time_control,
+            this.state.challenge.game.width,
+            this.state.challenge.game.height,
+        );
+
         if (player_id && !player) {
             player_cache
                 .fetch(player_id)
@@ -1608,6 +1652,14 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         {(mode === "demo" || null) && this.advancedDemoSettings()}
                     </div>
                 </div>
+                {speed_warning && (
+                    <div className="speed-warning">
+                        <span>
+                            <i className="fa fa-w fa-exclamation-triangle"></i>
+                            {speed_warning}
+                        </span>
+                    </div>
+                )}
                 <div className="buttons">
                     <button onClick={this.close}>{_("Close")}</button>
                     {(mode === "demo" || null) && (

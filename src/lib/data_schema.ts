@@ -20,11 +20,13 @@
  * all the possible keys as well as the associated value types.
  */
 
-import { GroupList, ActiveTournamentList, Speed, Size, RuleSet } from "./types";
+import { GroupList, ActiveTournamentList, Size, RuleSet } from "./types";
 import { Announcement } from "src/components/Announcements";
 import { ValidSound, ValidSoundGroup } from "./sfx";
 import { defaults as defaultPreferences, ValidPreference } from "./preferences";
 import { TimeControl, TimeControlTypes } from "src/components/TimeControl";
+import TimeControlSpeed = TimeControlTypes.TimeControlSpeed;
+import TimeControlSystem = TimeControlTypes.TimeControlSystem;
 import { AutomatchPreferences } from "src/components/AutomatchSettings";
 import { JosekiFilter } from "src/components/JosekiVariationFilter";
 import { Challenge } from "challenge_utils";
@@ -108,10 +110,10 @@ type PreferencesSchema = typeof defaultPreferences & {
 };
 
 type TimeControlSchema = {
-    speed: Speed;
-    system: TimeControlTypes.TimeControlSystem;
+    speed: TimeControlSpeed;
+    system: TimeControlSystem;
 } & {
-    [speed_system_key in `${Speed}.${TimeControlTypes.TimeControlSystem}`]: TimeControl;
+    [speed_system_key in `${TimeControlSpeed}.${TimeControlSystem}`]: TimeControl;
 };
 
 interface ChatIndicatorSchema {
@@ -125,10 +127,10 @@ interface PMSchema {
 }
 
 type AutomatchSchema = {
-    "last-tab": Speed;
+    "last-tab": TimeControlSpeed;
     size_options: Size[];
 } & {
-    [speed_key in Speed]: AutomatchPreferences;
+    [speed_key in TimeControlSpeed]: AutomatchPreferences;
 };
 
 type ObservedGamesSchema = {
@@ -142,10 +144,10 @@ interface AnnouncementsSchema {
 
 type ChallengeSchema = {
     bot: number;
-    speed: Speed;
+    speed: TimeControlSpeed;
     restrict_rank: boolean;
 } & {
-    [speed in `challenge.${Speed}`]: rest_api.ChallengeDetails;
+    [speed in `challenge.${TimeControlSpeed}`]: rest_api.ChallengeDetails;
 };
 
 interface DemoSettings {

@@ -521,6 +521,15 @@ export function isLiveGame(time_control: JGOFTimeControl, w?: number, h?: number
     return average_move_time > 0 && average_move_time < 3600;
 }
 
+export function classifyGameSpeed(
+    time_control: TimeControl,
+    w: number,
+    h: number,
+): TimeControlSpeed {
+    const tpm = computeAverageMoveTime(time_control, w, h);
+    return tpm === 0 || tpm > 3600 ? "correspondence" : tpm < 10 ? "blitz" : "live";
+}
+
 export function durationString(seconds: number): string {
     seconds = Math.round(seconds);
     const weeks = Math.floor(seconds / (86400 * 7));
@@ -615,12 +624,13 @@ type Reify<T extends TimeControlSystem> = T extends "fischer"
     : T extends "none"
     ? TimeControlTypes.None
     : never;
+type PropertyOf<T extends TimeControlSystem> = keyof Reify<T> & string;
 
-type TimeOption<T extends TimeControl> = {
-    [K in keyof T]?: LabeledTimeOption[];
+type TimeOption<T extends TimeControlSystem> = {
+    [K in PropertyOf<T>]?: LabeledTimeOption[];
 };
 type TimeOptions = {
-    [K in TimeControlSystem]?: TimeOption<Reify<K>>;
+    [K in TimeControlSystem]?: TimeOption<K>;
 };
 type TimeOptionsMap = {
     [K in TimeControlSpeed]: TimeOptions;
@@ -629,20 +639,20 @@ type TimeOptionsMap = {
 export function getTimeOptions(
     speed: TimeControlSpeed,
     system: TimeControlSystem,
-    property: string,
+    property: string, // Difficult to get this typed properly
 ): LabeledTimeOption[] {
     return time_options[speed][system][property] ?? [];
 }
 
-export function getDefaultTimeControl(
+export function getDefaultTimeControl<T extends TimeControlSystem>(
     speed: TimeControlSpeed,
-    system: TimeControlSystem,
-): TimeControl {
+    system: T,
+): Reify<T> {
     const settings = default_time_settings[speed][system];
-    return Object.assign(settings, {
+    return Object.assign({}, settings, {
         speed: speed,
         system: system,
-    }) as TimeControl;
+    }) as unknown as Reify<T>; // hacky but probably necessary
 }
 
 export const time_options: TimeOptionsMap = {

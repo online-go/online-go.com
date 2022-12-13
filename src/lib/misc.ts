@@ -1188,3 +1188,7 @@ export function skew_clock(ms: number): void {
 export function dev_site(): boolean {
     return window.location.hostname !== "online-go.com" && window.location.hostname !== "baduk.com";
 }
+
+export function capitalize<T extends string>(s: T): Capitalize<T> {
+    return (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<T>;
+}

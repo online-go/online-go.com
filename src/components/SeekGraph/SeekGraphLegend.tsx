@@ -54,7 +54,7 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
         filterKey: ChallengeFilterKey,
     ): JSX.Element => {
         return (
-            <div className="legend-item">
+            <div key={text} className="legend-item">
                 {props.showIcons && iconCreator()}
                 <input
                     id={text}
