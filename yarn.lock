@@ -5096,10 +5096,10 @@ glogg@^1.0.0:
   dependencies:
     sparkles "^1.0.0"
 
-goban@=0.5.118:
-  version "0.5.118"
-  resolved "https://registry.yarnpkg.com/goban/-/goban-0.5.118.tgz#946faef7082f9a8062bffb93f3934c39181740a4"
-  integrity sha512-Vp1nUVkOUq6u7cU5nat3+ykH6wNB0Pl6nqPnJF3jvVfHCSMCNwb283OjOjxVyAqcaxXMrO0/Lw00yT+1XrIK+Q==
+goban@=0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/goban/-/goban-0.6.0.tgz#c70ec6b7c663b4795b0d5a4580cdbec1ea769799"
+  integrity sha512-X1+iITsfuOrqjdaux86yGk11KLi/UMz+yXFhcl0L7+Ukri2SV75VRrqq1k5R+0JGKzMLi15cDU33+Z3W9cakHA==
 
 google-auth-library@^8.0.2:
   version "8.5.2"
