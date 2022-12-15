@@ -1343,7 +1343,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         boardWidth={challenge.game.width}
                         boardHeight={challenge.game.height}
                         forceSystem={forceSystem}
-                    ></TimeControlPicker>
+                    />
                 </div>
 
                 <div className="right-pane pane form-horizontal">

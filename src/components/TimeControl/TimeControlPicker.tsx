@@ -74,7 +74,7 @@ export function TimeControlPicker(props: TimeControlPickerProperties): JSX.Eleme
                 property={property}
                 valueGetter={getter}
                 onChangeProperty={onChangeProperty}
-            ></TimeControlPropertySelector>
+            />
         );
     };
 
@@ -111,7 +111,7 @@ export function TimeControlPicker(props: TimeControlPickerProperties): JSX.Eleme
                     default={default_time_settings[tc.speed].canadian.stones_per_period}
                     valueGetter={(ev) => parseInt(ev.target.value)}
                     onChangeProperty={onChangeProperty}
-                ></TimeControlPropertyInput>,
+                />,
             ];
             break;
         case "byoyomi":
@@ -135,7 +135,7 @@ export function TimeControlPicker(props: TimeControlPickerProperties): JSX.Eleme
                     default={default_time_settings[tc.speed].byoyomi.periods}
                     valueGetter={(ev) => parseInt(ev.target.value)}
                     onChangeProperty={onChangeProperty}
-                ></TimeControlPropertyInput>,
+                />,
             ];
             break;
         case "absolute":
