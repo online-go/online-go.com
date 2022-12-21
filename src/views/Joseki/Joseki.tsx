@@ -143,6 +143,7 @@ interface JosekiState {
     current_node_id?: string;
     most_recent_known_node?: string;
     position_description: string;
+    see_also: number[];
     variation_label: string;
     current_move_category: string;
     pass_available: boolean;
@@ -225,6 +226,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             current_node_id: this.props.match.params.pos || ("root" as string), // The server's ID for this node, so we can uniquely identify it and create our own route for it,
             most_recent_known_node: undefined as string, // the value of current_node_id when the person clicked on a node not in the db
             position_description: "",
+            see_also: [], // a list of node_ids that have the same board position (by unique board position id)
             variation_label: "_",
             current_move_category: "",
             pass_available: false, // Whether pass is one of the joseki moves or not.   Contains the category of the position resulting from pass, if present
@@ -426,7 +428,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
     };
 
     loadPosition = (node_id: string) => {
-        //console.log("load position:", node_id);
+        console.log("load position:", node_id);
         this.load_sequence_to_board = true;
         this.fetchNextMovesFor(node_id);
         this.move_trace = [];
@@ -501,12 +503,14 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                             ...this.cached_positions,
                         };
                     } else {
-                        /* console.log(
-                            "Ignoring server response ",
-                            target_node,
-                            " looking for ",
+                        // This can happen when (for example) the filter changes, causing a re-fetch with different filter params
+                        // with one already mid-flight.
+                        /*console.log(
+                            "Ignoring server response",
+                            target_node.node_id,
+                            " while looking for ",
                             this.waiting_for,
-                        );*/
+                        ); */
                     }
                 })
                 .catch((r) => {
@@ -620,6 +624,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             // I really wish I'd just put all of this into a single state object :S
             // It's on the "gee that would be good to refactor" list...
             position_description: position.description,
+            see_also: position.see_also,
             contributor_id: position.contributor,
             variation_label: position.variation_label, // needed for when we edit this position
             current_move_category: position.category,
@@ -630,6 +635,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             child_count: position.child_count,
             db_locked_down: position.db_locked_down,
         });
+        this.waiting_for = "";
         this.last_server_position = position.play;
         this.last_placement = position.placement;
         this.next_moves = position.next_moves;
@@ -1050,7 +1056,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
         data.set("oje-variation-filter", filter);
         this.cached_positions = {}; // dump cache because the filter changed, and the cache holds filtered results
         this.prefetching = false; // and ignore any results already in flight
-        this.fetchNextFilteredMovesFor(this.state.current_node_id, filter);
+        this.fetchNextFilteredMovesFor(this.waiting_for || this.state.current_node_id, filter);
     };
 
     updateMarks = (marks: Array<{ label: string; position: string }>) => {
@@ -1380,6 +1386,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                 <ExplorePane
                     description={this.state.position_description}
                     position_type={this.state.current_move_category}
+                    see_also={this.state.see_also}
                     comment_count={this.state.current_comment_count}
                     position_id={this.state.current_node_id}
                     can_comment={this.state.user_can_comment}
@@ -1498,6 +1505,7 @@ interface ExploreProps {
     position_id: string;
     description: string;
     position_type: string;
+    see_also: number[];
     comment_count: number;
     can_comment: boolean;
     joseki_source: { url: string; description: string };
@@ -1536,7 +1544,6 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
             next_comment: "",
             extra_throb: false,
         };
-        console.log("Explore pane constructor");
     }
 
     componentDidMount = () => {
@@ -1673,6 +1680,16 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
                         </div>
                     ) : (
                         "" // "(new)"
+                    )}
+                    {(this.props.see_also.length !== 0 || null) && (
+                        <div className="see-also-block">
+                            <div>{_("See also:")}</div>
+                            {this.props.see_also.map((node, index) => (
+                                <Link key={index} to={"/joseki/" + node + " "}>
+                                    {node}
+                                </Link>
+                            ))}
+                        </div>
                     )}
                 </div>
                 <div className={"extra-info-column extra-info-open"}>
