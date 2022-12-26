@@ -488,4 +488,29 @@ describe("PlayButtons", () => {
 
         expect(screen.queryByText("Accept Undo")).toBeNull();
     });
+
+    test("forked game where it's the first move, white to play, my move.", () => {
+        const goban = new Goban({
+            initial_player: "white",
+            players: {
+                black: { id: 456, username: "test_user2" },
+                white: { id: LOGGED_IN_USER.id, username: LOGGED_IN_USER.username },
+            },
+        });
+
+        render(
+            <GobanContext.Provider value={goban}>
+                <PlayButtons />
+            </GobanContext.Provider>,
+        );
+
+        // Present
+        expect(screen.getByText("Cancel game")).toBeDefined();
+        expect(screen.getByText("Pass")).toBeDefined();
+
+        // Absent
+        expect(screen.queryByText("Undo")).toBeNull();
+        expect(screen.queryByText("Accept Undo")).toBeNull();
+        expect(screen.queryByText("Submit Move")).toBeNull();
+    });
 });
