@@ -645,13 +645,10 @@ export const GoResources = () => {
                             <span>
                                 <Flag country={ru} />{" "}
                                 <a rel="noopener" href="https://www.twitch.tv/vladislav_vinokurov">
-                                   Vladislav Vinokurov Twitch
+                                    Vladislav Vinokurov Twitch
                                 </a>{" "}
                                 /{" "}
-                                <a
-                                    rel="noopener"
-                                    href="https://www.youtube.com/@user-qu1zq7ny5w"
-                                >
+                                <a rel="noopener" href="https://www.youtube.com/@user-qu1zq7ny5w">
                                     YouTube
                                 </a>
                             </span>,
