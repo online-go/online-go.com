@@ -642,6 +642,19 @@ export const GoResources = () => {
                                 title="Nihon Kiin do Brasil"
                                 href="https://www.twitch.tv/brasilnihonkiin"
                             />,
+                            <span>
+                                <Flag country={ru} />{" "}
+                                <a rel="noopener" href="https://www.twitch.tv/vladislav_vinokurov">
+                                   Vladislav Vinokurov Twitch
+                                </a>{" "}
+                                /{" "}
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/@user-qu1zq7ny5w"
+                                >
+                                    YouTube
+                                </a>
+                            </span>,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
                         ))}
