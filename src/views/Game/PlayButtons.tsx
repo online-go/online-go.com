@@ -36,9 +36,9 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): JSX.Eleme
     const engine = goban.engine;
     const phase = engine.phase;
 
-    const is_my_move = engine.playerToMove() === data.get("user").id;
     const cur_move_number = useCurrentMoveNumber(goban);
     const player_to_move = usePlayerToMove(goban);
+    const is_my_move = player_to_move === data.get("user").id;
 
     const [show_submit, setShowSubmit] = React.useState(false);
     React.useEffect(() => {
