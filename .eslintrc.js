@@ -114,7 +114,7 @@ module.exports = {
             "error",
             {
                 rules: {
-                    "file-header": [true, "[Cc]opyright ([(][Cc][)])?\\s*\\d{4}"],
+                    "file-header": [true, "[Cc]opyright ([(][Cc][)])?\\s*[Oo]nline-[gG]o.com"],
                     "import-spacing": true,
                     whitespace: [
                         true,

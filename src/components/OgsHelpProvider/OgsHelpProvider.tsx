@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2022 Online-Go.com.
+Copyright (c)  Online-Go.com.
 
  *
  * This program is free software: you can redistribute it and/or modify

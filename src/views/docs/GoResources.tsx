@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2022  Online-Go.com
+ * Copyright (C)  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -143,7 +143,7 @@ export const GoResources = () => {
                                 ]}
                                 editions={[
                                     {
-                                        title: "2022 Edition (pdf)",
+                                        title: " Edition (pdf)",
                                         country: en,
                                         href: "https://cdn.online-go.com/81_little_lions/81_little_lions_an_introduction_to_the_9x9_board_for_advanced_beginners_2022.pdf",
                                     },

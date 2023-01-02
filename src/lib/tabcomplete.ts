@@ -1,10 +1,17 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This file is heavily derived from "Nickname Tab Complete"
+ * by Doug Neiner and any changes made to this file are
+ * licensed under the same terms as the original.
+ */
+
 /*!
  * Nickname Tab Complete
  * Version: 0.8
  *
  * Copyright (c) 2010, Doug Neiner
  * Dual licenses under MIT or GPL
- *
  */
 
 import * as player_cache from "player_cache";

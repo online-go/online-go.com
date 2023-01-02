@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022  Benjamin P. Jones
+ * Copyright (C)   Benjamin P. Jones
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as

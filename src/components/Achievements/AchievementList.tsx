@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2022  Online-Go.com
+ * Copyright (C)  Online-Go.com
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -45,7 +45,7 @@ function render_achievement_entry(entry: AchievementEntry): JSX.Element {
             break;
         case "wsc2022":
             title = "Western Server Challenge Contender";
-            description = "Played 100 or more games during the 2022 Western Server Challenge";
+            description = "Played 100 or more games during the  Western Server Challenge";
             break;
     }
 
