@@ -493,10 +493,14 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
             }
         };
 
+        // It's unclear to me if we still need this "move_number" in (line as any) check,
+        // our typing says that field should always exist so the second case isn't necsesary,
+        // but I'm not sure why we had it to begin with then, so I'm leaving it in place
+        // for the time being. - anoek 2023-01-02
         move_number = (
             <LineText className="move-number" onClick={jumpToMove}>
                 Move{" "}
-                {"move_number" in line
+                {"move_number" in (line as any)
                     ? line.move_number
                     : "moves" in line
                     ? line.from + (line.moves.length ? " + " + line.moves.length / 2 : "")
