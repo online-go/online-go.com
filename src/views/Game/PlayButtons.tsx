@@ -17,7 +17,6 @@
 
 import * as React from "react";
 import { _ } from "translate";
-import { JGOFNumericPlayerColor } from "goban";
 import { isLiveGame } from "TimeControl";
 import * as preferences from "preferences";
 import * as data from "data";
@@ -37,13 +36,9 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): JSX.Eleme
     const engine = goban.engine;
     const phase = engine.phase;
 
-    const real_player_to_move =
-        engine.last_official_move?.player === JGOFNumericPlayerColor.BLACK
-            ? engine.players.white.id
-            : engine.players.black.id;
-    const is_my_move = real_player_to_move === data.get("user").id;
     const cur_move_number = useCurrentMoveNumber(goban);
     const player_to_move = usePlayerToMove(goban);
+    const is_my_move = player_to_move === data.get("user").id;
 
     const [show_submit, setShowSubmit] = React.useState(false);
     React.useEffect(() => {
