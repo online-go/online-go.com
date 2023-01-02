@@ -247,3 +247,23 @@ test("Renders conditional moves", () => {
     expect(screen.getByText("Conditional Move Planner")).toBeDefined();
     expect(screen.getByText("A19")).toBeDefined();
 });
+
+test("Unsubscribe from all events on unmount", () => {
+    const goban = new Goban({ game_id: 1234 });
+    data.set("user", TEST_USER);
+
+    const getListenerCounts = (emitter: Goban) =>
+        Object.fromEntries(emitter.eventNames().map((key) => [key, emitter.listenerCount(key)]));
+
+    // Goban may set up listeners on itself
+    const listeners_before = getListenerCounts(goban);
+
+    const { unmount } = render(
+        <WrapTest goban={goban}>
+            <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
+        </WrapTest>,
+    );
+    unmount();
+
+    expect(getListenerCounts(goban)).toEqual(listeners_before);
+});

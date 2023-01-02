@@ -44,6 +44,7 @@ import { setExtraActionCallback, Player } from "Player";
 import { PlayButtons } from "./PlayButtons";
 import {
     generateGobanHook,
+    subscribeAllEvents,
     useCurrentMoveNumber,
     useShowUndoRequested,
     useUserIsParticipant,
@@ -52,6 +53,7 @@ import { useGoban } from "./goban_context";
 import { is_valid_url } from "url_validation";
 import { enableTouchAction } from "./touch_actions";
 import { ConditionalMoveTreeDisplay } from "./ConditionalMoveTreeDisplay";
+import { useUser } from "hooks";
 
 interface PlayControlsProps {
     // Cancel buttons are in props because the Cancel Button is placed below
@@ -114,7 +116,7 @@ export function PlayControls({
     variationKeyPress,
     stopEstimatingScore,
 }: PlayControlsProps): JSX.Element {
-    const user = data.get("user");
+    const user = useUser();
     const goban = useGoban();
     const engine = goban.engine;
     const [searchParams] = useSearchParams();
@@ -155,38 +157,17 @@ export function PlayControls({
         };
         syncStoneRemovalAcceptance();
 
-        goban.on("load", syncStoneRemovalAcceptance);
-        goban.on("phase", syncStoneRemovalAcceptance);
-        goban.on("mode", syncStoneRemovalAcceptance);
-        goban.on("outcome", syncStoneRemovalAcceptance);
-        goban.on("stone-removal.accepted", syncStoneRemovalAcceptance);
-        goban.on("stone-removal.updated", syncStoneRemovalAcceptance);
-    }, [goban]);
-
-    const [paused, setPaused] = React.useState(goban.pause_control && !!goban.pause_control.paused);
-    React.useEffect(() => {
-        goban.on("load", () => setPaused(goban.pause_control && !!goban.pause_control.paused));
-        goban.on("paused", setPaused);
-    }, [goban]);
-
-    const show_undo_requested = useShowUndoRequested(goban);
-
-    const [winner, set_winner] = React.useState(goban.engine.winner);
-    React.useEffect(() => {
-        goban.on("load", () => set_winner(goban.engine.winner));
-        goban.on("winner", set_winner);
-    }, [goban]);
-
-    const [official_move_number, set_official_move_number] = React.useState(
-        goban.engine.last_official_move?.move_number || -1,
-    );
-    React.useEffect(() => {
-        goban.on("load", () =>
-            set_official_move_number(goban.engine.last_official_move?.move_number || -1),
+        return subscribeAllEvents(
+            goban,
+            ["phase", "mode", "outcome", "stone-removal.accepted", "stone-removal.updated"],
+            syncStoneRemovalAcceptance,
         );
-        goban.on("last_official_move", (move) => set_official_move_number(move.move_number));
     }, [goban]);
 
+    const paused = usePaused(goban);
+    const show_undo_requested = useShowUndoRequested(goban);
+    const winner = useWinner(goban);
+    const official_move_number = useOfficialMoveNumber(goban);
     const conditional_moves = useConditionalMoveTree(goban);
 
     const goban_setMode_play = () => {
@@ -1154,7 +1135,7 @@ function ShareAnalysisButton(props: ShareAnalysisButtonProperties): JSX.Element 
     }
 }
 
-function stoneRemovalAccepted(goban: Goban, color: PlayerColor) {
+function stoneRemovalAccepted(goban: GobanCore, color: PlayerColor) {
     const engine = goban.engine;
 
     if (engine.phase !== "stone removal") {
@@ -1162,3 +1143,10 @@ function stoneRemovalAccepted(goban: Goban, color: PlayerColor) {
     }
     return engine.players[color].accepted_stones === engine.getStoneRemovalString();
 }
+
+const useOfficialMoveNumber = generateGobanHook(
+    (goban) => goban.engine.last_official_move?.move_number || -1,
+    ["last_official_move"],
+);
+const useWinner = generateGobanHook((goban) => goban.engine.winner, ["winner"]);
+const usePaused = generateGobanHook((goban) => goban.pause_control && !!goban.pause_control.paused);

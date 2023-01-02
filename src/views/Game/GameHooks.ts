@@ -45,17 +45,31 @@ export function generateGobanHook<T, G extends GobanCore | null>(
                 return;
             }
 
-            const events_with_load: Array<keyof GobanEvents> = ["load", ...events];
-            for (const e of events_with_load) {
-                goban.on(e, syncProp);
-            }
-            return () => {
-                for (const e of events_with_load) {
-                    goban.off(e, syncProp);
-                }
-            };
+            return subscribeAllEvents(goban, events, syncProp);
         }, [goban]);
         return prop;
+    };
+}
+
+/**
+ * @param goban the goban object
+ * @param events the events to which we want to subscribe (excluding load)
+ * @param cb the callback which should be triggered on emit.
+ * @returns a callback that will unsubscribe from all events that were just subscribed.
+ */
+export function subscribeAllEvents(
+    goban: GobanCore,
+    events: Array<keyof Omit<GobanEvents, "load">> = [],
+    cb: () => void,
+) {
+    const events_with_load: Array<keyof GobanEvents> = ["load", ...events];
+    for (const e of events_with_load) {
+        goban.on(e, cb);
+    }
+    return () => {
+        for (const e of events_with_load) {
+            goban.off(e, cb);
+        }
     };
 }
 
