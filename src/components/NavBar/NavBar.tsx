@@ -335,6 +335,7 @@ export function NavBar(): JSX.Element {
             <section className={`right ${search_focus ? "search-focused" : ""}`}>
                 {user.anonymous ? (
                     <>
+                        <span className="spacer" />
                         <i className="fa fa-adjust" onClick={toggleTheme} />
                         <LanguagePicker />
                         {(show_signin || null) && (
