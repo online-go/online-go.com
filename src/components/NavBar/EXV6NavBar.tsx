@@ -345,12 +345,13 @@ export function EXV6NavBar(): JSX.Element {
                     </>
                 ) : (
                     <>
-                        <TurnIndicator />
+                        <span className="spacer" />
                         <IncidentReportTracker />
                         <ChatIndicator />
                         <TournamentIndicator />
                         <FriendIndicator />
                         <NotificationIndicator onClick={toggleNotifications} />
+                        <TurnIndicator />
                         <span
                             className="icon-container"
                             onClick={toggleRightNav}
