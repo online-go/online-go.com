@@ -62,7 +62,7 @@ import {
 import { copyChallengeLinkURL } from "ChallengeLinkButton";
 
 import { alert } from "swal_config";
-import { updateSystem, getTimeControlSpeedWarning } from "TimeControl/TimeControlUpdates";
+import { updateSystem } from "TimeControl/TimeControlUpdates";
 
 type ChallengeDetails = rest_api.ChallengeDetails;
 
@@ -1612,11 +1612,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         const player = player_id && player_cache.lookup(player_id);
         const player_username = player ? player.username : "...";
 
-        const speed_warning = getTimeControlSpeedWarning(
-            this.state.time_control,
-            this.state.challenge.game.width,
-            this.state.challenge.game.height,
-        );
+        // const speed_warning = getTimeControlSpeedWarning(
+        //     this.state.time_control,
+        //     this.state.challenge.game.width,
+        //     this.state.challenge.game.height,
+        // );
 
         if (player_id && !player) {
             player_cache
@@ -1652,14 +1652,14 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         {(mode === "demo" || null) && this.advancedDemoSettings()}
                     </div>
                 </div>
-                {speed_warning && (
+                {/* {speed_warning && (
                     <div className="speed-warning">
                         <span>
                             <i className="fa fa-w fa-exclamation-triangle"></i>
                             {speed_warning}
                         </span>
                     </div>
-                )}
+                )} */}
                 <div className="buttons">
                     <button onClick={this.close}>{_("Close")}</button>
                     {(mode === "demo" || null) && (
