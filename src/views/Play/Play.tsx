@@ -28,10 +28,15 @@ import { _, pgettext } from "translate";
 import { Card } from "material";
 import { SeekGraph, SeekGraphLegend } from "SeekGraph";
 import { PersistentElement } from "PersistentElement";
-import { isLiveGame, shortShortTimeControl, usedForCheating } from "TimeControl";
+import {
+    isLiveGame,
+    shortShortTimeControl,
+    timeControlSystemText,
+    usedForCheating,
+} from "TimeControl";
 import { challenge, challengeComputer } from "ChallengeModal";
 import { openGameAcceptModal } from "GameAcceptModal";
-import { errorAlerter, rulesText, timeControlSystemText, dup, uuid, ignore } from "misc";
+import { errorAlerter, rulesText, dup, uuid, ignore } from "misc";
 import { Player } from "Player";
 import { openAutomatchSettings, getAutomatchSettings } from "AutomatchSettings";
 import { automatch_manager, AutomatchPreferences } from "automatch_manager";

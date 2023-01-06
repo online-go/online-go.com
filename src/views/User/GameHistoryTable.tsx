@@ -21,7 +21,7 @@ import { PlayerAutocomplete } from "PlayerAutocomplete";
 import { Card } from "material";
 import { PaginatedTable } from "PaginatedTable";
 import { effective_outcome } from "rank_utils";
-import { getGameResultText } from "misc";
+import { capitalize, getGameResultText } from "misc";
 import { openUrlIfALinkWasNotClicked, maskedRank } from "./common";
 import * as moment from "moment";
 import { rankString } from "rank_utils";
@@ -382,10 +382,6 @@ function getGameResultRichText(game: rest_api.Game) {
     }
 
     return <>{resultText}</>;
-}
-
-function capitalize<T extends string>(s: T): Capitalize<T> {
-    return (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<T>;
 }
 
 function getResultClass(game: rest_api.Game, user_id: number): ResultClass {

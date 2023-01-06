@@ -16,805 +16,309 @@
  */
 
 import * as React from "react";
-import * as data from "data";
+import { capitalize } from "misc";
 import { _ } from "translate";
 
-import { time_options, makeTimeControlParameters } from "./util";
-import { computeAverageMoveTime } from "goban";
 import { TimeControl, TimeControlTypes } from "./TimeControl";
-import { Speed } from "src/lib/types";
+import { updateProperty, updateSpeed, updateSystem } from "./TimeControlUpdates";
+import { default_time_settings, getTimeOptions, timeControlSystemText } from "./util";
 
 type TimeControlSystem = TimeControlTypes.TimeControlSystem;
+type TimeControlSpeed = TimeControlTypes.TimeControlSpeed;
 
 interface TimeControlPickerProperties {
-    value?: TimeControl;
-    onChange?: (tc: TimeControl) => void;
-    boardWidth?: number;
-    boardHeight?: number;
-    force_system?: TimeControlSystem;
+    timeControl: TimeControl;
+    onChange: (tc: TimeControl) => void;
+    forceSystem: boolean;
+    boardWidth: number;
+    boardHeight: number;
 }
 
-export class TimeControlPicker extends React.PureComponent<
-    TimeControlPickerProperties,
-    TimeControl
-> {
-    time_control: TimeControl;
+const numeric = (ev: React.ChangeEvent<HTMLSelectElement>) => parseInt(ev.target.value);
 
-    constructor(props: TimeControlPickerProperties) {
-        super(props);
+export function TimeControlPicker(props: TimeControlPickerProperties): JSX.Element {
+    const tc = props.timeControl;
 
-        const speed = data.get("time_control.speed", "correspondence") || "correspondence";
-        const system: TimeControlSystem =
-            this.props.force_system || data.get("time_control.system", "fischer") || "fischer";
-
-        this.state = Object.assign(
-            this.recallTimeControlSettings(speed, system),
-            this.props.value || {},
-        );
-
-        // TODO: Fix rematch bug (caused by overwriting speed)
-        this.state = Object.assign(
-            this.state,
-            makeTimeControlParameters(this.state, this.props.boardWidth, this.props.boardHeight),
-            { speed },
-        );
-        this.time_control = makeTimeControlParameters(
-            this.state,
-            this.props.boardWidth,
-            this.props.boardHeight,
-        );
-    }
-
-    componentDidUpdate(prev_props: TimeControlPickerProperties) {
-        let update: TimeControl | undefined;
-        // console.log("Timepicker props", next_props);
-        if (
-            prev_props?.value !== this.props.value ||
-            prev_props?.force_system !== this.props.force_system
-        ) {
-            if (this.props.force_system) {
-                update = Object.assign(
-                    this.state,
-                    this.recallTimeControlSettings(this.state.speed, this.props.force_system),
-                    {
-                        // if `value` and `force` are both asserted, with different `system`, then `force` wins,
-                        // and the previously saved settings for that `system` will be used instead of `value`
-                        ...(this.props.value && this.props.value.system === this.props.force_system
-                            ? this.props.value
-                            : {}),
-                    },
-                );
-            } else if (this.props.value) {
-                update = {
-                    ...makeTimeControlParameters(
-                        this.props.value,
-                        this.props.boardWidth,
-                        this.props.boardHeight,
-                    ),
-                };
-            }
-
-            if (update) {
-                //console.log("Updating time control:", update);
-                this.time_control = makeTimeControlParameters(
-                    update,
-                    this.props.boardWidth,
-                    this.props.boardHeight,
-                );
-                this.setState(update);
-            }
-        }
-    }
-
-    syncTimeControl(update: Partial<TimeControl>) {
-        // This should be 'TimeControl', but there are currently some
-        // not-trivial-to-fix type errors that arise
-        const tc: any = Object.assign({}, this.state, update);
-
-        const options = time_options[tc.speed as Speed];
-
-        function goodChoice(arr: Array<{ time: number }>) {
-            return arr[Math.round(arr.length / 2)].time;
-        }
-        function findIndex(arr: Array<{ time: number }>, time: number) {
-            time = parseInt(time as any);
-            for (let i = 0; i < arr.length; ++i) {
-                if (arr[i].time === time) {
-                    return i;
-                }
-            }
-            return -1;
-        }
-
-        if (this.state.system === "fischer") {
-            if (findIndex(options["fischer"]["initial_time"], tc.initial_time) === -1) {
-                tc.initial_time = goodChoice(options["fischer"]["initial_time"]);
-            }
-            if (findIndex(options["fischer"]["time_increment"], tc.time_increment) === -1) {
-                tc.time_increment = goodChoice(options["fischer"]["time_increment"]);
-            }
-            if (findIndex(options["fischer"]["max_time"], tc.max_time) === -1) {
-                tc.max_time = goodChoice(options["fischer"]["max_time"]);
-            }
-        }
-        if (this.state.system === "simple") {
-            if (findIndex(options["simple"]["per_move"], tc.per_move) === -1) {
-                tc.per_move = goodChoice(options["simple"]["per_move"]);
-            }
-        }
-        if (this.state.system === "canadian") {
-            if (findIndex(options["canadian"]["main_time"], tc.main_time) === -1) {
-                tc.main_time = goodChoice(options["canadian"]["main_time"]);
-            }
-            if (findIndex(options["canadian"]["period_time"], tc.period_time) === -1) {
-                console.log("Failed to find", tc.period_time, options["canadian"]["period_time"]);
-                tc.period_time = goodChoice(options["canadian"]["period_time"]);
-            }
-        }
-        if (this.state.system === "byoyomi") {
-            if (findIndex(options["byoyomi"]["main_time"], tc.main_time) === -1) {
-                tc.main_time = goodChoice(options["byoyomi"]["main_time"]);
-            }
-            if (findIndex(options["byoyomi"]["period_time"], tc.period_time) === -1) {
-                console.log("Failed to find", tc.period_time, options["byoyomi"]["period_time"]);
-                tc.period_time = goodChoice(options["byoyomi"]["period_time"]);
-            }
-        }
-        if (this.state.system === "absolute") {
-            if (findIndex(options["absolute"]["total_time"], tc.total_time) === -1) {
-                tc.total_time = goodChoice(options["absolute"]["total_time"]);
-            }
-        }
-
-        if (tc.time_increment > tc.max_time) {
-            tc.max_time = tc.time_increment;
-        }
-        if (tc.initial_time > tc.max_time) {
-            tc.max_time = tc.initial_time;
-        }
-
-        tc.time_per_move = computeAverageMoveTime(
-            makeTimeControlParameters(tc, this.props.boardWidth, this.props.boardHeight),
-            this.props.boardWidth,
-            this.props.boardHeight,
-        );
-        this.time_control = makeTimeControlParameters(
-            tc,
-            this.props.boardWidth,
-            this.props.boardHeight,
-        );
-        this.setState(tc);
-        if (this.props.onChange) {
-            this.props.onChange(this.time_control);
-        }
-    }
-
-    setSpeedBracket = (bracket: Speed) => {
-        this.syncTimeControl(
-            Object.assign({}, this.recallTimeControlSettings(bracket, this.state.system), {
-                speed: bracket,
-            }),
+    const onChangeProperty = <T extends TimeControl, U extends keyof T & string>(
+        tc: T,
+        property: U,
+        newValue: T[U],
+    ) => {
+        props.onChange(updateProperty(tc, property, newValue, props.boardWidth, props.boardHeight));
+    };
+    const onChangeSpeed = (speed: TimeControlSpeed) => {
+        props.onChange(updateSpeed(tc, speed, props.boardWidth, props.boardHeight));
+    };
+    const onChangeSystem = (system: TimeControlSystem) => {
+        props.onChange(updateSystem(tc, system, props.boardWidth, props.boardHeight));
+    };
+    const onChangePauseOnWeekends = (newValue: boolean) => {
+        props.onChange(
+            updateProperty(tc, "pause_on_weekends", newValue, props.boardWidth, props.boardHeight),
         );
     };
-    setTimeControlSystem = (time_control_system: TimeControlSystem) => {
-        if (!this.props.force_system) {
-            this.syncTimeControl(
-                Object.assign(
-                    {},
-                    this.recallTimeControlSettings(this.state.speed, time_control_system),
-                    {
-                        speed: this.state.speed,
-                    },
-                ),
-            );
-        }
-    };
 
-    recallTimeControlSettings(speed: Speed, time_control_system: TimeControlSystem) {
-        if (speed !== "blitz" && speed !== "live" && speed !== "correspondence") {
-            throw new Error(`Invalid speed: ${speed}`);
-        }
-
-        return makeTimeControlParameters(
-            Object.assign(
-                {},
-                default_time_options[speed][time_control_system],
-                data.get(`time_control.${speed}.${time_control_system}`),
-                { speed: speed },
-                { system: time_control_system },
-            ),
-            this.props.boardWidth,
-            this.props.boardHeight,
-        );
-    }
-
-    update_speed_bracket = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.setSpeedBracket(ev.target.value as Speed);
-    update_time_control_system = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.setTimeControlSystem(ev.target.value as TimeControlSystem);
-    update_initial_time = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.syncTimeControl({ initial_time: parseInt(ev.target.value) });
-    update_time_increment = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.syncTimeControl({ time_increment: parseInt(ev.target.value) });
-    update_max_time = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.syncTimeControl({ max_time: parseInt(ev.target.value) });
-    update_per_move = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.syncTimeControl({ per_move: parseInt(ev.target.value) });
-    update_main_time = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.syncTimeControl({ main_time: parseInt(ev.target.value) });
-    //update_main_time            = (ev)=>this.syncTimeControl({main_time: ev.target.value});
-    update_period_time = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.syncTimeControl({ period_time: parseInt(ev.target.value) });
-    update_periods = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.syncTimeControl({
-            periods: ev.target.value as any,
-        });
-    //update_period_time          = (ev)=>this.syncTimeControl({period_time: ev.target.value});
-    update_stones_per_period = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.syncTimeControl({ stones_per_period: ev.target.value as any });
-    update_total_time = (ev: React.ChangeEvent<HTMLSelectElement>) =>
-        this.syncTimeControl({ total_time: parseInt(ev.target.value) });
-    update_pause_on_weekends = (ev: React.ChangeEvent<HTMLInputElement>) =>
-        this.syncTimeControl({ pause_on_weekends: ev.target.checked });
-
-    saveSettings() {
-        const speed = this.state.speed;
-        const system = this.state.system;
-        data.set(`time_control.speed`, speed);
-        data.set(`time_control.system`, system);
-        data.set(
-            `time_control.${speed}.${system}`,
-            makeTimeControlParameters(this.state, this.props.boardWidth, this.props.boardHeight),
-        );
-    }
-
-    render() {
-        const speed = this.state.speed;
-
+    const instantiate = <T extends TimeControl, U extends keyof T & string>(
+        property: U,
+        name: string,
+        id: string,
+        getter: (ev: React.ChangeEvent<HTMLSelectElement>) => T[U],
+        tc: T,
+    ) => {
         return (
-            <div className="TimeControlPicker">
-                {
-                    <div className="form-group">
-                        <label className="control-label" htmlFor="challenge-speed">
-                            {_("Game Speed")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <select
-                                    id="challenge-speed"
-                                    value={speed}
-                                    onChange={this.update_speed_bracket}
-                                    className="challenge-dropdown form-control"
-                                    style={{ overflow: "hidden" }}
-                                >
-                                    <option value="blitz">{_("Blitz")}</option>
-                                    <option value="live">{_("Live")}</option>
-                                    <option value="correspondence">{_("Correspondence")}</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                }
+            <TimeControlPropertySelector<T, U>
+                key={id}
+                tc={tc}
+                id={id}
+                name={name}
+                property={property}
+                valueGetter={getter}
+                onChangeProperty={onChangeProperty}
+            />
+        );
+    };
 
-                <div className="form-group">
-                    <label className="control-label" htmlFor="challenge-time-control">
-                        {_("Time Control")}
+    let selectors: JSX.Element[] = [];
+    switch (tc.system) {
+        case "fischer":
+            selectors = [
+                instantiate("initial_time", _("Initial Time"), "tc-initial-time", numeric, tc),
+                instantiate("time_increment", _("Time Increment"), "tc-inc-time", numeric, tc),
+                instantiate("max_time", _("Max Time"), "tc-max-time", numeric, tc),
+            ];
+            break;
+        case "simple":
+            selectors = [instantiate("per_move", _("Time per Move"), "tc-per-move", numeric, tc)];
+            break;
+        case "canadian":
+            selectors = [
+                instantiate("main_time", _("Main Time"), "tc-main-time-canadian", numeric, tc),
+                instantiate(
+                    "period_time",
+                    _("Time per Period"),
+                    "tc-per-period-canadian",
+                    numeric,
+                    tc,
+                ),
+                <TimeControlPropertyInput
+                    tc={tc}
+                    key={"tc-stones-per-period"}
+                    id={"tc-stones-per-period"}
+                    name={_("Stones per Period")}
+                    property={"stones_per_period"}
+                    min={default_time_settings[tc.speed].canadian.stones_per_period_min}
+                    max={default_time_settings[tc.speed].canadian.stones_per_period_max}
+                    default={default_time_settings[tc.speed].canadian.stones_per_period}
+                    valueGetter={(ev) => parseInt(ev.target.value)}
+                    onChangeProperty={onChangeProperty}
+                />,
+            ];
+            break;
+        case "byoyomi":
+            selectors = [
+                instantiate("main_time", _("Main Time"), "tc-main-time-byoyomi", numeric, tc),
+                instantiate(
+                    "period_time",
+                    _("Time per Period"),
+                    "tc-per-period-byoyomi",
+                    numeric,
+                    tc,
+                ),
+                <TimeControlPropertyInput
+                    tc={tc}
+                    key={"tc-periods-byoyomi"}
+                    id={"tc-periods-byoyomi"}
+                    name={_("Periods")}
+                    property={"periods"}
+                    min={default_time_settings[tc.speed].byoyomi.periods_min}
+                    max={default_time_settings[tc.speed].byoyomi.periods_max}
+                    default={default_time_settings[tc.speed].byoyomi.periods}
+                    valueGetter={(ev) => parseInt(ev.target.value)}
+                    onChangeProperty={onChangeProperty}
+                />,
+            ];
+            break;
+        case "absolute":
+            selectors = [instantiate("total_time", _("Total Time"), "tc-total-time", numeric, tc)];
+            break;
+    }
+
+    const valid_systems =
+        tc.speed === "correspondence"
+            ? TimeControlTypes.ALL_SYSTEMS
+            : TimeControlTypes.ALL_SYSTEMS_EXCEPT_NONE;
+
+    return (
+        <div className="TimeControlPicker">
+            <div className="form-group">
+                <label className="control-label" htmlFor="challenge-speed">
+                    {_("Game Speed")}
+                </label>
+                <div className="controls">
+                    <div className="checkbox">
+                        <select
+                            id="challenge-speed"
+                            value={tc.speed}
+                            onChange={(ev) => onChangeSpeed(ev.target.value as TimeControlSpeed)}
+                            className="challenge-dropdown form-control"
+                            style={{ overflow: "hidden" }}
+                        >
+                            {TimeControlTypes.ALL_SPEEDS.map((speed) => (
+                                <option value={speed} key={speed}>
+                                    {_(capitalize(speed))}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div className="form-group">
+                <label className="control-label" htmlFor="challenge-time-control">
+                    {_("Time Control")}
+                </label>
+                <div className="controls">
+                    <div className="checkbox">
+                        <select
+                            disabled={props.forceSystem}
+                            value={tc.system}
+                            onChange={(ev) => onChangeSystem(ev.target.value as TimeControlSystem)}
+                            id="challenge-time-control"
+                            className="challenge-dropdown form-control"
+                        >
+                            {valid_systems.map((system) => (
+                                <option value={system} key={system}>
+                                    {_(timeControlSystemText(system))}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            {selectors}
+            {tc.speed === "correspondence" && tc.system !== "none" && (
+                <div
+                    id="challenge-pause-on-weekends-div"
+                    className="form-group"
+                    style={{ position: "relative" }}
+                >
+                    <label className="control-label" htmlFor="challenge-pause-on-weekends">
+                        {_("Pause on Weekends")}
                     </label>
                     <div className="controls">
                         <div className="checkbox">
-                            <select
-                                disabled={!!this.props.force_system}
-                                value={this.state.system}
-                                onChange={this.update_time_control_system}
-                                id="challenge-time-control"
-                                className="challenge-dropdown form-control"
-                            >
-                                <option value="fischer">{_("Fischer")}</option>
-                                <option value="simple">{_("Simple")}</option>
-                                <option value="byoyomi">{_("Byo-Yomi")}</option>
-                                <option value="canadian">{_("Canadian")}</option>
-                                <option value="absolute">{_("Absolute")}</option>
-                                {(speed === "correspondence" || null) && (
-                                    <option value="none">{_("None")}</option>
-                                )}
-                            </select>
+                            <input
+                                checked={tc.pause_on_weekends}
+                                onChange={(ev) => onChangePauseOnWeekends(ev.target.checked)}
+                                id="challenge-pause-on-weekends"
+                                type="checkbox"
+                            />
                         </div>
                     </div>
                 </div>
-
-                {(this.state.system === "fischer" || null) && (
-                    <div
-                        id="challenge-initial-time-group"
-                        className="form-group challenge-time-group"
-                    >
-                        <label
-                            id="challenge-initial-time-label"
-                            className=" control-label"
-                            htmlFor="challenge-initial-time"
-                        >
-                            {_("Initial Time")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <select
-                                    id="challenge-initial-time"
-                                    className="form-control time-spinner"
-                                    value={(this.state as TimeControlTypes.Fischer).initial_time}
-                                    onChange={this.update_initial_time}
-                                >
-                                    {time_options[speed]["fischer"]["initial_time"].map(
-                                        (it, idx) => (
-                                            <option key={idx} value={it.time}>
-                                                {it.label}
-                                            </option>
-                                        ),
-                                    )}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                )}
-                {(this.state.system === "fischer" || null) && (
-                    <div id="challenge-inc-time-group" className="form-group challenge-time-group">
-                        <label
-                            id="challenge-inc-time-label"
-                            className=" control-label"
-                            htmlFor="challenge-inc-time"
-                        >
-                            {_("Time Increment")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <select
-                                    id="challenge-inc-time"
-                                    className="form-control"
-                                    value={(this.state as TimeControlTypes.Fischer).time_increment}
-                                    onChange={this.update_time_increment}
-                                >
-                                    {time_options[speed]["fischer"]["time_increment"].map(
-                                        (it, idx) => (
-                                            <option key={idx} value={it.time}>
-                                                {it.label}
-                                            </option>
-                                        ),
-                                    )}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                )}
-                {(this.state.system === "fischer" || null) && (
-                    <div id="challenge-max-time-group" className="form-group challenge-time-group">
-                        <label className=" control-label" htmlFor="challenge-max-time">
-                            {_("Max Time")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <select
-                                    id="challenge-max-time"
-                                    className="form-control"
-                                    value={(this.state as TimeControlTypes.Fischer).max_time}
-                                    onChange={this.update_max_time}
-                                >
-                                    {time_options[speed]["fischer"]["max_time"].map((it, idx) => (
-                                        <option key={idx} value={it.time}>
-                                            {it.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {(this.state.system === "simple" || null) && (
-                    <div
-                        id="challenge-per-move-time-group"
-                        className="form-group challenge-time-group"
-                    >
-                        <label
-                            id="challenge-per-move-time-label"
-                            className=" control-label"
-                            htmlFor="challenge-per-move-time"
-                        >
-                            {_("Time per Move")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <select
-                                    id="challenge-per-move-time"
-                                    className="form-control"
-                                    value={(this.state as TimeControlTypes.Simple).per_move}
-                                    onChange={this.update_per_move}
-                                >
-                                    {time_options[speed]["simple"]["per_move"].map((it, idx) => (
-                                        <option key={idx} value={it.time}>
-                                            {it.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {(this.state.system === "canadian" || null) && (
-                    <div className="form-group challenge-time-group">
-                        <label
-                            id="challenge-main-time-label"
-                            className=" control-label"
-                            htmlFor="challenge-main-time"
-                        >
-                            {_("Main Time")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <select
-                                    id="challenge-main-time"
-                                    className="form-control"
-                                    value={(this.state as TimeControlTypes.Canadian).main_time}
-                                    onChange={this.update_main_time}
-                                >
-                                    {time_options[speed]["canadian"]["main_time"].map((it, idx) => (
-                                        <option key={idx} value={it.time}>
-                                            {it.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                )}
-                {(this.state.system === "byoyomi" || null) && (
-                    <div className="form-group challenge-time-group">
-                        <label
-                            id="challenge-main-time-label"
-                            className=" control-label"
-                            htmlFor="challenge-main-time"
-                        >
-                            {_("Main Time")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <select
-                                    id="challenge-main-time"
-                                    className="form-control"
-                                    value={(this.state as TimeControlTypes.ByoYomi).main_time}
-                                    onChange={this.update_main_time}
-                                >
-                                    {time_options[speed]["byoyomi"]["main_time"].map((it, idx) => (
-                                        <option key={idx} value={it.time}>
-                                            {it.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                )}
-                {(this.state.system === "byoyomi" || null) && (
-                    <div
-                        id="challenge-per-period-time-group"
-                        className="form-group challenge-time-group"
-                    >
-                        <label
-                            id="challenge-per-period-time-label"
-                            className=" control-label"
-                            htmlFor="challenge-per-period-time"
-                        >
-                            {_("Time per Period")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <select
-                                    id="challenge-per-period-time"
-                                    className="form-control"
-                                    value={(this.state as TimeControlTypes.ByoYomi).period_time}
-                                    onChange={this.update_period_time}
-                                >
-                                    {time_options[speed]["byoyomi"]["period_time"].map(
-                                        (it, idx) => (
-                                            <option key={idx} value={it.time}>
-                                                {it.label}
-                                            </option>
-                                        ),
-                                    )}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                )}
-                {(this.state.system === "byoyomi" || null) && (
-                    <div id="challenge-periods-group" className="form-group challenge-time-group">
-                        <label
-                            id="challenge-periods-label"
-                            className=" control-label"
-                            htmlFor="challenge-periods"
-                        >
-                            {_("Periods")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <input
-                                    type="number"
-                                    id="challenge-periods"
-                                    min={default_time_options[this.state.speed].byoyomi.periods_min}
-                                    max={default_time_options[this.state.speed].byoyomi.periods_max}
-                                    className="challenge-dropdown form-control"
-                                    value={(this.state as TimeControlTypes.ByoYomi).periods}
-                                    onChange={this.update_periods}
-                                    onBlur={(sender) =>
-                                        numericInputOnBlur(
-                                            sender,
-                                            this.state.speed,
-                                            this.state.system,
-                                            "periods",
-                                        )
-                                    }
-                                />
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {(this.state.system === "canadian" || null) && (
-                    <div
-                        id="challenge-per-canadian-period-time-group"
-                        className="form-group challenge-time-group"
-                    >
-                        <label
-                            id="challenge-per-canadian-period-time-label"
-                            className=" control-label"
-                            htmlFor="challenge-per-canadian-period-time"
-                        >
-                            {_("Time per Period")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <select
-                                    id="challenge-per-canadian-period-time"
-                                    className="form-control"
-                                    value={(this.state as TimeControlTypes.Canadian).period_time}
-                                    onChange={this.update_period_time}
-                                >
-                                    {time_options[speed]["canadian"]["period_time"].map(
-                                        (it, idx) => (
-                                            <option key={idx} value={it.time}>
-                                                {it.label}
-                                            </option>
-                                        ),
-                                    )}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                )}
-                {(this.state.system === "canadian" || null) && (
-                    <div
-                        id="challenge-canadian-stones-group"
-                        className="form-group challenge-time-group"
-                    >
-                        <label
-                            id="challenge-canadian-stones-label"
-                            className=" control-label"
-                            htmlFor="challenge-canadian-stones"
-                        >
-                            {_("Stones per Period")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <input
-                                    type="number"
-                                    id="challenge-canadian-stones"
-                                    min={
-                                        default_time_options[this.state.speed].canadian
-                                            .stones_per_period_min
-                                    }
-                                    max={
-                                        default_time_options[this.state.speed].canadian
-                                            .stones_per_period_max
-                                    }
-                                    className="challenge-dropdown form-control"
-                                    value={
-                                        (this.state as TimeControlTypes.Canadian).stones_per_period
-                                    }
-                                    onChange={this.update_stones_per_period}
-                                    onBlur={(sender) =>
-                                        numericInputOnBlur(
-                                            sender,
-                                            this.state.speed,
-                                            this.state.system,
-                                            "stones_per_period",
-                                        )
-                                    }
-                                />
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {(this.state.system === "absolute" || null) && (
-                    <div
-                        id="challenge-total-time-group"
-                        className="form-group challenge-time-group"
-                    >
-                        <label
-                            id="challenge-total-time-label"
-                            className=" control-label"
-                            htmlFor="challenge-total-time"
-                        >
-                            {_("Total Time")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <select
-                                    id="challenge-total-time"
-                                    className="form-control"
-                                    value={(this.state as TimeControlTypes.Absolute).total_time}
-                                    onChange={this.update_total_time}
-                                >
-                                    {time_options[speed]["absolute"]["total_time"].map(
-                                        (it, idx) => (
-                                            <option key={idx} value={it.time}>
-                                                {it.label}
-                                            </option>
-                                        ),
-                                    )}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {((this.state.speed === "correspondence" && this.state.system !== "none") ||
-                    null) && (
-                    <div
-                        id="challenge-pause-on-weekends-div"
-                        className="form-group"
-                        style={{ position: "relative" }}
-                    >
-                        <label className="control-label" htmlFor="challenge-pause-on-weekends">
-                            {_("Pause on Weekends")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <input
-                                    checked={this.state.pause_on_weekends}
-                                    onChange={this.update_pause_on_weekends}
-                                    id="challenge-pause-on-weekends"
-                                    type="checkbox"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-        );
-    }
+            )}
+        </div>
+    );
 }
 
-const default_time_options = {
-    blitz: {
-        system: "byoyomi",
+interface TimeControlPropertySelectorProps<T extends TimeControl, U extends keyof T & string> {
+    tc: T;
+    id: string;
+    name: string;
+    property: U;
+    valueGetter: (ev: React.ChangeEvent<HTMLSelectElement>) => T[U];
+    onChangeProperty: (tc: T, property: U, newValue: T[U]) => void;
+}
 
-        fischer: {
-            initial_time: 30,
-            time_increment: 10,
-            max_time: 60,
-            pause_on_weekends: false,
-        },
-        byoyomi: {
-            main_time: 30,
-            period_time: 5,
-            periods: 5,
-            periods_min: 1,
-            periods_max: 300,
-            pause_on_weekends: false,
-        },
-        canadian: {
-            main_time: 30,
-            period_time: 30,
-            stones_per_period: 5,
-            stones_per_period_min: 1,
-            stones_per_period_max: 50,
-            pause_on_weekends: false,
-        },
-        simple: {
-            per_move: 5,
-            pause_on_weekends: false,
-        },
-        absolute: {
-            total_time: 300,
-            pause_on_weekends: false,
-        },
-    },
-    live: {
-        system: "byoyomi",
-        pause_on_weekends: false,
-        fischer: {
-            initial_time: 120,
-            time_increment: 30,
-            max_time: 300,
-            pause_on_weekends: false,
-        },
-        byoyomi: {
-            main_time: 10 * 60,
-            period_time: 30,
-            periods: 5,
-            periods_min: 1,
-            periods_max: 300,
-            pause_on_weekends: false,
-        },
-        canadian: {
-            main_time: 10 * 60,
-            period_time: 180,
-            stones_per_period: 10,
-            stones_per_period_min: 1,
-            stones_per_period_max: 50,
-            pause_on_weekends: false,
-        },
-        simple: {
-            per_move: 60,
-            pause_on_weekends: false,
-        },
-        absolute: {
-            total_time: 900,
-            pause_on_weekends: false,
-        },
-    },
-    correspondence: {
-        system: "fischer",
-        fischer: {
-            initial_time: 3 * 86400,
-            time_increment: 86400,
-            max_time: 7 * 86400,
-            pause_on_weekends: true,
-        },
-        byoyomi: {
-            main_time: 7 * 86400,
-            period_time: 1 * 86400,
-            periods: 5,
-            periods_min: 1,
-            periods_max: 300,
-            pause_on_weekends: true,
-        },
-        canadian: {
-            main_time: 7 * 86400,
-            period_time: 7 * 86400,
-            stones_per_period: 10,
-            stones_per_period_min: 1,
-            stones_per_period_max: 50,
-            pause_on_weekends: true,
-        },
-        simple: {
-            per_move: 2 * 86400,
-            pause_on_weekends: true,
-        },
-        absolute: {
-            total_time: 28 * 86400,
-            pause_on_weekends: true,
-        },
-        none: {
-            pause_on_weekends: false,
-        },
-    },
-};
+function TimeControlPropertySelector<T extends TimeControl, U extends keyof T & string>(
+    props: TimeControlPropertySelectorProps<T, U>,
+): JSX.Element {
+    return (
+        <React.Fragment key={props.id}>
+            <div id={`${props.id}-group`} className="form-group challenge-time-group">
+                <label id={`${props.id}-label`} className=" control-label" htmlFor={props.id}>
+                    {props.name}
+                </label>
+                <div className="controls">
+                    <div className="checkbox">
+                        <select
+                            id={props.id}
+                            className="form-control time-spinner"
+                            value={`${props.tc[props.property]}`}
+                            onChange={(ev: React.ChangeEvent<HTMLSelectElement>) => {
+                                props.onChangeProperty(
+                                    props.tc,
+                                    props.property,
+                                    props.valueGetter(ev),
+                                );
+                            }}
+                        >
+                            {getTimeOptions(props.tc.speed, props.tc.system, props.property).map(
+                                (it) => (
+                                    <option key={it.label} value={it.time}>
+                                        {it.label}
+                                    </option>
+                                ),
+                            )}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </React.Fragment>
+    );
+}
 
-// TODO: Guard against invalid combinations, such as
-// { speed: "live", time_control_system: "none" }
-// Currently, this causes a ts-strict implicit any error.
+interface TimeControlPropertyInputProps<T extends TimeControl, U extends keyof T & string> {
+    tc: T;
+    id: string;
+    name: string;
+    property: U;
+    min: number;
+    max: number;
+    default: number;
+    valueGetter: (ev: React.ChangeEvent<HTMLInputElement>) => T[U];
+    onChangeProperty: (tc: T, property: U, newValue: T[U]) => void;
+}
+
+function TimeControlPropertyInput<T extends TimeControl, U extends keyof T & string>(
+    props: TimeControlPropertyInputProps<T, U>,
+): JSX.Element {
+    return (
+        <div id={`${props.id}-group`} className="form-group challenge-time-group">
+            <label id={`${props.id}-label`} className=" control-label" htmlFor={props.id}>
+                {props.name}
+            </label>
+            <div className="controls">
+                <div className="checkbox">
+                    <input
+                        type="number"
+                        id={props.id}
+                        min={props.min}
+                        max={props.max}
+                        className="challenge-dropdown form-control"
+                        value={`${props.tc[props.property]}`}
+                        onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
+                            props.onChangeProperty(props.tc, props.property, props.valueGetter(ev));
+                        }}
+                        onBlur={(sender) =>
+                            numericInputOnBlur(sender, props.min, props.max, props.default)
+                        }
+                    />
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function numericInputOnBlur(
     sender: React.FocusEvent<HTMLInputElement, Element>,
-    speed: Speed,
-    time_control_system: TimeControlSystem,
-    propertyName: string,
+    min: number,
+    max: number,
+    defaultVal: number,
 ) {
     const num = sender.target.valueAsNumber;
-    const min: number = default_time_options[speed][time_control_system][`${propertyName}_min`];
-    const max: number = default_time_options[speed][time_control_system][`${propertyName}_max`];
 
     if (isNaN(num)) {
-        sender.target.value = default_time_options[speed][time_control_system][`${propertyName}`];
+        sender.target.value = defaultVal.toString();
     } else if (num < min || num > max) {
         sender.target.value = Math.min(Math.max(num, min), max).toString();
     }

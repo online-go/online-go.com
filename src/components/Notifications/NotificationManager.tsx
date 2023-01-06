@@ -27,7 +27,8 @@ import { TypedEventEmitter } from "TypedEventEmitter";
 import { toast } from "toast";
 import { sfx } from "sfx";
 
-import { ogs_has_focus, getCurrentGameId, shouldOpenNewTab, lookingAtOurLiveGame } from "misc";
+import { ogs_has_focus, getCurrentGameId, shouldOpenNewTab } from "misc";
+import { lookingAtOurLiveGame } from "TimeControl/util";
 
 declare let Notification: any;
 

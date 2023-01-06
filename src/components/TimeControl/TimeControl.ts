@@ -25,6 +25,23 @@ export namespace TimeControlTypes {
         | "absolute"
         | "none";
 
+    export const ALL_SPEEDS: TimeControlSpeed[] = ["blitz", "live", "correspondence"];
+    export const ALL_SYSTEMS: TimeControlSystem[] = [
+        "fischer",
+        "byoyomi",
+        "simple",
+        "canadian",
+        "absolute",
+        "none",
+    ];
+    export const ALL_SYSTEMS_EXCEPT_NONE: TimeControlSystem[] = [
+        "fischer",
+        "byoyomi",
+        "simple",
+        "canadian",
+        "absolute",
+    ];
+
     export interface Fischer {
         system: "fischer";
         speed: TimeControlSpeed;

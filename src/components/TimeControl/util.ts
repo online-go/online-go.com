@@ -15,9 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { computeAverageMoveTime, JGOFTimeControl } from "goban";
+import { computeAverageMoveTime, Goban, JGOFTimeControl } from "goban";
 import { _, pgettext, ngettext, interpolate } from "translate";
 import { TimeControl, TimeControlTypes } from "./TimeControl";
+
+type TimeControlSystem = TimeControlTypes.TimeControlSystem;
+type TimeControlSpeed = TimeControlTypes.TimeControlSpeed;
 
 const times = [
     1,
@@ -109,7 +112,7 @@ const times = [
     86400 * 28,
 ];
 
-function mktime(t) {
+function mktime(t: number): string {
     if (t < 60) {
         return interpolate(t === 1 ? _("1 second") : _("%s seconds"), [t]);
     }
@@ -141,12 +144,17 @@ function mktime(t) {
     );
 }
 
-const zero = {
+interface LabeledTimeOption {
+    time: number;
+    label: string;
+}
+
+const zero: LabeledTimeOption = {
     time: 0,
     label: _("None"),
 };
 
-function gen(min, max) {
+function gen(min, max): LabeledTimeOption[] {
     const ret = [];
     for (let i = 0; i < times.length; ++i) {
         if (times[i] >= min && times[i] <= max) {
@@ -158,72 +166,6 @@ function gen(min, max) {
     }
     return ret;
 }
-
-export const time_options = {
-    blitz: {
-        fischer: {
-            initial_time: gen(5, 300),
-            time_increment: gen(1, 10),
-            max_time: gen(5, 300),
-        },
-        simple: {
-            per_move: gen(3, 9),
-        },
-        canadian: {
-            main_time: [zero].concat(gen(0, 300)),
-            period_time: gen(5, 30),
-        },
-        byoyomi: {
-            main_time: [zero].concat(gen(0, 300)),
-            period_time: gen(1, 10),
-        },
-        absolute: {
-            total_time: gen(45, 300),
-        },
-    },
-    live: {
-        fischer: {
-            initial_time: gen(30, 3600 * 4),
-            time_increment: gen(10, 1800),
-            max_time: gen(30, 3600 * 4),
-        },
-        simple: {
-            per_move: gen(10, 3600),
-        },
-        canadian: {
-            main_time: [zero].concat(gen(30, 3600 * 4)),
-            period_time: gen(20, 3600),
-        },
-        byoyomi: {
-            main_time: [zero].concat(gen(30, 3600 * 4)),
-            period_time: gen(10, 3600),
-        },
-        absolute: {
-            total_time: gen(600, 14400),
-        },
-    },
-    correspondence: {
-        fischer: {
-            initial_time: gen(86400, 86400 * 28),
-            time_increment: gen(14400, 86400 * 7),
-            max_time: gen(86400, 86400 * 28),
-        },
-        simple: {
-            per_move: gen(3600 * 12, 86400 * 28),
-        },
-        canadian: {
-            main_time: [zero].concat(gen(86400, 86400 * 28)),
-            period_time: gen(86400, 86400 * 28),
-        },
-        byoyomi: {
-            main_time: [zero].concat(gen(86400, 86400 * 28)),
-            period_time: gen(86400, 86400 * 28),
-        },
-        absolute: {
-            total_time: gen(86400 * 7, 86400 * 28),
-        },
-    },
-};
 
 export function parseIntWithDefaultValue(
     value: string,
@@ -242,7 +184,7 @@ export function parseIntWithDefaultValue(
 
 export function makeTimeControlParameters(tc: any, width?: number, height?: number): TimeControl {
     const tpm = computeAverageMoveTime(tc, width, height);
-    const speed: TimeControlTypes.TimeControlSpeed =
+    const speed: TimeControlSpeed =
         tpm === 0 || tpm > 3600 ? "correspondence" : tpm < 10 ? "blitz" : "live";
 
     switch (tc.system || tc.time_control) {
@@ -310,24 +252,25 @@ export function makeTimeControlParameters(tc: any, width?: number, height?: numb
     }
     throw new Error(`Invalid time control type: ${tc.system}`);
 }
-export function timeControlText(time_control) {
-    if (typeof time_control === "object") {
-        time_control = time_control.system || time_control.time_control;
+
+export function timeControlSystemText(system: TimeControlSystem) {
+    if (!system) {
+        return "[unknown]";
     }
 
-    switch (time_control) {
+    switch (system.toLowerCase()) {
         case "fischer":
-            return _("fischer");
-        case "none":
-            return _("none");
+            return _("Fischer");
         case "simple":
-            return _("simple");
-        case "canadian":
-            return _("canadian");
+            return _("Simple");
         case "byoyomi":
-            return _("byo-yomi");
+            return _("Byo-Yomi");
+        case "canadian":
+            return _("Canadian");
         case "absolute":
-            return _("absolute");
+            return _("Absolute");
+        case "none":
+            return _("None");
     }
     return "[unknown]";
 }
@@ -520,63 +463,34 @@ export function usedForCheating(time_control) {
     }
 }
 
-export function timeControlSystemText(system) {
-    switch (system) {
-        case "simple":
-            return pgettext("time control system", "simple");
-        case "fischer":
-            return pgettext("time control system", "fischer");
-        case "byoyomi":
-            return pgettext("time control system", "byo-yomi");
-        case "canadian":
-            return pgettext("time control system", "canadian byo-yomi");
-        case "absolute":
-            return pgettext("time control system", "absolute");
-        case "none":
-            return pgettext("time control system", "none");
-        default:
-            return "[error]";
+export function lookingAtOurLiveGame(): boolean {
+    // Is the current page looking at a game we are live playing in...
+    const goban = window["global_goban"] as Goban;
+    if (!goban) {
+        return false;
     }
-}
-export function validateTimeControl(tc: TimeControl): boolean {
-    let error = false;
+    const player_id = goban.config.player_id;
 
-    for (const k in tc) {
-        if (typeof tc[k] === "number" && isNaN(tc[k])) {
-            return false;
-        }
-    }
-
-    switch (tc.system) {
-        case "fischer":
-            error = error || tc.initial_time < 10;
-            error = error || tc.time_increment < 3;
-            error = error || tc.max_time < 10;
-            return !error;
-        case "byoyomi":
-            error = error || tc.main_time < 0;
-            error = error || tc.period_time < 3;
-            error = error || tc.periods < 1;
-            return !error;
-        case "simple":
-            error = error || tc.per_move < 3;
-            return !error;
-        case "canadian":
-            error = error || tc.main_time < 0;
-            error = error || tc.period_time < 3;
-            error = error || tc.stones_per_period < 1;
-            error = error || tc.period_time / tc.stones_per_period < 3;
-            return !error;
-        case "absolute":
-            error = error || tc.total_time < 60;
-            return !error;
-        case "none":
-            return !error;
-    }
+    return (
+        goban &&
+        goban.engine.phase !== "finished" &&
+        isLiveGame(goban.engine.time_control, goban.engine.width, goban.engine.height) &&
+        goban.engine.isParticipant(player_id)
+    );
 }
-export function isLiveGame(time_control: JGOFTimeControl, w?: number, h?: number) {
-    const average_move_time = computeAverageMoveTime(time_control, w, h);
-    return average_move_time > 0 && average_move_time < 3600;
+
+export function isLiveGame(time_control: JGOFTimeControl | TimeControl, w?: number, h?: number) {
+    const speed = classifyGameSpeed(time_control, w, h);
+    return speed === "live" || speed === "blitz";
+}
+
+export function classifyGameSpeed(
+    time_control: TimeControl | JGOFTimeControl,
+    w: number,
+    h: number,
+): TimeControlSpeed {
+    const tpm = computeAverageMoveTime(time_control, w, h);
+    return tpm === 0 || tpm > 3600 ? "correspondence" : tpm < 10 ? "blitz" : "live";
 }
 
 export function durationString(seconds: number): string {
@@ -659,3 +573,223 @@ export function shortDurationString(seconds) {
         (seconds ? " " + interpolate(pgettext("Short time (seconds)", "%ss"), [seconds]) : "")
     );
 }
+
+type Reify<T extends TimeControlSystem> = T extends "fischer"
+    ? TimeControlTypes.Fischer
+    : T extends "simple"
+    ? TimeControlTypes.Simple
+    : T extends "canadian"
+    ? TimeControlTypes.Canadian
+    : T extends "byoyomi"
+    ? TimeControlTypes.ByoYomi
+    : T extends "absolute"
+    ? TimeControlTypes.Absolute
+    : T extends "none"
+    ? TimeControlTypes.None
+    : never;
+type PropertyOf<T extends TimeControlSystem> = keyof Reify<T> & string;
+
+type TimeOption<T extends TimeControlSystem> = {
+    [K in PropertyOf<T>]?: LabeledTimeOption[];
+};
+type TimeOptions = {
+    [K in TimeControlSystem]?: TimeOption<K>;
+};
+type TimeOptionsMap = {
+    [K in TimeControlSpeed]: TimeOptions;
+};
+
+export function getTimeOptions(
+    speed: TimeControlSpeed,
+    system: TimeControlSystem,
+    property: string, // Difficult to get this typed properly
+): LabeledTimeOption[] {
+    return time_options[speed][system][property] ?? [];
+}
+
+export function getDefaultTimeControl<T extends TimeControlSystem>(
+    speed: TimeControlSpeed,
+    system: T,
+): Reify<T> {
+    const settings = default_time_settings[speed][system];
+    return Object.assign({}, settings, {
+        speed: speed,
+        system: system,
+    }) as unknown as Reify<T>; // hacky but probably necessary
+}
+
+export const time_options: TimeOptionsMap = {
+    blitz: {
+        fischer: {
+            initial_time: gen(5, 300),
+            time_increment: gen(1, 10),
+            max_time: gen(5, 300),
+        },
+        simple: {
+            per_move: gen(3, 9),
+        },
+        canadian: {
+            main_time: [zero].concat(gen(0, 300)),
+            period_time: gen(5, 30),
+        },
+        byoyomi: {
+            main_time: [zero].concat(gen(0, 300)),
+            period_time: gen(1, 10),
+        },
+        absolute: {
+            total_time: gen(45, 300),
+        },
+    },
+    live: {
+        fischer: {
+            initial_time: gen(30, 3600 * 4),
+            time_increment: gen(10, 1800),
+            max_time: gen(30, 3600 * 4),
+        },
+        simple: {
+            per_move: gen(10, 3600),
+        },
+        canadian: {
+            main_time: [zero].concat(gen(30, 3600 * 4)),
+            period_time: gen(20, 3600),
+        },
+        byoyomi: {
+            main_time: [zero].concat(gen(30, 3600 * 4)),
+            period_time: gen(10, 3600),
+        },
+        absolute: {
+            total_time: gen(600, 14400),
+        },
+    },
+    correspondence: {
+        fischer: {
+            initial_time: gen(86400, 86400 * 28),
+            time_increment: gen(14400, 86400 * 7),
+            max_time: gen(86400, 86400 * 28),
+        },
+        simple: {
+            per_move: gen(3600 * 12, 86400 * 28),
+        },
+        canadian: {
+            main_time: [zero].concat(gen(86400, 86400 * 28)),
+            period_time: gen(86400, 86400 * 28),
+        },
+        byoyomi: {
+            main_time: [zero].concat(gen(86400, 86400 * 28)),
+            period_time: gen(86400, 86400 * 28),
+        },
+        absolute: {
+            total_time: gen(86400 * 7, 86400 * 28),
+        },
+    },
+};
+
+type TimeControlDefaults = { [K in TimeControlSystem]: Omit<Reify<K>, "speed" | "system"> };
+type DefaultTimeSettingsMap = { [K in TimeControlSpeed]: TimeControlDefaults };
+export const default_time_settings: DefaultTimeSettingsMap = {
+    blitz: {
+        fischer: {
+            initial_time: 30,
+            time_increment: 10,
+            max_time: 60,
+            pause_on_weekends: false,
+        },
+        byoyomi: {
+            main_time: 30,
+            period_time: 5,
+            periods: 5,
+            periods_min: 1,
+            periods_max: 300,
+            pause_on_weekends: false,
+        },
+        canadian: {
+            main_time: 30,
+            period_time: 30,
+            stones_per_period: 5,
+            stones_per_period_min: 1,
+            stones_per_period_max: 50,
+            pause_on_weekends: false,
+        },
+        simple: {
+            per_move: 5,
+            pause_on_weekends: false,
+        },
+        absolute: {
+            total_time: 300,
+            pause_on_weekends: false,
+        },
+        none: {
+            pause_on_weekends: false,
+        },
+    },
+    live: {
+        fischer: {
+            initial_time: 120,
+            time_increment: 30,
+            max_time: 300,
+            pause_on_weekends: false,
+        },
+        byoyomi: {
+            main_time: 10 * 60,
+            period_time: 30,
+            periods: 5,
+            periods_min: 1,
+            periods_max: 300,
+            pause_on_weekends: false,
+        },
+        canadian: {
+            main_time: 10 * 60,
+            period_time: 180,
+            stones_per_period: 10,
+            stones_per_period_min: 1,
+            stones_per_period_max: 50,
+            pause_on_weekends: false,
+        },
+        simple: {
+            per_move: 60,
+            pause_on_weekends: false,
+        },
+        absolute: {
+            total_time: 900,
+            pause_on_weekends: false,
+        },
+        none: {
+            pause_on_weekends: false,
+        },
+    },
+    correspondence: {
+        fischer: {
+            initial_time: 3 * 86400,
+            time_increment: 86400,
+            max_time: 7 * 86400,
+            pause_on_weekends: true,
+        },
+        byoyomi: {
+            main_time: 7 * 86400,
+            period_time: 1 * 86400,
+            periods: 5,
+            periods_min: 1,
+            periods_max: 300,
+            pause_on_weekends: true,
+        },
+        canadian: {
+            main_time: 7 * 86400,
+            period_time: 7 * 86400,
+            stones_per_period: 10,
+            stones_per_period_min: 1,
+            stones_per_period_max: 50,
+            pause_on_weekends: true,
+        },
+        simple: {
+            per_move: 2 * 86400,
+            pause_on_weekends: true,
+        },
+        absolute: {
+            total_time: 28 * 86400,
+            pause_on_weekends: true,
+        },
+        none: {
+            pause_on_weekends: false,
+        },
+    },
+};
