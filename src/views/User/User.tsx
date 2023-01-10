@@ -100,7 +100,11 @@ export function User(props: { user_id?: number }): JSX.Element {
 
     const { signalUsed } = React.useContext(DynamicHelp.Api);
 
-    signalUsed("profile-edit-link"); // they have arrived here now, so they don't need to be told how to get here anymore
+    try {
+        signalUsed("profile-edit-link"); // they have arrived here now, so they don't need to be told how to get here anymore
+    } catch (e) {
+        console.error(e);
+    }
 
     const show_graph_type_toggle = !preferences.get("rating-graph-always-use");
 
