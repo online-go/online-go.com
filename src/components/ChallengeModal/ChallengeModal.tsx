@@ -43,6 +43,7 @@ import {
     TimeControlTypes,
     TimeControlPicker,
     timeControlSystemText,
+    TimeControl,
 } from "TimeControl";
 import { sfx } from "sfx";
 import * as preferences from "preferences";
@@ -221,7 +222,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             view_mode: goban_view_mode(),
             hide_preferred_settings_on_portrait: true,
             input_value_warning: false,
-            time_control: getDefaultTimeControl("correspondence", "byoyomi"),
+            time_control: this.loadLastTimeControlSettings(),
         };
 
         if (this.props.playersList && this.props.playersList.length > 0) {
@@ -351,6 +352,12 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         data.set(`time_control.speed`, speed);
         data.set(`time_control.system`, system);
         data.set(`time_control.${speed}.${system}`, this.state.time_control);
+    }
+
+    loadLastTimeControlSettings(): TimeControl {
+        const speed = data.get(`time_control.speed`, "correspondence");
+        const system = data.get(`time_control.system`, "byoyomi");
+        return data.get(`time_control.${speed}.${system}`, getDefaultTimeControl(speed, system));
     }
 
     saveSettings() {
@@ -1335,7 +1342,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     <TimeControlPicker
                         timeControl={this.state.time_control}
                         onChange={(tc) => {
-                            console.log("Time control changed to ", tc);
+                            // console.log("Time control changed to ", tc);
                             this.setState({
                                 time_control: tc,
                             });
