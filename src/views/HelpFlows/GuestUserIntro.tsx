@@ -23,13 +23,12 @@ import { _, pgettext } from "translate";
 
 /**
  * A help flow intended for guests who arrived on a Challenge Link
- * (targets components in the EXV6 flow)
  */
 
-export function GuestUserIntroEXV6(): JSX.Element {
+export function GuestUserIntro(): JSX.Element {
     return (
         <HelpFlow
-            id="guest-user-intro-exv6"
+            id="guest-user-intro"
             showInitially={false}
             debug={false}
             description={pgettext(

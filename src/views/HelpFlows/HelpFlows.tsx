@@ -20,8 +20,7 @@ import * as DynamicHelp from "react-dynamic-help";
 
 import * as data from "data";
 
-import { GuestUserIntroEXV6 } from "./GuestUserIntroEXV6";
-import { GuestUserIntroOldNav } from "./GuestUserIntroOldNav";
+import { GuestUserIntro } from "./GuestUserIntro";
 import { GuestUserIntroRengo } from "./GuestUserIntroRengo";
 
 /**
@@ -63,11 +62,7 @@ export function HelpFlows(): JSX.Element {
                     triggerFlow("guest-user-intro-rengo");
                 }
 
-                if (data.get("experiments.v6") === "enabled") {
-                    triggerFlow("guest-user-intro-exv6");
-                } else {
-                    triggerFlow("guest-user-intro-old-nav");
-                }
+                triggerFlow("guest-user-intro");
                 data.set("challenge_link_registration", null);
             }
         }
@@ -75,9 +70,7 @@ export function HelpFlows(): JSX.Element {
 
     return (
         <>
-            <GuestUserIntroEXV6 />
-
-            <GuestUserIntroOldNav />
+            <GuestUserIntro />
 
             <GuestUserIntroRengo />
         </>
