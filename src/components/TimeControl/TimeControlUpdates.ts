@@ -64,7 +64,14 @@ function recallTimeControlSettings(
         system = "byoyomi";
     }
     const fallback = getDefaultTimeControl(speed, system);
-    const tc = data.get(`time_control.${speed}.${system}`, fallback);
+    let tc = data.get(`time_control.${speed}.${system}`, fallback);
+    // The old time control picker occasionally wrote malformed entries, which unfortunately need to be
+    // accounted for.
+    if (tc.speed !== speed || tc.system !== system) {
+        console.log(`Repairing time_control.${speed}.${system}`);
+        data.remove(`time_control.${speed}.${system}`);
+        tc = fallback;
+    }
     return validateSettings(tc, boardWidth, boardHeight);
 }
 
