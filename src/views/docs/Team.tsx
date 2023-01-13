@@ -63,7 +63,6 @@ export class Team extends React.PureComponent<{}, any> {
         const gb = getLanguageFlag("gb", country, "gb");
         const se = getLanguageFlag("swedish", country, "se");
         const cz = getLanguageFlag("czech", country, "cz");
-        const nl = getLanguageFlag("netherlands", country, "nl");
         const it = getLanguageFlag("italian", country, "it");
         const eng = "_England";
 
@@ -87,7 +86,6 @@ export class Team extends React.PureComponent<{}, any> {
             { id: 695886, country: ["de"], languages: [de, en] }, //KAOSkonfused
             { id: 483146, country: ["gb"], languages: [en, fr] }, //teapoweredrobot
             { id: 76618, country: ["us"], languages: [en] }, //yebellz
-            { id: 193671, country: ["nl"], languages: [nl, gb, de] }, //gennan
             { id: 52288, country: ["se"], languages: [se, en] }, //le_4tc
             { id: 126739, country: ["it"], languages: [it, fr, en, es] }, //Sofiam
         ];
