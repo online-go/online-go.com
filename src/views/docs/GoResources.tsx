@@ -1293,7 +1293,7 @@ export const GoResources = () => {
                             />,
                             <span>
                                 <Flag country={"au"} />{" "}
-                                <a rel="noopener" href="https://facebook.com/pacifigoshop">
+                                <a rel="noopener" href="https://pacifigo.com.au/">
                                     PacifiGo
                                 </a>{" "}
                                 /{" "}
