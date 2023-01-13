@@ -416,6 +416,12 @@ export const GoResources = () => {
                                 </a>
                             </span>,
                             <span>
+                                <Flag country={fr} />{" "}
+                                <a rel="noopener" href="https://www.youtube.com/@FulguroGo">
+                                    FulguroGo
+                                </a>{" "}
+                            </span>,
+                            <span>
                                 <Flag country={jp} />{" "}
                                 <a rel="noopener" href="https://www.twitch.tv/sinayaka">
                                     sinayaka Twitch
