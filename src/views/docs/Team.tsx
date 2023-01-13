@@ -60,7 +60,6 @@ export class Team extends React.PureComponent<{}, any> {
         const es = getLanguageFlag("spanish", country, "es");
         const de = getLanguageFlag("german", country, "de");
         const cn = getLanguageFlag("chinese", country, "cn");
-        const gb = getLanguageFlag("gb", country, "gb");
         const se = getLanguageFlag("swedish", country, "se");
         const cz = getLanguageFlag("czech", country, "cz");
         const it = getLanguageFlag("italian", country, "it");
