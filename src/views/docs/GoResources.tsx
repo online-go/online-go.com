@@ -654,7 +654,10 @@ export const GoResources = () => {
                                     Vladislav Vinokurov Twitch
                                 </a>{" "}
                                 /{" "}
-                                <a rel="noopener" href="https://www.youtube.com/@user-qu1zq7ny5w">
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/@vladislav_vinokurov"
+                                >
                                     YouTube
                                 </a>
                             </span>,
