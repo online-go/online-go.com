@@ -29,6 +29,7 @@ import { createDemoBoard } from "ChallengeModal";
 import { LanguagePicker } from "LanguagePicker";
 import { GobanThemePicker } from "GobanThemePicker";
 import { IncidentReportTracker } from "IncidentReportTracker";
+import { KBShortcut } from "KBShortcut";
 import { NotificationList, notification_manager } from "Notifications";
 import { TurnIndicator } from "TurnIndicator";
 import { NotificationIndicator } from "NotificationIndicator";
@@ -144,6 +145,8 @@ export function NavBar(): JSX.Element {
 
     return (
         <header className={"NavBar" + (hamburger_expanded ? " hamburger-expanded" : "")}>
+            <KBShortcut shortcut="`" action={() => search_input.current.focus()} />
+
             <span className="hamburger">
                 {hamburger_expanded ? (
                     <i className="fa fa-times" onClick={toggleHamburgerExpanded} />
