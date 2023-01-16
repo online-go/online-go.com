@@ -62,7 +62,6 @@ export class Team extends React.PureComponent<{}, any> {
         const cn = getLanguageFlag("chinese", country, "cn");
         const se = getLanguageFlag("swedish", country, "se");
         const cz = getLanguageFlag("czech", country, "cz");
-        const it = getLanguageFlag("italian", country, "it");
         const eng = "_England";
 
         const moderators = [
@@ -85,11 +84,10 @@ export class Team extends React.PureComponent<{}, any> {
             { id: 695886, country: ["de"], languages: [de, en] }, //KAOSkonfused
             { id: 483146, country: ["gb"], languages: [en, fr] }, //teapoweredrobot
             { id: 76618, country: ["us"], languages: [en] }, //yebellz
-            { id: 52288, country: ["se"], languages: [se, en] }, //le_4tc
-            { id: 126739, country: ["it"], languages: [it, fr, en, es] }, //Sofiam
+            { id: 52288, country: ["se"], languages: [se, en] }, //antonTobi
         ];
         const developers = [
-            { id: 4, username: "matburt", country: ["us"], languages: [en] },
+            { id: 648853, username: "GreenAsJade", country: ["us"], languages: [en] },
             { id: 1, username: "anoek", country: ["us"], languages: [en] },
         ];
 
