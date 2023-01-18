@@ -39,8 +39,6 @@ import { PlayerIcon } from "PlayerIcon";
 import {
     shortShortTimeControl,
     isLiveGame,
-    getDefaultTimeControl,
-    TimeControlTypes,
     TimeControlPicker,
     timeControlSystemText,
     TimeControl,
@@ -63,7 +61,11 @@ import {
 import { copyChallengeLinkURL } from "ChallengeLinkButton";
 
 import { alert } from "swal_config";
-import { updateSystem } from "TimeControl/TimeControlUpdates";
+import {
+    recallTimeControlSettings,
+    saveTimeControlSettings,
+    updateSystem,
+} from "TimeControl/TimeControlUpdates";
 
 type ChallengeDetails = rest_api.ChallengeDetails;
 
@@ -346,23 +348,15 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         });
     }
 
-    saveTimeControlSettings() {
-        const speed = this.state.time_control.speed as TimeControlTypes.TimeControlSpeed;
-        const system = this.state.time_control.system as TimeControlTypes.TimeControlSystem;
-        data.set(`time_control.speed`, speed);
-        data.set(`time_control.system`, system);
-        data.set(`time_control.${speed}.${system}`, this.state.time_control);
-    }
-
     loadLastTimeControlSettings(): TimeControl {
         const speed = data.get(`time_control.speed`, "correspondence");
         const system = data.get(`time_control.system`, "byoyomi");
-        return data.get(`time_control.${speed}.${system}`, getDefaultTimeControl(speed, system));
+        return recallTimeControlSettings(speed, system);
     }
 
     saveSettings() {
         const next = this.next();
-        this.saveTimeControlSettings();
+        saveTimeControlSettings(this.state.time_control);
         const speed = data.get("challenge.speed", "live");
         data.set(`challenge.challenge.${speed}`, next.challenge);
         data.set("challenge.bot", next.conf.bot_id);

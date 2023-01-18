@@ -182,77 +182,6 @@ export function parseIntWithDefaultValue(
     return Math.max(min, Math.min(max, parsedInt));
 }
 
-export function makeTimeControlParameters(tc: any, width?: number, height?: number): TimeControl {
-    const tpm = computeAverageMoveTime(tc, width, height);
-    const speed: TimeControlSpeed =
-        tpm === 0 || tpm > 3600 ? "correspondence" : tpm < 10 ? "blitz" : "live";
-
-    switch (tc.system || tc.time_control) {
-        case "fischer":
-            return {
-                system: "fischer",
-                speed: speed,
-                initial_time: parseInt(tc.initial_time),
-                time_increment: parseInt(tc.time_increment),
-                max_time: parseInt(tc.max_time),
-                pause_on_weekends: tc.pause_on_weekends,
-            };
-        case "byoyomi":
-            return {
-                system: "byoyomi",
-                speed: speed,
-                main_time: parseInt(tc.main_time),
-                period_time: parseInt(tc.period_time),
-                periods: parseIntWithDefaultValue(
-                    tc.periods,
-                    tc.periods_min || 1,
-                    tc.periods_min || 1,
-                    tc.periods_max || 300,
-                ),
-                periods_min: tc.periods_min,
-                periods_max: tc.periods_max,
-                pause_on_weekends: tc.pause_on_weekends,
-            };
-        case "simple":
-            return {
-                system: "simple",
-                speed: speed,
-                per_move: parseInt(tc.per_move),
-                pause_on_weekends: tc.pause_on_weekends,
-            };
-        case "canadian":
-            return {
-                system: "canadian",
-                speed: speed,
-                main_time: parseInt(tc.main_time),
-                period_time: parseInt(tc.period_time),
-                stones_per_period: parseIntWithDefaultValue(
-                    tc.stones_per_period,
-                    tc.stones_per_period_min || 1,
-                    tc.stones_per_period_min || 1,
-                    tc.stones_per_period_max || 50,
-                ),
-                stones_per_period_min: tc.stones_per_period_min,
-                stones_per_period_max: tc.stones_per_period_max,
-                pause_on_weekends: tc.pause_on_weekends,
-            };
-        case "absolute":
-            return {
-                system: "absolute",
-                speed: speed,
-                total_time: parseInt(tc.total_time),
-                pause_on_weekends: tc.pause_on_weekends,
-            };
-        case "none":
-            return {
-                system: "none",
-                speed: "correspondence",
-                pause_on_weekends: tc.pause_on_weekends,
-            };
-    }
-    throw new Error(`Invalid time control type: ${tc.system}`);
-}
-
 export function timeControlSystemText(system: TimeControlSystem) {
     if (!system) {
         return "[unknown]";
@@ -587,7 +516,7 @@ type Reify<T extends TimeControlSystem> = T extends "fischer"
     : T extends "none"
     ? TimeControlTypes.None
     : never;
-type PropertyOf<T extends TimeControlSystem> = keyof Reify<T> & string;
+export type PropertyOf<T extends TimeControlSystem> = keyof Reify<T> & string;
 
 type TimeOption<T extends TimeControlSystem> = {
     [K in PropertyOf<T>]?: LabeledTimeOption[];
@@ -605,6 +534,19 @@ export function getTimeOptions(
     property: string, // Difficult to get this typed properly
 ): LabeledTimeOption[] {
     return time_options[speed][system][property] ?? [];
+}
+
+export function getInputRange(
+    speed: TimeControlSpeed,
+    system: TimeControlSystem,
+    property: string,
+): [number, number] | null {
+    const min = default_time_settings[speed][system][property + "_min"];
+    const max = default_time_settings[speed][system][property + "_max"];
+    if (min != null && max != null) {
+        return [min, max];
+    }
+    return null;
 }
 
 export function getDefaultTimeControl<T extends TimeControlSystem>(
