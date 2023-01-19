@@ -16,7 +16,7 @@
  */
 
 import { TimeControl, TimeControlTypes } from "./TimeControl";
-import { classifyGameSpeed, getDefaultTimeControl, getTimeOptions } from "./util";
+import { classifyGameSpeed, getDefaultTimeControl, getInputRange, getTimeOptions } from "./util";
 import * as data from "data";
 import { interpolate, pgettext } from "translate";
 import { computeAverageMoveTime } from "goban";
@@ -54,11 +54,19 @@ export function updateSystem(
     return recallTimeControlSettings(old.speed, system, boardWidth, boardHeight);
 }
 
-function recallTimeControlSettings(
+export function saveTimeControlSettings(tc: TimeControl) {
+    const speed = tc.speed;
+    const system = tc.system;
+    data.set(`time_control.speed`, speed);
+    data.set(`time_control.system`, system);
+    data.set(`time_control.${speed}.${system}`, tc);
+}
+
+export function recallTimeControlSettings(
     speed: TimeControlSpeed,
     system: TimeControlSystem,
-    boardWidth: number,
-    boardHeight: number,
+    boardWidth?: number,
+    boardHeight?: number,
 ): TimeControl {
     if (system === "none" && speed !== "correspondence") {
         system = "byoyomi";
@@ -79,15 +87,15 @@ function recallTimeControlSettings(
 // TimeControl object
 function validateSettings(
     tc: TimeControl,
-    boardWidth: number,
-    boardHeight: number,
+    boardWidth?: number,
+    boardHeight?: number,
     updateSpeed: boolean = false,
 ): TimeControl {
     switch (tc.system) {
         case "fischer":
-            restrictProperty(tc, "initial_time");
-            restrictProperty(tc, "time_increment");
-            restrictProperty(tc, "max_time");
+            restrictSpinnerProperty(tc, "initial_time");
+            restrictSpinnerProperty(tc, "time_increment");
+            restrictSpinnerProperty(tc, "max_time");
             if (tc.max_time < tc.time_increment) {
                 tc.max_time = tc.time_increment;
             }
@@ -96,22 +104,24 @@ function validateSettings(
             }
             break;
         case "simple":
-            restrictProperty(tc, "per_move");
+            restrictSpinnerProperty(tc, "per_move");
             break;
         case "canadian":
-            restrictProperty(tc, "main_time");
-            restrictProperty(tc, "period_time");
+            restrictSpinnerProperty(tc, "main_time");
+            restrictSpinnerProperty(tc, "period_time");
+            restrictRangedInputProperty(tc, "stones_per_period");
             break;
         case "byoyomi":
-            restrictProperty(tc, "main_time");
-            restrictProperty(tc, "period_time");
+            restrictSpinnerProperty(tc, "main_time");
+            restrictSpinnerProperty(tc, "period_time");
+            restrictRangedInputProperty(tc, "periods");
             break;
         case "absolute":
-            restrictProperty(tc, "total_time");
+            restrictSpinnerProperty(tc, "total_time");
             break;
     }
 
-    if (updateSpeed) {
+    if (updateSpeed && boardWidth != null && boardHeight != null) {
         tc.speed = classifyGameSpeed(tc, boardWidth, boardHeight);
     }
 
@@ -141,7 +151,10 @@ export function getTimeControlSpeedWarning(
 }
 
 // Ensures that the value of property is restricted to one of the valid choices shown in the time control picker
-function restrictProperty<T extends TimeControl, U extends keyof T & string>(tc: T, property: U) {
+function restrictSpinnerProperty<T extends TimeControl, U extends keyof T & string>(
+    tc: T,
+    property: U,
+) {
     const options = getTimeOptions(tc.speed, tc.system, property);
     if (options.findIndex((option) => option.time === tc[property]) === -1) {
         // This preserves the old behavior of picking a central value, but it might be better to pick the closest option to the invalid value
@@ -151,5 +164,16 @@ function restrictProperty<T extends TimeControl, U extends keyof T & string>(tc:
             `The value ${tc[property]} is not a valid option for '${property}' in the time control system '${tc.system}' with speed '${tc.speed}'. Using ${replacement} instead.`,
         );
         tc[property] = replacement as T[U];
+    }
+}
+
+function restrictRangedInputProperty(tc: TimeControl, property: string) {
+    const range = getInputRange(tc.speed, tc.system, property);
+    const value = tc[property];
+    if (range != null && typeof value == "number") {
+        const [min, max] = range;
+        tc[property] = Math.min(Math.max(min, value), max);
+    } else {
+        console.warn(`Trying to restrict an invalid property: ${property}.`);
     }
 }
