@@ -1,16 +1,20 @@
-//import { UserByName } from "./UserByName";
+import { UserByName } from "./UserByName";
 import * as React from "react";
-//import * as player_cache from "../../lib/player_cache";
-//import { render } from "react-dom";
-//import { act } from "react-dom/test-utils";
-//import * as requests from "../../lib/requests";
+import * as player_cache from "../../lib/player_cache";
+import * as requests from "../../lib/requests";
 import { User } from "./User";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { render } from "@testing-library/react";
+import { act } from "react-dom/test-utils";
 
 let container: HTMLDivElement = null;
 beforeEach(() => {
     // setup a DOM element as a render target
     container = document.createElement("div");
     document.body.appendChild(container);
+});
+
+afterEach(() => {
     (User as jest.Mock).mockClear();
 });
 
@@ -22,37 +26,32 @@ jest.mock("./User", () => {
     };
 });
 
-test("Dummy test", async () => {
-    return;
-});
+async function renderUserByName() {
+    let res: ReturnType<typeof render>;
+    await act(async () => {
+        res = render(
+            <MemoryRouter initialEntries={["/user/benjito"]}>
+                <Routes>
+                    <Route path="/user/:username" element={<UserByName />} />
+                </Routes>
+            </MemoryRouter>,
+        );
+    });
+    return res;
+}
 
-/*
 test("Renders User page if found in cache", async () => {
     player_cache.update({ id: 12345, username: "benjito" });
     jest.spyOn(requests, "get").mockImplementation(() => {
         return Promise.resolve({ results: [{ player_id: 12345 }] });
     });
 
-    await act(async () =>
-        render(
-            <UserByName
-                match={{
-                    params: { username: "benjito" },
-                    isExact: null,
-                    path: null,
-                    url: null,
-                }}
-                history={null}
-                location={null}
-            />,
-            container,
-        ),
-    );
+    const { container } = await renderUserByName();
 
     expect(requests.get).toHaveBeenCalledTimes(0);
     expect(container.children).toHaveLength(1);
     expect(container.children[0].className).toBe("UserMock");
-    expect((User as jest.Mock).mock.calls[0][0].match.params.user_id).toBe("12345");
+    expect((User as jest.Mock).mock.calls[0][0]).toEqual({ user_id: 12345 });
 });
 
 test("Renders User page if not found", async () => {
@@ -65,26 +64,12 @@ test("Renders User page if not found", async () => {
         return Promise.resolve({ results: [{ id: 12345 }] });
     });
 
-    await act(async () =>
-        render(
-            <UserByName
-                match={{
-                    params: { username: "benjito" },
-                    isExact: null,
-                    path: null,
-                    url: null,
-                }}
-                history={null}
-                location={null}
-            />,
-            container,
-        ),
-    );
+    const { container } = await renderUserByName();
 
     expect(requests.get).toHaveBeenCalledTimes(1);
     expect(container.children).toHaveLength(1);
     expect(container.children[0].className).toBe("UserMock");
-    expect((User as jest.Mock).mock.calls[0][0].match.params.user_id).toBe("12345");
+    expect((User as jest.Mock).mock.calls[0][0]).toEqual({ user_id: 12345 });
 });
 
 test("Displays user not found if not found.", async () => {
@@ -97,25 +82,10 @@ test("Displays user not found if not found.", async () => {
         return Promise.resolve({ results: [] });
     });
 
-    await act(async () =>
-        render(
-            <UserByName
-                match={{
-                    params: { username: "benjito" },
-                    isExact: null,
-                    path: null,
-                    url: null,
-                }}
-                history={null}
-                location={null}
-            />,
-            container,
-        ),
-    );
+    const { container } = await renderUserByName();
 
     expect(requests.get).toHaveBeenCalledWith("players", { username: "benjito" });
     expect(container.children).toHaveLength(1);
     expect(container.children[0].className).toBe("UserMock");
-    expect((User as jest.Mock).mock.calls[0][0].match.params.user_id).toBe("-1");
+    expect((User as jest.Mock).mock.calls[0][0]).toEqual({ user_id: -1 });
 });
-*/
