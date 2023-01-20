@@ -5,6 +5,7 @@ import * as React from "react";
 import * as data from "data";
 import { MemoryRouter as Router } from "react-router-dom";
 import { GobanContext } from "./goban_context";
+import { act } from "react-dom/test-utils";
 
 const TEST_USER = {
     anonymous: false,
@@ -266,4 +267,38 @@ test("Unsubscribe from all events on unmount", () => {
     unmount();
 
     expect(getListenerCounts(goban)).toEqual(listeners_before);
+});
+
+test("Pause buttons show up", () => {
+    const goban = new Goban({
+        game_id: 1234,
+        // TEST_USER must be a member of the game in order for cancel to show up.
+        players: {
+            black: TEST_USER,
+            white: { id: 456, username: "test_user2" },
+        },
+    });
+    data.set("user", TEST_USER);
+
+    render(
+        <WrapTest goban={goban}>
+            <PlayControls {...PLAY_CONTROLS_DEFAULTS} />
+        </WrapTest>,
+    );
+    act(() => {
+        // It would be more realistic to mock the "game/%%/clock" socket event,
+        // but AdHocClock is a complicated object and I'm not sure what params
+        // to use to get the goban to actually pause.
+        goban.pause_control = {
+            paused: {
+                pausing_player_id: 123,
+                pauses_left: 4,
+            },
+        };
+        goban.emit("paused", true);
+    });
+
+    expect(screen.getByText("Resume")).toBeDefined();
+    expect(screen.getByText("Game Paused")).toBeDefined();
+    expect(screen.getByText("4 pauses left for Black")).toBeDefined();
 });
