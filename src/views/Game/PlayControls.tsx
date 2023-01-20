@@ -1149,4 +1149,7 @@ const useOfficialMoveNumber = generateGobanHook(
     ["last_official_move"],
 );
 const useWinner = generateGobanHook((goban) => goban.engine.winner, ["winner"]);
-const usePaused = generateGobanHook((goban) => goban.pause_control && !!goban.pause_control.paused);
+const usePaused = generateGobanHook(
+    (goban) => goban.pause_control && !!goban.pause_control.paused,
+    ["paused"],
+);
