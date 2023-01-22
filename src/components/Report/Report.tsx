@@ -28,7 +28,6 @@ type ReportType =
     | "stalling"
     | "inappropriate_content"
     | "score_cheating"
-    | "harassment"
     | "ai_use"
     | "sandbagging"
     | "escaping"
@@ -72,8 +71,8 @@ export const report_categories: Array<ReportDescription> = [
         type: "inappropriate_content",
         title: pgettext("Report user for inappropriate content", "Inappropriate Content"),
         description: pgettext(
-            "Report user for inappropriate content",
-            "User is posting inappropriate content.",
+            "Report user for inappropriate content or harassing another user",
+            "User is posting inappropriate content or harassing another user.",
         ),
         min_description_length: 20,
     },
@@ -85,15 +84,6 @@ export const report_categories: Array<ReportDescription> = [
             "User is attempting to cheat in the stone removal phase.",
         ),
         game_id_required: true,
-    },
-    {
-        type: "harassment",
-        title: pgettext("Report user for harassment", "Harassment"),
-        description: pgettext(
-            "Report user for harassment",
-            "User is harassing other users.",
-        ),
-        min_description_length: 20,
     },
     {
         type: "ai_use",
