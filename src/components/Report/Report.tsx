@@ -73,7 +73,7 @@ export const report_categories: Array<ReportDescription> = [
         title: pgettext("Report user for inappropriate content", "Inappropriate Content"),
         description: pgettext(
             "Report user for inappropriate content",
-            "This user is posting inappropriate content.",
+            "User is posting inappropriate content.",
         ),
         min_description_length: 20,
     },
@@ -82,17 +82,14 @@ export const report_categories: Array<ReportDescription> = [
         title: pgettext("Report user for score cheating", "Score Cheating"),
         description: pgettext(
             "Report user for score cheating",
-            "User is attempting to cheat in the stone removal phase",
+            "User is attempting to cheat in the stone removal phase or the game has been miscored.",
         ),
         game_id_required: true,
     },
     {
         type: "harassment",
         title: pgettext("Report user for harassment", "Harassment"),
-        description: pgettext(
-            "Report user for harassment",
-            "User is harassing players or other users.",
-        ),
+        description: pgettext("Report user for harassment", "User is harassing other users."),
         min_description_length: 20,
     },
     {
@@ -100,7 +97,7 @@ export const report_categories: Array<ReportDescription> = [
         title: pgettext("Report user for AI use", "AI Use"),
         description: pgettext(
             "Report user for AI use",
-            "User is suspected of using an AI assistance in a game.",
+            "User is suspected of using an AI assistance in this game.",
         ),
         game_id_required: true,
     },
@@ -109,7 +106,7 @@ export const report_categories: Array<ReportDescription> = [
         title: pgettext("Report user for sandbagging", "Sandbagging"),
         description: pgettext(
             "Report user for sandbagging",
-            "User is resigning won games to purposefully lower their rank",
+            "User is resigning or timing out won games to purposefully lower their rank.",
         ),
         game_id_required: true,
     },
@@ -118,7 +115,7 @@ export const report_categories: Array<ReportDescription> = [
         title: pgettext("Report user for escaping", "Escaping"),
         description: pgettext(
             "Report user for escaping",
-            "User left the game without concluding it",
+            "User purposefully left the game without concluding it.",
         ),
         game_id_required: true,
     },
