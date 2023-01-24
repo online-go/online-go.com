@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C)  Online-Go.com
  *
@@ -88,7 +89,7 @@ export const report_categories: Array<ReportDescription> = [
     },
     {
         type: "harassment",
-        title: pgettext("Report user for harassment", "Harassment"),
+        title: pgettext("Report user harassment", "Harassment"),
         description: pgettext(
             "Report user for harassment",
             "User is harassing players users.",
