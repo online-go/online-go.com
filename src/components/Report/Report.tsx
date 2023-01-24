@@ -91,8 +91,7 @@ export const report_categories: Array<ReportDescription> = [
         type: "harassment",
         title: pgettext("Report user for harassment", "Harassment"),
         description: pgettext(
-            "Report user for harassment",
-            "User is harassing players users.",
+            "Report user for harassment", "User is harassing other users.",
         ),
         min_description_length: 20,
     },
