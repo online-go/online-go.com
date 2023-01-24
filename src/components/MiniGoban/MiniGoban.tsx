@@ -48,6 +48,8 @@ interface MiniGobanProps {
     openLinksInNewTab?: boolean;
     noText?: boolean;
     title?: boolean;
+    onGobanCreated?: (goban: Goban) => void;
+    chat?: boolean;
 }
 
 export function MiniGoban(props: MiniGobanProps): JSX.Element {
@@ -83,6 +85,7 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                 draw_bottom_labels: false,
                 draw_left_labels: false,
                 draw_right_labels: false,
+                connect_to_chat: !!props.chat,
                 game_id: props.id,
                 display_width:
                     props.displayWidth || Math.min($("body").width() - 50, $("#em10").width() * 2),
@@ -92,6 +95,10 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
             },
             props.json,
         );
+
+        if (props.onGobanCreated) {
+            props.onGobanCreated(goban.current);
+        }
 
         goban.current.on("update", () => {
             const engine = goban.current.engine;

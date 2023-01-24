@@ -1,0 +1,218 @@
+.ReportsCenter {
+    display: flex;
+    flex-direction: column;
+
+
+    .ModTools {
+        margin: 0;
+        themed background bg
+        border: 0;
+        box-shadow: none;
+    }
+
+    #move-tree-container {
+        height: 2rem;
+    }
+
+    .notes-container {
+        display: flex;
+        flex: 1;
+        flex-wrap: wrap;
+        flex-direction: row;
+        align-items: stretch;
+        justify-content: stretch;
+        align-content: stretch;
+        margin-bottom: 1rem;
+    }
+
+    .notes {
+        margin-bottom: 1rem;
+        flex: 1;
+        flex-basis: 40%;
+        min-width: 20rem;
+        display: inline-flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: stretch;
+        align-content: stretch;
+
+        .Card, textarea {
+            flex: 1;
+            margin-left: 1rem;
+            margin-right: 1rem;
+            margin-top: 0;
+            margin-bottom: 0;
+            min-height: 7rem;
+        }
+
+        textarea {
+            flex: 1;
+        }
+    }
+
+    h3, h4 {
+        margin-top: 0;
+    }
+
+    .reported-game-container {
+        flex: 1;
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        justify-content: stretch;
+        align-content: stretch;
+        flex-wrap: wrap;
+
+        .col {
+            flex: 1;
+            flex-basis: 40%;
+            display: inline-flex;
+            min-width: 20rem;
+            width: 40%;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: stretch;
+            align-content: stretch;
+            padding: 0.5rem;
+        }
+    }
+
+}
+
+#SelectedReport {
+    display: block;
+    width: 100%;
+    height: 100%;
+    clear: both;
+
+    textarea {
+    }
+
+    h3.users {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        flex-wrap: wrap;
+
+        .reporting-user, .reported-user {
+            white-space: nowrap;
+        }
+
+        .reporting-user {
+            float: right;
+            font-size: 0.8rem;
+            font-weight: 400;
+        }
+    }
+
+    .header {
+        .report-id {
+            margin-right: 1rem;
+        }
+        button {
+            margin-left: 1rem;
+            margin-right: 1rem;
+        }
+    }
+
+    /*
+    .reported-user {
+
+    }
+
+    .reporting-user {
+        text-align: right;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        padding-bottom: 1rem;
+        display: inline-block;
+        //border: 1px solid #fff;
+        //themed border-color shade1
+        //themed background-color shade5
+    }
+    */
+}
+
+
+
+#ReportsCenterContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    //align-items: stretch;
+    align-items: flex-start;
+}
+
+#ReportsCenterCategoryList {
+    border: 1px solid black;
+    themed border-color shade3
+    flex-basis: 15rem;
+
+    .Category {
+        cursor: pointer;
+        padding: 0.7rem;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        &.selected {
+            themed background-color primary
+            themed color colored-background-fg
+        }
+
+        .spacer {
+            display: inline-block;
+            width: 1rem;
+        }
+
+        i {
+            display: inline-block;
+            width: 1rem;
+
+        }
+    }
+}
+
+#SelectedReport {
+    flex: 1;
+
+    .help-details-greyed {
+        themed color shade4
+    }
+}
+
+// Mobile
+@media (max-width: 767px) {
+    #ReportsCenterCategoryList {
+        display: none;
+    }
+    #ReportsCenterContainer {
+        flex-direction: column;
+    }
+    #SelectedReport {
+        padding-top: 1rem;
+    }
+
+
+    #ReportsCenterCategoryDropdown {
+        .reports-center-category-container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    }
+    #ReportsCenterContainer {
+        align-items: stretch;
+    }
+}
+
+// Desktop
+@media (min-width: 768px) {
+    #ReportsCenterCategoryDropdown {
+        display: none;
+    }
+    #SelectedReport {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}

@@ -24,7 +24,8 @@ import { PlayerIcon } from "PlayerIcon";
 import { post } from "requests";
 import { alert } from "swal_config";
 
-type ReportType =
+export type ReportType =
+    | "all"
     | "stalling"
     | "inappropriate_content"
     | "score_cheating"
@@ -35,7 +36,7 @@ type ReportType =
     | "appeal"
     | "other";
 
-interface ReportDescription {
+export interface ReportDescription {
     type: ReportType;
     title: string;
     description: string;
@@ -58,13 +59,31 @@ interface ReportProperties {
     onClose?: () => void;
 }
 
-export const report_categories: Array<ReportDescription> = [
+export const report_categories: ReportDescription[] = [
     {
         type: "stalling",
         title: pgettext("Report user for stalling in a game", "Game Stalling"),
         description: pgettext(
             "Report user for stalling in a game",
             "User is stalling at the end of a game to annoy their opponent.",
+        ),
+        game_id_required: true,
+    },
+    {
+        type: "escaping",
+        title: pgettext("Report user for escaping", "Escaping"),
+        description: pgettext(
+            "Report user for escaping",
+            "User purposefully left the game without concluding it.",
+        ),
+        game_id_required: true,
+    },
+    {
+        type: "score_cheating",
+        title: pgettext("Report user for score cheating", "Score Cheating"),
+        description: pgettext(
+            "Report user for score cheating",
+            "User is attempting to cheat in the stone removal phase or the game has been miscored.",
         ),
         game_id_required: true,
     },
@@ -78,28 +97,10 @@ export const report_categories: Array<ReportDescription> = [
         min_description_length: 20,
     },
     {
-        type: "score_cheating",
-        title: pgettext("Report user for score cheating", "Score Cheating"),
-        description: pgettext(
-            "Report user for score cheating",
-            "User is attempting to cheat in the stone removal phase or the game has been miscored.",
-        ),
-        game_id_required: true,
-    },
-    {
         type: "harassment",
         title: pgettext("Report user for harassment", "Harassment"),
         description: pgettext("Report user for harassment", "User is harassing other users."),
         min_description_length: 20,
-    },
-    {
-        type: "ai_use",
-        title: pgettext("Report user for AI use", "AI Use"),
-        description: pgettext(
-            "Report user for AI use",
-            "User is suspected of using an AI assistance in this game.",
-        ),
-        game_id_required: true,
     },
     {
         type: "sandbagging",
@@ -111,11 +112,11 @@ export const report_categories: Array<ReportDescription> = [
         game_id_required: true,
     },
     {
-        type: "escaping",
-        title: pgettext("Report user for escaping", "Escaping"),
+        type: "ai_use",
+        title: pgettext("Report user for AI use", "AI Use"),
         description: pgettext(
-            "Report user for escaping",
-            "User purposefully left the game without concluding it.",
+            "Report user for AI use",
+            "User is suspected of using an AI assistance in this game.",
         ),
         game_id_required: true,
     },

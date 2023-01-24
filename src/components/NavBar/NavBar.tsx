@@ -253,6 +253,12 @@ export function NavBar(): JSX.Element {
                     </Link>
 
                     {user.is_moderator && (
+                        <Link className="admin-link" to="/reports-center">
+                            <i className="fa fa-exclamation-triangle"></i>
+                            {_("Reports Center")}
+                        </Link>
+                    )}
+                    {user.is_moderator && (
                         <Link className="admin-link" to="/moderator">
                             <i className="fa fa-gavel"></i>
                             {_("Moderator Center")}

@@ -38,8 +38,11 @@ interface AppealMessage {
     hidden?: boolean;
 }
 
-export function Appeal(): JSX.Element {
-    const params = useParams<{ player_id?: string }>();
+export function Appeal(props: { player_id?: number }): JSX.Element {
+    // we are either a full blow appeals page, or we are embedded within the ReportsCenter
+    // For the embedded version we use props, for the routed version we use useParams
+    const _params = useParams();
+    const params = props?.player_id ? props : _params;
 
     const banned_user_id: number = data.get("appeals.banned_user_id");
     const jwt_key: string = data.get("appeals.jwt");

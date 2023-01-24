@@ -53,3 +53,8 @@ export function useData<KeyT extends Extract<keyof DataSchema, string>>(
 export function useUser(): rest_api.UserConfig {
     return useData("user")[0];
 }
+
+export function useRefresh(): () => void {
+    const [, refresh] = React.useState(0);
+    return React.useCallback(() => refresh(() => Math.random()), [refresh]);
+}

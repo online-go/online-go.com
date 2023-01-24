@@ -16,105 +16,35 @@
  */
 
 import * as React from "react";
-import { Link } from "react-router-dom";
-import { _, pgettext } from "translate";
-import { socket } from "sockets";
-import { post } from "requests";
+import * as moment from "moment";
 import * as data from "data";
 import * as preferences from "preferences";
+import { Link } from "react-router-dom";
+import { alert } from "swal_config";
+import { _, pgettext } from "translate";
+import { post } from "requests";
 import { usePreference } from "preferences";
 import { Player } from "Player";
 import { ignore, errorAlerter } from "misc";
-import * as moment from "moment";
-import { emitNotification } from "Notifications";
-import { browserHistory } from "ogsHistory";
 import { openReportedConversationModal } from "ReportedConversationModal";
-import { ReportedConversation, report_categories } from "Report";
 import { AutoTranslate } from "AutoTranslate";
-import { PlayerCacheEntry } from "player_cache";
-import { alert } from "swal_config";
-
-export interface Report {
-    id: number;
-    created: string;
-    updated: string;
-    state: string;
-    source: string;
-    report_type: string;
-    reporting_user: any;
-    reported_user: any;
-    reported_game: number;
-    reported_review: number;
-    reported_conversation: ReportedConversation;
-    url: string;
-    moderator: PlayerCacheEntry;
-    cleared_by_user: boolean;
-    was_helpful: boolean;
-    reporter_note: string;
-    reporter_note_translation: {
-        source_language: string;
-        target_language: string;
-        source_text: string;
-        target_text: string;
-    };
-    moderator_note: string;
-    system_note: string;
-
-    unclaim: () => void;
-    claim: () => void;
-    steal: () => void;
-    bad_report: () => void;
-    good_report: () => void;
-    cancel: () => void;
-    set_note: () => void;
-}
-
-// when true, don't alert mods about notifications - this prevents a surge of
-// existing notifications when we reconnect to the server
-let post_connect_notification_squelch = true;
+import { report_categories } from "Report";
+import { Report, report_manager } from "report_manager";
+import { useRefresh } from "hooks";
 
 export function IncidentReportTracker(): JSX.Element {
-    const active_incident_reports_ref = React.useRef({});
     const [show_incident_list, setShowIncidentList] = React.useState(false);
-    const [reports, setReports] = React.useState<Report[]>([]);
     const [normal_ct, setNormalCt] = React.useState(0);
     const [hide_icon] = usePreference("hide-incident-reports");
+    const refresh = useRefresh();
+
+    function toggleList() {
+        setShowIncidentList(!show_incident_list);
+    }
 
     React.useEffect(() => {
-        const connect_fn = () => {
-            const user = data.get("user");
-            active_incident_reports_ref.current = {};
-            setReports(new Array<Report>());
-
-            post_connect_notification_squelch = true;
-            setTimeout(() => {
-                post_connect_notification_squelch = false;
-            }, 5000);
-
-            if (!user.anonymous) {
-                socket.send("incident/connect", {
-                    player_id: user.id,
-                    auth: data.get("config.incident_auth"),
-                });
-            }
-        };
-
-        socket.on("connect", connect_fn);
-        if (socket.connected) {
-            connect_fn();
-        }
-
-        socket.on("incident-report", handleReport);
-
-        return () => {
-            socket.off("incident-report", handleReport);
-            socket.off("connect", connect_fn);
-        };
-
-        function handleReport(report: Report) {
-            if (report.state === "resolved") {
-                delete active_incident_reports_ref.current[report.id];
-            } else {
+        const onReport = (report: Report) => {
+            if (report.state !== "resolved") {
                 report.unclaim = () => {
                     post("moderation/incident/%%", report.id, { id: report.id, action: "unclaim" })
                         .then(ignore)
@@ -184,85 +114,22 @@ export function IncidentReportTracker(): JSX.Element {
                             }
                         });
                 };
-
-                if (!(report.id in active_incident_reports_ref.current)) {
-                    if (
-                        data.get("user").is_moderator &&
-                        preferences.get("notify-on-incident-report") &&
-                        !post_connect_notification_squelch
-                    ) {
-                        emitNotification(
-                            "Incident Report",
-                            report.reporting_user.username + ": " + report.reporter_note,
-                            () => {
-                                if (report.reported_game) {
-                                    browserHistory.push(`/game/${report.reported_game}`);
-                                } else if (report.reported_review) {
-                                    browserHistory.push(`/review/${report.reported_review}`);
-                                } else if (report.reported_user) {
-                                    browserHistory.push(`/user/view/${report.reported_user.id}`);
-                                }
-                            },
-                        );
-                    }
-                }
-                active_incident_reports_ref.current[report.id] = report;
             }
+        };
 
-            const user = data.get("user");
-            const reports = [];
-            let normal_ct = 0;
-            for (const id in active_incident_reports_ref.current) {
-                const report = active_incident_reports_ref.current[id];
-                reports.push(report);
-                if (report.moderator === null || report.moderator.id === user.id) {
-                    normal_ct++;
-                }
-            }
+        report_manager.on("incident-report", onReport);
+        report_manager.on("active-count", setNormalCt);
+        report_manager.on("update", refresh);
 
-            reports.sort((a, b) => {
-                const A_BEFORE_B = -1;
-                const B_BEFORE_A = 1;
-
-                if (!a.moderator && !b.moderator) {
-                    return parseInt(b.id) - parseInt(a.id);
-                }
-                if (a.moderator && !b.moderator) {
-                    if (a.moderator.id === user.id) {
-                        return A_BEFORE_B;
-                    }
-                    return B_BEFORE_A;
-                }
-                if (b.moderator && !a.moderator) {
-                    if (b.moderator.id === user.id) {
-                        return B_BEFORE_A;
-                    }
-                    return A_BEFORE_B;
-                }
-
-                // both have moderators, sort our mod reports first, then other
-                // mods, then by id
-
-                if (a.moderator.id !== user.id && b.moderator.id === user.id) {
-                    return B_BEFORE_A;
-                }
-                if (a.moderator.id === user.id && b.moderator.id !== user.id) {
-                    return A_BEFORE_B;
-                }
-
-                return parseInt(b.id) - parseInt(a.id);
-            });
-
-            setReports(reports);
-            setNormalCt(normal_ct);
-        }
+        return () => {
+            report_manager.off("incident-report", onReport);
+            report_manager.off("active-count", setNormalCt);
+            report_manager.off("update", refresh);
+        };
     }, []);
 
-    function toggleList() {
-        setShowIncidentList(!show_incident_list);
-    }
-
     const user = data.get("user");
+    const reports = report_manager.sorted_active_incident_reports;
 
     if (reports.length === 0 && !user.is_moderator) {
         return null;

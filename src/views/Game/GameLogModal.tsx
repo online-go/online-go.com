@@ -32,7 +32,7 @@ interface GameLogModalProperties {
     white: any;
 }
 
-interface LogEntry {
+export interface LogEntry {
     timestamp: string;
     event: string;
     data: any;
@@ -108,7 +108,7 @@ export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: A
     }
 }
 
-function LogData({
+export function LogData({
     config,
     markCoords,
     event,

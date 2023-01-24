@@ -26,17 +26,19 @@ import { _ } from "translate";
 import { Link } from "react-router-dom";
 import { chat_markup } from "Chat";
 import { errorAlerter } from "misc";
-import { put } from "requests";
+import { put, get } from "requests";
 import { IPDetails } from "Moderator";
 import { usePreference } from "preferences";
 
 interface ModToolsProps {
     user_id: number;
     show_mod_log: boolean;
+    collapse_same_users?: boolean;
 }
 
 export function ModTools(props: ModToolsProps): JSX.Element {
     const [hide_moderator_controls] = usePreference("moderator.hide-profile-information");
+    const [aliases, setAliases] = React.useState([]);
     const moderator_note = React.useRef<HTMLTextAreaElement>(null);
     const addModeratorNote = async () => {
         const txt = moderator_note.current.value.trim();
@@ -56,13 +58,25 @@ export function ModTools(props: ModToolsProps): JSX.Element {
             errorAlerter(e);
         }
     };
-
     const moderator_log_anchor = React.useRef<HTMLDivElement>(null);
+    /*
     React.useEffect(() => {
         if (props.show_mod_log && moderator_log_anchor.current !== null) {
             moderator_log_anchor.current.scrollIntoView();
         }
     });
+    */
+
+    React.useEffect(() => {
+        if (props.collapse_same_users) {
+            get(`players/${props.user_id}/aliases/`, undefined, { page_size: 100 })
+                .then((data: any) => {
+                    const aliases = data.results;
+                    setAliases(aliases);
+                })
+                .catch(errorAlerter);
+        }
+    }, [props.user_id, props.collapse_same_users]);
 
     if (hide_moderator_controls) {
         return null;
@@ -71,65 +85,79 @@ export function ModTools(props: ModToolsProps): JSX.Element {
     return (
         <Card className="ModTools">
             {" "}
-            <b>Users with the same IP or Browser ID</b>
-            <PaginatedTable
-                className="aliases"
-                name="aliases"
-                source={`players/${props.user_id}/aliases/`}
-                columns={[
-                    {
-                        header: "Registered",
-                        className: "date",
-                        render: (X) => moment(X.registration_date).format("YYYY-MM-DD"),
-                    },
-                    {
-                        header: "Last Login",
-                        className: "date",
-                        render: (X) => moment(X.last_login).format("YYYY-MM-DD"),
-                    },
-                    {
-                        header: "Browser ID",
-                        sortable: true,
-                        className: "browser_id",
-                        render: (X) => X.last_browser_id,
-                    },
-                    {
-                        header: "User",
-                        className: "user",
-                        render: (X) => (
-                            <span>
-                                <Player user={X} />
-                                {(X.has_notes || null) && (
-                                    <i
-                                        className="fa fa-file-text-o clickable"
-                                        onClick={() => openNotes(X.moderator_notes)}
-                                    />
-                                )}
-                            </span>
-                        ),
-                    },
-                    {
-                        header: "Banned",
-                        className: "banned",
-                        render: (X) => (X.is_banned ? _("Yes") : _("No")),
-                    },
-                    {
-                        header: "Shadowbanned",
-                        className: "banned",
-                        render: (X) => (X.is_shadowbanned ? _("Yes") : _("No")),
-                    },
-                    {
-                        header: "Timezone",
-                        className: "timezone",
-                        render: (X) => X.last_timezone_offset / -60,
-                    },
-                    {
-                        header: "Inet",
-                        className: "inet",
-                        render: (X) => <IPDetails ip={X.last_ip} details={X.ip_details} />,
-                    },
-                ]}
-            />
+            {props.collapse_same_users ? (
+                <div>
+                    <b>Aliases: </b>
+                    {aliases.map((alias, idx) => (
+                        <React.Fragment key={alias.username}>
+                            {idx > 0 ? ", " : ""}
+                            <Player user={alias} />
+                        </React.Fragment>
+                    ))}
+                </div>
+            ) : (
+                <div>
+                    <b>Users with the same IP or Browser ID</b>
+                    <PaginatedTable
+                        className="aliases"
+                        name="aliases"
+                        source={`players/${props.user_id}/aliases/`}
+                        columns={[
+                            {
+                                header: "Registered",
+                                className: "date",
+                                render: (X) => moment(X.registration_date).format("YYYY-MM-DD"),
+                            },
+                            {
+                                header: "Last Login",
+                                className: "date",
+                                render: (X) => moment(X.last_login).format("YYYY-MM-DD"),
+                            },
+                            {
+                                header: "Browser ID",
+                                sortable: true,
+                                className: "browser_id",
+                                render: (X) => X.last_browser_id,
+                            },
+                            {
+                                header: "User",
+                                className: "user",
+                                render: (X) => (
+                                    <span>
+                                        <Player user={X} />
+                                        {(X.has_notes || null) && (
+                                            <i
+                                                className="fa fa-file-text-o clickable"
+                                                onClick={() => openNotes(X.moderator_notes)}
+                                            />
+                                        )}
+                                    </span>
+                                ),
+                            },
+                            {
+                                header: "Banned",
+                                className: "banned",
+                                render: (X) => (X.is_banned ? _("Yes") : _("No")),
+                            },
+                            {
+                                header: "Shadowbanned",
+                                className: "banned",
+                                render: (X) => (X.is_shadowbanned ? _("Yes") : _("No")),
+                            },
+                            {
+                                header: "Timezone",
+                                className: "timezone",
+                                render: (X) => X.last_timezone_offset / -60,
+                            },
+                            {
+                                header: "Inet",
+                                className: "inet",
+                                render: (X) => <IPDetails ip={X.last_ip} details={X.ip_details} />,
+                            },
+                        ]}
+                    />
+                </div>
+            )}
             <b>Mod log</b>
             <div id="leave-moderator-note" ref={moderator_log_anchor}>
                 <textarea ref={moderator_note} placeholder="Leave note" id="moderator-note" />

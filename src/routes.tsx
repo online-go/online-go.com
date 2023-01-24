@@ -66,6 +66,7 @@ import { BlockedVPN } from "BlockedVPN";
 import { Firewall } from "Firewall";
 import { Appeal } from "Appeal";
 import { AppealsCenter } from "AppealsCenter";
+import { ReportsCenter } from "ReportsCenter";
 import { Experiment, Variant, Default as ExDefault } from "Experiment";
 
 import * as docs from "docs";
@@ -181,6 +182,8 @@ export const routes = (
                 <Route path="/appeal/:player_id" element={<Appeal />} />
                 <Route path="/appeal" element={<Appeal />} />
                 <Route path="/appeals-center" element={<AppealsCenter />} />
+                <Route path="/reports-center/:report_id" element={<ReportsCenter />} />
+                <Route path="/reports-center" element={<ReportsCenter />} />
                 <Route path="/overview" element={<Overview />} />
                 <Route path="/play/*" element={<Play />} />
                 <Route path="/chat/:channel" element={<ChatView />} />
