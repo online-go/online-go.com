@@ -28,7 +28,7 @@ type ReportType =
     | "stalling"
     | "inappropriate_content"
     | "score_cheating"
-    | "harassing"
+    | "harassment"
     | "ai_use"
     | "sandbagging"
     | "escaping"
@@ -82,18 +82,18 @@ export const report_categories: Array<ReportDescription> = [
         title: pgettext("Report user for score cheating", "Score Cheating"),
         description: pgettext(
             "Report user for score cheating",
-            "User is attempting to cheat in the stone removal phase.",
+            "User is attempting to cheat in the stone removal phase or the game has been miscored.",
         ),
         game_id_required: true,
     },
     {
-        type: "harassing",
+        type: "harassment",
         title: pgettext("Report user for harassment", "Harassment"),
         description: pgettext(
             "Report user for harassment",
-            "User is harassing other users.",
+            "User is harassing players users.",
         ),
-        game_id_required: true,
+        min_description_length: 20,
     },
     {
         type: "ai_use",
