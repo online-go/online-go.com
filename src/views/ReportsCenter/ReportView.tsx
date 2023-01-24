@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import Select from "react-select";
 import { useUser } from "hooks";
 import { report_categories } from "Report";
 import { Report } from "report_manager";
@@ -28,6 +29,7 @@ import { errorAlerter, ignore } from "misc";
 import { UserHistory } from "./UserHistory";
 import { ReportedGame } from "./ReportedGame";
 import { AppealView } from "./AppealView";
+import { get } from "requests";
 
 // Used for saving updates to the report
 let report_note_id = 0;
@@ -37,6 +39,21 @@ let report_note_update_timeout = null;
 export function ReportView({ report }: { report: Report }): JSX.Element {
     const user = useUser();
     const [moderatorNote, setModeratorNote] = React.useState("");
+    const [moderators, setModerators] = React.useState([]);
+    const [moderator_id, setModeratorId] = React.useState(report?.moderator?.id);
+
+    React.useEffect(() => {
+        get("players/?is_moderator=true&page_size=100")
+            .then((res) => {
+                console.log("mods: ", res.results);
+                setModerators(res.results);
+            })
+            .catch(errorAlerter);
+    }, []);
+
+    React.useEffect(() => {
+        setModeratorId(report?.moderator?.id);
+    }, [report, report?.moderator?.id]);
 
     React.useEffect(() => {
         if (document.activeElement.nodeName !== "TEXTAREA") {
@@ -75,6 +92,20 @@ export function ReportView({ report }: { report: Report }): JSX.Element {
         [report],
     );
 
+    const assignToModerator = React.useCallback(
+        (id: number) => {
+            setModeratorId(id);
+            post("moderation/incident/%%", report.id, {
+                id: report.id,
+                action: "assign",
+                moderator_id: id,
+            })
+                .then(ignore)
+                .catch(errorAlerter);
+        },
+        [report],
+    );
+
     if (!report) {
         return <div id="SelectedReport" />;
     }
@@ -87,9 +118,47 @@ export function ReportView({ report }: { report: Report }): JSX.Element {
                 <span className="report-id">{"R" + `${report.id}`.slice(-3)}</span>
 
                 <span className="moderator">
+                    <Select
+                        id="ReportsCenterSelectModerator"
+                        className="reports-center-category-option-select"
+                        classNamePrefix="ogs-react-select"
+                        value={moderators.filter((m) => m.id === moderator_id)[0]}
+                        getOptionValue={(data) => data.type}
+                        onChange={(m: any) => assignToModerator(m.id)}
+                        options={moderators}
+                        isClearable={false}
+                        isSearchable={false}
+                        blurInputOnSelect={true}
+                        placeholder={"Moderator.."}
+                        components={{
+                            Option: ({ innerRef, innerProps, isFocused, isSelected, data }) => (
+                                <div
+                                    ref={innerRef}
+                                    {...innerProps}
+                                    className={
+                                        "reports-center-assigned-moderator" +
+                                        (isFocused ? "focused " : "") +
+                                        (isSelected ? "selected" : "")
+                                    }
+                                >
+                                    {data.username}
+                                </div>
+                            ),
+                            SingleValue: ({ innerProps, data }) => (
+                                <span {...innerProps} className="reports-center-assigned-moderator">
+                                    {data.username}
+                                </span>
+                            ),
+                            ValueContainer: ({ children }) => (
+                                <div className="reports-center-assigned-moderator-container">
+                                    {children}
+                                </div>
+                            ),
+                        }}
+                    />
+
                     {report.moderator ? (
                         <>
-                            Moderator: <Player user={report.moderator} />
                             {(report.moderator.id === user.id || null) && (
                                 <button className="danger xs" onClick={report.unclaim}>
                                     {_("Unclaim")}
