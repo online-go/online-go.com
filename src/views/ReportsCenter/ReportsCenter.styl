@@ -10,13 +10,41 @@
         box-shadow: none;
     }
 
+    .moderator {
+        button.danger {
+            margin-left: 0.5rem !important;
+            margin-right: 0.5rem !important;
+        }
+    }
+
+    #ReportsCenterSelectReport  {
+        display: inline-block;
+        width: 6rem;
+        .reports-center-selected-report-container {
+            display: inline-flex;
+            align-items: center;
+        }
+        margin-right: 0.5rem;
+    }
+
     #ReportsCenterSelectModerator  {
         display: inline-block;
-        width: 12rem;
+        width: 10rem;
         .reports-center-assigned-moderator-container {
             display: inline-flex;
             align-items: center;
 
+        }
+    }
+
+    .actions {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        .Button {
+            margin-left: 0.5rem;
         }
     }
 
@@ -84,6 +112,7 @@
             flex-basis: 40%;
             display: inline-flex;
             min-width: 20rem;
+            max-width: 40%;
             width: 40%;
             flex-direction: column;
             align-items: stretch;
@@ -94,62 +123,6 @@
     }
 
 }
-
-#SelectedReport {
-    display: block;
-    width: 100%;
-    height: 100%;
-    clear: both;
-
-    textarea {
-    }
-
-    h3.users {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        flex-wrap: wrap;
-
-        .reporting-user, .reported-user {
-            white-space: nowrap;
-        }
-
-        .reporting-user {
-            float: right;
-            font-size: 0.8rem;
-            font-weight: 400;
-        }
-    }
-
-    .header {
-        .report-id {
-            margin-right: 1rem;
-        }
-        button {
-            margin-left: 1rem;
-            margin-right: 1rem;
-        }
-    }
-
-    /*
-    .reported-user {
-
-    }
-
-    .reporting-user {
-        text-align: right;
-        padding-left: 1rem;
-        padding-right: 1rem;
-        padding-bottom: 1rem;
-        display: inline-block;
-        //border: 1px solid #fff;
-        //themed border-color shade1
-        //themed background-color shade5
-    }
-    */
-}
-
-
 
 #ReportsCenterContainer {
     display: flex;
@@ -163,6 +136,8 @@
     border: 1px solid black;
     themed border-color shade3
     flex-basis: 15rem;
+    min-width: 15rem;
+    max-width: 15rem;
 
     .Category {
         cursor: pointer;

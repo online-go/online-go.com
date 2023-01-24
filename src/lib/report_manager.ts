@@ -104,7 +104,11 @@ class ReportManager extends EventEmitter<Events> {
         }
 
         socket.on("incident-report", (report: Report) => {
-            this.active_incident_reports[report.id] = report;
+            if (report.state === "resolved") {
+                delete this.active_incident_reports[report.id];
+            } else {
+                this.active_incident_reports[report.id] = report;
+            }
             const user = data.get("user");
 
             const reports = [];

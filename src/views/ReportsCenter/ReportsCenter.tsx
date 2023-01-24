@@ -22,7 +22,7 @@ import { report_manager } from "report_manager";
 import Select from "react-select";
 import { _ } from "translate";
 import { useParams } from "react-router-dom";
-import { ReportView } from "./ReportView";
+import { SelectedReport } from "./SelectedReport";
 
 const categories: ReportDescription[] = [
     {
@@ -112,6 +112,10 @@ export function ReportsCenter(): JSX.Element {
         counts["all"] = (counts["all"] || 0) + 1;
     }
 
+    const selectReport = (report) => {
+        setReport(report);
+    };
+
     return (
         <div className="ReportsCenter container">
             <h2 className="page-title">
@@ -180,7 +184,7 @@ export function ReportsCenter(): JSX.Element {
                     }}
                 />
 
-                <ReportView report={report} />
+                <SelectedReport reports={reports} onChange={selectReport} report={report} />
             </div>
         </div>
     );
