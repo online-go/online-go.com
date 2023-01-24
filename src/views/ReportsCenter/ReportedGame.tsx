@@ -38,6 +38,7 @@ import {
 import { Goban } from "goban";
 import { Resizable } from "Resizable";
 import { socket } from "sockets";
+import { Player } from "Player";
 
 export function ReportedGame({ game_id }: { game_id: number }): JSX.Element {
     const [goban, setGoban] = React.useState<Goban>(null);
@@ -156,6 +157,9 @@ export function ReportedGame({ game_id }: { game_id: number }): JSX.Element {
         return null;
     }
 
+    const winner =
+        goban?.engine?.winner === goban?.engine?.config.black_player_id ? "Black" : "White";
+
     return (
         <div className="reported-game">
             <h3>
@@ -177,8 +181,9 @@ export function ReportedGame({ game_id }: { game_id: number }): JSX.Element {
                             <div>Game Phase: {goban.engine.phase}</div>
                             {(goban.engine.phase === "finished" || null) && (
                                 <div>
-                                    Game Outcome: {goban.engine.outcome}{" "}
-                                    {annulled ? " anulled" : ""}
+                                    Game Outcome: {winner} (
+                                    <Player user={goban?.engine?.winner as number} />) by{" "}
+                                    {goban.engine.outcome} {annulled ? " anulled" : ""}
                                 </div>
                             )}
 
