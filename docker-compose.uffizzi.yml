@@ -10,7 +10,7 @@ services:
   nginx:
     image: nginx:alpine
     volumes:
-      - ./nginx-uffizzi:/etc/nginx
+      - ./nginx:/etc/nginx
   
   online-go:
     image: "${ONLINE_GO_IMAGE}"
