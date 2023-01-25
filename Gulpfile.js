@@ -4,6 +4,7 @@
 //let BACKEND = process.env.OGS_BACKEND || 'BETA';
 //BACKEND = 'PRODUCTION';
 //BACKEND = 'LOCAL';
+let BACKEND = 'UFFIZZI';
 
 const spawn        = require('child_process').spawn;
 const fs           = require('fs');

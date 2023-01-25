@@ -12,7 +12,7 @@ services:
     entrypoint: /bin/sh
     command: 
       - "-c"
-      - "OGS_BACKEND=UFFIZZI UFFIZZI_URL=$$UFFIZZI_URL/ npm run dev"
+      - "UFFIZZI_URL=$$UFFIZZI_URL/ npm run dev"
     ports:
       - "8080:8080"
     deploy:
