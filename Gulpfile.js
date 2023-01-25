@@ -1,7 +1,7 @@
 'use strict';
 
 // Which backend server would you like to use today? ...
-let BACKEND = process.env.OGS_BACKEND || 'BETA';
+//let BACKEND = process.env.OGS_BACKEND || 'BETA';
 //BACKEND = 'PRODUCTION';
 //BACKEND = 'LOCAL';
 
@@ -182,6 +182,9 @@ function dev_server(done) {
             server_url = 'http://localhost:1080';
             use_https = false;
             break;
+        case 'UFFIZZI':
+            server_url = process.env.UFFIZZI_URL;
+            use_https = true;        
         default:
             console.error(`unsupported backend: ${BACKEND}`);
             process.exit(1);

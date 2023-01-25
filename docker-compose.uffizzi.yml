@@ -9,10 +9,14 @@ services:
 
   online-go:
     image: "${ONLINE_GO_IMAGE}"
-    container_name: online-go
+    entrypoint: /bin/sh
+    command: 
+      - "-c"
+      - "OGS_BACKEND=UFFIZZI UFFIZZI_URL=$$UFFIZZI_URL/ npm run dev"
     ports:
       - "8080:8080"
     deploy:
           resources:
             limits:
               memory: 4000M
+  
