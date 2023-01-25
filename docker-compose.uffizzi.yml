@@ -1,0 +1,16 @@
+version: "3"
+
+x-uffizzi:
+  ingress:
+    service: online-go
+    port: 8080
+
+
+services:
+
+  online-go:
+    image: "${ONLINE_GO_IMAGE}"
+    container_name: online-go
+    ports:
+      - "8080:8080"
+
