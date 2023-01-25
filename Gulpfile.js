@@ -4,7 +4,7 @@
 //let BACKEND = process.env.OGS_BACKEND || 'BETA';
 //let BACKEND = 'PRODUCTION';
 //let BACKEND = 'LOCAL';
-let BACKEND = 'UFFIZZI';
+let BACKEND = 'LOCAL';
 
 const spawn        = require('child_process').spawn;
 const fs           = require('fs');
@@ -53,7 +53,6 @@ gulp.task('default',
         "watch_eslint"
     )
 );
-
 
 function reload(done) {
     livereload.reload();
@@ -180,7 +179,7 @@ function dev_server(done) {
             use_https = true;
             break;
         case 'LOCAL':
-            server_url = 'http://localhost:1080';
+            server_url = 'http://localhost:8080';
             use_https = false;
             break;
         case 'UFFIZZI':
