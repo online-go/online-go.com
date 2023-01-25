@@ -13,4 +13,7 @@ services:
     container_name: online-go
     ports:
       - "8080:8080"
-
+    deploy:
+          resources:
+            limits:
+              memory: 2000M
