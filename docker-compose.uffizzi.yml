@@ -12,7 +12,7 @@ services:
     entrypoint: /bin/sh
     command: 
       - "-c"
-      - "UFFIZZI_URL=$$UFFIZZI_URL/ npm run dev:uffizzi"
+      - "UFFIZZI_URL=$$UFFIZZI_URL npm run dev:uffizzi"
     ports:
       - "8080:8080"
     deploy:
