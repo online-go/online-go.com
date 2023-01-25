@@ -184,7 +184,7 @@ function dev_server(done) {
             use_https = false;
             break;
         case 'UFFIZZI':
-            server_url = process.env.UFFIZZI_URL;
+            server_url = 'https://pr-4-deployment-12283-online-go-com.app.uffizzi.com'
             use_https = true;  
             break;      
         default:
