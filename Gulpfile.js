@@ -184,7 +184,7 @@ function dev_server(done) {
             break;
         case 'UFFIZZI':
             server_url = process.env.UFFIZZI_URL;
-            use_https = true;  
+            use_https = false;  
             break;      
         default:
             console.error(`unsupported backend: ${BACKEND}`);
