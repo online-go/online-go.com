@@ -5,7 +5,6 @@ x-uffizzi:
     service: online-go
     port: 8080
 
-
 services:
 
   online-go:
