@@ -2,11 +2,16 @@ version: "3"
 
 x-uffizzi:
   ingress:
-    service: online-go
-    port: 8080
+    service: nginx
+    port: 8081
 
 services:
 
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx-uffizzi:/etc/nginx
+  
   online-go:
     image: "${ONLINE_GO_IMAGE}"
     entrypoint: /bin/sh
