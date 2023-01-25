@@ -9,6 +9,7 @@
     },
     "scripts": {
         "dev": "supervisor -w Gulpfile.js,webpack.config.js,tsconfig.json supervisor -w Gulpfile.js -x gulp --",
+        "dev:uffizzi": "gulp --",
         "prettier": "prettier --write \"src/**/*.{ts,tsx}\"",
         "prettier:check": "prettier --check \"src/**/*.{ts,tsx}\"",
         "webpack": "webpack",
