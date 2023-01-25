@@ -54,7 +54,6 @@ gulp.task('default',
     )
 );
 
-
 function reload(done) {
     livereload.reload();
     done();
