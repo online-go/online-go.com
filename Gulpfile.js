@@ -179,7 +179,7 @@ function dev_server(done) {
             use_https = true;
             break;
         case 'LOCAL':
-            server_url = 'http://localhost:1080';
+            server_url = 'http://localhost:8080';
             use_https = false;
             break;
         case 'UFFIZZI':
