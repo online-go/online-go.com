@@ -16,16 +16,12 @@
  */
 
 import * as React from "react";
-
-import { _ } from "translate";
-
 import * as data from "data";
-
+import { _ } from "translate";
 import { usePreference } from "preferences";
-
 import { Toggle } from "Toggle";
-
 import { SettingGroupPageProps, PreferenceLine } from "SettingsCommon";
+import { ReportsCenterSettings } from "ReportsCenter";
 
 export function ModeratorPreferences(_props: SettingGroupPageProps): JSX.Element {
     const [incident_report_notifications, setIncidentReportNotifications] = usePreference(
@@ -68,6 +64,7 @@ export function ModeratorPreferences(_props: SettingGroupPageProps): JSX.Element
             <PreferenceLine title="Hide moderator information on profile pages">
                 <Toggle checked={hide_profile} onChange={setHideProfile} />
             </PreferenceLine>
+            <ReportsCenterSettings />
         </div>
     );
 }

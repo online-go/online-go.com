@@ -16,3 +16,4 @@
  */
 
 export * from "./ReportsCenter";
+export * from "./ReportsCenterSettings";

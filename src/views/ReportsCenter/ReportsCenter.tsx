@@ -23,6 +23,7 @@ import Select from "react-select";
 import { _ } from "translate";
 import { useParams } from "react-router-dom";
 import { SelectedReport } from "./SelectedReport";
+import { ReportsCenterSettings } from "./ReportsCenterSettings";
 
 interface OtherView {
     special: string;
@@ -59,7 +60,8 @@ export function ReportsCenter(): JSX.Element {
     const params = useParams();
 
     const refresh = useRefresh();
-    const [selectedTab, setSelectedTab] = React.useState("all");
+    //const [selectedTab, setSelectedTab] = React.useState("all");
+    const [selectedTab, setSelectedTab] = React.useState("settings");
     const [report, setReport] = React.useState(null);
 
     React.useEffect(() => {
@@ -134,7 +136,7 @@ export function ReportsCenter(): JSX.Element {
 
             <div id="ReportsCenterContainer">
                 <div id="ReportsCenterCategoryList">
-                    {categories.map((report_type) => {
+                    {categories.map((report_type, idx) => {
                         if ("type" in report_type) {
                             const ct = counts[report_type.type] || 0;
                             return (
@@ -158,7 +160,7 @@ export function ReportsCenter(): JSX.Element {
                         if ("special" in report_type) {
                             switch (report_type.special) {
                                 case "hr":
-                                    return <hr />;
+                                    return <hr key={idx} />;
                                 case "settings":
                                 case "history":
                                     return (
@@ -227,22 +229,13 @@ export function ReportsCenter(): JSX.Element {
                 />
 
                 {selectedTab === "settings" ? (
-                    <Settings />
+                    <ReportsCenterSettings />
                 ) : selectedTab === "history" ? (
                     <History />
                 ) : selectedTab === "hr" ? null : (
                     <SelectedReport reports={reports} onChange={selectReport} report={report} />
                 )}
             </div>
-        </div>
-    );
-}
-
-export function Settings(): JSX.Element {
-    return (
-        <div className="ReportsCenterSettings">
-            <h3>Settings</h3>
-            <div className="Settings"></div>
         </div>
     );
 }

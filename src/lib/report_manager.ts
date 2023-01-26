@@ -109,20 +109,6 @@ class ReportManager extends EventEmitter<Events> {
             } else {
                 this.active_incident_reports[report.id] = report;
             }
-            const user = data.get("user");
-
-            const reports = [];
-            let normal_ct = 0;
-            for (const id in this.active_incident_reports) {
-                const report = this.active_incident_reports[id];
-                reports.push(report);
-                if (report.moderator === null || report.moderator.id === user.id) {
-                    normal_ct++;
-                }
-            }
-
-            reports.sort(compare_reports);
-
             if (!(report.id in this.active_incident_reports)) {
                 if (
                     data.get("user").is_moderator &&
@@ -144,12 +130,37 @@ class ReportManager extends EventEmitter<Events> {
                     );
                 }
             }
-
-            this.sorted_active_incident_reports = reports;
             this.emit("incident-report", report);
-            this.emit("active-count", normal_ct);
-            this.emit("update");
+            this.update();
         });
+
+        preferences.watch("moderator.report-settings", () => {
+            this.update();
+        });
+    }
+
+    public update() {
+        console.log("Updating");
+        const prefs = preferences.get("moderator.report-settings");
+        const user = data.get("user");
+
+        const reports = [];
+        let normal_ct = 0;
+        for (const id in this.active_incident_reports) {
+            const report = this.active_incident_reports[id];
+            if (prefs[report.report_type]?.visible ?? true) {
+                reports.push(report);
+                if (report.moderator === null || report.moderator.id === user.id) {
+                    normal_ct++;
+                }
+            }
+        }
+
+        reports.sort(compare_reports);
+
+        this.sorted_active_incident_reports = reports;
+        this.emit("active-count", normal_ct);
+        this.emit("update");
     }
 
     public getAvailableReports() {
@@ -162,12 +173,16 @@ class ReportManager extends EventEmitter<Events> {
 }
 
 function compare_reports(a: Report, b: Report): number {
+    const prefs = preferences.get("moderator.report-settings");
     const user = data.get("user");
     const A_BEFORE_B = -1;
     const B_BEFORE_A = 1;
 
+    const custom_ordering =
+        (prefs[a.report_type]?.priority ?? 1) - (prefs[b.report_type]?.priority ?? 1);
+
     if (!a.moderator && !b.moderator) {
-        return b.id - a.id;
+        return custom_ordering || b.id - a.id;
     }
     if (a.moderator && !b.moderator) {
         if (a.moderator.id === user.id) {
@@ -192,7 +207,7 @@ function compare_reports(a: Report, b: Report): number {
         return A_BEFORE_B;
     }
 
-    return b.id - a.id;
+    return custom_ordering || b.id - a.id;
 }
 
 export const report_manager = new ReportManager();
