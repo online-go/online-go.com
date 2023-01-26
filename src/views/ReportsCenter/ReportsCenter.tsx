@@ -24,12 +24,17 @@ import { _ } from "translate";
 import { useParams } from "react-router-dom";
 import { SelectedReport } from "./SelectedReport";
 
-const categories: ReportDescription[] = [
+interface OtherView {
+    special: string;
+    title: string;
+}
+
+const categories: (ReportDescription | OtherView)[] = [
     {
         type: "all",
         title: "All",
         description: "",
-    } as ReportDescription,
+    } as ReportDescription | OtherView,
 ]
     .concat(report_categories)
     .concat([
@@ -38,8 +43,12 @@ const categories: ReportDescription[] = [
             title: "Appeals",
             description: "",
         },
+    ])
+    .concat([
+        { special: "hr", title: "" },
+        { special: "history", title: "History" },
+        { special: "settings", title: "Settings" },
     ]);
-
 const category_priorities: { [type: string]: number } = {};
 for (let i = 0; i < report_categories.length; ++i) {
     category_priorities[report_categories[i].type] = i;
@@ -126,34 +135,63 @@ export function ReportsCenter(): JSX.Element {
             <div id="ReportsCenterContainer">
                 <div id="ReportsCenterCategoryList">
                     {categories.map((report_type) => {
-                        const ct = counts[report_type.type] || 0;
-                        return (
-                            <div
-                                key={report_type.type}
-                                className={
-                                    "Category " +
-                                    (ct > 0 ? "active" : "") +
-                                    (selectedTab === report_type.type ? " selected" : "")
-                                }
-                                title={report_type.title}
-                                onClick={() => setSelectedTab(report_type.type)}
-                            >
-                                <span className="title">{report_type.title}</span>
-                                <span className={"count " + (ct > 0 ? "active" : "")}>
-                                    {ct > 0 ? `(${ct})` : ""}
-                                </span>
-                            </div>
-                        );
+                        if ("type" in report_type) {
+                            const ct = counts[report_type.type] || 0;
+                            return (
+                                <div
+                                    key={report_type.type}
+                                    className={
+                                        "Category " +
+                                        (ct > 0 ? "active" : "") +
+                                        (selectedTab === report_type.type ? " selected" : "")
+                                    }
+                                    title={report_type.title}
+                                    onClick={() => setSelectedTab(report_type.type)}
+                                >
+                                    <span className="title">{report_type.title}</span>
+                                    <span className={"count " + (ct > 0 ? "active" : "")}>
+                                        {ct > 0 ? `(${ct})` : ""}
+                                    </span>
+                                </div>
+                            );
+                        }
+                        if ("special" in report_type) {
+                            switch (report_type.special) {
+                                case "hr":
+                                    return <hr />;
+                                case "settings":
+                                case "history":
+                                    return (
+                                        <div
+                                            key={report_type.special}
+                                            className={
+                                                "Category " +
+                                                (selectedTab === report_type.special
+                                                    ? " selected"
+                                                    : "")
+                                            }
+                                            title={report_type.title}
+                                            onClick={() => setSelectedTab(report_type.special)}
+                                        >
+                                            <span className="title">{report_type.title}</span>
+                                        </div>
+                                    );
+                            }
+                        }
                     })}
                 </div>
                 <Select
                     id="ReportsCenterCategoryDropdown"
                     className="reports-center-category-option-select"
                     classNamePrefix="ogs-react-select"
-                    value={categories.filter((opt) => opt.type === selectedTab)[0]}
-                    getOptionValue={(data) => data.type}
-                    onChange={(data: any) => setSelectedTab(data.type)}
-                    options={categories}
+                    value={
+                        categories.filter(
+                            (opt: any) => opt.type === selectedTab || opt.special === selectedTab,
+                        )[0]
+                    }
+                    getOptionValue={(data: any) => data.type || data.special}
+                    onChange={(data: any) => setSelectedTab(data.type || data.special)}
+                    options={categories.filter((opt: any) => opt.special !== "hr")}
                     isClearable={false}
                     isSearchable={false}
                     blurInputOnSelect={true}
@@ -169,13 +207,17 @@ export function ReportsCenter(): JSX.Element {
                                 }
                             >
                                 {data.title}{" "}
-                                {counts[data.type] > 0 ? `(${counts[data.type] || 0})` : ""}
+                                {"type" in data && counts[data.type] > 0
+                                    ? `(${counts[data.type] || 0})`
+                                    : ""}
                             </div>
                         ),
                         SingleValue: ({ innerProps, data }) => (
                             <span {...innerProps} className="reports-center-category">
                                 {data.title}{" "}
-                                {counts[data.type] > 0 ? `(${counts[data.type] || 0})` : ""}
+                                {"type" in data && counts[data.type] > 0
+                                    ? `(${counts[data.type] || 0})`
+                                    : ""}
                             </span>
                         ),
                         ValueContainer: ({ children }) => (
@@ -184,8 +226,32 @@ export function ReportsCenter(): JSX.Element {
                     }}
                 />
 
-                <SelectedReport reports={reports} onChange={selectReport} report={report} />
+                {selectedTab === "settings" ? (
+                    <Settings />
+                ) : selectedTab === "history" ? (
+                    <History />
+                ) : selectedTab === "hr" ? null : (
+                    <SelectedReport reports={reports} onChange={selectReport} report={report} />
+                )}
             </div>
+        </div>
+    );
+}
+
+export function Settings(): JSX.Element {
+    return (
+        <div className="ReportsCenterSettings">
+            <h3>Settings</h3>
+            <div className="Settings"></div>
+        </div>
+    );
+}
+
+export function History(): JSX.Element {
+    return (
+        <div className="ReportsCenterHistory">
+            <h3>History</h3>
+            <div className="History"></div>
         </div>
     );
 }

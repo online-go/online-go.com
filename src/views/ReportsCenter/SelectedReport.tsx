@@ -113,7 +113,11 @@ export function SelectedReport({ report, reports, onChange }: SelectedReportProp
     );
 
     if (!report) {
-        return <div id="SelectedReport" />;
+        return (
+            <div id="SelectedReport">
+                <div className="no-report-selected">All done!</div>
+            </div>
+        );
     }
 
     const category = report_categories.find((c) => c.type === report.report_type);
