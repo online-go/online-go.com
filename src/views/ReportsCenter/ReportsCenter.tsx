@@ -24,6 +24,7 @@ import { _ } from "translate";
 import { useParams } from "react-router-dom";
 import { SelectedReport } from "./SelectedReport";
 import { ReportsCenterSettings } from "./ReportsCenterSettings";
+import { ReportsCenterHistory } from "./ReportsCenterHistory";
 
 interface OtherView {
     special: string;
@@ -60,7 +61,8 @@ export function ReportsCenter(): JSX.Element {
     const params = useParams();
 
     const refresh = useRefresh();
-    const [selectedTab, setSelectedTab] = React.useState("all");
+    //const [selectedTab, setSelectedTab] = React.useState("all");
+    const [selectedTab, setSelectedTab] = React.useState("history");
     const [report, setReport] = React.useState(null);
 
     React.useEffect(() => {
@@ -230,7 +232,7 @@ export function ReportsCenter(): JSX.Element {
                 {selectedTab === "settings" ? (
                     <ReportsCenterSettings />
                 ) : selectedTab === "history" ? (
-                    <History />
+                    <ReportsCenterHistory />
                 ) : selectedTab === "hr" ? null : (
                     <SelectedReport
                         reports={
@@ -243,15 +245,6 @@ export function ReportsCenter(): JSX.Element {
                     />
                 )}
             </div>
-        </div>
-    );
-}
-
-export function History(): JSX.Element {
-    return (
-        <div className="ReportsCenterHistory">
-            <h3>History</h3>
-            <div className="History"></div>
         </div>
     );
 }
