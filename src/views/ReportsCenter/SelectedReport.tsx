@@ -25,6 +25,7 @@ import { _ } from "translate";
 import { Player } from "Player";
 import { Link } from "react-router-dom";
 import { post } from "requests";
+import { PlayerCacheEntry } from "player_cache";
 import { errorAlerter, ignore } from "misc";
 import { UserHistory } from "./UserHistory";
 import { ReportedGame } from "./ReportedGame";
@@ -52,7 +53,17 @@ export function SelectedReport({ report, reports, onChange }: SelectedReportProp
         get("players/?is_moderator=true&page_size=100")
             .then((res) => {
                 console.log("mods: ", res.results);
-                setModerators(res.results);
+                setModerators(
+                    res.results.sort((a: PlayerCacheEntry, b: PlayerCacheEntry) => {
+                        if (a.id === user.id) {
+                            return -1;
+                        }
+                        if (b.id === user.id) {
+                            return 1;
+                        }
+                        return a.username.localeCompare(b.username);
+                    }),
+                );
             })
             .catch(errorAlerter);
     }, []);
