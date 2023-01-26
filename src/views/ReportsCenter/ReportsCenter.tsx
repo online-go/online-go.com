@@ -60,8 +60,7 @@ export function ReportsCenter(): JSX.Element {
     const params = useParams();
 
     const refresh = useRefresh();
-    //const [selectedTab, setSelectedTab] = React.useState("all");
-    const [selectedTab, setSelectedTab] = React.useState("settings");
+    const [selectedTab, setSelectedTab] = React.useState("all");
     const [report, setReport] = React.useState(null);
 
     React.useEffect(() => {
@@ -233,7 +232,15 @@ export function ReportsCenter(): JSX.Element {
                 ) : selectedTab === "history" ? (
                     <History />
                 ) : selectedTab === "hr" ? null : (
-                    <SelectedReport reports={reports} onChange={selectReport} report={report} />
+                    <SelectedReport
+                        reports={
+                            selectedTab === "all"
+                                ? reports
+                                : reports.filter((x) => x.report_type === selectedTab)
+                        }
+                        onChange={selectReport}
+                        report={report}
+                    />
                 )}
             </div>
         </div>
