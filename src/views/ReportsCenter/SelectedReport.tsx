@@ -19,7 +19,7 @@ import * as React from "react";
 import Select from "react-select";
 import { useUser } from "hooks";
 import { report_categories } from "Report";
-import { Report } from "report_manager";
+import { report_manager, Report } from "report_manager";
 import { AutoTranslate } from "AutoTranslate";
 import { _ } from "translate";
 import { Player } from "Player";
@@ -121,6 +121,7 @@ export function SelectedReport({ report, reports, onChange }: SelectedReportProp
     }
 
     const category = report_categories.find((c) => c.type === report.report_type);
+    const claimed_by_me = report.moderator?.id === user.id;
 
     return (
         <div id="SelectedReport">
@@ -278,13 +279,29 @@ export function SelectedReport({ report, reports, onChange }: SelectedReportProp
             </div>
 
             <div className="actions">
-                <button className="success" onClick={report.good_report}>
-                    Close as good report
-                </button>
+                {claimed_by_me && (
+                    <button className="success" onClick={report.good_report}>
+                        Close as good report
+                    </button>
+                )}
 
-                <button className="reject" onClick={report.bad_report}>
-                    Close as bad report
-                </button>
+                {!claimed_by_me && !report.moderator && (
+                    <button className="primary" onClick={report.claim}>
+                        {_("Claim")}
+                    </button>
+                )}
+
+                {!claimed_by_me && (
+                    <button className="default" onClick={() => report_manager.ignore(report.id)}>
+                        Ignore
+                    </button>
+                )}
+
+                {claimed_by_me && (
+                    <button className="reject" onClick={report.bad_report}>
+                        Close as bad report
+                    </button>
+                )}
             </div>
 
             <hr />

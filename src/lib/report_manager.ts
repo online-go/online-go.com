@@ -148,7 +148,7 @@ class ReportManager extends EventEmitter<Events> {
         let normal_ct = 0;
         for (const id in this.active_incident_reports) {
             const report = this.active_incident_reports[id];
-            if (prefs[report.report_type]?.visible ?? true) {
+            if ((prefs[report.report_type]?.visible ?? true) && !this.getIgnored(report.id)) {
                 reports.push(report);
                 if (report.moderator === null || report.moderator.id === user.id) {
                     normal_ct++;
@@ -167,8 +167,29 @@ class ReportManager extends EventEmitter<Events> {
         const user = data.get("user");
 
         return this.sorted_active_incident_reports.filter((report) => {
+            if (this.getIgnored(report.id)) {
+                return false;
+            }
+
             return report.moderator === null || report.moderator.id === user.id;
         });
+    }
+
+    public getIgnored(report_id: number) {
+        const ignored = data.get("ignored-reports") || {};
+        return ignored[report_id] || false;
+    }
+
+    public ignore(report_id: number) {
+        const ignored = data.get("ignored-reports") || {};
+        ignored[report_id] = Date.now() + 1000 * 60 * 60 * 24 * 7; // for 7 days
+        for (const key in ignored) {
+            if (ignored[key] < Date.now()) {
+                delete ignored[key];
+            }
+        }
+        data.set("ignored-reports", ignored);
+        this.update();
     }
 }
 
