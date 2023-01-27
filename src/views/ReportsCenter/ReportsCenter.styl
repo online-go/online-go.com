@@ -106,14 +106,13 @@
         justify-content: stretch;
         align-content: stretch;
         flex-wrap: wrap;
+        max-width: 60rem;
 
         .col {
             flex: 1;
-            flex-basis: 40%;
+            flex-basis: 45%;
             display: inline-flex;
             min-width: 20rem;
-            max-width: 40%;
-            width: 40%;
             flex-direction: column;
             align-items: stretch;
             justify-content: stretch;
@@ -147,6 +146,11 @@
         justify-content: space-between;
         align-items: center;
 
+        &:hover {
+            themed background-color shade5
+            themed color colored-background-fg
+        }
+
         &.selected {
             themed background-color primary
             themed color colored-background-fg
@@ -165,7 +169,7 @@
     }
 }
 
-#SelectedReport {
+#ViewReport {
     flex: 1;
 
     .help-details-greyed {
@@ -181,7 +185,7 @@
     #ReportsCenterContainer {
         flex-direction: column;
     }
-    #SelectedReport {
+    #ViewReport {
         padding-top: 1rem;
     }
 
@@ -202,7 +206,7 @@
     #ReportsCenterCategoryDropdown {
         display: none;
     }
-    #SelectedReport {
+    #ViewReport {
         padding-left: 1rem;
         padding-right: 1rem;
     }

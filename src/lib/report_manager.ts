@@ -22,12 +22,14 @@
 
 import * as data from "data";
 import * as preferences from "preferences";
+import { alert } from "swal_config";
 import { socket } from "sockets";
 import { ReportedConversation } from "Report";
 import { PlayerCacheEntry } from "player_cache";
 import { EventEmitter } from "eventemitter3";
 import { emitNotification } from "Notifications";
 import { browserHistory } from "ogsHistory";
+import { get, post } from "requests";
 
 export interface Report {
     id: number;
@@ -103,71 +105,180 @@ class ReportManager extends EventEmitter<Events> {
             connect_fn();
         }
 
-        socket.on("incident-report", (report: Report) => {
-            if (report.state === "resolved") {
-                delete this.active_incident_reports[report.id];
-            } else {
-                this.active_incident_reports[report.id] = report;
-            }
-            const user = data.get("user");
+        socket.on("incident-report", (report: Report) => this.updateIncidentReport(report));
 
-            const reports = [];
-            let normal_ct = 0;
-            for (const id in this.active_incident_reports) {
-                const report = this.active_incident_reports[id];
+        preferences.watch("moderator.report-settings", () => {
+            this.update();
+        });
+    }
+
+    public updateIncidentReport(report: Report) {
+        report.id = parseInt(report.id as unknown as string);
+
+        if (!(report.id in this.active_incident_reports)) {
+            if (
+                data.get("user").is_moderator &&
+                preferences.get("notify-on-incident-report") &&
+                !post_connect_notification_squelch
+            ) {
+                emitNotification(
+                    "Incident Report",
+                    report.reporting_user?.username + ": " + report.reporter_note,
+                    () => {
+                        if (report.reported_game) {
+                            browserHistory.push(`/game/${report.reported_game}`);
+                        } else if (report.reported_review) {
+                            browserHistory.push(`/review/${report.reported_review}`);
+                        } else if (report.reported_user) {
+                            browserHistory.push(`/user/view/${report.reported_user.id}`);
+                        }
+                    },
+                );
+            }
+        }
+
+        if (report.state === "resolved") {
+            delete this.active_incident_reports[report.id];
+        } else {
+            this.active_incident_reports[report.id] = report;
+        }
+
+        this.emit("incident-report", report);
+        this.update();
+    }
+
+    public update() {
+        const prefs = preferences.get("moderator.report-settings");
+        const user = data.get("user");
+
+        const reports = [];
+        let normal_ct = 0;
+        for (const id in this.active_incident_reports) {
+            const report = this.active_incident_reports[id];
+            if ((prefs[report.report_type]?.visible ?? true) && !this.getIgnored(report.id)) {
                 reports.push(report);
                 if (report.moderator === null || report.moderator.id === user.id) {
                     normal_ct++;
                 }
             }
+        }
 
-            reports.sort(compare_reports);
+        reports.sort(compare_reports);
 
-            if (!(report.id in this.active_incident_reports)) {
-                if (
-                    data.get("user").is_moderator &&
-                    preferences.get("notify-on-incident-report") &&
-                    !post_connect_notification_squelch
-                ) {
-                    emitNotification(
-                        "Incident Report",
-                        report.reporting_user.username + ": " + report.reporter_note,
-                        () => {
-                            if (report.reported_game) {
-                                browserHistory.push(`/game/${report.reported_game}`);
-                            } else if (report.reported_review) {
-                                browserHistory.push(`/review/${report.reported_review}`);
-                            } else if (report.reported_user) {
-                                browserHistory.push(`/user/view/${report.reported_user.id}`);
-                            }
-                        },
-                    );
-                }
-            }
-
-            this.sorted_active_incident_reports = reports;
-            this.emit("incident-report", report);
-            this.emit("active-count", normal_ct);
-            this.emit("update");
-        });
+        this.sorted_active_incident_reports = reports;
+        this.emit("active-count", normal_ct);
+        this.emit("update");
     }
 
     public getAvailableReports() {
         const user = data.get("user");
 
         return this.sorted_active_incident_reports.filter((report) => {
+            if (this.getIgnored(report.id)) {
+                return false;
+            }
+
             return report.moderator === null || report.moderator.id === user.id;
         });
+    }
+
+    public getIgnored(report_id: number) {
+        const ignored = data.get("ignored-reports") || {};
+        return ignored[report_id] || false;
+    }
+
+    public ignore(report_id: number) {
+        const ignored = data.get("ignored-reports") || {};
+        ignored[report_id] = Date.now() + 1000 * 60 * 60 * 24 * 7; // for 7 days
+        for (const key in ignored) {
+            if (ignored[key] < Date.now()) {
+                delete ignored[key];
+            }
+        }
+        data.set("ignored-reports", ignored);
+        this.update();
+    }
+
+    public async getReport(id: number): Promise<Report> {
+        if (id in this.active_incident_reports) {
+            return this.active_incident_reports[id];
+        }
+
+        const res = await get(`moderation/incident/${id}`);
+
+        if (res) {
+            return res;
+        }
+
+        throw new Error("Report not found");
+    }
+
+    public async reopen(report_id: number): Promise<Report> {
+        const res = await post(`moderation/incident/${report_id}`, {
+            id: report_id,
+            action: "reopen",
+        });
+        this.updateIncidentReport(res);
+        return res;
+    }
+    public async close(report_id: number, helpful: boolean): Promise<Report> {
+        delete this.active_incident_reports[report_id];
+        this.update();
+        const res = await post("moderation/incident/%%", report_id, {
+            id: report_id,
+            action: "resolve",
+            was_helpful: helpful,
+        });
+        this.updateIncidentReport(res);
+        return res;
+    }
+    public async good_report(report_id: number): Promise<Report> {
+        const res = await this.close(report_id, true);
+        this.updateIncidentReport(res);
+        return res;
+    }
+    public async bad_report(report_id: number): Promise<Report> {
+        const res = await this.close(report_id, false);
+        this.updateIncidentReport(res);
+        return res;
+    }
+    public async unclaim(report_id: number): Promise<Report> {
+        const res = await post("moderation/incident/%%", report_id, {
+            id: report_id,
+            action: "unclaim",
+        });
+        this.updateIncidentReport(res);
+        return res;
+    }
+    public async claim(report_id: number): Promise<Report> {
+        const res = await post("moderation/incident/%%", report_id, {
+            id: report_id,
+            action: "claim",
+        }).then((res) => {
+            if (res.vanished) {
+                void alert.fire("Report was removed");
+            }
+            if (res.already_claimed) {
+                void alert.fire("Report was removed");
+            }
+            return res;
+        });
+        this.updateIncidentReport(res);
+        return res;
     }
 }
 
 function compare_reports(a: Report, b: Report): number {
+    const prefs = preferences.get("moderator.report-settings");
     const user = data.get("user");
     const A_BEFORE_B = -1;
     const B_BEFORE_A = 1;
 
+    const custom_ordering =
+        (prefs[a.report_type]?.priority ?? 1) - (prefs[b.report_type]?.priority ?? 1);
+
     if (!a.moderator && !b.moderator) {
-        return b.id - a.id;
+        return custom_ordering || b.id - a.id;
     }
     if (a.moderator && !b.moderator) {
         if (a.moderator.id === user.id) {
@@ -192,7 +303,7 @@ function compare_reports(a: Report, b: Report): number {
         return A_BEFORE_B;
     }
 
-    return b.id - a.id;
+    return custom_ordering || b.id - a.id;
 }
 
 export const report_manager = new ReportManager();

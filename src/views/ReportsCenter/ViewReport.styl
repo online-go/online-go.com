@@ -1,4 +1,4 @@
-#SelectedReport {
+#ViewReport {
     display: block;
     width: 100%;
     height: 100%;
@@ -46,4 +46,44 @@
 
     .translated {
     }
+
+    .no-report-selected {
+        text-align: center;
+        margin-top: 10rem;
+        margin-bottom: 1rem;
+        font-size: 3rem;
+    }
+
+    .historical-report-number {
+        font-size: 1.1rem;
+        padding-right: 1rem;
+    }
+
+    .when {
+        font-size: 0.9rem;
+        font-weight: 400;
+        padding-left: 1rem;
+        float: right;
+    }
+
+    .newer-older-buttons {
+        display: flex;
+        width: 16.5rem;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        button {
+            margin-left: 0;
+            margin-right: 0;
+        }
+    }
+}
+
+@media (max-width: 767px) {
+#ViewReport {
+    .newer-older-buttons {
+        display: inline-flex;
+        width: 100%;
+        max-width: 100vw;
+    }
+}
 }

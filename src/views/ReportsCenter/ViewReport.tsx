@@ -16,15 +16,17 @@
  */
 
 import * as React from "react";
+import * as moment from "moment";
 import Select from "react-select";
 import { useUser } from "hooks";
 import { report_categories } from "Report";
-import { Report } from "report_manager";
+import { report_manager, Report } from "report_manager";
 import { AutoTranslate } from "AutoTranslate";
 import { _ } from "translate";
 import { Player } from "Player";
 import { Link } from "react-router-dom";
 import { post } from "requests";
+import { PlayerCacheEntry } from "player_cache";
 import { errorAlerter, ignore } from "misc";
 import { UserHistory } from "./UserHistory";
 import { ReportedGame } from "./ReportedGame";
@@ -36,36 +38,93 @@ let report_note_id = 0;
 let report_note_text = "";
 let report_note_update_timeout = null;
 
-interface SelectedReportProps {
+interface ViewReportProps {
     reports: Report[];
-    onChange: (report: Report) => void;
-    report: Report;
+    onChange: (report_id: number) => void;
+    report_id: number;
 }
 
-export function SelectedReport({ report, reports, onChange }: SelectedReportProps): JSX.Element {
+let cached_moderators = [];
+
+export function ViewReport({ report_id, reports, onChange }: ViewReportProps): JSX.Element {
     const user = useUser();
     const [moderatorNote, setModeratorNote] = React.useState("");
-    const [moderators, setModerators] = React.useState([]);
+    const [moderators, setModerators] = React.useState(cached_moderators);
+    const [report, setReport] = React.useState(null);
+    const [error, setError] = React.useState(null);
     const [moderator_id, setModeratorId] = React.useState(report?.moderator?.id);
+    const [reportState, setReportState] = React.useState(report?.state);
 
     React.useEffect(() => {
-        get("players/?is_moderator=true&page_size=100")
-            .then((res) => {
-                console.log("mods: ", res.results);
-                setModerators(res.results);
-            })
-            .catch(errorAlerter);
+        if (report_id) {
+            report_manager
+                .getReport(report_id)
+                .then((report) => {
+                    setError(null);
+                    setReport(report);
+                    setModeratorId(report?.moderator?.id);
+                    setReportState(report?.state);
+                })
+                .catch((err) => {
+                    console.error(err);
+                    setError(err + "");
+                });
+        } else {
+            setReport(null);
+            setError(null);
+            setModeratorId(null);
+            setReportState(null);
+        }
+    }, [report_id]);
+
+    React.useEffect(() => {
+        const onUpdate = (r) => {
+            if (r.id === report?.id) {
+                setReport(r);
+                setModeratorId(r?.moderator?.id);
+                setReportState(r?.state);
+            }
+        };
+        report_manager.on("incident-report", onUpdate);
+        return () => {
+            report_manager.off("incident-report", onUpdate);
+        };
+    }, [report]);
+
+    React.useEffect(() => {
+        if (cached_moderators.length === 0 || moderators.length === 0) {
+            get("players/?is_moderator=true&page_size=100")
+                .then((res) => {
+                    cached_moderators = res.results.sort(
+                        (a: PlayerCacheEntry, b: PlayerCacheEntry) => {
+                            if (a.id === user.id) {
+                                return -1;
+                            }
+                            if (b.id === user.id) {
+                                return 1;
+                            }
+                            return a.username.localeCompare(b.username);
+                        },
+                    );
+                    setModerators(cached_moderators);
+                })
+                .catch(errorAlerter);
+        }
     }, []);
 
     React.useEffect(() => {
         setModeratorId(report?.moderator?.id);
-    }, [report, report?.moderator?.id]);
+    }, [report?.moderator?.id]);
 
     React.useEffect(() => {
         if (document.activeElement.nodeName !== "TEXTAREA") {
             setModeratorNote(report?.moderator_note || "");
         }
-    }, [report]);
+    }, [report?.moderator_note]);
+
+    React.useEffect(() => {
+        setReportState(report?.state);
+    }, [report?.state]);
 
     const setAndSaveModeratorNote = React.useCallback(
         (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -112,52 +171,113 @@ export function SelectedReport({ report, reports, onChange }: SelectedReportProp
         [report],
     );
 
-    if (!report) {
-        return <div id="SelectedReport" />;
+    if (!report || report_id === 0) {
+        return (
+            <div id="ViewReport">
+                <div className="no-report-selected">All done!</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div id="ViewReport">
+                <div className="error">{error}</div>
+            </div>
+        );
     }
 
     const category = report_categories.find((c) => c.type === report.report_type);
+    const claimed_by_me = report.moderator?.id === user.id;
+    const report_in_reports = reports.find((r) => r.id === report.id);
+    let next_report: Report = null;
+    let prev_report: Report = null;
+    for (let i = 0; i < reports.length; i++) {
+        if (reports[i].id === report.id) {
+            if (i + 1 < reports.length) {
+                next_report = reports[i + 1];
+            }
+            if (i - 1 >= 0) {
+                prev_report = reports[i - 1];
+            }
+            break;
+        }
+    }
+
+    const next = () => {
+        if (next_report) {
+            onChange(next_report.id);
+        } else {
+            onChange(0);
+        }
+    };
+
+    const prev = () => {
+        if (prev_report) {
+            onChange(prev_report.id);
+        }
+    };
 
     return (
-        <div id="SelectedReport">
+        <div id="ViewReport">
             <div className="header">
-                <Select
-                    id="ReportsCenterSelectReport"
-                    className="reports-center-category-option-select"
-                    classNamePrefix="ogs-react-select"
-                    value={reports.filter((r) => r.id === report.id)[0]}
-                    getOptionValue={(r) => r.id.toString()}
-                    onChange={(r: Report) => onChange(r)}
-                    options={reports}
-                    isClearable={false}
-                    isSearchable={false}
-                    blurInputOnSelect={true}
-                    components={{
-                        Option: ({ innerRef, innerProps, isFocused, isSelected, data }) => (
-                            <div
-                                ref={innerRef}
-                                {...innerProps}
-                                className={
-                                    "reports-center-selected-report" +
-                                    (isFocused ? "focused " : "") +
-                                    (isSelected ? "selected" : "")
-                                }
-                            >
-                                {"R" + `${data.id}`.slice(-3)}
-                            </div>
-                        ),
-                        SingleValue: ({ innerProps, data }) => (
-                            <span {...innerProps} className="reports-center-selected-report">
-                                {"R" + `${data.id}`.slice(-3)}
-                            </span>
-                        ),
-                        ValueContainer: ({ children }) => (
-                            <div className="reports-center-selected-report-container">
-                                {children}
-                            </div>
-                        ),
-                    }}
-                />
+                <div className="newer-older-buttons">
+                    {(prev_report && (
+                        <button className="default" onClick={prev}>
+                            &lt; Newer
+                        </button>
+                    )) || <span className="empty" />}
+
+                    {(next_report && (
+                        <button className="default" onClick={next}>
+                            Older &gt;
+                        </button>
+                    )) || <span className="empty" />}
+                </div>
+
+                {report_in_reports ? (
+                    <Select
+                        id="ReportsCenterSelectReport"
+                        className="reports-center-category-option-select"
+                        classNamePrefix="ogs-react-select"
+                        value={reports.filter((r) => r.id === report.id)[0]}
+                        getOptionValue={(r) => r.id.toString()}
+                        onChange={(r: Report) => onChange(r.id)}
+                        options={reports}
+                        isClearable={false}
+                        isSearchable={false}
+                        blurInputOnSelect={true}
+                        components={{
+                            Option: ({ innerRef, innerProps, isFocused, isSelected, data }) => (
+                                <div
+                                    ref={innerRef}
+                                    {...innerProps}
+                                    className={
+                                        "reports-center-selected-report" +
+                                        (isFocused ? "focused " : "") +
+                                        (isSelected ? "selected" : "")
+                                    }
+                                >
+                                    {"R" + `${data.id}`.slice(-3)}
+                                </div>
+                            ),
+                            SingleValue: ({ innerProps, data }) => (
+                                <span {...innerProps} className="reports-center-selected-report">
+                                    {"R" + `${data.id}`.slice(-3)}
+                                </span>
+                            ),
+                            ValueContainer: ({ children }) => (
+                                <div className="reports-center-selected-report-container">
+                                    {children}
+                                </div>
+                            ),
+                        }}
+                    />
+                ) : (
+                    <span className="historical-report-number">
+                        {"R" + `${report.id}`.slice(-3)}
+                    </span>
+                )}
 
                 <span className="moderator">
                     <Select
@@ -202,13 +322,26 @@ export function SelectedReport({ report, reports, onChange }: SelectedReportProp
                     {report.moderator ? (
                         <>
                             {(report.moderator.id === user.id || null) && (
-                                <button className="danger xs" onClick={report.unclaim}>
+                                <button
+                                    className="danger xs"
+                                    onClick={() => {
+                                        setReportState(report?.moderator ? "claimed" : "pending");
+                                        void report_manager.unclaim(report.id);
+                                    }}
+                                >
                                     {_("Unclaim")}
                                 </button>
                             )}
                         </>
                     ) : (
-                        <button className="primary xs" onClick={report.claim}>
+                        <button
+                            className="primary xs"
+                            onClick={() => {
+                                report.moderator = user;
+                                setReportState("claimed");
+                                void report_manager.claim(report.id);
+                            }}
+                        >
                             {_("Claim")}
                         </button>
                     )}
@@ -226,7 +359,10 @@ export function SelectedReport({ report, reports, onChange }: SelectedReportProp
                 </h3>
             </div>
 
-            <h3>Incident Type: {category?.title}</h3>
+            <h3>
+                {category?.title}
+                <span className="when">{moment(report.created).fromNow()}</span>
+            </h3>
 
             <div className="notes-container">
                 {(report.reporter_note || null) && (
@@ -274,13 +410,59 @@ export function SelectedReport({ report, reports, onChange }: SelectedReportProp
             </div>
 
             <div className="actions">
-                <button className="success" onClick={report.good_report}>
-                    Close as good report
-                </button>
+                {reportState !== "resolved" && claimed_by_me && (
+                    <button
+                        className="success"
+                        onClick={() => {
+                            void report_manager.good_report(report.id);
+                            next();
+                        }}
+                    >
+                        Close as good report
+                    </button>
+                )}
 
-                <button className="reject" onClick={report.bad_report}>
-                    Close as bad report
-                </button>
+                {reportState !== "resolved" && claimed_by_me && (
+                    <button
+                        className="reject"
+                        onClick={() => {
+                            void report_manager.bad_report(report.id);
+                            next();
+                        }}
+                    >
+                        Close as bad report
+                    </button>
+                )}
+
+                {reportState === "resolved" && (
+                    <button
+                        className="default"
+                        onClick={() => void report_manager.reopen(report.id)}
+                    >
+                        Re-open
+                    </button>
+                )}
+
+                {!claimed_by_me && !report.moderator && (
+                    <button
+                        className="primary"
+                        onClick={() => void report_manager.claim(report.id)}
+                    >
+                        Claim
+                    </button>
+                )}
+
+                {!claimed_by_me && (
+                    <button
+                        className="default"
+                        onClick={() => {
+                            void report_manager.ignore(report.id);
+                            next();
+                        }}
+                    >
+                        Ignore
+                    </button>
+                )}
             </div>
 
             <hr />
