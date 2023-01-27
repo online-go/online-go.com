@@ -378,40 +378,7 @@ export function NavBar(): JSX.Element {
                             to={`/user/view/${user.id}`}
                             className="profile desktop-only"
                         >
-                            <Link to={`/user/view/${user.id}`}>
-                                <PlayerIcon user={user} size={16} />
-                                {_("Profile")}
-                            </Link>
-
-                            <Link to="/user/settings" ref={settingsNavLink}>
-                                <i className="fa fa-gear"></i>
-                                {_("Settings")}
-                            </Link>
-                            <span className="fakelink" onClick={logout}>
-                                <i className="fa fa-power-off"></i>
-                                {_("Sign out")}
-                            </span>
-
-                            <LineText>{_("Theme")}</LineText>
-
-                            <div className="theme-selectors">
-                                <button className="theme-button light" onClick={setThemeLight}>
-                                    <i className="fa fa-sun-o" />
-                                </button>
-                                <button className="theme-button dark" onClick={setThemeDark}>
-                                    <i className="fa fa-moon-o" />
-                                </button>
-                                <button
-                                    className="theme-button accessible"
-                                    onClick={setThemeAccessible}
-                                >
-                                    <i className="fa fa-eye" />
-                                </button>
-                            </div>
-
-                            <div className="theme-selectors">
-                                <GobanThemePicker />
-                            </div>
+                            <ProfileAndQuickSettingsBits settingsNavLink={settingsNavLink} />
                         </Menu>
                     </>
                 )}
@@ -430,37 +397,7 @@ export function NavBar(): JSX.Element {
             {/* Right Nav drop down on mobile */}
             {right_nav_active && (
                 <div className="RightNav">
-                    <Link to={`/user/view/${user.id}`}>
-                        <PlayerIcon user={user} size={16} />
-                        {_("Profile")}
-                    </Link>
-
-                    <Link to="/user/settings" ref={settingsNavLink}>
-                        <i className="fa fa-gear"></i>
-                        {_("Settings")}
-                    </Link>
-                    <span className="fakelink" onClick={logout}>
-                        <i className="fa fa-power-off"></i>
-                        {_("Sign out")}
-                    </span>
-
-                    <LineText>{_("Theme")}</LineText>
-
-                    <div className="theme-selectors">
-                        <button className="theme-button light" onClick={setThemeLight}>
-                            <i className="fa fa-sun-o" />
-                        </button>
-                        <button className="theme-button dark" onClick={setThemeDark}>
-                            <i className="fa fa-moon-o" />
-                        </button>
-                        <button className="theme-button accessible" onClick={setThemeAccessible}>
-                            <i className="fa fa-eye" />
-                        </button>
-                    </div>
-
-                    <div className="theme-selectors">
-                        <GobanThemePicker />
-                    </div>
+                    <ProfileAndQuickSettingsBits settingsNavLink={settingsNavLink} />
                 </div>
             )}
         </header>
@@ -486,5 +423,45 @@ function Menu({ title, to, children, className }: MenuProps): JSX.Element {
             )}
             <div className="Menu-children">{children}</div>
         </section>
+    );
+}
+
+function ProfileAndQuickSettingsBits({ settingsNavLink }: { settingsNavLink: any }): JSX.Element {
+    const user = useUser();
+
+    return (
+        <>
+            <Link to={`/user/view/${user.id}`}>
+                <PlayerIcon user={user} size={16} />
+                {_("Profile")}
+            </Link>
+
+            <Link to="/user/settings" ref={settingsNavLink}>
+                <i className="fa fa-gear"></i>
+                {_("Settings")}
+            </Link>
+            <span className="fakelink" onClick={logout}>
+                <i className="fa fa-power-off"></i>
+                {_("Sign out")}
+            </span>
+
+            <LineText>{_("Theme")}</LineText>
+
+            <div className="theme-selectors">
+                <button className="theme-button light" onClick={setThemeLight}>
+                    <i className="fa fa-sun-o" />
+                </button>
+                <button className="theme-button dark" onClick={setThemeDark}>
+                    <i className="fa fa-moon-o" />
+                </button>
+                <button className="theme-button accessible" onClick={setThemeAccessible}>
+                    <i className="fa fa-eye" />
+                </button>
+            </div>
+
+            <div className="theme-selectors">
+                <GobanThemePicker />
+            </div>
+        </>
     );
 }
