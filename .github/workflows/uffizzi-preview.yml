@@ -1,9 +1,9 @@
-name: Deploy Uffizzi Preview
+name: Preview (deploy)
 
 on:
   workflow_run:
     workflows:
-      - "Build PR Image"
+      - 'Preview (build)'
     types:
       - completed
 
@@ -11,6 +11,7 @@ jobs:
   cache-compose-file:
     name: Cache Compose File
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     outputs:
       compose-file-cache-key: ${{ env.COMPOSE_FILE_HASH }}
       pr-number: ${{ env.PR_NUMBER }}
@@ -28,6 +29,9 @@ jobs:
             let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
               return artifact.name == "preview-spec"
             })[0];
+            if (matchArtifact === undefined) {
+              throw TypeError('Build Artifact not found!');
+            }
             let download = await github.rest.actions.downloadArtifact({
                owner: context.repo.owner,
                repo: context.repo.repo,
@@ -42,7 +46,7 @@ jobs:
         run: |
           echo 'EVENT_JSON<<EOF' >> $GITHUB_ENV
           cat event.json >> $GITHUB_ENV
-          echo 'EOF' >> $GITHUB_ENV
+          echo -e '\nEOF' >> $GITHUB_ENV
       - name: Hash Rendered Compose File
         id: hash
         # If the previous workflow was triggered by a PR close event, we will not have a compose file artifact.
@@ -69,6 +73,7 @@ jobs:
     name: Use Remote Workflow to Preview on Uffizzi
     needs:
       - cache-compose-file
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     uses: UffizziCloud/preview-action/.github/workflows/reusable.yaml@v2
     with:
       # If this workflow was triggered by a PR close event, cache-key will be an empty string

@@ -8,31 +8,14 @@ x-uffizzi:
 services:
   online-go:
     image: '${ONLINE_GO_IMAGE}'
-    container_name: online-go
-    ports:
-      - "8080:8080"
-    entrypoint:
-    - "sh"
-    command:
-    - "-c"
-    - "npm run gulp"
-    deploy:
-      resources:
-        limits:
-          memory: 2000M
-
-  online-go-server:
-    image: '${ONLINE_GO_IMAGE}'
-    container_name: online-go
-    ports:
-      - "8080:8080"
-    entrypoint:
-    - "sh"
-    command:
-    - "-c"
-    - "npm run gulp dev-server"
+    environment:
+      OGS_BACKEND: PRODUCTION
+    # entrypoint:
+    # - "sh"
+    # command:
+    # - "-c"
+    # - "npm run dev"
     deploy:
       resources:
         limits:
           memory: 4000M
-
