@@ -79,6 +79,7 @@ export function NavBar(): JSX.Element {
     const [notifications_active, setNotificationsActive] = React.useState(false);
     const [hamburger_expanded, setHamburgerExpanded] = React.useState(false);
     const search_input = React.useRef<HTMLInputElement>(null);
+    const [force_nav_close, setForceNavClose] = React.useState(false);
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
 
@@ -119,6 +120,13 @@ export function NavBar(): JSX.Element {
     };
 
     React.useEffect(() => {
+        setForceNavClose(true);
+        setTimeout(() => {
+            setForceNavClose(false);
+        }, 50);
+    }, [location]);
+
+    React.useEffect(() => {
         setHamburgerExpanded(false);
         closeNavbar();
     }, [location.key]);
@@ -145,7 +153,13 @@ export function NavBar(): JSX.Element {
         !window.location.hash.includes("/welcome"); // the signin with redirect to challenge accept
 
     return (
-        <header className={"NavBar" + (hamburger_expanded ? " hamburger-expanded" : "")}>
+        <header
+            className={
+                "NavBar" +
+                (hamburger_expanded ? " hamburger-expanded" : "") +
+                (force_nav_close ? " force-nav-close" : "")
+            }
+        >
             <KBShortcut shortcut="`" action={() => search_input.current.focus()} />
 
             <span className="hamburger">
