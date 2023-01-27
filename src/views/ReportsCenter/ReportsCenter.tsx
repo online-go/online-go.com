@@ -16,13 +16,13 @@
  */
 
 import * as React from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useUser, useRefresh } from "hooks";
 import { report_categories, ReportDescription } from "Report";
 import { report_manager } from "report_manager";
 import Select from "react-select";
 import { _ } from "translate";
-import { useParams } from "react-router-dom";
-import { SelectedReport } from "./SelectedReport";
+import { ViewReport } from "./ViewReport";
 import { ReportsCenterSettings } from "./ReportsCenterSettings";
 import { ReportsCenterHistory } from "./ReportsCenterHistory";
 
@@ -58,64 +58,11 @@ for (let i = 0; i < report_categories.length; ++i) {
 
 export function ReportsCenter(): JSX.Element {
     const user = useUser();
-    const params = useParams();
-
+    const navigateTo = useNavigate();
     const refresh = useRefresh();
-    //const [selectedTab, setSelectedTab] = React.useState("all");
-    const [selectedTab, setSelectedTab] = React.useState("history");
-    const [report, setReport] = React.useState(null);
-
-    React.useEffect(() => {
-        report_manager.on("update", refresh);
-        return () => {
-            report_manager.off("update", refresh);
-        };
-    }, []);
-
-    React.useEffect(() => {
-        const setToFirstAvailableReport = () => {
-            const reports = report_manager.getAvailableReports();
-
-            if (reports.length) {
-                for (let i = 0; i < reports.length; ++i) {
-                    if (reports[i].report_type === selectedTab || selectedTab === "all") {
-                        setReport(reports[i]);
-                        return;
-                    }
-                }
-            }
-
-            setReport(null);
-        };
-
-        setToFirstAvailableReport();
-
-        const syncToFirstAvailableReportIfNotSelected = () => {
-            if (!report) {
-                setToFirstAvailableReport();
-            }
-        };
-
-        report_manager.on("update", syncToFirstAvailableReportIfNotSelected);
-        return () => {
-            report_manager.off("update", syncToFirstAvailableReportIfNotSelected);
-        };
-    }, [selectedTab]);
-
-    React.useEffect(() => {
-        if (report) {
-            window.history.replaceState({}, document.title, "/reports-center/" + report.id);
-        }
-    }, [report]);
-
-    if (params.reportId) {
-        // TODO: We should figure out how to load historical reports if
-        // this is set when we first come in
-    }
-
-    if (!user.is_moderator) {
-        return null;
-    }
+    const params = useParams<"category" | "report_id">();
+    const report_id = parseInt(params["report_id"] || "0");
+    const category = params["category"] || "all";
 
     const reports = report_manager.getAvailableReports();
     const counts = {};
@@ -124,8 +71,63 @@ export function ReportsCenter(): JSX.Element {
         counts["all"] = (counts["all"] || 0) + 1;
     }
 
-    const selectReport = (report) => {
-        setReport(report);
+    React.useEffect(() => {
+        // update our counts as they stream in
+        report_manager.on("update", refresh);
+        return () => {
+            report_manager.off("update", refresh);
+        };
+    }, []);
+
+    React.useEffect(() => {
+        if (!category) {
+            navigateTo("/reports-center/all");
+            return;
+        }
+
+        const setToFirstAvailableReport = () => {
+            if (!report_id) {
+                const reports = report_manager.getAvailableReports();
+
+                if (reports.length) {
+                    for (let i = 0; i < reports.length; ++i) {
+                        if (reports[i].report_type === category || category === "all") {
+                            navigateTo(`/reports-center/${category}/${reports[i].id}`);
+                            return;
+                        }
+                    }
+                }
+            }
+        };
+
+        setToFirstAvailableReport();
+
+        const syncToFirstAvailableReportIfNotSelected = () => {
+            if (!report_id) {
+                setToFirstAvailableReport();
+            }
+        };
+
+        report_manager.on("update", syncToFirstAvailableReportIfNotSelected);
+        return () => {
+            report_manager.off("update", syncToFirstAvailableReportIfNotSelected);
+        };
+    }, [category]);
+
+    const setCategory = React.useCallback((category) => {
+        navigateTo(`/reports-center/${category}`);
+    }, []);
+
+    if (!user.is_moderator) {
+        return null;
+    }
+
+    const selectReport = (report_id: number) => {
+        if (report_id) {
+            navigateTo(`/reports-center/${category}/${report_id}`);
+        } else {
+            navigateTo(`/reports-center/${category}`);
+        }
     };
 
     return (
@@ -146,10 +148,10 @@ export function ReportsCenter(): JSX.Element {
                                     className={
                                         "Category " +
                                         (ct > 0 ? "active" : "") +
-                                        (selectedTab === report_type.type ? " selected" : "")
+                                        (category === report_type.type ? " selected" : "")
                                     }
                                     title={report_type.title}
-                                    onClick={() => setSelectedTab(report_type.type)}
+                                    onClick={() => setCategory(report_type.type)}
                                 >
                                     <span className="title">{report_type.title}</span>
                                     <span className={"count " + (ct > 0 ? "active" : "")}>
@@ -169,12 +171,12 @@ export function ReportsCenter(): JSX.Element {
                                             key={report_type.special}
                                             className={
                                                 "Category " +
-                                                (selectedTab === report_type.special
+                                                (category === report_type.special
                                                     ? " selected"
                                                     : "")
                                             }
                                             title={report_type.title}
-                                            onClick={() => setSelectedTab(report_type.special)}
+                                            onClick={() => setCategory(report_type.special)}
                                         >
                                             <span className="title">{report_type.title}</span>
                                         </div>
@@ -189,11 +191,11 @@ export function ReportsCenter(): JSX.Element {
                     classNamePrefix="ogs-react-select"
                     value={
                         categories.filter(
-                            (opt: any) => opt.type === selectedTab || opt.special === selectedTab,
+                            (opt: any) => opt.type === category || opt.special === category,
                         )[0]
                     }
                     getOptionValue={(data: any) => data.type || data.special}
-                    onChange={(data: any) => setSelectedTab(data.type || data.special)}
+                    onChange={(data: any) => setCategory(data.type || data.special)}
                     options={categories.filter((opt: any) => opt.special !== "hr")}
                     isClearable={false}
                     isSearchable={false}
@@ -229,19 +231,19 @@ export function ReportsCenter(): JSX.Element {
                     }}
                 />
 
-                {selectedTab === "settings" ? (
+                {category === "settings" ? (
                     <ReportsCenterSettings />
-                ) : selectedTab === "history" ? (
+                ) : category === "history" ? (
                     <ReportsCenterHistory />
-                ) : selectedTab === "hr" ? null : (
-                    <SelectedReport
+                ) : category === "hr" ? null : (
+                    <ViewReport
                         reports={
-                            selectedTab === "all"
+                            category === "all"
                                 ? reports
-                                : reports.filter((x) => x.report_type === selectedTab)
+                                : reports.filter((x) => x.report_type === category)
                         }
                         onChange={selectReport}
-                        report={report}
+                        report_id={report_id}
                     />
                 )}
             </div>

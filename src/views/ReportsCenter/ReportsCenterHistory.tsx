@@ -16,11 +16,13 @@
  */
 
 import * as React from "react";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { PaginatedTable } from "PaginatedTable";
 import { Player } from "Player";
-import { browserHistory } from "ogsHistory";
+
 export function ReportsCenterHistory(): JSX.Element {
+    const navigateTo = useNavigate();
+
     return (
         <div className="ReportsCenterHistory">
             <PaginatedTable
@@ -34,7 +36,7 @@ export function ReportsCenterHistory(): JSX.Element {
                         className: () => "report",
                         render: (X) => (
                             <button
-                                onClick={() => browserHistory.push(`/reports-center/${X?.id}`)}
+                                onClick={() => navigateTo(`/reports-center/all/${X?.id}`)}
                                 className="small"
                             >
                                 {"R" + X?.id?.toString()?.substr(-3)}

@@ -22,12 +22,14 @@
 
 import * as data from "data";
 import * as preferences from "preferences";
+import { alert } from "swal_config";
 import { socket } from "sockets";
 import { ReportedConversation } from "Report";
 import { PlayerCacheEntry } from "player_cache";
 import { EventEmitter } from "eventemitter3";
 import { emitNotification } from "Notifications";
 import { browserHistory } from "ogsHistory";
+import { get, post } from "requests";
 
 export interface Report {
     id: number;
@@ -103,44 +105,49 @@ class ReportManager extends EventEmitter<Events> {
             connect_fn();
         }
 
-        socket.on("incident-report", (report: Report) => {
-            if (report.state === "resolved") {
-                delete this.active_incident_reports[report.id];
-            } else {
-                this.active_incident_reports[report.id] = report;
-            }
-            if (!(report.id in this.active_incident_reports)) {
-                if (
-                    data.get("user").is_moderator &&
-                    preferences.get("notify-on-incident-report") &&
-                    !post_connect_notification_squelch
-                ) {
-                    emitNotification(
-                        "Incident Report",
-                        report.reporting_user.username + ": " + report.reporter_note,
-                        () => {
-                            if (report.reported_game) {
-                                browserHistory.push(`/game/${report.reported_game}`);
-                            } else if (report.reported_review) {
-                                browserHistory.push(`/review/${report.reported_review}`);
-                            } else if (report.reported_user) {
-                                browserHistory.push(`/user/view/${report.reported_user.id}`);
-                            }
-                        },
-                    );
-                }
-            }
-            this.emit("incident-report", report);
-            this.update();
-        });
+        socket.on("incident-report", (report: Report) => this.updateIncidentReport(report));
 
         preferences.watch("moderator.report-settings", () => {
             this.update();
         });
     }
 
+    public updateIncidentReport(report: Report) {
+        report.id = parseInt(report.id as unknown as string);
+
+        if (!(report.id in this.active_incident_reports)) {
+            if (
+                data.get("user").is_moderator &&
+                preferences.get("notify-on-incident-report") &&
+                !post_connect_notification_squelch
+            ) {
+                emitNotification(
+                    "Incident Report",
+                    report.reporting_user?.username + ": " + report.reporter_note,
+                    () => {
+                        if (report.reported_game) {
+                            browserHistory.push(`/game/${report.reported_game}`);
+                        } else if (report.reported_review) {
+                            browserHistory.push(`/review/${report.reported_review}`);
+                        } else if (report.reported_user) {
+                            browserHistory.push(`/user/view/${report.reported_user.id}`);
+                        }
+                    },
+                );
+            }
+        }
+
+        if (report.state === "resolved") {
+            delete this.active_incident_reports[report.id];
+        } else {
+            this.active_incident_reports[report.id] = report;
+        }
+
+        this.emit("incident-report", report);
+        this.update();
+    }
+
     public update() {
-        console.log("Updating");
         const prefs = preferences.get("moderator.report-settings");
         const user = data.get("user");
 
@@ -190,6 +197,72 @@ class ReportManager extends EventEmitter<Events> {
         }
         data.set("ignored-reports", ignored);
         this.update();
+    }
+
+    public async getReport(id: number): Promise<Report> {
+        if (id in this.active_incident_reports) {
+            return this.active_incident_reports[id];
+        }
+
+        const res = await get(`moderation/incident/${id}`);
+
+        if (res) {
+            return res;
+        }
+
+        throw new Error("Report not found");
+    }
+
+    public async reopen(report_id: number): Promise<Report> {
+        const res = await post(`moderation/incident/${report_id}`, {
+            id: report_id,
+            action: "reopen",
+        });
+        this.updateIncidentReport(res);
+        return res;
+    }
+    public async close(report_id: number, helpful: boolean): Promise<Report> {
+        const res = await post("moderation/incident/%%", report_id, {
+            id: report_id,
+            action: "resolve",
+            was_helpful: helpful,
+        });
+        this.updateIncidentReport(res);
+        return res;
+    }
+    public async good_report(report_id: number): Promise<Report> {
+        const res = await this.close(report_id, true);
+        this.updateIncidentReport(res);
+        return res;
+    }
+    public async bad_report(report_id: number): Promise<Report> {
+        const res = await this.close(report_id, false);
+        this.updateIncidentReport(res);
+        return res;
+    }
+    public async unclaim(report_id: number): Promise<Report> {
+        const res = await post("moderation/incident/%%", report_id, {
+            id: report_id,
+            action: "unclaim",
+        });
+        this.updateIncidentReport(res);
+        return res;
+    }
+    public async claim(report_id: number): Promise<Report> {
+        const res = await post("moderation/incident/%%", report_id, {
+            id: report_id,
+            action: "claim",
+        }).then((res) => {
+            if (res.vanished) {
+                void alert.fire("Report was removed");
+            }
+            if (res.already_claimed) {
+                void alert.fire("Report was removed");
+            }
+            return res;
+        });
+        this.updateIncidentReport(res);
+        return res;
     }
 }
 

@@ -45,7 +45,6 @@ export function ReportedGame({ game_id }: { game_id: number }): JSX.Element {
     const [selectedChatLog, setSelectedChatLog] = React.useState<ChatMode>("main");
     const refresh = useRefresh();
     const onGobanCreated = React.useCallback((goban: Goban) => {
-        console.log("Goban: ", goban);
         setGoban(goban);
     }, []);
     const cur_move = useCurrentMove(goban);

@@ -76,7 +76,7 @@ export interface PlayerProperties {
 export function Player(props: PlayerProperties): JSX.Element {
     const user = data.get("user");
     const player_id =
-        typeof props.user !== "object" ? props.user : props.user.id || props.user.player_id;
+        typeof props.user !== "object" ? props.user : props.user?.id || props.user?.player_id;
     const historical = props.historical;
     //const navigate = useNavigate();
 
@@ -93,7 +93,7 @@ export function Player(props: PlayerProperties): JSX.Element {
     const username_ref = React.useRef<string>();
 
     player_id_ref.current = player_id;
-    username_ref.current = typeof props.user !== "object" ? null : props.user.username;
+    username_ref.current = typeof props.user !== "object" ? null : props.user?.username;
 
     const base = player || historical;
     const combined = base ? Object.assign({}, base, historical ? historical : {}) : null;
@@ -104,7 +104,7 @@ export function Player(props: PlayerProperties): JSX.Element {
                 player_cache.update(player);
             }
 
-            const username = typeof props.user !== "object" ? null : props.user.username;
+            const username = typeof props.user !== "object" ? null : props.user?.username;
             if (player_id && player_id > 0) {
                 player_cache
                     .fetch(player_id, ["username", "ui_class", "ranking", "pro"])
@@ -178,7 +178,7 @@ export function Player(props: PlayerProperties): JSX.Element {
                 online_status.subscribe(player_id, set_online);
             }
         };
-    }, [player_id, typeof props.user === "object" && props.user.username]);
+    }, [player_id, typeof props.user === "object" && props.user?.username]);
 
     const display_details = (event: React.MouseEvent) => {
         if (!player) {

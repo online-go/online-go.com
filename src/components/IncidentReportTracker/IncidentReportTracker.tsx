@@ -166,6 +166,10 @@ export function IncidentReportTracker(): JSX.Element {
                 <div className="IncidentReportTracker">
                     <div className="IncidentReportList-backdrop" onClick={toggleList}></div>
                     <div className="IncidentReportList-results">
+                        <h1>
+                            <Link to="/reports-center/all">Go to the new Reports Center</Link>
+                        </h1>
+                        <hr />
                         {filtered_reports.length === 0 && (
                             <div>
                                 {pgettext(
