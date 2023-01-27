@@ -68,7 +68,6 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                 .catch((err) => {
                     console.error(err);
                     setError(err + "");
-                    //navigateTo("reports-center/");
                 });
         } else {
             setReport(null);
@@ -172,7 +171,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
         [report],
     );
 
-    if (!report) {
+    if (!report || report_id === 0) {
         return (
             <div id="ViewReport">
                 <div className="no-report-selected">All done!</div>

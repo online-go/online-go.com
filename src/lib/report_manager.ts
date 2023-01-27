@@ -222,6 +222,8 @@ class ReportManager extends EventEmitter<Events> {
         return res;
     }
     public async close(report_id: number, helpful: boolean): Promise<Report> {
+        delete this.active_incident_reports[report_id];
+        this.update();
         const res = await post("moderation/incident/%%", report_id, {
             id: report_id,
             action: "resolve",

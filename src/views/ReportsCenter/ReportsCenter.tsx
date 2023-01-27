@@ -112,7 +112,7 @@ export function ReportsCenter(): JSX.Element {
         return () => {
             report_manager.off("update", syncToFirstAvailableReportIfNotSelected);
         };
-    }, [category]);
+    }, [category, report_id]);
 
     const setCategory = React.useCallback((category) => {
         navigateTo(`/reports-center/${category}`);
