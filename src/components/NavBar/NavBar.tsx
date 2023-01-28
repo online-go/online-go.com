@@ -79,10 +79,11 @@ export function NavBar(): JSX.Element {
     const [notifications_active, setNotificationsActive] = React.useState(false);
     const [hamburger_expanded, setHamburgerExpanded] = React.useState(false);
     const search_input = React.useRef<HTMLInputElement>(null);
+    const [force_nav_close, setForceNavClose] = React.useState(false);
 
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
 
-    const { ref: toggleRightNavButton, used: rightNavToggled } =
+    const { /* ref: toggleRightNavButton, */ used: rightNavToggled } =
         registerTargetItem("toggle-right-nav");
 
     const { ref: settingsNavLink } = registerTargetItem("settings-nav-link");
@@ -109,6 +110,7 @@ export function NavBar(): JSX.Element {
         if (hamburger_expanded) {
             setSearch("");
         }
+        setRightNavActive(false);
         setHamburgerExpanded(!hamburger_expanded);
     };
 
@@ -116,6 +118,13 @@ export function NavBar(): JSX.Element {
         closeNavbar();
         createDemoBoard();
     };
+
+    React.useEffect(() => {
+        setForceNavClose(true);
+        setTimeout(() => {
+            setForceNavClose(false);
+        }, 50);
+    }, [location]);
 
     React.useEffect(() => {
         setHamburgerExpanded(false);
@@ -144,7 +153,13 @@ export function NavBar(): JSX.Element {
         !window.location.hash.includes("/welcome"); // the signin with redirect to challenge accept
 
     return (
-        <header className={"NavBar" + (hamburger_expanded ? " hamburger-expanded" : "")}>
+        <header
+            className={
+                "NavBar" +
+                (hamburger_expanded ? " hamburger-expanded" : "") +
+                (force_nav_close ? " force-nav-close" : "")
+            }
+        >
             <KBShortcut shortcut="`" action={() => search_input.current.focus()} />
 
             <span className="hamburger">
@@ -362,17 +377,23 @@ export function NavBar(): JSX.Element {
                         <FriendIndicator />
                         <NotificationIndicator onClick={toggleNotifications} />
                         <TurnIndicator />
-                        <span
-                            className="icon-container"
-                            onClick={toggleRightNav}
-                            ref={toggleRightNavButton}
-                        >
+
+                        <span className="icon-container mobile-only" onClick={toggleRightNav}>
                             <PlayerIcon user={user} size={64} />
-                            <span className="username">
-                                {user.username}
-                                <i className="fa fa-caret-down" />
-                            </span>
                         </span>
+
+                        <Menu
+                            title={
+                                <span className="icon-container">
+                                    <PlayerIcon user={user} size={64} />
+                                    <span className="username">{user.username}</span>
+                                </span>
+                            }
+                            to={`/user/view/${user.id}`}
+                            className="profile desktop-only"
+                        >
+                            <ProfileAndQuickSettingsBits settingsNavLink={settingsNavLink} />
+                        </Menu>
                     </>
                 )}
             </section>
@@ -387,40 +408,10 @@ export function NavBar(): JSX.Element {
 
             {notifications_active && <NotificationList />}
 
-            {/* Right Nav */}
+            {/* Right Nav drop down on mobile */}
             {right_nav_active && (
                 <div className="RightNav">
-                    <Link to={`/user/view/${user.id}`}>
-                        <PlayerIcon user={user} size={16} />
-                        {_("Profile")}
-                    </Link>
-
-                    <Link to="/user/settings" ref={settingsNavLink}>
-                        <i className="fa fa-gear"></i>
-                        {_("Settings")}
-                    </Link>
-                    <span className="fakelink" onClick={logout}>
-                        <i className="fa fa-power-off"></i>
-                        {_("Sign out")}
-                    </span>
-
-                    <LineText>{_("Theme")}</LineText>
-
-                    <div className="theme-selectors">
-                        <button className="theme-button light" onClick={setThemeLight}>
-                            <i className="fa fa-sun-o" />
-                        </button>
-                        <button className="theme-button dark" onClick={setThemeDark}>
-                            <i className="fa fa-moon-o" />
-                        </button>
-                        <button className="theme-button accessible" onClick={setThemeAccessible}>
-                            <i className="fa fa-eye" />
-                        </button>
-                    </div>
-
-                    <div className="theme-selectors">
-                        <GobanThemePicker />
-                    </div>
+                    <ProfileAndQuickSettingsBits settingsNavLink={settingsNavLink} />
                 </div>
             )}
         </header>
@@ -428,7 +419,7 @@ export function NavBar(): JSX.Element {
 }
 
 interface MenuProps {
-    title: string;
+    title: string | JSX.Element;
     to?: string;
     children: React.ReactNode;
     className?: string;
@@ -446,5 +437,45 @@ function Menu({ title, to, children, className }: MenuProps): JSX.Element {
             )}
             <div className="Menu-children">{children}</div>
         </section>
+    );
+}
+
+function ProfileAndQuickSettingsBits({ settingsNavLink }: { settingsNavLink: any }): JSX.Element {
+    const user = useUser();
+
+    return (
+        <>
+            <Link to={`/user/view/${user.id}`}>
+                <PlayerIcon user={user} size={16} />
+                {_("Profile")}
+            </Link>
+
+            <Link to="/user/settings" ref={settingsNavLink}>
+                <i className="fa fa-gear"></i>
+                {_("Settings")}
+            </Link>
+            <span className="fakelink" onClick={logout}>
+                <i className="fa fa-power-off"></i>
+                {_("Sign out")}
+            </span>
+
+            <LineText>{_("Theme")}</LineText>
+
+            <div className="theme-selectors">
+                <button className="theme-button light" onClick={setThemeLight}>
+                    <i className="fa fa-sun-o" />
+                </button>
+                <button className="theme-button dark" onClick={setThemeDark}>
+                    <i className="fa fa-moon-o" />
+                </button>
+                <button className="theme-button accessible" onClick={setThemeAccessible}>
+                    <i className="fa fa-eye" />
+                </button>
+            </div>
+
+            <div className="theme-selectors">
+                <GobanThemePicker />
+            </div>
+        </>
     );
 }
