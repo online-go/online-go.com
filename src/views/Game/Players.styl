@@ -388,13 +388,25 @@
     }
 
     .Clock {
+        @media screen and (max-width 600px) {
+            font-size: 1.2em;
+        }
+
         .main-time {
             font-size: font-size-small;
+
+            @media screen and (max-width 600px) {
+                font-size: 1em;    
+            }
         }
         .byo-yomi-container,
         .canadian-container
         {
             font-size: font-size-extra-small;
+
+            @media screen and (max-width 600px) {
+                font-size: 0.8em;
+            }
         }
     }
 }
