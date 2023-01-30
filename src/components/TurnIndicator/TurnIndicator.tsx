@@ -17,7 +17,6 @@
 
 import * as React from "react";
 import { notification_manager } from "Notifications";
-//import { Experiment, Variant, Default } from "Experiment";
 
 export function TurnIndicator(): JSX.Element {
     const [count, setCount] = React.useState(0);
@@ -44,36 +43,4 @@ export function TurnIndicator(): JSX.Element {
             </span>
         </span>
     );
-
-    /*
-    return (
-        <Experiment name="v6">
-            <Variant value="enabled">
-                <span
-                    className="TurnIndicatorV6"
-                    onAuxClick={(e) => notification_manager.advanceToNextBoard(e)}
-                    onClick={(e) => notification_manager.advanceToNextBoard(e)}
-                >
-                    <i className={`ogs-goban ${count > 0 ? "active" : ""}`} />
-                    <span className="count">{count}</span>
-                </span>
-            </Variant>
-            <Default>
-                <span
-                    className="TurnIndicator"
-                    onAuxClick={(e) => notification_manager.advanceToNextBoard(e)}
-                    onClick={(e) => notification_manager.advanceToNextBoard(e)}
-                >
-                    <span
-                        className={
-                            total > 0 ? (count > 0 ? "active count" : "inactive count") : "count"
-                        }
-                    >
-                        <span>{count}</span>
-                    </span>
-                </span>
-            </Default>
-        </Experiment>
-    );
-    */
 }
