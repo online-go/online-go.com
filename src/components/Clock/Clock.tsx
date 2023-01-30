@@ -96,10 +96,18 @@ export function Clock({
             return <span className={clock_className}>{prettyTime(clock.start_time_left)}</span>;
         }
 
+        // The main time for correspondence games can get pretty lengthy, for those
+        // use use a smaller font
+        const need_small_main_time_font = prettyTime(player_clock.main_time).length > 8;
+
         return (
             <span className={clock_className}>
                 {player_clock.main_time > 0 && (
-                    <span className="main-time boxed">{prettyTime(player_clock.main_time)}</span>
+                    <span
+                        className={"main-time boxed " + (need_small_main_time_font ? " small" : "")}
+                    >
+                        {prettyTime(player_clock.main_time)}
+                    </span>
                 )}
 
                 {time_control.system === "byoyomi" && (
