@@ -130,6 +130,7 @@ export const defaults = {
             visible: boolean;
         };
     },
+    "moderator.hide-next-game-arrows": false,
 
     "table-color-default-on": false,
 
