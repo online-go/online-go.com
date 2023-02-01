@@ -8,6 +8,7 @@ let BACKEND = process.env.OGS_BACKEND || "BETA";
 const spawn = require("child_process").spawn;
 const fs = require("fs");
 const gulp = require("gulp");
+const path = require("path");
 const execSync = require("child_process").execSync;
 const livereload = require("gulp-livereload");
 const stylus = require("gulp-stylus");
@@ -302,6 +303,17 @@ function dev_server(done) {
     devserver.get("*", (req, res) => {
         console.info(`GET ${req.path}`);
 
+        if (req.path === "ogs.js") {
+            const dist_path = path.join(__dirname, "dist");
+            console.error("Failed to locate built ogs.js");
+            console.error(`CWD: ${process.cwd()}`);
+            console.error(`   ${dist_path} exists?: ${fs.existsSync(dist_path)}`);
+            if (fs.existsSync(dist_path)) {
+                console.error(`   ${dist_path} contents: `, fs.readdirSync(dist_path));
+            }
+            res.status(500).send("Failed to locate built ogs.js");
+        }
+
         let _index = fs.readFileSync("src/index.html", { encoding: "utf-8" });
         let supported_languages = JSON.parse(
             fs.readFileSync("i18n/languages.json", { encoding: "utf-8" }),
@@ -310,10 +322,21 @@ function dev_server(done) {
 
         let index = _index.replace(/[{][{]\s*(\w+)\s*[}][}]/g, (_, parameter) => {
             switch (parameter) {
-                case "CDN_SERVICE":
+                case "CDN_SERVICE": {
+                    // We run within a docker container on 8080 but are served out of 443 so no
+                    // need to specify a port, just use the same hostname.
+                    if (req.hostname?.indexOf("uffizzi") >= 0) {
+                        return `//${req.hostname}/`;
+                    }
                     return `//${req.hostname}:${port}/`;
-                case "LIVE_RELOAD":
+                }
+                case "LIVE_RELOAD": {
+                    if (req.hostname?.indexOf("uffizzi") >= 0) {
+                        // no need for live reloading on uffizzi
+                        return ``;
+                    }
                     return `<script async src="//${req.hostname}:35701/livereload.js"></script>`;
+                }
                 case "MIN":
                     return "";
 
