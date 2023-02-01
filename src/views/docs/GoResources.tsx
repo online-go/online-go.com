@@ -377,7 +377,7 @@ export const GoResources = () => {
                             <BasicResource
                                 countries={[en]}
                                 title="Go Commentary Videos"
-                                href="http://www.gocommentary.com/free-tutorial-videos.html"
+                                href="https://www.youtube.com/@GoCommentary/"
                             />,
                             <BasicResource
                                 countries={[en]}
