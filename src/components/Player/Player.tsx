@@ -221,10 +221,13 @@ export function Player(props: PlayerProperties): JSX.Element {
             }
             window.open(uri, "_blank");
         } else if (props.nodetails) {
+            const unlisten = browserHistory.listen(() => {
+                close_all_popovers();
+                unlisten();
+            });
             close_friend_list();
             browserHistory.push(`/player/${player_id}/`);
             //navigate(`/player/${player_id}/`);
-            close_all_popovers();
             return;
         } else {
             let chat_id = null;
