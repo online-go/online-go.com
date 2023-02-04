@@ -143,7 +143,7 @@ export const GoResources = () => {
                                 ]}
                                 editions={[
                                     {
-                                        title: " Edition (pdf)",
+                                        title: "2022 Edition (pdf)",
                                         country: en,
                                         href: "https://cdn.online-go.com/81_little_lions/81_little_lions_an_introduction_to_the_9x9_board_for_advanced_beginners_2022.pdf",
                                     },
