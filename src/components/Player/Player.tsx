@@ -194,16 +194,6 @@ export function Player(props: PlayerProperties): JSX.Element {
             return;
         }
 
-        if (
-            ("buttons" in event && event.buttons & 2) ||
-            ("button" in event && event.button === 2)
-        ) {
-            /* on click with right mouse button do nothing.
-               buttons uses on bit per button, alowing for multiple buttons pressed at the same time. The bit with value 2 is the right mouse button. https://www.w3schools.com/jsref/event_buttons.asp
-               buttons isn't supported in all browsers, so we have to check button as fallback. */
-            return;
-        }
-
         if (!props.fakelink && shouldOpenNewTab(event)) {
             /* let browser deal with opening the window so we don't get popup warnings */
             return;
