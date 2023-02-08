@@ -351,7 +351,7 @@ export function Player(props: PlayerProperties): JSX.Element {
 
     if (props.nolink || props.fakelink || !player_id || combined.anonymous || player_id < 0) {
         return (
-            <span ref={elt_ref} {...main_attrs} onMouseDown={display_details}>
+            <span ref={elt_ref} {...main_attrs} onClick={display_details}>
                 {(props.icon || null) && <PlayerIcon user={combined} size={props.iconSize || 16} />}
                 {(props.flag || null) && <Flag country={combined.country} />}
                 {username}
@@ -366,7 +366,7 @@ export function Player(props: PlayerProperties): JSX.Element {
         return (
             // if only we could put {...main_attrs} on the span, we could put the styles in .Player.  But router seems to hate that.
             <span>
-                <a href={uri} ref={elt_ref} {...main_attrs} onMouseDown={display_details}>
+                <a href={uri} ref={elt_ref} {...main_attrs} onClick={display_details}>
                     {(props.icon || null) && (
                         <PlayerIcon user={combined} size={props.iconSize || 16} />
                     )}
