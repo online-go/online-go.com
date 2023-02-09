@@ -25,74 +25,57 @@ import { _, pgettext } from "translate";
 import { get, put } from "requests";
 import { errorAlerter } from "misc";
 import { browserHistory } from "ogsHistory";
-// import { get_ebi } from "SignIn";
-// import cached from "cached";
 
-//import { Card } from "material";
 import { LoadingPage } from "Loading";
 import { UIPush } from "UIPush";
-
-//import { Player } from "Player";
-
-// type Challenge = socket_api.seekgraph_global.Challenge;
+import { EmbeddedChatCard } from "Chat";
 
 // Users are intended to arrive here via an online-league player invite URL
 
+// They get to chat to each other here, in a dedicated channel, and mutually agree when to start.
+
 export function OnlineLeagueLanding(): JSX.Element {
     /* State */
-    const [loading, set_loading] = React.useState(true);
+    const [loading, set_loading] = React.useState(true); // set to false after we have the info about that match they are joining
     const [logging_in, set_logging_in] = React.useState<boolean>(false);
+    const [im_ready, set_im_ready] = React.useState(false);
+
     const [match, set_match] = React.useState<rest_api.online_league.MatchStatus>(null);
 
-    //const [linked_challenge, set_linked_challenge] = React.useState<Challenge>(null);
-    //const [logging_in, set_logging_in] = React.useState<boolean>(false);
+    const [linked_challenge_key, set_linked_challenge_key] = React.useState(
+        new URLSearchParams(location.search).get("id"),
+    );
+
+    const [side, set_side] = React.useState(new URLSearchParams(location.search).get("side"));
 
     const navigate = useNavigate();
 
-    /* Actions */
-
-    const signThemIn = () => {
-        console.log("Helping them sign in");
-        set_logging_in(true);
-        data.set("pending_league_match", match);
-        // Go to sign in, and come back to this page after signing in
-        navigate("/sign-in#/online-league/league-player", { replace: true });
-    };
-
-    const signThemUp = () => {
-        console.log("Sending them to register");
-        set_logging_in(true);
-        data.set("pending_league_match", match);
-        navigate("/register#/online-league/league-player", { replace: true });
-    };
-
-    const jumpToGame = (details) => {
-        console.log("OOL Game started...", details);
-        if (details.gameId === match.game) {
-            navigate(`/game/${details.gameId}`, { replace: true });
-        } else {
-            console.log("... but it's not ours.");
-        }
-    };
-
     // ... we need to:
-    //  - get the linked online league challenge
-    //  - create an OGS one if this is the first person to arrive
-    //  - start the game if this is the second person to arrive
+    //  - get the linked online league match
+    //  - tell the server when this player is ready
     // possibly logging in or registering them along with league id along the way...
-
-    const linked_challenge_key = new URLSearchParams(location.search).get("id");
-    const side = new URLSearchParams(location.search).get("side");
 
     const pending_match = data.get("pending_league_match", null);
 
     const user = useUser();
     const logged_in = !user.anonymous;
 
-    const doPlayerIsHereAction = (player_side, key) => {
-        put(`online_league/commence?side=${player_side}&id=${key}`, {})
+    const signThemIn = () => {
+        console.log("Helping them sign in");
+        data.set("pending_league_match", { ...match, side: side, key: linked_challenge_key });
+        // Go to sign in, and come back to this page after signing in
+        navigate("/sign-in#/online-league/league-player", { replace: true });
+    };
+
+    const signThemUp = () => {
+        console.log("Sending them to register");
+        data.set("pending_league_match", match);
+        navigate("/register#/online-league/league-player", { replace: true });
+    };
+
+    const toggleReadiness = () => {
+        put(`online_league/commence?side=${side}&id=${linked_challenge_key}&ready=${!im_ready}`, {})
             .then((matchStatus) => {
-                set_loading(false);
                 if (matchStatus.started) {
                     console.log("OOL game started!", matchStatus);
                     navigate(`/game/${matchStatus.game}`, { replace: true });
@@ -108,64 +91,71 @@ export function OnlineLeagueLanding(): JSX.Element {
                 errorAlerter(err);
                 navigate("/", { replace: true });
             });
+
+        set_im_ready(!im_ready);
+    };
+
+    const jumpToGame = (details) => {
+        console.log("Jump to game?", details, match);
+        if (details.matchId === match.id) {
+            console.log("yes, jumping...");
+            navigate(`/game/${details.gameId}`, { replace: true });
+        }
+    };
+
+    const updateWaitingStatus = (details) => {
+        if (details.matchId === match.id) {
+            set_match({ ...match, black_ready: details.black, white_ready: details.white });
+        }
     };
 
     React.useEffect(() => {
         console.log("*** OLL effect...");
-        if (logged_in && linked_challenge_key && side && !match) {
-            // easiest case: they are logged in already!
 
-            // no matter what, make sure this is clean
-            // (defend against wierd user reloads, stale data whatever...)
-            data.set("pending_league_match", null);
-
-            console.log("Logged-in user arrived!  Telling server...");
-            doPlayerIsHereAction(side, linked_challenge_key);
-        }
-        // See if that they arrived back here after logging in...
-        else if (logged_in && pending_match && !match) {
+        // First, see if they arrived back here after we sent them off to log in...
+        // ... in which case restore all the info...
+        if (logged_in && pending_match && !match) {
             console.log("Logged them in, now getting on with pending match");
             set_match(pending_match);
-        }
-        // Maybe we set match from pending_match, so we can get on with whatever next...
-        else if (logged_in && match && pending_match) {
+            set_logging_in(false);
+            set_loading(false);
+            set_side(pending_match.side);
+            set_linked_challenge_key(pending_match.key);
             data.set("pending_league_match", null);
-            console.log("after logging in, telling server...");
-            doPlayerIsHereAction(match.side, match.player_key);
-        }
-        // If they're not logged in, we have to get them logged in before doing anything else
-        else if (!logged_in && !logging_in) {
-            // no matter what, make sure this is clean
-            data.set("pending_league_match", null);
-
+        } else if (!match) {
             if (!linked_challenge_key || !side) {
                 console.log(
                     "Unexpected arrival at OnlineLeagueLanding: missing player-key/side params!",
                 );
                 browserHistory.push("/");
+            } else {
+                // no matter what, make sure this is clean
+                data.set("pending_league_match", null);
+
+                // If they're not logged in, we have to get them logged in before doing anything else
+                if (!logged_in && !logging_in) {
+                    set_logging_in(true);
+                }
+
+                get(`online_league/commence?side=${side}&id=${linked_challenge_key}`)
+                    .then((match: rest_api.online_league.MatchStatus) => {
+                        set_match(match); // contains match details for later use, and display on login-options screen
+                        set_loading(false); // This will cause us to ask them to log in, if necessary
+                        set_im_ready(side === "black" ? match.black_ready : match.white_ready);
+                        console.log(match);
+                    })
+                    .catch((err: any) => {
+                        alert.close();
+                        errorAlerter(err);
+                    });
             }
-
-            set_logging_in(true);
-
-            // This is needed simply to display the match information on the login options page
-            // It also makes it handy to store and forward the relevant information (via `data`) to use
-            // when they come back afeter login.
-            get(`online_league/commence?side=${side}&id=${linked_challenge_key}`)
-                .then((match: rest_api.online_league.MatchStatus) => {
-                    set_match(match); // contains match details for later use, and display on login options screen
-                    set_loading(false); // This will cause us to ask them to log in, if necessary
-                    console.log(match);
-                })
-                .catch((err: any) => {
-                    alert.close();
-                    errorAlerter(err);
-                });
         } else {
             console.log("Nothing to do in OLL useEffect", logged_in, logging_in, match);
         }
     }, [match, logged_in, logging_in]);
 
     console.log("*** OLL render....", match);
+
     /* Render */
     return (
         <div id="OnlineLeagueLanding">
@@ -209,12 +199,27 @@ export function OnlineLeagueLanding(): JSX.Element {
                 </div>
             )}
 
-            {((!loading && logged_in) || null) && (
+            {((!loading && logged_in && match) || null) && (
                 <div className="unstarted-match">
-                    <div>{_("Waiting for your opponent...")}</div>
-                    <div>{_("... stay on this page to be taken to the game when it starts.")}</div>
-                    <LoadingPage slow /> {/* persuade them that we're alive :) */}
+                    <button onClick={toggleReadiness} className={im_ready ? "info" : "primary"}>
+                        {im_ready ? _("Wait, I'm not ready!") : _("I'm Ready")}
+                    </button>
+                    <div className="waiting-chat">
+                        <EmbeddedChatCard
+                            inputPlaceholdertText="Chat while you wait..."
+                            channel={`ool-landing-${match.id}`}
+                        />
+                    </div>
+                    <div>
+                        Black:{" "}
+                        {match.black_ready ? <i className="fa fa-thumbs-up" /> : "waiting..."}
+                    </div>
+                    <div>
+                        White:{" "}
+                        {match.white_ready ? <i className="fa fa-thumbs-up" /> : "waiting..."}
+                    </div>
                     <UIPush event="online-league-game-commencement" action={jumpToGame} />
+                    <UIPush event="online-league-game-waiting" action={updateWaitingStatus} />
                 </div>
             )}
         </div>
