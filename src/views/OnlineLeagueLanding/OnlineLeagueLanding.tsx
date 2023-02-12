@@ -69,7 +69,7 @@ export function OnlineLeagueLanding(): JSX.Element {
 
     const signThemUp = () => {
         console.log("Sending them to register");
-        data.set("pending_league_match", match);
+        data.set("pending_league_match", { ...match, side: side, key: linked_challenge_key });
         navigate("/register#/online-league/league-player", { replace: true });
     };
 
