@@ -111,7 +111,7 @@ export function GameDock({
         : api1(`games/${game_id}/sgf`);
     const sgf_with_ai_review_url: string | null =
         game_id && selected_ai_review_uuid
-            ? `games/${game_id}/sgf?ai_review=${selected_ai_review_uuid}`
+            ? api1(`games/${game_id}/sgf?ai_review=${selected_ai_review_uuid}`)
             : null;
     const sgf_with_comments_url: string | null = review_id
         ? api1(`reviews/${review_id}/sgf`)
