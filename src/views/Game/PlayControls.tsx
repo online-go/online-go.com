@@ -1199,10 +1199,22 @@ function automateBranch(goban: Goban): void {
     // TODO: check player to move?
 
     const before = goban.conditional_tree.duplicate();
-    const tree = diffToConditionalMove(diff.moves);
+    const tree = mergeConditionalTrees(before, diffToConditionalMove(diff.moves));
+
     goban.setConditionalTree(tree);
     goban.saveConditionalMoves();
     goban.setConditionalTree(before);
     toast(<div>{_("Copied branch to the conditional move planner")}</div>, 2000);
-    // TODO: don't delete existing conditional moves
+}
+
+// Merges two conditional trees into one. If there are conflicts, the branch in
+// `b` overwrites the one in `a`.
+function mergeConditionalTrees(a: GoConditionalMove, b: GoConditionalMove): GoConditionalMove {
+    const treeA = a.encode()[1];
+    const treeB = b.encode()[1];
+    for (const move in treeB) {
+        treeA[move] = treeB[move];
+    }
+    // TODO: merge recursively
+    return GoConditionalMove.decode([null, treeA]);
 }
