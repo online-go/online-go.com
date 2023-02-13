@@ -19,6 +19,8 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { alert } from "swal_config";
 
+import * as DynamicHelp from "react-dynamic-help";
+
 import * as data from "data";
 import { useUser } from "hooks";
 import { _, pgettext } from "translate";
@@ -50,6 +52,11 @@ export function OnlineLeagueLanding(): JSX.Element {
 
     const navigate = useNavigate();
 
+    const { registerTargetItem } = React.useContext(DynamicHelp.Api);
+    const { ref: readyButton, used: signalReadyPressed } = registerTargetItem("ready-button");
+    const { ref: notReadyButton, used: signalNotReadyPressed } =
+        registerTargetItem("not-ready-button");
+
     // ... we need to:
     //  - get the linked online league match
     //  - tell the server when this player is ready
@@ -74,6 +81,12 @@ export function OnlineLeagueLanding(): JSX.Element {
     };
 
     const toggleReadiness = () => {
+        if (!im_ready) {
+            signalReadyPressed();
+        } else {
+            signalNotReadyPressed();
+        }
+
         put(`online_league/commence?side=${side}&id=${linked_challenge_key}&ready=${!im_ready}`, {})
             .then((matchStatus) => {
                 if (matchStatus.started) {
@@ -170,7 +183,7 @@ export function OnlineLeagueLanding(): JSX.Element {
             {(!loading || null) && (
                 <React.Fragment>
                     <h2>{match.name}</h2>
-                    <div>
+                    <div className={"match-detail"}>
                         ({match.league} Match {match.id})
                     </div>
                 </React.Fragment>
@@ -201,7 +214,11 @@ export function OnlineLeagueLanding(): JSX.Element {
 
             {((!loading && logged_in && match) || null) && (
                 <div className="unstarted-match">
-                    <button onClick={toggleReadiness} className={im_ready ? "info" : "primary"}>
+                    <button
+                        onClick={toggleReadiness}
+                        className={im_ready ? "info" : "primary"}
+                        ref={im_ready ? notReadyButton : readyButton}
+                    >
                         {im_ready ? _("Wait, I'm not ready!") : _("I'm Ready")}
                     </button>
                     <div className="waiting-chat">
@@ -211,12 +228,14 @@ export function OnlineLeagueLanding(): JSX.Element {
                         />
                     </div>
                     <div>
-                        Black:{" "}
-                        {match.black_ready ? <i className="fa fa-thumbs-up" /> : "waiting..."}
+                        {`Black: `}
+                        {match.black_ready ? <i className="fa fa-thumbs-up" /> : "waiting... "}
+                        {`${side === "black" ? " (you)" : ""}`}
                     </div>
                     <div>
-                        White:{" "}
+                        {`White: `}
                         {match.white_ready ? <i className="fa fa-thumbs-up" /> : "waiting..."}
+                        {`${side === "white" ? " (you)" : ""}`}
                     </div>
                     <UIPush event="online-league-game-commencement" action={jumpToGame} />
                     <UIPush event="online-league-game-waiting" action={updateWaitingStatus} />
