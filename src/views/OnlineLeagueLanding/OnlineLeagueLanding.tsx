@@ -192,9 +192,14 @@ export function OnlineLeagueLanding(): JSX.Element {
             {((!logged_in && !loading) || null) && (
                 <div className="login-options">
                     <h3>{_("You'll need to be logged in to play this match.")}</h3>
-                    <span>{_("Already have an account?")}</span>
+                    <span>
+                        {pgettext(
+                            "This text is next to a `login` button - if they already have an account, they should log in.",
+                            "Already have an account?",
+                        )}
+                    </span>
                     <button onClick={signThemIn} className="primary">
-                        {_("Sign In")}
+                        {pgettext("This is the text on a `login` button", "Sign In")}
                     </button>
 
                     <span>
@@ -219,23 +224,48 @@ export function OnlineLeagueLanding(): JSX.Element {
                         className={im_ready ? "info" : "primary"}
                         ref={im_ready ? notReadyButton : readyButton}
                     >
-                        {im_ready ? _("Wait, I'm not ready!") : _("I'm Ready")}
+                        {im_ready
+                            ? pgettext(
+                                  "This is on a button they can press to indicate they're not ready to play",
+                                  "Wait, I'm not ready!",
+                              )
+                            : pgettext(
+                                  "This is on a button they can press to indicate they are ready for the game to start",
+                                  "I'm Ready",
+                              )}
                     </button>
                     <div className="waiting-chat">
                         <EmbeddedChatCard
-                            inputPlaceholdertText="Chat while you wait..."
+                            inputPlaceholdertText={pgettext(
+                                "place holder text in a chat channel input",
+                                "Chat while you wait...",
+                            )}
                             channel={`ool-landing-${match.id}`}
                         />
                     </div>
                     <div>
-                        {`Black: `}
-                        {match.black_ready ? <i className="fa fa-thumbs-up" /> : "waiting... "}
-                        {`${side === "black" ? " (you)" : ""}`}
+                        {_("Black: ")}
+                        {match.black_ready ? <i className="fa fa-thumbs-up" /> : _("waiting... ")}
+                        {`${
+                            side === "black"
+                                ? pgettext(
+                                      "this text is added after `waiting...` to indicate it's about the user",
+                                      " (you)",
+                                  )
+                                : ""
+                        }`}
                     </div>
                     <div>
-                        {`White: `}
-                        {match.white_ready ? <i className="fa fa-thumbs-up" /> : "waiting..."}
-                        {`${side === "white" ? " (you)" : ""}`}
+                        {_("White: ")}
+                        {match.white_ready ? <i className="fa fa-thumbs-up" /> : _("waiting...")}
+                        {`${
+                            side === "white"
+                                ? pgettext(
+                                      "this text is added after `waiting...` to indicate it's about the user",
+                                      " (you)",
+                                  )
+                                : ""
+                        }`}
                     </div>
                     <UIPush event="online-league-game-commencement" action={jumpToGame} />
                     <UIPush event="online-league-game-waiting" action={updateWaitingStatus} />
