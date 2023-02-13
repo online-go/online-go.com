@@ -749,6 +749,15 @@ export function AnalyzeButtonBar({
                     <i className="ogs-label-x"></i>
                 </button>
             </div>
+            <div className="btn-group">
+                <button
+                    onClick={() => automateBranch(goban)}
+                    title={_("Copy branch to conditional move planner")}
+                >
+                    {/* TODO: hide if not available */}
+                    <i className="fa fa-exchange"></i>
+                </button>
+            </div>
             <div className="analyze-mode-buttons">
                 {(mode === "analyze" || null) && (
                     <span>
@@ -1153,3 +1162,47 @@ const usePaused = generateGobanHook(
     (goban) => goban.pause_control && !!goban.pause_control.paused,
     ["paused"],
 );
+
+// Converts move diff string into a GoConditionalMove.
+// Caller should check that the moves start from the last official move and
+// that the first move in the string is the opponent's.
+function diffToConditionalMove(moves: string): GoConditionalMove {
+    if (moves.length % 2 !== 0) {
+        throw new Error("invalid move string");
+    }
+
+    let tree = new GoConditionalMove(null);
+    const start = moves.length - 1 - ((moves.length - 1) % 4);
+    for (let i = start; i >= 0; i -= 4) {
+        const opponent = moves.slice(i, i + 2);
+        const player = moves.slice(i + 2, i + 4) || null;
+
+        tree.move = player;
+        const parent = new GoConditionalMove(null, tree);
+        if (player != null) {
+            parent.children[opponent] = tree;
+        }
+        tree = parent;
+    }
+    return tree;
+}
+
+// Copies branch to conditional move planner (only copies up to the selected
+// move). Should only be called in analyze mode.
+function automateBranch(goban: Goban): void {
+    const diff = goban.engine.getMoveDiff();
+
+    if (diff.from !== goban.engine.last_official_move.move_number) {
+        toast(<div>{_("Outdated branch")}</div>, 1000);
+        return;
+    }
+    // TODO: check player to move?
+
+    const before = goban.conditional_tree.duplicate();
+    const tree = diffToConditionalMove(diff.moves);
+    goban.setConditionalTree(tree);
+    goban.saveConditionalMoves();
+    goban.setConditionalTree(before);
+    toast(<div>{_("Copied branch to the conditional move planner")}</div>, 2000);
+    // TODO: don't delete existing conditional moves
+}
