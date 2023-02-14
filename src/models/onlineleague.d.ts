@@ -27,6 +27,8 @@ declare namespace rest_api {
             side: string; // black or white
             started: boolean;
             game: number; // pk
+            black_ready: boolean;
+            white_ready: boolean;
         }
 
         //  /api/v1/online_league/match

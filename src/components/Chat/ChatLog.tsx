@@ -52,6 +52,7 @@ interface ChatLogProperties {
     updateTitle?: boolean;
     hideTopic?: boolean;
     forceShowGames?: boolean;
+    inputPlaceholdertText?: string;
     onShowChannels?: (tf: boolean) => void;
     onShowUsers?: (tf: boolean) => void;
     /* if properties are added to this, don't forget to
@@ -64,6 +65,7 @@ interface InternalChatLogProperties extends ChatLogProperties {
     onShowGames?: (tf: boolean) => void;
     showingGames?: boolean;
     canShowGames?: boolean;
+    inputPlaceholdertext?: string;
 }
 
 let deferred_chat_update: Timeout = null;
@@ -494,7 +496,11 @@ function ChatLines({
     );
 }
 
-function ChatInput({ channel, autoFocus }: InternalChatLogProperties): JSX.Element {
+function ChatInput({
+    channel,
+    autoFocus,
+    inputPlaceholdertText,
+}: InternalChatLogProperties): JSX.Element {
     const user = data.get("user");
     const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;
     const input = useRef(null);
@@ -538,6 +544,13 @@ function ChatInput({ channel, autoFocus }: InternalChatLogProperties): JSX.Eleme
         [channel, proxy],
     );
 
+    const placeholder = inputPlaceholdertText
+        ? inputPlaceholdertText
+        : pgettext(
+              "This is the placeholder text for the chat input field in games, chat channels, and private messages",
+              interpolate("Message {{who}}", { who: channel_name || "..." }),
+          );
+
     return (
         <TabCompleteInput
             ref={input}
@@ -548,10 +561,7 @@ function ChatInput({ channel, autoFocus }: InternalChatLogProperties): JSX.Eleme
                 !user.email_validated
                     ? _("Chat will be enabled once your email address has been validated")
                     : show_say_hi_placeholder
-                    ? pgettext(
-                          "This is the placeholder text for the chat input field in games, chat channels, and private messages",
-                          interpolate("Message {{who}}", { who: channel_name || "..." }),
-                      )
+                    ? placeholder
                     : ""
             }
             disabled={user.anonymous || !data.get("user").email_validated}

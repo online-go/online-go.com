@@ -34,7 +34,30 @@
         }
      }
 
-    div {
+    .match-detail {
         margin-bottom: 2rem;
+    }
+
+    .waiting-chat {
+
+    }
+
+    .unstarted-match {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+
+        .waiting-chat {
+            width: 80%;
+            max-width: 100rem;
+            max-height: 20rem;
+            margin-bottom: 1rem;
+            overflow-y: scroll;
+
+            .EmbeddedChatCard {
+                min-height: 4rem;
+            }
+        }
     }
 }
