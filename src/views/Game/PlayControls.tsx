@@ -754,6 +754,7 @@ export function AnalyzeButtonBar({
                 <button
                     onClick={() => automateBranch(goban)}
                     title={_("Copy branch to conditional move planner")}
+                    disabled={goban.engine.rengo}
                 >
                     <i className="fa fa-exchange"></i>
                 </button>
@@ -1190,15 +1191,20 @@ function diffToConditionalMove(moves: string): GoConditionalMove {
 // Copies branch to conditional move planner (only copies up to the selected
 // move). Should only be called in analyze mode.
 function automateBranch(goban: Goban): void {
-    const diff = goban.engine.getMoveDiff();
-
-    if (diff.from !== goban.engine.last_official_move.move_number) {
-        toast(<div>{_("Outdated branch")}</div>, 1000);
+    if (goban.engine.rengo) {
+        toast(<div>{_("You cannot make conditional moves in Rengo games.")}</div>, 2000);
         return;
     }
 
     if (data.get("user").id === currentPlayer(goban)) {
         toast(<div>{_("You cannot make conditional moves on your turn.")}</div>, 2000);
+        return;
+    }
+
+    const diff = goban.engine.getMoveDiff();
+
+    if (diff.from !== goban.engine.last_official_move.move_number) {
+        toast(<div>{_("Outdated branch")}</div>, 1000);
         return;
     }
 
