@@ -755,7 +755,6 @@ export function AnalyzeButtonBar({
                     onClick={() => automateBranch(goban)}
                     title={_("Copy branch to conditional move planner")}
                 >
-                    {/* TODO: hide if not available */}
                     <i className="fa fa-exchange"></i>
                 </button>
             </div>
@@ -1197,7 +1196,11 @@ function automateBranch(goban: Goban): void {
         toast(<div>{_("Outdated branch")}</div>, 1000);
         return;
     }
-    // TODO: check player to move?
+
+    if (data.get("user").id === currentPlayer(goban)) {
+        toast(<div>{_("You cannot make conditional moves on your turn.")}</div>, 2000);
+        return;
+    }
 
     const before = goban.conditional_tree.duplicate();
     const tree = mergeGoConditionalMoves(before, diffToConditionalMove(diff.moves));
@@ -1239,4 +1242,12 @@ function mergeConditionalTrees(a: ConditionalMoveTree, b: ConditionalMoveTree): 
 
         mergeConditionalTrees(nextA, nextB);
     }
+}
+
+// Returns current player, ignoring any provisional stones on the board.
+function currentPlayer(goban: Goban): number {
+    const engine = goban.engine;
+    return engine.getMoveNumber() === engine.getCurrentMoveNumber()
+        ? engine.playerToMove()
+        : engine.playerNotToMove();
 }
