@@ -9,7 +9,8 @@ services:
   online-go:
     image: '${ONLINE_GO_IMAGE}'
     environment:
-      OGS_BACKEND: PRODUCTION
+      #OGS_BACKEND: PRODUCTION
+      OGS_BACKEND: BETA
     # entrypoint:
     # - "sh"
     # command:
