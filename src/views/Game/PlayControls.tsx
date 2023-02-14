@@ -1255,7 +1255,9 @@ function mergeConditionalTrees(a: ConditionalMoveTree, b: ConditionalMoveTree): 
 // Returns current player, ignoring any provisional stones on the board.
 function currentPlayer(goban: Goban): number {
     const engine = goban.engine;
-    return engine.getMoveNumber() === engine.getCurrentMoveNumber()
-        ? engine.playerToMove()
-        : engine.playerNotToMove();
+    const backup = engine.cur_move;
+    engine.jumpTo(engine.last_official_move);
+    const ret = engine.playerToMove();
+    engine.jumpTo(backup);
+    return ret;
 }
