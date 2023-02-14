@@ -194,16 +194,6 @@ export function Player(props: PlayerProperties): JSX.Element {
             return;
         }
 
-        if (
-            ("buttons" in event && event.buttons & 2) ||
-            ("button" in event && event.button === 2)
-        ) {
-            /* on click with right mouse button do nothing.
-               buttons uses on bit per button, alowing for multiple buttons pressed at the same time. The bit with value 2 is the right mouse button. https://www.w3schools.com/jsref/event_buttons.asp
-               buttons isn't supported in all browsers, so we have to check button as fallback. */
-            return;
-        }
-
         if (!props.fakelink && shouldOpenNewTab(event)) {
             /* let browser deal with opening the window so we don't get popup warnings */
             return;
@@ -351,7 +341,7 @@ export function Player(props: PlayerProperties): JSX.Element {
 
     if (props.nolink || props.fakelink || !player_id || combined.anonymous || player_id < 0) {
         return (
-            <span ref={elt_ref} {...main_attrs} onMouseDown={display_details}>
+            <span ref={elt_ref} {...main_attrs} onClick={display_details}>
                 {(props.icon || null) && <PlayerIcon user={combined} size={props.iconSize || 16} />}
                 {(props.flag || null) && <Flag country={combined.country} />}
                 {username}
@@ -366,7 +356,7 @@ export function Player(props: PlayerProperties): JSX.Element {
         return (
             // if only we could put {...main_attrs} on the span, we could put the styles in .Player.  But router seems to hate that.
             <span>
-                <a href={uri} ref={elt_ref} {...main_attrs} onMouseDown={display_details}>
+                <a href={uri} ref={elt_ref} {...main_attrs} onClick={display_details}>
                     {(props.icon || null) && (
                         <PlayerIcon user={combined} size={props.iconSize || 16} />
                     )}
