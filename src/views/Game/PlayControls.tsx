@@ -750,15 +750,17 @@ export function AnalyzeButtonBar({
                     <i className="ogs-label-x"></i>
                 </button>
             </div>
-            <div className="btn-group">
-                <button
-                    onClick={() => automateBranch(goban)}
-                    title={_("Copy branch to conditional move planner")}
-                    disabled={goban.engine.rengo}
-                >
-                    <i className="fa fa-exchange"></i>
-                </button>
-            </div>
+            {(!is_review || null) && (
+                <div className="btn-group">
+                    <button
+                        onClick={() => automateBranch(goban)}
+                        title={_("Copy branch to conditional move planner")}
+                        disabled={goban.engine.rengo}
+                    >
+                        <i className="fa fa-exchange"></i>
+                    </button>
+                </div>
+            )}
             <div className="analyze-mode-buttons">
                 {(mode === "analyze" || null) && (
                     <span>
