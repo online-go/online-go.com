@@ -318,6 +318,13 @@ export function GameDock({
             .catch(errorAlerter);
     };
 
+    // Not the same as engine.playerToMove(), which changes when you place a
+    // provisional stone on the board (in submit-move or double-click mode).
+    const currentPlayer =
+        engine.getMoveNumber() === engine.getCurrentMoveNumber()
+            ? engine.playerToMove()
+            : engine.playerNotToMove();
+
     return (
         <Dock>
             {(tournament_id || null) && (
@@ -388,7 +395,7 @@ export function GameDock({
                 <a
                     style={{
                         visibility:
-                            goban.mode === "play" && engine.playerToMove() !== user?.id
+                            goban.mode === "play" && currentPlayer !== user?.id
                                 ? "visible"
                                 : "hidden",
                     }}
