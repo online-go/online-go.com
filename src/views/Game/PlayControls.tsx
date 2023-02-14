@@ -19,6 +19,7 @@ import { useSearchParams } from "react-router-dom";
 import { _, interpolate, pgettext } from "translate";
 import * as data from "data";
 import {
+    ConditionalMoveTree,
     Goban,
     GobanCore,
     GoConditionalMove,
@@ -1199,7 +1200,7 @@ function automateBranch(goban: Goban): void {
     // TODO: check player to move?
 
     const before = goban.conditional_tree.duplicate();
-    const tree = mergeConditionalTrees(before, diffToConditionalMove(diff.moves));
+    const tree = mergeGoConditionalMoves(before, diffToConditionalMove(diff.moves));
 
     goban.setConditionalTree(tree);
     goban.saveConditionalMoves();
@@ -1209,12 +1210,33 @@ function automateBranch(goban: Goban): void {
 
 // Merges two conditional trees into one. If there are conflicts, the branch in
 // `b` overwrites the one in `a`.
-function mergeConditionalTrees(a: GoConditionalMove, b: GoConditionalMove): GoConditionalMove {
+function mergeGoConditionalMoves(a: GoConditionalMove, b: GoConditionalMove): GoConditionalMove {
     const treeA = a.encode()[1];
     const treeB = b.encode()[1];
-    for (const move in treeB) {
-        treeA[move] = treeB[move];
-    }
-    // TODO: merge recursively
+    mergeConditionalTrees(treeA, treeB);
     return GoConditionalMove.decode([null, treeA]);
+}
+
+function mergeConditionalTrees(a: ConditionalMoveTree, b: ConditionalMoveTree): void {
+    if (a === b) {
+        return;
+    }
+
+    for (const move in b) {
+        if (!a.hasOwnProperty(move)) {
+            // Deep copy.
+            a[move] = JSON.parse(JSON.stringify(b[move]));
+            continue;
+        }
+
+        const [responseA, nextA] = a[move];
+        const [responseB, nextB] = b[move];
+        if (responseA !== responseB) {
+            // Overwrite subtree if the response moves are different.
+            a[move] = JSON.parse(JSON.stringify(b[move]));
+            continue;
+        }
+
+        mergeConditionalTrees(nextA, nextB);
+    }
 }
