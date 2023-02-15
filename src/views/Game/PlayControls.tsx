@@ -755,7 +755,9 @@ export function AnalyzeButtonBar({
                     <button
                         onClick={() => automateBranch(goban)}
                         title={_("Copy branch to conditional move planner")}
-                        disabled={goban.engine.rengo}
+                        disabled={
+                            goban.engine.rengo || data.get("user").id === currentPlayer(goban)
+                        }
                     >
                         <i className="fa fa-exchange"></i>
                     </button>
