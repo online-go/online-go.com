@@ -2,7 +2,7 @@
 
 name: CI
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the devel branch
   push:
@@ -23,11 +23,11 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-      
+
       - uses: actions/setup-node@v3
         with:
           node-version: '16'
-          
+
       - name: Cache node modules
         id: cache-node-modules
         uses: actions/cache@v2
@@ -46,15 +46,16 @@ jobs:
       - name: Build CSS
         run: npx gulp min_styl
 
-      - name: Lint
-        run: npm run lint
-
-      - name: Prettier
-        run: npm run prettier:check
+      - name: Run linters
+        uses: wearerequired/lint-action@v2
+        with:
+          auto_fix: ${{ github.event_name == 'pull_request' }}
+          eslint: true
+          eslint_extensions: "ts,tsx"
 
       - name: Webpack
         run: npx webpack --optimization-minimize --devtool=source-map
-        
+
       - name: Tests
         run: npx jest
 
@@ -64,6 +65,6 @@ jobs:
           gzip -9 dist/ogs.min.js | wc -c
           gzip -9 dist/vendor.min.js | wc -c
           gzip -9 dist/ogs.min.css | wc -c
-    
-          
-      
+
+
+
