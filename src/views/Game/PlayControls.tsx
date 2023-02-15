@@ -612,6 +612,10 @@ export function AnalyzeButtonBar({
         goban.clearAnalysisDrawing();
     };
 
+    const user_id = data.get("user").id;
+    const is_player =
+        goban.engine.players.black.id === user_id || goban.engine.players.white.id === user_id;
+
     return (
         <div className="game-analyze-button-bar">
             <div className="btn-group">
@@ -750,14 +754,12 @@ export function AnalyzeButtonBar({
                     <i className="ogs-label-x"></i>
                 </button>
             </div>
-            {(!is_review || null) && (
+            {((!is_review && !goban.engine.rengo && is_player) || null) && (
                 <div className="btn-group">
                     <button
                         onClick={() => automateBranch(goban)}
                         title={_("Copy branch to conditional move planner")}
-                        disabled={
-                            goban.engine.rengo || data.get("user").id === currentPlayer(goban)
-                        }
+                        disabled={user_id === currentPlayer(goban)}
                     >
                         <i className="fa fa-exchange"></i>
                     </button>
