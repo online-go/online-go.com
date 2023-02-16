@@ -19,6 +19,7 @@ import { useSearchParams } from "react-router-dom";
 import { _, interpolate, pgettext } from "translate";
 import * as data from "data";
 import {
+    ConditionalMoveTree,
     Goban,
     GobanCore,
     GoConditionalMove,
@@ -611,6 +612,10 @@ export function AnalyzeButtonBar({
         goban.clearAnalysisDrawing();
     };
 
+    const user_id = data.get("user").id;
+    const is_player =
+        goban.engine.players.black.id === user_id || goban.engine.players.white.id === user_id;
+
     return (
         <div className="game-analyze-button-bar">
             <div className="btn-group">
@@ -749,6 +754,17 @@ export function AnalyzeButtonBar({
                     <i className="ogs-label-x"></i>
                 </button>
             </div>
+            {((!is_review && !goban.engine.rengo && is_player) || null) && (
+                <div className="btn-group">
+                    <button
+                        onClick={() => automateBranch(goban)}
+                        title={_("Copy branch to conditional move planner")}
+                        disabled={user_id === currentPlayer(goban)}
+                    >
+                        <i className="fa fa-exchange"></i>
+                    </button>
+                </div>
+            )}
             <div className="analyze-mode-buttons">
                 {(mode === "analyze" || null) && (
                     <span>
@@ -1153,3 +1169,99 @@ const usePaused = generateGobanHook(
     (goban) => goban.pause_control && !!goban.pause_control.paused,
     ["paused"],
 );
+
+// Converts move diff string into a GoConditionalMove.
+// Caller should check that the moves start from the last official move and
+// that the first move in the string is the opponent's.
+function diffToConditionalMove(moves: string): GoConditionalMove {
+    if (moves.length % 2 !== 0) {
+        throw new Error("invalid move string");
+    }
+
+    let tree = new GoConditionalMove(null);
+    const start = moves.length - 1 - ((moves.length - 1) % 4);
+    for (let i = start; i >= 0; i -= 4) {
+        const opponent = moves.slice(i, i + 2);
+        const player = moves.slice(i + 2, i + 4) || null;
+
+        tree.move = player;
+        const parent = new GoConditionalMove(null, tree);
+        if (player != null) {
+            parent.children[opponent] = tree;
+        }
+        tree = parent;
+    }
+    return tree;
+}
+
+// Copies branch to conditional move planner (only copies up to the selected
+// move). Should only be called in analyze mode.
+function automateBranch(goban: Goban): void {
+    if (goban.engine.rengo) {
+        toast(<div>{_("You cannot make conditional moves in Rengo games.")}</div>, 2000);
+        return;
+    }
+
+    if (data.get("user").id === currentPlayer(goban)) {
+        toast(<div>{_("You cannot make conditional moves on your turn.")}</div>, 2000);
+        return;
+    }
+
+    const diff = goban.engine.getMoveDiff();
+
+    if (diff.from !== goban.engine.last_official_move.move_number) {
+        toast(<div>{_("Outdated branch")}</div>, 1000);
+        return;
+    }
+
+    const before = goban.conditional_tree.duplicate();
+    const tree = mergeGoConditionalMoves(before, diffToConditionalMove(diff.moves));
+
+    goban.setConditionalTree(tree);
+    goban.saveConditionalMoves();
+    goban.setConditionalTree(before);
+    toast(<div>{_("Copied branch to the conditional move planner")}</div>, 2000);
+}
+
+// Merges two conditional trees into one. If there are conflicts, the branch in
+// `b` overwrites the one in `a`.
+function mergeGoConditionalMoves(a: GoConditionalMove, b: GoConditionalMove): GoConditionalMove {
+    const treeA = a.encode()[1];
+    const treeB = b.encode()[1];
+    mergeConditionalTrees(treeA, treeB);
+    return GoConditionalMove.decode([null, treeA]);
+}
+
+function mergeConditionalTrees(a: ConditionalMoveTree, b: ConditionalMoveTree): void {
+    if (a === b) {
+        return;
+    }
+
+    for (const move in b) {
+        if (!a.hasOwnProperty(move)) {
+            // Deep copy.
+            a[move] = JSON.parse(JSON.stringify(b[move]));
+            continue;
+        }
+
+        const [responseA, nextA] = a[move];
+        const [responseB, nextB] = b[move];
+        if (responseA !== responseB) {
+            // Overwrite subtree if the response moves are different.
+            a[move] = JSON.parse(JSON.stringify(b[move]));
+            continue;
+        }
+
+        mergeConditionalTrees(nextA, nextB);
+    }
+}
+
+// Returns current player, ignoring any provisional stones on the board.
+function currentPlayer(goban: Goban): number {
+    const engine = goban.engine;
+    const backup = engine.cur_move;
+    engine.jumpTo(engine.last_official_move);
+    const ret = engine.playerToMove();
+    engine.jumpTo(backup);
+    return ret;
+}
