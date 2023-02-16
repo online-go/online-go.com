@@ -30,7 +30,7 @@ export const TermsOfService = () => (
                     any other reason either.{" "}
                 </div>
 
-                <div className="legal-paragraph">Don't cheat or harass people.</div>
+                <div className="legal-paragraph">Don't cheat, obstruct, or harass people.</div>
 
                 <div className="legal-paragraph">
                     We reserve the right to, at our sole discretion, delete or freeze your account
