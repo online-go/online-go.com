@@ -1,0 +1,125 @@
+/*
+ * Copyright (C)  Online-Go.com
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import * as React from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { alert } from "swal_config";
+
+import { _, pgettext } from "translate";
+import { get } from "requests";
+import { errorAlerter } from "misc";
+
+import { LoadingPage } from "Loading";
+import { UIPush } from "UIPush";
+import { EmbeddedChatCard } from "Chat";
+
+// Spectators are intended to arrive here via an online-league spectate URL that provides
+// the Online League match ID
+
+export function OnlineLeagueSpectatorLanding(): JSX.Element {
+    const navigate = useNavigate();
+    const { match_id } = useParams();
+
+    /* State */
+    const [loading, set_loading] = React.useState(true); // set to false after we have the info about that match they are joining
+    const [match, set_match] = React.useState<rest_api.online_league.MatchStatus>(null);
+
+    //const { registerTargetItem } = React.useContext(DynamicHelp.Api);
+
+    /*    const { ref: readyButton, used: signalReadyPressed } = registerTargetItem("ready-button");
+    const { ref: notReadyButton, used: signalNotReadyPressed } =
+        registerTargetItem("not-ready-button");
+*/
+
+    const jumpToGame = (details) => {
+        console.log("Jump to game?", details, match);
+        if (details.matchId === match.id) {
+            console.log("yes, jumping...");
+            navigate(`/game/${details.gameId}`, { replace: true });
+        }
+    };
+
+    const updateWaitingStatus = (details) => {
+        if (details.matchId === match.id) {
+            set_match({ ...match, black_ready: details.black, white_ready: details.white });
+        }
+    };
+
+    React.useEffect(() => {
+        console.log("*** OLL effect...");
+
+        if (!match) {
+            get(`online_league/match/${match_id}`)
+                .then((match: rest_api.online_league.MatchStatus) => {
+                    set_match(match);
+                    set_loading(false);
+                    console.log(match);
+                })
+                .catch((err: any) => {
+                    alert.close();
+                    errorAlerter(err);
+                });
+        } else {
+            console.log("Nothing to do in OLL useEffect", match);
+        }
+    }, [match]);
+
+    console.log("*** OLL render....", match);
+
+    /* Render */
+    return (
+        <div id="OnlineLeaguePlayerLanding">
+            <h2>{_("Welcome to OGS!")}</h2>
+
+            {(loading || null) && <LoadingPage />}
+
+            {(!loading || null) && (
+                <React.Fragment>
+                    <h2>{match.name}</h2>
+                    <div className={"match-detail"}>
+                        ({match.league} Match {match.id})
+                    </div>
+                </React.Fragment>
+            )}
+
+            {((!loading && match) || null) && (
+                <div className="unstarted-match">
+                    <div>{_("The match will start when both players are ready...")}</div>
+                    <div className="waiting-chat">
+                        <EmbeddedChatCard
+                            inputPlaceholdertText={pgettext(
+                                "place holder text in a chat channel input",
+                                "Chat while you wait...",
+                            )}
+                            channel={`ool-landing-${match.id}`}
+                        />
+                    </div>
+                    <div>
+                        {_("Black: ")}
+                        {match.black_ready ? <i className="fa fa-thumbs-up" /> : _("waiting... ")}
+                    </div>
+                    <div>
+                        {_("White: ")}
+                        {match.white_ready ? <i className="fa fa-thumbs-up" /> : _("waiting...")}
+                    </div>
+                    <UIPush event="online-league-game-commencement" action={jumpToGame} />
+                    <UIPush event="online-league-game-waiting" action={updateWaitingStatus} />
+                </div>
+            )}
+        </div>
+    );
+}

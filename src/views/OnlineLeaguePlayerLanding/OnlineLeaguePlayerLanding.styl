@@ -16,21 +16,48 @@
  */
 
 
-#OnlineLeagueGame {
+#OnlineLeaguePlayerLanding {
     display: flex;
     flex-direction: column;
     align-items: center;
+
+    .login-options {
+        display: grid;
+        grid-template-columns: 1fr 0.4fr;
+        h3 {
+            grid-column: 1/span 2;
+        }
+        span {
+            justify-self: end;
+            align-self: center;
+            padding-right: 0.5rem;
+        }
+     }
+
+    .match-detail {
+        margin-bottom: 2rem;
+    }
+
+    .waiting-chat {
+
+    }
 
     .unstarted-match {
         display: flex;
         flex-direction: column;
         align-items: center;
-        div {
-            margin-bottom: 2rem;
-        }
-    }
+        width: 100%;
 
-    .membership-drive{
-        margin-top: 3rem;
+        .waiting-chat {
+            width: 80%;
+            max-width: 100rem;
+            max-height: 20rem;
+            margin-bottom: 1rem;
+            overflow-y: scroll;
+
+            .EmbeddedChatCard {
+                min-height: 4rem;
+            }
+        }
     }
 }
