@@ -94,6 +94,7 @@ export function OnlineLeagueSpectatorLanding(): JSX.Element {
                     <div className={"match-detail"}>
                         ({match.league} Match {match.id})
                     </div>
+                    <div className={"match-detail"}>{_("Spectator Waiting Room")}</div>
                 </React.Fragment>
             )}
 
