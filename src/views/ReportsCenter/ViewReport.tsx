@@ -22,7 +22,7 @@ import { useUser } from "hooks";
 import { report_categories } from "Report";
 import { report_manager, Report } from "report_manager";
 import { AutoTranslate } from "AutoTranslate";
-import { _ } from "translate";
+import { _, pgettext } from "translate";
 import { Player } from "Player";
 import { Link } from "react-router-dom";
 import { post } from "requests";
@@ -351,10 +351,18 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
             <div className="reported-user">
                 <h3 className="users">
                     <span className="reported-user">
-                        {_("Reported User")}: <Player user={report.reported_user} />
+                        {pgettext(
+                            "A label for the user name who has been reported to mods (followed by colon and the username)",
+                            "Reported User",
+                        )}
+                        : <Player user={report.reported_user} />
                     </span>
                     <span className="reporting-user">
-                        {_("Reporting User")}: <Player user={report.reporting_user} />
+                        {pgettext(
+                            "A label for the user name that reported an incident (followed by colon and the username)",
+                            "Reported by",
+                        )}
+                        : <Player user={report.reporting_user} />
                     </span>
                 </h3>
             </div>
