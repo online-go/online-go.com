@@ -277,7 +277,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
                         user.anonymous
                             ? _("Sign in to chat")
                             : !data.get("user").email_validated
-                            ? _("Chat will be enabled once your email address has been validated")
+                            ? _("Chat is enabled for OGS users with validated accounts")
                             : selected_chat_log === "malkovich"
                             ? pgettext(
                                   "Malkovich logs are only visible after the game has ended",

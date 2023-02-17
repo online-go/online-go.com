@@ -359,7 +359,7 @@ class PrivateChat {
         ) {
             this.input.attr(
                 "placeholder",
-                _("Chat will be enabled once your email address has been validated"),
+                _("Chat is enabled for OGS users with validated accounts"),
             );
             this.input.attr("disabled", "disabled");
         } else {

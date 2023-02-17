@@ -559,7 +559,7 @@ function ChatInput({
             autoFocus={autoFocus}
             placeholder={
                 !user.email_validated
-                    ? _("Chat will be enabled once your email address has been validated")
+                    ? _("Chat is enabled for OGS users with validated accounts")
                     : show_say_hi_placeholder
                     ? placeholder
                     : ""
