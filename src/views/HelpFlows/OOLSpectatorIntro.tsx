@@ -19,30 +19,29 @@ import React from "react";
 
 import { HelpFlow, HelpItem } from "react-dynamic-help";
 
-import { _, pgettext } from "translate";
+import { pgettext } from "translate";
 
 /**
- * A help flow intended for players who arrived on an OOL Game Link
+ * A help flow intended for spectators who arrived on an OOL Game Link
  */
 
-export function OOLUserIntro(): JSX.Element {
+export function OOLSpectatorIntro(): JSX.Element {
     return (
         <HelpFlow
-            id="ool-user-intro"
+            id="ool-spectator-intro"
             showInitially={true}
             debug={true}
             description={pgettext(
                 "Name of a dynamic help flow",
-                "Online League New User Introduction",
+                "Online League Spectator Introduction Message",
             )}
         >
-            <HelpItem target="ready-button" position={"bottom-right"}>
-                <div>{_("When both players have pressed this button, the game will start.")}</div>
-            </HelpItem>
-
-            <HelpItem target="not-ready-button" position={"bottom-right"}>
+            <HelpItem target="spectator-wait" position={"top-right"}>
                 <div>
-                    {_("If you press this now, the game will not start, until you press it again.")}
+                    {pgettext(
+                        "A message to spectators who've come to see a leage game",
+                        "When both players have presssed their 'ready' button the game will start.",
+                    )}
                 </div>
             </HelpItem>
         </HelpFlow>

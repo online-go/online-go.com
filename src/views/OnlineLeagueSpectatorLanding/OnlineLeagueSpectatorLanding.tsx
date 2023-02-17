@@ -22,7 +22,8 @@ import { alert } from "swal_config";
 import { _, pgettext } from "translate";
 import { get } from "requests";
 import { errorAlerter } from "misc";
-
+import * as DynamicHelp from "react-dynamic-help";
+import { useUser } from "hooks";
 import { LoadingPage } from "Loading";
 import { UIPush } from "UIPush";
 import { EmbeddedChatCard } from "Chat";
@@ -38,12 +39,12 @@ export function OnlineLeagueSpectatorLanding(): JSX.Element {
     const [loading, set_loading] = React.useState(true); // set to false after we have the info about that match they are joining
     const [match, set_match] = React.useState<rest_api.online_league.MatchStatus>(null);
 
-    //const { registerTargetItem } = React.useContext(DynamicHelp.Api);
+    const { registerTargetItem } = React.useContext(DynamicHelp.Api);
 
-    /*    const { ref: readyButton, used: signalReadyPressed } = registerTargetItem("ready-button");
-    const { ref: notReadyButton, used: signalNotReadyPressed } =
-        registerTargetItem("not-ready-button");
-*/
+    const { ref: spectatorWaitMessage } = registerTargetItem("spectator-wait");
+
+    const user = useUser();
+    const logged_in = !user.anonymous;
 
     const jumpToGame = (details) => {
         console.log("Jump to game?", details, match);
@@ -98,7 +99,9 @@ export function OnlineLeagueSpectatorLanding(): JSX.Element {
 
             {((!loading && match) || null) && (
                 <div className="unstarted-match">
-                    <div>{_("The match will start when both players are ready...")}</div>
+                    <div ref={spectatorWaitMessage}>
+                        {_("The match will start when both players are ready...")}
+                    </div>
                     <div className="waiting-chat">
                         <EmbeddedChatCard
                             inputPlaceholdertText={pgettext(
@@ -108,14 +111,27 @@ export function OnlineLeagueSpectatorLanding(): JSX.Element {
                             channel={`ool-landing-${match.id}`}
                         />
                     </div>
-                    <div>
-                        {_("Black: ")}
-                        {match.black_ready ? <i className="fa fa-thumbs-up" /> : _("waiting... ")}
-                    </div>
-                    <div>
-                        {_("White: ")}
-                        {match.white_ready ? <i className="fa fa-thumbs-up" /> : _("waiting...")}
-                    </div>
+                    {(logged_in || null) && (
+                        <React.Fragment>
+                            {/* can't show thes unles we're logged in 'cause updates don't come */}
+                            <div>
+                                {_("Black: ")}
+                                {match.black_ready ? (
+                                    <i className="fa fa-thumbs-up" />
+                                ) : (
+                                    _("waiting... ")
+                                )}
+                            </div>
+                            <div>
+                                {_("White: ")}
+                                {match.white_ready ? (
+                                    <i className="fa fa-thumbs-up" />
+                                ) : (
+                                    _("waiting...")
+                                )}
+                            </div>
+                        </React.Fragment>
+                    )}
                     <UIPush event="online-league-game-commencement" action={jumpToGame} />
                     <UIPush event="online-league-game-waiting" action={updateWaitingStatus} />
                 </div>
