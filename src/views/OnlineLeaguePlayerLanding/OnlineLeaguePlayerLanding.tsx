@@ -33,10 +33,12 @@ import { UIPush } from "UIPush";
 import { EmbeddedChatCard } from "Chat";
 
 // Users are intended to arrive here via an online-league player invite URL
+// They need to have a valid key in that URL.  The assumption is that only the
+// correct user has been given the key.
 
 // They get to chat to each other here, in a dedicated channel, and mutually agree when to start.
 
-export function OnlineLeagueLanding(): JSX.Element {
+export function OnlineLeaguePlayerLanding(): JSX.Element {
     /* State */
     const [loading, set_loading] = React.useState(true); // set to false after we have the info about that match they are joining
     const [logging_in, set_logging_in] = React.useState<boolean>(false);
@@ -171,7 +173,7 @@ export function OnlineLeagueLanding(): JSX.Element {
 
     /* Render */
     return (
-        <div id="OnlineLeagueLanding">
+        <div id="OnlineLeaguePlayerLanding">
             <h2>
                 {logged_in
                     ? "" /* this vertical space intentionally left blank! */
