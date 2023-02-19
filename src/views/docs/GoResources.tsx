@@ -252,6 +252,11 @@ export const GoResources = () => {
                         <dt>{_("Learning Resources")}</dt>
                         {scramble(
                             <BasicResource
+                                countries={[en, "hk"]}
+                                title="1200igo Takumi Go Academy"
+                                href="https://1200igo.com/"
+                            />,
+                            <BasicResource
                                 countries={[en]}
                                 title="Josekipedia"
                                 href="http://www.josekipedia.com/"
@@ -434,6 +439,11 @@ export const GoResources = () => {
                                     女流棋士 田口美星 YouTube
                                 </a>
                             </span>,
+                            <BasicResource
+                                countries={[en]}
+                                title="Takumi Go Academy"
+                                href="https://www.youtube.com/@TakumiGoAcademy"
+                            />,
                             <BasicResource
                                 countries={[en]}
                                 title="Jonathan Markowitz"
