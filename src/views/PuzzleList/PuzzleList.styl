@@ -25,6 +25,10 @@
     align-items: center;
     padding: 0 1rem;
 
+    table {
+        overflow: hidden;
+    }
+
 
     .puzzle-list-container {
         width: 100%;
@@ -39,11 +43,18 @@
     }
 
     .MiniGoban {
-        height: 64px;
+        height: 0;
         width: 64px;
+        margin-top: 20px;
+        transform: translateY(20px);
+        overflow: visible;
+        background-color: red;
+
+        .inner-container {
+            overflow: visible;
+        }
     }
     .icon {
-        padding: 0.2rem;
         text-align: center;
     }
     .rating-count {
