@@ -910,9 +910,12 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         return (
             <div className="puzzle-node-content">
                 {(show_correct || null) && (
-                    <div className="success">
+                    <Link
+                        to={show_correct && next_id ? `/puzzle/${next_id}` : `#`}
+                        className="success"
+                    >
                         <i className="fa fa-check-circle-o"></i> {_("Correct!")}
-                    </div>
+                    </Link>
                 )}
 
                 {(this.state.show_wrong || null) && (
