@@ -754,7 +754,11 @@ export function AnalyzeButtonBar({
                     <i className="ogs-label-x"></i>
                 </button>
             </div>
-            {((!is_review && !goban.engine.rengo && is_player) || null) && (
+            {((!is_review &&
+                !goban.engine.rengo &&
+                is_player &&
+                goban.engine.phase !== "finished") ||
+                null) && (
                 <div className="btn-group">
                     <button
                         onClick={() => automateBranch(goban)}
@@ -1197,6 +1201,10 @@ function diffToConditionalMove(moves: string): GoConditionalMove {
 // Copies branch to conditional move planner (only copies up to the selected
 // move). Should only be called in analyze mode.
 function automateBranch(goban: Goban): void {
+    if (goban.engine.phase === "finished") {
+        return;
+    }
+
     if (goban.engine.rengo) {
         toast(<div>{_("You cannot make conditional moves in Rengo games.")}</div>, 2000);
         return;
