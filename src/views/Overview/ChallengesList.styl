@@ -33,6 +33,7 @@
 
             .name {
                 flex-grow: 1;
+                min-width: 0;
             }
 
             .PlayerIcon {
@@ -43,6 +44,8 @@
 
             h4 {
                 margin: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
         }
 
@@ -51,6 +54,7 @@
         }
         .fab {
             float: right;
+            flex-shrink: 0;
         }
     }
 }

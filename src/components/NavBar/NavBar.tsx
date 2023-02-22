@@ -182,18 +182,14 @@ export function NavBar(): JSX.Element {
                     <Link to="/play">
                         <i className="ogs-goban"></i> {_("Play")}
                     </Link>
-                    <div className="submenu-container">
-                        <Link to="/tournaments">
-                            <i className="fa fa-trophy"></i>
-                            {_("Tournaments")}
-                        </Link>
-                    </div>
-                    <div className="submenu-container">
-                        <Link to="/ladders">
-                            <i className="fa fa-list-ol"></i>
-                            {_("Ladders")}
-                        </Link>
-                    </div>
+                    <Link to="/tournaments">
+                        <i className="fa fa-trophy"></i>
+                        {_("Tournaments")}
+                    </Link>
+                    <Link to="/ladders">
+                        <i className="fa fa-list-ol"></i>
+                        {_("Ladders")}
+                    </Link>
                 </Menu>
                 <Menu title={_("Learn")} to="/learn-to-play-go">
                     <Link to="/learn-to-play-go">
@@ -229,12 +225,10 @@ export function NavBar(): JSX.Element {
                         <i className="fa fa-comment-o"></i>
                         {_("Chat")}
                     </Link>
-                    <div className="submenu-container">
-                        <Link to="/groups">
-                            <i className="fa fa-users"></i>
-                            {_("Groups")}
-                        </Link>
-                    </div>
+                    <Link to="/groups">
+                        <i className="fa fa-users"></i>
+                        {_("Groups")}
+                    </Link>
                     <Link to="/supporter">
                         <i className="fa fa-star"></i>
                         {_("Support OGS")}
