@@ -68,6 +68,7 @@ import { Appeal } from "Appeal";
 import { AppealsCenter } from "AppealsCenter";
 import { ReportsCenter } from "ReportsCenter";
 import { Experiment, Variant, Default as ExDefault } from "Experiment";
+import { RatingCalculator } from "RatingCalculator";
 
 import * as docs from "docs";
 
@@ -324,6 +325,7 @@ export const routes = (
                     path="/cotsen2019"
                     element={<Navigate to="/tournament-record/45/" replace />}
                 />
+                <Route path="/rating-calculator" element={<RatingCalculator />} />
                 <Route path="/" element={<Default />} />
                 <Route path="/*" element={<PageNotFound />} />
             </Routes>

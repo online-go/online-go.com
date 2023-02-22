@@ -267,6 +267,11 @@ export function NavBar(): JSX.Element {
                         {_("SGF Library")}
                     </Link>
 
+                    <Link to={`/rating-calculator`}>
+                        <i className="fa fa-calculator"></i>
+                        {_("Rating Calculator")}
+                    </Link>
+
                     {user.is_moderator && (
                         <Link className="admin-link" to="/reports-center">
                             <i className="fa fa-exclamation-triangle"></i>
