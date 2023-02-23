@@ -29,6 +29,8 @@ import {
 } from "./test_glicko2";
 import { Glicko2Entry, glicko2_update } from "./glicko2";
 import { get_handicap_adjustment } from "rank_utils";
+import { PlayerAutocomplete } from "PlayerAutocomplete";
+import { PlayerCacheEntry } from "src/lib/player_cache";
 
 interface RatingCalcState {}
 
@@ -89,6 +91,8 @@ interface RatingCalcTableState {
     p2newdeviation: string[];
     p1newvolatility: string[];
     p2newvolatility: string[];
+    auto_black: PlayerCacheEntry;
+    auto_white: PlayerCacheEntry;
 }
 
 export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableState> {
@@ -108,15 +112,18 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
             p2newdeviation: [],
             p1newvolatility: [],
             p2newvolatility: [],
+            auto_black: null,
+            auto_white: null,
         };
         this.compute_new_ratings = this.compute_new_ratings.bind(this);
+        this.fill_player_info = this.fill_player_info.bind(this);
     }
 
     /*componentDidMount() {
     }*/
 
     inputs_positive(all_inputs: string[]) {
-        console.log(all_inputs);
+        //console.log(all_inputs);
         return (
             all_inputs.length === 6 &&
             all_inputs.every((element) => {
@@ -125,8 +132,35 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
         );
     }
 
+    all_info_found() {
+        return (
+            this.state.auto_black?.ratings?.overall?.rating !== undefined &&
+            this.state.auto_black?.ratings?.overall?.deviation !== undefined &&
+            this.state.auto_black?.ratings?.overall?.volatility !== undefined &&
+            this.state.auto_white?.ratings?.overall?.rating !== undefined &&
+            this.state.auto_white?.ratings?.overall?.deviation !== undefined &&
+            this.state.auto_white?.ratings?.overall?.volatility !== undefined
+        );
+    }
+
+    fill_player_info() {
+        if (this.state.auto_black === null || this.state.auto_white === null) {
+            return;
+        }
+        if (this.all_info_found()) {
+            this.setState({
+                p1r: this.state.auto_black.ratings.overall.rating.toFixed(2),
+                p2r: this.state.auto_white.ratings.overall.rating.toFixed(2),
+                p1d: this.state.auto_black.ratings.overall.deviation.toFixed(2),
+                p2d: this.state.auto_white.ratings.overall.deviation.toFixed(2),
+                p1v: this.state.auto_black.ratings.overall.volatility.toFixed(4),
+                p2v: this.state.auto_white.ratings.overall.volatility.toFixed(4),
+            });
+        }
+    }
+
     compute_new_ratings() {
-        console.log("computing new ratings");
+        //console.log("computing new ratings");
         if (
             !this.inputs_positive([
                 this.state.p1r,
@@ -137,11 +171,11 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                 this.state.p2v,
             ])
         ) {
-            console.log("not all positive");
+            //console.log("not all positive");
             return;
         }
 
-        console.log("all positive");
+        //console.log("all positive");
 
         let p1win: Glicko2Entry;
         let p1loss: Glicko2Entry;
@@ -229,6 +263,35 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                         </tr>
                     </thead>
                     <tbody>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <div>
+                                    <PlayerAutocomplete
+                                        onComplete={(player) => {
+                                            this.setState({ auto_black: player });
+                                        }}
+                                    />
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <PlayerAutocomplete
+                                        onComplete={(player) => {
+                                            this.setState({ auto_white: player });
+                                        }}
+                                    />
+                                </div>
+                            </td>
+                            <td>
+                                <span>Fill using players</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colSpan={4}>
+                                <button onClick={this.fill_player_info}>{_("Use Players")}</button>
+                            </td>
+                        </tr>
                         <tr>
                             <td colSpan={4}>{_("Current Parameters")}</td>
                         </tr>
