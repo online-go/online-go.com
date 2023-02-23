@@ -172,17 +172,17 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                     <thead>
                         <tr>
                             <th></th>
-                            <th>Player 1</th>
-                            <th>Player 2</th>
-                            <th>Comment</th>
+                            <th><span>{_("Player 1")}</span></th>
+                            <th><span>{_("Player 2")}</span></th>
+                            <th><span>{_("Comment")}</span></th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td colSpan={4}>Current Parameters</td>
+                            <td colSpan={4}>{_("Current Parameters")}</td>
                         </tr>
                         <tr>
-                            <td>Rating</td>
+                            <td><span>{_("Rating")}</span></td>
                             <td>
                                 <input
                                     type="text"
@@ -207,7 +207,7 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                             </td>
                         </tr>
                         <tr>
-                            <td>Deviation</td>
+                            <td>{_("Deviation")}</td>
                             <td>
                                 <input
                                     type="text"
@@ -230,7 +230,7 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                             </td>
                         </tr>
                         <tr>
-                            <td>Volatility</td>
+                            <td>{_("Volatility")}</td>
                             <td>
                                 <input
                                     type="text"
@@ -254,44 +254,44 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                         </tr>
                         <tr>
                             <td colSpan={4}>
-                                <button onClick={this.compute_new_ratings}>Calculate</button>
+                                <button onClick={this.compute_new_ratings}>{_("Calculate")}</button>
                             </td>
                         </tr>
                         <tr>
-                            <td colSpan={4}>New Parameters</td>
+                            <td colSpan={4}>{_("New Parameters")}</td>
                         </tr>
                         <tr>
-                            <td>Rating</td>
+                            <td>{_("Rating")}</td>
                             <td>{this.state.p1newrating[0] || null}</td>
                             <td>{this.state.p2newrating[0] || null}</td>
                             <td>P1 win</td>
                         </tr>
                         <tr>
-                            <td>Deviation</td>
+                            <td>{_("Deviation")}</td>
                             <td>{this.state.p1newdeviation[0] || null}</td>
                             <td>{this.state.p2newdeviation[0] || null}</td>
                             <td></td>
                         </tr>
                         <tr>
-                            <td>Volatility</td>
+                            <td>{_("Volatility")}</td>
                             <td>{this.state.p1newvolatility[0] || null}</td>
                             <td>{this.state.p2newvolatility[0] || null}</td>
                             <td></td>
                         </tr>
                         <tr>
-                            <td>Rating</td>
+                            <td>{_("Rating")}</td>
                             <td>{this.state.p1newrating[1] || null}</td>
                             <td>{this.state.p2newrating[1] || null}</td>
                             <td>P2 win</td>
                         </tr>
                         <tr>
-                            <td>Deviation</td>
+                            <td>{_("Deviation")}</td>
                             <td>{this.state.p1newdeviation[1] || null}</td>
                             <td>{this.state.p2newdeviation[1] || null}</td>
                             <td></td>
                         </tr>
                         <tr>
-                            <td>Volatility</td>
+                            <td>{_("Volatility")}</td>
                             <td>{this.state.p1newvolatility[1] || null}</td>
                             <td>{this.state.p2newvolatility[1] || null}</td>
                             <td></td>
