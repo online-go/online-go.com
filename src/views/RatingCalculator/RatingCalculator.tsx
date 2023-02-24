@@ -17,16 +17,6 @@
 
 import { _ } from "translate";
 import * as React from "react";
-import { test_table_1, test_example_3, test_example_4, test_example_5 } from "./test_gor";
-import {
-    test_glicko2,
-    test_str,
-    test_expansion,
-    test_copy,
-    test_expected_win_probability,
-    test_nop,
-    test_exercise,
-} from "./test_glicko2";
 import { Glicko2Entry, glicko2_update } from "./glicko2";
 import { get_handicap_adjustment } from "rank_utils";
 import { PlayerAutocomplete } from "PlayerAutocomplete";
@@ -47,22 +37,6 @@ export class RatingCalculator extends React.Component<{}, RatingCalcState> {
 
     //componentWillUnmount() {}
 
-    run_unit_tests() {
-        //test gor
-        test_table_1();
-        test_example_3();
-        test_example_4();
-        test_example_5();
-        //test glicko2
-        test_glicko2();
-        test_str();
-        test_expansion();
-        test_copy();
-        test_expected_win_probability();
-        test_nop();
-        test_exercise();
-    }
-
     render() {
         return (
             <div id="Rating-Calculator-Container">
@@ -70,7 +44,6 @@ export class RatingCalculator extends React.Component<{}, RatingCalcState> {
                     Glicko2 rating calculator to predict rating changes for even and handicap rated
                     games.
                 </p>
-                {false && <button onClick={this.run_unit_tests}>Run Unit Tests</button>}
                 <RatingCalculatorTable />
             </div>
         );

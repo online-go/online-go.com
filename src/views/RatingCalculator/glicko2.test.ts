@@ -17,7 +17,7 @@
 
 import { Glicko2Entry, glicko2_update } from "./glicko2";
 
-export function test_glicko2() {
+test("glicko2", () => {
     let player = new Glicko2Entry(1500, 200, 0.06);
     player.glicko2_configure(0.5, 10, 500);
 
@@ -36,67 +36,43 @@ export function test_glicko2() {
         [c, 0],
     ]);
 
-    console.assert(
-        player.rating.toFixed(1) === "1464.1",
-        player.rating.toFixed(1) + " not equal 1464.1",
-    );
-    console.assert(
-        player.deviation.toFixed(1) === "151.5",
-        player.rating.toFixed(1) + " not equal 151.5",
-    );
-    //console.log("pass?");
-}
+    expect(player.rating).toBeCloseTo(1464.1, 1);
+    expect(player.deviation).toBeCloseTo(151.5, 1);
+});
 
-export function test_str() {
+test("str", () => {
     const player = new Glicko2Entry(1500, 200, 0.06);
-    console.assert(typeof player.GEstr() === "string", "GE string is not a string");
-    //console.log("pass?");
-}
+    expect(typeof player.GEstr()).toBe("string");
+});
 
-export function test_expansion() {
+test("expansion", () => {
     const player = new Glicko2Entry(1500, 200, 0.06);
     player.expand_deviation_because_no_games_played(1);
-    console.assert(
-        player.deviation.toFixed(1) === "200.3",
-        player.deviation.toFixed(1) + " not equal 200.3",
-    );
-    //console.log("pass?");
-}
+    expect(player.deviation).toBeCloseTo(200.3, 1);
+});
 
-export function test_copy() {
+test("copy", () => {
     const player = new Glicko2Entry(1500, 200, 0.06);
     const copy = player.copy();
-    console.assert(copy.rating === player.rating, copy.rating + " not equal " + player.rating);
-    console.assert(
-        copy.deviation === player.deviation,
-        copy.deviation + " not equal " + player.deviation,
-    );
-    console.assert(
-        copy.volatility === player.volatility,
-        copy.volatility + " not equal " + player.volatility,
-    );
-    console.assert(copy.mu === player.mu, copy.mu + " not equal " + player.mu);
-    console.assert(copy.phi === player.phi, copy.phi + " not equal " + player.phi);
-    //console.log("pass?");
-}
+    expect(copy.rating).toBe(player.rating);
+    expect(copy.deviation).toBe(player.deviation);
+    expect(copy.volatility).toBe(player.volatility);
+    expect(copy.mu).toBe(player.mu);
+    expect(copy.phi).toBe(player.phi);
+});
 
-export function test_expected_win_probability() {
+test("expected_win_probability", () => {
     const player = new Glicko2Entry(1500, 200, 0.06);
-    console.assert(
-        player.expected_win_probability(player, 0) === 0.5,
-        player.expected_win_probability(player, 0) + " not equal 0.5",
-    );
-    //console.log("pass?");
-}
+    expect(player.expected_win_probability(player, 0)).toBe(0.5);
+});
 
-export function test_nop() {
+test("nop", () => {
     const player = new Glicko2Entry(1500, 200, 0.06);
     const p = glicko2_update(player, []);
-    console.assert(p.rating === player.rating, p.rating + " is not equal " + player.rating);
-    //console.log("pass?");
-}
+    expect(p.rating).toBe(player.rating);
+});
 
-export function test_exercise() {
+test("exercise", () => {
     const player = new Glicko2Entry(1500, 200, 0.06);
     glicko2_update(player, [
         [new Glicko2Entry(100, 100), 0],
@@ -104,5 +80,4 @@ export function test_exercise() {
         [new Glicko2Entry(1500, 100), 1],
         [new Glicko2Entry(1500, 100), 0],
     ]);
-    //console.log("pass?");
-}
+});
