@@ -220,17 +220,17 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
     render() {
         return (
             <div id="Rating-Table-Div">
-                <table>
+                <table className="rating-table">
                     <thead>
                         <tr>
-                            <th></th>
-                            <th>
+                            <th className={"rating-rable-row-header"}></th>
+                            <th className={"rating-table-divider rating-rable-row-header"}>
                                 <span>{_("Black")}</span>
                             </th>
-                            <th>
+                            <th className={"rating-rable-row-header"}>
                                 <span>{_("White")}</span>
                             </th>
-                            <th>
+                            <th className={"rating-rable-row-header"}>
                                 <span>{_("Comment")}</span>
                             </th>
                         </tr>
@@ -238,7 +238,7 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                     <tbody>
                         <tr>
                             <td></td>
-                            <td>
+                            <td className={"rating-table-divider"}>
                                 <div>
                                     <PlayerAutocomplete
                                         onComplete={(player) => {
@@ -266,13 +266,13 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                             </td>
                         </tr>
                         <tr>
-                            <td colSpan={4}>{_("Current Parameters")}</td>
+                            <td colSpan={4} className={"rating-rable-row-header"}>{_("Current Parameters")}</td>
                         </tr>
                         <tr>
                             <td>
                                 <span>{_("Rating")}</span>
                             </td>
-                            <td>
+                            <td className={"rating-table-divider"}>
                                 <input
                                     type="text"
                                     required
@@ -297,7 +297,7 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                         </tr>
                         <tr>
                             <td>{_("Deviation")}</td>
-                            <td>
+                            <td className={"rating-table-divider"}>
                                 <input
                                     type="text"
                                     required
@@ -320,7 +320,7 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                         </tr>
                         <tr>
                             <td>{_("Volatility")}</td>
-                            <td>
+                            <td className={"rating-table-divider"}>
                                 <input
                                     type="text"
                                     required
@@ -362,41 +362,41 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                             </td>
                         </tr>
                         <tr>
-                            <td colSpan={4}>{_("New Parameters")}</td>
+                            <td colSpan={4} className={"rating-rable-row-header"}>{_("New Parameters")}</td>
                         </tr>
                         <tr>
                             <td>{_("Rating")}</td>
-                            <td>{this.state.p1newrating[0] || null}</td>
+                            <td className={"rating-table-divider"}>{this.state.p1newrating[0] || null}</td>
                             <td>{this.state.p2newrating[0] || null}</td>
                             <td>Black win</td>
                         </tr>
                         <tr>
                             <td>{_("Deviation")}</td>
-                            <td>{this.state.p1newdeviation[0] || null}</td>
+                            <td className={"rating-table-divider"}>{this.state.p1newdeviation[0] || null}</td>
                             <td>{this.state.p2newdeviation[0] || null}</td>
                             <td></td>
                         </tr>
                         <tr>
-                            <td>{_("Volatility")}</td>
-                            <td>{this.state.p1newvolatility[0] || null}</td>
-                            <td>{this.state.p2newvolatility[0] || null}</td>
-                            <td></td>
+                            <td className={"rating-table-divider-horizontal"}>{_("Volatility")}</td>
+                            <td className={"rating-table-divider rating-table-divider-horizontal"}>{this.state.p1newvolatility[0] || null}</td>
+                            <td className={"rating-table-divider-horizontal"}>{this.state.p2newvolatility[0] || null}</td>
+                            <td className={"rating-table-divider-horizontal"}></td>
                         </tr>
                         <tr>
                             <td>{_("Rating")}</td>
-                            <td>{this.state.p1newrating[1] || null}</td>
+                            <td className={"rating-table-divider"}>{this.state.p1newrating[1] || null}</td>
                             <td>{this.state.p2newrating[1] || null}</td>
                             <td>White win</td>
                         </tr>
                         <tr>
                             <td>{_("Deviation")}</td>
-                            <td>{this.state.p1newdeviation[1] || null}</td>
+                            <td className={"rating-table-divider"}>{this.state.p1newdeviation[1] || null}</td>
                             <td>{this.state.p2newdeviation[1] || null}</td>
                             <td></td>
                         </tr>
                         <tr>
                             <td>{_("Volatility")}</td>
-                            <td>{this.state.p1newvolatility[1] || null}</td>
+                            <td className={"rating-table-divider"}>{this.state.p1newvolatility[1] || null}</td>
                             <td>{this.state.p2newvolatility[1] || null}</td>
                             <td></td>
                         </tr>
