@@ -334,7 +334,7 @@ function compare_reports(a: Report, b: Report): number {
         (prefs[a.report_type]?.priority ?? 1) - (prefs[b.report_type]?.priority ?? 1);
 
     if (!a.moderator && !b.moderator) {
-        return custom_ordering || b.id - a.id;
+        return custom_ordering || (sort_order === "newest-first" ? b.id - a.id : a.id - b.id);
     }
     if (a.moderator && !b.moderator) {
         if (a.moderator.id === user.id) {
