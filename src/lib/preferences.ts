@@ -111,7 +111,7 @@ export const defaults = {
     "translation-dialog-never-show": false,
     "unicode-filter": false,
     "variations-in-chat-enabled": true,
-    "zen-mode": false,
+    "start-in-zen-mode": false,
     "show-empty-chat-notification": true,
     "chat-subscribe-group-chat-unread": true,
     "chat-subscribe-group-mentions": true,

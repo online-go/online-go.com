@@ -54,7 +54,7 @@ export function GamePreferences(): JSX.Element {
     const [visual_undo_request_indicator, setVisualUndoRequestIndicator] = usePreference(
         "visual-undo-request-indicator",
     );
-    const [zen_mode_by_default, _setZenModeByDefault] = usePreference("zen-mode");
+    const [zen_mode_by_default, _setZenModeByDefault] = usePreference("start-in-zen-mode");
 
     function setDockDelay(ev) {
         const new_delay = parseFloat(ev.target.value);
@@ -247,7 +247,12 @@ export function GamePreferences(): JSX.Element {
                 <Toggle checked={!variations_in_chat} onChange={toggleVariationsInChat} />
             </PreferenceLine>
 
-            <PreferenceLine title={_("Always enter game(s) in Zen mode")}>
+            <PreferenceLine
+                title={_("Activate Zen Mode by default")}
+                description={_(
+                    'When enabled, games you play or view will start off in the full screen "Zen Mode". This can be toggled off in game by clicking the Z icon.',
+                )}
+            >
                 <Toggle checked={zen_mode_by_default} onChange={toggleZenMode} />
             </PreferenceLine>
 
