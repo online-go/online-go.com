@@ -30,7 +30,6 @@ export function OOLSpectatorIntro(): JSX.Element {
         <HelpFlow
             id="ool-spectator-intro"
             showInitially={true}
-            debug={true}
             description={pgettext(
                 "Name of a dynamic help flow",
                 "Online League Spectator Introduction Message",
