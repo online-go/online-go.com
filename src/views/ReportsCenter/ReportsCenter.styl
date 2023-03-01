@@ -1,3 +1,5 @@
+reports_center_content_width=56rem
+
 .ReportsCenter {
     display: flex;
     flex-direction: column;
@@ -8,6 +10,7 @@
         themed background bg
         border: 0;
         box-shadow: none;
+        max-width: reports_center_content_width;
     }
 
     .moderator {
@@ -106,7 +109,7 @@
         justify-content: stretch;
         align-content: stretch;
         flex-wrap: wrap;
-        max-width: 60rem;
+        max-width: reports_center_content_width;
 
         .col {
             flex: 1;
