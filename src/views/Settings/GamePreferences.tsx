@@ -54,6 +54,7 @@ export function GamePreferences(): JSX.Element {
     const [visual_undo_request_indicator, setVisualUndoRequestIndicator] = usePreference(
         "visual-undo-request-indicator",
     );
+    const [zen_mode_by_default, _setZenModeByDefault] = usePreference("zen-mode");
 
     function setDockDelay(ev) {
         const new_delay = parseFloat(ev.target.value);
@@ -65,6 +66,9 @@ export function GamePreferences(): JSX.Element {
     }
     function toggleVariationsInChat(checked) {
         _setVariationsInChat(!checked);
+    }
+    function toggleZenMode(checked) {
+        _setZenModeByDefault(checked);
     }
 
     function getSubmitMode(speed) {
@@ -241,6 +245,10 @@ export function GamePreferences(): JSX.Element {
                 )}
             >
                 <Toggle checked={!variations_in_chat} onChange={toggleVariationsInChat} />
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Always enter game(s) in Zen mode")}>
+                <Toggle checked={zen_mode_by_default} onChange={toggleZenMode} />
             </PreferenceLine>
 
             <PreferenceLine

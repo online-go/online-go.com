@@ -106,7 +106,7 @@ export function Game(): JSX.Element {
     const [estimating_score, set_estimating_score] = React.useState<boolean>(false);
     const [analyze_pencil_color, set_analyze_pencil_color] = React.useState<string>("#004cff");
     const user_is_player = useUserIsParticipant(goban.current);
-    const [zen_mode, set_zen_mode] = React.useState(false);
+    const [zen_mode, set_zen_mode] = React.useState(preferences.get("zen-mode"));
     const [autoplaying, set_autoplaying] = React.useState(false);
     const [review_list, set_review_list] = React.useState([]);
     const [selected_chat_log, set_selected_chat_log] = React.useState<ChatMode>("main");
