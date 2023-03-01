@@ -30,7 +30,6 @@ export function OOLUserIntro(): JSX.Element {
         <HelpFlow
             id="ool-user-intro"
             showInitially={true}
-            debug={true}
             description={pgettext(
                 "Name of a dynamic help flow",
                 "Online League New User Introduction",
