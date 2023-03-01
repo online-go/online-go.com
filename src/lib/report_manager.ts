@@ -110,6 +110,10 @@ class ReportManager extends EventEmitter<Events> {
         preferences.watch("moderator.report-settings", () => {
             this.update();
         });
+
+        preferences.watch("moderator.report-sort-order", () => {
+            this.update();
+        });
     }
 
     public updateIncidentReport(report: Report) {
@@ -162,6 +166,8 @@ class ReportManager extends EventEmitter<Events> {
                 }
             }
         }
+
+        console.log("Sort order: ", preferences.get("moderator.report-sort-order"));
 
         reports.sort(compare_reports);
 
@@ -270,6 +276,7 @@ class ReportManager extends EventEmitter<Events> {
 
 function compare_reports(a: Report, b: Report): number {
     const prefs = preferences.get("moderator.report-settings");
+    const sort_order = preferences.get("moderator.report-sort-order");
     const user = data.get("user");
     const A_BEFORE_B = -1;
     const B_BEFORE_A = 1;
@@ -303,7 +310,7 @@ function compare_reports(a: Report, b: Report): number {
         return A_BEFORE_B;
     }
 
-    return custom_ordering || b.id - a.id;
+    return custom_ordering || (sort_order === "newest-first" ? b.id - a.id : a.id - b.id);
 }
 
 export const report_manager = new ReportManager();

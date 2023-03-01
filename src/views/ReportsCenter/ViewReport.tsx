@@ -224,13 +224,13 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                 <div className="newer-older-buttons">
                     {(prev_report && (
                         <button className="default" onClick={prev}>
-                            &lt; Newer
+                            &lt; Prev
                         </button>
                     )) || <span className="empty" />}
 
                     {(next_report && (
                         <button className="default" onClick={next}>
-                            Older &gt;
+                            Next &gt;
                         </button>
                     )) || <span className="empty" />}
                 </div>

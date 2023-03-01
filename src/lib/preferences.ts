@@ -130,6 +130,7 @@ export const defaults = {
             visible: boolean;
         };
     },
+    "moderator.report-sort-order": "oldest-first" as "oldest-first" | "newest-first",
     "moderator.hide-next-game-arrows": false,
 
     "table-color-default-on": false,

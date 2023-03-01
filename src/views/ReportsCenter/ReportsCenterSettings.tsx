@@ -16,6 +16,7 @@
  */
 import * as React from "react";
 import * as preferences from "preferences";
+import { usePreference } from "preferences";
 import { report_categories } from "Report";
 import { Toggle } from "Toggle";
 
@@ -46,6 +47,7 @@ export function getReportSettings(): { [key: string]: { priority: number; visibl
 
 export function ReportsCenterSettings(): JSX.Element {
     const [state, setState] = React.useState(getReportSettings());
+    const [sortOrder, setSortOrder] = usePreference("moderator.report-sort-order");
 
     const setPriority = React.useCallback((type, priority) => {
         const new_state = Object.assign({}, state);
@@ -107,6 +109,12 @@ export function ReportsCenterSettings(): JSX.Element {
             <footer>
                 * Priority is used to sort the reports, lower numbers are higher priority.
             </footer>
+
+            <h3>Report Ordering</h3>
+            <select onChange={(ev) => setSortOrder(ev.target.value as any)} value={sortOrder}>
+                <option value="newest-first">Newest First</option>
+                <option value="oldest-first">Oldest First</option>
+            </select>
         </div>
     );
 }
