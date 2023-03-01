@@ -48,7 +48,7 @@ export function ReportedGame({ game_id }: { game_id: number }): JSX.Element {
         setGoban(goban);
     }, []);
     const cur_move = useCurrentMove(goban);
-    const [, /* game */ setGame] = React.useState<rest_api.GameDetails>(null);
+    const [game, setGame] = React.useState<rest_api.GameDetails>(null);
     const [, /* aiReviewUuid */ setAiReviewUuid] = React.useState<string | null>(null);
     const [annulled, setAnnulled] = React.useState<boolean>(false);
 
@@ -177,6 +177,15 @@ export function ReportedGame({ game_id }: { game_id: number }): JSX.Element {
                 {goban && goban.engine && (
                     <GobanContext.Provider value={goban}>
                         <div className="col">
+                            <div>
+                                Creator: <Player user={game?.creator} />
+                            </div>
+                            <div>
+                                Black: <Player user={game?.black} />
+                            </div>
+                            <div>
+                                White: <Player user={game?.white} />
+                            </div>
                             <div>Game Phase: {goban.engine.phase}</div>
                             {(goban.engine.phase === "finished" || null) && (
                                 <div>
