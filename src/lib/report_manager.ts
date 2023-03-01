@@ -66,6 +66,11 @@ export interface Report {
     set_note: () => void;
 }
 
+export interface ReportRelation {
+    relationship: string;
+    report: Report;
+}
+
 interface Events {
     "incident-report": (report: Report) => void;
     "active-count": (count: number) => void;
@@ -176,7 +181,7 @@ class ReportManager extends EventEmitter<Events> {
         this.emit("update");
     }
 
-    public getAvailableReports() {
+    public getAvailableReports(): Report[] {
         const user = data.get("user");
 
         return this.sorted_active_incident_reports.filter((report) => {
@@ -186,6 +191,50 @@ class ReportManager extends EventEmitter<Events> {
 
             return report.moderator === null || report.moderator.id === user.id;
         });
+    }
+
+    public getRelatedReports(report_id: number): ReportRelation[] {
+        const related: ReportRelation[] = [];
+        const report = this.active_incident_reports[report_id];
+
+        if (!report) {
+            return related;
+        }
+
+        for (const id in this.sorted_active_incident_reports) {
+            const other = this.sorted_active_incident_reports[id];
+            if (other.id === report_id) {
+                continue;
+            }
+
+            const relationships = [];
+
+            if (report.reported_game && other.reported_game === report.reported_game) {
+                relationships.push("Same game");
+            }
+
+            if (report.reported_review && other.reported_review === report.reported_review) {
+                console.log(other.reported_review, report.reported_review);
+                relationships.push("Same review");
+            }
+
+            if (
+                report.reporting_user?.id &&
+                other.reporting_user?.id === report.reporting_user?.id
+            ) {
+                relationships.push("Same reporting user");
+            }
+
+            if (report.reported_user?.id && other.reported_user?.id === report.reported_user?.id) {
+                relationships.push("Same reported user");
+            }
+
+            if (relationships.length > 0) {
+                related.push({ relationship: relationships.join(", "), report: other });
+            }
+        }
+
+        return related;
     }
 
     public getIgnored(report_id: number) {

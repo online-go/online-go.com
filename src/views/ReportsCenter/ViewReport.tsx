@@ -54,6 +54,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     const [error, setError] = React.useState(null);
     const [moderator_id, setModeratorId] = React.useState(report?.moderator?.id);
     const [reportState, setReportState] = React.useState(report?.state);
+    const related = report_manager.getRelatedReports(report_id);
 
     React.useEffect(() => {
         if (report_id) {
@@ -258,12 +259,12 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                                         (isSelected ? "selected" : "")
                                     }
                                 >
-                                    {"R" + `${data.id}`.slice(-3)}
+                                    {R(data.id)}
                                 </div>
                             ),
                             SingleValue: ({ innerProps, data }) => (
                                 <span {...innerProps} className="reports-center-selected-report">
-                                    {"R" + `${data.id}`.slice(-3)}
+                                    {R(data.id)}
                                 </span>
                             ),
                             ValueContainer: ({ children }) => (
@@ -274,9 +275,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                         }}
                     />
                 ) : (
-                    <span className="historical-report-number">
-                        {"R" + `${report.id}`.slice(-3)}
-                    </span>
+                    <span className="historical-report-number">{R(report.id)}</span>
                 )}
 
                 <span className="moderator">
@@ -371,6 +370,21 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                 {category?.title}
                 <span className="when">{moment(report.created).fromNow()}</span>
             </h3>
+
+            {related.length > 0 && (
+                <div className="related-reports">
+                    <h4>{_("Related Reports")}</h4>
+                    <ul>
+                        {related.map((r) => (
+                            <li key={r.report.id}>
+                                <Link to={`/reports-center/all/${r.report.id}`}>
+                                    {R(r.report.id)}: {r.relationship}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
 
             <div className="notes-container">
                 {(report.reporter_note || null) && (
@@ -507,4 +521,8 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
             <UserHistory user={report.reported_user} />
         </div>
     );
+}
+
+function R(id: number): string {
+    return "R" + `${id}`.slice(-3);
 }
