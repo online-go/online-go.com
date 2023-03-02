@@ -80,7 +80,6 @@ socket.on("connect", () => {
     connect_time = Date.now();
     ++times_connected;
     if (times_connected > 1) {
-        console.log("Should be sending reconnect", times_connected);
         socket.emit("times_connected", times_connected);
     }
 });
