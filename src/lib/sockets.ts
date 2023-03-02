@@ -73,11 +73,16 @@ export const ai_socket = ai_host ? io(ai_host, ai_config) : io(ai_config);
 socket.send = socket.emit;
 ai_socket.send = ai_socket.emit;
 let connect_time = Date.now();
-
+let times_connected = 0;
 socket.on("connect", () => {
     debug.log("Connection to server established.");
     socket.emit("hostinfo");
     connect_time = Date.now();
+    ++times_connected;
+    if (times_connected > 1) {
+        console.log("Should be sending reconnect", times_connected);
+        socket.emit("times_connected", times_connected);
+    }
 });
 socket.on("HUP", () => window.location.reload());
 socket.on("hostinfo", (hostinfo) => {
