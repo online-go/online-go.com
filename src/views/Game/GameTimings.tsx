@@ -50,7 +50,7 @@ export class GameTimings extends React.Component<GameTimingProperties> {
         if (duration < moment.duration(1000)) {
             return `${moment.duration(duration).asSeconds().toFixed(2)}s`;
         } else if (duration < moment.duration(60000)) {
-            return `${moment.duration(duration).asSeconds().toFixed(0)}s`;
+            return `${moment.duration(duration).asSeconds().toFixed(1)}s`;
         } else {
             return moment.duration(duration).format("d:h:m:s");
         }
