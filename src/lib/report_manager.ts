@@ -172,8 +172,6 @@ class ReportManager extends EventEmitter<Events> {
             }
         }
 
-        console.log("Sort order: ", preferences.get("moderator.report-sort-order"));
-
         reports.sort(compare_reports);
 
         this.sorted_active_incident_reports = reports;
