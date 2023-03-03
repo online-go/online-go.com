@@ -20,7 +20,8 @@ import * as React from "react";
 import { Glicko2Entry, glicko2_update } from "./glicko2";
 import { get_handicap_adjustment } from "rank_utils";
 import { PlayerAutocomplete } from "PlayerAutocomplete";
-import { PlayerCacheEntry } from "src/lib/player_cache";
+import { PlayerCacheEntry, lookup } from "player_cache";
+import { get } from "data";
 
 interface RatingCalcState {}
 
@@ -32,10 +33,6 @@ export class RatingCalculator extends React.Component<{}, RatingCalcState> {
     componentDidMount() {
         window.document.title = _("Rating Calculator");
     }
-
-    //componentDidUpdate() {}
-
-    //componentWillUnmount() {}
 
     render() {
         return (
@@ -92,8 +89,24 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
         this.fill_player_info = this.fill_player_info.bind(this);
     }
 
-    /*componentDidMount() {
-    }*/
+    user = get("user");
+
+    componentDidMount(): void {
+        //console.log(this.user);
+        if (this.user.id > 0) {
+            const user_cache_entry = lookup(this.user.id);
+            //console.log(user_cache_entry);
+            this.setState(
+                {
+                    auto_black: user_cache_entry,
+                    auto_white: user_cache_entry,
+                },
+                this.fill_player_info,
+            );
+        }
+    }
+
+    //componentWillUnmount() {}
 
     inputs_positive(all_inputs: string[]) {
         //console.log(all_inputs);
@@ -105,30 +118,43 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
         );
     }
 
-    all_info_found() {
+    info_found() {
         return (
-            this.state.auto_black?.ratings?.overall?.rating !== undefined &&
-            this.state.auto_black?.ratings?.overall?.deviation !== undefined &&
-            this.state.auto_black?.ratings?.overall?.volatility !== undefined &&
-            this.state.auto_white?.ratings?.overall?.rating !== undefined &&
-            this.state.auto_white?.ratings?.overall?.deviation !== undefined &&
-            this.state.auto_white?.ratings?.overall?.volatility !== undefined
+            (this.state.auto_black?.ratings?.overall?.rating !== undefined &&
+                this.state.auto_black?.ratings?.overall?.deviation !== undefined &&
+                this.state.auto_black?.ratings?.overall?.volatility !== undefined) ||
+            (this.state.auto_white?.ratings?.overall?.rating !== undefined &&
+                this.state.auto_white?.ratings?.overall?.deviation !== undefined &&
+                this.state.auto_white?.ratings?.overall?.volatility !== undefined)
         );
     }
 
     fill_player_info() {
-        if (this.state.auto_black === null || this.state.auto_white === null) {
+        if (this.state.auto_black === null && this.state.auto_white === null) {
             return;
         }
-        if (this.all_info_found()) {
-            this.setState({
-                p1r: this.state.auto_black.ratings.overall.rating.toFixed(2),
-                p2r: this.state.auto_white.ratings.overall.rating.toFixed(2),
-                p1d: this.state.auto_black.ratings.overall.deviation.toFixed(2),
-                p2d: this.state.auto_white.ratings.overall.deviation.toFixed(2),
-                p1v: this.state.auto_black.ratings.overall.volatility.toFixed(4),
-                p2v: this.state.auto_white.ratings.overall.volatility.toFixed(4),
-            });
+        if (this.info_found()) {
+            if (this.state.auto_black?.ratings?.overall?.rating !== undefined) {
+                this.setState(
+                    {
+                        p1r: this.state.auto_black.ratings.overall.rating.toFixed(2),
+                        p1d: this.state.auto_black.ratings.overall.deviation.toFixed(2),
+                        p1v: this.state.auto_black.ratings.overall.volatility.toFixed(4),
+                    },
+                    this.compute_new_ratings,
+                );
+            }
+
+            if (this.state.auto_white?.ratings?.overall?.rating !== undefined) {
+                this.setState(
+                    {
+                        p2r: this.state.auto_white.ratings.overall.rating.toFixed(2),
+                        p2d: this.state.auto_white.ratings.overall.deviation.toFixed(2),
+                        p2v: this.state.auto_white.ratings.overall.volatility.toFixed(4),
+                    },
+                    this.compute_new_ratings,
+                );
+            }
         }
     }
 
@@ -242,8 +268,12 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                                 <div>
                                     <PlayerAutocomplete
                                         onComplete={(player) => {
-                                            this.setState({ auto_black: player });
+                                            this.setState(
+                                                { auto_black: player },
+                                                this.fill_player_info,
+                                            );
                                         }}
+                                        playerId={this.user.id > 0 ? this.user.id : undefined}
                                     />
                                 </div>
                             </td>
@@ -251,18 +281,17 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                                 <div>
                                     <PlayerAutocomplete
                                         onComplete={(player) => {
-                                            this.setState({ auto_white: player });
+                                            this.setState(
+                                                { auto_white: player },
+                                                this.fill_player_info,
+                                            );
                                         }}
+                                        playerId={this.user.id > 0 ? this.user.id : undefined}
                                     />
                                 </div>
                             </td>
                             <td>
                                 <span>Fill using players</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colSpan={4}>
-                                <button onClick={this.fill_player_info}>{_("Use Players")}</button>
                             </td>
                         </tr>
                         <tr>
@@ -281,7 +310,10 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                                     value={this.state.p1r}
                                     onChange={(event) => {
                                         //console.log(event.target.value);
-                                        this.setState({ p1r: event.target.value });
+                                        this.setState(
+                                            { p1r: event.target.value },
+                                            this.compute_new_ratings,
+                                        );
                                     }}
                                 ></input>
                             </td>
@@ -292,7 +324,10 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                                     required
                                     value={this.state.p2r}
                                     onChange={(event) => {
-                                        this.setState({ p2r: event.target.value });
+                                        this.setState(
+                                            { p2r: event.target.value },
+                                            this.compute_new_ratings,
+                                        );
                                     }}
                                 ></input>
                             </td>
@@ -305,7 +340,10 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                                     required
                                     value={this.state.p1d}
                                     onChange={(event) => {
-                                        this.setState({ p1d: event.target.value });
+                                        this.setState(
+                                            { p1d: event.target.value },
+                                            this.compute_new_ratings,
+                                        );
                                     }}
                                 ></input>
                             </td>
@@ -315,7 +353,10 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                                     required
                                     value={this.state.p2d}
                                     onChange={(event) => {
-                                        this.setState({ p2d: event.target.value });
+                                        this.setState(
+                                            { p2d: event.target.value },
+                                            this.compute_new_ratings,
+                                        );
                                     }}
                                 ></input>
                             </td>
@@ -328,7 +369,10 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                                     required
                                     value={this.state.p1v}
                                     onChange={(event) => {
-                                        this.setState({ p1v: event.target.value });
+                                        this.setState(
+                                            { p1v: event.target.value },
+                                            this.compute_new_ratings,
+                                        );
                                     }}
                                 ></input>
                             </td>
@@ -338,7 +382,10 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                                     required
                                     value={this.state.p2v}
                                     onChange={(event) => {
-                                        this.setState({ p2v: event.target.value });
+                                        this.setState(
+                                            { p2v: event.target.value },
+                                            this.compute_new_ratings,
+                                        );
                                     }}
                                 ></input>
                             </td>
@@ -353,14 +400,12 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                                     max="9"
                                     value={this.state.handicap}
                                     onChange={(event) => {
-                                        this.setState({ handicap: event.target.value });
+                                        this.setState(
+                                            { handicap: event.target.value },
+                                            this.compute_new_ratings,
+                                        );
                                     }}
                                 ></input>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colSpan={4}>
-                                <button onClick={this.compute_new_ratings}>{_("Calculate")}</button>
                             </td>
                         </tr>
                         <tr>
