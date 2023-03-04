@@ -61,8 +61,6 @@ export function OnlineLeagueSpectatorLanding(): JSX.Element {
     };
 
     React.useEffect(() => {
-        console.log("*** OLL effect...");
-
         if (!match) {
             get(`online_league/match/${match_id}`)
                 .then((match: rest_api.online_league.MatchStatus) => {
@@ -71,18 +69,15 @@ export function OnlineLeagueSpectatorLanding(): JSX.Element {
                     }
                     set_match(match);
                     set_loading(false);
-                    console.log(match);
                 })
                 .catch((err: any) => {
                     alert.close();
                     errorAlerter(err);
                 });
         } else {
-            console.log("Nothing to do in OLL useEffect", match);
+            //console.log("Nothing to do in OLL useEffect", match);
         }
     }, [match]);
-
-    console.log("*** OLL render....", match);
 
     /* Render */
     return (
