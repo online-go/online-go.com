@@ -39,6 +39,7 @@ import { EmbeddedChatCard } from "Chat";
 // They get to chat to each other here, in a dedicated channel, and mutually agree when to start.
 
 export function OnlineLeaguePlayerLanding(): JSX.Element {
+    console.log(location.href, location.pathname, location.search);
     /* State */
     const [loading, set_loading] = React.useState(true); // set to false after we have the info about that match they are joining
     const [logging_in, set_logging_in] = React.useState<boolean>(false);
@@ -169,7 +170,7 @@ export function OnlineLeaguePlayerLanding(): JSX.Element {
         }
     }, [match, logged_in, logging_in]);
 
-    console.log("*** OLL render....", match);
+    console.log("*** OLL render....", match, side);
 
     /* Render */
     return (
