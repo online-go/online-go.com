@@ -170,14 +170,14 @@ const urls = {
     cloudflare: window.location.origin.replace("http", "ws") + "/",
     "gcp-premium": "wss://gcp-premium.online-go.com/",
     "gcp-standard": "wss://gcp-standard.online-go.com/",
-    beta: "wss://beta.online-go.com/",
+    //beta: "wss://beta.online-go.com/",
 };
 
 const connection_counts = {
     cloudflare: 0,
     "gcp-premium": 0,
     "gcp-standard": 0,
-    beta: 0,
+    //beta: 0,
 };
 
 const device_info = gather_device_info("", 0);
