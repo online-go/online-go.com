@@ -18,7 +18,7 @@
 import { _ } from "translate";
 import * as React from "react";
 import { Glicko2Entry, glicko2_update } from "./glicko2";
-import { get_handicap_adjustment } from "rank_utils";
+import { get_handicap_adjustment, getUserRating, Rating } from "rank_utils";
 import { PlayerAutocomplete } from "PlayerAutocomplete";
 import { PlayerCacheEntry, lookup } from "player_cache";
 import { get } from "data";
@@ -87,6 +87,9 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
         };
         this.compute_new_ratings = this.compute_new_ratings.bind(this);
         this.fill_player_info = this.fill_player_info.bind(this);
+        this.calculated_rank_display_player = this.calculated_rank_display_player.bind(this);
+        this.input_rank_display_player = this.input_rank_display_player.bind(this);
+        this.setHandicap = this.setHandicap.bind(this);
     }
 
     user = get("user");
@@ -116,6 +119,21 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                 return element !== "" && !isNaN(Number(element)) && Number(element) > 0;
             })
         );
+    }
+
+    setHandicap(event) {
+        if (
+            event.target.value !== "" &&
+            !isNaN(Number(event.target.value)) &&
+            Number(event.target.value) >= 0
+        ) {
+            this.setState(
+                { handicap: String(Math.min(Math.max(Number(event.target.value), 0), 9)) },
+                this.compute_new_ratings,
+            );
+        } else {
+            this.setState({ handicap: "0" }, this.compute_new_ratings);
+        }
     }
 
     info_found() {
@@ -241,6 +259,99 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
             p1newvolatility: [p1win.volatility.toFixed(4), p1loss.volatility.toFixed(4)],
             p2newvolatility: [p2loss.volatility.toFixed(4), p2win.volatility.toFixed(4)],
         });
+    }
+
+    calculated_rank_display_player(p12: number, win: boolean): String {
+        const winindex = (p12 === 1 && win) || (p12 === 2 && !win) ? 0 : 1;
+        if (
+            this.state.p1newrating.length === 0 ||
+            this.state.p2newrating.length === 0 ||
+            this.state.p1newdeviation.length === 0 ||
+            this.state.p2newdeviation.length === 0 ||
+            this.state.p1newvolatility.length === 0 ||
+            this.state.p1newdeviation.length === 0
+        ) {
+            return "";
+        }
+
+        if (p12 === 1) {
+            return this.rank_display(
+                getUserRating({
+                    ratings: {
+                        overall: {
+                            rating: Number(this.state.p1newrating[winindex]),
+                            deviation: Number(this.state.p1newdeviation[winindex]),
+                            volatility: Number(this.state.p1newvolatility[winindex]),
+                        },
+                    },
+                }),
+            );
+        } else {
+            return this.rank_display(
+                getUserRating({
+                    ratings: {
+                        overall: {
+                            rating: Number(this.state.p2newrating[winindex]),
+                            deviation: Number(this.state.p2newdeviation[winindex]),
+                            volatility: Number(this.state.p2newvolatility[winindex]),
+                        },
+                    },
+                }),
+            );
+        }
+    }
+
+    input_rank_display_player(p12: number): String {
+        if (
+            !this.inputs_positive([
+                this.state.p1r,
+                this.state.p2r,
+                this.state.p1d,
+                this.state.p2d,
+                this.state.p1v,
+                this.state.p2v,
+            ])
+        ) {
+            return "";
+        }
+
+        if (
+            p12 === 1 &&
+            this.inputs_positive([this.state.p1r, "1", this.state.p1d, "1", this.state.p1v, "1"])
+        ) {
+            return this.rank_display(
+                getUserRating({
+                    ratings: {
+                        overall: {
+                            rating: Number(this.state.p1r),
+                            deviation: Number(this.state.p1d),
+                            volatility: Number(this.state.p1v),
+                        },
+                    },
+                }),
+            );
+        } else if (
+            p12 === 2 &&
+            this.inputs_positive(["1", this.state.p2r, "1", this.state.p2d, "1", this.state.p2v])
+        ) {
+            return this.rank_display(
+                getUserRating({
+                    ratings: {
+                        overall: {
+                            rating: Number(this.state.p2r),
+                            deviation: Number(this.state.p2d),
+                            volatility: Number(this.state.p2v),
+                        },
+                    },
+                }),
+            );
+        } else {
+            return "";
+        }
+    }
+
+    rank_display(rating: Rating): String {
+        return rating.partial_bounded_rank_label + " \xB1 " + rating.rank_deviation.toFixed(1);
     }
 
     render() {
@@ -391,6 +502,13 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                             </td>
                         </tr>
                         <tr>
+                            <td>{_("Rank")}</td>
+                            <td className={"rating-table-divider"}>
+                                {this.input_rank_display_player(1) || null}
+                            </td>
+                            <td>{this.input_rank_display_player(2) || null}</td>
+                        </tr>
+                        <tr>
                             <td colSpan={2}> Handicap </td>
                             <td colSpan={2}>
                                 <input
@@ -400,10 +518,7 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                                     max="9"
                                     value={this.state.handicap}
                                     onChange={(event) => {
-                                        this.setState(
-                                            { handicap: event.target.value },
-                                            this.compute_new_ratings,
-                                        );
+                                        this.setHandicap(event);
                                     }}
                                 ></input>
                             </td>
@@ -430,12 +545,20 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                             <td></td>
                         </tr>
                         <tr>
-                            <td className={"rating-table-divider-horizontal"}>{_("Volatility")}</td>
-                            <td className={"rating-table-divider rating-table-divider-horizontal"}>
+                            <td>{_("Volatility")}</td>
+                            <td className={"rating-table-divider"}>
                                 {this.state.p1newvolatility[0] || null}
                             </td>
+                            <td>{this.state.p2newvolatility[0] || null}</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td className={"rating-table-divider-horizontal"}>{_("Rank")}</td>
+                            <td className={"rating-table-divider rating-table-divider-horizontal"}>
+                                {this.calculated_rank_display_player(1, true) || null}
+                            </td>
                             <td className={"rating-table-divider-horizontal"}>
-                                {this.state.p2newvolatility[0] || null}
+                                {this.calculated_rank_display_player(2, false) || null}
                             </td>
                             <td className={"rating-table-divider-horizontal"}></td>
                         </tr>
@@ -461,6 +584,14 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                                 {this.state.p1newvolatility[1] || null}
                             </td>
                             <td>{this.state.p2newvolatility[1] || null}</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>{_("Rank")}</td>
+                            <td className={"rating-table-divider"}>
+                                {this.calculated_rank_display_player(1, false) || null}
+                            </td>
+                            <td>{this.calculated_rank_display_player(2, true) || null}</td>
                             <td></td>
                         </tr>
                     </tbody>

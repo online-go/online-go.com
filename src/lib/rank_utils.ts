@@ -22,7 +22,7 @@ export interface IRankInfo {
     label: string;
 }
 
-class Rating {
+export class Rating {
     unset: boolean;
     rating: number;
     deviation: number;
