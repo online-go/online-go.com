@@ -125,8 +125,6 @@ export function OnlineLeaguePlayerLanding(): JSX.Element {
     };
 
     React.useEffect(() => {
-        console.log("*** OLL effect...");
-
         // First, see if they arrived back here after we sent them off to log in...
         // ... in which case restore all the info...
         if (logged_in && pending_match && !match) {
@@ -157,7 +155,6 @@ export function OnlineLeaguePlayerLanding(): JSX.Element {
                         set_match(match); // contains match details for later use, and display on login-options screen
                         set_loading(false); // This will cause us to ask them to log in, if necessary
                         set_im_ready(side === "black" ? match.black_ready : match.white_ready);
-                        console.log(match);
                     })
                     .catch((err: any) => {
                         alert.close();
@@ -165,11 +162,9 @@ export function OnlineLeaguePlayerLanding(): JSX.Element {
                     });
             }
         } else {
-            console.log("Nothing to do in OLL useEffect", logged_in, logging_in, match);
+            //console.log("Nothing to do in OLL useEffect", logged_in, logging_in, match);
         }
     }, [match, logged_in, logging_in]);
-
-    console.log("*** OLL render....", match);
 
     /* Render */
     return (
