@@ -194,7 +194,6 @@ for (const [route, url] of Object.entries(urls)) {
         });
     });
     test_socket.on("latency", (latency: number) => {
-        console.info("Latency to " + route + ": " + latency + "ms");
         test_socket.send("net/route_latency", { route, latency, mobile: device_info.mobile });
     });
     test_socket.on("unrecoverable_error", (code: number, tag: string, message: string) => {
