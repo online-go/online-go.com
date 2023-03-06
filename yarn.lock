@@ -1402,6 +1402,11 @@
   resolved "https://registry.yarnpkg.com/@types/parse-json/-/parse-json-4.0.0.tgz#2f8bb441434d163b35fb8ffdccd7138927ffb8c0"
   integrity sha512-//oorEZjL6sbPcKUaCdIGlIUeH26mgzimjBB77G6XRgnDl/L5wOnpyBGRe/Mmf5CVW3PwEBE1NjiMZ/ssFh4wA==
 
+"@types/platform@^1.3.4":
+  version "1.3.4"
+  resolved "https://registry.yarnpkg.com/@types/platform/-/platform-1.3.4.tgz#0d3a4254863afaa89d6f02d73c2806271d13415d"
+  integrity sha512-U0o4K+GNiK0PNxoDwd8xRnvLVe4kzei6opn3/FCjAriqaP+rfrDdSl1kP/hLL6Y3/Y3hhGnBwD4dCkkAqs1W/Q==
+
 "@types/prettier@^2.0.0", "@types/prettier@^2.6.0":
   version "2.7.0"
   resolved "https://registry.yarnpkg.com/@types/prettier/-/prettier-2.7.0.tgz#ea03e9f0376a4446f44797ca19d9c46c36e352dc"
@@ -5153,10 +5158,12 @@ glogg@^1.0.0:
   dependencies:
     sparkles "^1.0.0"
 
-goban@=0.6.8:
-  version "0.6.8"
-  resolved "https://registry.yarnpkg.com/goban/-/goban-0.6.8.tgz#4f53a6391f82656191f4fcc62eb44feb07374772"
-  integrity sha512-CCOJzRyN6iKq/7fnvsr9O0T1sr/w6GSjwgL2A0/+8qbgg406b/b5S5Zp+L8JOcNeV8nBaCAq2/PnYvPQFUfmrQ==
+goban@=0.6.11:
+  version "0.6.11"
+  resolved "https://registry.yarnpkg.com/goban/-/goban-0.6.11.tgz#76293a7eb6ad0ce229a770fbaa86e8cf6c52052f"
+  integrity sha512-XqPmAJhVra4aGjjKoRrkiB8Np90OrzjPULWVOk2Fg7ZDdNsvPpdVhbKR2rHOGEp3/Yt08jH8L2Je1rcw5N9/pw==
+  dependencies:
+    isomorphic-ws "^5.0.0"
 
 google-auth-library@^8.0.2:
   version "8.5.2"
@@ -6063,6 +6070,11 @@ isobject@^3.0.0, isobject@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/isobject/-/isobject-3.0.1.tgz#4e431e92b11a9731636aa1f9c8d1ccbcfdab78df"
   integrity sha512-WhB9zCku7EGTj/HQQRz5aUQEUeoQZH2bWcltRErOpymJ4boYE6wL9Tbr23krRPSZ+C5zqNSrSw+Cc7sZZ4b7vg==
+
+isomorphic-ws@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/isomorphic-ws/-/isomorphic-ws-5.0.0.tgz#e5529148912ecb9b451b46ed44d53dae1ce04bbf"
+  integrity sha512-muId7Zzn9ywDsyXgTIafTry2sV3nySZeUDe6YedVd1Hvuuep5AsIlqK+XefWpYTyJG5e503F2xIuT2lcU6rCSw==
 
 istanbul-lib-coverage@^3.0.0, istanbul-lib-coverage@^3.2.0:
   version "3.2.0"
@@ -7941,6 +7953,11 @@ pkg-dir@^4.2.0:
   integrity sha512-HRDzbaKjC+AOWVXxAU/x54COGeIv9eb+6CkDSQoNTt4XyWoIJvuPsXizxu/Fr23EiekbtZwmh1IcIG/l/a10GQ==
   dependencies:
     find-up "^4.0.0"
+
+platform@^1.3.6:
+  version "1.3.6"
+  resolved "https://registry.yarnpkg.com/platform/-/platform-1.3.6.tgz#48b4ce983164b209c2d45a107adb31f473a6e7a7"
+  integrity sha512-fnWVljUchTro6RiCFvCXBbNhJc2NijN7oIQxbwsyL0buWJPG85v81ehlHI9fXrJsMNgTofEoWIQeClKpgxFLrg==
 
 plugin-error@1.0.1, plugin-error@^1.0.1:
   version "1.0.1"
