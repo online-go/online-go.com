@@ -19,7 +19,6 @@ import Debug from "debug";
 import { current_language } from "translate";
 import { io } from "socket.io-client";
 import { niceInterval } from "goban";
-import { post } from "requests";
 
 declare let ogs_language_version;
 declare let ogs_version;
@@ -200,7 +199,7 @@ for (const [route, url] of Object.entries(urls)) {
     });
     test_socket.on("unrecoverable_error", (code: number, tag: string, message: string) => {
         console.error("Unrecoverable error: " + code + " " + tag + " " + message);
-        void post(`/termination-api/unrecoverable_error`, {
+        socket.send("net/unrecoverable_error", {
             code,
             tag,
             message,
