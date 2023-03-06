@@ -5158,10 +5158,10 @@ glogg@^1.0.0:
   dependencies:
     sparkles "^1.0.0"
 
-goban@=0.6.11:
-  version "0.6.11"
-  resolved "https://registry.yarnpkg.com/goban/-/goban-0.6.11.tgz#76293a7eb6ad0ce229a770fbaa86e8cf6c52052f"
-  integrity sha512-XqPmAJhVra4aGjjKoRrkiB8Np90OrzjPULWVOk2Fg7ZDdNsvPpdVhbKR2rHOGEp3/Yt08jH8L2Je1rcw5N9/pw==
+goban@=0.6.12:
+  version "0.6.12"
+  resolved "https://registry.yarnpkg.com/goban/-/goban-0.6.12.tgz#ae134c2c79baf45ad728a37b370b138c5ada2c1d"
+  integrity sha512-widuIcASENiBjIkhn0OsJlLsUKoSLCJzf6UAD0Q6DbcedEVwWDy3gxY1HlrjljIwyj5Lr9pLq22SYk0jMV/veA==
   dependencies:
     isomorphic-ws "^5.0.0"
 
