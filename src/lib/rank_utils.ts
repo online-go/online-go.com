@@ -22,7 +22,7 @@ export interface IRankInfo {
     label: string;
 }
 
-class Rating {
+export class Rating {
     unset: boolean;
     rating: number;
     deviation: number;
@@ -86,7 +86,7 @@ export function rank_deviation(rating: number, deviation: number): number {
     return rating_to_rank(rating + deviation) - rating_to_rank(rating);
 }
 
-function get_handicap_adjustment(rating: number, handicap: number): number {
+export function get_handicap_adjustment(rating: number, handicap: number): number {
     return rank_to_rating(rating_to_rank(rating) + handicap) - rating;
 }
 function overall_rank(user_or_rank: UserOrRank): number {
