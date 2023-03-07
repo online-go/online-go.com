@@ -36,11 +36,12 @@ export class RatingCalculator extends React.Component<{}, RatingCalcState> {
 
     render() {
         return (
-            <div id="Rating-Calculator-Container">
-                <p>
-                    Glicko2 rating calculator to predict rating changes for even and handicap rated
-                    games.
-                </p>
+            <div id="RatingCalculator">
+                <h3>
+                    {_(
+                        "This calculator lets you predict the rating change of players who have played a game together.",
+                    )}
+                </h3>
                 <RatingCalculatorTable />
             </div>
         );
@@ -360,21 +361,18 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                 <table className="rating-table">
                     <thead>
                         <tr>
-                            <th className={"rating-rable-row-header"}></th>
-                            <th className={"rating-table-divider rating-rable-row-header"}>
-                                <span>{_("Black")}</span>
+                            <th></th>
+                            <th className={"rating-table-divider"}>
+                                <h2>{_("Black")}</h2>
                             </th>
-                            <th className={"rating-rable-row-header"}>
-                                <span>{_("White")}</span>
-                            </th>
-                            <th className={"rating-rable-row-header"}>
-                                <span>{_("Comment")}</span>
+                            <th>
+                                <h2>{_("White")}</h2>
                             </th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td></td>
+                            <th>{_("Player")}</th>
                             <td className={"rating-table-divider"}>
                                 <div>
                                     <PlayerAutocomplete
@@ -401,19 +399,9 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                                     />
                                 </div>
                             </td>
-                            <td>
-                                <span>Fill using players</span>
-                            </td>
                         </tr>
                         <tr>
-                            <td colSpan={4} className={"rating-rable-row-header"}>
-                                {_("Current Parameters")}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <span>{_("Rating")}</span>
-                            </td>
+                            <th>{_("Rating")}</th>
                             <td className={"rating-table-divider"}>
                                 <input
                                     type="text"
@@ -444,7 +432,7 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                             </td>
                         </tr>
                         <tr>
-                            <td>{_("Deviation")}</td>
+                            <th>{_("Deviation")}</th>
                             <td className={"rating-table-divider"}>
                                 <input
                                     type="text"
@@ -473,7 +461,7 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                             </td>
                         </tr>
                         <tr>
-                            <td>{_("Volatility")}</td>
+                            <th>{_("Volatility")}</th>
                             <td className={"rating-table-divider"}>
                                 <input
                                     type="text"
@@ -502,15 +490,15 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                             </td>
                         </tr>
                         <tr>
-                            <td>{_("Rank")}</td>
+                            <th>{_("Rank")}</th>
                             <td className={"rating-table-divider"}>
                                 {this.input_rank_display_player(1) || null}
                             </td>
                             <td>{this.input_rank_display_player(2) || null}</td>
                         </tr>
                         <tr>
-                            <td colSpan={2}> Handicap </td>
-                            <td colSpan={2}>
+                            <th colSpan={1}>{_("Handicap")}</th>
+                            <td colSpan={3}>
                                 <input
                                     id="handicap-picker"
                                     type="number"
@@ -523,76 +511,77 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
                                 ></input>
                             </td>
                         </tr>
+
                         <tr>
-                            <td colSpan={4} className={"rating-rable-row-header"}>
-                                {_("New Parameters")}
+                            <td colSpan={3}>
+                                <h3>{_("If Black wins")}</h3>
                             </td>
                         </tr>
                         <tr>
-                            <td>{_("Rating")}</td>
-                            <td className={"rating-table-divider"}>
+                            <th>{_("Rating")}</th>
+                            <td className={"rating-table-divider result-won"}>
                                 {this.state.p1newrating[0] || null}
                             </td>
-                            <td>{this.state.p2newrating[0] || null}</td>
-                            <td>Black win</td>
+                            <td className="result-lost">{this.state.p2newrating[0] || null}</td>
                         </tr>
                         <tr>
-                            <td>{_("Deviation")}</td>
-                            <td className={"rating-table-divider"}>
+                            <th>{_("Deviation")}</th>
+                            <td className={"rating-table-divider result-won"}>
                                 {this.state.p1newdeviation[0] || null}
                             </td>
-                            <td>{this.state.p2newdeviation[0] || null}</td>
-                            <td></td>
+                            <td className="result-lost">{this.state.p2newdeviation[0] || null}</td>
                         </tr>
                         <tr>
-                            <td>{_("Volatility")}</td>
-                            <td className={"rating-table-divider"}>
+                            <th>{_("Volatility")}</th>
+                            <td className={"rating-table-divider result-won"}>
                                 {this.state.p1newvolatility[0] || null}
                             </td>
-                            <td>{this.state.p2newvolatility[0] || null}</td>
-                            <td></td>
+                            <td className="result-lost">{this.state.p2newvolatility[0] || null}</td>
                         </tr>
                         <tr>
-                            <td className={"rating-table-divider-horizontal"}>{_("Rank")}</td>
-                            <td className={"rating-table-divider rating-table-divider-horizontal"}>
+                            <th>{_("Rank")}</th>
+                            <td className={"rating-table-divider result-won"}>
                                 {this.calculated_rank_display_player(1, true) || null}
                             </td>
-                            <td className={"rating-table-divider-horizontal"}>
+                            <td className="result-lost">
                                 {this.calculated_rank_display_player(2, false) || null}
                             </td>
-                            <td className={"rating-table-divider-horizontal"}></td>
+                        </tr>
+
+                        <tr>
+                            <td colSpan={3}>
+                                <h3>{_("If White wins")}</h3>
+                            </td>
                         </tr>
                         <tr>
-                            <td>{_("Rating")}</td>
-                            <td className={"rating-table-divider"}>
+                            <th>{_("Rating")}</th>
+                            <td className={"rating-table-divider result-lost"}>
                                 {this.state.p1newrating[1] || null}
                             </td>
-                            <td>{this.state.p2newrating[1] || null}</td>
-                            <td>White win</td>
+                            <td className="result-won">{this.state.p2newrating[1] || null}</td>
                         </tr>
                         <tr>
-                            <td>{_("Deviation")}</td>
-                            <td className={"rating-table-divider"}>
+                            <th>{_("Deviation")}</th>
+                            <td className={"rating-table-divider result-lost"}>
                                 {this.state.p1newdeviation[1] || null}
                             </td>
-                            <td>{this.state.p2newdeviation[1] || null}</td>
-                            <td></td>
+                            <td className="result-won">{this.state.p2newdeviation[1] || null}</td>
                         </tr>
                         <tr>
-                            <td>{_("Volatility")}</td>
-                            <td className={"rating-table-divider"}>
+                            <th>{_("Volatility")}</th>
+                            <td className={"rating-table-divider result-lost"}>
                                 {this.state.p1newvolatility[1] || null}
                             </td>
-                            <td>{this.state.p2newvolatility[1] || null}</td>
-                            <td></td>
+                            <td className="result-won">{this.state.p2newvolatility[1] || null}</td>
                         </tr>
                         <tr>
-                            <td>{_("Rank")}</td>
-                            <td className={"rating-table-divider"}>
+                            <th>{_("Rank")}</th>
+                            <td className={"rating-table-divider result-lost"}>
                                 {this.calculated_rank_display_player(1, false) || null}
                             </td>
-                            <td>{this.calculated_rank_display_player(2, true) || null}</td>
-                            <td></td>
+                            <td className="result-won">
+                                {this.calculated_rank_display_player(2, true) || null}
+                            </td>
                         </tr>
                     </tbody>
                 </table>
