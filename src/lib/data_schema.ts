@@ -200,7 +200,8 @@ export interface DataSchema
         Prefixed<AnnouncementsSchema, "announcements">,
         Prefixed<ChallengeSchema, "challenge"> {
     user: rest_api.UserConfig;
-    bid: string;
+    bid: string; // deprecated in favor of device_id
+    device_id: string;
     theme: string;
     debug: boolean;
 

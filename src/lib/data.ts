@@ -99,6 +99,7 @@
 
 import { TypedEventEmitter } from "TypedEventEmitter";
 import { DataSchema } from "data_schema";
+import { protocol } from "goban";
 
 interface DataEvents {
     remote_data_sync_complete: never;
@@ -512,11 +513,22 @@ function _process_write_ahead_log(user_id: number): void {
         if ("value" in kv) {
             socket.send(
                 "remote_storage/set",
-                { key: kv.key, value: kv.value, replication: kv.replication },
+                {
+                    key: kv.key,
+                    value: kv.value,
+                    replication: kv.replication as unknown as protocol.RemoteStorageReplication,
+                },
                 cb,
             );
         } else {
-            socket.send("remote_storage/remove", { key: kv.key, replication: kv.replication }, cb);
+            socket.send(
+                "remote_storage/remove",
+                {
+                    key: kv.key,
+                    replication: kv.replication as unknown as protocol.RemoteStorageReplication,
+                },
+                cb,
+            );
         }
     }
 }
@@ -543,17 +555,23 @@ function remote_sync() {
     currently_synchronizing = true;
     need_another_synchronization_call = false;
 
-    socket.send("remote_storage/sync", last_modified, (ret) => {
-        if (ret.error) {
-            console.error(ret.error);
-        } else {
-            // success
-        }
-        currently_synchronizing = false;
-        if (need_another_synchronization_call) {
-            remote_sync();
-        }
-    });
+    socket.send(
+        "remote_storage/sync",
+        {
+            since: last_modified,
+        },
+        (ret) => {
+            if (ret.error) {
+                console.error(ret.error);
+            } else {
+                // success
+            }
+            currently_synchronizing = false;
+            if (need_another_synchronization_call) {
+                remote_sync();
+            }
+        },
+    );
 }
 // When we get disconnected from the server, reset the our remote_sync state in the
 // event that we were mid-sync

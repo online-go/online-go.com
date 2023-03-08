@@ -69,7 +69,7 @@ class PrivateChat {
 
     constructor(user_id, username) {
         this.user_id = user_id;
-        socket.send("chat/pm/load", user_id);
+        socket.send("chat/pm/load", { player_id: user_id });
 
         this.player_dom = $("<span class='user Player nolink'>...</span>");
         if (username) {
@@ -133,7 +133,6 @@ class PrivateChat {
                         socket.send("chat/pm/superchat", {
                             player_id: this.user_id,
                             username: this.player.username,
-                            auth: data.get("config.superchat_auth"),
                             enable: true,
                         });
                     } else {
@@ -142,7 +141,6 @@ class PrivateChat {
                         socket.send("chat/pm/superchat", {
                             player_id: this.user_id,
                             username: this.player.username,
-                            auth: data.get("config.superchat_auth"),
                             enable: false,
                         });
                     }
@@ -464,7 +462,7 @@ class PrivateChat {
             data.set(`pm.close-${this.user_id}`, this.last_uid);
         }
         if (socket && !dont_send_pm_close) {
-            socket.send("chat/pm/close", this.user_id);
+            socket.send("chat/pm/close", { player_id: this.user_id });
         }
     }
     addChat(from, txt, user_id, timestamp) {

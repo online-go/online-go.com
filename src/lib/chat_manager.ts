@@ -628,7 +628,12 @@ class ChatChannel extends TypedEventEmitter<Events> {
     public setTopic(topic: string) {
         const user = data.get("user");
 
-        const msg: TopicMessage = {
+        socket.send("chat/topic", {
+            channel: this.channel,
+            topic: topic,
+        });
+
+        this.topic = {
             channel: this.channel,
             username: user.username,
             id: user.id,
@@ -639,8 +644,6 @@ class ChatChannel extends TypedEventEmitter<Events> {
             topic: topic,
             timestamp: Date.now(),
         };
-        socket.send("chat/topic", msg);
-        this.topic = msg;
     }
 
     public systemMessage(text: string, system_message_type: "flood"): void {

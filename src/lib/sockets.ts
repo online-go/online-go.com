@@ -16,12 +16,9 @@
  */
 
 import Debug from "debug";
-import { current_language } from "translate";
 import { io } from "socket.io-client";
+import { protocol } from "goban";
 import { niceInterval } from "goban";
-
-declare let ogs_language_version;
-declare let ogs_version;
 
 const debug = new Debug("sockets");
 
@@ -41,9 +38,9 @@ const ai_config = {
     upgrade: false,
 };
 
-export const socket = window["websocket_host"]
+export const socket = (window["websocket_host"]
     ? io(window["websocket_host"], io_config)
-    : io(io_config);
+    : io(io_config)) as unknown as protocol.GobanSocket;
 
 export let ai_host = "";
 if (
@@ -117,13 +114,6 @@ function handle_pong(data) {
     last_clock_drift = drift;
     (window as any)["latency"] = last_latency;
 }
-function send_client_info() {
-    socket.send("client/info", {
-        language: current_language,
-        langauge_version: ogs_language_version,
-        version: ogs_version,
-    });
-}
 export function get_network_latency(): number {
     return last_latency;
 }
@@ -132,7 +122,6 @@ export function get_clock_drift(): number {
 }
 socket.on("net/pong", handle_pong);
 socket.on("connect", ping);
-socket.on("connect", send_client_info);
 niceInterval(ping, 10000);
 
 function ai_ping() {

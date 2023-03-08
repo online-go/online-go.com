@@ -82,7 +82,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
         super();
         socket.on("connect", () => {
             this.clearState();
-            socket.send("automatch/list");
+            socket.send("automatch/list", {});
         });
         socket.on("disconnect", () => {
             this.clearState();

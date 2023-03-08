@@ -34,7 +34,6 @@ import { HelpFlows } from "HelpFlows";
 import { sfx } from "sfx";
 import { post } from "requests";
 import { ai_host } from "sockets";
-import { get_bid } from "SignIn";
 sfx.sync();
 
 declare let ogs_current_language;
@@ -136,7 +135,7 @@ import { browserHistory } from "./ogsHistory";
 import { routes } from "./routes";
 
 //import {Promise} from "es6-promise";
-import { errorAlerter, uuid } from "misc";
+import { errorAlerter } from "misc";
 import { close_all_popovers } from "popover";
 import * as sockets from "sockets";
 import { _, setCurrentLanguage } from "translate";
@@ -145,6 +144,7 @@ import * as player_cache from "player_cache";
 import { toast } from "toast";
 import cached from "cached";
 import * as moment from "moment";
+import { get_device_id } from "SignIn";
 
 import { ConfigSchema } from "data_schema";
 import * as history from "history";
@@ -198,12 +198,6 @@ data.set("user", user);
 window["user"] = user;
 
 /***
- * Setup a device UUID so we can logout other *devices* and not all other
- * tabs with our new logout-other-devices button
- */
-data.set("device.uuid", data.get("device.uuid", uuid()));
-
-/***
  * Test if local storage is disabled for some reason (Either because the user
  * turned it off, the browser doesn't support it, or because the user is using
  * Safari in private browsing mode which implicitly disables the feature.)
@@ -225,37 +219,16 @@ let auth_connect_fn = () => {
     return;
 };
 
-if (!user.anonymous) {
-    auth_connect_fn = (): void => {
-        sockets.socket.send("authenticate", {
-            auth: data.get("config.chat_auth"),
-            player_id: user.id,
-            username: user.username,
-            jwt: data.get("config.user_jwt"),
-            bid: get_bid(),
-            useragent: navigator.userAgent,
-            language: ogs_current_language,
-            language_version: ogs_language_version,
-            client_version: ogs_version,
-        });
-        sockets.socket.send("chat/connect", {
-            auth: data.get("config.chat_auth"),
-            player_id: user.id,
-            ranking: user.ranking,
-            username: user.username,
-            ui_class: user.ui_class,
-        });
-    };
-} else if (user.id < 0) {
-    auth_connect_fn = (): void => {
-        sockets.socket.send("chat/connect", {
-            player_id: user.id,
-            ranking: user.ranking,
-            username: user.username,
-            ui_class: user.ui_class,
-        });
-    };
-}
+auth_connect_fn = (): void => {
+    sockets.socket.send("authenticate", {
+        jwt: data.get("config.user_jwt"),
+        device_id: get_device_id(),
+        user_agent: navigator.userAgent,
+        language: ogs_current_language,
+        language_version: ogs_language_version,
+        client_version: ogs_version,
+    });
+};
 if (sockets.socket.connected) {
     auth_connect_fn();
 }

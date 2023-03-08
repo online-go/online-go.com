@@ -33,7 +33,7 @@ socket.on("connect", () => {
         list.push(id);
     }
     if (list.length) {
-        socket.send("user/monitor", list);
+        socket.send("user/monitor", { user_ids: list });
     }
 });
 
@@ -58,7 +58,7 @@ socket.on("disconnect", () => {
 });
 
 const subscribe_queue = new Batcher<number>((ids) => {
-    socket.send("user/monitor", ids);
+    socket.send("user/monitor", { user_ids: ids });
 });
 
 type callback = (player_id: number, online: boolean) => void;

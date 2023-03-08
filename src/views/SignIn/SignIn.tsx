@@ -21,7 +21,7 @@ import * as data from "data";
 import { useNavigate } from "react-router-dom";
 import { _ } from "translate";
 import { Card } from "material";
-import { errorAlerter } from "misc";
+import { errorAlerter, uuid } from "misc";
 import { post } from "requests";
 import cached from "cached";
 import { Md5 } from "ts-md5/dist/md5";
@@ -32,14 +32,17 @@ import { SocialLoginButtons } from "SocialLoginButtons";
 window["Md5"] = Md5;
 import { alert } from "swal_config";
 
-export function get_bid() {
-    const bid = data.get("bid") || `${Math.random()}`.split(".")[1];
-    data.set("bid", bid);
-    return bid;
+/***
+ * Setup a device UUID so we can logout other *devices* and not all other
+ * tabs with our new logout-other-devices button
+ */
+export function get_device_id() {
+    const device_id = data.set("device.uuid", data.get("device.uuid", uuid()));
+    return device_id;
 }
 
 export function get_ebi() {
-    const bid = get_bid();
+    const device_id = get_device_id();
 
     let plugin_hash = "xxx";
     let user_agent_hash = "xxx";
@@ -73,7 +76,9 @@ export function get_ebi() {
     } catch (e) {
         console.error(e);
     }
-    return bid + "." + screen_dims + "." + plugin_hash + "." + user_agent_hash + "." + tzoffset;
+    return (
+        device_id + "." + screen_dims + "." + plugin_hash + "." + user_agent_hash + "." + tzoffset
+    );
 }
 
 export function SignIn(): JSX.Element {

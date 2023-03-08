@@ -47,9 +47,9 @@ export function ChatUsersList({ channel }: ChatUsersListProperties): JSX.Element
         syncStateSoon();
 
         const online_count_interval = setInterval(() => {
-            socket.send("getOnlineCount", { interval: 1800 }, (ct) => set_online_count(ct));
+            socket.send("stats/online", { interval: 1800 }, (ct) => set_online_count(ct));
         }, 30000);
-        socket.send("getOnlineCount", { interval: 1800 }, (ct) => set_online_count(ct));
+        socket.send("stats/online", { interval: 1800 }, (ct) => set_online_count(ct));
 
         return () => {
             clearInterval(online_count_interval);

@@ -325,15 +325,6 @@ export class NotificationManager {
         this.rebuildNotificationList();
     }
     connect() {
-        if (socket.connected) {
-            socket.send("notification/connect", { player_id: this.user.id, auth: this.auth });
-        }
-        socket.on("connect", () => {
-            socket.send("notification/connect", { player_id: this.user.id, auth: this.auth });
-        });
-        socket.on("disconnect", () => {
-            //console.log("Notifier disconnected from " + server);
-        });
         socket.on("active_game", (game) => {
             delete this.boards_to_move_on[game.id];
             if (game.phase === "finished") {
