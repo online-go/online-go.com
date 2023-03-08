@@ -229,17 +229,25 @@ function PlayerCard({
     const show_next_game_arrows = user.is_moderator && game_id && !hide_next_game_arrows;
 
     const jumpToPrevGame = () => {
-        void get(`games/${game_id}/prev/${player.id}`).then((body) => {
-            const prev_game = body.id;
-            browserHistory.push(`/game/${prev_game}`);
-        });
+        get(`games/${game_id}/prev/${player.id}`)
+            .then((body) => {
+                const prev_game = body.id;
+                browserHistory.push(`/game/${prev_game}`);
+            })
+            .catch((e) => {
+                console.debug("No previous game", e);
+            });
     };
 
     const jumpToNextGame = () => {
-        void get(`games/${game_id}/next/${player.id}`).then((body) => {
-            const next_game = body.id;
-            browserHistory.push(`/game/${next_game}`);
-        });
+        get(`games/${game_id}/next/${player.id}`)
+            .then((body) => {
+                const next_game = body.id;
+                browserHistory.push(`/game/${next_game}`);
+            })
+            .catch((e) => {
+                console.debug("No next game", e);
+            });
     };
 
     const hideNextGameArrows = () => {
