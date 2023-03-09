@@ -2,12 +2,26 @@ import * as React from "react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { act, render, screen } from "@testing-library/react";
 import * as ogs_hooks from "hooks";
-import * as data from "data";
 
 import { OgsHelpProvider } from "OgsHelpProvider";
 
 import * as requests from "requests";
 import { OnlineLeaguePlayerLanding } from "./OnlineLeaguePlayerLanding";
+
+// This thing has a TabCompleteInput in it that doesn't work under jest
+import { EmbeddedChatCard } from "../../../src/components/Chat";
+
+afterEach(() => {
+    (EmbeddedChatCard as jest.Mock).mockClear();
+});
+
+jest.mock("../../../src/components/Chat", () => {
+    return {
+        EmbeddedChatCard: jest.fn(() => {
+            return <div className="EmbeddedChatCardMock" />;
+        }),
+    };
+});
 
 const TEST_USER = {
     username: "testuser",
@@ -46,9 +60,6 @@ const UNSTARTED_MATCH = {
     white_ready: false,
 } as const;
 */
-/**
- * @jest-environment jsdom
- */
 
 jest.mock("requests");
 
@@ -56,7 +67,7 @@ describe("COOL Player landing tests", () => {
     test("logged out player arrival", async () => {
         const user = { ...TEST_USER, anonymous: true };
         jest.spyOn(ogs_hooks, "useUser").mockReturnValue(user);
-        data.set("user", user);
+        // data.set("user", user);
 
         (requests.get as jest.MockedFunction<typeof requests.get>).mockResolvedValue(
             new Promise((resolve) => {
@@ -89,27 +100,18 @@ describe("COOL Player landing tests", () => {
 
     test("logged in player arrival", async () => {
         jest.spyOn(ogs_hooks, "useUser").mockReturnValue(TEST_USER);
-        data.set("user", TEST_USER);
+        // data.set("user", TEST_USER);
 
-        (requests.get as jest.MockedFunction<typeof requests.get>).mockResolvedValue(
-            new Promise((resolve) => {
-                resolve({
-                    data: "foo",
+        (requests.get as jest.MockedFunction<typeof requests.get>).mockImplementation(
+            (url: string) => {
+                console.log(url);
+                return new Promise((resolve) => {
+                    resolve({
+                        data: "foo",
+                    });
                 });
-            }),
+            },
         );
-        /*
-        getMock.mockImplementation((url: string): Promise<any> => {
-            console.log("get mock...");
-            let result = { data: "foo" };
-            if (url === "someValue") {
-                result = { data: "bar" };
-            }
-
-            return new Promise((resolve) => {
-                resolve(result);
-            });
-        });*/
 
         let res: ReturnType<typeof render>;
         await act(async () => {
