@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { alert } from "swal_config";
 
 import * as DynamicHelp from "react-dynamic-help";
@@ -39,6 +39,8 @@ import { EmbeddedChatCard } from "Chat";
 // They get to chat to each other here, in a dedicated channel, and mutually agree when to start.
 
 export function OnlineLeaguePlayerLanding(): JSX.Element {
+    const { search: urlparams } = useLocation();
+
     /* State */
     const [loading, set_loading] = React.useState(true); // set to false after we have the info about that match they are joining
     const [logging_in, set_logging_in] = React.useState<boolean>(false);
@@ -47,10 +49,10 @@ export function OnlineLeaguePlayerLanding(): JSX.Element {
     const [match, set_match] = React.useState<rest_api.online_league.MatchStatus>(null);
 
     const [linked_challenge_key, set_linked_challenge_key] = React.useState(
-        new URLSearchParams(location.search).get("id"),
+        new URLSearchParams(urlparams).get("id"),
     );
 
-    const [side, set_side] = React.useState(new URLSearchParams(location.search).get("side"));
+    const [side, set_side] = React.useState(new URLSearchParams(urlparams).get("side"));
 
     const navigate = useNavigate();
 
