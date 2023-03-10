@@ -9,12 +9,6 @@ import * as requests from "requests";
 import { OnlineLeaguePlayerLanding } from "./OnlineLeaguePlayerLanding";
 
 // This thing has a TabCompleteInput in it that doesn't work under jest
-import { EmbeddedChatCard } from "../../../src/components/Chat";
-
-afterEach(() => {
-    (EmbeddedChatCard as jest.Mock).mockClear();
-});
-
 jest.mock("../../../src/components/Chat", () => {
     return {
         EmbeddedChatCard: jest.fn(() => {
@@ -67,14 +61,16 @@ describe("COOL Player landing tests", () => {
     test("logged out player arrival", async () => {
         const user = { ...TEST_USER, anonymous: true };
         jest.spyOn(ogs_hooks, "useUser").mockReturnValue(user);
-        // data.set("user", user);
 
-        (requests.get as jest.MockedFunction<typeof requests.get>).mockResolvedValue(
-            new Promise((resolve) => {
-                resolve({
-                    data: "foo",
+        (requests.get as jest.MockedFunction<typeof requests.get>).mockImplementation(
+            (url: string) => {
+                console.log(url);
+                return new Promise((resolve) => {
+                    resolve({
+                        data: "foo",
+                    });
                 });
-            }),
+            },
         );
 
         //let res: ReturnType<typeof render>;
