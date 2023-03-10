@@ -45,6 +45,7 @@ import { ObserveGamesComponent } from "ObserveGamesComponent";
 import { profanity_filter } from "profanity_filter";
 import { popover } from "popover";
 import { alert } from "swal_config";
+import { useUser } from "hooks";
 
 interface ChatLogProperties {
     channel: string;
@@ -174,7 +175,7 @@ function ChannelTopic({
     showingGames,
     canShowGames,
 }: InternalChatLogProperties): JSX.Element {
-    const user = data.get("user");
+    const user = useUser();
 
     const [editing, set_editing]: [boolean, (tf: boolean) => void] = useState(false as boolean);
     const [topic, set_topic]: [string, (tf: string) => void] = useState("");
@@ -501,7 +502,7 @@ function ChatInput({
     autoFocus,
     inputPlaceholdertText,
 }: InternalChatLogProperties): JSX.Element {
-    const user = data.get("user");
+    const user = useUser();
     const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;
     const input = useRef(null);
     const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] =
@@ -564,7 +565,7 @@ function ChatInput({
                     ? placeholder
                     : ""
             }
-            disabled={user.anonymous || !data.get("user").email_validated}
+            disabled={user.anonymous || !user.email_validated}
             onKeyPress={onKeyPress}
         />
     );
