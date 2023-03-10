@@ -61,7 +61,6 @@
         "husky": "^8.0.1",
         "jest": "^26.6.1",
         "lint-staged": "^12.1.7",
-        "nock": "^13.3.0",
         "pofile": "^1.1.0",
         "postcss": "^8.4.16",
         "postcss-inline-svg": "^5.0.0",
