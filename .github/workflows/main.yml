@@ -47,11 +47,12 @@ jobs:
         run: npx gulp min_styl
 
       - name: Run linters
-        uses: wearerequired/lint-action@v2
-        with:
-          auto_fix: ${{ github.event_name == 'pull_request' }}
-          eslint: true
-          eslint_extensions: "ts,tsx"
+        # uses: wearerequired/lint-action@v2
+        # with:
+          # auto_fix: ${{ github.event_name == 'pull_request' }}
+          # eslint: true
+          # eslint_extensions: "ts,tsx"
+        run: npm run lint && npm run prettier:check
 
       - name: Webpack
         run: npx webpack --optimization-minimize --devtool=source-map
