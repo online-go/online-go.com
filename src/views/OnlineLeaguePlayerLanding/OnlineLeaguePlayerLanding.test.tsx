@@ -1,6 +1,6 @@
 import * as React from "react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import * as ReactRouterDOM from "react-router-dom";
+
 import { act, render, screen, getByRole, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
@@ -49,7 +49,18 @@ const UNSTARTED_MATCH = {
     white_ready: false,
 } as const;
 
+// Mocks
+
+// mock backend calls
 jest.mock("requests");
+
+// mock useNavigate, so we can test login buttons etc
+const mockedUseNavigate = jest.fn();
+
+jest.mock("react-router-dom", () => ({
+    ...(jest.requireActual("react-router-dom") as any),
+    useNavigate: () => mockedUseNavigate,
+}));
 
 // EmbeddedChatCard has a TabCompleteInput in it that doesn't work under jest
 // so we have to mock it out from the landing page we're testing
@@ -108,22 +119,32 @@ describe("COOL Player landing tests", () => {
         );
 
         // And there should be register and login buttons
-        const signIn = getByRole(rendered, "button", { name: "Sign In" });
-        expect(signIn).toBeInTheDocument();
-        expect(getByRole(rendered, "button", { name: "Register" })).toBeInTheDocument();
+        const signInButton = getByRole(rendered, "button", { name: "Sign In" });
+        const registerButton = getByRole(rendered, "button", { name: "Register" });
+        expect(signInButton).toBeInTheDocument();
+        expect(registerButton).toBeInTheDocument();
 
-        // And the sign in button should take us to the ... sign in page!
-
-        // Create a mock implementation of navigate
-        const mockNavigate = jest.fn();
-
-        // Spy on the useNavigate hook and return the mock navigate function
-        jest.spyOn(ReactRouterDOM, "useNavigate").mockReturnValue(mockNavigate);
+        // The sign in button should try to navigate to the sign in page
+        // with a # return URL
 
         await act(async () => {
-            fireEvent.click(signIn);
+            fireEvent.click(signInButton);
         });
-        expect(mockNavigate).toHaveBeenCalledWith("/sign-in#/online-league/league-player");
+        expect(mockedUseNavigate).toHaveBeenCalledWith(
+            "/sign-in#/online-league/league-player",
+            expect.anything(),
+        );
+
+        // The register button should try to navigate to the register page
+        // with a # return URL
+
+        await act(async () => {
+            fireEvent.click(registerButton);
+        });
+        expect(mockedUseNavigate).toHaveBeenCalledWith(
+            "/register#/online-league/league-player",
+            expect.anything(),
+        );
     });
 
     test("logged in player arrival", async () => {
