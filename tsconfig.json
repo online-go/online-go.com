@@ -41,7 +41,7 @@
         "jsx": "react"
     },
     "files": [
-        "./src/main.tsx"
-    ],
+        "./src/main.tsx",
+        "node_modules/jest-chain/types/index.d.ts"],
     "include": ["src"]
 }

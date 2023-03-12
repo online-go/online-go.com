@@ -9,6 +9,8 @@ import * as ogs_hooks from "hooks";
 import { OgsHelpProvider } from "OgsHelpProvider";
 
 import * as requests from "requests";
+import * as data from "data";
+
 import { OnlineLeaguePlayerLanding } from "./OnlineLeaguePlayerLanding";
 
 // Test data
@@ -73,7 +75,7 @@ jest.mock("../../../src/components/Chat", () => {
 });
 
 describe("COOL Player landing tests", () => {
-    test.only("logged out player arrival", async () => {
+    test("logged out player arrival", async () => {
         const user = { ...TEST_USER, anonymous: true };
         jest.spyOn(ogs_hooks, "useUser").mockReturnValue(user);
 
@@ -107,8 +109,9 @@ describe("COOL Player landing tests", () => {
         });
 
         // There should be a welcome header for not-logged in players
-        expect(rendered.querySelector("#cool-player-landing-header")).toBeInTheDocument();
-        expect(screen.getByText("Welcome", { exact: false }));
+        expect(rendered.querySelector("#cool-player-landing-header"))
+            .toBeInTheDocument()
+            .toHaveTextContent("Welcome");
 
         // The match name and number should be listed
         expect(screen.getByText(UNSTARTED_MATCH.name));
@@ -149,22 +152,23 @@ describe("COOL Player landing tests", () => {
 
     test("logged in player arrival", async () => {
         jest.spyOn(ogs_hooks, "useUser").mockReturnValue(TEST_USER);
-        // data.set("user", TEST_USER);
 
+        // we have to clear this, because it's left over from other tests :S
+        data.set("pending_league_match", null);
+
+        // Landing page hits back-end to find out match status
         (requests.get as jest.MockedFunction<typeof requests.get>).mockImplementation(
             (url: string) => {
-                console.log(url);
+                expect(url).toEqual("online_league/commence?side=black&id=testid");
                 return new Promise((resolve) => {
-                    resolve({
-                        data: "foo",
-                    });
+                    resolve(UNSTARTED_MATCH);
                 });
             },
         );
 
-        let res: ReturnType<typeof render>;
+        let rendered: HTMLElement;
         await act(async () => {
-            res = render(
+            rendered = render(
                 <OgsHelpProvider>
                     <MemoryRouter
                         initialEntries={["/online-league/league-player?side=black&id=testid"]}
@@ -177,10 +181,28 @@ describe("COOL Player landing tests", () => {
                         </Routes>
                     </MemoryRouter>
                 </OgsHelpProvider>,
-            );
+            ).container;
         });
 
-        const { container } = res;
-        expect(container.children).toHaveLength(1);
+        // There should not be a "welcome" header for logged in players
+        expect(rendered.querySelector("#cool-player-landing-header"))
+            .toBeInTheDocument()
+            .toHaveTextContent(/^$/);
+
+        // The match name and number should be listed
+        expect(screen.getByText(UNSTARTED_MATCH.name));
+        expect(
+            screen.getByText(`${UNSTARTED_MATCH.league} Match ${UNSTARTED_MATCH.id}`, {
+                exact: false,
+            }),
+        );
+
+        // There should be the I'm Ready button
+        const imReadyButton = getByRole(rendered, "button", { name: "I'm Ready" });
+        expect(imReadyButton).toBeInTheDocument();
+
+        // And display of player waiting status
+        expect(screen.getByText("Black:", { exact: false })).toHaveTextContent("waiting");
+        expect(screen.getByText("White:", { exact: false })).toHaveTextContent("waiting");
     });
 });
