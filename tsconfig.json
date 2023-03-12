@@ -41,7 +41,9 @@
         "jsx": "react"
     },
     "files": [
-        "./src/main.tsx"
+        "./src/main.tsx",
+        "typings_manual/index.d.ts",
+        "node_modules/@types/jquery/index.d.ts"
     ],
     "include": ["src"]
 }
