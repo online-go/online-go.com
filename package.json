@@ -15,7 +15,7 @@
         "webpack-watch": "webpack --watch --progress --color",
         "lint": "eslint src/ --ext=.ts,.tsx",
         "lint:fix": "eslint --fix src/ --ext=.ts,.tsx",
-        "test": "`jest`",
+        "test": "jest",
         "fresh-test": "clear && jest",
         "gulp": "gulp",
         "minify-index": "gulp minify-index --silent",
