@@ -1,6 +1,9 @@
 import * as React from "react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { act, render, screen } from "@testing-library/react";
+import * as ReactRouterDOM from "react-router-dom";
+import { act, render, screen, getByRole, fireEvent } from "@testing-library/react";
+import "@testing-library/jest-dom";
+
 import * as ogs_hooks from "hooks";
 
 import { OgsHelpProvider } from "OgsHelpProvider";
@@ -8,14 +11,7 @@ import { OgsHelpProvider } from "OgsHelpProvider";
 import * as requests from "requests";
 import { OnlineLeaguePlayerLanding } from "./OnlineLeaguePlayerLanding";
 
-// This thing has a TabCompleteInput in it that doesn't work under jest
-jest.mock("../../../src/components/Chat", () => {
-    return {
-        EmbeddedChatCard: jest.fn(() => {
-            return <div className="EmbeddedChatCardMock" />;
-        }),
-    };
-});
+// Test data
 
 const TEST_USER = {
     username: "testuser",
@@ -41,7 +37,6 @@ const TEST_USER = {
     is_announcer: false,
 } as const;
 
-/*
 const UNSTARTED_MATCH = {
     id: 1,
     name: "Test Match 2",
@@ -53,29 +48,38 @@ const UNSTARTED_MATCH = {
     black_ready: false,
     white_ready: false,
 } as const;
-*/
 
 jest.mock("requests");
 
+// EmbeddedChatCard has a TabCompleteInput in it that doesn't work under jest
+// so we have to mock it out from the landing page we're testing
+jest.mock("../../../src/components/Chat", () => {
+    return {
+        EmbeddedChatCard: jest.fn(() => {
+            return <div className="EmbeddedChatCardMock" />;
+        }),
+    };
+});
+
 describe("COOL Player landing tests", () => {
-    test("logged out player arrival", async () => {
+    test.only("logged out player arrival", async () => {
         const user = { ...TEST_USER, anonymous: true };
         jest.spyOn(ogs_hooks, "useUser").mockReturnValue(user);
 
+        // The landing page has to ask the back-end about this match, so that it
+        // can display the details to the user.
         (requests.get as jest.MockedFunction<typeof requests.get>).mockImplementation(
             (url: string) => {
-                console.log(url);
+                expect(url).toEqual("online_league/commence?side=black&id=testid");
                 return new Promise((resolve) => {
-                    resolve({
-                        data: "foo",
-                    });
+                    resolve(UNSTARTED_MATCH);
                 });
             },
         );
 
-        //let res: ReturnType<typeof render>;
+        let rendered: HTMLElement;
         await act(async () => {
-            render(
+            rendered = render(
                 <OgsHelpProvider>
                     <MemoryRouter
                         initialEntries={["/online-league/league-player?side=black&id=testid"]}
@@ -88,10 +92,38 @@ describe("COOL Player landing tests", () => {
                         </Routes>
                     </MemoryRouter>
                 </OgsHelpProvider>,
-            );
+            ).container;
         });
 
-        expect(screen.getByText("Welcome to OGS!")).toBeDefined();
+        // There should be a welcome header for not-logged in players
+        expect(rendered.querySelector("#cool-player-landing-header")).toBeInTheDocument();
+        expect(screen.getByText("Welcome", { exact: false }));
+
+        // The match name and number should be listed
+        expect(screen.getByText(UNSTARTED_MATCH.name));
+        expect(
+            screen.getByText(`${UNSTARTED_MATCH.league} Match ${UNSTARTED_MATCH.id}`, {
+                exact: false,
+            }),
+        );
+
+        // And there should be register and login buttons
+        const signIn = getByRole(rendered, "button", { name: "Sign In" });
+        expect(signIn).toBeInTheDocument();
+        expect(getByRole(rendered, "button", { name: "Register" })).toBeInTheDocument();
+
+        // And the sign in button should take us to the ... sign in page!
+
+        // Create a mock implementation of navigate
+        const mockNavigate = jest.fn();
+
+        // Spy on the useNavigate hook and return the mock navigate function
+        jest.spyOn(ReactRouterDOM, "useNavigate").mockReturnValue(mockNavigate);
+
+        await act(async () => {
+            fireEvent.click(signIn);
+        });
+        expect(mockNavigate).toHaveBeenCalledWith("/sign-in#/online-league/league-player");
     });
 
     test("logged in player arrival", async () => {
