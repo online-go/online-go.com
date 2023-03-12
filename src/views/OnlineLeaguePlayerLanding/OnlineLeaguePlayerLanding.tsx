@@ -98,7 +98,6 @@ export function OnlineLeaguePlayerLanding(): JSX.Element {
                     navigate(`/game/${matchStatus.game}`, { replace: true });
                 } else {
                     set_match(matchStatus);
-                    console.log("updated match", matchStatus);
                 }
             })
             .catch((err) => {

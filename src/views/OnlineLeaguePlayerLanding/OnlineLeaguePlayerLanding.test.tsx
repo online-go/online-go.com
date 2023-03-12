@@ -204,5 +204,44 @@ describe("COOL Player landing tests", () => {
         // And display of player waiting status
         expect(screen.getByText("Black:", { exact: false })).toHaveTextContent("waiting");
         expect(screen.getByText("White:", { exact: false })).toHaveTextContent("waiting");
+
+        // When they press the button, we're supposed to tell the back end
+
+        (requests.put as jest.MockedFunction<typeof requests.put>).mockImplementation(
+            (url: string) => {
+                expect(url).toEqual("online_league/commence?side=black&id=testid&ready=true");
+                return new Promise((resolve) => {
+                    resolve({
+                        ...UNSTARTED_MATCH,
+                        black_ready: true,
+                    });
+                });
+            },
+        );
+
+        await act(async () => {
+            fireEvent.click(imReadyButton);
+        });
+
+        expect(screen.getByText("Black:", { exact: false })).toHaveTextContent(/^(?!.*waiting).*$/);
+        expect(screen.getByText("White:", { exact: false })).toHaveTextContent("waiting");
+
+        (requests.put as jest.MockedFunction<typeof requests.put>).mockImplementation(
+            (url: string) => {
+                expect(url).toEqual("online_league/commence?side=black&id=testid&ready=false");
+                return new Promise((resolve) => {
+                    resolve({
+                        ...UNSTARTED_MATCH,
+                    });
+                });
+            },
+        );
+
+        await act(async () => {
+            fireEvent.click(imReadyButton);
+        });
+
+        expect(screen.getByText("Black:", { exact: false })).toHaveTextContent("waiting");
+        expect(screen.getByText("White:", { exact: false })).toHaveTextContent("waiting");
     });
 });
