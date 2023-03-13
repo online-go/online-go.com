@@ -64,6 +64,29 @@ jest.mock("react-router-dom", () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 
+// mock UIPush to emulate server socket pushes
+
+// collect up all the actions found on UIPush components, so we can call them when we want to
+const uiPushActions = {};
+
+interface UIPushProperties {
+    event: string;
+    channel?: string;
+    action: () => void;
+}
+
+function MockUIPush({ event, action }: UIPushProperties): JSX.Element {
+    React.useEffect(() => {
+        uiPushActions[event] = action;
+    }, [event, action]);
+    return null;
+}
+jest.mock("../../../src/components/UIPush", () => {
+    return {
+        UIPush: jest.fn(MockUIPush),
+    };
+});
+
 // EmbeddedChatCard has a TabCompleteInput in it that doesn't work under jest
 // so we have to mock it out from the landing page we're testing
 jest.mock("../../../src/components/Chat", () => {
@@ -243,5 +266,27 @@ describe("COOL Player landing tests", () => {
 
         expect(screen.getByText("Black:", { exact: false })).toHaveTextContent("waiting");
         expect(screen.getByText("White:", { exact: false })).toHaveTextContent("waiting");
+
+        // We need to update the opponent status when the server tells us
+        await act(async () => {
+            uiPushActions["online-league-game-waiting"]({
+                matchId: 1,
+                black: false,
+                white: true,
+            });
+        });
+
+        expect(screen.getByText("Black:", { exact: false })).toHaveTextContent("waiting");
+        expect(screen.getByText("White:", { exact: false })).toHaveTextContent(/^(?!.*waiting).*$/);
+
+        // And go to game when the server tells us
+        await act(async () => {
+            uiPushActions["online-league-game-commencement"]({
+                matchId: 1,
+                gameId: 999,
+            });
+        });
+
+        expect(mockedUseNavigate).toHaveBeenCalledWith("/game/999", expect.anything());
     });
 });
