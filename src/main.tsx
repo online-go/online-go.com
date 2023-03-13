@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// <reference path="../typings_manual/index.d.ts" />
 import * as Sentry from "@sentry/browser";
 import { apply_polyfills } from "polyfills";
 apply_polyfills();

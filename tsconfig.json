@@ -42,6 +42,9 @@
     },
     "files": [
         "./src/main.tsx",
-        "node_modules/jest-chain/types/index.d.ts"],
+        "typings_manual/index.d.ts",
+        "node_modules/@types/jquery/index.d.ts",
+        "node_modules/jest-chain/types/index.d.ts",
+    ],
     "include": ["src"]
 }
