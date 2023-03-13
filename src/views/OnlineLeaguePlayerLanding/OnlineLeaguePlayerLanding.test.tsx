@@ -1,21 +1,19 @@
 import * as React from "react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { act, render, screen } from "@testing-library/react";
+
+import { act, render, screen, getByRole, fireEvent } from "@testing-library/react";
+import "@testing-library/jest-dom";
+
 import * as ogs_hooks from "hooks";
 
 import { OgsHelpProvider } from "OgsHelpProvider";
 
 import * as requests from "requests";
+import * as data from "data";
+
 import { OnlineLeaguePlayerLanding } from "./OnlineLeaguePlayerLanding";
 
-// This thing has a TabCompleteInput in it that doesn't work under jest
-jest.mock("../../../src/components/Chat", () => {
-    return {
-        EmbeddedChatCard: jest.fn(() => {
-            return <div className="EmbeddedChatCardMock" />;
-        }),
-    };
-});
+// Test data
 
 const TEST_USER = {
     username: "testuser",
@@ -41,7 +39,6 @@ const TEST_USER = {
     is_announcer: false,
 } as const;
 
-/*
 const UNSTARTED_MATCH = {
     id: 1,
     name: "Test Match 2",
@@ -53,29 +50,49 @@ const UNSTARTED_MATCH = {
     black_ready: false,
     white_ready: false,
 } as const;
-*/
 
+// Mocks
+
+// mock backend calls
 jest.mock("requests");
+
+// mock useNavigate, so we can test login buttons etc
+const mockedUseNavigate = jest.fn();
+
+jest.mock("react-router-dom", () => ({
+    ...(jest.requireActual("react-router-dom") as any),
+    useNavigate: () => mockedUseNavigate,
+}));
+
+// EmbeddedChatCard has a TabCompleteInput in it that doesn't work under jest
+// so we have to mock it out from the landing page we're testing
+jest.mock("../../../src/components/Chat", () => {
+    return {
+        EmbeddedChatCard: jest.fn(() => {
+            return <div className="EmbeddedChatCardMock" />;
+        }),
+    };
+});
 
 describe("COOL Player landing tests", () => {
     test("logged out player arrival", async () => {
         const user = { ...TEST_USER, anonymous: true };
         jest.spyOn(ogs_hooks, "useUser").mockReturnValue(user);
 
+        // The landing page has to ask the back-end about this match, so that it
+        // can display the details to the user.
         (requests.get as jest.MockedFunction<typeof requests.get>).mockImplementation(
             (url: string) => {
-                console.log(url);
+                expect(url).toEqual("online_league/commence?side=black&id=testid");
                 return new Promise((resolve) => {
-                    resolve({
-                        data: "foo",
-                    });
+                    resolve(UNSTARTED_MATCH);
                 });
             },
         );
 
-        //let res: ReturnType<typeof render>;
+        let rendered: HTMLElement;
         await act(async () => {
-            render(
+            rendered = render(
                 <OgsHelpProvider>
                     <MemoryRouter
                         initialEntries={["/online-league/league-player?side=black&id=testid"]}
@@ -88,30 +105,70 @@ describe("COOL Player landing tests", () => {
                         </Routes>
                     </MemoryRouter>
                 </OgsHelpProvider>,
-            );
+            ).container;
         });
 
-        expect(screen.getByText("Welcome to OGS!")).toBeDefined();
+        // There should be a welcome header for not-logged in players
+        expect(rendered.querySelector("#cool-player-landing-header"))
+            .toBeInTheDocument()
+            .toHaveTextContent("Welcome");
+
+        // The match name and number should be listed
+        expect(screen.getByText(UNSTARTED_MATCH.name));
+        expect(
+            screen.getByText(`${UNSTARTED_MATCH.league} Match ${UNSTARTED_MATCH.id}`, {
+                exact: false,
+            }),
+        );
+
+        // And there should be register and login buttons
+        const signInButton = getByRole(rendered, "button", { name: "Sign In" });
+        const registerButton = getByRole(rendered, "button", { name: "Register" });
+        expect(signInButton).toBeInTheDocument();
+        expect(registerButton).toBeInTheDocument();
+
+        // The sign in button should try to navigate to the sign in page
+        // with a # return URL
+
+        await act(async () => {
+            fireEvent.click(signInButton);
+        });
+        expect(mockedUseNavigate).toHaveBeenCalledWith(
+            "/sign-in#/online-league/league-player",
+            expect.anything(),
+        );
+
+        // The register button should try to navigate to the register page
+        // with a # return URL
+
+        await act(async () => {
+            fireEvent.click(registerButton);
+        });
+        expect(mockedUseNavigate).toHaveBeenCalledWith(
+            "/register#/online-league/league-player",
+            expect.anything(),
+        );
     });
 
     test("logged in player arrival", async () => {
         jest.spyOn(ogs_hooks, "useUser").mockReturnValue(TEST_USER);
-        // data.set("user", TEST_USER);
 
+        // we have to clear this, because it's left over from other tests :S
+        data.set("pending_league_match", null);
+
+        // Landing page hits back-end to find out match status
         (requests.get as jest.MockedFunction<typeof requests.get>).mockImplementation(
             (url: string) => {
-                console.log(url);
+                expect(url).toEqual("online_league/commence?side=black&id=testid");
                 return new Promise((resolve) => {
-                    resolve({
-                        data: "foo",
-                    });
+                    resolve(UNSTARTED_MATCH);
                 });
             },
         );
 
-        let res: ReturnType<typeof render>;
+        let rendered: HTMLElement;
         await act(async () => {
-            res = render(
+            rendered = render(
                 <OgsHelpProvider>
                     <MemoryRouter
                         initialEntries={["/online-league/league-player?side=black&id=testid"]}
@@ -124,10 +181,67 @@ describe("COOL Player landing tests", () => {
                         </Routes>
                     </MemoryRouter>
                 </OgsHelpProvider>,
-            );
+            ).container;
         });
 
-        const { container } = res;
-        expect(container.children).toHaveLength(1);
+        // There should not be a "welcome" header for logged in players
+        expect(rendered.querySelector("#cool-player-landing-header"))
+            .toBeInTheDocument()
+            .toHaveTextContent(/^$/);
+
+        // The match name and number should be listed
+        expect(screen.getByText(UNSTARTED_MATCH.name));
+        expect(
+            screen.getByText(`${UNSTARTED_MATCH.league} Match ${UNSTARTED_MATCH.id}`, {
+                exact: false,
+            }),
+        );
+
+        // There should be the I'm Ready button
+        const imReadyButton = getByRole(rendered, "button", { name: "I'm Ready" });
+        expect(imReadyButton).toBeInTheDocument();
+
+        // And display of player waiting status
+        expect(screen.getByText("Black:", { exact: false })).toHaveTextContent("waiting");
+        expect(screen.getByText("White:", { exact: false })).toHaveTextContent("waiting");
+
+        // When they press the button, we're supposed to tell the back end
+
+        (requests.put as jest.MockedFunction<typeof requests.put>).mockImplementation(
+            (url: string) => {
+                expect(url).toEqual("online_league/commence?side=black&id=testid&ready=true");
+                return new Promise((resolve) => {
+                    resolve({
+                        ...UNSTARTED_MATCH,
+                        black_ready: true,
+                    });
+                });
+            },
+        );
+
+        await act(async () => {
+            fireEvent.click(imReadyButton);
+        });
+
+        expect(screen.getByText("Black:", { exact: false })).toHaveTextContent(/^(?!.*waiting).*$/);
+        expect(screen.getByText("White:", { exact: false })).toHaveTextContent("waiting");
+
+        (requests.put as jest.MockedFunction<typeof requests.put>).mockImplementation(
+            (url: string) => {
+                expect(url).toEqual("online_league/commence?side=black&id=testid&ready=false");
+                return new Promise((resolve) => {
+                    resolve({
+                        ...UNSTARTED_MATCH,
+                    });
+                });
+            },
+        );
+
+        await act(async () => {
+            fireEvent.click(imReadyButton);
+        });
+
+        expect(screen.getByText("Black:", { exact: false })).toHaveTextContent("waiting");
+        expect(screen.getByText("White:", { exact: false })).toHaveTextContent("waiting");
     });
 });
