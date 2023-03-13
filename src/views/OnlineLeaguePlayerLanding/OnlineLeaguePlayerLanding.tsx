@@ -98,7 +98,6 @@ export function OnlineLeaguePlayerLanding(): JSX.Element {
                     navigate(`/game/${matchStatus.game}`, { replace: true });
                 } else {
                     set_match(matchStatus);
-                    console.log("updated match", matchStatus);
                 }
             })
             .catch((err) => {
@@ -171,7 +170,7 @@ export function OnlineLeaguePlayerLanding(): JSX.Element {
     /* Render */
     return (
         <div id="OnlineLeaguePlayerLanding">
-            <h2>
+            <h2 id="cool-player-landing-header">
                 {logged_in
                     ? "" /* this vertical space intentionally left blank! */
                     : _("Welcome to OGS!")}

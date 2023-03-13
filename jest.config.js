@@ -25,4 +25,5 @@ module.exports = {
         "node_modules"
     ],
     "setupFiles": ["./setup-jest.js"],
+    "setupFilesAfterEnv": ["jest-chain"],
 }
