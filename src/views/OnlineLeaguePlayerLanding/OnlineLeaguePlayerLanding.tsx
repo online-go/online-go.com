@@ -112,9 +112,7 @@ export function OnlineLeaguePlayerLanding(): JSX.Element {
     };
 
     const jumpToGame = (details) => {
-        console.log("Jump to game?", details, match);
         if (details.matchId === match.id) {
-            console.log("yes, jumping...");
             navigate(`/game/${details.gameId}`, { replace: true });
         }
     };
