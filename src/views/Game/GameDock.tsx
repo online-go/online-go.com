@@ -424,7 +424,14 @@ export function GameDock({
             >
                 <i className="fa fa-tachometer"></i> {_("Estimate score")}
             </a>
-            <a onClick={fork} className={engine.rengo ? "disabled" : ""}>
+            <a
+                onClick={fork}
+                className={
+                    engine.rengo || (goban.isAnalysisDisabled() && phase !== "finished")
+                        ? "disabled"
+                        : ""
+                }
+            >
                 <i className="fa fa-code-fork"></i> {_("Fork game")}
             </a>
             <a onClick={alertModerator}>
