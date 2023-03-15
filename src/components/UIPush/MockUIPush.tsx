@@ -20,7 +20,22 @@ import "@testing-library/jest-dom";
 
 // mock UIPush to emulate server socket pushes
 
-// collect up all the actions found on UIPush components, so we can call them when we want to
+// ** Note: this component needs to be imported before the React components that are under test.
+
+// Use this hash: it collects up all the actions found on UIPush components in the React tree,
+// so you can call their action by event namein a test.
+//
+// For example:
+/*
+        // go to game when the server tells us it's ready
+        await act(async () => {
+            uiPushActions["online-league-game-commencement"]({
+                matchId: 1,
+                gameId: 999,
+            });
+        });
+*/
+
 export const uiPushActions = {};
 
 interface UIPushProperties {
