@@ -11,6 +11,8 @@ import { OgsHelpProvider } from "OgsHelpProvider";
 import * as requests from "requests";
 import * as data from "data";
 
+import { uiPushActions } from "../../components/UIPush/MockUIPush";
+
 import { OnlineLeaguePlayerLanding } from "./OnlineLeaguePlayerLanding";
 
 // Test data
@@ -63,29 +65,6 @@ jest.mock("react-router-dom", () => ({
     ...(jest.requireActual("react-router-dom") as any),
     useNavigate: () => mockedUseNavigate,
 }));
-
-// mock UIPush to emulate server socket pushes
-
-// collect up all the actions found on UIPush components, so we can call them when we want to
-const uiPushActions = {};
-
-interface UIPushProperties {
-    event: string;
-    channel?: string;
-    action: () => void;
-}
-
-function MockUIPush({ event, action }: UIPushProperties): JSX.Element {
-    React.useEffect(() => {
-        uiPushActions[event] = action;
-    }, [event, action]);
-    return null;
-}
-jest.mock("../../../src/components/UIPush", () => {
-    return {
-        UIPush: jest.fn(MockUIPush),
-    };
-});
 
 // EmbeddedChatCard has a TabCompleteInput in it that doesn't work under jest
 // so we have to mock it out from the landing page we're testing
