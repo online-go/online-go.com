@@ -16,33 +16,13 @@
  */
 
 import Debug from "debug";
-import { io } from "socket.io-client";
-import { protocol } from "goban";
-import { niceInterval } from "goban";
+import { GobanSocket, niceInterval, protocol } from "goban";
 
 const debug = new Debug("sockets");
 
-const io_config = {
-    reconnection: true,
-    reconnectionDelay: 750,
-    reconnectionDelayMax: 10000,
-    transports: ["websocket"],
-    upgrade: false,
-};
+export const socket = new GobanSocket(window["websocket_host"] ?? window.location.origin);
 
-const ai_config = {
-    reconnection: true,
-    reconnectionDelay: 750,
-    reconnectionDelayMax: 10000,
-    transports: ["websocket"],
-    upgrade: false,
-};
-
-export const socket = (window["websocket_host"]
-    ? io(window["websocket_host"], io_config)
-    : io(io_config)) as unknown as protocol.GobanSocket;
-
-export let ai_host = "";
+export let ai_host;
 if (
     window.location.hostname.indexOf("dev.beta") >= 0 &&
     window["websocket_host"] === "https://online-go.com"
@@ -63,13 +43,13 @@ if (
 } else if (window.location.hostname.indexOf("ogs") >= 0) {
     ai_host = `${window.location.protocol}//ai-${window.location.hostname}`;
 } else {
-    ai_host = null;
+    console.warn("AI Host not set, AI reviews will not work");
 }
 
-export const ai_socket = ai_host ? io(ai_host, ai_config) : io(ai_config);
+export const ai_socket = ai_host
+    ? new GobanSocket<protocol.ClientToAIServer, protocol.AIServerToClient>(ai_host)
+    : undefined;
 
-socket.send = socket.emit;
-ai_socket.send = ai_socket.emit;
 let connect_time = Date.now();
 let times_connected = 0;
 socket.on("connect", () => {
@@ -125,9 +105,10 @@ socket.on("connect", ping);
 niceInterval(ping, 10000);
 
 function ai_ping() {
-    if (ai_socket.connected) {
+    if (ai_socket && ai_socket.connected) {
         ai_socket.send("net/ping", {
             client: Date.now(),
+            drift: last_clock_drift,
             latency: last_ai_latency,
         });
     }
@@ -138,8 +119,8 @@ function ai_handle_pong(data) {
     last_ai_latency = latency;
 }
 
-ai_socket.on("connect", ai_ping);
-ai_socket.on("net/pong", ai_handle_pong);
+ai_socket?.on("connect", ai_ping);
+ai_socket?.on("net/pong", ai_handle_pong);
 niceInterval(ai_ping, 20000);
 
 export default {
@@ -150,3 +131,26 @@ export default {
 };
 
 (window as any)["socket"] = socket;
+
+const goban_socket = new GobanSocket(window.location.origin.replace("http", "ws") + "/");
+goban_socket.on("connect", () => {
+    console.log("Connected to Goban server");
+});
+goban_socket.on("disconnect", () => {
+    console.log("Disconnected from Goban server");
+});
+goban_socket.on("error", (err) => {
+    console.error("Error from Goban server", err);
+});
+goban_socket.on("latency", (latency) => {
+    console.log("Goban server latency", latency);
+});
+
+/*
+setInterval(async () => {
+    const hi = await goban_socket.sendPromise("hostinfo", {});
+    console.log(hi);
+}, 1000);
+*/
+
+(window as any)["goban_socket"] = goban_socket;
