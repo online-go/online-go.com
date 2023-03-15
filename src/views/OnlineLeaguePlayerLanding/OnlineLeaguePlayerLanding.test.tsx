@@ -11,9 +11,9 @@ import { OgsHelpProvider } from "OgsHelpProvider";
 import * as requests from "requests";
 import * as data from "data";
 
-import { OnlineLeaguePlayerLanding } from "./OnlineLeaguePlayerLanding";
+import { uiPushActions } from "../../components/UIPush/MockUIPush";
 
-import { uiPushActions } from "./MockUIPush";
+import { OnlineLeaguePlayerLanding } from "./OnlineLeaguePlayerLanding";
 
 // Test data
 
