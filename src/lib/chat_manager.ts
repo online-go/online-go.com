@@ -347,13 +347,13 @@ class ChatChannel extends TypedEventEmitter<Events> {
     handleAnonymousOverride = () => {
         if (inGameModChannel(this.channel)) {
             socket.off("connect", this._rejoin);
-            socket.emit("chat/part", { channel: this.channel });
+            socket.send("chat/part", { channel: this.channel });
             for (const user_id in this.user_list) {
                 this.handlePart(this.user_list[user_id]);
             }
         } else {
             socket.on("connect", this._rejoin);
-            socket.emit("chat/join", { channel: this.channel });
+            socket.send("chat/join", { channel: this.channel });
         }
     };
 
@@ -380,12 +380,12 @@ class ChatChannel extends TypedEventEmitter<Events> {
 
     _rejoin = () => {
         if (socket.connected) {
-            socket.emit("chat/join", { channel: this.channel });
+            socket.send("chat/join", { channel: this.channel });
         }
     };
     _destroy() {
         if (socket.connected) {
-            socket.emit("chat/part", { channel: this.channel });
+            socket.send("chat/part", { channel: this.channel });
         }
         socket.off("connect", this._rejoin);
         this.removeAllListeners();

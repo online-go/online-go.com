@@ -51,15 +51,10 @@ export const ai_socket = ai_host
     : undefined;
 
 let connect_time = Date.now();
-let times_connected = 0;
 socket.on("connect", () => {
     debug.log("Connection to server established.");
-    socket.emit("hostinfo");
+    socket.send("hostinfo", {});
     connect_time = Date.now();
-    ++times_connected;
-    if (times_connected > 1) {
-        socket.emit("times_connected", times_connected);
-    }
 });
 socket.on("HUP", () => window.location.reload());
 socket.on("hostinfo", (hostinfo) => {
