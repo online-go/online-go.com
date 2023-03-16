@@ -131,26 +131,3 @@ export default {
 };
 
 (window as any)["socket"] = socket;
-
-const goban_socket = new GobanSocket(window.location.origin.replace("http", "ws") + "/");
-goban_socket.on("connect", () => {
-    console.log("Connected to Goban server");
-});
-goban_socket.on("disconnect", () => {
-    console.log("Disconnected from Goban server");
-});
-goban_socket.on("error", (err) => {
-    console.error("Error from Goban server", err);
-});
-goban_socket.on("latency", (latency) => {
-    console.log("Goban server latency", latency);
-});
-
-/*
-setInterval(async () => {
-    const hi = await goban_socket.sendPromise("hostinfo", {});
-    console.log(hi);
-}, 1000);
-*/
-
-(window as any)["goban_socket"] = goban_socket;
