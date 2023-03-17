@@ -591,7 +591,9 @@ export class Play extends React.Component<{}, PlayState> {
                         <div className="custom-games-list-header-row">{_("Custom Games")}</div>
                         <div className="challenge-list" onMouseMove={this.freezeChallenges}>
                             <div className="challenge-row">
-                                <span className="cell break">{_("Short Games")}</span>
+                                <span className="cell break challenge-row-heading">
+                                    {_("Short Games")}
+                                </span>
                                 {this.cellBreaks(8)}
                             </div>
 
@@ -611,7 +613,9 @@ export class Play extends React.Component<{}, PlayState> {
                                         onMouseMove={this.freezeChallenges}
                                     >
                                         <div className="challenge-row">
-                                            <span className="cell break">{_("Rengo")}</span>
+                                            <span className="cell break challenge-row-heading sub">
+                                                {_("Rengo")}
+                                            </span>
                                         </div>
                                         <table id="rengo-table">
                                             <thead>{this.rengoListHeaders()}</thead>
@@ -626,7 +630,10 @@ export class Play extends React.Component<{}, PlayState> {
 
                         <div className="challenge-list" onMouseMove={this.freezeChallenges}>
                             <div className="challenge-row">
-                                <span className="cell break" style={{ maxWidth: "5rem" }}>
+                                <span
+                                    className="cell break challenge-row-heading"
+                                    style={{ maxWidth: "5rem" }}
+                                >
                                     {_("Correspondence Games")}
                                 </span>
                                 {this.cellBreaks(8)}
@@ -642,8 +649,10 @@ export class Play extends React.Component<{}, PlayState> {
                         </div>
                         {this.state.filter.showRengo && (
                             <div className="challenge-list" onMouseMove={this.freezeChallenges}>
-                                <div className="challenge-row" style={{ marginTop: "1em" }}>
-                                    <span className="cell break">{_("Rengo")}</span>
+                                <div className="challenge-row">
+                                    <span className="cell break challenge-row-heading sub">
+                                        {_("Rengo")}
+                                    </span>
                                 </div>
                                 <table id="rengo-table">
                                     <thead>

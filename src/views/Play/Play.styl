@@ -102,6 +102,15 @@
         cursor: help;
     }
 
+    .challenge-row-heading {
+        // make sure these don't mess with column widths in the following rows
+        max-width: 5rem;
+    }
+
+    .challenge-row-heading.sub {
+        padding-left: 1rem !important; // cells already hav a padding-left specified
+    }
+
     .challenge-row {
         padding-top: 0.2em;
         padding-bottom: 0.2em;
