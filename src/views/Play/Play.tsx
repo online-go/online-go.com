@@ -63,7 +63,8 @@ const CHALLENGE_LIST_FREEZE_PERIOD = 1000; // Freeze challenge list for this per
 interface PlayState {
     live_list: Array<Challenge>;
     correspondence_list: Array<Challenge>;
-    rengo_list: Array<Challenge>;
+    live_rengo_list: Array<Challenge>;
+    correspondence_rengo_list: Array<Challenge>;
     showLoadingSpinnerForCorrespondence: boolean;
     filter: ChallengeFilter;
     automatch_size_options: Size[];
@@ -106,7 +107,8 @@ export class Play extends React.Component<{}, PlayState> {
         this.state = {
             live_list: [],
             correspondence_list: [],
-            rengo_list: [],
+            live_rengo_list: [],
+            correspondence_rengo_list: [],
             showLoadingSpinnerForCorrespondence: false,
             filter: filter as ChallengeFilter,
             automatch_size_options: data.get("automatch.size_options", ["9x9", "13x13", "19x19"]),
@@ -174,11 +176,17 @@ export class Play extends React.Component<{}, PlayState> {
     };
 
     updateChallenges = (challenges: Challenge[]) => {
+        let live = [];
+        let corr = [];
+        let live_rengo = [];
+        let corre_rengo = [];
+
         if (this.state.freeze_challenge_list) {
-            const live = this.state.live_list;
-            const corr = this.state.correspondence_list;
-            const rengo = this.state.rengo_list;
-            for (const list of [live, corr, rengo]) {
+            live = this.state.live_list;
+            corr = this.state.correspondence_list;
+            live_rengo = this.state.live_rengo_list;
+            corre_rengo = this.state.correspondence_rengo_list;
+            for (const list of [live, corr, live_rengo, corre_rengo]) {
                 for (const i in list) {
                     const id = list[i].challenge_id;
                     if (!challenges[id]) {
@@ -200,9 +208,7 @@ export class Play extends React.Component<{}, PlayState> {
         }
 
         //console.log("Updating challenges with:", challenges);
-        const live = [];
-        const corr = [];
-        const rengo = [];
+
         for (const i in challenges) {
             const C = challenges[i];
             player_cache
@@ -219,7 +225,11 @@ export class Play extends React.Component<{}, PlayState> {
             }
 
             if (C.rengo) {
-                rengo.push(C);
+                if (isLiveGame(C.time_control_parameters, C.width, C.height)) {
+                    live_rengo.push(C);
+                } else {
+                    corre_rengo.push(C);
+                }
             } else if (isLiveGame(C.time_control_parameters, C.width, C.height)) {
                 live.push(C);
             } else {
@@ -228,13 +238,15 @@ export class Play extends React.Component<{}, PlayState> {
         }
         live.sort(challenge_sort);
         corr.sort(challenge_sort);
-        rengo.sort(time_per_move_challenge_sort);
+        live_rengo.sort(time_per_move_challenge_sort);
+        corre_rengo.sort(time_per_move_challenge_sort);
 
         //console.log("list update...");
         this.setState({
             live_list: live,
             correspondence_list: corr,
-            rengo_list: rengo,
+            live_rengo_list: live_rengo,
+            correspondence_rengo_list: corre_rengo,
             pending_challenges: [],
         });
     };
@@ -393,7 +405,10 @@ export class Play extends React.Component<{}, PlayState> {
 
     ownRengoChallengesPending = (): Challenge[] => {
         // multiple correspondence are possible, plus one live
-        const orcp = this.state.rengo_list.filter((c) => c.user_challenge);
+        const orcp = [
+            ...this.state.live_rengo_list,
+            ...this.state.correspondence_rengo_list,
+        ].filter((c) => c.user_challenge);
         //console.log("own rcp", orcp);
         return orcp;
     };
@@ -401,9 +416,10 @@ export class Play extends React.Component<{}, PlayState> {
     joinedRengoChallengesPending = (): Challenge[] => {
         // multiple correspondence are possible, plus one live
         const user_id = data.get("config.user").id;
-        const jrcp = this.state.rengo_list.filter(
-            (c) => c["rengo_participants"].includes(user_id) && !c.user_challenge,
-        );
+        const jrcp = [
+            ...this.state.live_rengo_list,
+            ...this.state.correspondence_rengo_list,
+        ].filter((c) => c["rengo_participants"].includes(user_id) && !c.user_challenge);
         // console.log("joined rcp", jrcp);
         return jrcp;
     };
@@ -413,7 +429,7 @@ export class Play extends React.Component<{}, PlayState> {
             clearTimeout(this.list_freeze_timeout);
         }
         if (!this.state.freeze_challenge_list) {
-            //console.log("Freeze challenges...");
+            console.log("Freeze challenges...");
             this.setState({ freeze_challenge_list: true });
         }
         this.list_freeze_timeout = setTimeout(
@@ -423,7 +439,7 @@ export class Play extends React.Component<{}, PlayState> {
     };
 
     unfreezeChallenges = () => {
-        //console.log("Unfreeze challenges...");
+        console.log("Unfreeze challenges...");
         this.setState({ freeze_challenge_list: false });
         if (this.list_freeze_timeout) {
             clearTimeout(this.list_freeze_timeout);
@@ -476,85 +492,104 @@ export class Play extends React.Component<{}, PlayState> {
 
                 <div id="challenge-list-container">
                     <div id="challenge-list-inner-container">
-                        <div id="challenge-list" onMouseMove={this.freezeChallenges}>
+                        <div className="challenge-list" onMouseMove={this.freezeChallenges}>
                             {(corr_automatchers.length || null) && (
-                                <div className="challenge-row">
-                                    <span className="cell break">
-                                        {_("Your Automatch Requests")}
-                                    </span>
-                                    {this.cellBreaks(7)}
-                                </div>
-                            )}
-                            {(corr_automatchers.length || null) && (
-                                <div className="challenge-row">
-                                    <span className="head">{/* buttons */}</span>
-                                    <span className="head">{_("Rank")}</span>
-                                    <span className="head">{_("Size")}</span>
-                                    <span className="head">{_("Time Control")}</span>
-                                    <span className="head">{_("Handicap")}</span>
-                                    <span className="head">{_("Rules")}</span>
-                                </div>
-                            )}
-                            {corr_automatchers.map((m) => (
-                                <div className="challenge-row automatch-challenge-row" key={m.uuid}>
-                                    <span className="cell">
-                                        <button
-                                            className="reject xs"
-                                            onClick={() => {
-                                                automatch_manager.cancel(m.uuid);
-                                                if (corr_automatchers.length === 1) {
-                                                    this.setState({
-                                                        showLoadingSpinnerForCorrespondence: false,
-                                                    });
-                                                }
-                                            }}
+                                <>
+                                    <div className="challenge-row">
+                                        <span className="cell break">
+                                            {_("Your Automatch Requests")}
+                                        </span>
+                                        {this.cellBreaks(7)}
+                                    </div>
+                                    <div className="challenge-row">
+                                        <span className="head">{/* buttons */}</span>
+                                        <span className="head">{_("Rank")}</span>
+                                        <span className="head">{_("Size")}</span>
+                                        <span className="head">{_("Time Control")}</span>
+                                        <span className="head">{_("Handicap")}</span>
+                                        <span className="head">{_("Rules")}</span>
+                                    </div>
+
+                                    {corr_automatchers.map((m) => (
+                                        <div
+                                            className="challenge-row automatch-challenge-row"
+                                            key={m.uuid}
                                         >
-                                            {pgettext("Cancel automatch", "Cancel")}
-                                        </button>
-                                    </span>
-
-                                    <span className="cell">
-                                        {m.lower_rank_diff === m.upper_rank_diff ? (
-                                            <span>&plusmn; {m.lower_rank_diff}</span>
-                                        ) : (
-                                            <span>
-                                                -{m.lower_rank_diff} &nbsp; +{m.upper_rank_diff}
+                                            <span className="cell">
+                                                <button
+                                                    className="reject xs"
+                                                    onClick={() => {
+                                                        automatch_manager.cancel(m.uuid);
+                                                        if (corr_automatchers.length === 1) {
+                                                            this.setState({
+                                                                showLoadingSpinnerForCorrespondence:
+                                                                    false,
+                                                            });
+                                                        }
+                                                    }}
+                                                >
+                                                    {pgettext("Cancel automatch", "Cancel")}
+                                                </button>
                                             </span>
-                                        )}
-                                    </span>
 
-                                    <span className="cell">
-                                        {m.size_speed_options
-                                            .filter((x) => x.speed === "correspondence")
-                                            .map((x) => x.size)
-                                            .join(",")}
-                                    </span>
+                                            <span className="cell">
+                                                {m.lower_rank_diff === m.upper_rank_diff ? (
+                                                    <span>&plusmn; {m.lower_rank_diff}</span>
+                                                ) : (
+                                                    <span>
+                                                        -{m.lower_rank_diff} &nbsp; +
+                                                        {m.upper_rank_diff}
+                                                    </span>
+                                                )}
+                                            </span>
 
-                                    <span className={m.time_control.condition + " cell"}>
-                                        {m.time_control.condition === "no-preference"
-                                            ? pgettext("Automatch: no preference", "No preference")
-                                            : timeControlSystemText(m.time_control.value.system)}
-                                    </span>
+                                            <span className="cell">
+                                                {m.size_speed_options
+                                                    .filter((x) => x.speed === "correspondence")
+                                                    .map((x) => x.size)
+                                                    .join(",")}
+                                            </span>
 
-                                    <span className={m.handicap.condition + " cell"}>
-                                        {m.handicap.condition === "no-preference"
-                                            ? pgettext("Automatch: no preference", "No preference")
-                                            : m.handicap.value === "enabled"
-                                            ? pgettext("Handicap dnabled", "Enabled")
-                                            : pgettext("Handicap disabled", "Disabled")}
-                                    </span>
+                                            <span className={m.time_control.condition + " cell"}>
+                                                {m.time_control.condition === "no-preference"
+                                                    ? pgettext(
+                                                          "Automatch: no preference",
+                                                          "No preference",
+                                                      )
+                                                    : timeControlSystemText(
+                                                          m.time_control.value.system,
+                                                      )}
+                                            </span>
 
-                                    <span className={m.rules.condition + " cell"}>
-                                        {m.rules.condition === "no-preference"
-                                            ? pgettext("Automatch: no preference", "No preference")
-                                            : rulesText(m.rules.value)}
-                                    </span>
-                                    <span className="cell"></span>
-                                </div>
-                            ))}
+                                            <span className={m.handicap.condition + " cell"}>
+                                                {m.handicap.condition === "no-preference"
+                                                    ? pgettext(
+                                                          "Automatch: no preference",
+                                                          "No preference",
+                                                      )
+                                                    : m.handicap.value === "enabled"
+                                                    ? pgettext("Handicap dnabled", "Enabled")
+                                                    : pgettext("Handicap disabled", "Disabled")}
+                                            </span>
 
-                            <div className="custom-games-list-header-row">{_("Custom Games")}</div>
+                                            <span className={m.rules.condition + " cell"}>
+                                                {m.rules.condition === "no-preference"
+                                                    ? pgettext(
+                                                          "Automatch: no preference",
+                                                          "No preference",
+                                                      )
+                                                    : rulesText(m.rules.value)}
+                                            </span>
+                                            <span className="cell"></span>
+                                        </div>
+                                    ))}
 
+                                    <div style={{ marginTop: "2em" }}></div>
+                                </>
+                            )}
+                        </div>
+                        <div className="custom-games-list-header-row">{_("Custom Games")}</div>
+                        <div className="challenge-list" onMouseMove={this.freezeChallenges}>
                             <div className="challenge-row">
                                 <span className="cell break">{_("Short Games")}</span>
                                 {this.cellBreaks(8)}
@@ -565,11 +600,35 @@ export class Play extends React.Component<{}, PlayState> {
                                 : null}
 
                             {this.challengeList(true)}
-
                             <div style={{ marginTop: "2em" }}></div>
+                        </div>
 
-                            <div className="challenge-row" style={{ marginTop: "1em" }}>
-                                <span className="cell break">{_("Long Games")}</span>
+                        {this.state.filter.showRengo &&
+                            this.anyChallengesToShow(this.state.live_rengo_list) && (
+                                <>
+                                    <div
+                                        className="challenge-list"
+                                        onMouseMove={this.freezeChallenges}
+                                    >
+                                        <div className="challenge-row">
+                                            <span className="cell break">{_("Rengo")}</span>
+                                        </div>
+                                        <table id="rengo-table">
+                                            <thead>{this.rengoListHeaders()}</thead>
+                                            <tbody>
+                                                {this.rengoList(this.state.live_rengo_list)}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div style={{ marginTop: "2em" }}></div>
+                                </>
+                            )}
+
+                        <div className="challenge-list" onMouseMove={this.freezeChallenges}>
+                            <div className="challenge-row">
+                                <span className="cell break" style={{ maxWidth: "5rem" }}>
+                                    {_("Correspondence Games")}
+                                </span>
                                 {this.cellBreaks(8)}
                             </div>
 
@@ -582,17 +641,21 @@ export class Play extends React.Component<{}, PlayState> {
                             <div style={{ marginTop: "2em" }}></div>
                         </div>
                         {this.state.filter.showRengo && (
-                            <div id="challenge-list" onMouseMove={this.freezeChallenges}>
+                            <div className="challenge-list" onMouseMove={this.freezeChallenges}>
                                 <div className="challenge-row" style={{ marginTop: "1em" }}>
                                     <span className="cell break">{_("Rengo")}</span>
                                 </div>
                                 <table id="rengo-table">
                                     <thead>
-                                        {this.anyChallengesToShow(this.state.rengo_list)
+                                        {this.anyChallengesToShow(
+                                            this.state.correspondence_rengo_list,
+                                        )
                                             ? this.rengoListHeaders()
                                             : null}
                                     </thead>
-                                    <tbody>{this.rengoList()}</tbody>
+                                    <tbody>
+                                        {this.rengoList(this.state.correspondence_rengo_list)}
+                                    </tbody>
                                 </table>
                             </div>
                         )}
@@ -668,7 +731,10 @@ export class Play extends React.Component<{}, PlayState> {
                     <RengoManagementPane
                         user={user}
                         challenge_id={rengo_challenge_to_show.challenge_id}
-                        rengo_challenge_list={this.state.rengo_list}
+                        rengo_challenge_list={[
+                            ...this.state.live_rengo_list,
+                            ...this.state.correspondence_rengo_list,
+                        ]}
                         startRengoChallenge={rengo_utils.startOwnRengoChallenge}
                         cancelChallenge={this.cancelOpenChallenge}
                         withdrawFromRengoChallenge={this.unNominateForRengoChallenge}
@@ -677,7 +743,10 @@ export class Play extends React.Component<{}, PlayState> {
                         <RengoTeamManagementPane
                             user={user}
                             challenge_id={rengo_challenge_to_show.challenge_id}
-                            challenge_list={this.state.rengo_list}
+                            challenge_list={[
+                                ...this.state.live_rengo_list,
+                                ...this.state.correspondence_rengo_list,
+                            ]}
                             moderator={user.is_moderator}
                             show_chat={false}
                             assignToTeam={rengo_utils.assignToTeam}
@@ -1003,8 +1072,8 @@ export class Play extends React.Component<{}, PlayState> {
         rengo_utils.nominateForRengoChallenge(C).catch(errorAlerter);
     };
 
-    rengoList = () => {
-        if (!this.anyChallengesToShow(this.state.rengo_list)) {
+    rengoList = (rengo_challenge_list: Array<Challenge>) => {
+        if (!this.anyChallengesToShow(rengo_challenge_list)) {
             return (
                 <tr key="none-available">
                     <td colSpan={9}>
@@ -1026,39 +1095,12 @@ export class Play extends React.Component<{}, PlayState> {
 
         const user = data.get("user");
 
-        const live_list = this.state.rengo_list.filter((c) =>
-            isLiveGame(c.time_control_parameters, c.width, c.height),
-        );
-        const corr_list = this.state.rengo_list.filter(
-            (c) => !isLiveGame(c.time_control_parameters, c.width, c.height),
-        );
-
         return (
-            <>
-                <tr className="challenge-row">
-                    <td className="cell">{_("Live:")}</td>
-                </tr>
-                <this.rengoChallengeManagementList
-                    challenge_list={live_list}
-                    user={user}
-                    key="live"
-                />
-
-                <tr className="challenge-row">
-                    <td className="cell" colSpan={10}>
-                        <hr />
-                    </td>
-                </tr>
-
-                <tr className="challenge-row">
-                    <td className="cell">{_("Correspondence:")}</td>
-                </tr>
-                <this.rengoChallengeManagementList
-                    challenge_list={corr_list}
-                    user={user}
-                    key="corr"
-                />
-            </>
+            <this.rengoChallengeManagementList
+                challenge_list={rengo_challenge_list}
+                user={user}
+                key="live"
+            />
         );
     };
 
@@ -1150,7 +1192,10 @@ export class Play extends React.Component<{}, PlayState> {
                         <RengoManagementPane
                             user={user}
                             challenge_id={C.challenge_id}
-                            rengo_challenge_list={this.state.rengo_list}
+                            rengo_challenge_list={[
+                                ...this.state.live_rengo_list,
+                                ...this.state.correspondence_rengo_list,
+                            ]}
                             startRengoChallenge={rengo_utils.startOwnRengoChallenge}
                             cancelChallenge={this.cancelOpenChallenge}
                             withdrawFromRengoChallenge={this.unNominateForRengoChallenge}
@@ -1160,7 +1205,10 @@ export class Play extends React.Component<{}, PlayState> {
                             <RengoTeamManagementPane
                                 user={user}
                                 challenge_id={C.challenge_id}
-                                challenge_list={this.state.rengo_list}
+                                challenge_list={[
+                                    ...this.state.live_rengo_list,
+                                    ...this.state.correspondence_rengo_list,
+                                ]}
                                 moderator={user.is_moderator}
                                 show_chat={true}
                                 assignToTeam={rengo_utils.assignToTeam}
