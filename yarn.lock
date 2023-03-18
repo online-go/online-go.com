@@ -5128,12 +5128,10 @@ glogg@^1.0.0:
   dependencies:
     sparkles "^1.0.0"
 
-goban@=0.6.14:
-  version "0.6.14"
-  resolved "https://registry.yarnpkg.com/goban/-/goban-0.6.14.tgz#47f61dfff848a9eb40066294e2398910d50c093e"
-  integrity sha512-wS4w6AClljHb8qrFixOgYTfJ8tUCXQ8iRiwv2SaR6k6TO26eZi5sMu52GJtHWgVERqKzEQWgneQrUxuP6k/zPA==
-  dependencies:
-    modern-isomorphic-ws "^1.0.3"
+goban@=0.7.0-beta.1:
+  version "0.7.0-beta.1"
+  resolved "https://registry.yarnpkg.com/goban/-/goban-0.7.0-beta.1.tgz#769c3e80c32090c23a4daa9e62074f07324d6fa5"
+  integrity sha512-Wy2/4pjEbAoeb2YljThbXCXzea7IN8Vxm/x9iIRculAX00WRUQalBikS9oCmWb9YoFLtQdnjcHZLCSN1qHamkw==
 
 google-auth-library@^8.0.2:
   version "8.5.2"
@@ -7299,11 +7297,6 @@ mkdirp@^0.5.3:
   integrity sha512-FP+p8RB8OWpF3YZBCrP5gtADmtXApB5AMLn+vdyA+PyxCjrCs00mjyUozssO33cwDeT3wNGdLxJ5M//YqtHAJw==
   dependencies:
     minimist "^1.2.6"
-
-modern-isomorphic-ws@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/modern-isomorphic-ws/-/modern-isomorphic-ws-1.0.3.tgz#e1fc3e2a3ecf2d6e530ae6a3e5997838d2c64fcd"
-  integrity sha512-l513ZrCAgfxbg9hLV2PP+xJdv9Rme3zF7bVETHZChcJ3oFHXCtmGcxp8gCXA2fXEAMaPSg2TRrK2JjIImMgK3w==
 
 moment-duration-format@^2.3.2:
   version "2.3.2"
