@@ -561,7 +561,7 @@ function remote_sync() {
             since: last_modified,
         },
         (ret) => {
-            if (ret.error) {
+            if ("error" in ret && ret.error) {
                 console.error(ret.error);
             } else {
                 // success
