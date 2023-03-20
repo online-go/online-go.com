@@ -102,7 +102,9 @@ class ReportManager extends EventEmitter<Events> {
             connect_fn();
         }
 
-        socket.on("incident-report", (report: Report) => this.updateIncidentReport(report));
+        socket.on("incident-report", (report) =>
+            this.updateIncidentReport(report as any as Report),
+        );
 
         preferences.watch("moderator.report-settings", () => {
             this.update();

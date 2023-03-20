@@ -596,7 +596,7 @@ ITC.register("remote_storage/sync_needed", () => {
 
 // After we've sent a synchronization request, we'll get these update messages
 // for each key that's been updated since the timestamp we sent
-socket.on("remote_storage/update", (row: RemoteKV) => {
+socket.on("remote_storage/update", (row) => {
     const user = store["config.user"];
 
     if (!user || user.anonymous) {
@@ -608,7 +608,8 @@ socket.on("remote_storage/update", (row: RemoteKV) => {
 
     const current_data_value = get(row.key as keyof DataSchema);
 
-    if (row.replication === Replication.REMOTE_OVERWRITES_LOCAL) {
+    const replication_mode: Replication = row.replication as any;
+    if (replication_mode === Replication.REMOTE_OVERWRITES_LOCAL) {
         setWithoutEmit(row.key as keyof DataSchema, row.value);
     }
 

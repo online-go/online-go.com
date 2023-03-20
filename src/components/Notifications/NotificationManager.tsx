@@ -351,7 +351,8 @@ export class NotificationManager {
             if (this.boards_to_move_on[game.id]) {
                 const current_game_id = getCurrentGameId();
                 if (current_game_id !== game.id || !document.hasFocus()) {
-                    if (game.avg_move_time > 3600) {
+                    //if (game.avg_move_time > 3600) {
+                    if (game.time_per_move > 3600) {
                         // don't notify for realtime games ever
                         emitNotification(
                             _("Your Turn"),

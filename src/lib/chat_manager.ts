@@ -38,7 +38,7 @@ export interface ChatMessage {
     ui_class: string;
     country?: string;
     message: {
-        i: string; // uuid;
+        i?: string; // uuid;
         t: number; // epoch in seconds
         m: string; // the text
     };

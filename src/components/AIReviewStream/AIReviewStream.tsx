@@ -18,7 +18,7 @@
 import * as React from "react";
 import * as data from "data";
 import { ai_socket } from "sockets";
-import { MoveTree } from "goban";
+import { MoveTree, GobanSocketEvents } from "goban";
 import { IdType } from "src/lib/types";
 
 const analysis_requests_made: { [id: string]: boolean } = {};
@@ -41,7 +41,7 @@ export function AIReviewStream(props: AIReviewStreamProperties): JSX.Element {
             return;
         } else {
             ai_socket?.on("connect", onConnect);
-            ai_socket?.on(uuid, onMessage);
+            ai_socket?.on(uuid as keyof GobanSocketEvents, onMessage);
             if (ai_socket.connected) {
                 onConnect();
             }
@@ -76,7 +76,7 @@ export function AIReviewStream(props: AIReviewStreamProperties): JSX.Element {
                 ai_socket?.send("ai-review-disconnect", { uuid });
             }
             ai_socket?.off("connect", onConnect);
-            ai_socket?.off(uuid, onMessage);
+            ai_socket?.off(uuid as keyof GobanSocketEvents, onMessage);
             unwatch_jwt();
         };
     }, [uuid]);

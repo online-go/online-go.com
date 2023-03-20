@@ -754,7 +754,7 @@ socket.on("private-superchat", (config) => {
                 pc.addSystem({
                     message:
                         config.moderator_username +
-                        " just tried to superchat you, but being a super user we decided to ignore that shit.",
+                        " just tried to superchat you, but being a super user we decided to ignore it.",
                 });
             }
         }
