@@ -51,7 +51,6 @@ import { Supporter } from "Supporter";
 import { Tournament } from "Tournament";
 import { TournamentRecord } from "TournamentRecord";
 import { TournamentListMainView } from "TournamentList";
-import { Tutorial } from "Tutorial";
 import { LearningHub } from "LearningHub";
 import { User, UserByName } from "User";
 import { Settings } from "Settings";
@@ -292,10 +291,6 @@ export const routes = (
                 <Route path="/docs/learn-to-play-go/:section/:page" element={<LearningHub />} />
                 <Route path="/docs/learn-to-play-go/:section" element={<LearningHub />} />
                 <Route path="/docs/learn-to-play-go" element={<LearningHub />} />
-                <Route path="/crash-course-learn-to-play-go/:step" element={<Tutorial />} />
-                <Route path="/crash-course-learn-to-play-go" element={<Tutorial />} />
-                <Route path="/docs/crash-course-learn-to-play-go/:step" element={<Tutorial />} />
-                <Route path="/docs/crash-course-learn-to-play-go" element={<Tutorial />} />
                 {/* these aren't meant to be linked anywhere, just entered by hand
                 for developers looking to test and play with things */}
                 <Route path="/dev/styling" element={<Styling />} />

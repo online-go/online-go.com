@@ -44,7 +44,6 @@ import {
     TimeControl,
 } from "TimeControl";
 import { sfx } from "sfx";
-import * as preferences from "preferences";
 import { notification_manager } from "Notifications/NotificationManager";
 import { one_bot, bot_count, bots_list } from "bots";
 import { goban_view_mode } from "Game/util";
@@ -84,8 +83,6 @@ interface ChallengeModalProperties {
     tournamentRecordRoundId?: number;
     created?: (c: CreatedChallengeInfo) => void;
 }
-
-export const username_to_id = {};
 
 /* Constants  */
 
@@ -1819,9 +1816,6 @@ export function createDemoBoard(
         />,
     );
 }
-export function createOpenChallenge() {
-    return challenge();
-}
 export function challengeComputer() {
     return challenge(null, null, true);
 }
@@ -1869,34 +1863,6 @@ export function challengeRematch(
 
     challenge(opponent.id, null, false, config);
 }
-export function createBlitz() {
-    const user = data.get("user");
-    const config = dup(blitz_config);
-    config.challenge.min_ranking = user.ranking - 3;
-    config.challenge.max_ranking = user.ranking + 3;
-    config.challenge.game.width = preferences.get("new-game-board-size");
-    config.challenge.game.height = preferences.get("new-game-board-size");
-    return openModal(<ChallengeModal config={config} mode={"open"} autoCreate={true} />);
-}
-export function createLive() {
-    const user = data.get("user");
-    const config = dup(live_config);
-    config.challenge.min_ranking = user.ranking - 3;
-    config.challenge.max_ranking = user.ranking + 3;
-    config.challenge.game.width = preferences.get("new-game-board-size");
-    config.challenge.game.height = preferences.get("new-game-board-size");
-    return openModal(<ChallengeModal config={config} mode={"open"} autoCreate={true} />);
-}
-export function createCorrespondence() {
-    const user = data.get("user");
-    const config = dup(correspondence_config);
-    config.challenge.min_ranking = user.ranking - 3;
-    config.challenge.max_ranking = user.ranking + 3;
-    config.challenge.game.width = preferences.get("new-game-board-size");
-    config.challenge.game.height = preferences.get("new-game-board-size");
-    return openModal(<ChallengeModal config={config} mode={"open"} autoCreate={true} />);
-}
-
 export function challenge_text_description(challenge) {
     const c = challenge;
     const g = "game" in challenge ? challenge.game : challenge;
@@ -1971,7 +1937,7 @@ export function challenge_text_description(challenge) {
     return details_html;
 }
 
-export function isStandardBoardSize(board_size: string): boolean {
+function isStandardBoardSize(board_size: string): boolean {
     return board_size in standard_board_sizes;
 }
 
@@ -2005,25 +1971,6 @@ interface ChallengeModalConfig {
     time_control: TimeControlConfig;
 }
 
-interface ChallengeConfig {
-    challenger_color: rest_api.ColorSelectionOptions;
-    game: {
-        name: string;
-        rules: RuleSet;
-        ranked: boolean;
-        handicap: number;
-        komi_auto: string;
-        disable_analysis: boolean;
-        initial_state: any;
-        private: boolean;
-        width?: number;
-        height?: number;
-    };
-    min_ranking?: number;
-    max_ranking?: number;
-    invite_only: boolean;
-}
-
 interface TimeControlConfig {
     system: JGOFTimeControlSystem;
     speed: JGOFTimeControlSpeed;
@@ -2035,90 +1982,3 @@ interface TimeControlConfig {
     periods?: number;
     pause_on_weekends: boolean;
 }
-interface GameConfig {
-    conf: { restrict_rank: boolean };
-    challenge: ChallengeConfig;
-    time_control: TimeControlConfig;
-}
-
-export const blitz_config: GameConfig = {
-    conf: {
-        restrict_rank: true,
-    },
-    challenge: {
-        challenger_color: "automatic",
-        invite_only: false,
-        game: {
-            name: "",
-            rules: "japanese",
-            ranked: true,
-            handicap: 0,
-            komi_auto: "automatic",
-            disable_analysis: false,
-            initial_state: null,
-            private: false,
-        },
-    },
-    time_control: {
-        system: "fischer",
-        speed: "blitz",
-        initial_time: 20,
-        time_increment: 10,
-        max_time: 30,
-        pause_on_weekends: false,
-    },
-};
-export const live_config: GameConfig = {
-    conf: {
-        restrict_rank: true,
-    },
-    challenge: {
-        challenger_color: "automatic",
-        invite_only: false,
-        game: {
-            name: "",
-            rules: "japanese",
-            ranked: true,
-            handicap: 0,
-            komi_auto: "automatic",
-            disable_analysis: false,
-            initial_state: null,
-            private: false,
-        },
-    },
-    time_control: {
-        system: "byoyomi",
-        speed: "live",
-        main_time: 10 * 60,
-        period_time: 30,
-        periods: 5,
-        pause_on_weekends: false,
-    },
-};
-export const correspondence_config: GameConfig = {
-    conf: {
-        restrict_rank: true,
-    },
-    challenge: {
-        challenger_color: "automatic",
-        invite_only: false,
-        game: {
-            name: "",
-            rules: "japanese",
-            ranked: true,
-            handicap: 0,
-            komi_auto: "automatic",
-            disable_analysis: false,
-            initial_state: null,
-            private: false,
-        },
-    },
-    time_control: {
-        system: "fischer",
-        speed: "correspondence",
-        initial_time: 3 * 86400,
-        time_increment: 86400,
-        max_time: 7 * 86400,
-        pause_on_weekends: true,
-    },
-};
