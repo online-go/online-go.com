@@ -147,7 +147,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 ranked: true,
                 width: 19,
                 height: 19,
-                handicap: -1,
+                handicap: 0,
                 komi_auto: "automatic",
                 komi: 5.5,
                 disable_analysis: false,
