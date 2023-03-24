@@ -78,7 +78,9 @@ This project is largely built with TypeScript and React. If you are unfamiliar w
 4. In a command window, run
 
 `nvm install lts`
+
 `npm install -g yarn`
+
 `npm install -g husky`
 
 5. Open VSCode
@@ -100,6 +102,7 @@ You could poke around in src/ if you are already curious
 6. in a command window, cd to the folder that was created when you cloned the repo and do
 
 `yarn`
+
 `npm run dev`
 
 This should result in a bunch of packages being installed, then a server starting up and telling you it's running
@@ -129,7 +132,9 @@ This is easiest done in VSCode - down the bottom left is a label telling you wha
  - Click the branch label
  - "Create a branch"
  - Give it a name
+
 Then
+
  - Click on the "source control" symbol in the left pane (select git actions)
  - Type a meaningful commit message in the obvious message entry place
  - click commit
