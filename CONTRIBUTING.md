@@ -15,7 +15,7 @@ npm run dev
 
 If you're on Linux, you can simply type `make` and it will do all this for you as well.
 
-If you're on Windows and need specific help getting it installed, see [Detailed Setup Steps](#detailed-setup-steps) below.
+If you're on Windows and need specific help getting tools installed and the repo cloned, see [Detailed Setup Steps](#detailed-setup-steps) below.
 
 (And ... those detailed steps may even be a useful pointer about how to get started under linux/macos: they're broadly applicable, even if details differ slightly.)
 
@@ -65,9 +65,9 @@ This project is largely built with TypeScript and React. If you are unfamiliar w
 ## Details Setup Steps
 
 0. Create a fork of [online-go.com](http://online-go.com/)
-– Have an account at [github.com](http://github.com/), login there
-– Go to [GitHub - online-go/online-go.com: Source code for the Online-Go.com web interface](https://github.com/online-go/online-go.com)
-– Press the “fork” button
+ - Have an account at [github.com](http://github.com/), login there
+ - Go to [GitHub - online-go/online-go.com: Source code for the Online-Go.com web interface](https://github.com/online-go/online-go.com)
+ - Press the “fork” button
 
 1. Install VSCode (you already did that)
 
@@ -77,16 +77,16 @@ This project is largely built with TypeScript and React. If you are unfamiliar w
 3. Download and run `nvm-setup.exe` from https://github.com/coreybutler/nvm-windows/releases
 4. In a command window, run
 
-nvm install lts
-npm install -g yarn
-npm install -g husky
+`nvm install lts`
+`npm install -g yarn`
+`npm install -g husky`
 
 5. Open VSCode
  - Choose "clone git repository"
  - Chose "clone from github"
  - Allow it to log you into gitbhub
  - Choose *your fork* of online-go.com to clone
-    -- ** make sure it's your one - VSCode may offer the official repo at the top of the list, dont chose that one
+    - ** make sure it's your fork - VSCode may offer the official repo at the top of the list, don't chose that one
  - Chose a local folder somewhere sensible to clone it into (definitely distinct from anything left over from before!)
  - Agree to install the recommended extensions
      (you definitely need these for OGS, they setup the editor for coding standards that are enforced, and provide linting while editing)
@@ -99,8 +99,8 @@ You could poke around in src/ if you are already curious
 
 6. in a command window, cd to the folder that was created when you cloned the repo and do
 
-yarn
-npm run dev
+`yarn`
+`npm run dev`
 
 This should result in a bunch of packages being installed, then a server starting up and telling you it's running
 
@@ -134,7 +134,7 @@ Then
  - Type a meaningful commit message in the obvious message entry place
  - click commit
 
-Do the last three steps often :slight_smile: 
+Do the last three steps often :slight_smile:
 
 8. Publish your change (to github)
 
