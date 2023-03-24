@@ -62,7 +62,7 @@ This project is largely built with TypeScript and React. If you are unfamiliar w
 -   [React](https://reactjs.org/)
 -   [TypeScript](https://www.typescriptlang.org/)
 
-## Details Setup Steps
+## Detailed Setup Steps
 
 0. Create a fork of [online-go.com](http://online-go.com/)
  - Have an account at [github.com](http://github.com/), login there
