@@ -15,6 +15,10 @@ npm run dev
 
 If you're on Linux, you can simply type `make` and it will do all this for you as well.
 
+If you're on Windows and need specific help getting tools installed and the repo cloned, see [Detailed Setup Steps](#detailed-setup-steps) below.
+
+(And ... those detailed steps may even be a useful pointer about how to get started under linux/macos: they're broadly applicable, even if details differ slightly.)
+
 Once running, you can then navigate to [http://dev.beta.online-go.com:8080/](http://dev.beta.online-go.com:8080/)
 which loads the interface from your local server that you just started with gulp, and
 connects to the beta server for testing.
@@ -57,3 +61,93 @@ This project is largely built with TypeScript and React. If you are unfamiliar w
 
 -   [React](https://reactjs.org/)
 -   [TypeScript](https://www.typescriptlang.org/)
+
+## Detailed Setup Steps
+
+0. Create a fork of [online-go.com](http://online-go.com/)
+ - Have an account at [github.com](http://github.com/), login there
+ - Go to [GitHub - online-go/online-go.com: Source code for the Online-Go.com web interface](https://github.com/online-go/online-go.com)
+ - Press the “fork” button
+
+1. Install VSCode (you already did that)
+
+2. Install git from the windows installer: [Git - Downloading Package (git-scm.com)](https://git-scm.com/download/win)
+   ** Choose all defaults _except_ "**Configuring Line Ending Conversions**".
+       No matter what the description says, chose `checkout-as-is, commit-as-is` (the description makes it sound like you would not want this)
+3. Download and run `nvm-setup.exe` from https://github.com/coreybutler/nvm-windows/releases
+4. In a command window, run
+
+`nvm install lts`
+
+`npm install -g yarn`
+
+`npm install -g husky`
+
+5. Open VSCode
+ - Choose "clone git repository"
+ - Chose "clone from github"
+ - Allow it to log you into gitbhub
+ - Choose *your fork* of online-go.com to clone
+    - ** make sure it's your fork - VSCode may offer the official repo at the top of the list, don't chose that one
+ - Chose a local folder somewhere sensible to clone it into (definitely distinct from anything left over from before!)
+ - Agree to install the recommended extensions
+     (you definitely need these for OGS, they setup the editor for coding standards that are enforced, and provide linting while editing)
+
+... you should now see a code explorer on the left pane of VS Code showing the OGS repo file structure (maybe you need to click on the top icon in the left pane to get this view).
+
+... now you have online-go.com checked out, without silly CRLF problems!
+
+You could poke around in src/ if you are already curious
+
+6. in a command window, cd to the folder that was created when you cloned the repo and do
+
+`yarn`
+
+`npm run dev`
+
+This should result in a bunch of packages being installed, then a server starting up and telling you it's running
+
+Navigate to localhost:8080 in your browser and hopefully see your local checkout rendering the Beta server....
+
+... and if that works, we have VSCode done and ready to edit something.
+
+You can immediately edit something:
+
+ - Click on the search magnifying glass top left pane of VSCode
+ - Type `no games being played` into the search bar
+
+It should show you where this string is in ObserveGamesComponent.tsx.
+
+ - click on that to be taken to that place in the code
+ - Edit the string, save the file
+ - See in the browser that string update on the "Watch" page that was open.
+
+:tada: you made an edit to OGS UI.
+
+7.  Commit your change (locally)
+
+You will want to commit your changes regularly locally.   To prepare for this you need to make a branch for them.
+
+This is easiest done in VSCode - down the bottom left is a label telling you what branch you are in fact on now.    It has the "source control" symbol (branchy thing) and the name of the branch.      To make a branch and commit to it:
+ - Click the branch label
+ - "Create a branch"
+ - Give it a name
+
+Then
+
+ - Click on the "source control" symbol in the left pane (select git actions)
+ - Type a meaningful commit message in the obvious message entry place
+ - click commit
+
+Do the last three steps often :slight_smile:
+
+8. Publish your change (to github)
+
+ When your change is ready for incorporation into OGS:
+
+ - Click "source control" in the left
+ - Click "publish change"
+
+Note: it might be saying "Sync" instead of "Publish" - this means that github knows about your branch already from something you did previously, that's OK.
+
+🎉   Now your code is available ready for a Pull Request into the main repo.
