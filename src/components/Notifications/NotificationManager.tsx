@@ -294,8 +294,6 @@ export class NotificationManager {
 
     deleteNotification(notification, dont_rebuild?: boolean) {
         socket.send("notification/delete", {
-            player_id: this.user.id,
-            auth: this.auth,
             notification_id: notification.id,
         });
         delete this.notifications[notification.id];
