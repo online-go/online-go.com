@@ -317,8 +317,6 @@ export class NotificationManager {
             }
             delete this.notifications[id];
             socket.send("notification/delete", {
-                player_id: this.user.id,
-                auth: this.auth,
                 notification_id: notification.id,
             });
         }
