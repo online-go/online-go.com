@@ -4362,6 +4362,11 @@ eventemitter3@^4.0.7:
   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-4.0.7.tgz#2de9b68f6528d5644ef5c59526a1b4a07306169f"
   integrity sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==
 
+eventemitter3@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-5.0.0.tgz#084eb7f5b5388df1451e63f4c2aafd71b217ccb3"
+  integrity sha512-riuVbElZZNXLeLEoprfNYoDSwTBRR44X3mnhdI1YcnENpWTCsTTVZ2zFuqQcpoyqPQIUXdiPEU0ECAq0KQRaHg==
+
 events@^3.2.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/events/-/events-3.3.0.tgz#31a95ad0a924e2d2c419a813aeb2c4e878ea7400"
@@ -5128,10 +5133,12 @@ glogg@^1.0.0:
   dependencies:
     sparkles "^1.0.0"
 
-goban@=0.7.0-beta.1:
-  version "0.7.0-beta.1"
-  resolved "https://registry.yarnpkg.com/goban/-/goban-0.7.0-beta.1.tgz#769c3e80c32090c23a4daa9e62074f07324d6fa5"
-  integrity sha512-Wy2/4pjEbAoeb2YljThbXCXzea7IN8Vxm/x9iIRculAX00WRUQalBikS9oCmWb9YoFLtQdnjcHZLCSN1qHamkw==
+goban@=0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/goban/-/goban-0.7.0.tgz#f0490b788c2ce83e466733042766751664ca5072"
+  integrity sha512-W2VoBsuaMeNwJqO1Gonnj6A8YO0zEJ7Ro095xzutubglGzVIxtfpKhTVJ640OjBFynJj+dkQhs+q5Pr4eP7R/w==
+  dependencies:
+    eventemitter3 "^5.0.0"
 
 google-auth-library@^8.0.2:
   version "8.5.2"
