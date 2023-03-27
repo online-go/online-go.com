@@ -42,8 +42,10 @@ if (
     ai_host = "https://ai.online-go.com";
 } else if (window.location.hostname.indexOf("ogs") >= 0) {
     ai_host = `${window.location.protocol}//ai-${window.location.hostname}`;
+} else if (window.location.hostname === "localhost") {
+    // automated test code stubs in localhost, no need to connect to the AI or warn
 } else {
-    console.warn("AI Host not set, AI reviews will not work");
+    console.warn("AI Host not set, AI reviews will not work", window.location.hostname);
 }
 
 export const ai_socket = ai_host

@@ -29,9 +29,12 @@ minjs:
 analyze:
 	ANALYZE=true npm run analyze
 
+test:
+	npm run test
+
 #NODE_PATH=$(NODE_PATH) PATH=$(PATH) PRODUCTION=true webpack --optimization-minimize --devtool=source-map --profile --json > analyze.json
 #npm run webpack-bundle-analyzer dist/ analyze.json
 
-.PHONY: dev min minjs mincss
+.PHONY: dev min minjs mincss test analyze pretty prettier lint-fix .husky
 
 -include Makefile.production
