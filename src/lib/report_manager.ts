@@ -89,15 +89,7 @@ class ReportManager extends EventEmitter<Events> {
         super();
 
         const connect_fn = () => {
-            const user = data.get("user");
             this.active_incident_reports = {};
-
-            if (!user.anonymous) {
-                socket.send("incident/connect", {
-                    player_id: user.id,
-                    auth: data.get("config.incident_auth"),
-                });
-            }
 
             post_connect_notification_squelch = true;
             setTimeout(() => {
@@ -110,7 +102,9 @@ class ReportManager extends EventEmitter<Events> {
             connect_fn();
         }
 
-        socket.on("incident-report", (report: Report) => this.updateIncidentReport(report));
+        socket.on("incident-report", (report) =>
+            this.updateIncidentReport(report as any as Report),
+        );
 
         preferences.watch("moderator.report-settings", () => {
             this.update();

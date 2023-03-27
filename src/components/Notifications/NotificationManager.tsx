@@ -294,8 +294,6 @@ export class NotificationManager {
 
     deleteNotification(notification, dont_rebuild?: boolean) {
         socket.send("notification/delete", {
-            player_id: this.user.id,
-            auth: this.auth,
             notification_id: notification.id,
         });
         delete this.notifications[notification.id];
@@ -317,23 +315,12 @@ export class NotificationManager {
             }
             delete this.notifications[id];
             socket.send("notification/delete", {
-                player_id: this.user.id,
-                auth: this.auth,
                 notification_id: notification.id,
             });
         }
         this.rebuildNotificationList();
     }
     connect() {
-        if (socket.connected) {
-            socket.send("notification/connect", { player_id: this.user.id, auth: this.auth });
-        }
-        socket.on("connect", () => {
-            socket.send("notification/connect", { player_id: this.user.id, auth: this.auth });
-        });
-        socket.on("disconnect", () => {
-            //console.log("Notifier disconnected from " + server);
-        });
         socket.on("active_game", (game) => {
             delete this.boards_to_move_on[game.id];
             if (game.phase === "finished") {
@@ -360,7 +347,8 @@ export class NotificationManager {
             if (this.boards_to_move_on[game.id]) {
                 const current_game_id = getCurrentGameId();
                 if (current_game_id !== game.id || !document.hasFocus()) {
-                    if (game.avg_move_time > 3600) {
+                    //if (game.avg_move_time > 3600) {
+                    if (game.time_per_move > 3600) {
                         // don't notify for realtime games ever
                         emitNotification(
                             _("Your Turn"),

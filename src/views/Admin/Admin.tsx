@@ -17,14 +17,9 @@
 
 import * as React from "react";
 import { Link } from "react-router-dom";
-import { post, get } from "requests";
-import { socket } from "sockets";
-import { ignore, getPrintableError } from "misc";
+import { post } from "requests";
+import { getPrintableError } from "misc";
 import { alert } from "swal_config";
-
-declare let ogs_release;
-declare let ogs_version;
-declare let ogs_language_version;
 
 interface AdminState {
     results: any[];
@@ -37,18 +32,6 @@ export class Admin extends React.PureComponent<{}, AdminState> {
     constructor(props) {
         super(props);
 
-        this.results.push(
-            JSON.stringify(
-                {
-                    release: ogs_release,
-                    version: ogs_version,
-                    language_version: ogs_language_version,
-                },
-                null,
-                4,
-            ),
-        );
-
         this.state = {
             results: this.results,
             notifications_player_id: "",
@@ -57,33 +40,7 @@ export class Admin extends React.PureComponent<{}, AdminState> {
 
     componentDidMount() {
         window.document.title = "Admin";
-
-        if (socket.connected) {
-            this.pollStats();
-        }
-        socket.on("connect", this.pollStats);
-
-        get("admin/aiReviewStatus")
-            .then((res) => {
-                this.appendResult("\n----------------\n");
-                this.appendResult("\nAI Review Status\n");
-                this.appendResult(res);
-                this.appendResult("\n----------------\n");
-            })
-            .catch(ignore);
     }
-
-    componentWillUnmount() {
-        socket.off("connect", this.pollStats);
-    }
-
-    pollStats = () => {
-        console.log("Should be polling stats");
-        socket.send("stats/cassandra", {}, (obj) => {
-            this.appendResult("Cassandra State");
-            this.appendResult(obj);
-        });
-    };
 
     updating = false;
     appendResult(text) {

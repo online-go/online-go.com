@@ -18,7 +18,7 @@
 /* Inter tab communications library */
 import { socket } from "sockets";
 
-const registrations = {};
+const registrations: { [event: string]: Array<(data: any) => void> } = {};
 
 socket.on("itc", (obj) => {
     if (obj.event in registrations) {
@@ -29,13 +29,13 @@ socket.on("itc", (obj) => {
 });
 
 export default {
-    register: (event, cb) => {
+    register: (event: string, cb: (data: any) => void) => {
         if (!(event in registrations)) {
             registrations[event] = [];
         }
         registrations[event].push(cb);
     },
-    send: (event, data) => {
+    send: (event: string, data: any) => {
         socket.send("itc", { event: event, data: data });
     },
 };

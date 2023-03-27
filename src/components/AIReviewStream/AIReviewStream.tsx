@@ -18,7 +18,7 @@
 import * as React from "react";
 import * as data from "data";
 import { ai_socket } from "sockets";
-import { MoveTree } from "goban";
+import { MoveTree, GobanSocketEvents } from "goban";
 import { IdType } from "src/lib/types";
 
 const analysis_requests_made: { [id: string]: boolean } = {};
@@ -40,8 +40,8 @@ export function AIReviewStream(props: AIReviewStreamProperties): JSX.Element {
             console.log("No UUID for review stream");
             return;
         } else {
-            ai_socket.on("connect", onConnect);
-            ai_socket.on(uuid, onMessage);
+            ai_socket?.on("connect", onConnect);
+            ai_socket?.on(uuid as keyof GobanSocketEvents, onMessage);
             if (ai_socket.connected) {
                 onConnect();
             }
@@ -51,7 +51,7 @@ export function AIReviewStream(props: AIReviewStreamProperties): JSX.Element {
             const user = data.get("config.user");
             const user_jwt = data.get("config.user_jwt");
             if (!user.anonymous && user_jwt) {
-                ai_socket.send("authenticate", { jwt: user_jwt });
+                ai_socket?.send("authenticate", { jwt: user_jwt });
             }
         }
 
@@ -63,7 +63,7 @@ export function AIReviewStream(props: AIReviewStreamProperties): JSX.Element {
         }
 
         function onConnect() {
-            ai_socket.send("ai-review-connect", { uuid, game_id, ai_review_id });
+            ai_socket?.send("ai-review-connect", { uuid, game_id, ai_review_id });
             watch_jwt();
         }
 
@@ -72,11 +72,11 @@ export function AIReviewStream(props: AIReviewStreamProperties): JSX.Element {
         }
 
         return () => {
-            if (ai_socket.connected) {
-                ai_socket.send("ai-review-disconnect", { uuid });
+            if (ai_socket?.connected) {
+                ai_socket?.send("ai-review-disconnect", { uuid });
             }
-            ai_socket.off("connect", onConnect);
-            ai_socket.off(uuid, onMessage);
+            ai_socket?.off("connect", onConnect);
+            ai_socket?.off(uuid as keyof GobanSocketEvents, onMessage);
             unwatch_jwt();
         };
     }, [uuid]);
@@ -91,7 +91,7 @@ export function ai_request_variation_analysis(
     cur_move: MoveTree,
     trunk_move: MoveTree,
 ): void {
-    if (!ai_socket.connected) {
+    if (!ai_socket?.connected) {
         console.warn(
             "Not sending request for variation analysis since we wern't connected to the AI server",
         );
@@ -115,5 +115,5 @@ export function ai_request_variation_analysis(
         from: trunk_move.move_number,
         variation: variation,
     };
-    ai_socket.send("ai-analyze-variation", req);
+    ai_socket?.send("ai-analyze-variation", req);
 }

@@ -34,7 +34,6 @@ import * as player_cache from "player_cache";
 
 import { nominateForRengoChallenge } from "rengo_utils";
 import { alert } from "swal_config";
-import { Socket } from "socket.io-client";
 import { SeekGraphColorPalette, SeekGraphPalettes } from "./SeekGraphPalettes";
 import * as SeekGraphSymbols from "./SeekGraphSymbols";
 
@@ -178,7 +177,6 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     canvas: HTMLCanvasElement;
     $canvas: JQuery;
     // show_live_games: boolean;
-    socket: Socket;
     connected: boolean = false;
     // This is treated as an array later because that is what TypedEventEmitter expects.
     // Perhaps this should be changed to an array as well.
@@ -204,17 +202,16 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         this.canvas = config.canvas;
         this.$canvas = $(config.canvas);
         // this.show_live_games = config.show_live_games;
-        this.socket = socket;
         this.list_hits = [];
         this.challengeFilter = config.filter;
         this.redraw();
 
-        if (this.socket.connected) {
+        if (socket.connected) {
             this.onConnect();
         }
 
-        this.socket.on("connect", this.onConnect);
-        this.socket.on("seekgraph/global", this.onSeekgraphGlobal);
+        socket.on("connect", this.onConnect);
+        socket.on("seekgraph/global", this.onSeekgraphGlobal);
         this.$canvas.on("mousemove", this.onPointerMove);
         this.$canvas.on("mouseout", this.onPointerOut);
         this.$canvas.on("click", this.onPointerDown);
@@ -237,7 +234,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
     onConnect = () => {
         this.connected = true;
-        this.socket.send("seek_graph/connect", { channel: "global" });
+        socket.send("seek_graph/connect", { channel: "global" });
         // if (this.show_live_games) {
         //     this.connectToLiveGameList();
         // }
@@ -365,7 +362,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     };
 
     // connectToLiveGameList() {
-    //     this.socket.send("gamelist/subscribe", { gamelist: "gamelist/global" });
+    //     socket.send("gamelist/subscribe", { gamelist: "gamelist/global" });
     // }
     // setShowLiveGames(tf) {
     //     const changed = tf !== this.show_live_games;
@@ -374,7 +371,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     //         if (tf) {
     //             this.connectToLiveGameList();
     //         } else {
-    //             this.socket.send("gamelist/unsubscribe", {});
+    //             socket.send("gamelist/unsubscribe", {});
     //         }
     //         this.redraw();
     //     }
@@ -384,11 +381,11 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         this.closeChallengeList();
         // this.setShowLiveGames(false);
         if (this.connected) {
-            this.socket.send("seek_graph/disconnect", { channel: "global" });
+            socket.send("seek_graph/disconnect", { channel: "global" });
         }
 
-        this.socket.off("connect", this.onConnect);
-        this.socket.off("seekgraph/global", this.onSeekgraphGlobal);
+        socket.off("connect", this.onConnect);
+        socket.off("seekgraph/global", this.onSeekgraphGlobal);
 
         $(document).off("touchend", this.onTouchEnd);
         $(document).off("touchstart touchmove", this.onTouchStartMove);

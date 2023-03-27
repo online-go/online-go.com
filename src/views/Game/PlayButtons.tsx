@@ -176,7 +176,7 @@ export function CancelButton({ className = "" }: CancelButtonProps) {
     const [resign_mode, set_resign_mode] = React.useState<"cancel" | "resign">();
     React.useEffect(() => {
         const sync_resign_mode = () => {
-            if (goban.engine.gameCanBeCanceled()) {
+            if (goban.engine.gameCanBeCancelled()) {
                 set_resign_mode("cancel");
             } else {
                 set_resign_mode("resign");

@@ -16,36 +16,13 @@
  */
 
 import Debug from "debug";
-import { current_language } from "translate";
-import { io } from "socket.io-client";
-import { niceInterval } from "goban";
-
-declare let ogs_language_version;
-declare let ogs_version;
+import { GobanSocket, niceInterval, protocol } from "goban";
 
 const debug = new Debug("sockets");
 
-const io_config = {
-    reconnection: true,
-    reconnectionDelay: 750,
-    reconnectionDelayMax: 10000,
-    transports: ["websocket"],
-    upgrade: false,
-};
+export const socket = new GobanSocket(window["websocket_host"] ?? window.location.origin);
 
-const ai_config = {
-    reconnection: true,
-    reconnectionDelay: 750,
-    reconnectionDelayMax: 10000,
-    transports: ["websocket"],
-    upgrade: false,
-};
-
-export const socket = window["websocket_host"]
-    ? io(window["websocket_host"], io_config)
-    : io(io_config);
-
-export let ai_host = "";
+export let ai_host;
 if (
     window.location.hostname.indexOf("dev.beta") >= 0 &&
     window["websocket_host"] === "https://online-go.com"
@@ -65,24 +42,21 @@ if (
     ai_host = "https://ai.online-go.com";
 } else if (window.location.hostname.indexOf("ogs") >= 0) {
     ai_host = `${window.location.protocol}//ai-${window.location.hostname}`;
+} else if (window.location.hostname === "localhost") {
+    // automated test code stubs in localhost, no need to connect to the AI or warn
 } else {
-    ai_host = null;
+    console.warn("AI Host not set, AI reviews will not work", window.location.hostname);
 }
 
-export const ai_socket = ai_host ? io(ai_host, ai_config) : io(ai_config);
+export const ai_socket = ai_host
+    ? new GobanSocket<protocol.ClientToAIServer, protocol.AIServerToClient>(ai_host)
+    : undefined;
 
-socket.send = socket.emit;
-ai_socket.send = ai_socket.emit;
 let connect_time = Date.now();
-let times_connected = 0;
 socket.on("connect", () => {
     debug.log("Connection to server established.");
-    socket.emit("hostinfo");
+    socket.send("hostinfo", {});
     connect_time = Date.now();
-    ++times_connected;
-    if (times_connected > 1) {
-        socket.emit("times_connected", times_connected);
-    }
 });
 socket.on("HUP", () => window.location.reload());
 socket.on("hostinfo", (hostinfo) => {
@@ -117,13 +91,6 @@ function handle_pong(data) {
     last_clock_drift = drift;
     (window as any)["latency"] = last_latency;
 }
-function send_client_info() {
-    socket.send("client/info", {
-        language: current_language,
-        langauge_version: ogs_language_version,
-        version: ogs_version,
-    });
-}
 export function get_network_latency(): number {
     return last_latency;
 }
@@ -132,13 +99,13 @@ export function get_clock_drift(): number {
 }
 socket.on("net/pong", handle_pong);
 socket.on("connect", ping);
-socket.on("connect", send_client_info);
 niceInterval(ping, 10000);
 
 function ai_ping() {
-    if (ai_socket.connected) {
+    if (ai_socket && ai_socket.connected) {
         ai_socket.send("net/ping", {
             client: Date.now(),
+            drift: last_clock_drift,
             latency: last_ai_latency,
         });
     }
@@ -149,8 +116,8 @@ function ai_handle_pong(data) {
     last_ai_latency = latency;
 }
 
-ai_socket.on("connect", ai_ping);
-ai_socket.on("net/pong", ai_handle_pong);
+ai_socket?.on("connect", ai_ping);
+ai_socket?.on("net/pong", ai_handle_pong);
 niceInterval(ai_ping, 20000);
 
 export default {

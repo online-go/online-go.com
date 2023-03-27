@@ -113,9 +113,9 @@ export class ObserveGamesComponent extends React.PureComponent<
 
     syncSubscribe = () => {
         if (Object.keys(this.namespacedPreferenceGet("observed-games-filter")).length === 0) {
-            socket.send("gamelist/count/subscribe", this.channel);
+            socket.send("gamelist/count/subscribe", { channel: this.channel });
         } else {
-            socket.send("gamelist/count/unsubscribe", this.channel);
+            socket.send("gamelist/count/unsubscribe", { channel: this.channel });
         }
     };
 
@@ -153,7 +153,7 @@ export class ObserveGamesComponent extends React.PureComponent<
         }
         socket.off("connect", this.syncSubscribe);
         if (socket.connected) {
-            socket.send("gamelist/count/unsubscribe", this.channel);
+            socket.send("gamelist/count/unsubscribe", { channel: this.channel });
         }
         if (this.auto_refresh) {
             clearInterval(this.auto_refresh);

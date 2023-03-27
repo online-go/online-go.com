@@ -699,7 +699,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     clearTimeout(keepalive_interval);
                     socket.send("game/disconnect", { game_id: game_id });
                     socket.off(`game/${game_id}/gamedata`, onGamedata);
-                    socket.off(`game/${game_id}/rejected`, onRejected);
+                    //socket.off(`game/${game_id}/rejected`, onRejected);
                     notification_manager.event_emitter.off("notification", checkForReject);
                 }
 

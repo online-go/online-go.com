@@ -82,7 +82,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
         super();
         socket.on("connect", () => {
             this.clearState();
-            socket.send("automatch/list");
+            socket.send("automatch/list", {});
         });
         socket.on("disconnect", () => {
             this.clearState();
@@ -153,7 +153,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
     }
 
     public findMatch(preferences: AutomatchPreferences) {
-        socket.emit("automatch/find_match", preferences);
+        socket.send("automatch/find_match", preferences);
 
         /* live game? track it, and pop up our searching toast */
         if (
@@ -171,7 +171,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
     }
     public cancel(uuid?: string) {
         this.remove(uuid);
-        socket.emit("automatch/cancel", uuid);
+        socket.send("automatch/cancel", { uuid });
     }
 }
 

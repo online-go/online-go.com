@@ -18,7 +18,6 @@
 import * as React from "react";
 import { _ } from "translate";
 import { Link } from "react-router-dom";
-import { socket } from "sockets";
 import * as data from "data";
 import { ServerTimeDisplay } from "ServerTimeDisplay";
 
@@ -28,20 +27,10 @@ declare let ogs_current_language;
 export class About extends React.Component<{}, any> {
     constructor(props) {
         super(props);
-        this.state = {
-            termination_versions: { loading: "..." },
-        };
     }
 
     componentDidMount() {
         window.document.title = _("About");
-        socket.on("connect", () => {
-            console.log("Got connect[term]");
-            socket.send("versions", true, (res) => this.setState({ termination_versions: res }));
-        });
-        if (socket.connected) {
-            socket.send("versions", true, (res) => this.setState({ termination_versions: res }));
-        }
     }
 
     render() {

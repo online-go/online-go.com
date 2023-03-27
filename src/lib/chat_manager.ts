@@ -38,7 +38,7 @@ export interface ChatMessage {
     ui_class: string;
     country?: string;
     message: {
-        i: string; // uuid;
+        i?: string; // uuid;
         t: number; // epoch in seconds
         m: string; // the text
     };
@@ -347,13 +347,13 @@ class ChatChannel extends TypedEventEmitter<Events> {
     handleAnonymousOverride = () => {
         if (inGameModChannel(this.channel)) {
             socket.off("connect", this._rejoin);
-            socket.emit("chat/part", { channel: this.channel });
+            socket.send("chat/part", { channel: this.channel });
             for (const user_id in this.user_list) {
                 this.handlePart(this.user_list[user_id]);
             }
         } else {
             socket.on("connect", this._rejoin);
-            socket.emit("chat/join", { channel: this.channel });
+            socket.send("chat/join", { channel: this.channel });
         }
     };
 
@@ -380,12 +380,12 @@ class ChatChannel extends TypedEventEmitter<Events> {
 
     _rejoin = () => {
         if (socket.connected) {
-            socket.emit("chat/join", { channel: this.channel });
+            socket.send("chat/join", { channel: this.channel });
         }
     };
     _destroy() {
         if (socket.connected) {
-            socket.emit("chat/part", { channel: this.channel });
+            socket.send("chat/part", { channel: this.channel });
         }
         socket.off("connect", this._rejoin);
         this.removeAllListeners();
@@ -628,7 +628,12 @@ class ChatChannel extends TypedEventEmitter<Events> {
     public setTopic(topic: string) {
         const user = data.get("user");
 
-        const msg: TopicMessage = {
+        socket.send("chat/topic", {
+            channel: this.channel,
+            topic: topic,
+        });
+
+        this.topic = {
             channel: this.channel,
             username: user.username,
             id: user.id,
@@ -639,8 +644,6 @@ class ChatChannel extends TypedEventEmitter<Events> {
             topic: topic,
             timestamp: Date.now(),
         };
-        socket.send("chat/topic", msg);
-        this.topic = msg;
     }
 
     public systemMessage(text: string, system_message_type: "flood"): void {
