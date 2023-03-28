@@ -291,5 +291,3 @@ window["data"] = data;
 window["preferences"] = preferences;
 window["player_cache"] = player_cache;
 window["GoMath"] = GoMath;
-
-console.log("Finished initialisation from main");
