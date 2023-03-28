@@ -30,7 +30,7 @@ const event_emitter = new TypedEventEmitter<Events>();
 socket.on("connect", () => {
     const list = [];
     for (const id in state) {
-        list.push(id);
+        list.push(parseInt(id));
     }
     if (list.length) {
         socket.send("user/monitor", { user_ids: list });
