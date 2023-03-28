@@ -80,22 +80,30 @@ class UIPushManager {
     }
 
     subscribe(channel) {
-        if (channel in this.subscriptions) {
-            this.subscriptions[channel]++;
+        if (!channel || channel === "" || channel === "undefined") {
+            console.error("Invalid channel: ", channel, new Error().stack);
         } else {
-            this.subscriptions[channel] = 1;
-            if ((socket as any).connected) {
-                socket.send("ui-pushes/subscribe", { channel: channel });
+            if (channel in this.subscriptions) {
+                this.subscriptions[channel]++;
+            } else {
+                this.subscriptions[channel] = 1;
+                if ((socket as any).connected) {
+                    socket.send("ui-pushes/subscribe", { channel: channel });
+                }
             }
         }
     }
     unsubscribe(channel) {
-        if (this.subscriptions[channel] > 1) {
-            this.subscriptions[channel]--;
+        if (!channel || channel === "" || channel === "undefined") {
+            console.error("Invalid channel: ", channel, new Error().stack);
         } else {
-            delete this.subscriptions[channel];
-            if ((socket as any).connected) {
-                socket.send("ui-pushes/unsubscribe", { channel: channel });
+            if (this.subscriptions[channel] > 1) {
+                this.subscriptions[channel]--;
+            } else {
+                delete this.subscriptions[channel];
+                if ((socket as any).connected) {
+                    socket.send("ui-pushes/unsubscribe", { channel: channel });
+                }
             }
         }
     }
