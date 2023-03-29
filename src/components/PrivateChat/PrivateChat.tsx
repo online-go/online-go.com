@@ -29,6 +29,7 @@ import { PlayerCacheEntry } from "player_cache";
 import * as player_cache from "player_cache";
 import online_status from "online_status";
 import { openReport } from "Report";
+import { alert } from "swal_config";
 
 let last_id = 0;
 
@@ -619,6 +620,11 @@ class PrivateChat {
         }
     }
     sendChat(msg) {
+        if (data.get("appeals.banned_user_id")) {
+            void alert.fire("You are banned from the site and cannot send messages.");
+            return;
+        }
+
         while (msg.length) {
             const arr = splitOnBytes(msg, 500);
             const line = arr[0];
@@ -634,10 +640,12 @@ class PrivateChat {
                     message: line,
                 },
                 (line) => {
-                    /* we're gonna get these echoed back to us in various cases */
-                    this.received_messages[
-                        line.message.i + " " + line.message.t + " " + line.from.username
-                    ] = true;
+                    if (line) {
+                        /* we're gonna get these echoed back to us in various cases */
+                        this.received_messages[
+                            line.message.i + " " + line.message.t + " " + line.from.username
+                        ] = true;
+                    }
                 },
             );
         }
