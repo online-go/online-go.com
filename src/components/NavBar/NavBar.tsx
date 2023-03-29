@@ -255,14 +255,18 @@ export function NavBar(): JSX.Element {
                         <i className="fa fa-sitemap"></i>
                         {_("Joseki")}
                     </Link>
-                    <span className="fakelink" onClick={newDemo}>
-                        <i className="fa fa-plus"></i>
-                        {_("Demo Board")}
-                    </span>
-                    <Link to={`/library/${user.id}`}>
-                        <i className="fa fa-book"></i>
-                        {_("SGF Library")}
-                    </Link>
+                    {user.anonymous ? null : (
+                        <span className="fakelink" onClick={newDemo}>
+                            <i className="fa fa-plus"></i>
+                            {_("Demo Board")}
+                        </span>
+                    )}
+                    {user.anonymous ? null : (
+                        <Link to={`/library/${user.id}`}>
+                            <i className="fa fa-book"></i>
+                            {_("SGF Library")}
+                        </Link>
+                    )}
 
                     <Link to={`/rating-calculator`}>
                         <i className="fa fa-calculator"></i>
