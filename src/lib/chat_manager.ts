@@ -353,7 +353,9 @@ class ChatChannel extends TypedEventEmitter<Events> {
             }
         } else {
             socket.on("connect", this._rejoin);
-            socket.send("chat/join", { channel: this.channel });
+            if (socket.connected) {
+                socket.send("chat/join", { channel: this.channel });
+            }
         }
     };
 
