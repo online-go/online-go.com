@@ -18,6 +18,7 @@
 import { GobanErrorMessageId, GobanErrorMessageObject } from "goban";
 
 export type MessageIdAPI =
+    | "user_is_banned"
     | "username_invalid"
     | "username_offensive"
     | "gamename_offensive"
