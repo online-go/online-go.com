@@ -18,6 +18,7 @@
 import * as React from "react";
 import * as DynamicHelp from "react-dynamic-help";
 
+import { useUser } from "hooks";
 import { _, pgettext, interpolate } from "translate";
 
 interface RengoManagementPaneProperties {
@@ -38,6 +39,7 @@ interface RengoManagementPaneProperties {
  * */
 
 export function RengoManagementPane(props: RengoManagementPaneProperties): JSX.Element {
+    const user = useUser();
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
 
     const { ref: rengoManagementPane } = registerTargetItem("active-rengo-management-pane");
@@ -128,6 +130,7 @@ export function RengoManagementPane(props: RengoManagementPaneProperties): JSX.E
                     <button
                         onClick={() => props.joinRengoChallenge(the_challenge)}
                         className="btn success sm"
+                        disabled={user.anonymous}
                     >
                         {_("Join")}
                     </button>
