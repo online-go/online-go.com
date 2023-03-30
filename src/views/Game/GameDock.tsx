@@ -18,6 +18,7 @@
 import * as React from "react";
 import * as data from "data";
 import * as preferences from "preferences";
+import { useUser } from "hooks";
 import { api1, post, del } from "requests";
 import { Dock } from "Dock";
 import { Link } from "react-router-dom";
@@ -79,7 +80,7 @@ export function GameDock({
     const engine = goban.engine;
     const phase = engine.phase;
 
-    const user = data.get("user");
+    const user = useUser();
 
     let superuser_ai_review_ready = user?.is_superuser && phase === "finished";
     let mod = user?.is_moderator && phase !== "finished";
@@ -126,7 +127,11 @@ export function GameDock({
     };
 
     const fork = () => {
-        if (!engine.rengo && (!goban.isAnalysisDisabled() || phase === "finished")) {
+        if (
+            !user.anonymous &&
+            !engine.rengo &&
+            (!goban.isAnalysisDisabled() || phase === "finished")
+        ) {
             challengeFromBoardPosition(goban);
         }
     };
@@ -172,8 +177,7 @@ export function GameDock({
     };
 
     const alertModerator = () => {
-        const user = data.get("user");
-        if (!user) {
+        if (!user || !user.anonymous) {
             return;
         }
         const obj: any = game_id
@@ -412,8 +416,16 @@ export function GameDock({
             )}
             {game && (
                 <a
-                    onClick={onReviewClicked}
-                    className={phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""}
+                    onClick={(ev) => {
+                        if (ev.currentTarget.className.indexOf("disabled") === -1) {
+                            return onReviewClicked();
+                        }
+                    }}
+                    className={
+                        (phase !== "finished" && goban.isAnalysisDisabled()) || user.anonymous
+                            ? "disabled"
+                            : ""
+                    }
                 >
                     <i className="fa fa-refresh"></i> {_("Review this game")}
                 </a>
@@ -427,14 +439,16 @@ export function GameDock({
             <a
                 onClick={fork}
                 className={
-                    engine.rengo || (goban.isAnalysisDisabled() && phase !== "finished")
+                    user.anonymous ||
+                    engine.rengo ||
+                    (goban.isAnalysisDisabled() && phase !== "finished")
                         ? "disabled"
                         : ""
                 }
             >
                 <i className="fa fa-code-fork"></i> {_("Fork game")}
             </a>
-            <a onClick={alertModerator}>
+            <a onClick={alertModerator} className={user.anonymous ? "disabled" : ""}>
                 <i className="fa fa-exclamation-triangle"></i> {_("Call moderator")}
             </a>
             {((review && game_id) || null) && (
