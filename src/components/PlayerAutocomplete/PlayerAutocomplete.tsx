@@ -28,6 +28,7 @@ interface PlayerAutocompleteProperties {
     placeholder?: string;
     ladderId?: IdType;
     className?: string;
+    disabled?: boolean;
 }
 
 export interface PlayerAutocompleteRef {
@@ -181,6 +182,7 @@ function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Elem
             onKeyDown: onKeyDown,
             onChange: onChange,
             autoCapitalize: "off",
+            disabled: props.disabled,
         }),
         [props.placeholder, value],
     );
