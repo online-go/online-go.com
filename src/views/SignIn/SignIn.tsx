@@ -112,7 +112,16 @@ export function SignIn(): JSX.Element {
                         // We need to retain any info in location.hash, because it can also have a ChallengeLink redirect
                         // to be honoured after login!
 
-                        window.location.pathname = config.redirect + (window.location.hash || "");
+                        //window.location.pathname = config.redirect + (window.location.hash || "");
+
+                        //window.location = window.location.origin + config.redirect + "?next=/";
+                        if (window.location.hash) {
+                            window.location.href =
+                                window.location.origin + config.redirect + window.location.hash;
+                        } else {
+                            window.location.href =
+                                window.location.origin + config.redirect + "?next=/";
+                        }
                         return;
                     }
                     data.set(cached.config, config);
