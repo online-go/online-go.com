@@ -956,6 +956,14 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                         }
                                         onChange={this.update_strict_rengo}
                                     />
+                                    {((!this.state.challenge.game.rengo &&
+                                        (this.state.challenge.game.private ||
+                                            this.state.challenge.game.ranked)) ||
+                                        null) && (
+                                        <span style={{ fontSize: "smaller", verticalAlign: "top" }}>
+                                            {_("must be unranked")}
+                                        </span>
+                                    )}
                                     <a
                                         href="https://forums.online-go.com/t/how-does-rengo-work-at-ogs/42484"
                                         className="help"
