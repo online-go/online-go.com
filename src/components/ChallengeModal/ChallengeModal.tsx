@@ -945,6 +945,11 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                     <input
                                         type="checkbox"
                                         id="strict-rengo"
+                                        disabled={
+                                            !this.state.challenge.game.rengo &&
+                                            (this.state.challenge.game.private ||
+                                                this.state.challenge.game.ranked)
+                                        }
                                         checked={
                                             this.state.challenge.game.rengo &&
                                             !this.state.challenge.game.rengo_casual_mode
