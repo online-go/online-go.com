@@ -732,20 +732,23 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
             ["challenge.game.ranked", false],
         ]);
     update_invite_only = (ev) => this.upstate("challenge.invite_only", ev);
-    update_rengo = (ev) => {
-        this.forceTimeControlSystemIfNecessary(
-            ev.target.value,
-            this.state.challenge.game.rengo_casual_mode,
-        );
+    update_strict_rengo = (ev) => {
+        this.forceTimeControlSystemIfNecessary(ev.target.value, false);
         this.upstate([
             ["challenge.game.rengo", ev],
+            ["challenge.game.rengo_casual_mode", false],
             ["challenge.game.ranked", false],
             ["challenge.game.handicap", 0],
         ]);
     };
-    update_rengo_casual = (ev) => {
-        this.forceTimeControlSystemIfNecessary(this.state.challenge.game.rengo, ev.target.value);
-        this.upstate("challenge.game.rengo_casual_mode", ev);
+    update_casual_rengo = (ev) => {
+        this.forceTimeControlSystemIfNecessary(ev.target.value, ev.target.value);
+        this.upstate([
+            ["challenge.game.rengo_casual_mode", ev],
+            ["challenge.game.rengo", ev],
+            ["challenge.game.ranked", false],
+            ["challenge.game.handicap", 0],
+        ]);
     };
 
     update_rengo_auto_start = (ev) => {
@@ -931,46 +934,22 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         )}
                     </div>
                 </div>
-
-                {(mode === "open" || null) && (
-                    <div className="form-group">
-                        <label className="control-label" htmlFor="rengo-option">
-                            {_("Rengo")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <input
-                                    type="checkbox"
-                                    id="rengo-option"
-                                    disabled={
-                                        !this.state.challenge.game.rengo &&
-                                        (this.state.challenge.game.private ||
-                                            this.state.challenge.game.ranked)
-                                    }
-                                    checked={this.state.challenge.game.rengo}
-                                    onChange={this.update_rengo}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                )}
                 {(mode === "open" || null) && (
                     <>
-                        <div
-                            className={
-                                "form-group" + (this.state.challenge.game.rengo ? "" : " hide")
-                            }
-                        >
-                            <label className="control-label" htmlFor="rengo-casual-mode">
-                                {_("Casual")}
+                        <div className="form-group">
+                            <label className="control-label" htmlFor="strict-rengo">
+                                {_("Strict Rengo")}
                             </label>
                             <div className="controls">
                                 <div className="checkbox">
                                     <input
                                         type="checkbox"
-                                        id="rengo-casual-mode"
-                                        checked={this.state.challenge.game.rengo_casual_mode}
-                                        onChange={this.update_rengo_casual}
+                                        id="strict-rengo"
+                                        checked={
+                                            this.state.challenge.game.rengo &&
+                                            !this.state.challenge.game.rengo_casual_mode
+                                        }
+                                        onChange={this.update_strict_rengo}
                                     />
                                     <a
                                         href="https://forums.online-go.com/t/how-does-rengo-work-at-ogs/42484"
@@ -983,6 +962,31 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                             </div>
                         </div>
                     </>
+                )}
+                {(mode === "open" || null) && (
+                    <div className="form-group">
+                        <label className="control-label" htmlFor="rengo-option">
+                            {_("Casual Rengo")}
+                        </label>
+                        <div className="controls">
+                            <div className="checkbox">
+                                <input
+                                    type="checkbox"
+                                    id="rengo-option"
+                                    disabled={
+                                        !this.state.challenge.game.rengo &&
+                                        (this.state.challenge.game.private ||
+                                            this.state.challenge.game.ranked)
+                                    }
+                                    checked={
+                                        this.state.challenge.game.rengo &&
+                                        this.state.challenge.game.rengo_casual_mode
+                                    }
+                                    onChange={this.update_casual_rengo}
+                                />
+                            </div>
+                        </div>
+                    </div>
                 )}
                 {(mode === "open" || null) && (
                     <>
