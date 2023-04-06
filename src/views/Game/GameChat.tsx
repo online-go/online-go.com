@@ -798,7 +798,7 @@ function getTranslatedMessageText(msg: protocol.GameChatTranslatedMessage): stri
 
     for (const key in msg as any) {
         if (key !== "type") {
-            return msg[key];
+            return `${msg[key]}`;
         }
     }
 
