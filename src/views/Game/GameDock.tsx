@@ -177,7 +177,7 @@ export function GameDock({
     };
 
     const alertModerator = () => {
-        if (!user || !user.anonymous) {
+        if (!user || user.anonymous) {
             return;
         }
         const obj: any = game_id
