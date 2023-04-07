@@ -82,6 +82,8 @@ export function GameDock({
 
     const user = useUser();
 
+    console.log(user);
+
     let superuser_ai_review_ready = user?.is_superuser && phase === "finished";
     let mod = user?.is_moderator && phase !== "finished";
     let annul = user?.is_moderator && phase === "finished";
@@ -177,7 +179,7 @@ export function GameDock({
     };
 
     const alertModerator = () => {
-        if (!user || !user.anonymous) {
+        if (!user || user.anonymous) {
             return;
         }
         const obj: any = game_id
