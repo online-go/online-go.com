@@ -84,6 +84,32 @@ interface ChallengeModalProperties {
     created?: (c: CreatedChallengeInfo) => void;
 }
 
+/* These rejection details come from gtp2ogs and allows bots to
+ * be clear about why a challenge is being rejected. */
+interface RejectionDetails {
+    rejection_code:
+        | "blacklisted"
+        | "board_size_not_square"
+        | "board_size_not_allowed"
+        | "handicap_not_allowed"
+        | "unranked_not_allowed"
+        | "blitz_not_allowed"
+        | "too_many_blitz_games"
+        | "live_not_allowed"
+        | "too_many_live_games"
+        | "correspondence_not_allowed"
+        | "too_many_correspondence_games"
+        | "time_control_system_not_allowed"
+        | "time_increment_out_of_range"
+        | "period_time_out_of_range"
+        | "periods_out_of_range"
+        | "main_time_out_of_range"
+        | "per_move_time_out_of_range";
+    details: {
+        [key: string]: any;
+    };
+}
+
 /* Constants  */
 
 const negKomiRanges = [];
@@ -687,11 +713,14 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     browserHistory.push(`/game/${game_id}`);
                 }
 
-                function onRejected(message?: string) {
+                function onRejected(message?: string, details?: RejectionDetails) {
                     off();
                     alert.close();
                     void alert.fire({
-                        text: message || _("Game offer was rejected"),
+                        text:
+                            (details && rejectionDetailsToMessage(details)) ||
+                            message ||
+                            _("Game offer was rejected"),
                     });
                 }
 
@@ -711,7 +740,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                          * drops, etc. */
                         notification_manager.deleteNotification(notification);
                         if (notification.game_id === game_id) {
-                            onRejected(notification.message);
+                            onRejected(notification.message, notification.rejection_details);
                         }
                     }
                 }
@@ -1981,4 +2010,72 @@ interface TimeControlConfig {
     period_time?: number;
     periods?: number;
     pause_on_weekends: boolean;
+}
+
+/* This function provides translations for rejection reasons coming gtp2ogs bot interface scripts. */
+function rejectionDetailsToMessage(details: RejectionDetails): string | undefined {
+    switch (details.rejection_code) {
+        case "blacklisted":
+            return pgettext(
+                "The user has been banned by the operator of the bot from playing agains the bot.",
+                "The operator of this bot will not let you play against it.",
+            );
+
+        case "board_size_not_square":
+            return _("This bot only plays on square boards");
+
+        case "board_size_not_allowed":
+            return _("The selected board size is not supported by this bot");
+
+        case "handicap_not_allowed":
+            return _("Handicap games are not allowed against this bot");
+
+        case "unranked_not_allowed":
+            return _("Unranked games are not allowed against this bot");
+
+        case "blitz_not_allowed":
+            return _("Blitz games are not allowed against this bot");
+
+        case "too_many_blitz_games":
+            return _(
+                "Too many blitz games are being played by this bot right now, please try again later.",
+            );
+
+        case "live_not_allowed":
+            return _("Live games are not allowed against this bot");
+
+        case "too_many_live_games":
+            return _(
+                "Too many live games are being played by this bot right now, please try again later.",
+            );
+
+        case "correspondence_not_allowed":
+            return _("Correspondence games are not allowed against this bot");
+
+        case "too_many_correspondence_games":
+            return _(
+                "Too many correspondence games are being played by this bot right now, please try again later.",
+            );
+
+        case "time_control_system_not_allowed":
+            return _("The provided time control system is not supported by this bot");
+
+        case "time_increment_out_of_range":
+            return _("The time increment is out of the acceptable range allowed by this bot");
+
+        case "period_time_out_of_range":
+            return _("The period time is out of the acceptable range allowed by this bot");
+
+        case "periods_out_of_range":
+            return _("The number of periods is out of the acceptable range allowed by this bot");
+
+        case "main_time_out_of_range":
+            return _("The main time is out of the acceptable range allowed by this bot");
+
+        case "per_move_time_out_of_range":
+            return _("The per move time is out the acceptable range allowed by this bot");
+
+        default:
+            return undefined;
+    }
 }
