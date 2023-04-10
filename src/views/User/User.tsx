@@ -470,7 +470,9 @@ export function User(props: { user_id?: number }): JSX.Element {
 
                             {titles != null &&
                                 trophies != null &&
-                                (titles.length > 0 || trophies.length > 0) && (
+                                (titles.length > 0 ||
+                                    trophies.length > 0 ||
+                                    user.id === 126739) && (
                                     <Card>
                                         <h3>{_("Trophies")}</h3>
 
@@ -529,6 +531,38 @@ export function User(props: { user_id?: number }): JSX.Element {
                                                             "LLLL",
                                                         )}
                                                     </div>
+                                                </div>
+                                            </React.Fragment>
+                                        )}
+
+                                        {(user.id === 126739 || null) && (
+                                            <React.Fragment>
+                                                <hr />
+                                                <div className="Dolphin-trophy">
+                                                    <img
+                                                        src="https://cdn.online-go.com/achievements/dolphin.png"
+                                                        width={300}
+                                                        height={300}
+                                                    />
+                                                    <div>
+                                                        <div>
+                                                            1513 simultaneous correspondence games
+                                                            <div>
+                                                                {moment(
+                                                                    "2021-11-21T00:00:00",
+                                                                ).format("LL")}
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            50,000 games played
+                                                            <div>
+                                                                {moment(
+                                                                    "2023-03-25T00:00:00",
+                                                                ).format("LL")}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div></div>
                                                 </div>
                                             </React.Fragment>
                                         )}
