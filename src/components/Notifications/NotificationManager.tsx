@@ -374,6 +374,11 @@ export class NotificationManager {
                 }
                 delete this.notifications[notification.id];
             } else {
+                if (notification.id in this.notifications) {
+                    // This will happen on reconnects
+                    this.notifications[notification.id] = notification;
+                    return;
+                }
                 this.notifications[notification.id] = notification;
             }
 
