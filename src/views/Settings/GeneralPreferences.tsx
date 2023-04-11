@@ -43,8 +43,10 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
         React.useState(preferences.get("game-list-threshold"));
     const [_desktop_notifications, setDesktopNotifications] =
         usePreference("desktop-notifications");
+    /*
     const [desktop_notifications_require_interaction, setDesktopNotificationsRequireInteraction] =
         usePreference("desktop-notifications-require-interaction");
+    */
     const [show_offline_friends, setShowOfflineFriends] = usePreference("show-offline-friends");
     const [show_seek_graph, setShowSeekGraph] = usePreference("show-seek-graph");
     const [unicode_filter_usernames, setUnicodeFilterUsernames] = usePreference("unicode-filter");
@@ -107,9 +109,11 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
         }
     }
 
+    /*
     function updateDesktopNotificationsRequireInteraction(enabled) {
         setDesktopNotificationsRequireInteraction(enabled);
     }
+    */
 
     function updateDesktopNotifications(enabled) {
         if (!enabled) {
@@ -241,7 +245,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
                 )}
             </PreferenceLine>
 
-            {desktop_notifications_enabled && (
+            {/* desktop_notifications_enabled && (
                 <PreferenceLine
                     title={_("Keep desktop notifications open until clicked")}
                     description={_("Note: Some browsers do not support this feature.")}
@@ -251,7 +255,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
                         onChange={updateDesktopNotificationsRequireInteraction}
                     />
                 </PreferenceLine>
-            )}
+            )*/}
 
             <PreferenceLine title={_("Show seek graph")}>
                 <Toggle checked={show_seek_graph} onChange={setShowSeekGraph} />

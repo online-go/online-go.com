@@ -141,14 +141,14 @@ export function emitNotification(title, body, cb?) {
                         dir: "auto",
                         lang: "",
                         tag: "ogs",
+                        /*
+                        // Setting this to true doesn't seem to work as expected
+                        // as of 2023-04-11
                         requireInteraction: preferences.get(
                             "desktop-notifications-require-interaction",
                         ),
+                        */
                     });
-                    console.log(
-                        "Setting require interaction",
-                        preferences.get("desktop-notifications-require-interaction"),
-                    );
 
                     if (cb) {
                         notification.onclick = cb;
