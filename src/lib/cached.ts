@@ -50,7 +50,6 @@ export const cached = {
         config: (cb?: () => void) => {
             get("ui/config")
                 .then((config) => {
-                    console.log("config.banned = ", config.banned);
                     if (config.banned) {
                         data.set("appeals.banned_user_id", config.banned.banned_user_id);
                         data.set("appeals.jwt", config.banned.jwt);
