@@ -35,6 +35,7 @@ export const defaults = {
     "chat.show-all-tournament-channels": true,
     "chat.user-sort-order": "rank",
     "desktop-notifications": true,
+    "desktop-notifications-require-interaction": false,
     "dock-delay": 0, // seconds.
     "double-click-submit-correspondence": false,
     "double-click-submit-live": false,
