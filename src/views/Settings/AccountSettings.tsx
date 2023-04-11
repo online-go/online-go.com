@@ -85,7 +85,7 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
         setLoading(true);
         get(`me/account_settings`)
             .then((settings) => {
-                console.log(settings);
+                //console.log(settings);
                 setSettings(settings);
                 setUsername(settings.username);
                 setFirstName(settings.first_name);

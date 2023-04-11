@@ -60,7 +60,7 @@ export const cached = {
                         }
                         */
                         return;
-                    } else if (!config.user.anonymous) {
+                    } else if (!config.user?.anonymous) {
                         data.remove("appeals.banned_user_id");
                         data.remove("appeals.jwt");
                         data.remove("appeals.ban-reason");
