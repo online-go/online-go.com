@@ -461,7 +461,14 @@ export class NotificationManager {
                 } else {
                     emitNotification(
                         _("Chat added to finished game"),
-                        _("Someone added some chat to your finished game"),
+                        interpolate(_("{{username}} added chat to your finished game"), {
+                            username: notification.from.username,
+                        }),
+                        () => {
+                            if (window.location.pathname !== "/game/" + notification.game_id) {
+                                browserHistory.push("/game/" + notification.game_id);
+                            }
+                        },
                     );
                 }
             }
