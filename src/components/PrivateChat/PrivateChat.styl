@@ -27,6 +27,18 @@
     width: 100%;
     max-width: private-chat-width;
 
+    &.system {
+        &.open {
+            .body {
+                themed background-color warning-bg
+                themed color colored-background-fg
+            }
+        }
+        input {
+            display: none !important;
+        }
+    }
+
 
     .title {
         themed background-color shade4
