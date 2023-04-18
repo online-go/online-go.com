@@ -634,6 +634,7 @@ export class Play extends React.Component<{}, PlayState> {
 
         const user = data.get("user");
         const anon = user.anonymous;
+        const warned = user.has_active_warning_flag;
 
         //  Construction of the pane we need to show...
         if (automatch_manager.active_live_automatcher) {
@@ -764,7 +765,7 @@ export class Play extends React.Component<{}, PlayState> {
                             <button
                                 className="primary"
                                 onClick={() => this.findMatch("blitz")}
-                                disabled={anon}
+                                disabled={anon || warned}
                             >
                                 <div className="play-button-text-root">
                                     <i className="fa fa-bolt" /> {_("Blitz")}
@@ -779,7 +780,7 @@ export class Play extends React.Component<{}, PlayState> {
                             <button
                                 className="primary"
                                 onClick={() => this.findMatch("live")}
-                                disabled={anon}
+                                disabled={anon || warned}
                             >
                                 <div className="play-button-text-root">
                                     <i className="fa fa-clock-o" /> {_("Normal")}
@@ -796,7 +797,7 @@ export class Play extends React.Component<{}, PlayState> {
                             <button
                                 className="primary"
                                 onClick={this.newComputerGame}
-                                disabled={anon}
+                                disabled={anon || warned}
                             >
                                 <div className="play-button-text-root">
                                     <i className="fa fa-desktop" /> {_("Computer")}
@@ -806,7 +807,7 @@ export class Play extends React.Component<{}, PlayState> {
                             <button
                                 className="primary"
                                 onClick={() => this.findMatch("correspondence")}
-                                disabled={anon}
+                                disabled={anon || warned}
                             >
                                 <div className="play-button-text-root">
                                     <span>
@@ -828,7 +829,7 @@ export class Play extends React.Component<{}, PlayState> {
                             <button
                                 className="primary"
                                 onClick={this.newCustomGame}
-                                disabled={anon}
+                                disabled={anon || warned}
                             >
                                 <i className="fa fa-cog" /> {_("Create")}
                             </button>
