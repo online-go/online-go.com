@@ -68,6 +68,7 @@ import { AppealsCenter } from "AppealsCenter";
 import { ReportsCenter } from "ReportsCenter";
 import { Experiment, Variant, Default as ExDefault } from "Experiment";
 import { RatingCalculator } from "RatingCalculator";
+import { AccountWarning } from "AccountWarning";
 
 import * as docs from "docs";
 
@@ -94,6 +95,9 @@ function Main(props): JSX.Element {
                     <ErrorBoundary>
                         <Announcements />
                     </ErrorBoundary>
+                    <ErrorBoundary>
+                        <AccountWarning />
+                    </ErrorBoundary>
                 </div>
             </Variant>
             <ExDefault>
@@ -105,6 +109,9 @@ function Main(props): JSX.Element {
                         <Announcements />
                     </ErrorBoundary>
                     <ErrorBoundary>{props.children}</ErrorBoundary>
+                    <ErrorBoundary>
+                        <AccountWarning />
+                    </ErrorBoundary>
                 </div>
             </ExDefault>
         </Experiment>

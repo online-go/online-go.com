@@ -236,6 +236,23 @@ sockets.socket.on("connect", () => {
     auth_connect_fn();
 });
 
+sockets.socket.on("user/jwt", (jwt: string) => {
+    console.log("Updating JWT: ", jwt);
+    data.set("config.user_jwt", jwt);
+});
+
+sockets.socket.on("user/update", (user: any) => {
+    if (user.id === data.get("config.user")?.id) {
+        console.log("Updating user", user);
+        data.set("config.user", user);
+        player_cache.update(user);
+        data.set("user", user);
+        window["user"] = user;
+    } else {
+        console.log("Ignoring user update for user", user);
+    }
+});
+
 /*** Setup remote score estimation */
 set_remote_scorer(remote_score_estimator);
 function remote_score_estimator(req: ScoreEstimateRequest): Promise<ScoreEstimateResponse> {

@@ -69,6 +69,7 @@ declare namespace rest_api {
         email: string;
         email_validated: boolean | string; // VerifyEmail sets this to a Date string
         is_announcer: boolean;
+        has_active_warning_flag?: boolean;
     }
 
     type AccountLinks = {
@@ -205,6 +206,7 @@ declare namespace rest_api {
         aga_id: null;
         ui_class: string;
         icon: string;
+        has_active_warning_flag?: boolean;
     }
 
     namespace termination_api {

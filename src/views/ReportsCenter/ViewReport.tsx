@@ -32,6 +32,7 @@ import { UserHistory } from "./UserHistory";
 import { ReportedGame } from "./ReportedGame";
 import { AppealView } from "./AppealView";
 import { get } from "requests";
+import { MessageTemplate, WARNING_TEMPLATES, REPORTER_RESPONSE_TEMPLATES } from "./MessageTemplate";
 
 // Used for saving updates to the report
 let report_note_id = 0;
@@ -485,6 +486,22 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                         Ignore
                     </button>
                 )}
+            </div>
+
+            <hr />
+
+            <div className="message-templates">
+                <MessageTemplate
+                    title="Accused"
+                    player={report.reported_user}
+                    templates={WARNING_TEMPLATES}
+                />
+
+                <MessageTemplate
+                    title="Reporter"
+                    player={report.reporting_user}
+                    templates={REPORTER_RESPONSE_TEMPLATES}
+                />
             </div>
 
             <hr />
