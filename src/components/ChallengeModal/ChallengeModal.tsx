@@ -93,6 +93,7 @@ interface RejectionDetails {
         | "board_size_not_allowed"
         | "handicap_not_allowed"
         | "unranked_not_allowed"
+        | "ranked_not_allowed"
         | "blitz_not_allowed"
         | "too_many_blitz_games"
         | "live_not_allowed"
@@ -104,7 +105,12 @@ interface RejectionDetails {
         | "period_time_out_of_range"
         | "periods_out_of_range"
         | "main_time_out_of_range"
-        | "per_move_time_out_of_range";
+        | "max_time_out_of_range"
+        | "per_move_time_out_of_range"
+        | "player_rank_out_of_range"
+        | "not_accepting_new_challenges"
+        | "too_many_games_for_player"
+        | "komi_out_of_range";
     details: {
         [key: string]: any;
     };
@@ -2033,6 +2039,9 @@ function rejectionDetailsToMessage(details: RejectionDetails): string | undefine
         case "unranked_not_allowed":
             return _("Unranked games are not allowed against this bot");
 
+        case "ranked_not_allowed":
+            return _("Ranked games are not allowed against this bot");
+
         case "blitz_not_allowed":
             return _("Blitz games are not allowed against this bot");
 
@@ -2072,8 +2081,25 @@ function rejectionDetailsToMessage(details: RejectionDetails): string | undefine
         case "main_time_out_of_range":
             return _("The main time is out of the acceptable range allowed by this bot");
 
+        case "max_time_out_of_range":
+            return _("The max time is out of the acceptable range allowed by this bot");
+
         case "per_move_time_out_of_range":
             return _("The per move time is out the acceptable range allowed by this bot");
+
+        case "player_rank_out_of_range":
+            return _("Your rank is too high or low to play against this bot");
+
+        case "not_accepting_new_challenges":
+            return _("This bot is not accepting new games at this time");
+
+        case "too_many_games_for_player":
+            return _(
+                "You are already playing against this bot, please end your other game before starting a new one",
+            );
+
+        case "komi_out_of_range":
+            return _("Komi is out of the acceptable range allowed by this bot");
 
         default:
             return undefined;
