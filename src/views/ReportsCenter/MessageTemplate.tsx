@@ -20,7 +20,7 @@ import { PlayerCacheEntry } from "player_cache";
 import { Player } from "Player";
 import { getPrivateChat } from "PrivateChat";
 import { alert } from "swal_config";
-import { post } from "requests";
+import { post, put } from "requests";
 import { errorAlerter } from "misc";
 
 interface TemplateEntry {
@@ -115,12 +115,19 @@ export function MessageTemplate({
         const pc = getPrivateChat(player.id, player.username);
         void alert.fire("Sent system PM to " + player.username);
         pc.sendChat(text, true);
+        void put(`players/${player.id}/moderate`, {
+            moderation_note: "Sent system PM: " + text,
+        });
+
         clear();
     };
     const sendPM = () => {
         const pc = getPrivateChat(player.id, player.username);
         pc.open();
         pc.sendChat(text);
+        void put(`players/${player.id}/moderate`, {
+            moderation_note: "Sent private message: " + text,
+        });
         clear();
     };
 
