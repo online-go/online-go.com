@@ -30,42 +30,6 @@ import { isLiveGame, durationString } from "TimeControl";
 
 import { notification_manager } from "./NotificationManager";
 
-/* TODO: This should be removed once we are happy with the new nav bar style,
- * as we use the NotificationIndicator component for that system */
-export class NotificationIndicator extends React.Component<{}, any> {
-    constructor(props) {
-        super(props);
-        this.state = {
-            count: notification_manager.unread_notification_count,
-        };
-        this.setCount = this.setCount.bind(this);
-    }
-
-    setCount(ct) {
-        this.setState({ count: ct });
-    }
-
-    componentDidMount() {
-        notification_manager.event_emitter.on("notification-count", this.setCount);
-    }
-    componentWillUnmount() {
-        notification_manager.event_emitter.off("notification-count", this.setCount);
-    }
-
-    render() {
-        return (
-            <span>
-                <span className={"notification-indicator " + (this.state.count ? "active" : "")} />
-                <span
-                    className={"notification-indicator-count " + (this.state.count ? "active" : "")}
-                >
-                    {this.state.count}
-                </span>
-            </span>
-        );
-    }
-}
-
 export function NotificationList(): JSX.Element {
     const [, setCount] = React.useState(notification_manager.ordered_notifications.length);
     const [, refresh] = React.useState(0);
@@ -80,7 +44,7 @@ export function NotificationList(): JSX.Element {
             notification_manager.event_emitter.off("notification-count", setCount);
             notification_manager.event_emitter.off("notification-list-updated", _refresh);
         };
-    }, []);
+    }, [refresh]);
 
     const list = notification_manager.ordered_notifications;
 
