@@ -209,6 +209,20 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
                 it.`,
             show_warning_button: false,
         },
+        "Asked opponent to be respectful of time": {
+            message: `
+                Thanks for your report, I have asked your opponent to be more
+                respectful of people’s time.`,
+            show_warning_button: false,
+        },
+        "Beginner end game scoring": {
+            message: `
+                Thanks for the report. It seems you were playing against a
+                complete beginner, so I have tried to explain that games should
+                be ended correctly, to pass when their opponent pass and to
+                trust the auto-score.`,
+            show_warning_button: false,
+        },
         "Warning given": {
             message: `
                 Thank you for your report, the player has been given a
