@@ -45,8 +45,6 @@ export const WARNING_TEMPLATES: MessageTemplates = {
             message: `
 This is a note to let you know that no player is obliged to accept an undo request, ever.
 
-Much of the community thinks that asking for an undo is rude.
-
 At OGS you are allowed to ask for an undo by pressing the undo button. If the person accepts that's great.  If they do not accept, that is the end of it.
 
 Chasing people in chat about undos is viewed as harrasment, and harrasment is not allowed at OGS.
