@@ -40,6 +40,22 @@ export const WARNING_TEMPLATES: MessageTemplates = {
             show_warning_button: true,
         },
     },
+    Escaping: {
+        "Escaped scoring phase, first time": {
+            message: `
+It appears that in this game you failed to accept the score at the end of the game, and left it to time out.
+
+  https://online-go.com/game/XXXXX
+
+Players are required to end games properly - leaving them to timeout forces the opponent to wait, obstructing them from moving on to the next game.
+
+Please take care to end your games properly - promptly accept the correct score after passing.
+
+Thanks.
+`,
+            show_warning_button: true,
+        },
+    },
 };
 
 export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
