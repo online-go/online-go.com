@@ -17,9 +17,8 @@
 
 import * as React from "react";
 import * as moment from "moment";
-import * as data from "data";
 import * as preferences from "preferences";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { alert } from "swal_config";
 import { _, pgettext } from "translate";
 import { post } from "requests";
@@ -30,16 +29,22 @@ import { openReportedConversationModal } from "ReportedConversationModal";
 import { AutoTranslate } from "AutoTranslate";
 import { report_categories } from "Report";
 import { Report, report_manager } from "report_manager";
-import { useRefresh } from "hooks";
+import { useRefresh, useUser } from "hooks";
 
 export function IncidentReportTracker(): JSX.Element {
+    const user = useUser();
+    const navigate = useNavigate();
     const [show_incident_list, setShowIncidentList] = React.useState(false);
     const [normal_ct, setNormalCt] = React.useState(0);
     const [hide_icon] = usePreference("hide-incident-reports");
     const refresh = useRefresh();
 
     function toggleList() {
-        setShowIncidentList(!show_incident_list);
+        if (user.is_moderator) {
+            navigate("/reports-center/");
+        } else {
+            setShowIncidentList(!show_incident_list);
+        }
     }
 
     React.useEffect(() => {
@@ -128,7 +133,6 @@ export function IncidentReportTracker(): JSX.Element {
         };
     }, []);
 
-    const user = data.get("user");
     const reports = report_manager.sorted_active_incident_reports;
 
     if (reports.length === 0 && !user.is_moderator) {
