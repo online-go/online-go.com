@@ -35,8 +35,99 @@ interface MessageTemplates {
 export const WARNING_TEMPLATES: MessageTemplates = {
     "AI Use": {
         "AI use detected": {
-            message:
-                "Our systems have detected that you are likely using AI assistance in your games. Use of such systems is considered cheating and is prohibited. We ask that you resign from all current games in which you used AI, and do not consult AI in future games. Continued use of AI will result in a ban.",
+            message: `Our systems have detected that you may be using AI assistance in your games.
+
+Using such methods is considered cheating and is prohibited.
+
+We ask that you resign from any ongoing games in which AI was used and refrain from seeking AI assistance in future games.
+
+Any further use of AI will result in a ban.
+`,
+            show_warning_button: true,
+        },
+    },
+
+    "Chat Abuse": {
+        "Objectionable chat": {
+            message: `Our team has observed that some of your recent comments have been harmful, threatening, abusive, defamatory, offensive, vulgar, obscene, libelous, hateful, or otherwise objectionable.
+
+Such behavior is prohibited and violates our terms of service.
+
+    https://online-go.com/docs/terms-of-service
+
+We urge you to refrain from such actions in the future as they will not be tolerated.
+
+Failure to comply with this warning will result in a ban.
+
+Please maintain a respectful and courteous environment for all users.`,
+            show_warning_button: true,
+        },
+    },
+
+    Escaping: {
+        "Escaped scoring phase, first time": {
+            message: `It appears that you did not accept the score at the end of game #XXXXXXXX and allowed it to time out.
+
+Players are required to end their games properly, because letting them timeout can make the opponent wait and prevent them from moving on to the next game.
+
+Please ensure that you end your games properly by accepting the correct score immediately after passing.`,
+            show_warning_button: true,
+        },
+        "Escaped scoring phase, second time": {
+            message: `It appears that you did not accept the score at the end of game #XXXXXXXX and allowed it to time out, inconveniencing your opponent.
+
+Our records show that you have been warned about this before, but it seems you have not managed to address it.  If you fail to address this problem, it will result a ban.
+
+Please be mindful of others’ experiences and end games properly.`,
+            show_warning_button: true,
+        },
+    },
+
+    "Endgame Stalling": {
+        "Endgame stalling, regular": {
+            message: `It has come to our attention that you stalled at the end of game #XXXXXXXX.
+
+This practice can be frustrating for your opponent and can prevent them from moving on to the next game.
+
+We ask that you end your games properly by accepting the correct score immediately after passing.
+
+Repeated failure to do so may result in a ban.`,
+            show_warning_button: true,
+        },
+        "Endgame stalling, beginner": {
+            message: `It appears that you delayed the end of game #XXXXXXXX, which can frustrate your opponent and prevent them from moving on to the next game.
+
+Since you are a new player, no action will be taken against your account. We simply ask that you learn when to end a game.
+
+Until you develop the experience to judge better, if your opponent passes and there are no open borders between your stones then you should also pass.
+
+After passing, promptly accept the correct score.
+
+Repeated failure to do so could lead to a ban.`,
+            show_warning_button: true,
+        },
+    },
+
+    Sandbagging: {
+        "Losing intentionally": {
+            message: `Our team has noticed that you have been resigning or abandoning ranked games even when you are winning.
+
+This conduct is known as “sandbagging” and is prohibited.
+
+The ranking system aims to reflect players’ skills. Manipulating it by sandbagging is fraud that undermines its credibility, frustrates other players, and can result in a ban.
+
+We strongly advise you to refrain from sandbagging in your games.`,
+            show_warning_button: true,
+        },
+    },
+
+    "Timer Abuse": {
+        "Abused ultra-blitz time settings": {
+            message: `It appears that you have been abusing ultra-blitz time settings and deliberately stalling at the end of games to win unfairly. 
+
+This conduct goes against the principles of fair play and can ruin the enjoyment of playing Go for others.
+
+We ask that you avoid using such tactics in the future and focus on playing to the best of your abilities within the site rules.`,
             show_warning_button: true,
         },
     },
