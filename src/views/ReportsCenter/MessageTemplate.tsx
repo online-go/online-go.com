@@ -131,6 +131,20 @@ We ask that you avoid using such tactics in the future and focus on playing to t
             show_warning_button: true,
         },
     },
+    Harrasment: {
+        "Undo-harrasment": {
+            message: `
+This is a note to let you know that no player is obliged to accept an undo request, ever.
+
+At OGS you are allowed to ask for an undo by pressing the undo button. If the person accepts that's great.  If they do not accept, that is the end of it.
+
+Chasing people in chat about undos is viewed as harrasment, and harrasment is not allowed at OGS.
+
+https://online-go.com/docs/terms-of-service
+`,
+            show_warning_button: true,
+        },
+    },
 };
 
 export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
