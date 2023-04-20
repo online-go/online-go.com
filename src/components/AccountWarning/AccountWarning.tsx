@@ -73,7 +73,7 @@ export function AccountWarning() {
         <>
             <div className="AccountWarning-backdrop" />
             <div className="AccountWarning">
-                <AutoTranslate source={warning.text} source_language={"en"} />
+                <AutoTranslate source={warning.text.trim()} source_language={"en"} />
                 <div className="space" />
                 <div className="buttons">
                     <input

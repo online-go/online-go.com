@@ -34,8 +34,9 @@
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    min-width: 30rem;
-    max-width: 95%;
+    width: 30rem;
+    max-width: calc(95vw - 2rem);
+    max-height: calc(95vh - 2rem);
 
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
 
@@ -51,12 +52,14 @@
     align-items: center;
 
 
-
     .AutoTranslate {
         font-size: 1.5rem;
-        text-align: center;
-        white-space: pre-line; // we have paragraphs in warning messages :)
-        line-height: 1;  // We have lots to say, not so much room to say in :)
+        text-align: justify-content;
+        white-space: pre-line;
+        line-height: 1;
+        overflow: auto;
+        padding: 0;
+        margin: 0;
     }
 
     .space  {
