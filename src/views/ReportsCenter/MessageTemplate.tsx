@@ -40,10 +40,10 @@ Our systems have detected that you may be using AI assistance in your games.
 
 Using such methods is considered cheating and is prohibited.
 
-We ask that you resign from any ongoing games in which AI was used and refrain from seeking AI assistance in future games.
+We ask that you resign from any ongoing games in which AI was used and refrain
+from seeking AI assistance in future games.
 
-Any further use of AI will result in a ban.
-`,
+Any further use of AI will result in a ban.`,
             show_warning_button: true,
         },
     },
@@ -51,13 +51,16 @@ Any further use of AI will result in a ban.
     "Chat Abuse": {
         "Objectionable chat": {
             message: `
-Our team has observed that some of your recent comments have been harmful, threatening, abusive, defamatory, offensive, vulgar, obscene, libelous, hateful, or otherwise objectionable.
+Our team has observed that some of your recent comments have been harmful,
+threatening, abusive, defamatory, offensive, vulgar, obscene, libelous,
+hateful, or otherwise objectionable.
 
 Such behavior is prohibited and violates our terms of service.
 
     https://online-go.com/docs/terms-of-service
 
-We urge you to refrain from such actions in the future as they will not be tolerated.
+We urge you to refrain from such actions in the future as they will not be
+tolerated.
 
 Failure to comply with this warning will result in a ban.
 
@@ -69,18 +72,24 @@ Please maintain a respectful and courteous environment for all users.`,
     Escaping: {
         "Escaped scoring phase, first time": {
             message: `
-It appears that you did not accept the score at the end of game #XXXXXXXX and allowed it to time out.
+It appears that you did not accept the score at the end of game #XXXXXXXX and
+allowed it to time out.
 
-Players are required to end their games properly, because letting them timeout can make the opponent wait and prevent them from moving on to the next game.
+Players are required to end their games properly, because letting them timeout
+can make the opponent wait and prevent them from moving on to the next game.
 
-Please ensure that you end your games properly by accepting the correct score immediately after passing.`,
+Please ensure that you end your games properly by accepting the correct score
+immediately after passing.`,
             show_warning_button: true,
         },
         "Escaped scoring phase, second time": {
             message: `
-It appears that you did not accept the score at the end of game #XXXXXXXX and allowed it to time out, inconveniencing your opponent.
+It appears that you did not accept the score at the end of game #XXXXXXXX and
+allowed it to time out, inconveniencing your opponent.
 
-Our records show that you have been warned about this before, but it seems you have not managed to address it.  If you fail to address this problem, it will result a ban.
+Our records show that you have been warned about this before, but it seems you
+have not managed to address it.  If you fail to address this problem, it will
+result a ban.
 
 Please be mindful of others’ experiences and end games properly.`,
             show_warning_button: true,
@@ -92,20 +101,25 @@ Please be mindful of others’ experiences and end games properly.`,
             message: `
 It has come to our attention that you stalled at the end of game #XXXXXXXX.
 
-This practice can be frustrating for your opponent and can prevent them from moving on to the next game.
+This practice can be frustrating for your opponent and can prevent them from
+moving on to the next game.
 
-We ask that you end your games properly by accepting the correct score immediately after passing.
+We ask that you end your games properly by accepting the correct score
+immediately after passing.
 
 Repeated failure to do so may result in a ban.`,
             show_warning_button: true,
         },
         "Endgame stalling, beginner": {
             message: `
-It appears that you delayed the end of game #XXXXXXXX, which can frustrate your opponent and prevent them from moving on to the next game.
+It appears that you delayed the end of game #XXXXXXXX, which can frustrate your
+opponent and prevent them from moving on to the next game.
 
-Since you are a new player, no action will be taken against your account. We simply ask that you learn when to end a game.
+Since you are a new player, no action will be taken against your account. We
+simply ask that you learn when to end a game.
 
-Until you develop the experience to judge better, if your opponent passes and there are no open borders between your stones then you should also pass.
+Until you develop the experience to judge better, if your opponent passes and
+there are no open borders between your stones then you should also pass.
 
 After passing, promptly accept the correct score.
 
@@ -117,11 +131,14 @@ Repeated failure to do so could lead to a ban.`,
     Sandbagging: {
         "Losing intentionally": {
             message: `
-Our team has noticed that you have been resigning or abandoning ranked games even when you are winning.
+Our team has noticed that you have been resigning or abandoning ranked games
+even when you are winning.
 
 This conduct is known as “sandbagging” and is prohibited.
 
-The ranking system aims to reflect players’ skills. Manipulating it by sandbagging is fraud that undermines its credibility, frustrates other players, and can result in a ban.
+The ranking system aims to reflect players’ skills. Manipulating it by
+sandbagging is fraud that undermines its credibility, frustrates other players,
+and can result in a ban.
 
 We strongly advise you to refrain from sandbagging in your games.`,
             show_warning_button: true,
@@ -131,25 +148,30 @@ We strongly advise you to refrain from sandbagging in your games.`,
     "Timer Abuse": {
         "Abused ultra-blitz time settings": {
             message: `
-It appears that you have been abusing ultra-blitz time settings and deliberately stalling at the end of games to win unfairly.
+It appears that you have been abusing ultra-blitz time settings and
+deliberately stalling at the end of games to win unfairly.
 
-This conduct goes against the principles of fair play and can ruin the enjoyment of playing Go for others.
+This conduct goes against the principles of fair play and can ruin the
+enjoyment of playing Go for others.
 
-We ask that you avoid using such tactics in the future and focus on playing to the best of your abilities within the site rules.`,
+We ask that you avoid using such tactics in the future and focus on playing to
+the best of your abilities within the site rules.`,
             show_warning_button: true,
         },
     },
     Harrasment: {
         "Undo-harrasment": {
             message: `
-This is a note to let you know that no player is obliged to accept an undo request, ever.
+This is a note to let you know that no player is obliged to accept an undo
+request, ever.
 
-At OGS you are allowed to ask for an undo by pressing the undo button. If the person accepts that's great.  If they do not accept, that is the end of it.
+At OGS you are allowed to ask for an undo by pressing the undo button. If the
+person accepts that's great.  If they do not accept, that is the end of it.
 
-Chasing people in chat about undos is viewed as harrasment, and harrasment is not allowed at OGS.
+Chasing people in chat about undos is viewed as harrasment, and harrasment is
+not allowed at OGS.
 
-https://online-go.com/docs/terms-of-service
-`,
+https://online-go.com/docs/terms-of-service `,
             show_warning_button: true,
         },
     },
@@ -168,20 +190,31 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
     },
     "Bad Report": {
         "No violation": {
-            message:
-                "Thank you for your report. We looked into it and found no behavior that violates our terms of service or community guidelines. But we’ll still keep an eye on the situation and take appropriate action if necessary. Thank you for helping keep OGS enjoyable for everyone. We appreciate it.",
+            message: `
+Thank you for your report. We looked into it and found no behavior that
+violates our terms of service or community guidelines. But we’ll still keep an
+eye on the situation and take appropriate action if necessary. Thank you for
+helping keep OGS enjoyable for everyone. We appreciate it.`,
             show_warning_button: false,
         },
         "No sandbagging": {
-            message:
-                "Thank you for bringing the possible instance of sandbagging to our attention. We looked into the report and found little evidence of deliberate underperformance. But we’ll still keep an eye on the situation and take appropriate action if necessary. Thank you for helping keep OGS enjoyable for everyone. We appreciate it.",
+            message: `
+Thank you for bringing the possible instance of sandbagging to our attention.
+We looked into the report and found little evidence of deliberate
+underperformance. But we’ll still keep an eye on the situation and take
+appropriate action if necessary. Thank you for helping keep OGS enjoyable for
+everyone. We appreciate it.`,
             show_warning_button: false,
         },
     },
     Chastise: {
         "Verbal abuse": {
-            message:
-                "Thanks for bringing the misbehavior to our attention. We also noticed that you were verbally harassing your opponent while this was going on. This kind of behavior is not acceptable either and will not be tolerated. We appreciate your help in keeping the game fair, but please refrain from using any kind of abusive language or behavior towards other players.",
+            message: `
+Thanks for bringing the misbehavior to our attention. We also noticed that you
+were verbally harassing your opponent while this was going on. This kind of
+behavior is not acceptable either and will not be tolerated. We appreciate your
+help in keeping the game fair, but please refrain from using any kind of
+abusive language or behavior towards other players.`,
             show_warning_button: true,
         },
     },
@@ -212,7 +245,8 @@ export function MessageTemplate({
                 .replace(
                     /#XX+/g,
                     game_id ? `[${game_id.toString()}](/game/${game_id.toString()})` : "#XXXXXXXX",
-                );
+                )
+                .replace(/([^\n])[\n]([^\n])/g, "$1 $2");
             setText(msg);
         } else {
             setTemplate(null);
