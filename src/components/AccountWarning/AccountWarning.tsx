@@ -20,11 +20,13 @@ import { _, pgettext } from "translate";
 import { get, patch } from "requests";
 import { useUser } from "hooks";
 import { AutoTranslate } from "AutoTranslate";
+import { useLocation } from "react-router";
 
 const BUTTON_COUNTDOWN_TIME = 10000; // ms;
 
 export function AccountWarning() {
     const user = useUser();
+    const location = useLocation();
     const [warning, setWarning] = React.useState(null);
     const [acceptTimer, setAcceptTimer] = React.useState(null);
     const [boxChecked, setBoxChecked] = React.useState(false);
@@ -64,6 +66,10 @@ export function AccountWarning() {
         return null;
     }
 
+    if (location.pathname.indexOf("terms-of-service") > 0) {
+        return null;
+    }
+
     const ok = () => {
         setWarning(null);
         void patch(`me/warning/${warning.id}`, { accept: true });
@@ -73,7 +79,11 @@ export function AccountWarning() {
         <>
             <div className="AccountWarning-backdrop" />
             <div className="AccountWarning">
-                <AutoTranslate source={warning.text.trim()} source_language={"en"} />
+                <AutoTranslate
+                    source={warning.text.trim()}
+                    source_language={"en"}
+                    markdown={true}
+                />
                 <div className="space" />
                 <div className="buttons">
                     <input
