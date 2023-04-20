@@ -33,6 +33,18 @@ interface MessageTemplates {
 }
 
 export const WARNING_TEMPLATES: MessageTemplates = {
+    "New user": {
+        "Please resign instead of timing out": {
+            message: `
+Hi, welcome to OGS!
+
+Please consider resigning games rather than letting them time out,
+as this is fairer to your opponents than making
+them wait for your clock to run out.`,
+            show_warning_button: true,
+        },
+    },
+
     "AI Use": {
         "AI use detected": {
             message: `
@@ -180,12 +192,19 @@ more information.`,
 
 export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
     "Good Report": {
+        "Contacted player": {
+            message: `
+Thank you for your report, I have contacted the player about it.`,
+            show_warning_button: false,
+        },
         "Warning given": {
-            message: "Thank you for your report, the player has been given a warning.",
+            message: `
+Thank you for your report, the player has been given a warning.`,
             show_warning_button: false,
         },
         "Reported player banned": {
-            message: "Thank you for your report, the player has been banned.",
+            message: `
+Thank you for your report, the player has been banned.`,
             show_warning_button: false,
         },
     },
