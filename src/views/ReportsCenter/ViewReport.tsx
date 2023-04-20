@@ -495,12 +495,14 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     title="Accused"
                     player={report.reported_user}
                     templates={WARNING_TEMPLATES}
+                    game_id={report.reported_game}
                 />
 
                 <MessageTemplate
                     title="Reporter"
                     player={report.reporting_user}
                     templates={REPORTER_RESPONSE_TEMPLATES}
+                    game_id={report.reported_game}
                 />
             </div>
 

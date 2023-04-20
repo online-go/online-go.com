@@ -35,7 +35,8 @@ interface MessageTemplates {
 export const WARNING_TEMPLATES: MessageTemplates = {
     "AI Use": {
         "AI use detected": {
-            message: `Our systems have detected that you may be using AI assistance in your games.
+            message: `
+Our systems have detected that you may be using AI assistance in your games.
 
 Using such methods is considered cheating and is prohibited.
 
@@ -49,7 +50,8 @@ Any further use of AI will result in a ban.
 
     "Chat Abuse": {
         "Objectionable chat": {
-            message: `Our team has observed that some of your recent comments have been harmful, threatening, abusive, defamatory, offensive, vulgar, obscene, libelous, hateful, or otherwise objectionable.
+            message: `
+Our team has observed that some of your recent comments have been harmful, threatening, abusive, defamatory, offensive, vulgar, obscene, libelous, hateful, or otherwise objectionable.
 
 Such behavior is prohibited and violates our terms of service.
 
@@ -66,7 +68,8 @@ Please maintain a respectful and courteous environment for all users.`,
 
     Escaping: {
         "Escaped scoring phase, first time": {
-            message: `It appears that you did not accept the score at the end of game #XXXXXXXX and allowed it to time out.
+            message: `
+It appears that you did not accept the score at the end of game #XXXXXXXX and allowed it to time out.
 
 Players are required to end their games properly, because letting them timeout can make the opponent wait and prevent them from moving on to the next game.
 
@@ -74,7 +77,8 @@ Please ensure that you end your games properly by accepting the correct score im
             show_warning_button: true,
         },
         "Escaped scoring phase, second time": {
-            message: `It appears that you did not accept the score at the end of game #XXXXXXXX and allowed it to time out, inconveniencing your opponent.
+            message: `
+It appears that you did not accept the score at the end of game #XXXXXXXX and allowed it to time out, inconveniencing your opponent.
 
 Our records show that you have been warned about this before, but it seems you have not managed to address it.  If you fail to address this problem, it will result a ban.
 
@@ -85,7 +89,8 @@ Please be mindful of others’ experiences and end games properly.`,
 
     "Endgame Stalling": {
         "Endgame stalling, regular": {
-            message: `It has come to our attention that you stalled at the end of game #XXXXXXXX.
+            message: `
+It has come to our attention that you stalled at the end of game #XXXXXXXX.
 
 This practice can be frustrating for your opponent and can prevent them from moving on to the next game.
 
@@ -95,7 +100,8 @@ Repeated failure to do so may result in a ban.`,
             show_warning_button: true,
         },
         "Endgame stalling, beginner": {
-            message: `It appears that you delayed the end of game #XXXXXXXX, which can frustrate your opponent and prevent them from moving on to the next game.
+            message: `
+It appears that you delayed the end of game #XXXXXXXX, which can frustrate your opponent and prevent them from moving on to the next game.
 
 Since you are a new player, no action will be taken against your account. We simply ask that you learn when to end a game.
 
@@ -110,7 +116,8 @@ Repeated failure to do so could lead to a ban.`,
 
     Sandbagging: {
         "Losing intentionally": {
-            message: `Our team has noticed that you have been resigning or abandoning ranked games even when you are winning.
+            message: `
+Our team has noticed that you have been resigning or abandoning ranked games even when you are winning.
 
 This conduct is known as “sandbagging” and is prohibited.
 
@@ -123,7 +130,8 @@ We strongly advise you to refrain from sandbagging in your games.`,
 
     "Timer Abuse": {
         "Abused ultra-blitz time settings": {
-            message: `It appears that you have been abusing ultra-blitz time settings and deliberately stalling at the end of games to win unfairly. 
+            message: `
+It appears that you have been abusing ultra-blitz time settings and deliberately stalling at the end of games to win unfairly.
 
 This conduct goes against the principles of fair play and can ruin the enjoyment of playing Go for others.
 
@@ -183,10 +191,12 @@ export function MessageTemplate({
     title,
     player,
     templates,
+    game_id,
 }: {
     title: string;
     player: PlayerCacheEntry;
     templates: MessageTemplates;
+    game_id: number | undefined;
 }): JSX.Element {
     const [selectedTemplate, setSelectedTemplate] = React.useState<string>("");
     const [template, setTemplate] = React.useState<TemplateEntry | null>(null);
@@ -196,7 +206,14 @@ export function MessageTemplate({
         if (selectedTemplate) {
             const arr = selectedTemplate.split("::");
             setTemplate(templates[arr[0]][arr[1]]);
-            setText(templates[arr[0]][arr[1]].message);
+
+            const msg = templates[arr[0]][arr[1]].message
+                .trim()
+                .replace(
+                    /#XX+/g,
+                    game_id ? `[${game_id.toString()}](/game/${game_id.toString()})` : "#XXXXXXXX",
+                );
+            setText(msg);
         } else {
             setTemplate(null);
         }
