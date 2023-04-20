@@ -188,6 +188,11 @@ export function ModTools(props: ModToolsProps): JSX.Element {
                         render: (X) => (
                             <div>
                                 <div className="action">
+                                    {X.incident_report?.id ? (
+                                        <Link to={`/reports-center/all/${X.incident_report.id}`}>
+                                            R{X.incident_report.id.toString().substr(-3)}
+                                        </Link>
+                                    ) : null}
                                     {X.game ? (
                                         <Link to={`/game/${X.game.id}`}>{X.game.id}</Link>
                                     ) : null}
