@@ -308,7 +308,7 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
             page_sizes.push(props.pageSize);
         }
     }
-    page_sizes.sort();
+    page_sizes.sort((a, b) => a - b);
 
     return (
         <div className={`PaginatedTable ${extra_classes} ${loading ? "loading" : ""}`}>

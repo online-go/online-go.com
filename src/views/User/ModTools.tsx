@@ -167,6 +167,7 @@ export function ModTools(props: ModToolsProps): JSX.Element {
                 className="moderator-log"
                 name="moderator-log"
                 source={`moderation?player_id=${props.user_id}`}
+                pageSizeOptions={[1, 2, 3, 5, 7, 10, 20, 25, 50, 100]}
                 uiPushProps={{
                     event: `modlog-${props.user_id}-updated`,
                     channel: "moderators",

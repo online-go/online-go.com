@@ -508,6 +508,10 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
 
             <hr />
 
+            <UserHistory user={report.reported_user} />
+
+            <hr />
+
             {(report.url || null) && (
                 <a href={report.url} target="_blank">
                     {report.url}
@@ -534,10 +538,6 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     ))}
                 </div>
             )}
-
-            <hr />
-
-            <UserHistory user={report.reported_user} />
         </div>
     );
 }
