@@ -171,7 +171,7 @@ person accepts that's great.  If they do not accept, that is the end of it.
 Chasing people in chat about undos is viewed as harrasment, and harrasment is
 not allowed at OGS.
 
-https://online-go.com/docs/terms-of-service `,
+https://online-go.com/docs/terms-of-service`,
             show_warning_button: true,
         },
     },
