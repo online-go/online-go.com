@@ -160,7 +160,7 @@ class ReportManager extends EventEmitter<Events> {
             const report = this.active_incident_reports[id];
             if ((prefs[report.report_type]?.visible ?? true) && !this.getIgnored(report.id)) {
                 reports.push(report);
-                if (report.moderator === null || report.moderator.id === user.id) {
+                if (!report.moderator || report.moderator.id === user.id) {
                     normal_ct++;
                 }
             }
