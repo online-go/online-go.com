@@ -86,31 +86,31 @@ export const WARNING_TEMPLATES: MessageTemplates = {
     Escaping: {
         "Escaped mid-game, first time": {
             message: `
-                It has come to our attention that you abandoned game #XXXXXXXX 
+                It has come to our attention that you abandoned game #XXXXXXXX
                 and allowed it to time out rather than resigning.
 
-                Players are required to end their games properly, as letting them 
-                time out can cause opponents to wait unnecessarily and prevent them 
+                Players are required to end their games properly, as letting them
+                time out can cause opponents to wait unnecessarily and prevent them
                 from moving on to the next game.
-                
-                Please ensure that you end your games properly by accepting the 
-                correct score immediately after passing or by resigning if you feel 
-                the position is hopeless. This helps maintain a positive gaming 
+
+                Please ensure that you end your games properly by accepting the
+                correct score immediately after passing or by resigning if you feel
+                the position is hopeless. This helps maintain a positive gaming
                 environment for everyone involved.`,
             show_warning_button: true,
         },
         "Escaped mid-game, second time": {
             message: `
-                We have noticed that you abandoned game #XXXXXXXX, 
+                We have noticed that you abandoned game #XXXXXXXX,
                 allowing it to time out instead of properly resigning.
 
-                Our records indicate that you have been previously warned 
-                about this behavior. Failure to address this issue and continuing 
+                Our records indicate that you have been previously warned
+                about this behavior. Failure to address this issue and continuing
                 to abandon games will lead to a ban.
 
-                Please be considerate of your opponents' experiences and 
-                ensure you end games appropriately. This includes accepting the 
-                correct score after passing or resigning when you believe the 
+                Please be considerate of your opponents' experiences and
+                ensure you end games appropriately. This includes accepting the
+                correct score after passing or resigning when you believe the
                 position is hopeless.`,
             show_warning_button: true,
         },
@@ -197,9 +197,9 @@ export const WARNING_TEMPLATES: MessageTemplates = {
     "Frequent Cancellation": {
         "Frequent cancellation": {
             message: `
-                We have observed that you often cancel games. To respect other 
-                players' time, please only initiate games you plan to play. Additionally, 
-                remember to deactivate the auto-match finder if you can no longer commit 
+                We have observed that you often cancel games. To respect other
+                players' time, please only initiate games you plan to play. Additionally,
+                remember to deactivate the auto-match finder if you can no longer commit
                 to starting a new game. Your understanding and cooperation are appreciated.`,
             show_warning_button: true,
         },
@@ -316,18 +316,20 @@ export function MessageTemplate({
     player,
     templates,
     game_id,
+    gpt,
 }: {
     title: string;
     player: PlayerCacheEntry;
     templates: MessageTemplates;
     game_id: number | undefined;
+    gpt: string | null;
 }): JSX.Element {
-    const [selectedTemplate, setSelectedTemplate] = React.useState<string>("");
+    const [selectedTemplate, setSelectedTemplate] = React.useState<string>(gpt ? "gpt" : "");
     const [template, setTemplate] = React.useState<TemplateEntry | null>(null);
-    const [text, setText] = React.useState<string>("");
+    const [text, setText] = React.useState<string>(gpt ? gpt : "");
 
     React.useEffect(() => {
-        if (selectedTemplate) {
+        if (selectedTemplate && selectedTemplate !== "gpt") {
             const arr = selectedTemplate.split("::");
             setTemplate(templates[arr[0]][arr[1]]);
 
@@ -341,10 +343,21 @@ export function MessageTemplate({
                 .replace(/[ \t]+\n/g, "\n")
                 .replace(/([^\n])[\n]([^\n])/g, "$1 $2");
             setText(msg);
+        } else if (selectedTemplate === "gpt") {
+            setTemplate(null);
+            setText(gpt ? gpt : "");
         } else {
             setTemplate(null);
         }
     }, [selectedTemplate]);
+
+    React.useEffect(() => {
+        if (gpt && selectedTemplate === "" && text === "") {
+            setSelectedTemplate("gpt");
+            setText(gpt);
+            setTemplate(null);
+        }
+    }, [gpt]);
 
     const clear = () => {
         setText("");
@@ -389,6 +402,7 @@ export function MessageTemplate({
                     onChange={(e) => setSelectedTemplate(e.target.value)}
                 >
                     <option value="">-- Select template --</option>
+                    <option value="gpt">ChatGPT Automod</option>
                     {Object.keys(templates).map((category) => (
                         <optgroup label={category} key={category}>
                             {Object.keys(templates[category]).map((title) => (
@@ -399,6 +413,9 @@ export function MessageTemplate({
                         </optgroup>
                     ))}
                 </select>
+                <button className="clear" onClick={clear}>
+                    Clear
+                </button>
             </h3>
 
             <textarea value={text} onChange={(e) => setText(e.target.value)} />

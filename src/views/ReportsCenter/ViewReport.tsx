@@ -490,12 +490,18 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
 
             <hr />
 
+            <div className="automod-analysis">
+                <b>Automod Analysis:</b>{" "}
+                <span className="analysis">{report.automod_to_moderator}</span>
+            </div>
+
             <div className="message-templates">
                 <MessageTemplate
                     title="Accused"
                     player={report.reported_user}
                     templates={WARNING_TEMPLATES}
                     game_id={report.reported_game}
+                    gpt={report.automod_to_reported}
                 />
 
                 <MessageTemplate
@@ -503,6 +509,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     player={report.reporting_user}
                     templates={REPORTER_RESPONSE_TEMPLATES}
                     game_id={report.reported_game}
+                    gpt={report.automod_to_reporter}
                 />
             </div>
 
