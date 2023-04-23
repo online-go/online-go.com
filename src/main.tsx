@@ -159,6 +159,9 @@ declare function getPreferredLanguage(): string;
 moment.locale(getPreferredLanguage());
 setCurrentLanguage(getPreferredLanguage());
 
+console.log("This seems like good format.");
+console.log("This seems like bad format", 1     + 5)
+
 /*** Load our config ***/
 
 /* cached.config is supplied by the server and stored with `data.set()` in response to a login action (login, register),
