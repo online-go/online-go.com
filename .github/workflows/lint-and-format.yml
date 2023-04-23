@@ -1,13 +1,13 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Lint and Format
 
 # Controls when the action will run.
 on:
-  # Triggers the workflow on push or pull request events but only for the devel branch
   push:
     branches: [ devel ]
-  pull_request:
+  # pull_request_target used because inline comments are not supported for pull request
+  pull_request_target:
     branches: [ devel ]
 
   # Allows you to run this workflow manually from the Actions tab
@@ -42,22 +42,12 @@ jobs:
           max_attempts: 3
           command: yarn install
 
-      # Build
-      - name: Build CSS
-        run: npx gulp min_styl
-
-      - name: Webpack
-        run: npx webpack --optimization-minimize --devtool=source-map
-
-      - name: Tests
-        run: npx jest
-
-      # Log compressed output size
-      - name: Compressed sizes
-        run: |
-          gzip -9 dist/ogs.min.js | wc -c
-          gzip -9 dist/vendor.min.js | wc -c
-          gzip -9 dist/ogs.min.css | wc -c
+      - name: Run linters
+        uses: wearerequired/lint-action@v2
+        with:
+          auto_fix: ${{ github.event_name == 'pull_request' }}
+          eslint: true
+          eslint_extensions: "ts,tsx"
 
 
 
