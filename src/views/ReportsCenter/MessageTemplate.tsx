@@ -84,6 +84,36 @@ export const WARNING_TEMPLATES: MessageTemplates = {
     },
 
     Escaping: {
+        "Escaped mid-game, first time": {
+            message: `
+                It has come to our attention that you abandoned game #XXXXXXXX 
+                and allowed it to time out rather than resigning.
+
+                Players are required to end their games properly, as letting them 
+                time out can cause opponents to wait unnecessarily and prevent them 
+                from moving on to the next game.
+                
+                Please ensure that you end your games properly by accepting the 
+                correct score immediately after passing or by resigning if you feel 
+                the position is hopeless. This helps maintain a positive gaming 
+                environment for everyone involved.`,
+            show_warning_button: true,
+        },
+        "Escaped mid-game, second time": {
+            message: `
+                We have noticed that you abandoned game #XXXXXXXX, 
+                allowing it to time out instead of properly resigning.
+
+                Our records indicate that you have been previously warned 
+                about this behavior. Failure to address this issue and continuing 
+                to abandon games will lead to a ban.
+
+                Please be considerate of your opponents' experiences and 
+                ensure you end games appropriately. This includes accepting the 
+                correct score after passing or resigning when you believe the 
+                position is hopeless.`,
+            show_warning_button: true,
+        },
         "Escaped scoring phase, first time": {
             message: `
                 It appears that you did not accept the score at the end of game
@@ -160,6 +190,17 @@ export const WARNING_TEMPLATES: MessageTemplates = {
                 credibility, frustrates other players, and can result in a ban.
 
                 We strongly advise you to refrain from sandbagging in your games.`,
+            show_warning_button: true,
+        },
+    },
+
+    "Frequent Cancellation": {
+        "Frequent cancellation": {
+            message: `
+                We have observed that you often cancel games. To respect other 
+                players' time, please only initiate games you plan to play. Additionally, 
+                remember to deactivate the auto-match finder if you can no longer commit 
+                to starting a new game. Your understanding and cooperation are appreciated.`,
             show_warning_button: true,
         },
     },
