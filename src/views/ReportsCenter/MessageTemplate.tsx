@@ -194,6 +194,17 @@ export const WARNING_TEMPLATES: MessageTemplates = {
         },
     },
 
+    "Frequent Cancellation": {
+        "Frequent cancellation": {
+            message: `
+                We have observed that you often cancel games. To respect other 
+                players' time, please only initiate games you plan to play. Additionally, 
+                remember to deactivate the auto-match finder if you can no longer commit 
+                to starting a new game. Your understanding and cooperation are appreciated.`,
+            show_warning_button: true,
+        },
+    },
+
     "Timer Abuse": {
         "Abused ultra-blitz time settings": {
             message: `
