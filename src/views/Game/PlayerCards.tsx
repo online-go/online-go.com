@@ -34,6 +34,7 @@ import { get_network_latency, get_clock_drift } from "sockets";
 import { useGoban } from "./goban_context";
 import { usePreference } from "preferences";
 import { browserHistory } from "ogsHistory";
+import { player_is_ignored } from "BlockPlayer";
 
 type PlayerType = rest_api.games.Player;
 
@@ -264,6 +265,10 @@ function PlayerCard({
     } else if (historical) {
         const icon = icon_size_url(historical["icon"], 64);
         player_bg.backgroundImage = `url("${icon}")`;
+    }
+
+    if (player_is_ignored(player.id)) {
+        player_bg.backgroundImage = ``;
     }
 
     const their_turn = player_to_move === player.id;

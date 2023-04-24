@@ -18,6 +18,7 @@
 import * as React from "react";
 import * as player_cache from "player_cache";
 import { errorLogger } from "misc";
+import { player_is_ignored } from "BlockPlayer";
 
 interface PlayerIconProps {
     id?: number;
@@ -78,7 +79,7 @@ export function PlayerIcon(props: PlayerIconProps): JSX.Element {
         }
     }, [id, props.size]);
 
-    if (url) {
+    if (url && !player_is_ignored(id)) {
         return (
             <img
                 className={`PlayerIcon PlayerIcon-${props.size} ${props.className || ""}`}
