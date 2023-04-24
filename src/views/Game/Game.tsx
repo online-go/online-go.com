@@ -806,35 +806,35 @@ export function Game(): JSX.Element {
             <div className="action-bar">
                 <span className="icons" />
                 <span className="controls">
-                    <span onClick={nav_first} className="move-control">
-                        <i className="fa fa-fast-backward"></i>
-                    </span>
-                    <span onClick={nav_prev_10} className="move-control">
-                        <i className="fa fa-backward"></i>
-                    </span>
-                    <span onClick={nav_prev} className="move-control">
-                        <i className="fa fa-step-backward"></i>
-                    </span>
-                    <span onClick={nav_play_pause} className="move-control">
-                        <i className={"fa " + (autoplaying ? "fa-pause" : "fa-play")}></i>
-                    </span>
-                    <span onClick={nav_next} className="move-control">
-                        <i className="fa fa-step-forward"></i>
-                    </span>
-                    <span onClick={nav_next_10} className="move-control">
-                        <i className="fa fa-forward"></i>
-                    </span>
-                    <span onClick={nav_last} className="move-control">
-                        <i className="fa fa-fast-forward"></i>
-                    </span>
-                </span>
+                <button type="button" onClick={nav_first} className="move-control">
+                    <i className="fa fa-fast-backward"></i>
+                </button>
+                <button type="button" onClick={nav_prev_10} className="move-control">
+                    <i className="fa fa-backward"></i>
+                </button>
+                <button type="button" onClick={nav_prev} className="move-control">
+                    <i className="fa fa-step-backward"></i>
+                </button>
+                <button type="button" onClick={nav_play_pause} className="move-control">
+                    <i className={"fa " + (autoplaying ? "fa-pause" : "fa-play")}></i>
+                </button>
+                <button type="button" onClick={nav_next} className="move-control">
+                    <i className="fa fa-step-forward"></i>
+                </button>
+                <button type="button" onClick={nav_next_10} className="move-control">
+                    <i className="fa fa-forward"></i>
+                </button>
+                <button type="button" onClick={nav_last} className="move-control">
+                    <i className="fa fa-fast-forward"></i>
+                </button>
+            </span>
 
                 {(view_mode !== "portrait" || null) && (
                     <span className="move-number">
-                        {interpolate(_("Move {{move_number}}"), {
-                            move_number: goban && goban.current.engine.getMoveNumber(),
-                        })}
-                    </span>
+                    {interpolate(_("Move {{move_number}}"), {
+                        move_number: goban && goban.current.engine.getMoveNumber(),
+                    })}
+                </span>
                 )}
             </div>
         );
