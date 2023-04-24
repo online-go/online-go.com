@@ -23,6 +23,7 @@ import { _, pgettext } from "translate";
 import { PlayerIcon } from "PlayerIcon";
 import { post } from "requests";
 import { alert } from "swal_config";
+import { setIgnore } from "BlockPlayer";
 
 export type ReportType =
     | "all"
@@ -201,6 +202,10 @@ export function Report(props: ReportProperties): JSX.Element {
         }
 
         set_submitting(true);
+
+        if (report_type === "inappropriate_content" || report_type === "harassment") {
+            setIgnore(user_id, true);
+        }
 
         post("moderation/incident", {
             note,
