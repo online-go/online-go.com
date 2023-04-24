@@ -68,37 +68,39 @@ declare namespace rest_api {
         rating: number;
         rating_count: number;
         rank: number;
-        collection: {
-            id: number;
-            owner: UserT;
-            name: string;
-            created: string; // ISODate
-            private: boolean;
-            price: string; // Number
-            starting_puzzle: {
-                id: number;
-                initial_state: {
-                    white: string;
-                    black: string;
-                };
-                width: number;
-                height: number;
-            };
-            rating: number;
-            rating_count: number;
-            puzzle_count: number;
-            min_rank: number;
-            max_rank: number;
-            view_count: number;
-            solved_count: number;
-            attempt_count: number;
-            color_transform_enabled: boolean;
-            position_transform_enabled: boolean;
-        };
+        collection: PuzzleCollection;
         view_count: number;
         solved_count: number;
         attempt_count: number;
 
         zoomable?: boolean;
+    }
+
+    interface PuzzleCollection {
+        id: number;
+        owner: UserT;
+        name: string;
+        created: string; // ISODate
+        private: boolean;
+        price: string; // Number
+        starting_puzzle: {
+            id: number;
+            initial_state: {
+                white: string;
+                black: string;
+            };
+            width: number;
+            height: number;
+        };
+        rating: number;
+        rating_count: number;
+        puzzle_count: number;
+        min_rank: number;
+        max_rank: number;
+        view_count: number;
+        solved_count: number;
+        attempt_count: number;
+        color_transform_enabled: boolean;
+        position_transform_enabled: boolean;
     }
 }

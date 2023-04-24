@@ -20,7 +20,7 @@ import { Link } from "react-router-dom";
 import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
 import { browserHistory } from "ogsHistory";
 import { _, pgettext, interpolate } from "translate";
-import { post, get, put, del } from "requests";
+import { post, put, del } from "requests";
 import { KBShortcut } from "KBShortcut";
 import { goban_view_mode, goban_view_squashed } from "Game";
 import { errorAlerter, errorLogger, ignore } from "misc";
@@ -34,7 +34,7 @@ import * as preferences from "preferences";
 import * as data from "data";
 import { TransformSettings, PuzzleTransform } from "./PuzzleTransform";
 import { PuzzleNavigation } from "./PuzzleNavigation";
-import { PuzzleEditor } from "./PuzzleEditing";
+import { PuzzleEditor, getAllPuzzleCollections } from "./PuzzleEditing";
 import { GobanContainer } from "GobanContainer";
 import { alert } from "swal_config";
 
@@ -441,11 +441,11 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     edit = () => {
         this.ref_edit_button.current.blur();
 
-        get("puzzles/collections/", { page_size: 100, owner: data.get("user").id })
+        getAllPuzzleCollections(data.get("user").id)
             .then((collections) => {
                 this.setState({
                     editing: true,
-                    puzzle_collections: collections.results,
+                    puzzle_collections: collections,
                 });
                 this.reset(true);
             })

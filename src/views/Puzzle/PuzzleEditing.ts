@@ -114,12 +114,12 @@ export class PuzzleEditor {
         })
             .then((res) => {
                 postResult = res;
-                return get("puzzles/collections/", { page_size: 100, owner: data.get("user").id });
+                return getAllPuzzleCollections(data.get("user").id);
             })
             .then((collections) => {
                 return {
                     puzzle: Object.assign({}, puzzle, { puzzle_collection: postResult.id }),
-                    puzzle_collections: collections.results,
+                    puzzle_collections: collections,
                 };
             });
     }
@@ -132,13 +132,11 @@ export class PuzzleEditor {
     fetchPuzzle(puzzle_id: number, callback: (state: any, editing: boolean) => void) {
         abort_requests_in_flight(`puzzles/`, "GET");
         if (isNaN(puzzle_id)) {
-            get("puzzles/collections/", { page_size: 100, owner: data.get("user").id })
+            getAllPuzzleCollections(data.get("user").id)
                 .then((collections) => {
+                    console.log(collections);
                     callback(
-                        Object.assign(
-                            { puzzle_collections: collections.results },
-                            this.editPuzzle(true),
-                        ),
+                        Object.assign({ puzzle_collections: collections }, this.editPuzzle(true)),
                         true,
                     );
                 })
@@ -337,4 +335,29 @@ export class PuzzleEditor {
 
         return ret;
     }
+}
+
+export async function getAllPuzzleCollections(
+    owner_id: number,
+): Promise<rest_api.PuzzleCollection[]> {
+    let again = true;
+    let page = 1;
+    const ret: rest_api.PuzzleCollection[] = [];
+
+    while (again) {
+        const res = await get("puzzles/collections/", {
+            page_size: 100,
+            owner: owner_id,
+            page,
+        });
+
+        ret.push(...res.results);
+        if (res.next) {
+            page += 1;
+        } else {
+            again = false;
+        }
+    }
+
+    return ret;
 }
