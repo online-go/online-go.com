@@ -502,6 +502,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     templates={WARNING_TEMPLATES}
                     game_id={report.reported_game}
                     gpt={report.automod_to_reported}
+                    logByDefault={true}
                 />
 
                 <MessageTemplate
@@ -510,6 +511,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     templates={REPORTER_RESPONSE_TEMPLATES}
                     game_id={report.reported_game}
                     gpt={report.automod_to_reporter}
+                    logByDefault={false}
                 />
             </div>
 

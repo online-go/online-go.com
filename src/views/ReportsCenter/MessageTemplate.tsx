@@ -317,16 +317,20 @@ export function MessageTemplate({
     templates,
     game_id,
     gpt,
+    logByDefault,
 }: {
     title: string;
     player: PlayerCacheEntry;
     templates: MessageTemplates;
     game_id: number | undefined;
     gpt: string | null;
+    logByDefault: boolean;
 }): JSX.Element {
+    const [uid] = React.useState(Math.random());
     const [selectedTemplate, setSelectedTemplate] = React.useState<string>(gpt ? "gpt" : "");
     const [template, setTemplate] = React.useState<TemplateEntry | null>(null);
     const [text, setText] = React.useState<string>(gpt ? gpt : "");
+    const [log, setLog] = React.useState<boolean>(logByDefault);
 
     React.useEffect(() => {
         if (selectedTemplate && selectedTemplate !== "gpt") {
@@ -377,9 +381,11 @@ export function MessageTemplate({
         const pc = getPrivateChat(player.id, player.username);
         void alert.fire("Sent system PM to " + player.username);
         pc.sendChat(text, true);
-        void put(`players/${player.id}/moderate`, {
-            moderation_note: "Sent system PM: " + text,
-        });
+        if (log) {
+            void put(`players/${player.id}/moderate`, {
+                moderation_note: "Sent system PM: " + text,
+            });
+        }
 
         clear();
     };
@@ -387,9 +393,11 @@ export function MessageTemplate({
         const pc = getPrivateChat(player.id, player.username);
         pc.open();
         pc.sendChat(text);
-        void put(`players/${player.id}/moderate`, {
-            moderation_note: "Sent private message: " + text,
-        });
+        if (log) {
+            void put(`players/${player.id}/moderate`, {
+                moderation_note: "Sent private message: " + text,
+            });
+        }
         clear();
     };
 
@@ -397,6 +405,8 @@ export function MessageTemplate({
         <div className="MessageTemplate">
             <h3>
                 {title}: <Player user={player} />
+            </h3>
+            <div className="top">
                 <select
                     value={selectedTemplate}
                     onChange={(e) => setSelectedTemplate(e.target.value)}
@@ -416,7 +426,16 @@ export function MessageTemplate({
                 <button className="clear" onClick={clear}>
                     Clear
                 </button>
-            </h3>
+                <span className="log">
+                    <label htmlFor={"log" + uid}>Log</label>
+                    <input
+                        type="checkbox"
+                        id={"log" + uid}
+                        checked={log}
+                        onChange={(e) => setLog(e.target.checked)}
+                    />
+                </span>
+            </div>
 
             <textarea value={text} onChange={(e) => setText(e.target.value)} />
 
