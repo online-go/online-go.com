@@ -89,7 +89,7 @@ export class Team extends React.PureComponent<{}, any> {
             { id: 209826, country: ["nl"], languages: [nl, gb, jp] }, //Vsotvep
         ];
         const developers = [
-            { id: 648853, username: "GreenAsJade", country: ["us"], languages: [en] },
+            { id: 648853, username: "GreenAsJade", country: ["au"], languages: [en] },
             { id: 1, username: "anoek", country: ["us"], languages: [en] },
         ];
 
