@@ -35,6 +35,7 @@ import { useGoban } from "./goban_context";
 import { usePreference } from "preferences";
 import { browserHistory } from "ogsHistory";
 import { player_is_ignored } from "BlockPlayer";
+import { doAnnul } from "misc";
 
 type PlayerType = rest_api.games.Player;
 
@@ -255,6 +256,10 @@ function PlayerCard({
         setHideNextGameArrows(true);
     };
 
+    const annulWithBlame = () => {
+        doAnnul(engine.config, true, null, ` player ${player.id} `);
+    };
+
     // In rengo we always will have a player icon to show (after initialisation).
     // In other cases, we only have one if `historical` is set
     const player_bg: React.CSSProperties = {};
@@ -319,7 +324,9 @@ function PlayerCard({
             {(show_next_game_arrows || null) && (
                 <div className="next-game-arrows">
                     <i className="fa fa-2x fa-angle-left" onClick={jumpToPrevGame} />
-                    <i className="fa fa-eye-slash" onClick={hideNextGameArrows} />
+                    <div className="next-arrow-mod-controls">
+                        <i className="fa fa-gavel" onClick={annulWithBlame} />
+                    </div>
                     <i className="fa fa-2x fa-angle-right" onClick={jumpToNextGame} />
                 </div>
             )}
@@ -344,7 +351,6 @@ function PlayerCard({
                     zen_mode={zen_mode}
                     hidden={show_points && !estimating_score}
                 />
-                {!show_points && <div className="komi">{komiString(score.komi)}</div>}
                 <div id={`${color}-score-details`} className="score-details">
                     <ScorePopup goban={goban} color={color} show={show_score_breakdown} />
                 </div>
@@ -398,14 +404,6 @@ function PlayerFlag({ player_id }: { player_id: number }): JSX.Element {
         return <Flag country={country} big />;
     }
     return null;
-}
-
-function komiString(komi: number) {
-    if (!komi) {
-        return "";
-    }
-    const abs_komi = Math.abs(komi).toFixed(1);
-    return komi > 0 ? `+ ${abs_komi}` : `- ${abs_komi}`;
 }
 
 function useAutoResignExpiration(goban: GobanCore, color: "black" | "white") {

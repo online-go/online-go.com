@@ -29,7 +29,7 @@ import { openGameLogModal } from "./GameLogModal";
 import { sfx } from "sfx";
 import { alert } from "swal_config";
 import { challengeFromBoardPosition } from "ChallengeModal/ForkModal";
-import { errorAlerter } from "misc";
+import { errorAlerter, doAnnul } from "misc";
 import { openReport } from "Report";
 import { game_control } from "./game_control";
 import { openGameInfoModal } from "./GameInfoModal";
@@ -246,40 +246,15 @@ export function GameDock({
             moderation_note: moderation_note,
         }).catch(errorAlerter);
     };
+
     const do_annul = (tf: boolean): void => {
         if (!game_id) {
             void alert.fire(_("Game ID missing"));
             return;
         }
-
-        let moderation_note: string | null = null;
-        do {
-            moderation_note = tf
-                ? prompt(_("ANNULMENT - Moderator note:"))
-                : prompt(_("Un-annulment - Moderator note:"));
-            if (moderation_note == null) {
-                return;
-            }
-            moderation_note = moderation_note
-                .trim()
-                .replace(/(black)\b/g, `player ${engine.players.black.id}`)
-                .replace(/(white)\b/g, `player ${engine.players.white.id}`);
-        } while (moderation_note === "");
-
-        post("games/%%/annul", game_id, {
-            annul: tf ? 1 : 0,
-            moderation_note: moderation_note,
-        })
-            .then(() => {
-                if (tf) {
-                    void alert.fire({ text: _("Game has been annulled") });
-                } else {
-                    void alert.fire({ text: _("Game ranking has been restored") });
-                }
-                onGameAnnulled(tf);
-            })
-            .catch(errorAlerter);
+        doAnnul(engine.config, tf, onGameAnnulled);
     };
+
     const showLogModal = () => {
         openGameLogModal(
             goban.config,
@@ -526,11 +501,13 @@ export function GameDock({
                     ) /* mod can't annul, presumably because it's already annulled */
             }
             {
-                annul && !annulable && !unannulable && (
-                    <div>
-                        <i className="fa fa-gavel greyed"></i> {_("Annul")}
-                    </div>
-                ) /* What is this case?! */
+                annul &&
+                    !annulable &&
+                    !unannulable && (
+                        <div>
+                            <i className="fa fa-gavel greyed"></i> {_("Annul")}
+                        </div>
+                    ) /* This is a "do nothing" icon for when the game is unranked */
             }
 
             {(mod || annul) && <hr />}
