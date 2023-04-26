@@ -18,47 +18,10 @@
 import { _, interpolate, pgettext } from "translate";
 import { errcodeAlerter } from "ErrcodeModal";
 import { browserHistory } from "ogsHistory";
-import { post } from "requests";
 import * as preferences from "preferences";
 import { alert } from "swal_config";
-import { GoEngineConfig } from "goban";
 
 export type Timeout = ReturnType<typeof setTimeout>;
-
-export function doAnnul(
-    engine: GoEngineConfig,
-    tf: boolean,
-    onGameAnnulled: (tf: boolean) => void = null,
-    init_prompt: string = "",
-): void {
-    let moderation_note: string | null = null;
-    do {
-        moderation_note = tf
-            ? prompt(_("ANNULMENT - Moderator note:"), init_prompt)
-            : prompt(_("Un-annulment - Moderator note:"), init_prompt);
-        if (moderation_note == null) {
-            return;
-        }
-        moderation_note = moderation_note
-            .trim()
-            .replace(/(black)\b/gi, `player ${engine.players.black.id}`)
-            .replace(/(white)\b/gi, `player ${engine.players.white.id}`);
-    } while (moderation_note === "");
-
-    post("games/%%/annul", engine.game_id, {
-        annul: tf ? 1 : 0,
-        moderation_note: moderation_note,
-    })
-        .then(() => {
-            if (tf) {
-                void alert.fire({ text: _("Game has been annulled") });
-            } else {
-                void alert.fire({ text: _("Game ranking has been restored") });
-            }
-            onGameAnnulled && onGameAnnulled(tf);
-        })
-        .catch(errorAlerter);
-}
 
 export function updateDup(obj: any, field: string, value: any) {
     const ret = dup(obj);

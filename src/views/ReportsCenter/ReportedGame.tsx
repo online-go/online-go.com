@@ -23,7 +23,9 @@ import { Link } from "react-router-dom";
 import { MiniGoban } from "MiniGoban";
 import { alert } from "swal_config";
 import { post, get } from "requests";
-import { errorAlerter, doAnnul } from "misc";
+import { errorAlerter } from "misc";
+import { doAnnul } from "moderation";
+
 import {
     AIReview,
     GameTimings,

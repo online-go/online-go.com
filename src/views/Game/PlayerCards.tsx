@@ -35,7 +35,7 @@ import { useGoban } from "./goban_context";
 import { usePreference } from "preferences";
 import { browserHistory } from "ogsHistory";
 import { player_is_ignored } from "BlockPlayer";
-import { doAnnul } from "misc";
+import { doAnnul } from "moderation";
 
 type PlayerType = rest_api.games.Player;
 
