@@ -45,7 +45,7 @@ export const WARNING_TEMPLATES: MessageTemplates = {
         },
     },
 
-    "AI Use": {
+    Cheating: {
         "AI use detected": {
             message: `
                 Our systems have detected that you may be using AI assistance
@@ -57,6 +57,17 @@ export const WARNING_TEMPLATES: MessageTemplates = {
                 used and refrain from seeking AI assistance in future games.
 
                 Any further use of AI will result in a ban.`,
+            show_warning_button: true,
+        },
+        "Score cheating": {
+            message: `
+                Our records show that you attempted to illegally change the score at the end of 
+                game #XXXXXXXX. This is a form of cheating and is prohibited by the 
+                OGS [Terms of Service](https://online-go.com/docs/terms-of-service). 
+                
+                We ask that you end your games properly by accepting the correct score 
+                immediately after passing. Further instances of score cheating will result 
+                in a ban.`,
             show_warning_button: true,
         },
     },
