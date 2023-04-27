@@ -75,7 +75,7 @@ export const WARNING_TEMPLATES: MessageTemplates = {
                 We urge you to refrain from such actions in the future as they
                 will not be tolerated.
 
-                Failure to comply with this warning will result in a ban.
+                Failure to comply with this warning will result in removal of your chat privileges.
 
                 Please maintain a respectful and courteous environment for all
                 users.`,
@@ -197,9 +197,11 @@ export const WARNING_TEMPLATES: MessageTemplates = {
     "Frequent Cancellation": {
         "Frequent cancellation": {
             message: `
-                We have observed that you often cancel games. To respect other
-                players' time, please only initiate games you plan to play. Additionally,
-                remember to deactivate the auto-match finder if you can no longer commit
+                We have observed that you often cancel games. Cancellation is something that
+                should happen rarely, it's an inconvenience to the other play.
+
+                To respect other players' time, please only initiate games you plan to play.
+                Additionally, remember to deactivate the auto-match finder if you can no longer commit
                 to starting a new game. Your understanding and cooperation are appreciated.`,
             show_warning_button: true,
         },
