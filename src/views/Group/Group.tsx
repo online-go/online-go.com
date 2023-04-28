@@ -55,6 +55,7 @@ interface GroupInfo {
     website: string;
     location: string;
     is_public: boolean;
+    admin_only_tournaments: boolean;
     require_invitation: boolean;
     hide_details: boolean;
     invitation_requests: any[];
@@ -119,6 +120,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                 website: "",
                 location: "",
                 is_public: false,
+                admin_only_tournaments: false,
                 require_invitation: false,
                 hide_details: false,
                 invitation_requests: [],
@@ -645,18 +647,26 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                                     >
                                                         {_("Leave Group")}
                                                     </button>
-                                                    <button
-                                                        className="primary sm"
-                                                        onClick={this.createTournament}
-                                                    >
-                                                        {_("Create tournament")}
-                                                    </button>
-                                                    <button
-                                                        className="primary sm"
-                                                        onClick={this.createTournamentRecord}
-                                                    >
-                                                        {_("Create tournament record")}
-                                                    </button>
+                                                    {(!group.admin_only_tournaments ||
+                                                        this.state.is_admin ||
+                                                        null) && (
+                                                        <span>
+                                                            <button
+                                                                className="primary sm"
+                                                                onClick={this.createTournament}
+                                                            >
+                                                                {_("Create tournament")}
+                                                            </button>
+                                                            <button
+                                                                className="primary sm"
+                                                                onClick={
+                                                                    this.createTournamentRecord
+                                                                }
+                                                            >
+                                                                {_("Create tournament record")}
+                                                            </button>
+                                                        </span>
+                                                    )}
                                                 </div>
                                             )
                                         ) : group.is_public ? (
