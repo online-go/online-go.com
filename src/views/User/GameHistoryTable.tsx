@@ -33,6 +33,7 @@ import { PlayerCacheEntry } from "src/lib/player_cache";
 import { TimeControl } from "src/components/TimeControl";
 import { Speed } from "src/lib/types";
 import { usePreference } from "preferences";
+import * as data from "data";
 
 interface GameHistoryProps {
     user_id: number;
@@ -72,6 +73,9 @@ export function GameHistoryTable(props: GameHistoryProps) {
         preferences.get("game-history-ranked-filter"),
     );
     const [hide_flags] = usePreference("moderator.hide-flags");
+    const [selectModeActive, setSelectModeActive] = React.useState<boolean>(false);
+    const [annulQueue, setAnnulQueue] = React.useState<any[]>([]);
+    const user = data.get("user");
 
     function getBoardSize(size_filter: string): number {
         switch (size_filter) {
@@ -81,6 +85,24 @@ export function GameHistoryTable(props: GameHistoryProps) {
                 return 13;
             case "19x19":
                 return 19;
+        }
+    }
+
+    function handleRowClick(row, ev) {
+        if (selectModeActive) {
+            toggleQueued(row);
+        } else {
+            openUrlIfALinkWasNotClicked(ev, row.href);
+        }
+    }
+
+    function toggleQueued(row) {
+        if (annulQueue.includes(row)) {
+            setAnnulQueue(annulQueue.filter((r) => r.id !== row.id));
+            console.log("Removed game #" + row.id);
+        } else {
+            setAnnulQueue([...annulQueue, row]);
+            console.log(`Added game #${row.id} to annul queue.`);
         }
     }
 
@@ -172,6 +194,19 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             />
                         </div>
                         <div>
+                            {user.is_moderator ? (
+                                <div className="btn-group">
+                                    <button
+                                        className={selectModeActive ? "sm danger" : "sm"}
+                                        onClick={() => {
+                                            setSelectModeActive(!selectModeActive);
+                                            setAnnulQueue([]);
+                                        }}
+                                    >
+                                        {_("Select")}
+                                    </button>
+                                </div>
+                            ) : null}
                             <div className="btn-group">
                                 <button
                                     className={
@@ -251,7 +286,8 @@ export function GameHistoryTable(props: GameHistoryProps) {
                         orderBy={["-ended"]}
                         groom={game_history_groomer}
                         pageSizeOptions={[10, 15, 25, 50]}
-                        onRowClick={(ref, ev) => openUrlIfALinkWasNotClicked(ev, ref.href)}
+                        onRowClick={handleRowClick}
+                        annulQueue={annulQueue}
                         columns={[
                             {
                                 header: _("User"),
