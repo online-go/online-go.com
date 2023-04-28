@@ -196,6 +196,11 @@ export function GameHistoryTable(props: GameHistoryProps) {
                         <div>
                             {user.is_moderator ? (
                                 <div className="btn-group">
+                                    {annulQueue.length > 0 ? (
+                                        <button className="sm info">
+                                            {_("View Queue")} {`(${annulQueue.length})`}
+                                        </button>
+                                    ) : null}
                                     <button
                                         className={selectModeActive ? "sm danger" : "sm"}
                                         onClick={() => {
