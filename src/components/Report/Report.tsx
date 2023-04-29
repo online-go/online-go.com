@@ -24,6 +24,7 @@ import { PlayerIcon } from "PlayerIcon";
 import { post } from "requests";
 import { alert } from "swal_config";
 import { setIgnore } from "BlockPlayer";
+import { useUser } from "hooks";
 
 export type ReportType =
     | "all"
@@ -35,7 +36,8 @@ export type ReportType =
     | "sandbagging"
     | "escaping"
     | "appeal"
-    | "other";
+    | "other"
+    | "warning"; // for moderators only
 
 export interface ReportDescription {
     type: ReportType;
@@ -43,6 +45,7 @@ export interface ReportDescription {
     description: string;
     game_id_required?: boolean;
     min_description_length?: number;
+    moderator_only?: boolean;
 }
 
 export interface ReportedConversation {
@@ -130,6 +133,15 @@ export const report_categories: ReportDescription[] = [
         ),
         min_description_length: 20,
     },
+    {
+        type: "warning",
+        title: pgettext("An option for moderators only, to warn players", "Warn"),
+        description: pgettext(
+            "An option for moderators only, to warn players",
+            "Type the warning text below",
+        ),
+        moderator_only: true,
+    },
 ];
 
 export function Report(props: ReportProperties): JSX.Element {
@@ -151,7 +163,9 @@ export function Report(props: ReportProperties): JSX.Element {
     const [note, set_note] = React.useState("");
     const [submitting, set_submitting] = React.useState(false);
 
-    const category = report_categories.filter((x) => x.type === report_type)[0];
+    const user = useUser();
+
+    const category = report_categories.find((x) => x.type === report_type);
 
     React.useEffect(() => {
         const fetching_user_id = reported_user_id;
@@ -227,7 +241,38 @@ export function Report(props: ReportProperties): JSX.Element {
             });
     }
 
+    function canWarn() {
+        if (note.length < 20) {
+            return false;
+        }
+        return true;
+    }
+
+    function sendWarning() {
+        if (!canWarn()) {
+            return;
+        }
+
+        set_submitting(true);
+
+        post("moderation/warn", { user_id: reported_user_id, text: note })
+            .then(() => {
+                set_submitting(false);
+                onClose();
+                void alert.fire("Warning sent");
+            })
+            .catch(() => {
+                set_submitting(false);
+                onClose();
+                void alert.fire({ text: _("There was an error submitting the warning!") });
+            });
+    }
+
     const show_game_id_required_text = category && category.game_id_required && !game_id;
+
+    const available_categories = user.is_moderator
+        ? report_categories
+        : report_categories.filter((x) => !x.moderator_only);
 
     return (
         <Card className="Report">
@@ -265,7 +310,7 @@ export function Report(props: ReportProperties): JSX.Element {
                             "What are you reporting?",
                         )}
                     </option>
-                    {report_categories.map((r) => (
+                    {available_categories.map((r) => (
                         <option key={r.type} value={r.type}>
                             {r.title}
                         </option>
@@ -308,10 +353,15 @@ export function Report(props: ReportProperties): JSX.Element {
                 <button className="default" onClick={close}>
                     {_("Close")}
                 </button>
-                <button className="primary" onClick={createReport} disabled={!canSubmit()}>
-                    {" "}
-                    {_("Report User")}
-                </button>
+                {category && category.type === "warning" ? (
+                    <button className="primary" onClick={sendWarning} disabled={!canWarn()}>
+                        {_("Warn User")}
+                    </button>
+                ) : (
+                    <button className="primary" onClick={createReport} disabled={!canSubmit()}>
+                        {_("Report User")}
+                    </button>
+                )}
             </div>
         </Card>
     );
