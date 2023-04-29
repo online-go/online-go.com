@@ -24,6 +24,8 @@ import { MiniGoban } from "MiniGoban";
 import { alert } from "swal_config";
 import { post, get } from "requests";
 import { errorAlerter } from "misc";
+import { doAnnul } from "moderation";
+
 import {
     AIReview,
     GameTimings,
@@ -86,33 +88,7 @@ export function ReportedGame({ game_id }: { game_id: number }): JSX.Element {
             }
 
             const engine = goban.engine;
-            let moderation_note: string | null = null;
-            do {
-                moderation_note = tf
-                    ? prompt(_("ANNULMENT - Moderator note:"))
-                    : prompt(_("Un-annulment - Moderator note:"));
-                if (moderation_note == null) {
-                    return;
-                }
-                moderation_note = moderation_note
-                    .trim()
-                    .replace(/(black)\b/g, `player ${engine.players.black.id}`)
-                    .replace(/(white)\b/g, `player ${engine.players.white.id}`);
-            } while (moderation_note === "");
-
-            post("games/%%/annul", game_id, {
-                annul: tf ? 1 : 0,
-                moderation_note: moderation_note,
-            })
-                .then(() => {
-                    setAnnulled(tf);
-                    if (tf) {
-                        void alert.fire({ text: _("Game has been annulled") });
-                    } else {
-                        void alert.fire({ text: _("Game ranking has been restored") });
-                    }
-                })
-                .catch(errorAlerter);
+            doAnnul(engine.config, tf);
         },
         [game_id, goban],
     );

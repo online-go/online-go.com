@@ -45,7 +45,7 @@ export const WARNING_TEMPLATES: MessageTemplates = {
         },
     },
 
-    "AI Use": {
+    Cheating: {
         "AI use detected": {
             message: `
                 Our systems have detected that you may be using AI assistance
@@ -57,6 +57,17 @@ export const WARNING_TEMPLATES: MessageTemplates = {
                 used and refrain from seeking AI assistance in future games.
 
                 Any further use of AI will result in a ban.`,
+            show_warning_button: true,
+        },
+        "Score cheating": {
+            message: `
+                Our records show that you attempted to illegally change the score at the end of 
+                game #XXXXXXXX. This is a form of cheating and is prohibited by the 
+                OGS [Terms of Service](https://online-go.com/docs/terms-of-service). 
+                
+                We ask that you end your games properly by accepting the correct score 
+                immediately after passing. Further instances of score cheating will result 
+                in a ban.`,
             show_warning_button: true,
         },
     },
@@ -75,7 +86,7 @@ export const WARNING_TEMPLATES: MessageTemplates = {
                 We urge you to refrain from such actions in the future as they
                 will not be tolerated.
 
-                Failure to comply with this warning will result in a ban.
+                Failure to comply with this warning will result in removal of your chat privileges.
 
                 Please maintain a respectful and courteous environment for all
                 users.`,
@@ -197,9 +208,11 @@ export const WARNING_TEMPLATES: MessageTemplates = {
     "Frequent Cancellation": {
         "Frequent cancellation": {
             message: `
-                We have observed that you often cancel games. To respect other
-                players' time, please only initiate games you plan to play. Additionally,
-                remember to deactivate the auto-match finder if you can no longer commit
+                We have observed that you often cancel games. Cancellation is something that
+                should happen rarely, it's an inconvenience to the other play.
+
+                To respect other players' time, please only initiate games you plan to play.
+                Additionally, remember to deactivate the auto-match finder if you can no longer commit
                 to starting a new game. Your understanding and cooperation are appreciated.`,
             show_warning_button: true,
         },
