@@ -141,7 +141,6 @@ export function Report(props: ReportProperties): JSX.Element {
         reported_review_id,
     } = props;
 
-    const [user_id, _set_user_id] = React.useState(reported_user_id);
     const [username, set_username] = React.useState<string>(
         player_cache.lookup(reported_user_id)?.username || "",
     );
@@ -185,7 +184,7 @@ export function Report(props: ReportProperties): JSX.Element {
             return false;
         }
 
-        if (!user_id) {
+        if (!reported_user_id) {
             return false;
         }
 
@@ -204,14 +203,14 @@ export function Report(props: ReportProperties): JSX.Element {
         set_submitting(true);
 
         if (report_type === "inappropriate_content" || report_type === "harassment") {
-            setIgnore(user_id, true);
+            setIgnore(reported_user_id, true);
         }
 
         post("moderation/incident", {
             note,
             report_type,
             reported_conversation,
-            reported_user_id: user_id,
+            reported_user_id: reported_user_id,
             reported_game_id: game_id,
             reported_review_id: review_id,
         })
@@ -234,9 +233,9 @@ export function Report(props: ReportProperties): JSX.Element {
             <h2>{_("Request Moderator Assistance")}</h2>
             <div className="reported-details">
                 <h3>
-                    {(user_id || null) && (
+                    {(reported_user_id || null) && (
                         <>
-                            <PlayerIcon id={user_id} size={64} />
+                            <PlayerIcon id={reported_user_id} size={64} />
                             {_("Player")}: {username}
                         </>
                     )}
@@ -261,7 +260,7 @@ export function Report(props: ReportProperties): JSX.Element {
                 >
                     <option value="">
                         {pgettext(
-                            "User is reporting a poblematic player or game",
+                            "User is reporting a problematic player or game",
                             "What are you reporting?",
                         )}
                     </option>
