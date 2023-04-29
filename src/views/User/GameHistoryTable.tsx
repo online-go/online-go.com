@@ -34,6 +34,7 @@ import { TimeControl } from "src/components/TimeControl";
 import { Speed } from "src/lib/types";
 import { usePreference } from "preferences";
 import * as data from "data";
+import { openAnnulQueueModal } from "AnnulQueueModal";
 
 interface GameHistoryProps {
     user_id: number;
@@ -103,6 +104,12 @@ export function GameHistoryTable(props: GameHistoryProps) {
         } else {
             setAnnulQueue([...annulQueue, row]);
             console.log(`Added game #${row.id} to annul queue.`);
+        }
+    }
+
+    function handleLinkClick(event) {
+        if (selectModeActive) {
+            event.preventDefault();
         }
     }
 
@@ -197,7 +204,16 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             {user.is_moderator ? (
                                 <div className="btn-group">
                                     {annulQueue.length > 0 ? (
-                                        <button className="sm info">
+                                        <button
+                                            className="sm info"
+                                            onClick={() =>
+                                                openAnnulQueueModal(
+                                                    annulQueue,
+                                                    setSelectModeActive,
+                                                    setAnnulQueue,
+                                                )
+                                            }
+                                        >
                                             {_("View Queue")} {`(${annulQueue.length})`}
                                         </button>
                                     ) : null}
@@ -357,7 +373,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                 className: (X) =>
                                     "game_name" + (X && X.annulled ? " annulled" : ""),
                                 render: (X) => (
-                                    <Link to={X.href}>
+                                    <Link to={X.href} onClick={(e) => handleLinkClick(e)}>
                                         {X.name ||
                                             interpolate(
                                                 "{{black_username}} vs. {{white_username}}",
