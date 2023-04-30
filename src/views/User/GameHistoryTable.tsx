@@ -46,6 +46,7 @@ type ResultClass =
 interface GroomedGame {
     id: number;
     annulled: boolean;
+    ranked: boolean;
     played_black: boolean;
     player: PlayerCacheEntry;
     player_won: boolean;
@@ -97,13 +98,13 @@ export function GameHistoryTable(props: GameHistoryProps) {
         }
     }
 
-    function toggleQueued(row) {
-        if (annulQueue.includes(row)) {
-            setAnnulQueue(annulQueue.filter((r) => r.id !== row.id));
-            console.log("Removed game #" + row.id);
+    function toggleQueued(rowData) {
+        const alreadyInQueue = annulQueue.some((item) => item.id === rowData.id);
+
+        if (!alreadyInQueue) {
+            setAnnulQueue([...annulQueue, rowData]);
         } else {
-            setAnnulQueue([...annulQueue, row]);
-            console.log(`Added game #${row.id} to annul queue.`);
+            setAnnulQueue(annulQueue.filter((item) => item.id !== rowData.id));
         }
     }
 
@@ -143,6 +144,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
             item.height = r.height;
             item.date = r.ended ? new Date(r.ended) : null;
             item.annulled = r.annulled || false;
+            item.ranked = r.ranked;
 
             item.black = r.players.black;
             item.white = r.players.white;
