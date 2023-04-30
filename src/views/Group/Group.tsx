@@ -55,6 +55,7 @@ interface GroupInfo {
     website: string;
     location: string;
     is_public: boolean;
+    admin_only_tournaments: boolean;
     require_invitation: boolean;
     hide_details: boolean;
     invitation_requests: any[];
@@ -119,6 +120,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                 website: "",
                 location: "",
                 is_public: false,
+                admin_only_tournaments: false,
                 require_invitation: false,
                 hide_details: false,
                 invitation_requests: [],
@@ -340,6 +342,13 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             group: Object.assign({}, this.state.group, { require_invitation: ev.target.checked }),
         });
     };
+    setAdminOnlyTournaments = (ev) => {
+        this.setState({
+            group: Object.assign({}, this.state.group, {
+                admin_only_tournaments: ev.target.checked,
+            }),
+        });
+    };
     setNewNewsTitle = (ev) => {
         this.setState({ new_news_title: ev.target.value });
     };
@@ -526,7 +535,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                             {/* Main card  */}
                             {(this.state.is_admin || user.is_moderator || null) && (
                                 <i
-                                    className={editing ? "fa fa-save" : "fa fa-pencil"}
+                                    className={editing ? "fa fa-lg fa-save" : "fa fa-pencil"}
                                     onClick={this.toggleEdit}
                                 />
                             )}
@@ -574,7 +583,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                         <input
                                             type="text"
                                             placeholder={_("Group name")}
-                                            style={{ width: "calc(100% - 30px)" }}
+                                            style={{ width: "calc(100% - 3rem)" }}
                                             value={group.name}
                                             onChange={this.setGroupName}
                                         />
@@ -645,18 +654,26 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                                     >
                                                         {_("Leave Group")}
                                                     </button>
-                                                    <button
-                                                        className="primary sm"
-                                                        onClick={this.createTournament}
-                                                    >
-                                                        {_("Create tournament")}
-                                                    </button>
-                                                    <button
-                                                        className="primary sm"
-                                                        onClick={this.createTournamentRecord}
-                                                    >
-                                                        {_("Create tournament record")}
-                                                    </button>
+                                                    {(!group.admin_only_tournaments ||
+                                                        this.state.is_admin ||
+                                                        null) && (
+                                                        <span>
+                                                            <button
+                                                                className="primary sm"
+                                                                onClick={this.createTournament}
+                                                            >
+                                                                {_("Create tournament")}
+                                                            </button>
+                                                            <button
+                                                                className="primary sm"
+                                                                onClick={
+                                                                    this.createTournamentRecord
+                                                                }
+                                                            >
+                                                                {_("Create tournament record")}
+                                                            </button>
+                                                        </span>
+                                                    )}
                                                 </div>
                                             )
                                         ) : group.is_public ? (
@@ -741,6 +758,21 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                                 />
                                                 <label htmlFor="public-group">
                                                     {_("Public group")}
+                                                </label>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="pad">
+                                        {(editing || null) && (
+                                            <div>
+                                                <input
+                                                    type="checkbox"
+                                                    id="admin-only-tournaments"
+                                                    checked={group.admin_only_tournaments}
+                                                    onChange={this.setAdminOnlyTournaments}
+                                                />
+                                                <label htmlFor="admin-only-tournaments">
+                                                    {_("Only admins can create tournaments")}
                                                 </label>
                                             </div>
                                         )}

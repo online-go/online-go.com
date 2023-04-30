@@ -24,6 +24,7 @@ import { PlayerIcon } from "PlayerIcon";
 import { post } from "requests";
 import { alert } from "swal_config";
 import { setIgnore } from "BlockPlayer";
+import { useUser } from "hooks";
 
 export type ReportType =
     | "all"
@@ -35,7 +36,8 @@ export type ReportType =
     | "sandbagging"
     | "escaping"
     | "appeal"
-    | "other";
+    | "other"
+    | "warning"; // for moderators only
 
 export interface ReportDescription {
     type: ReportType;
@@ -43,6 +45,7 @@ export interface ReportDescription {
     description: string;
     game_id_required?: boolean;
     min_description_length?: number;
+    moderator_only?: boolean;
 }
 
 export interface ReportedConversation {
@@ -130,6 +133,15 @@ export const report_categories: ReportDescription[] = [
         ),
         min_description_length: 20,
     },
+    {
+        type: "warning",
+        title: pgettext("An option for moderators only, to warn players", "Warn"),
+        description: pgettext(
+            "An option for moderators only, to warn players",
+            "Type the warning text below",
+        ),
+        moderator_only: true,
+    },
 ];
 
 export function Report(props: ReportProperties): JSX.Element {
@@ -141,7 +153,6 @@ export function Report(props: ReportProperties): JSX.Element {
         reported_review_id,
     } = props;
 
-    const [user_id, _set_user_id] = React.useState(reported_user_id);
     const [username, set_username] = React.useState<string>(
         player_cache.lookup(reported_user_id)?.username || "",
     );
@@ -151,7 +162,9 @@ export function Report(props: ReportProperties): JSX.Element {
     const [note, set_note] = React.useState("");
     const [submitting, set_submitting] = React.useState(false);
 
-    const category = report_categories.filter((x) => x.type === report_type)[0];
+    const user = useUser();
+
+    const category = report_categories.find((x) => x.type === report_type);
 
     React.useEffect(() => {
         const fetching_user_id = reported_user_id;
@@ -185,7 +198,7 @@ export function Report(props: ReportProperties): JSX.Element {
             return false;
         }
 
-        if (!user_id) {
+        if (!reported_user_id) {
             return false;
         }
 
@@ -204,14 +217,14 @@ export function Report(props: ReportProperties): JSX.Element {
         set_submitting(true);
 
         if (report_type === "inappropriate_content" || report_type === "harassment") {
-            setIgnore(user_id, true);
+            setIgnore(reported_user_id, true);
         }
 
         post("moderation/incident", {
             note,
             report_type,
             reported_conversation,
-            reported_user_id: user_id,
+            reported_user_id: reported_user_id,
             reported_game_id: game_id,
             reported_review_id: review_id,
         })
@@ -227,16 +240,47 @@ export function Report(props: ReportProperties): JSX.Element {
             });
     }
 
+    function canWarn() {
+        if (note.length < 20) {
+            return false;
+        }
+        return true;
+    }
+
+    function sendWarning() {
+        if (!canWarn()) {
+            return;
+        }
+
+        set_submitting(true);
+
+        post("moderation/warn", { user_id: reported_user_id, text: note })
+            .then(() => {
+                set_submitting(false);
+                onClose();
+                void alert.fire("Warning sent");
+            })
+            .catch(() => {
+                set_submitting(false);
+                onClose();
+                void alert.fire({ text: _("There was an error submitting the warning!") });
+            });
+    }
+
     const show_game_id_required_text = category && category.game_id_required && !game_id;
+
+    const available_categories = user.is_moderator
+        ? report_categories
+        : report_categories.filter((x) => !x.moderator_only);
 
     return (
         <Card className="Report">
             <h2>{_("Request Moderator Assistance")}</h2>
             <div className="reported-details">
                 <h3>
-                    {(user_id || null) && (
+                    {(reported_user_id || null) && (
                         <>
-                            <PlayerIcon id={user_id} size={64} />
+                            <PlayerIcon id={reported_user_id} size={64} />
                             {_("Player")}: {username}
                         </>
                     )}
@@ -261,11 +305,11 @@ export function Report(props: ReportProperties): JSX.Element {
                 >
                     <option value="">
                         {pgettext(
-                            "User is reporting a poblematic player or game",
+                            "User is reporting a problematic player or game",
                             "What are you reporting?",
                         )}
                     </option>
-                    {report_categories.map((r) => (
+                    {available_categories.map((r) => (
                         <option key={r.type} value={r.type}>
                             {r.title}
                         </option>
@@ -308,10 +352,15 @@ export function Report(props: ReportProperties): JSX.Element {
                 <button className="default" onClick={close}>
                     {_("Close")}
                 </button>
-                <button className="primary" onClick={createReport} disabled={!canSubmit()}>
-                    {" "}
-                    {_("Report User")}
-                </button>
+                {category && category.type === "warning" ? (
+                    <button className="primary" onClick={sendWarning} disabled={!canWarn()}>
+                        {_("Warn User")}
+                    </button>
+                ) : (
+                    <button className="primary" onClick={createReport} disabled={!canSubmit()}>
+                        {_("Report User")}
+                    </button>
+                )}
             </div>
         </Card>
     );

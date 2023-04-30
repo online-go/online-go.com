@@ -806,27 +806,27 @@ export function Game(): JSX.Element {
             <div className="action-bar">
                 <span className="icons" />
                 <span className="controls">
-                    <span onClick={nav_first} className="move-control">
+                    <button type="button" onClick={nav_first} className="move-control">
                         <i className="fa fa-fast-backward"></i>
-                    </span>
-                    <span onClick={nav_prev_10} className="move-control">
+                    </button>
+                    <button type="button" onClick={nav_prev_10} className="move-control">
                         <i className="fa fa-backward"></i>
-                    </span>
-                    <span onClick={nav_prev} className="move-control">
+                    </button>
+                    <button type="button" onClick={nav_prev} className="move-control">
                         <i className="fa fa-step-backward"></i>
-                    </span>
-                    <span onClick={nav_play_pause} className="move-control">
+                    </button>
+                    <button type="button" onClick={nav_play_pause} className="move-control">
                         <i className={"fa " + (autoplaying ? "fa-pause" : "fa-play")}></i>
-                    </span>
-                    <span onClick={nav_next} className="move-control">
+                    </button>
+                    <button type="button" onClick={nav_next} className="move-control">
                         <i className="fa fa-step-forward"></i>
-                    </span>
-                    <span onClick={nav_next_10} className="move-control">
+                    </button>
+                    <button type="button" onClick={nav_next_10} className="move-control">
                         <i className="fa fa-forward"></i>
-                    </span>
-                    <span onClick={nav_last} className="move-control">
+                    </button>
+                    <button type="button" onClick={nav_last} className="move-control">
                         <i className="fa fa-fast-forward"></i>
-                    </span>
+                    </button>
                 </span>
 
                 {(view_mode !== "portrait" || null) && (
