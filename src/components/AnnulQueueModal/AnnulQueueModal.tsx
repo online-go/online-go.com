@@ -23,7 +23,7 @@ import { Goban } from "goban";
 import { AIReview, GameTimings, ChatMode, GameChat, GobanContext } from "Game";
 import { Player } from "Player";
 import { Resizable } from "Resizable";
-// import { post } from "requests";
+import { post } from "requests";
 
 interface AnnulQueueModalProps {
     annulQueue: any[];
@@ -66,6 +66,8 @@ export function AnnulQueueModal({
     const onClose = () => {
         setAnnulQueue([]);
         setSelectModeActive(false);
+        setShowAnnulPopover(false);
+        setAnnulResponse(null);
         closeModal();
     };
 
@@ -159,30 +161,56 @@ export function AnnulQueueModal({
         return moderation_note;
     };
 
-    // const annul = (sanitizedGameIds: number[], moderation_note: string) => {
-    //     console.log("/moderation/mass_annul", {
-    //         games: sanitizedGameIds,
-    //         annul: true,
-    //         moderation_note: moderation_note,
-    //     });
-    // };
-
     const annul = (sanitizedGameIds: number[], moderation_note: string) => {
         setShowAnnulPopover(true);
-        // Simulating an API request and response
-        setTimeout(() => {
-            console.log("/moderation/mass_annul", {
-                games: sanitizedGameIds,
-                annul: true,
-                moderation_note: moderation_note,
+        post("/moderation/mass_annul", {
+            games: sanitizedGameIds,
+            annul: true,
+            moderation_note: moderation_note,
+        })
+            .then((res) => {
+                const successful = res.done;
+                const failed = res.failed;
+
+                if (successful.length === sanitizedGameIds.length) {
+                    setAnnulResponse(
+                        `Successfully annulled ${successful.length} ${
+                            successful.length > 1 ? "games" : "game"
+                        }`,
+                    );
+                    setTimeout(() => {
+                        onClose();
+                    }, 2000);
+                } else {
+                    setAnnulResponse(
+                        `Successfully annulled ${successful.length} ${
+                            successful.length > 1 ? "games" : "game"
+                        }.\nThe following games could not be annulled:\n${failed.join("\n")}`,
+                    );
+                }
+            })
+            .catch((err) => {
+                setAnnulResponse("Failed to annul games.\nCheck console for error.");
+                console.error("Annulment failed.", err);
             });
-            setAnnulResponse("Annulment successful");
-            setTimeout(() => {
-                setShowAnnulPopover(false);
-                setAnnulResponse(null);
-            }, 2000);
-        }, 3000);
     };
+
+    // const annul = (sanitizedGameIds: number[], moderation_note: string) => {
+    //     setShowAnnulPopover(true);
+    //     // Simulating an API request and response
+    //     setTimeout(() => {
+    //         console.log("/moderation/mass_annul", {
+    //             games: sanitizedGameIds,
+    //             annul: true,
+    //             moderation_note: moderation_note,
+    //         });
+    //         setAnnulResponse("Annulment successful");
+    //         setTimeout(() => {
+    //             setShowAnnulPopover(false);
+    //             setAnnulResponse(null);
+    //         }, 2000);
+    //     }, 3000);
+    // };
 
     return (
         <>
@@ -338,7 +366,7 @@ function AnnulPopover({ numGames, visible, response }) {
             <div className="overlay">
                 {response ? (
                     <div>
-                        <p>Response: {response}</p>
+                        <p>{response}</p>
                     </div>
                 ) : (
                     <div className="spinner-container">
