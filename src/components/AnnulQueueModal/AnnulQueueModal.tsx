@@ -23,6 +23,7 @@ import { Goban } from "goban";
 import { AIReview, GameTimings, ChatMode, GameChat, GobanContext } from "Game";
 import { Player } from "Player";
 import { Resizable } from "Resizable";
+// import { post } from "requests";
 
 interface AnnulQueueModalProps {
     annulQueue: any[];
@@ -106,6 +107,13 @@ export function AnnulQueueModal({
         );
     };
 
+    // Close modal if no games left after dequeue
+    React.useEffect(() => {
+        if (queue.length === 0) {
+            onClose();
+        }
+    }, [queue]);
+
     React.useEffect(() => {
         setQueue(annulQueue);
     }, [annulQueue]);
@@ -124,6 +132,39 @@ export function AnnulQueueModal({
         }
     }, [queue, dequeueRequested, selectedGameIndex]);
 
+    function getSanitizedGameIds(games) {
+        return games
+            .filter((game) => game.ranked === true && game.annulled === false)
+            .map((game) => game.id);
+    }
+
+    const sanitizedGameIds = getSanitizedGameIds(queue);
+
+    const promptForModerationNote = () => {
+        let moderation_note: string | null = null;
+        do {
+            moderation_note = prompt(
+                `Annulling ${sanitizedGameIds.length} of ${currentGame.player.username}'s games. \n\n$PLAYER will include link for ${currentGame.player.username}. \n\nModerator note:`,
+            );
+
+            if (moderation_note == null) {
+                return null;
+            }
+            moderation_note = moderation_note
+                .trim()
+                .replace(/\$PLAYER/i, `player ${currentGame.player.id}`);
+        } while (moderation_note === "");
+        return moderation_note;
+    };
+
+    const annul = (sanitizedGameIds: number[], moderation_note: string) => {
+        console.log("/moderation/mass_annul", {
+            games: sanitizedGameIds,
+            annul: true,
+            moderation_note: moderation_note,
+        });
+    };
+
     return (
         <div className="Modal AnnulQueueModal">
             <div className="header">
@@ -135,7 +176,9 @@ export function AnnulQueueModal({
                     <ul>
                         {queue.map((game, index) => (
                             <li
-                                className={selectedGameIndex === index ? "selected" : ""}
+                                className={`${selectedGameIndex === index ? "selected" : ""} ${
+                                    !game.ranked || game.annulled ? "strikethrough" : ""
+                                }`}
                                 key={game.id}
                                 onClick={() => setSelectedGameIndex(index)}
                             >
@@ -222,7 +265,16 @@ export function AnnulQueueModal({
                         <button className="dequeue-btn" onClick={dequeueGame}>
                             Dequeue
                         </button>
-                        <button className="annul-btn">{`Annul Games(${queue.length})`}</button>
+                        <button
+                            className="annul-btn"
+                            disabled={sanitizedGameIds.length === 0}
+                            onClick={() => {
+                                const note = promptForModerationNote();
+                                if (note) {
+                                    annul(getSanitizedGameIds(queue), note);
+                                }
+                            }}
+                        >{`Annul Games(${sanitizedGameIds.length})`}</button>
                     </div>
                     <div className="gamelist-nav">
                         <button onClick={goToPreviousGame}>Previous</button>

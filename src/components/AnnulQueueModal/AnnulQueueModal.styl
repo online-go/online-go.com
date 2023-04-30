@@ -92,6 +92,11 @@
         margin-right: 10px;
     }
 
+    .strikethrough {
+        text-decoration: line-through;
+        color: #444; /* Choose a more subdued color; you can adjust this value as needed */
+    }
+
     ul {
         width: 100%;
         height: 100%;
@@ -113,8 +118,12 @@
             }
 
             &.selected {
-                background-color: #2196F3; /* Blue background */
-                color: #ffffff; /* White text */
+                background-color: #2196F3; 
+                color: #ffffff; 
+
+                &.strikethrough {
+                    color: #bbb;
+                }
             }
         }
     }
