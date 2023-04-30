@@ -163,7 +163,7 @@ export function AnnulQueueModal({
 
     const annul = (sanitizedGameIds: number[], moderation_note: string) => {
         setShowAnnulPopover(true);
-        post("/moderation/mass_annul", {
+        post("moderation/annul", {
             games: sanitizedGameIds,
             annul: true,
             moderation_note: moderation_note,
