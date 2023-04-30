@@ -46,6 +46,8 @@ export function AnnulQueueModal({
     const [dequeueRequested, setDequeueRequested] = React.useState(false);
     const [queue, setQueue] = React.useState<any[]>(annulQueue);
     const [debounceTimer, setDebounceTimer] = React.useState<number | null>(null);
+    const [showAnnulPopover, setShowAnnulPopover] = React.useState(false);
+    const [annulResponse, setAnnulResponse] = React.useState(null);
 
     const currentGame = queue[selectedGameIndex];
 
@@ -157,138 +159,162 @@ export function AnnulQueueModal({
         return moderation_note;
     };
 
+    // const annul = (sanitizedGameIds: number[], moderation_note: string) => {
+    //     console.log("/moderation/mass_annul", {
+    //         games: sanitizedGameIds,
+    //         annul: true,
+    //         moderation_note: moderation_note,
+    //     });
+    // };
+
     const annul = (sanitizedGameIds: number[], moderation_note: string) => {
-        console.log("/moderation/mass_annul", {
-            games: sanitizedGameIds,
-            annul: true,
-            moderation_note: moderation_note,
-        });
+        setShowAnnulPopover(true);
+        // Simulating an API request and response
+        setTimeout(() => {
+            console.log("/moderation/mass_annul", {
+                games: sanitizedGameIds,
+                annul: true,
+                moderation_note: moderation_note,
+            });
+            setAnnulResponse("Annulment successful");
+            setTimeout(() => {
+                setShowAnnulPopover(false);
+                setAnnulResponse(null);
+            }, 2000);
+        }, 3000);
     };
 
     return (
-        <div className="Modal AnnulQueueModal">
-            <div className="header">
-                <h3>Mass Annulment Queue </h3>
-                <span className="count">{queue.length} Games in Queue</span>
-            </div>
-            <div className="body">
-                <div className="game-list">
-                    <ul>
-                        {queue.map((game, index) => (
-                            <li
-                                className={`${selectedGameIndex === index ? "selected" : ""} ${
-                                    !game.ranked || game.annulled ? "strikethrough" : ""
-                                }`}
-                                key={game.id}
-                                onClick={() => setSelectedGameIndex(index)}
-                            >
-                                {game.id}
-                            </li>
-                        ))}
-                    </ul>
+        <>
+            <div className="Modal AnnulQueueModal">
+                <div className="header">
+                    <h3>Mass Annulment Queue </h3>
+                    <span className="count">{queue.length} Games in Queue</span>
                 </div>
+                <div className="body">
+                    <div className="game-list">
+                        <ul>
+                            {queue.map((game, index) => (
+                                <li
+                                    className={`${selectedGameIndex === index ? "selected" : ""} ${
+                                        !game.ranked || game.annulled ? "strikethrough" : ""
+                                    }`}
+                                    key={game.id}
+                                    onClick={() => setSelectedGameIndex(index)}
+                                >
+                                    {game.id}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
 
-                <div className="game-container">
-                    <div className="game">
-                        {queue[selectedGameIndex] && (
-                            <MiniGoban
-                                key={selectedGameIndex}
-                                id={queue[selectedGameIndex].id}
-                                noLink={true}
-                                onGobanCreated={onGobanCreated}
-                                chat={true}
-                            />
-                        )}
+                    <div className="game-container">
+                        <AnnulPopover
+                            numGames={sanitizedGameIds.length}
+                            visible={showAnnulPopover}
+                            response={annulResponse}
+                        />
+                        <div className="game">
+                            {queue[selectedGameIndex] && (
+                                <MiniGoban
+                                    key={selectedGameIndex}
+                                    id={queue[selectedGameIndex].id}
+                                    noLink={true}
+                                    onGobanCreated={onGobanCreated}
+                                    chat={true}
+                                />
+                            )}
 
-                        {goban && goban.engine && currentGame && (
-                            <GobanContext.Provider value={goban}>
-                                <div className="col">
-                                    <div>
-                                        Black: <Player user={queue[selectedGameIndex]?.black} />
-                                    </div>
-                                    <div>
-                                        White: <Player user={queue[selectedGameIndex]?.white} />
-                                    </div>
-                                    <div>
-                                        Game Outcome: {winner} (
-                                        <Player user={goban?.engine?.winner as number} />) by{" "}
-                                        {goban.engine.outcome}{" "}
-                                    </div>
+                            {goban && goban.engine && currentGame && (
+                                <GobanContext.Provider value={goban}>
+                                    <div className="col">
+                                        <div>
+                                            Black: <Player user={queue[selectedGameIndex]?.black} />
+                                        </div>
+                                        <div>
+                                            White: <Player user={queue[selectedGameIndex]?.white} />
+                                        </div>
+                                        <div>
+                                            Game Outcome: {winner} (
+                                            <Player user={goban?.engine?.winner as number} />) by{" "}
+                                            {goban.engine.outcome}{" "}
+                                        </div>
 
-                                    <AIReview
-                                        onAIReviewSelected={(r) => setAiReviewUuid(r?.uuid)}
-                                        game_id={currentGame.id}
-                                        move={goban.engine.cur_move}
-                                        hidden={false}
-                                    />
-
-                                    {goban && (
-                                        <Resizable
-                                            id="move-tree-container"
-                                            className="vertically-resizable"
-                                            ref={(ref) =>
-                                                goban && goban.setMoveTreeContainer(ref?.div)
-                                            }
+                                        <AIReview
+                                            onAIReviewSelected={(r) => setAiReviewUuid(r?.uuid)}
+                                            game_id={currentGame.id}
+                                            move={goban.engine.cur_move}
+                                            hidden={false}
                                         />
-                                    )}
-                                </div>
 
-                                <div className="col">
-                                    <GameTimings
-                                        moves={goban.engine.config.moves}
-                                        start_time={goban.engine.config.start_time}
-                                        end_time={goban.engine.config.end_time}
-                                        free_handicap_placement={
-                                            goban.engine.config.free_handicap_placement
-                                        }
-                                        handicap={goban.engine.config.handicap}
-                                        black_id={goban.engine.config.black_player_id}
-                                        white_id={goban.engine.config.white_player_id}
-                                    />
-                                </div>
+                                        {goban && (
+                                            <Resizable
+                                                id="move-tree-container"
+                                                className="vertically-resizable"
+                                                ref={(ref) =>
+                                                    goban && goban.setMoveTreeContainer(ref?.div)
+                                                }
+                                            />
+                                        )}
+                                    </div>
 
-                                <div className="col">
-                                    <GameChat
-                                        selected_chat_log={selectedChatLog}
-                                        onSelectedChatModeChange={setSelectedChatLog}
-                                        channel={`game-${currentGame.id}`}
-                                        game_id={currentGame.id}
-                                    />
-                                </div>
-                            </GobanContext.Provider>
-                        )}
-                    </div>
-                </div>
+                                    <div className="col">
+                                        <GameTimings
+                                            moves={goban.engine.config.moves}
+                                            start_time={goban.engine.config.start_time}
+                                            end_time={goban.engine.config.end_time}
+                                            free_handicap_placement={
+                                                goban.engine.config.free_handicap_placement
+                                            }
+                                            handicap={goban.engine.config.handicap}
+                                            black_id={goban.engine.config.black_player_id}
+                                            white_id={goban.engine.config.white_player_id}
+                                        />
+                                    </div>
 
-                <div className="button-bar">
-                    <div className="actions">
-                        <button className="dequeue-btn" onClick={dequeueGame}>
-                            Dequeue
-                        </button>
-                        <button
-                            className="annul-btn"
-                            disabled={sanitizedGameIds.length === 0}
-                            onClick={() => {
-                                const note = promptForModerationNote();
-                                if (note) {
-                                    annul(getSanitizedGameIds(queue), note);
-                                }
-                            }}
-                        >{`Annul Games(${sanitizedGameIds.length})`}</button>
+                                    <div className="col">
+                                        <GameChat
+                                            selected_chat_log={selectedChatLog}
+                                            onSelectedChatModeChange={setSelectedChatLog}
+                                            channel={`game-${currentGame.id}`}
+                                            game_id={currentGame.id}
+                                        />
+                                    </div>
+                                </GobanContext.Provider>
+                            )}
+                        </div>
                     </div>
-                    <div className="gamelist-nav">
-                        <button onClick={goToPreviousGame}>Previous</button>
-                        <span>{`${selectedGameIndex + 1} of ${queue.length}`}</span>
-                        <button onClick={goToNextGame}>Next</button>
-                    </div>
-                    <div className="close">
-                        <button className="close-btn" onClick={() => onClose()}>
-                            {_("Close")}
-                        </button>
+
+                    <div className="button-bar">
+                        <div className="actions">
+                            <button className="dequeue-btn" onClick={dequeueGame}>
+                                Dequeue
+                            </button>
+                            <button
+                                className="annul-btn"
+                                disabled={sanitizedGameIds.length === 0}
+                                onClick={() => {
+                                    const note = promptForModerationNote();
+                                    if (note) {
+                                        annul(getSanitizedGameIds(queue), note);
+                                    }
+                                }}
+                            >{`Annul Games(${sanitizedGameIds.length})`}</button>
+                        </div>
+                        <div className="gamelist-nav">
+                            <button onClick={goToPreviousGame}>Previous</button>
+                            <span>{`${selectedGameIndex + 1} of ${queue.length}`}</span>
+                            <button onClick={goToNextGame}>Next</button>
+                        </div>
+                        <div className="close">
+                            <button className="close-btn" onClick={() => onClose()}>
+                                {_("Close")}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 }
 
@@ -300,4 +326,27 @@ export function openAnnulQueueModal(annulQueue, setSelectModeActive, setAnnulQue
             setAnnulQueue={setAnnulQueue}
         />,
     );
+}
+
+function Spinner() {
+    return <div className="spinner"></div>;
+}
+
+function AnnulPopover({ numGames, visible, response }) {
+    return visible ? (
+        <div className="AnnulPopover">
+            <div className="overlay">
+                {response ? (
+                    <div>
+                        <p>Response: {response}</p>
+                    </div>
+                ) : (
+                    <div className="spinner-container">
+                        <Spinner />
+                        <p>Annulling {numGames} games, please wait...</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    ) : null;
 }
