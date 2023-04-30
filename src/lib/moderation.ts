@@ -41,17 +41,25 @@ export function doAnnul(
             .replace(/(white)\b/gi, `player ${engine.players.white.id}`);
     } while (moderation_note === "");
 
-    post("games/%%/annul", engine.game_id, {
-        annul: tf ? 1 : 0,
+    const annul_request: rest_api.moderation.MassAnnulList = {
+        games: [engine.game_id as number],
+        annul: tf,
         moderation_note: moderation_note,
-    })
-        .then(() => {
-            if (tf) {
-                void alert.fire({ text: _("Game has been annulled") });
+    };
+
+    post("moderation/mass_annul", annul_request)
+        .then((result: rest_api.moderation.MassAnnulResult) => {
+            console.log("annul result", result);
+            if (!result["failed"].length) {
+                if (tf) {
+                    void alert.fire({ text: _("Game has been annulled") });
+                } else {
+                    void alert.fire({ text: _("Game ranking has been restored") });
+                }
+                onGameAnnulled && onGameAnnulled(tf);
             } else {
-                void alert.fire({ text: _("Game ranking has been restored") });
+                void alert.fire({ text: _("Something went wrong, no action taken!") });
             }
-            onGameAnnulled && onGameAnnulled(tf);
         })
         .catch(errorAlerter);
 }
