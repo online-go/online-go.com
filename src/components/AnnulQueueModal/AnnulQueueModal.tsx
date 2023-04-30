@@ -195,23 +195,6 @@ export function AnnulQueueModal({
             });
     };
 
-    // const annul = (sanitizedGameIds: number[], moderation_note: string) => {
-    //     setShowAnnulPopover(true);
-    //     // Simulating an API request and response
-    //     setTimeout(() => {
-    //         console.log("/moderation/mass_annul", {
-    //             games: sanitizedGameIds,
-    //             annul: true,
-    //             moderation_note: moderation_note,
-    //         });
-    //         setAnnulResponse("Annulment successful");
-    //         setTimeout(() => {
-    //             setShowAnnulPopover(false);
-    //             setAnnulResponse(null);
-    //         }, 2000);
-    //     }, 3000);
-    // };
-
     return (
         <>
             <div className="overlay"></div>
