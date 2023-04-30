@@ -342,6 +342,13 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             group: Object.assign({}, this.state.group, { require_invitation: ev.target.checked }),
         });
     };
+    setAdminOnlyTournaments = (ev) => {
+        this.setState({
+            group: Object.assign({}, this.state.group, {
+                admin_only_tournaments: ev.target.checked,
+            }),
+        });
+    };
     setNewNewsTitle = (ev) => {
         this.setState({ new_news_title: ev.target.value });
     };
@@ -528,7 +535,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                             {/* Main card  */}
                             {(this.state.is_admin || user.is_moderator || null) && (
                                 <i
-                                    className={editing ? "fa fa-save" : "fa fa-pencil"}
+                                    className={editing ? "fa fa-lg fa-save" : "fa fa-pencil"}
                                     onClick={this.toggleEdit}
                                 />
                             )}
@@ -576,7 +583,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                         <input
                                             type="text"
                                             placeholder={_("Group name")}
-                                            style={{ width: "calc(100% - 30px)" }}
+                                            style={{ width: "calc(100% - 3rem)" }}
                                             value={group.name}
                                             onChange={this.setGroupName}
                                         />
@@ -751,6 +758,21 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                                 />
                                                 <label htmlFor="public-group">
                                                     {_("Public group")}
+                                                </label>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="pad">
+                                        {(editing || null) && (
+                                            <div>
+                                                <input
+                                                    type="checkbox"
+                                                    id="admin-only-tournaments"
+                                                    checked={group.admin_only_tournaments}
+                                                    onChange={this.setAdminOnlyTournaments}
+                                                />
+                                                <label htmlFor="admin-only-tournaments">
+                                                    {_("Only admins can create tournaments")}
                                                 </label>
                                             </div>
                                         )}
