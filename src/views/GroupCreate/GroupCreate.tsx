@@ -26,6 +26,7 @@ interface GroupCreateState {
     require_invitation: boolean;
     is_public: boolean;
     hide_details: boolean;
+    admin_only_tournaments: boolean;
 }
 
 export class GroupCreate extends React.PureComponent<{}, GroupCreateState> {
@@ -38,6 +39,7 @@ export class GroupCreate extends React.PureComponent<{}, GroupCreateState> {
             require_invitation: false,
             is_public: true,
             hide_details: false,
+            admin_only_tournaments: false,
         };
     }
 
@@ -48,6 +50,7 @@ export class GroupCreate extends React.PureComponent<{}, GroupCreateState> {
                 require_invitation: this.state.require_invitation,
                 is_public: this.state.is_public,
                 hide_details: this.state.hide_details,
+                admin_only_tournaments: this.state.admin_only_tournaments,
             };
             post("groups/", group)
                 .then((group) => {
@@ -63,6 +66,8 @@ export class GroupCreate extends React.PureComponent<{}, GroupCreateState> {
     set_is_public = (ev) => this.setState({ is_public: ev.target.checked });
     set_require_invitation = (ev) => this.setState({ require_invitation: ev.target.checked });
     set_hide_details = (ev) => this.setState({ hide_details: ev.target.checked });
+    set_admin_only_tournaments = (ev) =>
+        this.setState({ admin_only_tournaments: ev.target.checked });
 
     render() {
         return (
@@ -116,6 +121,26 @@ export class GroupCreate extends React.PureComponent<{}, GroupCreateState> {
                                     </div>
                                 </div>
                             </div>
+
+                            <div className="form-group">
+                                <label
+                                    className="col-sm-5 control-label"
+                                    htmlFor="group-admin-only-tournaments"
+                                >
+                                    {_("Only admins create tournaments")}
+                                </label>
+                                <div className="col-sm-6">
+                                    <div className="checkbox">
+                                        <input
+                                            type="checkbox"
+                                            id="group-admin-only-tournaments"
+                                            checked={this.state.admin_only_tournaments}
+                                            onChange={this.set_admin_only_tournaments}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
                             {(!this.state.is_public || null) && (
                                 <div className="form-group">
                                     <label
