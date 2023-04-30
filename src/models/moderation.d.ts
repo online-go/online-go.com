@@ -15,15 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//  `/moderation/annul` endpoint
+
 declare namespace rest_api {
     namespace moderation {
-        interface MassAnnulList {
+        interface AnnulList {
             games: Array<number>; // game ids.  Do we have a type for them?
             annul: boolean;
             moderation_note: string;
         }
 
-        interface MassAnnulResult {
+        interface AnnulResult {
             done: Array<number>;
             failed: Array<number>;
         }

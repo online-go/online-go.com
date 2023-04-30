@@ -41,14 +41,14 @@ export function doAnnul(
             .replace(/(white)\b/gi, `player ${engine.players.white.id}`);
     } while (moderation_note === "");
 
-    const annul_request: rest_api.moderation.MassAnnulList = {
+    const annul_request: rest_api.moderation.AnnulList = {
         games: [engine.game_id as number],
         annul: tf,
         moderation_note: moderation_note,
     };
 
-    post("moderation/mass_annul", annul_request)
-        .then((result: rest_api.moderation.MassAnnulResult) => {
+    post("moderation/annul", annul_request)
+        .then((result: rest_api.moderation.AnnulResult) => {
             console.log("annul result", result);
             if (!result["failed"].length) {
                 if (tf) {
