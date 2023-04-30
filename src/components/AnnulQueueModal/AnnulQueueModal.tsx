@@ -214,6 +214,7 @@ export function AnnulQueueModal({
 
     return (
         <>
+            <div className="overlay"></div>
             <div className="Modal AnnulQueueModal">
                 <div className="header">
                     <h3>Mass Annulment Queue </h3>

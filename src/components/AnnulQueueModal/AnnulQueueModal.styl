@@ -2,6 +2,7 @@
     min-width: 80vw;
     min-height: 90vh;
     margin-top: 5vh;
+    z-index: 5;
 
     .header {
         justify-content: space-between;
@@ -144,7 +145,7 @@
         cursor: pointer;
         font-size: 1.7rem;
         transition: transform 0.3s ease;
-        z-index: 1;
+        z-index: 6;
         margin: 15px;
     }
 
@@ -196,4 +197,14 @@
         animation: spin 1s linear infinite;
         margin-bottom: 5px;
     }
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1;
 }
