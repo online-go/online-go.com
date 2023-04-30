@@ -148,7 +148,7 @@ export function AnnulQueueModal({
         let moderation_note: string | null = null;
         do {
             moderation_note = prompt(
-                `Annulling ${sanitizedGameIds.length} of ${currentGame.player.username}'s games. \n\n$PLAYER will include link for ${currentGame.player.username}. \n\nModerator note:`,
+                `Annulling ${sanitizedGameIds.length} of ${currentGame.player.username}'s games.\nEnter moderation note:  ($PLAYER will include link for ${currentGame.player.username})`,
             );
 
             if (moderation_note == null) {
