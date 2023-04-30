@@ -35,6 +35,7 @@ import { useGoban } from "./goban_context";
 import { usePreference } from "preferences";
 import { browserHistory } from "ogsHistory";
 import { player_is_ignored } from "BlockPlayer";
+import { doAnnul } from "moderation";
 
 type PlayerType = rest_api.games.Player;
 
@@ -221,9 +222,7 @@ function PlayerCard({
     const score = useScore(goban)[color];
     const { game_id, review_id } = goban;
     const chat_channel = game_id ? `game-${game_id}` : `review-${review_id}`;
-    const [hide_next_game_arrows, setHideNextGameArrows] = usePreference(
-        "moderator.hide-next-game-arrows",
-    );
+    const [hide_next_game_arrows] = usePreference("moderator.hide-next-game-arrows");
 
     const user = useUser();
 
@@ -251,8 +250,8 @@ function PlayerCard({
             });
     };
 
-    const hideNextGameArrows = () => {
-        setHideNextGameArrows(true);
+    const annulWithBlame = () => {
+        doAnnul(engine.config, true, null, ` ${color} `); // spaces make it easy to put the cursor before or after, they are trimmed later
     };
 
     // In rengo we always will have a player icon to show (after initialisation).
@@ -319,7 +318,9 @@ function PlayerCard({
             {(show_next_game_arrows || null) && (
                 <div className="next-game-arrows">
                     <i className="fa fa-2x fa-angle-left" onClick={jumpToPrevGame} />
-                    <i className="fa fa-eye-slash" onClick={hideNextGameArrows} />
+                    <div className="next-arrow-mod-controls">
+                        <i className="fa fa-gavel" onClick={annulWithBlame} />
+                    </div>
                     <i className="fa fa-2x fa-angle-right" onClick={jumpToNextGame} />
                 </div>
             )}
@@ -344,7 +345,6 @@ function PlayerCard({
                     zen_mode={zen_mode}
                     hidden={show_points && !estimating_score}
                 />
-                {!show_points && <div className="komi">{komiString(score.komi)}</div>}
                 <div id={`${color}-score-details`} className="score-details">
                     <ScorePopup goban={goban} color={color} show={show_score_breakdown} />
                 </div>
@@ -398,14 +398,6 @@ function PlayerFlag({ player_id }: { player_id: number }): JSX.Element {
         return <Flag country={country} big />;
     }
     return null;
-}
-
-function komiString(komi: number) {
-    if (!komi) {
-        return "";
-    }
-    const abs_komi = Math.abs(komi).toFixed(1);
-    return komi > 0 ? `+ ${abs_komi}` : `- ${abs_komi}`;
 }
 
 function useAutoResignExpiration(goban: GobanCore, color: "black" | "white") {
