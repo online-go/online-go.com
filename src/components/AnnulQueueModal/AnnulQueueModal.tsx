@@ -25,17 +25,20 @@ import { Player } from "Player";
 import { Resizable } from "Resizable";
 import { post } from "requests";
 
+// Define the AnnulQueueModalProps interface
 interface AnnulQueueModalProps {
     annulQueue: any[];
     setSelectModeActive: React.Dispatch<boolean>;
     setAnnulQueue: React.Dispatch<any[]>;
 }
 
+// Define the AnnulQueueModal component
 export function AnnulQueueModal({
     annulQueue,
     setSelectModeActive,
     setAnnulQueue,
 }: AnnulQueueModalProps) {
+    // Declare state variables
     const [selectedGameIndex, setSelectedGameIndex] = React.useState(0);
     const [goban, setGoban] = React.useState<Goban | null>(null);
     const [selectedChatLog, setSelectedChatLog] = React.useState<ChatMode>("main");
@@ -46,31 +49,38 @@ export function AnnulQueueModal({
     const [dequeueRequested, setDequeueRequested] = React.useState(false);
     const [queue, setQueue] = React.useState<any[]>(annulQueue);
     const [debounceTimer, setDebounceTimer] = React.useState<number | null>(null);
-    const [showAnnulPopover, setShowAnnulPopover] = React.useState(false);
+    const [showAnnulOverlay, setShowAnnulOverlay] = React.useState(false);
     const [annulResponse, setAnnulResponse] = React.useState(null);
 
+    // Get the current game from the queue
     const currentGame = queue[selectedGameIndex];
 
+    // Get the modal container element
     const container = document.getElementsByClassName("Modal-container")[0];
 
+    // Define the debounce duration
     const DEBOUNCE_DURATION = 300;
 
+    // Determine the winner of the game
     const winner =
         goban?.engine?.winner &&
         (goban.engine.winner === goban.engine.config.black_player_id ? "Black" : "White");
 
+    // Close the modal
     const closeModal = () => {
         container.parentNode?.removeChild(container);
     };
 
+    // Close the modal and reset state variables
     const onClose = () => {
         setAnnulQueue([]);
         setSelectModeActive(false);
-        setShowAnnulPopover(false);
+        setShowAnnulOverlay(false);
         setAnnulResponse(null);
         closeModal();
     };
 
+    // Navigate to the previous game in the queue
     const goToPreviousGame = () => {
         if (debounceTimer) {
             clearTimeout(debounceTimer);
@@ -85,6 +95,7 @@ export function AnnulQueueModal({
         );
     };
 
+    // Navigate to the next game in the queue
     const goToNextGame = () => {
         if (debounceTimer) {
             clearTimeout(debounceTimer);
@@ -99,6 +110,7 @@ export function AnnulQueueModal({
         );
     };
 
+    // Dequeue the selected game
     const dequeueGame = () => {
         if (debounceTimer) {
             clearTimeout(debounceTimer);
@@ -118,10 +130,12 @@ export function AnnulQueueModal({
         }
     }, [queue]);
 
+    // Update the queue when annulQueue changes
     React.useEffect(() => {
         setQueue(annulQueue);
     }, [annulQueue]);
 
+    // Handle dequeuing a game
     React.useEffect(() => {
         if (dequeueRequested) {
             // Remove the selected game from the queue
@@ -136,19 +150,22 @@ export function AnnulQueueModal({
         }
     }, [queue, dequeueRequested, selectedGameIndex]);
 
-    function getSanitizedGameIds(games) {
+    // Get only games that are ranked and not annulled
+    function getValidGameIds(games) {
         return games
             .filter((game) => game.ranked === true && game.annulled === false)
             .map((game) => game.id);
     }
 
-    const sanitizedGameIds = getSanitizedGameIds(queue);
+    // Get the valid game IDs from the queue
+    const validGameIds = getValidGameIds(queue);
 
+    // Prompt the user for a moderation note
     const promptForModerationNote = () => {
         let moderation_note: string | null = null;
         do {
             moderation_note = prompt(
-                `Annulling ${sanitizedGameIds.length} of ${currentGame.player.username}'s games.\nEnter moderation note:  ($PLAYER will include link for ${currentGame.player.username})`,
+                `Annulling ${validGameIds.length} of ${currentGame.player.username}'s games.\nEnter moderation note:  ($PLAYER will include link for ${currentGame.player.username})`,
             );
 
             if (moderation_note == null) {
@@ -161,10 +178,11 @@ export function AnnulQueueModal({
         return moderation_note;
     };
 
-    const annul = (sanitizedGameIds: number[], moderation_note: string) => {
-        setShowAnnulPopover(true);
+    // Annul the specified games
+    const annul = (validGameIds: number[], moderation_note: string) => {
+        setShowAnnulOverlay(true);
         post("moderation/annul", {
-            games: sanitizedGameIds,
+            games: validGameIds,
             annul: true,
             moderation_note: moderation_note,
         })
@@ -172,7 +190,7 @@ export function AnnulQueueModal({
                 const successful = res.done;
                 const failed = res.failed;
 
-                if (successful.length === sanitizedGameIds.length) {
+                if (successful.length === validGameIds.length) {
                     setAnnulResponse(
                         `Successfully annulled ${successful.length} ${
                             successful.length > 1 ? "games" : "game"
@@ -221,9 +239,9 @@ export function AnnulQueueModal({
                     </div>
 
                     <div className="game-container">
-                        <AnnulPopover
-                            numGames={sanitizedGameIds.length}
-                            visible={showAnnulPopover}
+                        <AnnulOverlay
+                            numGames={validGameIds.length}
+                            visible={showAnnulOverlay}
                             response={annulResponse}
                         />
                         <div className="game">
@@ -304,14 +322,14 @@ export function AnnulQueueModal({
                             </button>
                             <button
                                 className="annul-btn"
-                                disabled={sanitizedGameIds.length === 0}
+                                disabled={validGameIds.length === 0}
                                 onClick={() => {
                                     const note = promptForModerationNote();
                                     if (note) {
-                                        annul(getSanitizedGameIds(queue), note);
+                                        annul(getValidGameIds(queue), note);
                                     }
                                 }}
-                            >{`Annul Games(${sanitizedGameIds.length})`}</button>
+                            >{`Annul Games(${validGameIds.length})`}</button>
                         </div>
                         <div className="gamelist-nav">
                             <div className="nav-wrapper">
@@ -332,6 +350,7 @@ export function AnnulQueueModal({
     );
 }
 
+// Open the AnnulQueueModal
 export function openAnnulQueueModal(annulQueue, setSelectModeActive, setAnnulQueue) {
     return openModal(
         <AnnulQueueModal
@@ -342,13 +361,15 @@ export function openAnnulQueueModal(annulQueue, setSelectModeActive, setAnnulQue
     );
 }
 
+// Spinner component
 function Spinner() {
     return <div className="spinner"></div>;
 }
 
-function AnnulPopover({ numGames, visible, response }) {
+// AnnulOverlay component
+function AnnulOverlay({ numGames, visible, response }) {
     return visible ? (
-        <div className="AnnulPopover">
+        <div className="AnnulOverlay">
             <div className="overlay">
                 {response ? (
                     <div>
