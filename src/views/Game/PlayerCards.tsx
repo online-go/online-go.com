@@ -222,11 +222,14 @@ function PlayerCard({
     const score = useScore(goban)[color];
     const { game_id, review_id } = goban;
     const chat_channel = game_id ? `game-${game_id}` : `review-${review_id}`;
-    const [hide_next_game_arrows] = usePreference("moderator.hide-next-game-arrows");
+    const [hide_player_card_mod_controls] = usePreference(
+        "moderator.hide-player-card-mod-controls",
+    );
 
     const user = useUser();
 
-    const show_next_game_arrows = user.is_moderator && game_id && !hide_next_game_arrows;
+    const show_player_card_mod_controls =
+        user.is_moderator && game_id && !hide_player_card_mod_controls;
 
     const jumpToPrevGame = () => {
         get(`games/${game_id}/prev/${player.id}`)
@@ -251,7 +254,7 @@ function PlayerCard({
     };
 
     const annulWithBlame = () => {
-        doAnnul(engine.config, true, null, ` ${color} `); // spaces make it easy to put the cursor before or after, they are trimmed later
+        doAnnul(engine.config, true, null, ` ${color} `); // spaces make it easy for the user to put the cursor before or after, they are trimmed later
     };
 
     // In rengo we always will have a player icon to show (after initialisation).
@@ -315,11 +318,13 @@ function PlayerCard({
                 </span>
             )}
 
-            {(show_next_game_arrows || null) && (
-                <div className="next-game-arrows">
+            {(show_player_card_mod_controls || null) && (
+                <div className="player-card-mod-controls">
                     <i className="fa fa-2x fa-angle-left" onClick={jumpToPrevGame} />
-                    <div className="next-arrow-mod-controls">
-                        <i className="fa fa-gavel" onClick={annulWithBlame} />
+                    <div className="middle-mod-controls">
+                        {(engine.phase === "finished" || null) && (
+                            <i className="fa fa-gavel" onClick={annulWithBlame} />
+                        )}
                     </div>
                     <i className="fa fa-2x fa-angle-right" onClick={jumpToNextGame} />
                 </div>

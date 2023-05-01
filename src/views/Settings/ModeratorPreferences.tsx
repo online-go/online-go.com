@@ -34,8 +34,8 @@ export function ModeratorPreferences(_props: SettingGroupPageProps): JSX.Element
     );
     const [hide_flags, setHideFlags] = usePreference("moderator.hide-flags");
     const [hide_profile, setHideProfile] = usePreference("moderator.hide-profile-information");
-    const [hide_next_game_arrows, setHideNextGameArrows] = usePreference(
-        "moderator.hide-next-game-arrows",
+    const [hide_player_card_mod_controls, setHidePlayerCardModControls] = usePreference(
+        "moderator.hide-player-card-mod-controls",
     );
 
     const user = data.get("user");
@@ -67,8 +67,11 @@ export function ModeratorPreferences(_props: SettingGroupPageProps): JSX.Element
             <PreferenceLine title="Hide moderator information on profile pages">
                 <Toggle checked={hide_profile} onChange={setHideProfile} />
             </PreferenceLine>
-            <PreferenceLine title="Hide 'next game' arrows on player cards">
-                <Toggle checked={hide_next_game_arrows} onChange={setHideNextGameArrows} />
+            <PreferenceLine title="Hide moderator controls on player cards">
+                <Toggle
+                    checked={hide_player_card_mod_controls}
+                    onChange={setHidePlayerCardModControls}
+                />
             </PreferenceLine>
             <ReportsCenterSettings />
         </div>
