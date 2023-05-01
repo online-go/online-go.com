@@ -333,10 +333,20 @@ export function AnnulQueueModal({
                         </div>
                         <div className="gamelist-nav">
                             <div className="nav-wrapper">
-                                <i className="fa fa-angle-left" onClick={goToPreviousGame}></i>
+                                <button
+                                    className="nav-arrow left icon-button"
+                                    onClick={goToPreviousGame}
+                                >
+                                    <i className="fa fa-angle-left"></i>
+                                </button>
                                 <span>{`${selectedGameIndex + 1} of ${queue.length}`}</span>
-                                <i className="fa fa-angle-right" onClick={goToNextGame}></i>
-                            </div>{" "}
+                                <button
+                                    className="nav-arrow right icon-button"
+                                    onClick={goToNextGame}
+                                >
+                                    <i className="fa fa-angle-right"></i>
+                                </button>
+                            </div>
                         </div>
                         <div className="close">
                             <button className="close-btn" onClick={() => onClose()}>
