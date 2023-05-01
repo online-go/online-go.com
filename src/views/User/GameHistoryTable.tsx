@@ -33,8 +33,8 @@ import { PlayerCacheEntry } from "src/lib/player_cache";
 import { TimeControl } from "src/components/TimeControl";
 import { Speed } from "src/lib/types";
 import { usePreference } from "preferences";
-import * as data from "data";
 import { openAnnulQueueModal } from "AnnulQueueModal";
+import { useUser } from "hooks";
 
 interface GameHistoryProps {
     user_id: number;
@@ -77,7 +77,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
     const [hide_flags] = usePreference("moderator.hide-flags");
     const [selectModeActive, setSelectModeActive] = React.useState<boolean>(false);
     const [annulQueue, setAnnulQueue] = React.useState<any[]>([]);
-    const user = data.get("user");
+    const user = useUser();
 
     function getBoardSize(size_filter: string): number {
         switch (size_filter) {
