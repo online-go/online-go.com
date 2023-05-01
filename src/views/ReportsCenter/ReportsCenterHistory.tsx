@@ -31,6 +31,7 @@ export function ReportsCenterHistory(): JSX.Element {
                 <div className="search">
                     <i className="fa fa-search"></i>
                     <PlayerAutocomplete
+                        placeholder={"Reporter name"}
                         onComplete={(player) => {
                             // happily, and importantly, if there isn't a player, then we get null
                             setReportingUserFilter(player?.id);
