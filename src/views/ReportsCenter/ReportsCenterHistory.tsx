@@ -19,16 +19,35 @@ import * as React from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { PaginatedTable } from "PaginatedTable";
 import { Player } from "Player";
+import { PlayerAutocomplete } from "PlayerAutocomplete";
 
 export function ReportsCenterHistory(): JSX.Element {
     const navigateTo = useNavigate();
+    const [reportingUserFilter, setReportingUserFilter] = React.useState<number>(null);
 
     return (
         <div className="ReportsCenterHistory">
+            <div className="history-options">
+                <div className="search">
+                    <i className="fa fa-search"></i>
+                    <PlayerAutocomplete
+                        placeholder={"Reporter name"}
+                        onComplete={(player) => {
+                            // happily, and importantly, if there isn't a player, then we get null
+                            setReportingUserFilter(player?.id);
+                        }}
+                    />
+                </div>
+            </div>
             <PaginatedTable
                 className="history"
                 name="reports-appeals"
                 source={"moderation/incident"}
+                filter={
+                    reportingUserFilter !== null && {
+                        reporting_user: reportingUserFilter,
+                    }
+                }
                 orderBy={["-updated"]}
                 columns={[
                     {
