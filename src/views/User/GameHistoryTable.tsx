@@ -33,6 +33,8 @@ import { PlayerCacheEntry } from "src/lib/player_cache";
 import { TimeControl } from "src/components/TimeControl";
 import { Speed } from "src/lib/types";
 import { usePreference } from "preferences";
+import { openAnnulQueueModal } from "AnnulQueueModal";
+import { useUser } from "hooks";
 
 interface GameHistoryProps {
     user_id: number;
@@ -44,6 +46,7 @@ type ResultClass =
 interface GroomedGame {
     id: number;
     annulled: boolean;
+    ranked: boolean;
     played_black: boolean;
     player: PlayerCacheEntry;
     player_won: boolean;
@@ -72,6 +75,9 @@ export function GameHistoryTable(props: GameHistoryProps) {
         preferences.get("game-history-ranked-filter"),
     );
     const [hide_flags] = usePreference("moderator.hide-flags");
+    const [selectModeActive, setSelectModeActive] = React.useState<boolean>(false);
+    const [annulQueue, setAnnulQueue] = React.useState<any[]>([]);
+    const user = useUser();
 
     function getBoardSize(size_filter: string): number {
         switch (size_filter) {
@@ -81,6 +87,30 @@ export function GameHistoryTable(props: GameHistoryProps) {
                 return 13;
             case "19x19":
                 return 19;
+        }
+    }
+
+    function handleRowClick(row, ev) {
+        if (selectModeActive) {
+            toggleQueued(row);
+        } else {
+            openUrlIfALinkWasNotClicked(ev, row.href);
+        }
+    }
+
+    function toggleQueued(rowData) {
+        const alreadyInQueue = annulQueue.some((item) => item.id === rowData.id);
+
+        if (!alreadyInQueue) {
+            setAnnulQueue([...annulQueue, rowData]);
+        } else {
+            setAnnulQueue(annulQueue.filter((item) => item.id !== rowData.id));
+        }
+    }
+
+    function handleLinkClick(event) {
+        if (selectModeActive) {
+            event.preventDefault();
         }
     }
 
@@ -114,6 +144,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
             item.height = r.height;
             item.date = r.ended ? new Date(r.ended) : null;
             item.annulled = r.annulled || false;
+            item.ranked = r.ranked;
 
             item.black = r.players.black;
             item.white = r.players.white;
@@ -172,6 +203,33 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             />
                         </div>
                         <div>
+                            {user.is_moderator ? (
+                                <div className="btn-group">
+                                    {annulQueue.length > 0 ? (
+                                        <button
+                                            className="sm info"
+                                            onClick={() =>
+                                                openAnnulQueueModal(
+                                                    annulQueue,
+                                                    setSelectModeActive,
+                                                    setAnnulQueue,
+                                                )
+                                            }
+                                        >
+                                            {_("View Queue")} {`(${annulQueue.length})`}
+                                        </button>
+                                    ) : null}
+                                    <button
+                                        className={selectModeActive ? "sm danger" : "sm"}
+                                        onClick={() => {
+                                            setSelectModeActive(!selectModeActive);
+                                            setAnnulQueue([]);
+                                        }}
+                                    >
+                                        {_("Select")}
+                                    </button>
+                                </div>
+                            ) : null}
                             <div className="btn-group">
                                 <button
                                     className={
@@ -251,7 +309,8 @@ export function GameHistoryTable(props: GameHistoryProps) {
                         orderBy={["-ended"]}
                         groom={game_history_groomer}
                         pageSizeOptions={[10, 15, 25, 50]}
-                        onRowClick={(ref, ev) => openUrlIfALinkWasNotClicked(ev, ref.href)}
+                        onRowClick={handleRowClick}
+                        annulQueue={annulQueue}
                         columns={[
                             {
                                 header: _("User"),
@@ -316,7 +375,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                 className: (X) =>
                                     "game_name" + (X && X.annulled ? " annulled" : ""),
                                 render: (X) => (
-                                    <Link to={X.href}>
+                                    <Link to={X.href} onClick={(e) => handleLinkClick(e)}>
                                         {X.name ||
                                             interpolate(
                                                 "{{black_username}} vs. {{white_username}}",

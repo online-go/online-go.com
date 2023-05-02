@@ -85,11 +85,18 @@
     &.clickable-rows {
         tbody tr {
             cursor: pointer;
+            &.queued {
+                themed background-color danger
+                &:hover {
+                    themed background-color warning-bg
+                }
+            }
         }
         tbody tr:hover {
             themed background-color shade5
         }
     }
+
 
     .page-controls {
         display: flex;

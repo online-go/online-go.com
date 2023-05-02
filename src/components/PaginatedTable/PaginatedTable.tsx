@@ -60,6 +60,7 @@ interface PaginatedTableProperties<RawEntryT, GroomedEntryT = RawEntryT> {
     hidePageControls?: boolean;
     /** If provided, the table will listen for this push event and refresh its data accordingly */
     uiPushProps?: { event: string; channel: string };
+    annulQueue?: any[];
 }
 
 export interface PaginatedTableRef {
@@ -351,14 +352,35 @@ function _PaginatedTable<RawEntryT = any, GroomedEntryT = RawEntryT>(
                                     {column_render(column, row)}
                                 </td>
                             ));
-                            if (props.onRowClick) {
-                                return (
-                                    <tr key={row.id} onMouseUp={(ev) => props.onRowClick(row, ev)}>
-                                        {cols}
-                                    </tr>
-                                );
+                            if (props.annulQueue) {
+                                if (props.onRowClick) {
+                                    return (
+                                        <tr
+                                            key={row.id}
+                                            className={
+                                                props.annulQueue.includes(row) ? "queued" : ""
+                                            }
+                                            onMouseUp={(ev) => props.onRowClick(row, ev)}
+                                        >
+                                            {cols}
+                                        </tr>
+                                    );
+                                } else {
+                                    return <tr key={row.id}>{cols}</tr>;
+                                }
                             } else {
-                                return <tr key={row.id}>{cols}</tr>;
+                                if (props.onRowClick) {
+                                    return (
+                                        <tr
+                                            key={row.id}
+                                            onMouseUp={(ev) => props.onRowClick(row, ev)}
+                                        >
+                                            {cols}
+                                        </tr>
+                                    );
+                                } else {
+                                    return <tr key={row.id}>{cols}</tr>;
+                                }
                             }
                         })}
                         {blank_rows}
