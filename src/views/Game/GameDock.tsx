@@ -57,6 +57,7 @@ interface DockProps {
     onCoordinatesMarked: (stones: string) => void;
     onReviewClicked: () => void;
 }
+
 export function GameDock({
     annulled,
     selected_ai_review_uuid,
@@ -84,8 +85,8 @@ export function GameDock({
     const user = useUser();
 
     let superuser_ai_review_ready = user?.is_superuser && phase === "finished";
-    let mod = user?.is_moderator && phase !== "finished";
-    let annul = user?.is_moderator && phase === "finished";
+    let user_can_intervene = user?.is_moderator && phase !== "finished";
+    let user_can_annul = user?.is_moderator && phase === "finished";
     const annulable = !annulled && engine.config.ranked;
     const unannulable = annulled && engine.config.ranked;
     const user_is_player = useUserIsParticipant(goban);
@@ -97,8 +98,8 @@ export function GameDock({
     const game = !!game_id;
     if (review) {
         superuser_ai_review_ready = false;
-        mod = false;
-        annul = false;
+        user_can_intervene = false;
+        user_can_annul = false;
     }
 
     let sgf_download_enabled = false;
@@ -385,7 +386,8 @@ export function GameDock({
                     <i className="fa fa-exchange"></i> {_("Plan conditional moves")}
                 </a>
             )}
-            {((!review_id && (user_is_player || mod) && phase !== "finished") || null) && (
+            {((!review_id && (user_is_player || user_can_intervene) && phase !== "finished") ||
+                null) && (
                 <a onClick={onPauseClicked}>
                     <i className="fa fa-pause"></i> {_("Pause game")}
                 </a>
@@ -464,45 +466,40 @@ export function GameDock({
                     <i className="fa fa-download"></i> {_("SGF with comments")}
                 </a>
             )}
-            {(mod || annul) && <hr />}
-            {mod && (
+            {(user_can_intervene || user_can_annul) && <hr />}
+            {user_can_intervene && (
                 <a onClick={decide_black}>
                     <i className="fa fa-gavel"></i> {_("Black Wins")}
                 </a>
             )}
-            {mod && (
+            {user_can_intervene && (
                 <a onClick={decide_white}>
                     <i className="fa fa-gavel"></i> {_("White Wins")}
                 </a>
             )}
-            {mod && (
+            {user_can_intervene && (
                 <a onClick={decide_tie}>
                     <i className="fa fa-gavel"></i> {_("Tie")}
                 </a>
             )}
-            {mod && (
+            {user_can_intervene && (
                 <a onClick={force_autoscore}>
                     <i className="fa fa-gavel"></i> {_("Auto-score")}
                 </a>
             )}
 
+            {user_can_annul && annulable && (
+                <a onClick={() => do_annul(true)}>
+                    <i className="fa fa-gavel"></i> {_("Annul")}
+                </a>
+            )}
+            {user_can_annul && unannulable && (
+                <a onClick={() => do_annul(false)}>
+                    <i className="fa fa-gavel unannulable"></i> {"Remove annulment"}
+                </a>
+            )}
             {
-                annul && annulable && (
-                    <a onClick={() => do_annul(true)}>
-                        <i className="fa fa-gavel"></i> {_("Annul")}
-                    </a>
-                ) /* mod can annul this game */
-            }
-            {
-                annul &&
-                    unannulable && (
-                        <a onClick={() => do_annul(false)}>
-                            <i className="fa fa-gavel unannulable"></i> {"Remove annulment"}
-                        </a>
-                    ) /* mod can't annul, presumably because it's already annulled */
-            }
-            {
-                annul &&
+                user_can_annul &&
                     !annulable &&
                     !unannulable && (
                         <div>
@@ -511,18 +508,18 @@ export function GameDock({
                     ) /* This is a "do nothing" icon for when the game is unranked */
             }
 
-            {(mod || annul) && <hr />}
-            {(mod || annul) && (
+            {(user_can_intervene || user_can_annul) && <hr />}
+            {(user_can_intervene || user_can_annul) && (
                 <a onClick={onTimingClicked}>
                     <i className="fa fa-clock-o"></i> {_("Timing")}
                 </a>
             )}
-            {(mod || annul) && (
+            {(user_can_intervene || user_can_annul) && (
                 <a onClick={showLogModal}>
                     <i className="fa fa-list-alt"></i> {"Log"}
                 </a>
             )}
-            {(mod || annul) && (
+            {(user_can_intervene || user_can_annul) && (
                 <a onClick={toggleAnonymousModerator}>
                     <i className="fa fa-user-secret"></i> {"Cloak of Invisibility"}
                 </a>
