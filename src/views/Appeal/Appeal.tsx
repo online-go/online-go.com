@@ -56,6 +56,7 @@ export function Appeal(props: { player_id?: number }): JSX.Element {
     const [reason_for_ban, setReasonForBan] = React.useState(null);
     const [ban_expiration, setBanExpiration] = React.useState(null);
     const [still_banned, setStillBanned] = React.useState(true);
+    const [allow_further_appeals, setAllowFurtherAppeals] = React.useState(true);
 
     const ban_reason: string = reason_for_ban || data.get("appeals.ban-reason");
     React.useEffect(refresh, []);
@@ -109,15 +110,25 @@ export function Appeal(props: { player_id?: number }): JSX.Element {
             {state && (
                 <>
                     {mod ? (
-                        <select value={state} onChange={updateState}>
-                            <option value="awaiting_moderator_response">
-                                {_("Awaiting moderator response")}
-                            </option>
-                            <option value="awaiting_player_response">
-                                {_("Awaiting player response")}
-                            </option>
-                            <option value="resolved">{_("Resolved")}</option>
-                        </select>
+                        <div>
+                            <select value={state} onChange={updateState}>
+                                <option value="awaiting_moderator_response">
+                                    {_("Awaiting moderator response")}
+                                </option>
+                                <option value="awaiting_player_response">
+                                    {_("Awaiting player response")}
+                                </option>
+                                <option value="resolved">{_("Resolved")}</option>
+                            </select>
+                            <input
+                                name="allow_further_appeals"
+                                id="allow_further_appeals"
+                                type="checkbox"
+                                checked={allow_further_appeals}
+                                onChange={updateAllowFurtherAppeals}
+                            />{" "}
+                            <label htmlFor="allow_further_appeals">Allow further appeals</label>
+                        </div>
                     ) : (
                         <h3>{getStateString(state)}</h3>
                     )}
@@ -163,6 +174,13 @@ export function Appeal(props: { player_id?: number }): JSX.Element {
             .catch(errorAlerter);
     }
 
+    function updateAllowFurtherAppeals(ev) {
+        setAllowFurtherAppeals(ev.target.checked);
+        patch(`appeal/${player_id}`, { allow_further_appeals: ev.target.checked })
+            .then(() => 0)
+            .catch(errorAlerter);
+    }
+
     function submit() {
         post("appeal/messages", {
             player_id,
@@ -191,6 +209,7 @@ export function Appeal(props: { player_id?: number }): JSX.Element {
                 setReasonForBan(response.reason_for_ban);
                 setBanExpiration(response.ban_expiration);
                 setStillBanned(response.still_banned);
+                setAllowFurtherAppeals(response.allow_further_appeals);
                 //setAppeal(response);
             })
             .catch(errorAlerter);

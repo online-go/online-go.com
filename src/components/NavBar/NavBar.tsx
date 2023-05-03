@@ -153,6 +153,8 @@ export function NavBar(): JSX.Element {
         !window.location.pathname.includes("/welcome") && // a challenge link page is being shown
         !window.location.hash.includes("/welcome"); // the signin with redirect to challenge accept
 
+    const show_appeal_box = !window.location.pathname.includes("/appeal");
+
     return (
         <header
             className={
@@ -163,7 +165,7 @@ export function NavBar(): JSX.Element {
         >
             <KBShortcut shortcut="`" action={() => search_input.current.focus()} />
 
-            {banned_user_id ? <BanIndicator /> : null}
+            {banned_user_id && show_appeal_box ? <BanIndicator /> : null}
 
             <span className="hamburger">
                 {hamburger_expanded ? (
