@@ -59,7 +59,7 @@ export function Appeal(props: { player_id?: number }): JSX.Element {
     const [allow_further_appeals, setAllowFurtherAppeals] = React.useState(true);
 
     const ban_reason: string = reason_for_ban || data.get("appeals.ban-reason");
-    React.useEffect(refresh, []);
+    React.useEffect(refresh, [props.player_id]);
 
     if (!user.is_moderator && !jwt_key) {
         window.location.pathname = "/sign-in";
