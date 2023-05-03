@@ -61,12 +61,12 @@ export const WARNING_TEMPLATES: MessageTemplates = {
         },
         "Score cheating": {
             message: `
-                Our records show that you attempted to illegally change the score at the end of 
-                game #XXXXXXXX. This is a form of cheating and is prohibited by the 
-                OGS [Terms of Service](https://online-go.com/docs/terms-of-service). 
-                
-                We ask that you end your games properly by accepting the correct score 
-                immediately after passing. Further instances of score cheating will result 
+                Our records show that you attempted to illegally change the score at the end of
+                game #XXXXXXXX. This is a form of cheating and is prohibited by the
+                OGS [Terms of Service](https://online-go.com/docs/terms-of-service).
+
+                We ask that you end your games properly by accepting the correct score
+                immediately after passing. Further instances of score cheating will result
                 in a ban.`,
             show_warning_button: true,
         },
@@ -257,12 +257,6 @@ export const WARNING_TEMPLATES: MessageTemplates = {
 
 export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
     "Good Report": {
-        "Contacted player": {
-            message: `
-                Thank you for your report, I have contacted the player about
-                it.`,
-            show_warning_button: false,
-        },
         "Asked opponent to be respectful of time": {
             message: `
                 Thanks for your report, I have asked your opponent to be more
@@ -283,9 +277,29 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
                 warning.`,
             show_warning_button: false,
         },
+        "Formal warning about chat abuse": {
+            message: `
+            Thanks for your report.
+
+            That person has been given a formal warning, and their chat privileges at OGS will be removed if that behaviour continues.`,
+            show_warning_button: false,
+        },
+        "Chat banned": {
+            message: `
+            Thanks for your report.
+
+            That person's chat privilege at OGS has been removed. Other users will no longer see their chat.`,
+            show_warning_button: false,
+        },
         "Reported player banned": {
             message: `
                 Thank you for your report, the player has been banned.`,
+            show_warning_button: false,
+        },
+        "Contacted player": {
+            message: `
+                Thank you for your report, I have contacted the player about
+                it.`,
             show_warning_button: false,
         },
     },
