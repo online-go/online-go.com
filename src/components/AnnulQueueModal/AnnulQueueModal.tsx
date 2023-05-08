@@ -17,7 +17,6 @@
 
 import * as React from "react";
 import { _ } from "translate";
-import { openModal } from "Modal";
 import { MiniGoban } from "MiniGoban";
 import { Goban } from "goban";
 import { AIReview, GameTimings, ChatMode, GameChat, GobanContext } from "Game";
@@ -30,6 +29,7 @@ interface AnnulQueueModalProps {
     annulQueue: any[];
     setSelectModeActive: React.Dispatch<boolean>;
     setAnnulQueue: React.Dispatch<any[]>;
+    onClose: () => void;
 }
 
 // Define the AnnulQueueModal component
@@ -37,6 +37,7 @@ export function AnnulQueueModal({
     annulQueue,
     setSelectModeActive,
     setAnnulQueue,
+    onClose,
 }: AnnulQueueModalProps) {
     // Declare state variables
     const [selectedGameIndex, setSelectedGameIndex] = React.useState(0);
@@ -55,9 +56,6 @@ export function AnnulQueueModal({
     // Get the current game from the queue
     const currentGame = queue[selectedGameIndex];
 
-    // Get the modal container element
-    const container = document.getElementsByClassName("Modal-container")[0];
-
     // Define the debounce duration
     const DEBOUNCE_DURATION = 300;
 
@@ -68,16 +66,14 @@ export function AnnulQueueModal({
 
     // Close the modal
     const closeModal = () => {
-        container.parentNode?.removeChild(container);
-    };
-
-    // Close the modal and reset state variables
-    const onClose = () => {
         setAnnulQueue([]);
         setSelectModeActive(false);
         setShowAnnulOverlay(false);
         setAnnulResponse(null);
-        closeModal();
+        onClose();
+
+        // Re-enable body scroll
+        document.body.style.overflow = "";
     };
 
     // Navigate to the previous game in the queue
@@ -126,7 +122,7 @@ export function AnnulQueueModal({
     // Close modal if no games left after dequeue
     React.useEffect(() => {
         if (queue.length === 0) {
-            onClose();
+            closeModal();
         }
     }, [queue]);
 
@@ -197,7 +193,7 @@ export function AnnulQueueModal({
                         }`,
                     );
                     setTimeout(() => {
-                        onClose();
+                        closeModal();
                     }, 2000);
                 } else {
                     setAnnulResponse(
@@ -349,7 +345,7 @@ export function AnnulQueueModal({
                             </div>
                         </div>
                         <div className="close">
-                            <button className="close-btn" onClick={() => onClose()}>
+                            <button className="close-btn" onClick={() => closeModal()}>
                                 {_("Close")}
                             </button>
                         </div>
@@ -361,14 +357,16 @@ export function AnnulQueueModal({
 }
 
 // Open the AnnulQueueModal
-export function openAnnulQueueModal(annulQueue, setSelectModeActive, setAnnulQueue) {
-    return openModal(
-        <AnnulQueueModal
-            setSelectModeActive={setSelectModeActive}
-            annulQueue={annulQueue}
-            setAnnulQueue={setAnnulQueue}
-        />,
-    );
+export function openAnnulQueueModal(
+    annulQueue,
+    setSelectModeActive,
+    setAnnulQueue,
+    setIsAnnulQueueModalOpen,
+) {
+    setIsAnnulQueueModalOpen(true);
+
+    // Disable body scroll
+    document.body.style.overflow = "hidden";
 }
 
 // Spinner component
