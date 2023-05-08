@@ -271,10 +271,14 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
                 trust the auto-score.`,
             show_warning_button: false,
         },
-        "Warning given": {
+        "First warning given": {
             message: `
-                Thank you for your report, the player has been given a
-                warning.`,
+                Thank you for your report, the player has been given a formal warning.`,
+            show_warning_button: false,
+        },
+        "Final warning given": {
+            message: `
+                Thank you for your report, the player has been given a formal warning, and their account will be banned if that continues.`,
             show_warning_button: false,
         },
         "Formal warning about chat abuse": {
@@ -288,7 +292,12 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
             message: `
             Thanks for your report.
 
-            That person's chat privilege at OGS has been removed. Other users will no longer see their chat.`,
+            That person's chat privilege at OGS has been removed. Other users will no longer see any chat that they type.`,
+            show_warning_button: false,
+        },
+        "Repeat offender banned": {
+            message: `
+                Thank you for your report, that repeat offender has been banned.`,
             show_warning_button: false,
         },
         "Reported player banned": {
@@ -298,12 +307,19 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
         },
         "Contacted player": {
             message: `
-                Thank you for your report, I have contacted the player about
-                it.`,
+                Thank you for your report, I have contacted the player about it.`,
             show_warning_button: false,
         },
     },
     "Bad Report": {
+        "Duplicate reports": {
+            message: `
+            Thanks for your report.
+
+            Please don't file multiple reports for the same thing - that creates a lot of work for us tidying up,
+            which could be time spent better on other reports.`,
+            show_warning_button: true,
+        },
         "No violation": {
             message: `
                 Thank you for your report. We looked into it and found no
