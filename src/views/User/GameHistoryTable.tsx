@@ -33,7 +33,7 @@ import { PlayerCacheEntry } from "src/lib/player_cache";
 import { TimeControl } from "src/components/TimeControl";
 import { Speed } from "src/lib/types";
 import { usePreference } from "preferences";
-import { openAnnulQueueModal } from "AnnulQueueModal";
+import { openAnnulQueueModal, AnnulQueueModal } from "AnnulQueueModal";
 import { useUser } from "hooks";
 
 interface GameHistoryProps {
@@ -77,6 +77,8 @@ export function GameHistoryTable(props: GameHistoryProps) {
     const [hide_flags] = usePreference("moderator.hide-flags");
     const [selectModeActive, setSelectModeActive] = React.useState<boolean>(false);
     const [annulQueue, setAnnulQueue] = React.useState<any[]>([]);
+    const [isAnnulQueueModalOpen, setIsAnnulQueueModalOpen] = React.useState(false);
+
     const user = useUser();
 
     function getBoardSize(size_filter: string): number {
@@ -112,6 +114,10 @@ export function GameHistoryTable(props: GameHistoryProps) {
         if (selectModeActive) {
             event.preventDefault();
         }
+    }
+
+    function handleCloseAnnulQueueModal() {
+        setIsAnnulQueueModalOpen(false);
     }
 
     function toggleBoardSizeFilter(size_filter: string) {
@@ -191,6 +197,14 @@ export function GameHistoryTable(props: GameHistoryProps) {
             <h2>{_("Game History")}</h2>
             <Card>
                 <div>
+                    {isAnnulQueueModalOpen && (
+                        <AnnulQueueModal
+                            setSelectModeActive={setSelectModeActive}
+                            annulQueue={annulQueue}
+                            setAnnulQueue={setAnnulQueue}
+                            onClose={handleCloseAnnulQueueModal}
+                        />
+                    )}
                     {/* loading-container="game_history.settings().$loading" */}
                     <div className="game-options">
                         <div className="search">
@@ -213,6 +227,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                                     annulQueue,
                                                     setSelectModeActive,
                                                     setAnnulQueue,
+                                                    setIsAnnulQueueModalOpen,
                                                 )
                                             }
                                         >
