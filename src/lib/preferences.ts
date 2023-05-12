@@ -17,7 +17,7 @@
 
 import * as data from "data";
 import { GobanSelectedThemes, GoThemes, LabelPosition } from "goban";
-import React from "react";
+import * as React from "react";
 import { current_language } from "translate";
 import { DataSchema } from "./data_schema";
 

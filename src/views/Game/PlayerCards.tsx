@@ -203,7 +203,7 @@ interface PlayerCardProps {
     flags: null | rest_api.GamePlayerFlags;
 }
 
-function PlayerCard({
+export function PlayerCard({
     color,
     goban,
     historical,
@@ -350,6 +350,7 @@ function PlayerCard({
                     zen_mode={zen_mode}
                     hidden={show_points && !estimating_score}
                 />
+                {!show_points && <div className="komi">{komiString(score.komi)}</div>}
                 <div id={`${color}-score-details`} className="score-details">
                     <ScorePopup goban={goban} color={color} show={show_score_breakdown} />
                 </div>
@@ -403,6 +404,14 @@ function PlayerFlag({ player_id }: { player_id: number }): JSX.Element {
         return <Flag country={country} big />;
     }
     return null;
+}
+
+function komiString(komi: number) {
+    if (!komi) {
+        return "";
+    }
+    const abs_komi = Math.abs(komi).toFixed(1);
+    return komi > 0 ? `+ ${abs_komi}` : `- ${abs_komi}`;
 }
 
 function useAutoResignExpiration(goban: GobanCore, color: "black" | "white") {
