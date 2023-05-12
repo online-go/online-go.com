@@ -203,7 +203,7 @@ interface PlayerCardProps {
     flags: null | rest_api.GamePlayerFlags;
 }
 
-function PlayerCard({
+export function PlayerCard({
     color,
     goban,
     historical,
