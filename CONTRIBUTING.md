@@ -62,14 +62,14 @@ This project is largely built with TypeScript and React. If you are unfamiliar w
 -   [React](https://reactjs.org/)
 -   [TypeScript](https://www.typescriptlang.org/)
 
-## Detailed Setup Steps
+## Detailed Setup Steps (Windows, but applicable mostly to others)
 
 0. Create a fork of [online-go.com](http://online-go.com/)
  - Have an account at [github.com](http://github.com/), login there
  - Go to [GitHub - online-go/online-go.com: Source code for the Online-Go.com web interface](https://github.com/online-go/online-go.com)
  - Press the “fork” button
 
-1. Install VSCode (you already did that)
+1. Install VSCode 
 
 2. Install git from the windows installer: [Git - Downloading Package (git-scm.com)](https://git-scm.com/download/win)
    ** Choose all defaults _except_ "**Configuring Line Ending Conversions**".
