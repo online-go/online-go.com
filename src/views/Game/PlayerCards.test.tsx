@@ -44,7 +44,7 @@ const BASE_PROPS = {
     onScoreClick: jest.fn(),
 };
 
-test("make sure komi is displayed", () => {
+test("make sure komi is displayed for white", () => {
     data.set("user", TEST_USER);
     data.set("preferences.moderator.hide-flags", false);
     data.set("preferences.moderator.hide-player-card-mod-controls", false);
@@ -63,4 +63,27 @@ test("make sure komi is displayed", () => {
     const divElement = container.querySelector(".komi");
 
     expect(divElement).toHaveTextContent("5.0");
+});
+
+test("make sure komi is not displayed for black", () => {
+    data.set("user", TEST_USER);
+    data.set("preferences.moderator.hide-flags", false);
+    data.set("preferences.moderator.hide-player-card-mod-controls", false);
+
+    const goban = new Goban({ game_id: 123456, komi: 5 });
+
+    const props = { goban: goban, ...BASE_PROPS, color: "black" as const };
+
+    const { container } = render(
+        <Router>
+            <GobanContext.Provider value={goban}>
+                <PlayerCard {...props} />
+            </GobanContext.Provider>
+        </Router>,
+    );
+    const divElement = container.querySelector(".komi");
+
+    if (divElement) {
+        expect(divElement).toBeEmptyDOMElement();
+    }
 });
