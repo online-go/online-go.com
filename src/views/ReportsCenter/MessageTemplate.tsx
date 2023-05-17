@@ -216,6 +216,17 @@ export const WARNING_TEMPLATES: MessageTemplates = {
                 to starting a new game. Your understanding and cooperation are appreciated.`,
             show_warning_button: true,
         },
+        "Semi-frequent cancellation": {
+            message: `
+            Hi - this is a note to ask you to take care with the games that you accept, so that you're not
+            needing to cancel quite so often.
+
+            The cancel option is there for sparing use, but when you do that it frustrates your opponent,
+            so please avoid it if you can.
+
+            Thanks!`,
+            show_warning_button: true,
+        },
     },
 
     "Timer Abuse": {
@@ -335,6 +346,13 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
                 guidelines. But we’ll still keep an eye on the situation and take
                 appropriate action if necessary. Thank you for helping keep OGS
                 enjoyable for everyone. We appreciate it.`,
+            show_warning_button: false,
+        },
+        "Not escaping - using Cancel": {
+            message: `
+                Thanks for your report. Player are allowed to use the Cancel button to cancel a game that they have realised
+                will not suit them, as long as they do not do that too often. I have reminded your opponent to use that sparingly.
+                Thanks again.`,
             show_warning_button: false,
         },
     },
