@@ -323,21 +323,10 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
         },
     },
     "Bad Report": {
-        "Duplicate reports": {
+        "No AI use": {
             message: `
-            Thanks for your report.
-
-            Please don't file multiple reports for the same thing - that creates a lot of work for us tidying up,
-            which could be time spent better on other reports.`,
-            show_warning_button: true,
-        },
-        "No violation": {
-            message: `
-                Thank you for your report. We looked into it and found no
-                behavior that violates our terms of service or community
-                guidelines. But we’ll still keep an eye on the situation and take
-                appropriate action if necessary. Thank you for helping keep OGS
-                enjoyable for everyone. We appreciate it.`,
+                Thank you for your report. Our detection tools did not flag any AI use in that game.
+                If you think there’s something we’ve overlooked please file a new report with more details.`,
             show_warning_button: false,
         },
         "No sandbagging": {
@@ -350,15 +339,32 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
                 appreciate it.`,
             show_warning_button: false,
         },
+        "No violation": {
+            message: `
+                Thank you for your report. We looked into it and found no
+                behavior that violates our terms of service or community
+                guidelines. But we’ll still keep an eye on the situation and take
+                appropriate action if necessary. Thank you for helping keep OGS
+                enjoyable for everyone. We appreciate it.`,
+            show_warning_button: false,
+        },
         "Not escaping - using Cancel": {
             message: `
-            Thanks for your report. Player are allowed to use the Cancel button to cancel a game that they have realised
-            will not suit them, as long as they do not do that too often. I have reminded your opponent to use that sparingly.
-            Thanks again.`,
+                Thanks for your report. Player are allowed to use the Cancel button to cancel a game that they have realised
+                will not suit them, as long as they do not do that too often. I have reminded your opponent to use that sparingly.
+                Thanks again.`,
             show_warning_button: false,
         },
     },
     Chastise: {
+        "Duplicate reports": {
+            message: `
+                Thanks for your report.
+
+                Please don't file multiple reports for the same thing - that creates a lot of work for us tidying up,
+                which could be time spent better on other reports.`,
+            show_warning_button: true,
+        },
         "Verbal abuse": {
             message: `
                 Thanks for bringing the misbehavior to our attention. We also
