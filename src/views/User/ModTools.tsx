@@ -154,6 +154,11 @@ export function ModTools(props: ModToolsProps): JSX.Element {
                                 className: "inet",
                                 render: (X) => <IPDetails ip={X.last_ip} details={X.ip_details} />,
                             },
+                            {
+                                header: "BID Alias",
+                                className: "bid_match",
+                                render: (X) => X.bid_match && <i className="fa fa-check" />,
+                            },
                         ]}
                     />
                 </div>
