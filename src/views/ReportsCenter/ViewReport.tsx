@@ -433,59 +433,62 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
             </div>
 
             <div className="actions">
-                {reportState !== "resolved" && claimed_by_me && (
-                    <button
-                        className="success"
-                        onClick={() => {
-                            void report_manager.good_report(report.id);
-                            next();
-                        }}
-                    >
-                        Close as good report
-                    </button>
-                )}
+                <div className="actions-left">
+                    {!claimed_by_me && !report.moderator && (
+                        <button
+                            className="primary"
+                            onClick={() => void report_manager.claim(report.id)}
+                        >
+                            Claim
+                        </button>
+                    )}
+                </div>
+                <div className="actions-right">
+                    {reportState !== "resolved" && claimed_by_me && (
+                        <button
+                            className="success"
+                            onClick={() => {
+                                void report_manager.good_report(report.id);
+                                next();
+                            }}
+                        >
+                            Close as good report
+                        </button>
+                    )}
 
-                {reportState !== "resolved" && claimed_by_me && (
-                    <button
-                        className="reject"
-                        onClick={() => {
-                            void report_manager.bad_report(report.id);
-                            next();
-                        }}
-                    >
-                        Close as bad report
-                    </button>
-                )}
+                    {reportState !== "resolved" && claimed_by_me && (
+                        <button
+                            className="reject"
+                            onClick={() => {
+                                void report_manager.bad_report(report.id);
+                                next();
+                            }}
+                        >
+                            Close as bad report
+                        </button>
+                    )}
 
-                {reportState === "resolved" && (
-                    <button
-                        className="default"
-                        onClick={() => void report_manager.reopen(report.id)}
-                    >
-                        Re-open
-                    </button>
-                )}
+                    {reportState === "resolved" && (
+                        <button
+                            className="default"
+                            onClick={() => void report_manager.reopen(report.id)}
+                        >
+                            Re-open
+                        </button>
+                    )}
 
-                {!claimed_by_me && !report.moderator && (
-                    <button
-                        className="primary"
-                        onClick={() => void report_manager.claim(report.id)}
-                    >
-                        Claim
-                    </button>
-                )}
-
-                {!claimed_by_me && (
-                    <button
-                        className="default"
-                        onClick={() => {
-                            void report_manager.ignore(report.id);
-                            next();
-                        }}
-                    >
-                        Ignore
-                    </button>
-                )}
+                    {!claimed_by_me && (
+                        <button
+                            className="default"
+                            onClick={() => {
+                                void report_manager.ignore(report.id);
+                                next();
+                            }}
+                        >
+                            Ignore
+                        </button>
+                    )}
+                </div>
             </div>
 
             <hr />

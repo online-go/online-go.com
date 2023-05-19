@@ -41,13 +41,26 @@ reports_center_content_width=56rem
     }
 
     .actions {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-around;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         margin-top: 0.5rem;
         margin-bottom: 0.5rem;
-        .Button {
-            margin-left: 0.5rem;
+
+        .actions-left {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            .Button {
+                margin-left: 0.5rem;
+            }
+        }
+        .actions-right {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            .Button {
+                margin-left: 0.5rem;
+            }
         }
     }
 
