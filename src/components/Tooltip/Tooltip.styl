@@ -18,41 +18,35 @@
 
 .TooltipContainer {
     position: relative;
-    font-family: inherit;
 
     .Tooltip {
         display: none;
-        font-family: inherit;
-        background-color: #000000;
+        themed background-color toast-bg;
         width: 200px;
-        border-radius: 5px;
+        border-radius: 2px;
         position: absolute; 
         left: -220px;
         top: 50%;  
         transform: translateY(-50%);
         box-sizing: border-box;
         padding: 0.5em;
-        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-        border: 1px solid #333333;
+        box-shadow: 0px 0px 2px 1px rgba(0, 0, 0, 0.4);
 
         &.disabled {
             opacity: 0;
         }
 
             .title {
-                font-family: inherit;
                 font-weight: bolder;
                 margin: 0;
-                color: #FFF;
-                font-size: 0.8em;
+                themed color toast-fg;
+                font-size: 0.9em;
             } 
             
             .text {
-                font-family: inherit;
-                font-weight: lighter;
                 margin: 0;
-                font-size: 0.8em;
-                color: #888888;
+                font-size: 0.9em;
+                themed color toast-fg;
             } 
     }
 }
@@ -66,14 +60,15 @@
 .Tooltip::before {
     content: '';
     position: absolute;
-    width: 15px;
-    height: 15px;
-    border-radius: 3px;
-    background-color: #000000;
-    left: 190px;
+    left: 100%;
     top: 50%;
-    transform: translateY(-50%) rotate(45deg);
-    z-index: -1;
+    transform: translateX(-50%) translateY(-50%) rotate(45deg);
+    margin-left: -2px;
+    border-color: transparent;
+    themed border-top-color toast-bg;
+    themed border-right-color toast-bg;
+    border-width: 7px;
+    border-style: solid;
 }
 
 @media only screen and (max-width: 600px) {
