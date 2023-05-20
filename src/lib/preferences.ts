@@ -36,7 +36,7 @@ export const defaults = {
     "chat.user-sort-order": "rank",
     "desktop-notifications": true,
     "desktop-notifications-require-interaction": false,
-    "dock-delay": 3.0, // seconds.
+    "dock-delay": 0, // seconds.
     "double-click-submit-correspondence": false,
     "double-click-submit-live": false,
     "variation-stone-transparency": 0.6,
