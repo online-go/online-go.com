@@ -22,6 +22,7 @@ import { getPrivateChat } from "PrivateChat";
 import { alert } from "swal_config";
 import { post, put } from "requests";
 import { errorAlerter } from "misc";
+import { toast } from "toast";
 
 interface TemplateEntry {
     message: string;
@@ -444,7 +445,7 @@ export function MessageTemplate({
     const sendWarning = () => {
         post("moderation/warn", { user_id: player.id, text })
             .then(() => {
-                void alert.fire("Warning sent");
+                toast(<div>Warning sent</div>, 2000);
             })
             .catch(errorAlerter);
         clear();
