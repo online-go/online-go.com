@@ -359,10 +359,15 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
     Chastise: {
         "Duplicate reports": {
             message: `
-                Thanks for your report.
+            Thanks for your report.
 
-                Please don't file multiple reports for the same thing - that creates a lot of work for us tidying up,
-                which could be time spent better on other reports.`,
+            Please don't file multiple reports for the same thing - that creates a lot of work for us tidying up,
+            which could be time spent better on other reports.
+
+            We appreciate hearing about problems, but one report is enough for each incident -
+            more than that will slow us down.
+
+            Thanks!`,
             show_warning_button: true,
         },
         "Verbal abuse": {
