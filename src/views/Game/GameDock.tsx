@@ -475,9 +475,9 @@ export function GameDock({
                 </a>
             </Tooltip>
             {sgf_download_enabled ? (
-                <Tooltip tooltipRequired={tooltipRequired} title={_("Download SGF")}>
+                <Tooltip tooltipRequired={tooltipRequired} title={_("SGF Download")}>
                     <a href={sgf_url} target="_blank">
-                        <i className="fa fa-download"></i> {_("SGF Download")}
+                        <i className="fa fa-download"></i> {_("Download SGF")}
                     </a>
                 </Tooltip>
             ) : (
