@@ -495,14 +495,14 @@ export function GameDock({
                 </a>
             )}
             {sgf_download_enabled && sgf_with_ai_review_url && (
-                <Tooltip tooltipRequired={tooltipRequired} title={_("SGF with AI Review")}>
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Download SGF with AI Review")}>
                     <a href={sgf_with_ai_review_url} target="_blank">
                         <i className="fa fa-download"></i> {_("SGF with AI Review")}
                     </a>
                 </Tooltip>
             )}
             {sgf_download_enabled && sgf_with_comments_url && (
-                <Tooltip tooltipRequired={tooltipRequired} title={_("SGF with comments")}>
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Download SGF with comments")}>
                     <a href={sgf_with_comments_url} target="_blank">
                         <i className="fa fa-download"></i> {_("SGF with comments")}
                     </a>
