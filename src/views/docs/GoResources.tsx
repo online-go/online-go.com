@@ -311,11 +311,6 @@ export const GoResources = () => {
                                     Go Magic
                                 </a>
                             </span>,
-                            <BasicResource
-                                countries={["jp"]}
-                                title="Hoenkikaku Co, Ltd."
-                                href="https://www.hoenkikaku.co.jp/"
-                            />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
                         ))}
@@ -679,6 +674,16 @@ export const GoResources = () => {
                     <dl>
                         <dt>{_("Sites")}</dt>
                         {scramble(
+                            <BasicResource
+                                countries={[eu]}
+                                title="EGF Academy"
+                                href="https://academy.eurogofed.org/"
+                            />,
+                            <BasicResource
+                                countries={["jp"]}
+                                title="Hoenkikaku Co, Ltd."
+                                href="https://www.hoenkikaku.co.jp/"
+                            />,
                             <BasicResource
                                 countries={[en]}
                                 title="Open Study Room"
@@ -1057,6 +1062,11 @@ export const GoResources = () => {
                     <dl>
                         <dt>{_("Organizations")}</dt>
                         {scramble(
+                            <BasicResource
+                                countries={["_cat"]}
+                                title="Asociatia Dorna GO"
+                                href="https://asociatiadornago.com/"
+                            />,
                             <BasicResource
                                 countries={[us]}
                                 title="American Go Association"
