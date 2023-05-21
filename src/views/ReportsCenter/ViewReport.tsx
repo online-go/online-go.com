@@ -173,6 +173,13 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
         [report],
     );
 
+    const claimReport = () => {
+        if (report.moderator?.id !== user.id) {
+            setReportState("claimed");
+            void report_manager.claim(report.id);
+        }
+    };
+
     if (!report || report_id === 0) {
         return (
             <div id="ViewReport">
@@ -334,14 +341,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                             )}
                         </>
                     ) : (
-                        <button
-                            className="primary xs"
-                            onClick={() => {
-                                report.moderator = user;
-                                setReportState("claimed");
-                                void report_manager.claim(report.id);
-                            }}
-                        >
+                        <button className="primary xs" onClick={claimReport}>
                             {_("Claim")}
                         </button>
                     )}
@@ -435,10 +435,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
             <div className="actions">
                 <div className="actions-left">
                     {!claimed_by_me && !report.moderator && (
-                        <button
-                            className="primary"
-                            onClick={() => void report_manager.claim(report.id)}
-                        >
+                        <button className="primary" onClick={claimReport}>
                             Claim
                         </button>
                     )}
@@ -506,6 +503,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     game_id={report.reported_game}
                     gpt={report.automod_to_reported}
                     logByDefault={true}
+                    onSelect={claimReport}
                 />
 
                 <MessageTemplate
@@ -515,6 +513,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     game_id={report.reported_game}
                     gpt={report.automod_to_reporter}
                     logByDefault={false}
+                    onSelect={claimReport}
                 />
             </div>
 
