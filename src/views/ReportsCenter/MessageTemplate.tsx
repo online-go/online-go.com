@@ -391,6 +391,7 @@ export function MessageTemplate({
     game_id,
     gpt,
     logByDefault,
+    onSelect,
 }: {
     title: string;
     player: PlayerCacheEntry;
@@ -398,6 +399,7 @@ export function MessageTemplate({
     game_id: number | undefined;
     gpt: string | null;
     logByDefault: boolean;
+    onSelect?: () => void | null;
 }): JSX.Element {
     const [uid] = React.useState(Math.random());
     const [selectedTemplate, setSelectedTemplate] = React.useState<string>(gpt ? "gpt" : "");
@@ -474,16 +476,20 @@ export function MessageTemplate({
         clear();
     };
 
+    const selectTemplate = (e: any) => {
+        setSelectedTemplate(e);
+        if (onSelect) {
+            onSelect();
+        }
+    };
+
     return (
         <div className="MessageTemplate">
             <h3>
                 {title}: <Player user={player} />
             </h3>
             <div className="top">
-                <select
-                    value={selectedTemplate}
-                    onChange={(e) => setSelectedTemplate(e.target.value)}
-                >
+                <select value={selectedTemplate} onChange={(e) => selectTemplate(e.target.value)}>
                     <option value="">-- Select template --</option>
                     <option value="gpt">ChatGPT Automod</option>
                     {Object.keys(templates).map((category) => (
