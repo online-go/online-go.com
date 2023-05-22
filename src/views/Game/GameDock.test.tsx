@@ -63,11 +63,13 @@ test("providing both Game ID and Review ID cause SGF buttons to link to review S
             </GobanContext.Provider>
         </Router>,
     );
-    const sgf_button = screen.getByText("Download SGF");
+    const sgf_buttons = screen.getAllByText("Download SGF");
+    const sgf_button = sgf_buttons[1];
     expect(sgf_button).toBeDefined();
     expect(sgf_button.getAttribute("href")).toBe("/api/v1/reviews/123/sgf?without-comments=1");
 
-    const sgf_button_with_comments = screen.getByText("SGF with comments");
+    const sgf_buttons_with_comments = screen.getAllByText("SGF with comments");
+    const sgf_button_with_comments = sgf_buttons_with_comments[1];
     expect(sgf_button_with_comments).toBeDefined();
     expect(sgf_button_with_comments.getAttribute("href")).toBe("/api/v1/reviews/123/sgf");
 });

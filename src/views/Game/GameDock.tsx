@@ -18,6 +18,7 @@
 import * as React from "react";
 import * as data from "data";
 import * as preferences from "preferences";
+import { MAX_DOCK_DELAY } from "SettingsCommon";
 import { useUser } from "hooks";
 import { api1, post, del } from "requests";
 import { Dock } from "Dock";
@@ -36,6 +37,7 @@ import { game_control } from "./game_control";
 import { openGameInfoModal } from "./GameInfoModal";
 import { useUserIsParticipant } from "./GameHooks";
 import { useGoban } from "./goban_context";
+import { Tooltip } from "../../components/Tooltip";
 
 interface DockProps {
     annulled: boolean;
@@ -83,6 +85,8 @@ export function GameDock({
     const phase = engine.phase;
 
     const user = useUser();
+
+    const tooltipRequired = preferences.get("dock-delay") === MAX_DOCK_DELAY;
 
     let superuser_ai_review_ready = user?.is_superuser && phase === "finished";
     let user_can_intervene = user?.is_moderator && phase !== "finished";
@@ -325,123 +329,163 @@ export function GameDock({
                     {pgettext("Control who can access the game or review", "Access settings")}
                 </a>
             )}
-
-            <a>
-                <i
-                    className={
-                        "fa volume-icon " +
-                        (volume === 0
-                            ? "fa-volume-off"
-                            : volume > 0.5
-                            ? "fa-volume-up"
-                            : "fa-volume-down")
-                    }
-                    onClick={toggleVolume}
-                />{" "}
-                <input
-                    type="range"
-                    className="volume-slider"
-                    onChange={setVolume}
-                    value={volume}
-                    min={0}
-                    max={1.0}
-                    step={0.01}
-                />
-            </a>
-
-            <a onClick={onZenClicked}>
-                <i className="ogs-zen-mode"></i> {_("Zen mode")}
-            </a>
-            <a onClick={onCoordinatesClicked}>
-                <i className="ogs-coordinates"></i> {_("Toggle coordinates")}
-            </a>
-            {game && (
-                <a onClick={onAIReviewClicked}>
-                    <i className="fa fa-desktop"></i>{" "}
-                    {ai_review_enabled ? _("Disable AI review") : _("Enable AI review")}
+            <Tooltip tooltipRequired={tooltipRequired} title={_("Toggle volume")}>
+                <a>
+                    <i
+                        className={
+                            "fa volume-icon " +
+                            (volume === 0
+                                ? "fa-volume-off"
+                                : volume > 0.5
+                                ? "fa-volume-up"
+                                : "fa-volume-down")
+                        }
+                        onClick={toggleVolume}
+                    />{" "}
+                    <input
+                        type="range"
+                        className="volume-slider"
+                        onChange={setVolume}
+                        value={volume}
+                        min={0}
+                        max={1.0}
+                        step={0.01}
+                    />
                 </a>
-            )}
-            <a onClick={showGameInfo}>
-                <i className="fa fa-info"></i> {_("Game information")}
-            </a>
+            </Tooltip>
+            <Tooltip tooltipRequired={tooltipRequired} title={_("Zen mode")}>
+                <a onClick={onZenClicked}>
+                    <i className="ogs-zen-mode"></i> {_("Zen mode")}
+                </a>
+            </Tooltip>
+
+            <Tooltip tooltipRequired={tooltipRequired} title={_("Toggle coordinates")}>
+                <a onClick={onCoordinatesClicked}>
+                    <i className="ogs-coordinates"></i> {_("Toggle coordinates")}
+                </a>
+            </Tooltip>
+
             {game && (
-                <a
-                    onClick={onAnalyzeClicked}
-                    className={phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""}
+                <Tooltip
+                    tooltipRequired={tooltipRequired}
+                    title={ai_review_enabled ? _("Disable AI review") : _("Enable AI review")}
                 >
-                    <i className="fa fa-sitemap"></i> {_("Analyze game")}
+                    <a onClick={onAIReviewClicked}>
+                        <i className="fa fa-desktop"></i>{" "}
+                        {ai_review_enabled ? _("Disable AI review") : _("Enable AI review")}
+                    </a>
+                </Tooltip>
+            )}
+            <Tooltip tooltipRequired={tooltipRequired} title={_("Game information")}>
+                <a onClick={showGameInfo}>
+                    <i className="fa fa-info"></i> {_("Game information")}
                 </a>
+            </Tooltip>
+            {game && (
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Analyze game")}>
+                    <a
+                        onClick={onAnalyzeClicked}
+                        className={
+                            phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""
+                        }
+                    >
+                        <i className="fa fa-sitemap"></i> {_("Analyze game")}
+                    </a>
+                </Tooltip>
             )}
             {((!review_id && user_is_player && phase !== "finished" && !engine.rengo) || null) && (
-                <a
-                    style={{
-                        visibility:
-                            goban.mode === "play" && currentPlayer !== user?.id
-                                ? "visible"
-                                : "hidden",
-                    }}
-                    className={phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""}
-                    onClick={onConditionalMovesClicked}
-                >
-                    <i className="fa fa-exchange"></i> {_("Plan conditional moves")}
-                </a>
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Plan conditional moves")}>
+                    <a
+                        style={{
+                            visibility:
+                                goban.mode === "play" && currentPlayer !== user?.id
+                                    ? "visible"
+                                    : "hidden",
+                        }}
+                        className={
+                            phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""
+                        }
+                        onClick={onConditionalMovesClicked}
+                    >
+                        <i className="fa fa-exchange"></i> {_("Plan conditional moves")}
+                    </a>
+                </Tooltip>
             )}
             {((!review_id && (user_is_player || user_can_intervene) && phase !== "finished") ||
                 null) && (
-                <a onClick={onPauseClicked}>
-                    <i className="fa fa-pause"></i> {_("Pause game")}
-                </a>
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Pause game")}>
+                    <a onClick={onPauseClicked}>
+                        <i className="fa fa-pause"></i> {_("Pause game")}
+                    </a>
+                </Tooltip>
             )}
             {game && (
-                <a
-                    onClick={(ev) => {
-                        if (ev.currentTarget.className.indexOf("disabled") === -1) {
-                            return onReviewClicked();
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Review this game")}>
+                    <a
+                        onClick={(ev) => {
+                            if (ev.currentTarget.className.indexOf("disabled") === -1) {
+                                return onReviewClicked();
+                            }
+                        }}
+                        className={
+                            (phase !== "finished" && goban.isAnalysisDisabled()) || user.anonymous
+                                ? "disabled"
+                                : ""
                         }
-                    }}
+                    >
+                        <i className="fa fa-refresh"></i> {_("Review this game")}
+                    </a>
+                </Tooltip>
+            )}
+            <Tooltip tooltipRequired={tooltipRequired} title={_("Estimate score")}>
+                <a
+                    onClick={onEstimateClicked}
+                    className={phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""}
+                >
+                    <i className="fa fa-tachometer"></i> {_("Estimate score")}
+                </a>
+            </Tooltip>
+            <Tooltip tooltipRequired={tooltipRequired} title={_("Fork game")}>
+                <a
+                    onClick={fork}
                     className={
-                        (phase !== "finished" && goban.isAnalysisDisabled()) || user.anonymous
+                        user.anonymous ||
+                        engine.rengo ||
+                        (goban.isAnalysisDisabled() && phase !== "finished")
                             ? "disabled"
                             : ""
                     }
                 >
-                    <i className="fa fa-refresh"></i> {_("Review this game")}
+                    <i className="fa fa-code-fork"></i> {_("Fork game")}
                 </a>
-            )}
-            <a
-                onClick={onEstimateClicked}
-                className={phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""}
-            >
-                <i className="fa fa-tachometer"></i> {_("Estimate score")}
-            </a>
-            <a
-                onClick={fork}
-                className={
-                    user.anonymous ||
-                    engine.rengo ||
-                    (goban.isAnalysisDisabled() && phase !== "finished")
-                        ? "disabled"
-                        : ""
-                }
-            >
-                <i className="fa fa-code-fork"></i> {_("Fork game")}
-            </a>
-            <a onClick={alertModerator} className={user.anonymous ? "disabled" : ""}>
-                <i className="fa fa-exclamation-triangle"></i> {_("Call moderator")}
-            </a>
+            </Tooltip>
+            <Tooltip tooltipRequired={tooltipRequired} title={_("Call moderator")}>
+                <a onClick={alertModerator} className={user.anonymous ? "disabled" : ""}>
+                    <i className="fa fa-exclamation-triangle"></i> {_("Call moderator")}
+                </a>
+            </Tooltip>
             {((review && game_id) || null) && (
-                <Link to={`/game/${game_id}`}>
-                    <i className="ogs-goban" /> {_("Original game")}
-                </Link>
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Original game")}>
+                    <Link to={`/game/${game_id}`}>
+                        <i className="ogs-goban" /> {_("Original game")}
+                    </Link>
+                </Tooltip>
             )}
-            <a onClick={showLinkModal}>
-                <i className="fa fa-share-alt"></i>{" "}
-                {review ? _("Link to review") : _("Link to game")}
-            </a>
-            {sgf_download_enabled ? (
-                <a href={sgf_url} target="_blank">
-                    <i className="fa fa-download"></i> {_("Download SGF")}
+            <Tooltip
+                tooltipRequired={tooltipRequired}
+                title={review ? _("Link to review") : _("Link to game")}
+            >
+                <a onClick={showLinkModal}>
+                    <i className="fa fa-share-alt"></i>{" "}
+                    {review ? _("Link to review") : _("Link to game")}
                 </a>
+            </Tooltip>
+            {sgf_download_enabled ? (
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Download SGF")}>
+                    <a href={sgf_url} target="_blank">
+                        <i className="fa fa-download"></i> {_("Download SGF")}
+                    </a>
+                </Tooltip>
             ) : (
                 <a
                     className="disabled"
@@ -457,46 +501,62 @@ export function GameDock({
                 </a>
             )}
             {sgf_download_enabled && sgf_with_ai_review_url && (
-                <a href={sgf_with_ai_review_url} target="_blank">
-                    <i className="fa fa-download"></i> {_("SGF with AI Review")}
-                </a>
+                <Tooltip tooltipRequired={tooltipRequired} title={_("SGF with AI Review")}>
+                    <a href={sgf_with_ai_review_url} target="_blank">
+                        <i className="fa fa-download"></i> {_("SGF with AI Review")}
+                    </a>
+                </Tooltip>
             )}
             {sgf_download_enabled && sgf_with_comments_url && (
-                <a href={sgf_with_comments_url} target="_blank">
-                    <i className="fa fa-download"></i> {_("SGF with comments")}
-                </a>
+                <Tooltip tooltipRequired={tooltipRequired} title={_("SGF with comments")}>
+                    <a href={sgf_with_comments_url} target="_blank">
+                        <i className="fa fa-download"></i> {_("SGF with comments")}
+                    </a>
+                </Tooltip>
             )}
             {(user_can_intervene || user_can_annul) && <hr />}
             {user_can_intervene && (
-                <a onClick={decide_black}>
-                    <i className="fa fa-gavel"></i> {_("Black Wins")}
-                </a>
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Black Wins")}>
+                    <a onClick={decide_black}>
+                        <i className="fa fa-gavel"></i> {_("Black Wins")}
+                    </a>
+                </Tooltip>
             )}
             {user_can_intervene && (
-                <a onClick={decide_white}>
-                    <i className="fa fa-gavel"></i> {_("White Wins")}
-                </a>
+                <Tooltip tooltipRequired={tooltipRequired} title={_("White Wins")}>
+                    <a onClick={decide_white}>
+                        <i className="fa fa-gavel"></i> {_("White Wins")}
+                    </a>
+                </Tooltip>
             )}
             {user_can_intervene && (
-                <a onClick={decide_tie}>
-                    <i className="fa fa-gavel"></i> {_("Tie")}
-                </a>
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Tie")}>
+                    <a onClick={decide_tie}>
+                        <i className="fa fa-gavel"></i> {_("Tie")}
+                    </a>
+                </Tooltip>
             )}
             {user_can_intervene && (
-                <a onClick={force_autoscore}>
-                    <i className="fa fa-gavel"></i> {_("Auto-score")}
-                </a>
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Auto-score")}>
+                    <a onClick={force_autoscore}>
+                        <i className="fa fa-gavel"></i> {_("Auto-score")}
+                    </a>
+                </Tooltip>
             )}
 
             {user_can_annul && annulable && (
-                <a onClick={() => do_annul(true)}>
-                    <i className="fa fa-gavel"></i> {_("Annul")}
-                </a>
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Annul")}>
+                    <a onClick={() => do_annul(true)}>
+                        <i className="fa fa-gavel"></i> {_("Annul")}
+                    </a>
+                </Tooltip>
             )}
             {user_can_annul && unannulable && (
-                <a onClick={() => do_annul(false)}>
-                    <i className="fa fa-gavel unannulable"></i> {"Remove annulment"}
-                </a>
+                <Tooltip tooltipRequired={tooltipRequired} title={"Remove annulment"}>
+                    <a onClick={() => do_annul(false)}>
+                        <i className="fa fa-gavel unannulable"></i> {"Remove annulment"}
+                    </a>
+                </Tooltip>
             )}
             {
                 user_can_annul &&
@@ -510,36 +570,48 @@ export function GameDock({
 
             {(user_can_intervene || user_can_annul) && <hr />}
             {(user_can_intervene || user_can_annul) && (
-                <a onClick={onTimingClicked}>
-                    <i className="fa fa-clock-o"></i> {_("Timing")}
-                </a>
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Timing")}>
+                    <a onClick={onTimingClicked}>
+                        <i className="fa fa-clock-o"></i> {_("Timing")}
+                    </a>
+                </Tooltip>
             )}
             {(user_can_intervene || user_can_annul) && (
-                <a onClick={showLogModal}>
-                    <i className="fa fa-list-alt"></i> {"Log"}
-                </a>
+                <Tooltip tooltipRequired={tooltipRequired} title={"Log"}>
+                    <a onClick={showLogModal}>
+                        <i className="fa fa-list-alt"></i> {"Log"}
+                    </a>
+                </Tooltip>
             )}
             {(user_can_intervene || user_can_annul) && (
-                <a onClick={toggleAnonymousModerator}>
-                    <i className="fa fa-user-secret"></i> {"Cloak of Invisibility"}
-                </a>
+                <Tooltip tooltipRequired={tooltipRequired} title={"Cloak of Invisibility"}>
+                    <a onClick={toggleAnonymousModerator}>
+                        <i className="fa fa-user-secret"></i> {"Cloak of Invisibility"}
+                    </a>
+                </Tooltip>
             )}
 
             {superuser_ai_review_ready && <hr />}
             {superuser_ai_review_ready && (
-                <a onClick={() => force_ai_review("fast")}>
-                    <i className="fa fa-line-chart"></i> {"Fast AI Review"}
-                </a>
+                <Tooltip tooltipRequired={tooltipRequired} title={"Fast AI Review"}>
+                    <a onClick={() => force_ai_review("fast")}>
+                        <i className="fa fa-line-chart"></i> {"Fast AI Review"}
+                    </a>
+                </Tooltip>
             )}
             {superuser_ai_review_ready && (
-                <a onClick={() => force_ai_review("full")}>
-                    <i className="fa fa-area-chart"></i> {_("Full AI Review")}
-                </a>
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Full AI Review")}>
+                    <a onClick={() => force_ai_review("full")}>
+                        <i className="fa fa-area-chart"></i> {_("Full AI Review")}
+                    </a>
+                </Tooltip>
             )}
             {superuser_ai_review_ready && (
-                <a onClick={delete_ai_reviews}>
-                    <i className="fa fa-trash"></i> {"Delete AI reviews"}
-                </a>
+                <Tooltip tooltipRequired={tooltipRequired} title={"Delete AI reviews"}>
+                    <a onClick={delete_ai_reviews}>
+                        <i className="fa fa-trash"></i> {"Delete AI reviews"}
+                    </a>
+                </Tooltip>
             )}
         </Dock>
     );
