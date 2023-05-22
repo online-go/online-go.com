@@ -366,7 +366,10 @@ export function GameDock({
             </Tooltip>
 
             {game && (
-                <Tooltip tooltipRequired={tooltipRequired} title={_("Toggle AI review")}>
+                <Tooltip
+                    tooltipRequired={tooltipRequired}
+                    title={ai_review_enabled ? _("Disable AI review") : _("Enable AI review")}
+                >
                     <a onClick={onAIReviewClicked}>
                         <i className="fa fa-desktop"></i>{" "}
                         {ai_review_enabled ? _("Disable AI review") : _("Enable AI review")}
@@ -468,14 +471,17 @@ export function GameDock({
                     </Link>
                 </Tooltip>
             )}
-            <Tooltip tooltipRequired={tooltipRequired} title={_("Link to game")}>
+            <Tooltip
+                tooltipRequired={tooltipRequired}
+                title={review ? _("Link to review") : _("Link to game")}
+            >
                 <a onClick={showLinkModal}>
                     <i className="fa fa-share-alt"></i>{" "}
                     {review ? _("Link to review") : _("Link to game")}
                 </a>
             </Tooltip>
             {sgf_download_enabled ? (
-                <Tooltip tooltipRequired={tooltipRequired} title={_("SGF Download")}>
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Download SGF")}>
                     <a href={sgf_url} target="_blank">
                         <i className="fa fa-download"></i> {_("Download SGF")}
                     </a>
@@ -495,14 +501,14 @@ export function GameDock({
                 </a>
             )}
             {sgf_download_enabled && sgf_with_ai_review_url && (
-                <Tooltip tooltipRequired={tooltipRequired} title={_("Download SGF with AI Review")}>
+                <Tooltip tooltipRequired={tooltipRequired} title={_("SGF with AI Review")}>
                     <a href={sgf_with_ai_review_url} target="_blank">
                         <i className="fa fa-download"></i> {_("SGF with AI Review")}
                     </a>
                 </Tooltip>
             )}
             {sgf_download_enabled && sgf_with_comments_url && (
-                <Tooltip tooltipRequired={tooltipRequired} title={_("Download SGF with comments")}>
+                <Tooltip tooltipRequired={tooltipRequired} title={_("SGF with comments")}>
                     <a href={sgf_with_comments_url} target="_blank">
                         <i className="fa fa-download"></i> {_("SGF with comments")}
                     </a>
