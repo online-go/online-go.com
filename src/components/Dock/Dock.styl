@@ -85,6 +85,9 @@ dock-inline-height=500px
     }
 }
 
+
+// This is mobile layout...
+
 .Dock.inline {
     position: relative;
     right: 0;
@@ -95,15 +98,20 @@ dock-inline-height=500px
 
     flex-wrap: wrap;
 
-    > a {
-        font-size: 0.7rem;
+
+    // The immediate children need to be laid out this way
+    > * {
         flex-grow: 1;
         flex-shrink: 0;
         flex-basis: 30%;
+    }
+    // And the links within them this way...
+    * a {
         text-align: left;
         display: flex;
         min-width: 7rem;
         align-items: center;
+        font-size: 0.7rem;
         i {
             font-size: 1.0rem;
         }
@@ -127,6 +135,7 @@ dock-inline-height=500px
     }
 }
 
+// This is wierd devices that are very short...
 @media (max-height: dock-inline-height) {
     .Dock {
         position: relative;
@@ -138,15 +147,19 @@ dock-inline-height=500px
 
         flex-wrap: wrap;
 
-        > a {
-            font-size: 0.7rem;
+        // The immediate children need to be laid out this way
+        > * {
             flex-grow: 1;
             flex-shrink: 0;
             flex-basis: 30%;
+        }
+        // And the links within them this way...
+        * a {
             text-align: left;
             display: flex;
             min-width: 7rem;
             align-items: center;
+            font-size: 0.7rem;
             i {
                 font-size: 1.0rem;
             }
