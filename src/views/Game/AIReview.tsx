@@ -45,7 +45,6 @@ import {
 import { game_control } from "./game_control";
 import { alert } from "swal_config";
 import { GobanContext } from "./goban_context";
-
 export interface AIReviewEntry {
     move_number: number;
     win_rate: number;
@@ -480,7 +479,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             next_score = scores[move_number + 1] || score;
         }
 
-        const marks: { [mark: string]: string } = {};
+        let marks: { [mark: string]: string } = {};
         const colored_circles: ColoredCircle[] = [];
         let heatmap: Array<Array<number>> | null = null;
         try {
@@ -623,6 +622,9 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             errorLogger(e);
         }
 
+        // Reduce moves shown to the valation-move-count from settings
+        marks = this.trimMaxMoves(marks);
+
         try {
             goban.setMarks(marks, true); /* draw the remaining AI sequence as ghost marks, if any */
             goban.setHeatmap(heatmap, true);
@@ -643,6 +645,81 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         }
 
         return [win_rate, score, next_move_delta_win_rate, next_move_pretty_coords];
+    }
+
+    private trimMaxMoves(marks: { [mark: string]: string }): { [mark: string]: string } {
+        // Reduces the number of moves ahead shown in a the variation if the user has set it to non-zero
+        const maxMoves = preferences.get("variation-move-count");
+
+        // Move object has more than just one move in it and the user has set the non-zero value
+        if (maxMoves > 0 && Object.keys(marks).length > 2) {
+            // Get all the moves into an array but leave the black and white keys since we'll append them later
+            let marksArray = Object.entries(marks).reduce((result, entry) => {
+                if (entry[0] !== "black" && entry[0] !== "white") {
+                    result.push({ key: entry[0], value: entry[1] });
+                }
+                return result;
+            }, []);
+
+            // use the max moves set by teh user or the number of movesin the variation, whiever is lower
+            const actualMoves = marksArray.length > maxMoves ? maxMoves : marksArray.length;
+
+            // Chop off anything after the number of moves we want
+            marksArray = marksArray.slice(0, actualMoves);
+
+            // Work out whose move the first move is
+            let blackFirstMove: boolean;
+            if (marks.black.substring(0, 2) === marksArray[0].value) {
+                blackFirstMove = true;
+            } else {
+                blackFirstMove = false;
+            }
+
+            // See if we have an odd number of moves
+            const oddMoves = actualMoves % 2 > 0;
+
+            // Black and white have half the moves each...
+            let blackMoves = Math.floor(actualMoves / 2);
+            let whiteMoves = blackMoves;
+
+            // ... plus one for whoever moves first (if an odd number of moves)
+            if (oddMoves) {
+                if (blackFirstMove) {
+                    blackMoves++;
+                } else {
+                    whiteMoves++;
+                }
+            }
+
+            // Work out how many characters (2 per move) we should restrict the transpancy string to for each
+            const blackMoveString = marks.black.substring(0, 2 * blackMoves);
+            const whiteMoveString = marks.white.substring(0, 2 * whiteMoves);
+
+            // Add back the black and white keys with the transparency strings if each is non-blank.
+            // Seems ok to put a blank value but it may have unintended consequences.
+            if (blackMoveString) {
+                marksArray.push({
+                    key: "black",
+                    value: blackMoveString,
+                });
+            }
+
+            if (whiteMoveString) {
+                marksArray.push({
+                    key: "white",
+                    value: whiteMoveString,
+                });
+            }
+
+            // Convert teh array back into an object
+            marks = marksArray.reduce(
+                (target, item) => ((target[item.key] = item.value), target),
+                {},
+            );
+        }
+
+        //Return the result
+        return marks;
     }
 
     private requestAnalysisOfVariation(cur_move: MoveTree, trunk_move: MoveTree): boolean {

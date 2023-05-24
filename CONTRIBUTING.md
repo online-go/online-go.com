@@ -1,5 +1,7 @@
 # Development Environment
 
+Make sure you have at least 4 GB of physical memoty allocation to your OS and 4GB swap space allocated or npm run dev will probably freeze the system.
+
 Getting setup is easy, you'll need to have [Node.js](https://nodejs.org/) installed,
 then simply clone the repository and within the working directory run the following:
 
@@ -12,7 +14,11 @@ npx husky install
 # Run this to start the development server and build system
 npm run dev
 ```
-
+(if you get react dependency errors with npm install yarn, try this instead:
+```
+sudo npm install --global yarn
+```
+)
 If you're on Linux, you can simply type `make` and it will do all this for you as well.
 
 If you're on Windows and need specific help getting tools installed and the repo cloned, see [Detailed Setup Steps](#detailed-setup-steps) below.
