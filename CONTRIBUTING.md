@@ -14,11 +14,10 @@ npx husky install
 # Run this to start the development server and build system
 npm run dev
 ```
-(if you get react dependency errors with npm install yarn, try this instead:
+If you get react dependency errors with npm install yarn, try this instead:
 ```
 sudo npm install --global yarn
 ```
-)
 If you're on Linux, you can simply type `make` and it will do all this for you as well.
 
 If you're on Windows and need specific help getting tools installed and the repo cloned, see [Detailed Setup Steps](#detailed-setup-steps) below.
