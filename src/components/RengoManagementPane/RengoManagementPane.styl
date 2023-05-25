@@ -27,7 +27,14 @@
     flex-grow: 1;
 
     .rengo-challenge-status {
-        // nothing special yet
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        .challenge-created-at {
+            font-size: smaller;
+            padding-right: 2rem; // avoid collision wiuth dismiss button
+        }
     }
 
     // this is the child: the team management pane component (the second div we instantiate)

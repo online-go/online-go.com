@@ -55,6 +55,7 @@ declare namespace socket_api {
             rengo_participants: number[]; // array of player ids
             invite_only: boolean;
             uuid: string;
+            created?: string | null; // ISO 8601 format datetime
 
             // All this stuff seems to get added *after* we get a challenge from the api
             // but I don't have a good idea where to put it for now... (benjito)
