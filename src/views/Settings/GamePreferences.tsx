@@ -51,6 +51,7 @@ export function GamePreferences(): JSX.Element {
     const [variation_stone_transparency, _setVariationStoneTransparency] = usePreference(
         "variation-stone-transparency",
     );
+    const [variation_move_count, _setVariationMoveCount] = usePreference("variation-move-count");
     const [visual_undo_request_indicator, setVisualUndoRequestIndicator] = usePreference(
         "visual-undo-request-indicator",
     );
@@ -109,6 +110,13 @@ export function GamePreferences(): JSX.Element {
 
         if (value >= 0.0 && value <= 1.0) {
             _setVariationStoneTransparency(value);
+        }
+    }
+    function setVariationMoveCount(ev) {
+        const value = parseInt(ev.target.value);
+
+        if (value >= 0 && value <= 9) {
+            _setVariationMoveCount(value);
         }
     }
     function updateAutoplayDelay(ev) {
@@ -269,6 +277,22 @@ export function GamePreferences(): JSX.Element {
                     max="1.0"
                     onChange={setVariationStoneTransparency}
                     value={variation_stone_transparency}
+                />
+            </PreferenceLine>
+
+            <PreferenceLine
+                title={_("Variation max move count")}
+                description={_(
+                    "Choose the max number of moves shown in variations. 1-9 (0 is the default)",
+                )}
+            >
+                <input
+                    type="number"
+                    step="1"
+                    min="0"
+                    max="9"
+                    onChange={setVariationMoveCount}
+                    value={variation_move_count}
                 />
             </PreferenceLine>
         </div>
