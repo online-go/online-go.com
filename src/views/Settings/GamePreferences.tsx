@@ -281,9 +281,9 @@ export function GamePreferences(): JSX.Element {
             </PreferenceLine>
 
             <PreferenceLine
-                title={_("Variation max move count")}
+                title={_("Length of AI variations")}
                 description={_(
-                    "Choose the max number of moves shown in variations. 1-9 (0 is the default)",
+                    "Choose the maximum number of moves shown in AI variations. 0 to disable the limit and show all available moves.",
                 )}
             >
                 <input
