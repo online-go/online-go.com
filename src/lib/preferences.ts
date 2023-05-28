@@ -34,6 +34,7 @@ export const defaults = {
     "chat.show-all-group-channels": true,
     "chat.show-all-tournament-channels": true,
     "chat.user-sort-order": "rank",
+    "chat-mode": "main",
     "desktop-notifications": true,
     "desktop-notifications-require-interaction": false,
     "dock-delay": 0, // seconds.
