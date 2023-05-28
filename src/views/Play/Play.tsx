@@ -729,7 +729,7 @@ export class Play extends React.Component<{}, PlayState> {
             return (
                 <div className="automatch-container">
                     <div className="automatch-header">
-                        <div>{_("Quick match finder")}</div>
+                        <div>{_("Automatch finder")}</div>
                         <div className="btn-group">
                             <button
                                 className={size_enabled("9x9") ? "primary sm" : "sm"}
