@@ -29,6 +29,7 @@ import { KBShortcut } from "KBShortcut";
 import { Goban, GoMath, GobanConfig } from "goban";
 import { AutoTranslate } from "AutoTranslate";
 import { Markdown } from "Markdown";
+import { chat_manager } from "chat_manager";
 
 import { Player } from "Player";
 
@@ -1594,6 +1595,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
         this.setState({ extra_info_selected: "comments" });
     };
 
+    // (note - forum thread posting currently not supported, because discourse doesn't support it)
     extractCommentary = (commentary_dto) => {
         const commentary = commentary_dto.commentary.map((comment) => ({
             user_id: comment.user_id,
@@ -1641,15 +1643,30 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
         this.setState({ extra_info_selected: "variation-filter" });
     };
 
+    // This is to provide visibility to the community that a comment was posted.
+    // Our own chat is not ideal (no topics in a channel, not persistent etc), but since our forum (discourse)
+    // don't have an API for posting into it, this is the best we've come up with.
+
+    postCommentToChat = (comment: string, position_url: string) => {
+        const proxy = chat_manager.join("global-joseki");
+        proxy.channel.send(`/me said at ${position_url}: "${comment}"`);
+    };
+
     onCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         // If they hit enter, we intercept and save.  Otherwise just let them keep typing characters, up to the max length
         // (if they are allowed, of course)
         // because \r or \n give it length=1, we can't just check falsey to prevent empty comments
         if (/\r|\n/.exec(e.target.value) && e.target.value.length > 1) {
             const comment_url = server_url + "comment?id=" + this.props.position_id;
-            post(comment_url, { comment: this.state.next_comment })
+            const comment = this.state.next_comment;
+            post(comment_url, { comment })
                 .then((body) => {
                     this.extractCommentary(body);
+                    this.postCommentToChat(
+                        comment,
+                        // (The chat knows how to mark up the full production server URL nicely)
+                        `${window.location}/joseki/${this.props.position_id}`,
+                    );
                 })
                 .catch((r) => {
                     console.log("Comment PUT failed:", r);

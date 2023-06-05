@@ -98,6 +98,7 @@ export const global_channels: Array<ChannelInformation> = [
     { id: "global-help", name: "Help", country: "un" },
     { id: "global-offtopic", name: "Off Topic", country: "un" },
     { id: "global-rengo", name: "Rengo", country: "un" },
+    { id: "global-joseki", name: "OGS Joseki Explorer", country: "un" },
     { id: "global-japanese", name: "日本語 ", country: "jp", language: "ja" },
     { id: "global-zh-hans", name: "中文", country: "cn", language: ["zh", "zh_hans", "zh_cn"] },
     {
