@@ -152,6 +152,17 @@ export const WARNING_TEMPLATES: MessageTemplates = {
                 Please be mindful of others’ experiences and end games properly.`,
             show_warning_button: true,
         },
+        "Escaped without playing": {
+            message: `
+                Please cancel games you have joined but don't intend to play.
+
+                Use the "cancel" button for this.
+
+                This is fairer to your opponents than making them wait for
+                your clock to run out.   There is no penalty to you (providing 
+                it used only occasionally)`,
+            show_warning_button: true,
+        },
     },
 
     "Endgame Stalling": {
