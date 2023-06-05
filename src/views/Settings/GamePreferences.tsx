@@ -38,6 +38,7 @@ export function GamePreferences(): JSX.Element {
     const [_corr_submit_mode, _setCorrSubmitMode]: [string, (x: string) => void] = React.useState(
         getSubmitMode("correspondence"),
     );
+    const [chat_mode, _setChatMode] = usePreference("chat-mode");
     const [board_labeling, setBoardLabeling] = usePreference("board-labeling");
 
     const [autoadvance, setAutoAdvance] = usePreference("auto-advance-after-submit");
@@ -77,6 +78,11 @@ export function GamePreferences(): JSX.Element {
         const dbl = preferences.get(`double-click-submit-${speed}` as ValidPreference);
         return single ? "single" : dbl ? "double" : "button";
     }
+
+    function setChatMode(value) {
+        _setChatMode(value);
+    }
+
     function setSubmitMode(speed, mode) {
         switch (mode) {
             case "single":
@@ -256,6 +262,23 @@ export function GamePreferences(): JSX.Element {
             </PreferenceLine>
 
             <PreferenceLine
+                title={_("Set default game chat mode")}
+                description={_(
+                    "The chat mode that is defaulted to when a game is initiated or when the game page is refreshed.",
+                )}
+            >
+                <PreferenceDropdown
+                    value={chat_mode}
+                    options={[
+                        { value: "main", label: _("Chat") },
+                        { value: "malkovich", label: _("Malkovich") },
+                        { value: "personal", label: _("Personal") },
+                    ]}
+                    onChange={setChatMode}
+                />
+            </PreferenceLine>
+
+            <PreferenceLine
                 title={_("Activate Zen Mode by default")}
                 description={_(
                     'When enabled, games you play or view will start off in the full screen "Zen Mode". This can be toggled off in game by clicking the Z icon.',
@@ -283,7 +306,7 @@ export function GamePreferences(): JSX.Element {
             <PreferenceLine
                 title={_("Variation max move count")}
                 description={_(
-                    "Choose the max number of moves shown in variations. 1-9 (0 is the default)",
+                    "Choose the max number of moves shown at a time in variations. 1-9 (0 is the default)",
                 )}
             >
                 <input

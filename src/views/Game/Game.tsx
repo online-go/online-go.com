@@ -109,7 +109,8 @@ export function Game(): JSX.Element {
     const [zen_mode, set_zen_mode] = React.useState(preferences.get("start-in-zen-mode"));
     const [autoplaying, set_autoplaying] = React.useState(false);
     const [review_list, set_review_list] = React.useState([]);
-    const [selected_chat_log, set_selected_chat_log] = React.useState<ChatMode>("main");
+    const defaultChatMode = preferences.get("chat-mode") as ChatMode;
+    const [selected_chat_log, set_selected_chat_log] = React.useState<ChatMode>(defaultChatMode);
     const [variation_name, set_variation_name] = React.useState("");
     const [historical_black, set_historical_black] = React.useState<rest_api.games.Player | null>(
         null,
@@ -1341,7 +1342,7 @@ export function Game(): JSX.Element {
             }
             console.log("unmounting, going to destroy", goban);
             chat_proxy.current.part();
-            set_selected_chat_log("main");
+            set_selected_chat_log(defaultChatMode);
             delete game_control.creator_id;
             ladder_id.current = null;
             tournament_id.current = null;

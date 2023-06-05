@@ -70,12 +70,12 @@ export function GameChat(props: GameChatProperties): JSX.Element {
     const user = data.get("user");
     const goban = useGoban();
     const in_game_mod_channel = !props.review_id && inGameModChannel(props.game_id);
-
+    const defaultChatMode = preferences.get("chat-mode") as ChatMode;
     const ref_chat_log = React.useRef<HTMLDivElement>(null);
     const scrolled_to_bottom = React.useRef(true);
     const [show_quick_chat, setShowQuickChat] = React.useState(false);
     const [selected_chat_log, setSelectedChatLog] = React.useState<ChatMode>(
-        in_game_mod_channel ? "hidden" : "main",
+        in_game_mod_channel ? "hidden" : defaultChatMode,
     );
     const [show_player_list, setShowPlayerList] = React.useState(false);
 
@@ -156,7 +156,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
             if (in_game_mod_channel) {
                 setSelectedChatLog("hidden");
             } else {
-                setSelectedChatLog("main");
+                setSelectedChatLog(defaultChatMode);
             }
         };
 
