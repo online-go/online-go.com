@@ -15,11 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import * as React from "react";
 import { _ } from "translate";
 import { post } from "requests";
 import { alert } from "swal_config";
 import { GoEngineConfig } from "goban";
 import { errorAlerter } from "misc";
+import { toast } from "toast";
 
 export function doAnnul(
     engine: GoEngineConfig,
@@ -52,9 +54,9 @@ export function doAnnul(
             console.log("annul result", result);
             if (!result["failed"].length) {
                 if (tf) {
-                    void alert.fire({ text: _("Game has been annulled") });
+                    toast(<div>Game has been annulled</div>, 2000);
                 } else {
-                    void alert.fire({ text: _("Game ranking has been restored") });
+                    toast(<div>Game ranking has been restored</div>, 2000);
                 }
                 onGameAnnulled && onGameAnnulled(tf);
             } else {
