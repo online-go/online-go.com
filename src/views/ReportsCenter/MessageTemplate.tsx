@@ -280,9 +280,9 @@ export const WARNING_TEMPLATES: MessageTemplates = {
 
 export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
     "Good Report": {
-        "Asked opponent to be respectful of time": {
+        "Asked beginner opponent to be respectful of time": {
             message: `
-                Thanks for your report, I have asked your opponent to be more
+                Thanks for your report, I have asked your newcomer opponent to be more
                 respectful of people’s time.`,
             show_warning_button: false,
         },
@@ -297,6 +297,11 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
         "First warning given": {
             message: `
                 Thank you for your report, the player has been given a formal warning.`,
+            show_warning_button: false,
+        },
+        "First warning given - escaping": {
+            message: `
+                Thank you for your report, the player has been given a formal warning regarding escaping.`,
             show_warning_button: false,
         },
         "Final warning given": {
@@ -345,7 +350,7 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
             message: `
                 Thank you for bringing the possible instance of sandbagging to
                 our attention. We looked into the report and found little
-                evidence of deliberate underperformance. But we’ll still keep an
+                evidence of deliberate losing on purpose. But we’ll still keep an
                 eye on the situation and take appropriate action if necessary.
                 Thank you for helping keep OGS enjoyable for everyone. We
                 appreciate it.`,
