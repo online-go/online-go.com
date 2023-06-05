@@ -996,6 +996,11 @@ export const GoResources = () => {
                                 title="DGoB"
                                 href="http://www.dgob.de/yabbse/index.php"
                             />,
+                            <BasicResource
+                                countries={[en]}
+                                title="Lemmy"
+                                href="https://lemmy.ml/c/baduk"
+                            />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>
                         ))}
@@ -1053,6 +1058,11 @@ export const GoResources = () => {
                                 countries={[cn]}
                                 title="[LKGS] Lanke Go Server"
                                 href="http://lanke.cc/"
+                            />,
+                            <BasicResource
+                                countries={[en]}
+                                title="Kids Go Server"
+                                href="https://kidsgoserver.com/"
                             />,
                         ).map((elt, idx) => (
                             <dd key={idx}>{elt}</dd>

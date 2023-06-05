@@ -152,7 +152,17 @@ export function ModTools(props: ModToolsProps): JSX.Element {
                             {
                                 header: "Inet",
                                 className: "inet",
-                                render: (X) => <IPDetails ip={X.last_ip} details={X.ip_details} />,
+                                render: (X) => (
+                                    <a
+                                        href={
+                                            "https://online-go.com/api/v1/moderation/recent_users?id=" +
+                                            X.id
+                                        }
+                                        target={"_blank"}
+                                    >
+                                        <IPDetails ip={X.last_ip} details={X.ip_details} />
+                                    </a>
+                                ),
                             },
                             {
                                 header: "BID Alias",
