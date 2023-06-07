@@ -60,7 +60,7 @@ goban-view-bar-width=400px
 .MainGobanView {
     display: flex;
     flex-direction: row;
-    align-items: stretch;
+    align-items: stretch; // this is the default, I wonder why we need to say it?
     //align-content: stretch;
     //justify-content: stretch;
 
@@ -198,6 +198,11 @@ goban-view-bar-width=400px
         }
     }
 
+    // See if we can make folk who want wider chat happy
+    &.wide .right-col.experimental {
+        flex-grow: 1 !important
+        margin-left: 2rem;
+    }
 
     .conditional-move-planner {
         text-align: center;

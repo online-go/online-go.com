@@ -1425,6 +1425,8 @@ export function Game(): JSX.Element {
     );
     const review = !!review_id;
 
+    const experimental: boolean = data.get("experiments.v6") === "enabled";
+
     return (
         <div>
             <div
@@ -1499,7 +1501,7 @@ export function Game(): JSX.Element {
                     </div>
 
                     {(view_mode !== "portrait" || null) && (
-                        <div className="right-col">
+                        <div className={"right-col" + (experimental ? " experimental" : "")}>
                             {(zen_mode || null) && <div className="align-col-start"></div>}
                             {(view_mode === "square" || view_mode === "wide" || null) && (
                                 <PlayerCards
