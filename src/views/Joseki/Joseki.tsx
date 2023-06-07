@@ -1665,7 +1665,7 @@ class ExplorePane extends React.Component<ExploreProps, ExploreState> {
                     this.postCommentToChat(
                         comment,
                         // (The chat knows how to mark up the full production server URL nicely)
-                        `${window.location}/joseki/${this.props.position_id}`,
+                        `joseki ${this.props.position_id}`,
                     );
                 })
                 .catch((r) => {
