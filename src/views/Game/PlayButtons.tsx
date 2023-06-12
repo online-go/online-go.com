@@ -84,7 +84,19 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): JSX.Eleme
             data.get("user").id === goban.engine.playerNotToMove() &&
             goban.engine.undo_requested !== goban.engine.getMoveNumber()
         ) {
-            goban.requestUndo();
+            void alert
+                .fire({
+                    text: _("Request undo?"),
+                    confirmButtonText: _("Yes"),
+                    cancelButtonText: _("No"),
+                    showCancelButton: true,
+                    focusCancel: true,
+                })
+                .then(({ value: accept }) => {
+                    if (accept) {
+                        goban.requestUndo();
+                    }
+                });
         }
     };
 
