@@ -24,6 +24,7 @@ import { ValidPreference } from "preferences";
 import { Toggle } from "Toggle";
 
 export const MAX_DOCK_DELAY = 3.0;
+export const MIN_AI_VAR_MOVES = 0;
 
 export interface SettingGroupPageProps {
     state: SettingsState;

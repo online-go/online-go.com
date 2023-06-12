@@ -24,7 +24,12 @@ import { usePreference, ValidPreference } from "preferences";
 
 import { Toggle } from "Toggle";
 
-import { PreferenceLine, PreferenceDropdown, MAX_DOCK_DELAY } from "SettingsCommon";
+import {
+    PreferenceLine,
+    PreferenceDropdown,
+    MAX_DOCK_DELAY,
+    MIN_AI_VAR_MOVES,
+} from "SettingsCommon";
 
 export function GamePreferences(): JSX.Element {
     const [dock_delay, _setDockDelay]: [number, (x: number) => void] = React.useState(
@@ -128,9 +133,11 @@ export function GamePreferences(): JSX.Element {
     function updateAutoplayDelay(ev) {
         const delay = parseFloat(ev.target.value);
 
-        if (delay >= 0.1) {
+        if (!isNaN(delay) && delay >= 1 && delay <= 60) {
             _setAutoplayDelay(delay);
             preferences.set("autoplay-delay", Math.round(1000 * delay));
+        } else {
+            _setAutoplayDelay(ev.target.value as any);
         }
     }
 
@@ -294,13 +301,19 @@ export function GamePreferences(): JSX.Element {
                 )}
             >
                 <input
-                    type="number"
+                    type="range"
                     step="0.1"
                     min="0.0"
                     max="1.0"
                     onChange={setVariationStoneTransparency}
                     value={variation_stone_transparency}
                 />
+                <span>
+                    &nbsp;
+                    {interpolate(_("{{transparency_level}}"), {
+                        transparency_level: variation_stone_transparency,
+                    })}
+                </span>
             </PreferenceLine>
 
             <PreferenceLine
@@ -310,13 +323,21 @@ export function GamePreferences(): JSX.Element {
                 )}
             >
                 <input
-                    type="number"
+                    type="range"
                     step="1"
-                    min="0"
+                    min={MIN_AI_VAR_MOVES}
                     max="9"
                     onChange={setVariationMoveCount}
                     value={variation_move_count}
                 />
+                <span>
+                    &nbsp;
+                    {variation_move_count === MIN_AI_VAR_MOVES
+                        ? _("Off") // translators: Indicates the dock slide out has been turned off
+                        : interpolate(_("{{num_moves}} moves"), {
+                              num_moves: variation_move_count,
+                          })}
+                </span>
             </PreferenceLine>
         </div>
     );
