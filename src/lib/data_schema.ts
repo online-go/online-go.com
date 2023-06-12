@@ -70,7 +70,35 @@ export interface ConfigSchema {
     notification_auth: string;
     incident_auth: string;
     dismissable_messages: DismissableMessagesSchema;
+    payment_problems?: PaymentProblems;
 }
+
+interface PaymentMethodDetails {
+    type: string; // card, sepa, etc...
+    card?: {
+        brand: string; // visa, mastercard, etc...
+        last4: string; // last 4 digits of card number
+        exp_month: number;
+        exp_year: number;
+    };
+}
+
+export type PaymentProblem =
+    | {
+          type: "payment_failed";
+          payment_method?: PaymentMethodDetails;
+          failure_code: string;
+          created: string;
+      }
+    | {
+          type: "expiring_card";
+          payment_method?: PaymentMethodDetails;
+          expiration_date: {
+              year: number;
+              month: number;
+          };
+      };
+type PaymentProblems = PaymentProblem[];
 
 interface ChatSchema {
     active_channel: string;
@@ -218,6 +246,7 @@ export interface DataSchema
     "oje-variation-filter": JosekiFilter;
     "ad-override": boolean;
     "email-banner-dismissed": boolean;
+    "payment-problem-banner-dismissed-timestamp": number;
     "active-tournament": Announcement;
 
     "chat-manager.last-seen": { [channel: string]: number };
