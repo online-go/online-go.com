@@ -319,7 +319,7 @@ export function GamePreferences(): JSX.Element {
             <PreferenceLine
                 title={_("AI variations shown")}
                 description={_(
-                    "Maximum number of moves shown in AI variations. 0 to disable the limit and show all available moves.",
+                    "Maximum number of moves shown in AI variations. Off shows all available moves",
                 )}
             >
                 <input
