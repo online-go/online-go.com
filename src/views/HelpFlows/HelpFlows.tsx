@@ -24,6 +24,7 @@ import { GuestUserIntro } from "./GuestUserIntro";
 import { GuestUserIntroRengo } from "./GuestUserIntroRengo";
 import { OOLUserIntro } from "./OOLUserIntro";
 import { OOLSpectatorIntro } from "./OOLSpectatorIntro";
+import { UndoIntro } from "./UndoIntro";
 
 /**
  * This component is a handy wrapper for all the Help Flows, and reset on login/logout
@@ -78,6 +79,8 @@ export function HelpFlows(): JSX.Element {
 
             <OOLUserIntro />
             <OOLSpectatorIntro />
+
+            <UndoIntro />
         </>
     );
 }
