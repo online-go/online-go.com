@@ -57,6 +57,8 @@ import { enableTouchAction } from "./touch_actions";
 import { ConditionalMoveTreeDisplay } from "./ConditionalMoveTreeDisplay";
 import { useUser } from "hooks";
 
+import * as moment from "moment";
+
 interface PlayControlsProps {
     // Cancel buttons are in props because the Cancel Button is placed below
     // chat on mobile.
@@ -121,7 +123,7 @@ export function PlayControls({
     const user = useUser();
     const goban = useGoban();
     const engine = goban.engine;
-    const { registerTargetItem, triggerFlow } = React.useContext(DynamicHelp.Api);
+    const { registerTargetItem, triggerFlow, signalUsed } = React.useContext(DynamicHelp.Api);
     const { ref: game_state_pane } = registerTargetItem("undo-requested-message");
     const [searchParams] = useSearchParams();
     const return_url = is_valid_url(searchParams.get("return")) ? searchParams.get("return") : null;
@@ -232,6 +234,13 @@ export function PlayControls({
 
     const user_is_player = useUserIsParticipant(goban);
     const cur_move_number = useCurrentMoveNumber(goban);
+
+    // This condition protects against established users seeing this message introduced 2023-6-14
+    // Could be removed once all the "regulars" have done this
+
+    if (show_undo_requested && moment(user.registration_date).isBefore(moment("2023-06-14"))) {
+        signalUsed("undo-requested-message"); // stops the following "triggerFlow" from doing anything.
+    }
 
     if (show_undo_requested && game_state_pane) {
         triggerFlow("undo-intro");

@@ -16,7 +16,6 @@
  */
 
 import React from "react";
-
 import { HelpFlow, HelpItem } from "react-dynamic-help";
 
 import { _, pgettext } from "translate";
@@ -30,7 +29,6 @@ export function UndoIntro(): JSX.Element {
         <HelpFlow
             id="undo-intro"
             showInitially={false}
-            debug={true}
             description={pgettext("Name of a dynamic help flow", "OGS Undo policy notification")}
         >
             <HelpItem target="undo-requested-message" position={"bottom-center"} hideOptOut>
