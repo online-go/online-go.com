@@ -33,7 +33,9 @@ export function UndoIntro(): JSX.Element {
         >
             <HelpItem target="undo-requested-message" position={"bottom-center"} hideOptOut>
                 <div>
-                    {_("Please note: at OGS, no-one is ever obliged to accept an undo request!")}
+                    {_(
+                        "Your opponent may now decide to accept the undo request or not. Please note they are not obliged to do so.",
+                    )}
                 </div>
             </HelpItem>
         </HelpFlow>
