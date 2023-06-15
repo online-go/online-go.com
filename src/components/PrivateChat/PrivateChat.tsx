@@ -658,7 +658,7 @@ class PrivateChat {
     }
     sendChat(msg, as_system?: true) {
         if (data.get("appeals.banned_user_id")) {
-            void alert.fire("You are banned from the site and cannot send messages.");
+            void alert.fire(_("Your account is suspended - you cannot send messages."));
             return;
         }
 
