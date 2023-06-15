@@ -57,6 +57,10 @@ export interface Report {
     moderator_note: string;
     system_note: string;
 
+    automod_to_moderator?: string; // Suggestions from "automod"
+    automod_to_reporter?: string;
+    automod_to_reported?: string;
+
     unclaim: () => void;
     claim: () => void;
     steal: () => void;
