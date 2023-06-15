@@ -6,7 +6,7 @@ import * as data from "data";
 import { MemoryRouter as Router } from "react-router-dom";
 import { GobanContext } from "./goban_context";
 import { act } from "react-dom/test-utils";
-
+import { OgsHelpProvider } from "OgsHelpProvider";
 const TEST_USER = {
     anonymous: false,
     id: 123,
@@ -75,9 +75,11 @@ const PLAY_CONTROLS_DEFAULTS = {
 
 function WrapTest(props: { goban: Goban; children: any }): JSX.Element {
     return (
-        <Router>
-            <GobanContext.Provider value={props.goban}>{props.children}</GobanContext.Provider>
-        </Router>
+        <OgsHelpProvider>
+            <Router>
+                <GobanContext.Provider value={props.goban}>{props.children}</GobanContext.Provider>
+            </Router>
+        </OgsHelpProvider>
     );
 }
 

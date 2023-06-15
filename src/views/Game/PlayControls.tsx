@@ -17,6 +17,7 @@
 import * as React from "react";
 import { useSearchParams } from "react-router-dom";
 import { _, interpolate, pgettext } from "translate";
+import * as DynamicHelp from "react-dynamic-help";
 import * as data from "data";
 import {
     ConditionalMoveTree,
@@ -55,6 +56,8 @@ import { is_valid_url } from "url_validation";
 import { enableTouchAction } from "./touch_actions";
 import { ConditionalMoveTreeDisplay } from "./ConditionalMoveTreeDisplay";
 import { useUser } from "hooks";
+
+import * as moment from "moment";
 
 interface PlayControlsProps {
     // Cancel buttons are in props because the Cancel Button is placed below
@@ -120,6 +123,8 @@ export function PlayControls({
     const user = useUser();
     const goban = useGoban();
     const engine = goban.engine;
+    const { registerTargetItem, triggerFlow, signalUsed } = React.useContext(DynamicHelp.Api);
+    const { ref: game_state_pane } = registerTargetItem("undo-requested-message");
     const [searchParams] = useSearchParams();
     const return_url = is_valid_url(searchParams.get("return")) ? searchParams.get("return") : null;
     const [stone_removal_accept_disabled, setStoneRemovalAcceptDisabled] = React.useState(false);
@@ -230,6 +235,17 @@ export function PlayControls({
     const user_is_player = useUserIsParticipant(goban);
     const cur_move_number = useCurrentMoveNumber(goban);
 
+    // This condition protects against established users seeing this message introduced 2023-6-14
+    // Could be removed once all the "regulars" have done this
+
+    if (show_undo_requested && moment(user.registration_date).isBefore(moment("2023-06-14"))) {
+        signalUsed("undo-requested-message"); // stops the following "triggerFlow" from doing anything.
+    }
+
+    if (show_undo_requested && game_state_pane) {
+        triggerFlow("undo-intro");
+    }
+
     return (
         <div className="play-controls">
             <div className="game-action-buttons">
@@ -237,7 +253,7 @@ export function PlayControls({
                     <PlayButtons show_cancel={show_cancel} />
                 )}
             </div>
-            <div className="game-state">
+            <div className="game-state" ref={game_state_pane}>
                 {((mode === "play" && phase === "play") || null) && (
                     <span>
                         {show_undo_requested ? (

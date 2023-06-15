@@ -2850,20 +2850,10 @@ caniuse-api@^3.0.0:
     lodash.memoize "^4.1.2"
     lodash.uniq "^4.5.0"
 
-caniuse-lite@^1.0.0:
-  version "1.0.30001376"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001376.tgz#af2450833e5a06873fbb030a9556ca9461a2736d"
-  integrity sha512-I27WhtOQ3X3v3it9gNs/oTpoE5KpwmqKR5oKPA8M0G7uMXh9Ty81Q904HpKUrM30ei7zfcL5jE7AXefgbOfMig==
-
-caniuse-lite@^1.0.30001400, caniuse-lite@^1.0.30001426:
-  version "1.0.30001441"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001441.tgz#987437b266260b640a23cd18fbddb509d7f69f3e"
-  integrity sha512-OyxRR4Vof59I3yGWXws6i908EtGbMzVUi3ganaZQHmydk1iwDhRnvaPG2WaR0KcqrDFKrxVZHULT396LEPhXfg==
-
-caniuse-lite@^1.0.30001449:
-  version "1.0.30001477"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001477.tgz#a2ffb2276258233034bbb869d4558b02658a511e"
-  integrity sha512-lZim4iUHhGcy5p+Ri/G7m84hJwncj+Kz7S5aD4hoQfslKZJgt0tHc/hafVbqHC5bbhHb+mrW2JOUHkI5KH7toQ==
+caniuse-lite@^1.0.0, caniuse-lite@^1.0.30001400, caniuse-lite@^1.0.30001426, caniuse-lite@^1.0.30001449:
+  version "1.0.30001502"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001502.tgz"
+  integrity sha512-AZ+9tFXw1sS0o0jcpJQIXvFTOB/xGiQ4OQ2t98QX3NDn2EZTSRBC801gxrsGgViuq2ak/NLkNgSNEPtCr5lfKg==
 
 catharsis@^0.9.0:
   version "0.9.0"
@@ -8679,10 +8669,10 @@ react-dropzone@^12.0.5:
     file-selector "^0.5.0"
     prop-types "^15.8.1"
 
-react-dynamic-help@^2.6.0:
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/react-dynamic-help/-/react-dynamic-help-2.6.0.tgz#66ef0f99b00eaacec338c229e2bc7ee54a7626fe"
-  integrity sha512-v5cUAbJfDf5pCVrjtmKLL/hP37ef+Z+BoV8sBvoHcw1OeTyvNQovdB5a+OYTFssxbDa2JnDW9YVhVmh949alnA==
+react-dynamic-help@^2.7.0:
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/react-dynamic-help/-/react-dynamic-help-2.7.0.tgz#3919a7669cd6a03c7b122b33051a841156a4ad13"
+  integrity sha512-1cKG9eQli1FmYcmvHpQL7bhaxnoutRUP2E5Sj6QsX51QoqIDmJdYH5TuEhZ4BdJM5frJ22QPDCNOPBAQ2UPtOQ==
   dependencies:
     "@types/react" "^18.0.15"
 
