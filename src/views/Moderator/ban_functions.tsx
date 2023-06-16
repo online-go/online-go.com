@@ -77,7 +77,7 @@ export function remove_ban(player_id) {
             user_id: player_id,
         });
     } else {
-        return moderate(player_id, "Reason for removing ban?", { is_banned: 0 });
+        return moderate(player_id, "Reason for restoring account?", { is_banned: 0 });
     }
 }
 export function remove_shadowban(player_id) {

@@ -38,7 +38,9 @@ export function format_message(props: MessageProps): string {
 
     switch (message_id) {
         case "user_is_banned":
-            return _("You have been banned. You can use the appeal system to appeal your ban.");
+            return _(
+                "Your account has been suspended. You can use the appeal system to request re-activation.",
+            );
 
         case "username_invalid":
             return _("Sorry that username is not allowed, please use normal letters");

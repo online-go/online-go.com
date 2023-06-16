@@ -57,7 +57,7 @@ export const WARNING_TEMPLATES: MessageTemplates = {
                 We ask that you resign from any ongoing games in which AI was
                 used and refrain from seeking AI assistance in future games.
 
-                Any further use of AI will result in a ban.`,
+                Any further use of AI will result in suspension of your account.`,
             show_warning_button: true,
         },
         "Score cheating": {
@@ -68,7 +68,7 @@ export const WARNING_TEMPLATES: MessageTemplates = {
 
                 We ask that you end your games properly by accepting the correct score
                 immediately after passing. Further instances of score cheating will result
-                in a ban.`,
+                in suspension of your account.`,
             show_warning_button: true,
         },
     },
@@ -118,7 +118,7 @@ export const WARNING_TEMPLATES: MessageTemplates = {
 
                 Our records indicate that you have been previously warned
                 about this behavior. Failure to address this issue and continuing
-                to abandon games will lead to a ban.
+                to abandon games will lead to suspension of your account.
 
                 Please be considerate of your opponents' experiences and
                 ensure you end games appropriately. This includes accepting the
@@ -147,7 +147,7 @@ export const WARNING_TEMPLATES: MessageTemplates = {
 
                 Our records show that you have been warned about this before,
                 but it seems you have not managed to address it.  If you fail
-                to address this problem, it will result a ban.
+                to address this problem, it will result in suspension of your account.
 
                 Please be mindful of others’ experiences and end games properly.`,
             show_warning_button: true,
@@ -159,7 +159,7 @@ export const WARNING_TEMPLATES: MessageTemplates = {
                 Use the "cancel" button for this.
 
                 This is fairer to your opponents than making them wait for
-                your clock to run out.   There is no penalty to you (providing 
+                your clock to run out.   There is no penalty to you (providing
                 it used only occasionally)`,
             show_warning_button: true,
         },
@@ -177,7 +177,7 @@ export const WARNING_TEMPLATES: MessageTemplates = {
                 We ask that you end your games properly by accepting the
                 correct score immediately after passing.
 
-                Repeated failure to do so may result in a ban.`,
+                Repeated failure to do so may result in suspension of your account.`,
             show_warning_button: true,
         },
         "Endgame stalling, beginner": {
@@ -195,7 +195,7 @@ export const WARNING_TEMPLATES: MessageTemplates = {
 
                 After passing, promptly accept the correct score.
 
-                Repeated failure to do so could lead to a ban.`,
+                Repeated failure to do so could lead to a suspension of your account.`,
             show_warning_button: true,
         },
     },
@@ -210,7 +210,7 @@ export const WARNING_TEMPLATES: MessageTemplates = {
 
                 The ranking system aims to reflect players’ skills.
                 Manipulating it by sandbagging is fraud that undermines its
-                credibility, frustrates other players, and can result in a ban.
+                credibility, frustrates other players, and can result in a suspension of your account.
 
                 We strongly advise you to refrain from sandbagging in your games.`,
             show_warning_button: true,
@@ -306,7 +306,7 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
         },
         "Final warning given": {
             message: `
-                Thank you for your report, the player has been given a formal warning, and their account will be banned if that continues.`,
+                Thank you for your report, the player has been given a formal warning, and their account will be suspended if that continues.`,
             show_warning_button: false,
         },
         "Formal warning about chat abuse": {
@@ -325,12 +325,12 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
         },
         "Repeat offender banned": {
             message: `
-                Thank you for your report, that repeat offender has been banned.`,
+                Thank you for your report, that repeat offender's account has been suspended.`,
             show_warning_button: false,
         },
         "Reported player banned": {
             message: `
-                Thank you for your report, the player has been banned.`,
+                Thank you for your report, the players account has been suspended.`,
             show_warning_button: false,
         },
         "Contacted player": {
