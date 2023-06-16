@@ -24,6 +24,7 @@ import { game_control } from "./game_control";
 import { alert } from "swal_config";
 import { useCurrentMoveNumber, usePlayerToMove, useShowUndoRequested } from "./GameHooks";
 import { useGoban } from "./goban_context";
+import * as DynamicHelp from "react-dynamic-help";
 
 interface PlayButtonsProps {
     // This option exists because Cancel Button is placed below
@@ -35,6 +36,10 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): JSX.Eleme
     const goban = useGoban();
     const engine = goban.engine;
     const phase = engine.phase;
+
+    const { registerTargetItem } = React.useContext(DynamicHelp.Api);
+    const { ref: accept_button, used: signalUndoAcceptUsed } =
+        registerTargetItem("accept-undo-button");
 
     const cur_move_number = useCurrentMoveNumber(goban);
     const player_to_move = usePlayerToMove(goban);
@@ -105,6 +110,11 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): JSX.Eleme
         }
     };
 
+    const acceptUndo = () => {
+        goban.acceptUndo();
+        signalUndoAcceptUsed();
+    };
+
     const [submitting_move, setSubmittingMove] = React.useState(false);
     React.useEffect(() => {
         goban.on("submitting-move", setSubmittingMove);
@@ -130,7 +140,8 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): JSX.Eleme
                                 {show_accept_undo && (
                                     <button
                                         className="sm primary bold accept-undo-button"
-                                        onClick={() => goban.acceptUndo()}
+                                        onClick={() => acceptUndo()}
+                                        ref={accept_button}
                                     >
                                         {_("Accept Undo")}
                                     </button>
