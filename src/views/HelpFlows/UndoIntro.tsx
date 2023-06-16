@@ -24,17 +24,45 @@ import { _, pgettext } from "translate";
  * A help flow shown when you first press the undo button
  */
 
-export function UndoIntro(): JSX.Element {
+export function UndoRequestedIntro(): JSX.Element {
     return (
         <HelpFlow
-            id="undo-intro"
+            id="undo-requested-intro"
             showInitially={false}
-            description={pgettext("Name of a dynamic help flow", "OGS Undo policy notification")}
+            description={pgettext(
+                "Name of a dynamic help flow helping with waiting for undo acceptance",
+                "OGS Undo policy notification (requested)",
+            )}
         >
             <HelpItem target="undo-requested-message" position={"bottom-center"} hideOptOut>
                 <div>
                     {_(
                         "Your opponent may now decide to accept the undo request or not. Please note they are not obliged to do so.",
+                    )}
+                </div>
+            </HelpItem>
+        </HelpFlow>
+    );
+}
+
+/**
+ * A help flow shown when you first get asked for undo
+ */
+
+export function UndoRequestReceivedIntro(): JSX.Element {
+    return (
+        <HelpFlow
+            id="undo-request-received-intro"
+            showInitially={false}
+            description={pgettext(
+                "Name of a dynamic help flow helping with receiving an undo",
+                "OGS Undo policy notification (received)",
+            )}
+        >
+            <HelpItem target="accept-undo-button" position={"bottom-left"} hideOptOut>
+                <div>
+                    {_(
+                        "Your opponent requested an undo: you may decide to accept the undo request or not - you are not obliged to do so.",
                     )}
                 </div>
             </HelpItem>

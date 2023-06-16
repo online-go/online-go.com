@@ -50,6 +50,7 @@ import {
     useCurrentMoveNumber,
     useShowUndoRequested,
     useUserIsParticipant,
+    usePlayerToMove,
 } from "./GameHooks";
 import { useGoban } from "./goban_context";
 import { is_valid_url } from "url_validation";
@@ -175,6 +176,26 @@ export function PlayControls({
     const winner = useWinner(goban);
     const official_move_number = useOfficialMoveNumber(goban);
     const conditional_moves = useConditionalMoveTree(goban);
+    const user_is_player = useUserIsParticipant(goban);
+    const cur_move_number = useCurrentMoveNumber(goban);
+    const this_users_turn = usePlayerToMove(goban) === user.id;
+
+    React.useEffect(() => {
+        if (show_undo_requested && moment(user.registration_date).isBefore(moment("2023-06-14"))) {
+            // This condition protects against established users seeing this message introduced 2023-6-14
+            // Could be removed once all the "regulars" have done this
+            signalUsed("undo-requested-message"); // stops the following "triggerFlow" from doing anything.
+            signalUsed("accept-undo-button");
+        }
+
+        if (show_undo_requested && game_state_pane) {
+            if (this_users_turn) {
+                triggerFlow("undo-request-received-intro");
+            } else {
+                triggerFlow("undo-requested-intro");
+            }
+        }
+    }, [show_undo_requested, game_state_pane, user_is_player]);
 
     const goban_setMode_play = () => {
         goban.setMode("play");
@@ -231,20 +252,6 @@ export function PlayControls({
         goban.autoScore();
         return false;
     };
-
-    const user_is_player = useUserIsParticipant(goban);
-    const cur_move_number = useCurrentMoveNumber(goban);
-
-    // This condition protects against established users seeing this message introduced 2023-6-14
-    // Could be removed once all the "regulars" have done this
-
-    if (show_undo_requested && moment(user.registration_date).isBefore(moment("2023-06-14"))) {
-        signalUsed("undo-requested-message"); // stops the following "triggerFlow" from doing anything.
-    }
-
-    if (show_undo_requested && game_state_pane) {
-        triggerFlow("undo-intro");
-    }
 
     return (
         <div className="play-controls">
