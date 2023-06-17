@@ -444,7 +444,7 @@ export function MessageTemplate({
         } else {
             setTemplate(null);
         }
-    }, [selectedTemplate]);
+    }, [selectedTemplate, gpt, templates, game_id]);
 
     React.useEffect(() => {
         if (gpt && selectedTemplate === "" && text === "") {
@@ -507,7 +507,7 @@ export function MessageTemplate({
             <div className="top">
                 <select value={selectedTemplate} onChange={(e) => selectTemplate(e.target.value)}>
                     <option value="">-- Select template --</option>
-                    <option value="gpt">ChatGPT Automod</option>
+                    <option value="gpt">Automod suggestion</option>
                     {Object.keys(templates).map((category) => (
                         <optgroup label={category} key={category}>
                             {Object.keys(templates[category]).map((title) => (
