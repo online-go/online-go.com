@@ -30,7 +30,6 @@ import {
     MoveTree,
     PlayerColor,
 } from "goban";
-import device from "device";
 import { alert } from "swal_config";
 import { challengeRematch } from "ChallengeModal";
 import { Clock } from "Clock";
@@ -134,30 +133,19 @@ export function PlayControls({
         user.id,
     );
 
-    const stone_removal_accept_timeout = React.useRef<NodeJS.Timeout>();
     const [black_accepted, set_black_accepted] = React.useState(
         stoneRemovalAccepted(goban, "black"),
     );
     const [white_accepted, set_white_accepted] = React.useState(
         stoneRemovalAccepted(goban, "white"),
     );
+    const [stone_removal_string, set_stone_removal_string] = React.useState(
+        goban.engine.getStoneRemovalString(),
+    );
     React.useEffect(() => {
         const syncStoneRemovalAcceptance = () => {
             if (goban.engine.phase === "stone removal") {
-                if (stone_removal_accept_timeout.current) {
-                    clearTimeout(stone_removal_accept_timeout.current);
-                }
-
-                // TODO: Convert this way old jquery crap to React
-                setStoneRemovalAcceptDisabled(true);
-                stone_removal_accept_timeout.current = setTimeout(
-                    () => {
-                        setStoneRemovalAcceptDisabled(false);
-                        stone_removal_accept_timeout.current = null;
-                    },
-                    device.is_mobile ? 3000 : 1500,
-                );
-
+                set_stone_removal_string(goban.engine.getStoneRemovalString());
                 set_black_accepted(stoneRemovalAccepted(goban, "black"));
                 set_white_accepted(stoneRemovalAccepted(goban, "white"));
             }
@@ -170,6 +158,12 @@ export function PlayControls({
             syncStoneRemovalAcceptance,
         );
     }, [goban]);
+    React.useEffect(() => {
+        setStoneRemovalAcceptDisabled(true);
+        const timeout = setTimeout(() => setStoneRemovalAcceptDisabled(false), 1500);
+
+        return () => clearTimeout(timeout);
+    }, [stone_removal_string]);
 
     const paused = usePaused(goban);
     const show_undo_requested = useShowUndoRequested(goban);
