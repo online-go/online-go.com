@@ -44,7 +44,7 @@ import { setExtraActionCallback, PlayerDetails } from "Player";
 import * as player_cache from "player_cache";
 import { notification_manager } from "Notifications";
 import { Resizable } from "Resizable";
-import { chat_manager, ChatChannelProxy } from "chat_manager";
+import { chat_manager, ChatChannelProxy, inGameModChannel } from "chat_manager";
 import { sfx, SFXSprite, ValidSound } from "sfx";
 import { AIReview } from "./AIReview";
 import { GameChat, ChatMode } from "./GameChat";
@@ -110,7 +110,10 @@ export function Game(): JSX.Element {
     const [autoplaying, set_autoplaying] = React.useState(false);
     const [review_list, set_review_list] = React.useState([]);
     const defaultChatMode = preferences.get("chat-mode") as ChatMode;
-    const [selected_chat_log, set_selected_chat_log] = React.useState<ChatMode>(defaultChatMode);
+    const in_game_mod_channel = !review_id && inGameModChannel(game_id);
+    const [selected_chat_log, set_selected_chat_log] = React.useState<ChatMode>(
+        in_game_mod_channel ? "hidden" : defaultChatMode,
+    );
     const [variation_name, set_variation_name] = React.useState("");
     const [historical_black, set_historical_black] = React.useState<rest_api.games.Player | null>(
         null,

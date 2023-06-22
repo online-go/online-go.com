@@ -69,14 +69,11 @@ interface GameChatLineProperties {
 export function GameChat(props: GameChatProperties): JSX.Element {
     const user = data.get("user");
     const goban = useGoban();
-    const in_game_mod_channel = !props.review_id && inGameModChannel(props.game_id);
     const defaultChatMode = preferences.get("chat-mode") as ChatMode;
     const ref_chat_log = React.useRef<HTMLDivElement>(null);
     const scrolled_to_bottom = React.useRef(true);
     const [show_quick_chat, setShowQuickChat] = React.useState(false);
-    const [selected_chat_log, setSelectedChatLog] = React.useState<ChatMode>(
-        in_game_mod_channel ? "hidden" : defaultChatMode,
-    );
+    const { selected_chat_log, onSelectedChatModeChange } = props;
     const [show_player_list, setShowPlayerList] = React.useState(false);
 
     const chat_log_hash = React.useRef<{ [k: string]: boolean }>({});
@@ -154,9 +151,9 @@ export function GameChat(props: GameChatProperties): JSX.Element {
         const onAnonymousOverrideChange = () => {
             const in_game_mod_channel = inGameModChannel(props.game_id || props.review_id);
             if (in_game_mod_channel) {
-                setSelectedChatLog("hidden");
+                onSelectedChatModeChange("hidden");
             } else {
-                setSelectedChatLog(defaultChatMode);
+                onSelectedChatModeChange(defaultChatMode);
             }
         };
 
@@ -213,7 +210,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
 
     const toggleChatLog = (isModerator: boolean) => {
         const new_chat_log = nextChatMode(selected_chat_log, isModerator);
-        setSelectedChatLog(new_chat_log);
+        onSelectedChatModeChange(new_chat_log);
         setShowQuickChat(false);
         props.onSelectedChatModeChange(new_chat_log);
     };
