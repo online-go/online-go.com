@@ -666,7 +666,7 @@ function AssociationLink({
         let linker: ((id: string) => string) | undefined;
 
         if (country === "us") {
-            linker = (id: string) => `https://agagd.usgo.org/player/${id}/`;
+            linker = (id: string) => `https://agagd.usgo-archive.org/player/${id}/`;
         }
 
         if (country === "eu") {
