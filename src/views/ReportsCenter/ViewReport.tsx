@@ -504,6 +504,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     gpt={report.automod_to_reported}
                     logByDefault={true}
                     onSelect={claimReport}
+                    onMessage={claimReport}
                 />
 
                 <MessageTemplate
@@ -514,6 +515,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     gpt={report.automod_to_reporter}
                     logByDefault={false}
                     onSelect={claimReport}
+                    onMessage={claimReport}
                 />
             </div>
 

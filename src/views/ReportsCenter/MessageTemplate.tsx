@@ -408,6 +408,7 @@ export function MessageTemplate({
     gpt,
     logByDefault,
     onSelect,
+    onMessage,
 }: {
     title: string;
     player: PlayerCacheEntry;
@@ -416,6 +417,7 @@ export function MessageTemplate({
     gpt: string | null;
     logByDefault: boolean;
     onSelect?: () => void | null;
+    onMessage?: () => void | null;
 }): JSX.Element {
     const [uid] = React.useState(Math.random());
     const [selectedTemplate, setSelectedTemplate] = React.useState<string>(gpt ? "gpt" : "");
@@ -467,6 +469,9 @@ export function MessageTemplate({
             })
             .catch(errorAlerter);
         clear();
+        if (onMessage) {
+            onMessage();
+        }
     };
     const sendSystemPM = () => {
         const pc = getPrivateChat(player.id, player.username);
@@ -479,6 +484,9 @@ export function MessageTemplate({
         }
 
         clear();
+        if (onMessage) {
+            onMessage();
+        }
     };
     const sendPM = () => {
         const pc = getPrivateChat(player.id, player.username);
@@ -490,6 +498,9 @@ export function MessageTemplate({
             });
         }
         clear();
+        if (onMessage) {
+            onMessage();
+        }
     };
 
     const selectTemplate = (e: any) => {
