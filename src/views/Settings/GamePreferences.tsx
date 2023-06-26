@@ -28,7 +28,7 @@ import {
     PreferenceLine,
     PreferenceDropdown,
     MAX_DOCK_DELAY,
-    MIN_AI_VAR_MOVES,
+    MAX_AI_VAR_MOVES,
 } from "SettingsCommon";
 
 export function GamePreferences(): JSX.Element {
@@ -126,18 +126,15 @@ export function GamePreferences(): JSX.Element {
     function setVariationMoveCount(ev) {
         const value = parseInt(ev.target.value);
 
-        if (value >= 0 && value <= 9) {
+        if (value >= 1 && value <= 10) {
             _setVariationMoveCount(value);
         }
     }
     function updateAutoplayDelay(ev) {
-        const delay = parseFloat(ev.target.value);
-
-        if (!isNaN(delay) && delay >= 1 && delay <= 60) {
-            _setAutoplayDelay(delay);
-            preferences.set("autoplay-delay", Math.round(1000 * delay));
-        } else {
-            _setAutoplayDelay(ev.target.value as any);
+        const value = parseInt(ev.target.value);
+        if (value >= 1 && value <= 20) {
+            _setAutoplayDelay(value);
+            preferences.set("autoplay-delay", 1000 * value);
         }
     }
 
@@ -208,12 +205,19 @@ export function GamePreferences(): JSX.Element {
 
             <PreferenceLine title={_("Autoplay delay (in seconds)")}>
                 <input
-                    type="number"
-                    step="0.1"
-                    min="0.1"
+                    type="range"
+                    step="1"
+                    min="1"
+                    max="20"
                     onChange={updateAutoplayDelay}
                     value={autoplay_delay}
                 />
+                <span>
+                    &nbsp;
+                    {interpolate(_("{{delay}} secs"), {
+                        delay: autoplay_delay,
+                    })}
+                </span>
             </PreferenceLine>
 
             <PreferenceLine
@@ -325,15 +329,15 @@ export function GamePreferences(): JSX.Element {
                 <input
                     type="range"
                     step="1"
-                    min={MIN_AI_VAR_MOVES}
-                    max="9"
+                    min="1"
+                    max={MAX_AI_VAR_MOVES}
                     onChange={setVariationMoveCount}
                     value={variation_move_count}
                 />
                 <span>
                     &nbsp;
-                    {variation_move_count === MIN_AI_VAR_MOVES
-                        ? _("Off") // translators: Indicates the dock slide out has been turned off
+                    {variation_move_count === MAX_AI_VAR_MOVES
+                        ? _("Max") // translators: Indicates the dock slide out has been turned off
                         : interpolate(_("{{num_moves}} moves"), {
                               num_moves: variation_move_count,
                           })}

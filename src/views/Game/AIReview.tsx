@@ -622,7 +622,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             errorLogger(e);
         }
 
-        // Reduce moves shown to the valation-move-count from settings
+        // Reduce moves shown to the variation-move-count from settings
         marks = this.trimMaxMoves(marks);
 
         try {
@@ -650,9 +650,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     private trimMaxMoves(marks: { [mark: string]: string }): { [mark: string]: string } {
         // Reduces the number of moves ahead shown in a the variation if the user has set it to non-zero
         const maxMoves = preferences.get("variation-move-count");
-
         // Move object has more than just one move in it and the user has set the non-zero value
-        if (maxMoves > 0 && Object.keys(marks).length > 2) {
+        if (maxMoves < 10 && Object.keys(marks).length > 2) {
             // Get all the moves into an array but leave the black and white keys since we'll append them later
             let marksArray = Object.entries(marks).reduce((result, entry) => {
                 if (entry[0] !== "black" && entry[0] !== "white") {
