@@ -1722,7 +1722,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                 </div>
                 {!(this.props.playerId || null) && (mode === "open" || null) && (
                     <div className="form-group invite-only-challenge-selector">
-                        <label className="control-label" htmlFor="challenge-invite-only">
+                        <label className="control-label">
                             {pgettext(
                                 "A checkbox to make a challenge open only to invited people who have the link to it",
                                 "Invite-only",
