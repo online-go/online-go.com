@@ -65,8 +65,8 @@ interface Rule {
     value?: string | number | boolean;
 }
 
-type Action = "ACCEPT" | "REJECT" | "COLLECT_VPN_INFORMATION";
-const ACTIONS: Array<Action> = ["ACCEPT", "REJECT", "COLLECT_VPN_INFORMATION"];
+type Action = "ACCEPT" | "REJECT" | "REPORT" | "COLLECT_VPN_INFORMATION";
+const ACTIONS: Array<Action> = ["ACCEPT", "REJECT", "REPORT", "COLLECT_VPN_INFORMATION"];
 
 interface MatchHistoryEntry {
     id: number;
