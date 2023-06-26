@@ -41,6 +41,7 @@ import { DismissableMessages } from "DismissableMessages";
 import { Experiment, Variant, Default } from "Experiment";
 import { EXV6Overview } from "./EXV6Overview";
 import { EmailBanner } from "EmailBanner";
+import { PaymentProblemBanner } from "PaymentProblemBanner";
 import { ActiveDroppedGameList } from "ActiveDroppedGameList";
 
 declare let ogs_missing_translation_count: number;
@@ -168,6 +169,7 @@ export class OldOverview extends React.Component<{}, OverviewState> {
                     <div className="left">
                         <DismissableMessages />
                         <EmailBanner />
+                        <PaymentProblemBanner />
                         <ActiveAnnouncements />
                         <ChallengesList onAccept={() => this.refresh()} />
                         <InviteList />

@@ -51,7 +51,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     const user = useUser();
     const [moderatorNote, setModeratorNote] = React.useState("");
     const [moderators, setModerators] = React.useState(cached_moderators);
-    const [report, setReport] = React.useState(null);
+    const [report, setReport] = React.useState<Report>(null);
     const [error, setError] = React.useState(null);
     const [moderator_id, setModeratorId] = React.useState(report?.moderator?.id);
     const [reportState, setReportState] = React.useState(report?.state);
@@ -504,6 +504,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     gpt={report.automod_to_reported}
                     logByDefault={true}
                     onSelect={claimReport}
+                    onMessage={claimReport}
                 />
 
                 <MessageTemplate
@@ -514,6 +515,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     gpt={report.automod_to_reporter}
                     logByDefault={false}
                     onSelect={claimReport}
+                    onMessage={claimReport}
                 />
             </div>
 

@@ -491,7 +491,7 @@ function ProfileAndQuickSettingsBits({ settingsNavLink }: { settingsNavLink: any
 function BanIndicator(): JSX.Element {
     return (
         <div className="BanIndicator">
-            <h3>{_("You have been banned")}</h3>
+            <h3>{_("Your account has been suspended")}</h3>
             <div>
                 <Link to="/appeal">
                     {pgettext("Link for banned player to use to appeal their ban", "Appeal here")}

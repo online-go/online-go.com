@@ -2023,7 +2023,7 @@ function rejectionDetailsToMessage(details: RejectionDetails): string | undefine
     switch (details.rejection_code) {
         case "blacklisted":
             return pgettext(
-                "The user has been banned by the operator of the bot from playing agains the bot.",
+                "The user has been blocked by the operator of the bot from playing against the bot.",
                 "The operator of this bot will not let you play against it.",
             );
 

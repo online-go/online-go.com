@@ -4,6 +4,7 @@ import { act, cleanup, fireEvent, render, screen /* waitFor */ } from "@testing-
 import * as React from "react";
 import * as data from "data";
 import { GobanContext } from "./goban_context";
+import { OgsHelpProvider } from "OgsHelpProvider";
 
 const LOGGED_IN_USER = {
     anonymous: false,
@@ -214,6 +215,14 @@ describe("CancelButton", () => {
     */
 });
 
+function WrapTest(props: { goban: Goban; children: any }): JSX.Element {
+    return (
+        <OgsHelpProvider>
+            <GobanContext.Provider value={props.goban}>{props.children}</GobanContext.Provider>
+        </OgsHelpProvider>
+    );
+}
+
 describe("PlayButtons", () => {
     test("normal game when it's my opponent's turn.", () => {
         const goban = new Goban({
@@ -229,9 +238,9 @@ describe("PlayButtons", () => {
         });
 
         render(
-            <GobanContext.Provider value={goban}>
+            <WrapTest goban={goban}>
                 <PlayButtons />
-            </GobanContext.Provider>,
+            </WrapTest>,
         );
 
         // Present
@@ -259,9 +268,9 @@ describe("PlayButtons", () => {
         });
 
         render(
-            <GobanContext.Provider value={goban}>
+            <WrapTest goban={goban}>
                 <PlayButtons />
-            </GobanContext.Provider>,
+            </WrapTest>,
         );
 
         // Present
@@ -289,9 +298,9 @@ describe("PlayButtons", () => {
         });
         goban.engine.undo_requested = 4;
         render(
-            <GobanContext.Provider value={goban}>
+            <WrapTest goban={goban}>
                 <PlayButtons />
-            </GobanContext.Provider>,
+            </WrapTest>,
         );
 
         // Present
@@ -318,9 +327,9 @@ describe("PlayButtons", () => {
             },
         });
         render(
-            <GobanContext.Provider value={goban}>
+            <WrapTest goban={goban}>
                 <PlayButtons />
-            </GobanContext.Provider>,
+            </WrapTest>,
         );
 
         act(() => {
@@ -355,9 +364,9 @@ describe("PlayButtons", () => {
         // want to mess with GobanCanvas in these tests.
         goban.submit_move = jest.fn();
         render(
-            <GobanContext.Provider value={goban}>
+            <WrapTest goban={goban}>
                 <PlayButtons />
-            </GobanContext.Provider>,
+            </WrapTest>,
         );
 
         // Present
@@ -389,9 +398,9 @@ describe("PlayButtons", () => {
         });
 
         render(
-            <GobanContext.Provider value={goban}>
+            <WrapTest goban={goban}>
                 <PlayButtons />
-            </GobanContext.Provider>,
+            </WrapTest>,
         );
 
         // Present
@@ -413,9 +422,9 @@ describe("PlayButtons", () => {
         });
 
         render(
-            <GobanContext.Provider value={goban}>
+            <WrapTest goban={goban}>
                 <PlayButtons />
-            </GobanContext.Provider>,
+            </WrapTest>,
         );
 
         // Present
@@ -442,9 +451,9 @@ describe("PlayButtons", () => {
         });
 
         render(
-            <GobanContext.Provider value={goban}>
+            <WrapTest goban={goban}>
                 <PlayButtons />
-            </GobanContext.Provider>,
+            </WrapTest>,
         );
 
         // go back two moves
@@ -472,9 +481,9 @@ describe("PlayButtons", () => {
         });
 
         render(
-            <GobanContext.Provider value={goban}>
+            <WrapTest goban={goban}>
                 <PlayButtons />
-            </GobanContext.Provider>,
+            </WrapTest>,
         );
         // opponent requests undo
         act(() => {
@@ -499,9 +508,9 @@ describe("PlayButtons", () => {
         });
 
         render(
-            <GobanContext.Provider value={goban}>
+            <WrapTest goban={goban}>
                 <PlayButtons />
-            </GobanContext.Provider>,
+            </WrapTest>,
         );
 
         // Present

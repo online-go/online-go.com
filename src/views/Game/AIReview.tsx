@@ -24,6 +24,7 @@ import { UIPush } from "UIPush";
 import { AIReviewStream, ai_request_variation_analysis } from "AIReviewStream";
 import { openBecomeASiteSupporterModal } from "Supporter";
 import { errorAlerter, errorLogger, Timeout } from "misc";
+import { toast } from "toast";
 import { get, post } from "requests";
 import { _, pgettext, interpolate } from "translate";
 import { close_all_popovers } from "popover";
@@ -285,7 +286,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                 })
                     .then((res) => {
                         sanityCheck(res);
-                        void alert.fire(_("Analysis started"));
+                        toast(<div>{_("Analysis started")}</div>, 2000);
                     })
                     .catch(errorAlerter);
             } else {

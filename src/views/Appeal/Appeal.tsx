@@ -70,8 +70,8 @@ export function Appeal(props: { player_id?: number }): JSX.Element {
     const placeholder = mod
         ? "You can respond to the user's appeal here. Click 'hidden' for the reponse to only be visible to other moderators."
         : pgettext(
-              "This text is shown when a user needs to appeal a ban from the site.",
-              "If you would like to appeal this ban, please enter your appeal here and it will be reviewed by a moderator. Second chances are sometimes offered if we can be assured the reason for the ban will not be repeated.",
+              "This text is shown when a user needs to appeal the suspension of their account.",
+              "If you would like to appeal this suspension, please enter your appeal here and it will be reviewed by a moderator. Second chances are sometimes offered if we can be assured the reason for the suspension will not be repeated.",
           );
 
     return (
@@ -86,14 +86,17 @@ export function Appeal(props: { player_id?: number }): JSX.Element {
                     )}
                 </h1>
             ) : still_banned ? (
-                <h1>{_("You, or someone on your network, has been banned from the site. ")}</h1>
+                <h1>{_("Your account has been suspended. ")}</h1>
             ) : (
-                <h1>{_("Your ban has been lifted, welcome back.")}</h1>
+                <h1>{_("Your account has been re-activated, welcome back.")}</h1>
             )}
             {ban_reason && still_banned && (
                 <h2>
                     {interpolate(
-                        pgettext("Reason the player was banned", "Reason for ban: {{reason}}"),
+                        pgettext(
+                            "Reason the player's account was suspended",
+                            "Reason for suspension: {{reason}}",
+                        ),
                         {
                             reason: ban_reason,
                         },
@@ -102,9 +105,15 @@ export function Appeal(props: { player_id?: number }): JSX.Element {
             )}
             {ban_expiration && still_banned && (
                 <h2>
-                    {interpolate(pgettext("Expiration of the ban", "Ban expires: {{expiration}}"), {
-                        expiration: moment(ban_expiration).format("LLL"),
-                    })}
+                    {interpolate(
+                        pgettext(
+                            "When their account will be restored",
+                            "Supension expires: {{expiration}}",
+                        ),
+                        {
+                            expiration: moment(ban_expiration).format("LLL"),
+                        },
+                    )}
                 </h2>
             )}
             {state && (

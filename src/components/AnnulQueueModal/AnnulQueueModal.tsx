@@ -161,17 +161,15 @@ export function AnnulQueueModal({
         let moderation_note: string | null = null;
         do {
             moderation_note = prompt(
-                `Annulling ${validGameIds.length} of ${currentGame.player.username}'s games.\nEnter moderation note:  ($PLAYER will include link for ${currentGame.player.username})`,
+                `Annulling ${validGameIds.length} of ${currentGame.player.username}'s games.\nEnter moderation note: (will be entered with '${currentGame.player.username} mass annull:')`,
             );
 
             if (moderation_note == null) {
                 return null;
             }
-            moderation_note = moderation_note
-                .trim()
-                .replace(/\$PLAYER/i, `player ${currentGame.player.id}`);
+            moderation_note = moderation_note.trim();
         } while (moderation_note === "");
-        return moderation_note;
+        return `${currentGame.player.username} mass annul: ${moderation_note}`;
     };
 
     // Annul the specified games

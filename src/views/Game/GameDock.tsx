@@ -23,6 +23,7 @@ import { useUser } from "hooks";
 import { api1, post, del } from "requests";
 import { Dock } from "Dock";
 import { Link } from "react-router-dom";
+import { toast } from "toast";
 import { _, pgettext } from "translate";
 import { openACLModal } from "ACLModal";
 import { openGameLinkModal } from "./GameLinkModal";
@@ -299,7 +300,7 @@ export function GameDock({
             engine: "katago",
             type: analysis_type,
         })
-            .then(() => void alert.fire(_("Analysis started")))
+            .then(() => toast(<div>{_("Analysis started")}</div>, 2000))
             .catch(errorAlerter);
     };
 

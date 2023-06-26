@@ -37,7 +37,8 @@ export type ReportType =
     | "escaping"
     | "appeal"
     | "other"
-    | "warning"; // for moderators only
+    | "warning" // for moderators only
+    | "troll"; // system generated, for moderators only
 
 export interface ReportDescription {
     type: ReportType;
@@ -139,6 +140,18 @@ export const report_categories: ReportDescription[] = [
         description: pgettext(
             "An option for moderators only, to warn players",
             "Type the warning text below",
+        ),
+        moderator_only: true,
+    },
+    {
+        type: "troll",
+        title: pgettext(
+            "An option for moderators only, alert moderators to troll accounts",
+            "Troll",
+        ),
+        description: pgettext(
+            "Moderators can record information about suspect accounts",
+            "Put any information below",
         ),
         moderator_only: true,
     },
