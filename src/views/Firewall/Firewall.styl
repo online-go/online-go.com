@@ -21,6 +21,13 @@
     margin-left: auto;
     margin-right: auto;
 
+    .firewall-rule-header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        padding-bottom: 0.5rem;
+    }
+
     .new-rule {
         themed background-color shade5
         margin-top: 2rem;
@@ -28,7 +35,7 @@
         margin-bottom: 4rem;
     }
 
-    .header {
+    .config {
         > span, > input {
             margin-left: 1rem;
         }
@@ -69,7 +76,7 @@
     .buttons {
         text-align: right;
         margin: 1rem;
-        padding-bottom: 5rem;
+        padding-bottom: 3rem;
     }
 
     .test-results {
@@ -83,7 +90,7 @@
         display: inline-block;
         width: 50rem;
         max-width: 90vw;
-        
+
         > span { 
             margin-left: 1rem;
         }
