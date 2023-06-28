@@ -26,6 +26,11 @@
         flex-direction: row;
         justify-content: space-between;
         padding-bottom: 0.5rem;
+
+        .notes {
+            flex-grow: 2; // ensure the notes have as much room as possible
+            margin-left: 5rem;  // A slightly hacky way to stop it bumping into the owner in an ugly way
+        }
     }
 
     .new-rule {
