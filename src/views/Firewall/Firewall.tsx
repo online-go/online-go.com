@@ -65,8 +65,8 @@ interface Rule {
     value?: string | number | boolean;
 }
 
-type Action = "ACCEPT" | "REJECT" | "COLLECT_VPN_INFORMATION";
-const ACTIONS: Array<Action> = ["ACCEPT", "REJECT", "COLLECT_VPN_INFORMATION"];
+type Action = "ACCEPT" | "REJECT" | "REPORT" | "COLLECT_VPN_INFORMATION";
+const ACTIONS: Array<Action> = ["ACCEPT", "REJECT", "REPORT", "COLLECT_VPN_INFORMATION"];
 
 interface MatchHistoryEntry {
     id: number;
@@ -90,6 +90,7 @@ interface Network {
 
 interface FirewallRule {
     id: number;
+    owner?: number;
     active: boolean;
     priority: number;
     rule: Rule;
@@ -251,7 +252,23 @@ function FirewallRuleRow({
 
     return (
         <div className="FirewallRuleRow">
-            <div className="header">
+            <div className="firewall-rule-header">
+                <input
+                    className="notes"
+                    placeholder="Notes"
+                    value={notes}
+                    onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
+                        firewall_rule.notes = ev.target.value;
+                        setNotes(ev.target.value);
+                    }}
+                />
+                {(firewall_rule.owner || null) && (
+                    <span>
+                        Responsible: <Player user={firewall_rule.owner} />
+                    </span>
+                )}
+            </div>
+            <div className="config">
                 <label>{firewall_rule.active ? "Active" : "Inactive"}</label>
                 <input
                     type="checkbox"
@@ -277,16 +294,6 @@ function FirewallRuleRow({
                 </select>
 
                 <span className="priority">Priority: {firewall_rule.priority}</span>
-
-                <input
-                    className="notes"
-                    placeholder="Notes"
-                    value={notes}
-                    onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
-                        firewall_rule.notes = ev.target.value;
-                        setNotes(ev.target.value);
-                    }}
-                />
             </div>
 
             <div>

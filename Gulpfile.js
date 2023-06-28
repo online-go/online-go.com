@@ -239,6 +239,7 @@ function dev_server(done) {
     devserver.use("/disconnect", backend_proxy("/disconnect"));
     devserver.use("/OGSScoreEstimator", backend_proxy("/OGSScoreEstimator"));
     devserver.use("/oje", backend_proxy("/oje"));
+    devserver.use("/firewall", backend_proxy("/firewall"));
 
     devserver.get("/locale/*", (req, res) => {
         let options = {

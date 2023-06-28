@@ -41,7 +41,7 @@ export const defaults = {
     "double-click-submit-correspondence": false,
     "double-click-submit-live": false,
     "variation-stone-transparency": 0.6,
-    "variation-move-count": 0,
+    "variation-move-count": 10,
     "visual-undo-request-indicator": true,
     "dynamic-title": true,
     "function-keys-enabled": false,

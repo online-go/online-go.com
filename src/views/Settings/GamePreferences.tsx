@@ -24,7 +24,12 @@ import { usePreference, ValidPreference } from "preferences";
 
 import { Toggle } from "Toggle";
 
-import { PreferenceLine, PreferenceDropdown, MAX_DOCK_DELAY } from "SettingsCommon";
+import {
+    PreferenceLine,
+    PreferenceDropdown,
+    MAX_DOCK_DELAY,
+    MAX_AI_VAR_MOVES,
+} from "SettingsCommon";
 
 export function GamePreferences(): JSX.Element {
     const [dock_delay, _setDockDelay]: [number, (x: number) => void] = React.useState(
@@ -121,16 +126,15 @@ export function GamePreferences(): JSX.Element {
     function setVariationMoveCount(ev) {
         const value = parseInt(ev.target.value);
 
-        if (value >= 0 && value <= 9) {
+        if (value >= 1 && value <= 10) {
             _setVariationMoveCount(value);
         }
     }
     function updateAutoplayDelay(ev) {
-        const delay = parseFloat(ev.target.value);
-
-        if (delay >= 0.1) {
-            _setAutoplayDelay(delay);
-            preferences.set("autoplay-delay", Math.round(1000 * delay));
+        const value = parseInt(ev.target.value);
+        if (value >= 1 && value <= 20) {
+            _setAutoplayDelay(value);
+            preferences.set("autoplay-delay", 1000 * value);
         }
     }
 
@@ -201,12 +205,19 @@ export function GamePreferences(): JSX.Element {
 
             <PreferenceLine title={_("Autoplay delay (in seconds)")}>
                 <input
-                    type="number"
-                    step="0.1"
-                    min="0.1"
+                    type="range"
+                    step="1"
+                    min="1"
+                    max="20"
                     onChange={updateAutoplayDelay}
                     value={autoplay_delay}
                 />
+                <span>
+                    &nbsp;
+                    {interpolate(_("{{delay}} secs"), {
+                        delay: autoplay_delay,
+                    })}
+                </span>
             </PreferenceLine>
 
             <PreferenceLine
@@ -294,29 +305,41 @@ export function GamePreferences(): JSX.Element {
                 )}
             >
                 <input
-                    type="number"
+                    type="range"
                     step="0.1"
                     min="0.0"
                     max="1.0"
                     onChange={setVariationStoneTransparency}
                     value={variation_stone_transparency}
                 />
+                <span>
+                    &nbsp;
+                    {interpolate(_("{{transparency_level}}"), {
+                        transparency_level: variation_stone_transparency,
+                    })}
+                </span>
             </PreferenceLine>
 
             <PreferenceLine
                 title={_("AI variations shown")}
-                description={_(
-                    "Maximum number of moves shown in AI variations. 0 to disable the limit and show all available moves.",
-                )}
+                description={_("Maximum number of moves shown in AI variations")}
             >
                 <input
-                    type="number"
+                    type="range"
                     step="1"
-                    min="0"
-                    max="9"
+                    min="1"
+                    max={MAX_AI_VAR_MOVES}
                     onChange={setVariationMoveCount}
                     value={variation_move_count}
                 />
+                <span>
+                    &nbsp;
+                    {variation_move_count === MAX_AI_VAR_MOVES
+                        ? _("Max") // translators: Indicates the dock slide out has been turned off
+                        : interpolate(_("{{num_moves}} moves"), {
+                              num_moves: variation_move_count,
+                          })}
+                </span>
             </PreferenceLine>
         </div>
     );
