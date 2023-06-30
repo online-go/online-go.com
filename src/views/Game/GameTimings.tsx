@@ -34,12 +34,18 @@ interface GameTimingProperties {
 
 export function GameTimings(props: GameTimingProperties): JSX.Element {
     const show_seconds_nicely = (duration: moment.Duration) =>
-        duration < moment.duration(60000)
-            ? `${moment.duration(duration).asSeconds().toFixed(1)}s`
-            : moment.duration(duration).format();
+        duration < moment.duration(60 * 1000) ? (
+            <span className="timing-seconds">
+                {moment.duration(duration).asSeconds().toFixed(1)}
+            </span>
+        ) : duration < moment.duration(60 * 60 * 1000) ? (
+            <span className="timing-slow-live">{moment.duration(duration).format()}</span>
+        ) : (
+            <span className="timing-slow">{moment.duration(duration).format()}</span>
+        );
 
     // needed because end_time and start_time are only to the nearest second
-    const show_seconds_resolution = (duration: moment.Duration) => {
+    const show_seconds_resolution = (duration: moment.Duration): string => {
         if (duration < moment.duration(1000)) {
             return `${moment.duration(duration).asSeconds().toFixed(2)}s`;
         } else if (duration < moment.duration(60000)) {
@@ -223,8 +229,8 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
                 <hr />
             </div>
             <div>Totals:</div>
-            <div>{show_seconds_nicely(black_elapsed)}</div>
-            <div>{show_seconds_nicely(white_elapsed)}</div>
+            <div>{moment.duration(black_elapsed).format()}</div>
+            <div>{moment.duration(white_elapsed).format()}</div>
             <div>{/* empty cell at end of row */}</div>
             <div className="span-3">Final action:</div>
             <div>
