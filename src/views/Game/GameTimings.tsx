@@ -20,10 +20,10 @@ import "moment-duration-format";
 
 import * as React from "react";
 
-import { JGOFMove, AdHocPackedMove } from "goban";
+import { GobanMovesArray } from "goban";
 
 interface GameTimingProperties {
-    moves: Array<AdHocPackedMove> | Array<JGOFMove>;
+    moves: GobanMovesArray;
     start_time: number;
     end_time: number;
     free_handicap_placement: boolean;
