@@ -78,18 +78,16 @@ export function RengoManagementPane(props: RengoManagementPaneProperties): JSX.E
 
     return (
         <div className="RengoManagementPane" ref={rengoManagementPane}>
-            {!the_challenge.rengo_auto_start && (
-                <div className="rengo-challenge-status">
-                    <span>
-                        {own_challenge && challenge_ready_to_start
-                            ? _("Waiting for your decision to start...")
-                            : challenge_ready_to_start
-                            ? _("Waiting for organiser to start...")
-                            : _("Waiting for Rengo players...")}
-                    </span>
-                    <span className="challenge-created-at">(created: {created_at})</span>
-                </div>
-            )}
+            <div className="rengo-challenge-status">
+                <span>
+                    {own_challenge && challenge_ready_to_start && !the_challenge.rengo_auto_start
+                        ? _("Waiting for your decision to start...")
+                        : challenge_ready_to_start && !the_challenge.rengo_auto_start
+                        ? _("Waiting for organiser to start...")
+                        : _("Waiting for Rengo players...")}
+                </span>
+                <span className="challenge-created-at">(created: {created_at})</span>
+            </div>
             {!!the_challenge.rengo_auto_start && (
                 <div className="auto-start-status">
                     {interpolate(_("Game auto-starts when {{auto_start_remaining}} more join..."), {
