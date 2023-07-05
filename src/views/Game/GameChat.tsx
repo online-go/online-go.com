@@ -513,6 +513,11 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
     let chat_id = props.review_id ? "r." + props.review_id : "g." + props.game_id;
     chat_id += "." + line.channel + "." + line.chat_id;
 
+    const show_rank =
+        !(line.player_id in goban.engine.player_pool) ||
+        goban.engine.config.ranked ||
+        goban.engine.rengo;
+
     return (
         <div className={`chat-line-container`} data-chat-id={chat_id}>
             {move_number}
@@ -526,7 +531,9 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
                         ]{" "}
                     </span>
                 )}
-                {(line.player_id || null) && <Player user={line} flare disableCacheUpdate />}
+                {(line.player_id || null) && (
+                    <Player user={line} rank={show_rank} flare disableCacheUpdate />
+                )}
                 <span className="body">
                     {third_person ? " " : ": "}
                     <MarkupChatLine line={line} />
