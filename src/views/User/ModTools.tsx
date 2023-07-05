@@ -165,7 +165,7 @@ export function ModTools(props: ModToolsProps): JSX.Element {
                                 ),
                             },
                             {
-                                header: "BID Alias",
+                                header: "Shared BIDs",
                                 className: "bid_match",
                                 render: (X) => X.bid_match && <i className="fa fa-check" />,
                             },
