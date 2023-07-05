@@ -1164,6 +1164,12 @@ export class Play extends React.Component<{}, PlayState> {
         }
     };
 
+    startOwnRengoChallenge = (challenge: Challenge): Promise<void> => {
+        // stop the person from pressing "Start" twice impatiently, while we get around to removing this challenge
+        this.closeChallengeManagementPane(challenge.challenge_id);
+        return rengo_utils.startOwnRengoChallenge(challenge);
+    };
+
     rengoManageListItem = (props: { C: Challenge; user: any }) => {
         const { C, user } = { ...props };
         return (
@@ -1186,7 +1192,7 @@ export class Play extends React.Component<{}, PlayState> {
                             user={user}
                             challenge_id={C.challenge_id}
                             rengo_challenge_list={this.state.rengo_list}
-                            startRengoChallenge={rengo_utils.startOwnRengoChallenge}
+                            startRengoChallenge={this.startOwnRengoChallenge}
                             cancelChallenge={this.cancelOpenChallenge}
                             withdrawFromRengoChallenge={this.unNominateForRengoChallenge}
                             joinRengoChallenge={rengo_utils.nominateForRengoChallenge}
