@@ -54,6 +54,7 @@ type TimeControlSystem = TimeControlTypes.TimeControlSystem;
 function challengeDtoToSeekgraphChallengeSubset(c: ChallengeDTO, user_id: number): Challenge {
     return {
         challenge_id: c.id,
+        created: c.created,
         user_id: c.challenger.id, // number;
         username: c.challenger.username, // string;
 
