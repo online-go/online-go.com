@@ -195,7 +195,8 @@ export const WARNING_TEMPLATES: MessageTemplates = {
 
                 After passing, promptly accept the correct score.
 
-                Repeated failure to do so could lead to a suspension of your account.`,
+                If in doubt about this sort of situation. please ask for help in chat
+                or the forums.`,
             show_warning_button: true,
         },
     },
