@@ -112,6 +112,7 @@ declare namespace rest_api {
     // you would expect this to be what's on any route returning an Open (not Direct) challenge.
     interface OpenChallengeDTO {
         id: number;
+        created?: string | null;
         challenger: MinimalPlayerDTO;
         group: number;
         game?: GameDTO; // not clear why/when this would not be present
