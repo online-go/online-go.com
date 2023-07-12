@@ -58,6 +58,7 @@ export const GoResources = () => {
     const hk = getLanguageFlag("hk", country, "hk");
     const gr = "gr";
     const br = "br";
+    const _in = "in";
     const ar = getLanguageFlag("spanish", country, "ar");
 
     return (
@@ -440,9 +441,9 @@ export const GoResources = () => {
                                 href="https://www.youtube.com/@TakumiGoAcademy"
                             />,
                             <BasicResource
-                                countries={[en]}
-                                title="Jonathan Markowitz"
-                                href="https://www.youtube.com/user/KNMeepsie"
+                                countries={[_in, en]}
+                                title="Association of Indian Go Players"
+                                href="https://www.youtube.com/@aigpindia"
                             />,
                             <span>
                                 <Flag country={en} />{" "}
@@ -1072,6 +1073,11 @@ export const GoResources = () => {
                     <dl>
                         <dt>{_("Organizations")}</dt>
                         {scramble(
+                            <BasicResource
+                                countries={["in"]}
+                                title="Association of Indian Go Players"
+                                href="https://aigp.org.in/"
+                            />,
                             <BasicResource
                                 countries={["_cat"]}
                                 title="Asociatia Dorna GO"
