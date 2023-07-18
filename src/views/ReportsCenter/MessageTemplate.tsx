@@ -41,7 +41,7 @@ export const WARNING_TEMPLATES: MessageTemplates = {
 
                 Please consider resigning games rather than letting them time
                 out, as this is fairer to your opponents than making them wait for
-                your clock to run out.`,
+                your clock to run out. Thank you.`,
             show_warning_button: true,
         },
     },
