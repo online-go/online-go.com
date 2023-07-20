@@ -89,6 +89,7 @@ export class Team extends React.PureComponent<{}, any> {
             { id: 52288, country: ["se"], languages: [se, en] }, //antonTobi
             { id: 209826, country: ["nl"], languages: [nl, gb, jp] }, //Vsotvep
             { id: 85719, country: ["fi"], languages: [fi, gb] }, //KoBa
+            { id: 309835, country: ["us"], languages: [en] }, //Feijoa
         ];
         const developers = [
             { id: 648853, username: "GreenAsJade", country: ["au"], languages: [en] },
