@@ -1111,7 +1111,7 @@ export const GoResources = () => {
                             <BasicResource
                                 countries={[au]}
                                 title="Australian Go Association"
-                                href="http://www.australiango.asn.au/"
+                                href="https://www.australiango.asn.au/"
                             />,
                             <BasicResource
                                 countries={[un]}
@@ -1127,6 +1127,11 @@ export const GoResources = () => {
                                 countries={[eu]}
                                 title="European Go Federation"
                                 href="http://www.eurogofed.org/"
+                            />,
+                            <BasicResource
+                                countries={["nz"]}
+                                title="New Zealand Go Society"
+                                href="https://go.org.nz"
                             />,
                             <BasicResource
                                 countries={["cy"]}
