@@ -64,7 +64,9 @@ export const WARNING_TEMPLATES: MessageTemplates = {
             message: `
                 Our records show that you attempted to illegally change the score at the end of
                 game #XXXXXXXX. This is a form of cheating and is prohibited by the
-                OGS [Terms of Service](https://online-go.com/docs/terms-of-service).
+                OGS Terms of Service.
+
+                https://online-go.com/docs/terms-of-service
 
                 We ask that you end your games properly by accepting the correct score
                 immediately after passing. Further instances of score cheating will result
@@ -271,9 +273,9 @@ export const WARNING_TEMPLATES: MessageTemplates = {
                 of harrasement, which is not allowed and can result in punitive
                 actions taken.
 
-                See our [Terms of
-                Service](https://online-go.com/docs/terms-of-service) for more
-                information.`,
+                See our Terms of Service for more information.
+
+                https://online-go.com/docs/terms-of-service`,
             show_warning_button: true,
         },
     },
