@@ -386,6 +386,15 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
             Thanks!`,
             show_warning_button: true,
         },
+        "Don't hassle about AI": {
+            message: `
+                If you suspect your opponent of using AI, please tell us and not them.
+                When actual cheaters are warned about suspicion, they change their behaviour,
+                it makes it harder to detect.   Also, accusations of AI use feel like harrasment,
+                which is not allowed.  Please finish the game the best you can and report it - this
+                provides the best evidence, and we will investigate`,
+            show_warning_button: false,
+        },
         "Verbal abuse": {
             message: `
                 Thanks for bringing the misbehavior to our attention. We also
