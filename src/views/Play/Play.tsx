@@ -261,11 +261,23 @@ export class Play extends React.Component<{}, PlayState> {
     };
 
     cancelOpenChallenge = (challenge: Challenge) => {
-        // stop trying to show the cancelled challenge
-        this.closeChallengeManagementPane(challenge.challenge_id);
+        alert
+            .fire({
+                text: _("Are you sure you want to delete this rengo challenge?"),
+                showCancelButton: true,
+                confirmButtonText: _("Yes"),
+                cancelButtonText: _("Cancel"),
+            })
+            .then(({ value: yes }) => {
+                if (yes) {
+                    // stop trying to show the cancelled challenge
+                    this.closeChallengeManagementPane(challenge.challenge_id);
 
-        // do the action
-        rengo_utils.cancelChallenge(challenge).catch(errorAlerter);
+                    // do the action
+                    rengo_utils.cancelChallenge(challenge).catch(errorAlerter);
+                }
+            })
+            .catch(() => 0);
 
         this.unfreezeChallenges();
     };
