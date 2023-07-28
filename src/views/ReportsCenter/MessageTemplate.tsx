@@ -285,13 +285,13 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
     "Good Report": {
         "Asked beginner opponent to be respectful of time": {
             message: `
-                Thanks for your report, I have asked your newcomer opponent to be more
+                Thanks for your report about #REPORTED, I have asked your newcomer opponent to be more
                 respectful of people’s time.`,
             show_warning_button: false,
         },
         "Beginner end game scoring": {
             message: `
-                Thanks for the report. It seems you were playing against a
+                Thanks for the report about #REPORTED. It seems you were playing against a
                 complete beginner, so I have tried to explain that games should
                 be ended correctly, to pass when their opponent pass and to
                 trust the auto-score.`,
@@ -299,59 +299,55 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
         },
         "First warning given": {
             message: `
-                Thank you for your report, the player has been given a formal warning.`,
+                Thank you for your report, #REPORTED has been given a formal warning.`,
             show_warning_button: false,
         },
         "First warning given - escaping": {
             message: `
-                Thank you for your report, the player has been given a formal warning regarding escaping.`,
+                Thank you for your report, #REPORTED has been given a formal warning regarding escaping.`,
             show_warning_button: false,
         },
         "Final warning given": {
             message: `
-                Thank you for your report, the player has been given a formal warning, and their account will be suspended if that continues.`,
+                Thank you for your report, #REPORTED has been given a formal warning, and their account will be suspended if that continues.`,
             show_warning_button: false,
         },
         "Formal warning about chat abuse": {
             message: `
-            Thanks for your report.
-
-            That person has been given a formal warning, and their chat privileges at OGS will be removed if that behaviour continues.`,
+            Thanks for your report, #REPORTED has been given a formal warning, and their chat privileges at OGS will be removed if that behaviour continues.`,
             show_warning_button: false,
         },
         "Chat banned": {
             message: `
-            Thanks for your report.
-
-            That person's chat privilege at OGS has been removed. Other users will no longer see any chat that they type.`,
+            Thanks for your report, #REPORTED's chat privilege at OGS has been removed. Other users will no longer see any chat that they type.`,
             show_warning_button: false,
         },
         "Repeat offender banned": {
             message: `
-                Thank you for your report, that repeat offender's account has been suspended.`,
+                Thank you for your report about #REPORTED.  That repeat offender's account has been suspended.`,
             show_warning_button: false,
         },
         "Reported player banned": {
             message: `
-                Thank you for your report, the players account has been suspended.`,
+                Thank you for your report about #REPORTED. That player's account has been suspended.`,
             show_warning_button: false,
         },
         "Contacted player": {
             message: `
-                Thank you for your report, I have contacted the player about it.`,
+                Thank you for your report about #REPORTED. I have contacted the player about it.`,
             show_warning_button: false,
         },
     },
     "Bad Report": {
         "No AI use": {
             message: `
-                Thank you for your report. Our detection tools did not flag any AI use in that game.
+                Thank you for your report about possible AI use by #REPORTED. Our detection tools did not flag any AI use in that game.
                 If you think there’s something we’ve overlooked please file a new report with more details.`,
             show_warning_button: false,
         },
         "No sandbagging": {
             message: `
-                Thank you for bringing the possible instance of sandbagging to
+                Thank you for bringing the possible instance of sandbagging by #REPORTED to
                 our attention. We looked into the report and found little
                 evidence of deliberate losing on purpose. But we’ll still keep an
                 eye on the situation and take appropriate action if necessary.
@@ -361,7 +357,7 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
         },
         "No violation": {
             message: `
-                Thank you for your report. We looked into it and found no
+                Thank you for your report about #REPORTED. We looked into it and found no
                 behavior that violates our terms of service or community
                 guidelines. But we’ll still keep an eye on the situation and take
                 appropriate action if necessary. Thank you for helping keep OGS
@@ -390,6 +386,15 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
             Thanks!`,
             show_warning_button: true,
         },
+        "Don't hassle about AI": {
+            message: `
+                If you suspect your opponent of using AI, please tell us and not them.
+                When actual cheaters are warned about suspicion, they change their behaviour,
+                it makes it harder to detect.   Also, accusations of AI use feel like harrasment,
+                which is not allowed.  Please finish the game the best you can and report it - this
+                provides the best evidence, and we will investigate`,
+            show_warning_button: false,
+        },
         "Verbal abuse": {
             message: `
                 Thanks for bringing the misbehavior to our attention. We also
@@ -406,6 +411,7 @@ export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
 export function MessageTemplate({
     title,
     player,
+    reported,
     templates,
     game_id,
     gpt,
@@ -415,6 +421,7 @@ export function MessageTemplate({
 }: {
     title: string;
     player: PlayerCacheEntry;
+    reported: PlayerCacheEntry;
     templates: MessageTemplates;
     game_id: number | undefined;
     gpt: string | null;
@@ -439,6 +446,7 @@ export function MessageTemplate({
                     /#XX+/g,
                     game_id ? `[${game_id.toString()}](/game/${game_id.toString()})` : "#XXXXXXXX",
                 )
+                .replace(/#REPORTED/, reported ? reported.username : "that player")
                 .replace(/\n[ \t]+/g, "\n")
                 .replace(/[ \t]+\n/g, "\n")
                 .replace(/([^\n])[\n]([^\n])/g, "$1 $2");

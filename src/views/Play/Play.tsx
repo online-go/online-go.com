@@ -261,11 +261,23 @@ export class Play extends React.Component<{}, PlayState> {
     };
 
     cancelOpenChallenge = (challenge: Challenge) => {
-        // stop trying to show the cancelled challenge
-        this.closeChallengeManagementPane(challenge.challenge_id);
+        alert
+            .fire({
+                text: _("Are you sure you want to delete this rengo challenge?"),
+                showCancelButton: true,
+                confirmButtonText: _("Yes"),
+                cancelButtonText: _("Cancel"),
+            })
+            .then(({ value: yes }) => {
+                if (yes) {
+                    // stop trying to show the cancelled challenge
+                    this.closeChallengeManagementPane(challenge.challenge_id);
 
-        // do the action
-        rengo_utils.cancelChallenge(challenge).catch(errorAlerter);
+                    // do the action
+                    rengo_utils.cancelChallenge(challenge).catch(errorAlerter);
+                }
+            })
+            .catch(() => 0);
 
         this.unfreezeChallenges();
     };
@@ -1347,7 +1359,22 @@ export function time_per_move_challenge_sort(A: Challenge, B: Challenge) {
 
     if (comparison) {
         return comparison;
-    } else {
-        return challenge_sort(A, B);
     }
+
+    if (A.eligible && !B.eligible) {
+        return -1;
+    }
+    if (!A.eligible && B.eligible) {
+        return 1;
+    }
+    if (A.user_challenge && !B.user_challenge) {
+        return -1;
+    }
+    if (!A.user_challenge && B.user_challenge) {
+        return 1;
+    }
+
+    const createdA = A.created ? new Date(A.created).getTime() : -Infinity;
+    const createdB = B.created ? new Date(B.created).getTime() : -Infinity;
+    return createdA - createdB;
 }

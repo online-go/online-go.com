@@ -499,6 +499,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                 <MessageTemplate
                     title="Accused"
                     player={report.reported_user}
+                    reported={report.reported_user}
                     templates={WARNING_TEMPLATES}
                     game_id={report.reported_game}
                     gpt={report.automod_to_reported}
@@ -510,6 +511,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                 <MessageTemplate
                     title="Reporter"
                     player={report.reporting_user}
+                    reported={report.reported_user}
                     templates={REPORTER_RESPONSE_TEMPLATES}
                     game_id={report.reported_game}
                     gpt={report.automod_to_reporter}
