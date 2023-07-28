@@ -1347,7 +1347,22 @@ export function time_per_move_challenge_sort(A: Challenge, B: Challenge) {
 
     if (comparison) {
         return comparison;
-    } else {
-        return challenge_sort(A, B);
     }
+
+    if (A.eligible && !B.eligible) {
+        return -1;
+    }
+    if (!A.eligible && B.eligible) {
+        return 1;
+    }
+    if (A.user_challenge && !B.user_challenge) {
+        return -1;
+    }
+    if (!A.user_challenge && B.user_challenge) {
+        return 1;
+    }
+
+    const createdA = A.created ? new Date(A.created).getTime() : -Infinity;
+    const createdB = B.created ? new Date(B.created).getTime() : -Infinity;
+    return createdA - createdB;
 }
