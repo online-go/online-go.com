@@ -30,6 +30,7 @@ import {
     MoveTree,
     PlayerColor,
 } from "goban";
+import { game_control } from "./game_control";
 import { alert } from "swal_config";
 import { challengeRematch } from "ChallengeModal";
 import { Clock } from "Clock";
@@ -934,14 +935,20 @@ const useReviewControllerId = generateGobanHook(
     (goban: GobanCore) => goban.review_controller_id,
     ["review_controller_id"],
 );
+
+let review_out_of_sync = false;
+
 const useReviewOutOfSync = generateGobanHook(
     (goban: GobanCore) => {
+        if (game_control.in_pushed_analysis) {
+            return review_out_of_sync;
+        }
         const engine = goban.engine;
-        return (
+        review_out_of_sync =
             engine.cur_move &&
             engine.cur_review_move &&
-            engine.cur_move.id !== engine.cur_review_move.id
-        );
+            engine.cur_move.id !== engine.cur_review_move.id;
+        return review_out_of_sync;
     },
     ["cur_move", "review.updated"],
 );
