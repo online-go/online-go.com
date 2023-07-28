@@ -311,6 +311,9 @@ export function AnnulQueueModal({
 
                     <div className="button-bar">
                         <div className="actions">
+                            <button className="next-btn" onClick={goToNextGame}>
+                                Next
+                            </button>
                             <button className="dequeue-btn" onClick={dequeueGame}>
                                 Dequeue
                             </button>
