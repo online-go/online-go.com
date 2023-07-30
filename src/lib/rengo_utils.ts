@@ -75,7 +75,7 @@ export function startOwnRengoChallenge(the_challenge: Challenge): Promise<void> 
     });
 }
 
-export function cancelChallenge(the_challenge: Challenge): Promise<void> {
+export function cancelRengoChallenge(the_challenge: Challenge): Promise<void> {
     return del("challenges/%%", the_challenge.challenge_id);
 }
 
