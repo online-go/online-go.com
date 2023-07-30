@@ -18,6 +18,7 @@
 import * as React from "react";
 import * as data from "data";
 import * as DynamicHelp from "react-dynamic-help";
+import { del } from "requests";
 
 import * as preferences from "preferences";
 import * as player_cache from "player_cache";
@@ -260,7 +261,7 @@ export class Play extends React.Component<{}, PlayState> {
             .catch(errorAlerter);
     };
 
-    cancelOpenChallenge = (challenge: Challenge) => {
+    cancelOpenRengoChallenge = (challenge: Challenge) => {
         alert
             .fire({
                 text: _("Are you sure you want to delete this rengo challenge?"),
@@ -274,11 +275,14 @@ export class Play extends React.Component<{}, PlayState> {
                     this.closeChallengeManagementPane(challenge.challenge_id);
 
                     // do the action
-                    rengo_utils.cancelChallenge(challenge).catch(errorAlerter);
+                    rengo_utils.cancelRengoChallenge(challenge).catch(errorAlerter);
                 }
             })
             .catch(() => 0);
+    };
 
+    cancelOpenChallenge = (challenge: Challenge) => {
+        del("challenges/%%", challenge.challenge_id).catch(errorAlerter);
         this.unfreezeChallenges();
     };
 
@@ -700,7 +704,7 @@ export class Play extends React.Component<{}, PlayState> {
                         challenge_id={rengo_challenge_to_show.challenge_id}
                         rengo_challenge_list={this.state.rengo_list}
                         startRengoChallenge={rengo_utils.startOwnRengoChallenge}
-                        cancelChallenge={this.cancelOpenChallenge}
+                        cancelChallenge={this.cancelOpenRengoChallenge}
                         withdrawFromRengoChallenge={this.unNominateForRengoChallenge}
                         joinRengoChallenge={rengo_utils.nominateForRengoChallenge}
                     >
@@ -1205,7 +1209,7 @@ export class Play extends React.Component<{}, PlayState> {
                             challenge_id={C.challenge_id}
                             rengo_challenge_list={this.state.rengo_list}
                             startRengoChallenge={this.startOwnRengoChallenge}
-                            cancelChallenge={this.cancelOpenChallenge}
+                            cancelChallenge={this.cancelOpenRengoChallenge}
                             withdrawFromRengoChallenge={this.unNominateForRengoChallenge}
                             joinRengoChallenge={rengo_utils.nominateForRengoChallenge}
                             dontShowCancelButton={true}
@@ -1237,7 +1241,7 @@ export class Play extends React.Component<{}, PlayState> {
                 <td className={"cell rengo-list-buttons"}>
                     {user.is_moderator && (
                         <button
-                            onClick={this.cancelOpenChallenge.bind(this, C)}
+                            onClick={this.cancelOpenRengoChallenge.bind(this, C)}
                             className="btn danger xs pull-left "
                         >
                             <i className="fa fa-trash" />
@@ -1246,7 +1250,7 @@ export class Play extends React.Component<{}, PlayState> {
 
                     {(C.user_challenge || null) && (
                         <button
-                            onClick={this.cancelOpenChallenge.bind(this, C)}
+                            onClick={this.cancelOpenRengoChallenge.bind(this, C)}
                             className="btn reject xs"
                         >
                             {_("Remove")}

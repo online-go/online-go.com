@@ -19,9 +19,9 @@ import * as React from "react";
 
 import * as rengo_utils from "rengo_utils";
 import * as rengo_balancer from "rengo_balancer";
-
+import { alert } from "swal_config";
 import { errorAlerter } from "misc";
-import { pgettext } from "translate";
+import { _, pgettext } from "translate";
 import { del, get } from "requests";
 import { useUser } from "hooks";
 
@@ -111,16 +111,27 @@ export function InviteList(): JSX.Element {
             .catch(errorAlerter);
     };
 
-    // technically this is the same as deleteChallenge, but it seems good to keep
-    // rengo and normal challenges using a separate interface
     const cancelRengoChallenge = (challenge: Challenge) => {
         setShowDetails(null);
-        rengo_utils
-            .cancelChallenge(challenge)
-            .then(() => {
-                removeChallenge(challenge);
+
+        alert
+            .fire({
+                text: _("Are you sure you want to delete this rengo challenge?"),
+                showCancelButton: true,
+                confirmButtonText: _("Yes"),
+                cancelButtonText: _("Cancel"),
             })
-            .catch(errorAlerter);
+            .then(({ value: yes }) => {
+                if (yes) {
+                    rengo_utils
+                        .cancelRengoChallenge(challenge)
+                        .then(() => {
+                            removeChallenge(challenge);
+                        })
+                        .catch(errorAlerter);
+                }
+            })
+            .catch(() => 0);
     };
 
     const unNominate = (challenge: Challenge) => {
@@ -262,7 +273,8 @@ export function InviteList(): JSX.Element {
                                                   )}
                                         </button>
                                     )}
-                                    {(challenge.user_id === user.id || null) && (
+                                    {((challenge.user_id === user.id && !challenge.rengo) ||
+                                        null) && (
                                         <FabX onClick={() => deleteChallenge(challenge)} />
                                     )}
                                 </div>
