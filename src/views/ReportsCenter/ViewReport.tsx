@@ -230,20 +230,6 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     return (
         <div id="ViewReport">
             <div className="header">
-                <div className="newer-older-buttons">
-                    {(prev_report && (
-                        <button className="default" onClick={prev}>
-                            &lt; Prev
-                        </button>
-                    )) || <span className="empty" />}
-
-                    {(next_report && (
-                        <button className="default" onClick={next}>
-                            Next &gt;
-                        </button>
-                    )) || <span className="empty" />}
-                </div>
-
                 {report_in_reports ? (
                     <Select
                         id="ReportsCenterSelectReport"
@@ -326,6 +312,14 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                         }}
                     />
 
+                    <button className={"default" + (prev_report ? "" : " hide")} onClick={prev}>
+                        &lt; Prev
+                    </button>
+
+                    <button className={"default" + (next_report ? "" : " hide")} onClick={next}>
+                        Next &gt;
+                    </button>
+
                     {report.moderator ? (
                         <>
                             {(report.moderator.id === user.id || null) && (
@@ -341,8 +335,19 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                             )}
                         </>
                     ) : (
-                        <button className="primary xs" onClick={claimReport}>
+                        <button className="primary" onClick={claimReport}>
                             {_("Claim")}
+                        </button>
+                    )}
+                    {!claimed_by_me && (
+                        <button
+                            className="default"
+                            onClick={() => {
+                                void report_manager.ignore(report.id);
+                                next();
+                            }}
+                        >
+                            Ignore
                         </button>
                     )}
                 </span>
@@ -351,46 +356,26 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
             <div className="reported-user">
                 <h3 className="users">
                     <span className="reported-user">
-                        {pgettext(
-                            "A label for the user name who has been reported to mods (followed by colon and the username)",
-                            "Reported User",
-                        )}
+                        {category?.title}
                         : <Player user={report.reported_user} />
                     </span>
-                    <span className="reporting-user">
-                        {pgettext(
-                            "A label for the user name that reported an incident (followed by colon and the username)",
-                            "Reported by",
-                        )}
-                        : <Player user={report.reporting_user} />
-                    </span>
+                    <div>
+                        <span className="reporting-user">
+                            {pgettext(
+                                "A label for the user name that reported an incident (followed by colon and the username)",
+                                "Reported by",
+                            )}
+                            : <Player user={report.reporting_user} />
+                            <span className="when">{moment(report.created).fromNow()}</span>
+                        </span>
+                    </div>
                 </h3>
             </div>
-
-            <h3>
-                {category?.title}
-                <span className="when">{moment(report.created).fromNow()}</span>
-            </h3>
-
-            {related.length > 0 && (
-                <div className="related-reports">
-                    <h4>{_("Related Reports")}</h4>
-                    <ul>
-                        {related.map((r) => (
-                            <li key={r.report.id}>
-                                <Link to={`/reports-center/all/${r.report.id}`}>
-                                    {R(r.report.id)}: {r.relationship}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
 
             <div className="notes-container">
                 {(report.reporter_note || null) && (
                     <div className="notes">
-                        <h3>Reporter Notes</h3>
+                        <h4>Reporter Notes</h4>
                         <div className="Card">
                             {report.reporter_note_translation ? (
                                 <>
@@ -419,27 +404,35 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
 
                 {(report.system_note || null) && (
                     <div className="notes">
-                        <h3>System Notes</h3>
+                        <h4>System Notes</h4>
                         <div className="Card">{report.system_note}</div>
                     </div>
                 )}
 
                 {(user.is_moderator || null) && (
                     <div className="notes">
-                        <h3>Moderator Notes</h3>
+                        <h4>Moderator Notes</h4>
                         <textarea value={moderatorNote} onChange={setAndSaveModeratorNote} />
                     </div>
                 )}
             </div>
 
             <div className="actions">
-                <div className="actions-left">
-                    {!claimed_by_me && !report.moderator && (
-                        <button className="primary" onClick={claimReport}>
-                            Claim
-                        </button>
-                    )}
-                </div>
+                {related.length > 0 && (
+                    <div className="related-reports">
+                        <h4>{_("Related Reports")}</h4>
+                        <ul>
+                            {related.map((r) => (
+                                <li key={r.report.id}>
+                                    <Link to={`/reports-center/all/${r.report.id}`}>
+                                        {R(r.report.id)}: {r.relationship}
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
                 <div className="actions-right">
                     {reportState !== "resolved" && claimed_by_me && (
                         <button
@@ -471,18 +464,6 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                             onClick={() => void report_manager.reopen(report.id)}
                         >
                             Re-open
-                        </button>
-                    )}
-
-                    {!claimed_by_me && (
-                        <button
-                            className="default"
-                            onClick={() => {
-                                void report_manager.ignore(report.id);
-                                next();
-                            }}
-                        >
-                            Ignore
                         </button>
                     )}
                 </div>
