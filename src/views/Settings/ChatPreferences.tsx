@@ -26,21 +26,37 @@ import { Toggle } from "Toggle";
 import { PreferenceLine } from "SettingsCommon";
 
 export function ChatPreferences(): JSX.Element {
-    const [show_empty_chat_notification, toggleEmptyChatNotification] = usePreference(
+    const [show_empty_chat_notification, _toggleEmptyChatNotification] = usePreference(
         "show-empty-chat-notification",
     );
-    const [group_chat_unread, toggleGroupChatUnread] = usePreference(
+    const [group_chat_unread, _toggleGroupChatUnread] = usePreference(
         "chat-subscribe-group-chat-unread",
     );
-    const [group_chat_mentions, toggleGroupChatMentions] = usePreference(
+    const [group_chat_mentions, _toggleGroupChatMentions] = usePreference(
         "chat-subscribe-group-mentions",
     );
-    const [tournament_chat_unread, toggleTournamentChatUnread] = usePreference(
+    const [tournament_chat_unread, _toggleTournamentChatUnread] = usePreference(
         "chat-subscribe-tournament-chat-unread",
     );
-    const [tournament_chat_mentions, toggleTournamentChatMentions] = usePreference(
+    const [tournament_chat_mentions, _toggleTournamentChatMentions] = usePreference(
         "chat-subscribe-tournament-mentions",
     );
+
+    function toggleEmptyChatNotification() {
+        _toggleEmptyChatNotification;
+    }
+    function toggleGroupChatUnread() {
+        _toggleGroupChatUnread;
+    }
+    function toggleGroupChatMentions() {
+        _toggleGroupChatMentions;
+    }
+    function toggleTournamentChatUnread() {
+        _toggleTournamentChatUnread;
+    }
+    function toggleTournamentChatMentions() {
+        _toggleTournamentChatMentions;
+    }
 
     return (
         <div>

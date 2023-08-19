@@ -41,33 +41,32 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
 
     const [game_list_threshold, _setGameListThreshold]: [number, (x: number) => void] =
         React.useState(preferences.get("game-list-threshold"));
-    const [_desktop_notifications, setDesktopNotifications] =
+    const [_desktop_notifications, _setDesktopNotifications] =
         usePreference("desktop-notifications");
     /*
     const [desktop_notifications_require_interaction, setDesktopNotificationsRequireInteraction] =
         usePreference("desktop-notifications-require-interaction");
     */
-    const [show_offline_friends, setShowOfflineFriends] = usePreference("show-offline-friends");
-    const [show_seek_graph, setShowSeekGraph] = usePreference("show-seek-graph");
-    const [unicode_filter_usernames, setUnicodeFilterUsernames] = usePreference("unicode-filter");
-    const [translation_dialog_never_show, setTranslationDialogNeverShow] = usePreference(
+    const [show_offline_friends, _setShowOfflineFriends] = usePreference("show-offline-friends");
+    const [show_seek_graph, _setShowSeekGraph] = usePreference("show-seek-graph");
+    const [unicode_filter_usernames, _setUnicodeFilterUsernames] = usePreference("unicode-filter");
+    const [translation_dialog_never_show, _setTranslationDialogNeverShow] = usePreference(
         "translation-dialog-never-show",
     );
-    const [hide_ui_class, setHideUiClass]: [boolean, (x: boolean) => void] = React.useState(
+    const [hide_ui_class, _setHideUiClass]: [boolean, (x: boolean) => void] = React.useState(
         props.state.hide_ui_class,
     );
-    const [show_tournament_indicator, setShowTournamentIndicator] = usePreference(
+    const [show_tournament_indicator, _setShowTournamentIndicator] = usePreference(
         "show-tournament-indicator",
     );
-    const [show_tournament_indicator_on_mobile, setShowTournamentIndicatorOnMobile] = usePreference(
-        "show-tournament-indicator-on-mobile",
-    );
-    const [hide_ranks, setHideRanks] = usePreference("hide-ranks");
-    const [rating_graph_always_use, setAlwaysUse] = usePreference("rating-graph-always-use");
-    const [rating_graph_plot_by_games, setPlotByGames] = usePreference(
+    const [show_tournament_indicator_on_mobile, _setShowTournamentIndicatorOnMobile] =
+        usePreference("show-tournament-indicator-on-mobile");
+    const [hide_ranks, _setHideRanks] = usePreference("hide-ranks");
+    const [rating_graph_always_use, _setAlwaysUse] = usePreference("rating-graph-always-use");
+    const [rating_graph_plot_by_games, _setPlotByGames] = usePreference(
         "rating-graph-plot-by-games",
     );
-    const [enable_v6, setEnableV6]: [boolean, (x: boolean) => void] = React.useState(
+    const [enable_v6, _setEnableV6]: [boolean, (x: boolean) => void] = React.useState(
         data.get("experiments.v6") === "enabled",
     );
 
@@ -121,7 +120,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
         }
 
         try {
-            setDesktopNotifications(enabled);
+            _setDesktopNotifications(enabled);
 
             if (enabled) {
                 if ((Notification as any).permission === "denied") {
@@ -171,7 +170,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
     }
 
     function updateHideUIClass(checked) {
-        setHideUiClass(!checked);
+        _setHideUiClass(!checked);
         put(`me/settings`, {
             site_preferences: {
                 hide_ui_class: !checked,
@@ -191,6 +190,34 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
         preferences.set("language", language_code);
         setCurrentLanguage(language_code);
         window.location.reload();
+    }
+
+    function setShowTournamentIndicator() {
+        _setShowTournamentIndicator;
+    }
+    function setShowTournamentIndicatorOnMobile() {
+        _setShowTournamentIndicatorOnMobile;
+    }
+    function setShowOfflineFriends() {
+        _setShowOfflineFriends;
+    }
+    function setShowSeekGraph() {
+        _setShowSeekGraph;
+    }
+    function setUnicodeFilterUsernames() {
+        _setUnicodeFilterUsernames;
+    }
+    function setHideRanks() {
+        _setHideRanks;
+    }
+    function setAlwaysUse() {
+        _setAlwaysUse;
+    }
+    function setPlotByGames() {
+        _setPlotByGames;
+    }
+    function setEnableV6(tf: boolean) {
+        _setEnableV6(tf);
     }
 
     // Render...

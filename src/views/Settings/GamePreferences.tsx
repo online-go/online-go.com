@@ -44,13 +44,13 @@ export function GamePreferences(): JSX.Element {
         getSubmitMode("correspondence"),
     );
     const [chat_mode, _setChatMode] = usePreference("chat-mode");
-    const [board_labeling, setBoardLabeling] = usePreference("board-labeling");
+    const [board_labeling, _setBoardLabeling] = usePreference("board-labeling");
 
-    const [autoadvance, setAutoAdvance] = usePreference("auto-advance-after-submit");
-    const [always_disable_analysis, setAlwaysDisableAnalysis] =
+    const [autoadvance, _setAutoAdvance] = usePreference("auto-advance-after-submit");
+    const [always_disable_analysis, _setAlwaysDisableAnalysis] =
         usePreference("always-disable-analysis");
-    const [dynamic_title, setDynamicTitle] = usePreference("dynamic-title");
-    const [function_keys_enabled, setFunctionKeysEnabled] = usePreference("function-keys-enabled");
+    const [dynamic_title, _setDynamicTitle] = usePreference("dynamic-title");
+    const [function_keys_enabled, _setFunctionKeysEnabled] = usePreference("function-keys-enabled");
     const [autoplay_delay, _setAutoplayDelay]: [number, (x: number) => void] = React.useState(
         preferences.get("autoplay-delay") / 1000,
     );
@@ -58,7 +58,7 @@ export function GamePreferences(): JSX.Element {
         "variation-stone-transparency",
     );
     const [variation_move_count, _setVariationMoveCount] = usePreference("variation-move-count");
-    const [visual_undo_request_indicator, setVisualUndoRequestIndicator] = usePreference(
+    const [visual_undo_request_indicator, _setVisualUndoRequestIndicator] = usePreference(
         "visual-undo-request-indicator",
     );
     const [zen_mode_by_default, _setZenModeByDefault] = usePreference("start-in-zen-mode");
@@ -136,6 +136,24 @@ export function GamePreferences(): JSX.Element {
             _setAutoplayDelay(value);
             preferences.set("autoplay-delay", 1000 * value);
         }
+    }
+    function setBoardLabeling() {
+        _setBoardLabeling;
+    }
+    function setAutoAdvance() {
+        _setAutoAdvance;
+    }
+    function setDynamicTitle() {
+        _setDynamicTitle;
+    }
+    function setFunctionKeysEnabled() {
+        _setFunctionKeysEnabled;
+    }
+    function setVisualUndoRequestIndicator() {
+        _setVisualUndoRequestIndicator;
+    }
+    function setAlwaysDisableAnalysis() {
+        _setAlwaysDisableAnalysis;
     }
 
     return (

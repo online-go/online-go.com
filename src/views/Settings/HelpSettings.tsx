@@ -46,7 +46,11 @@ export function HelpSettings(): JSX.Element {
     // we need a state to trigger re-reander after changing a flow visibility,
     // because DynamicHelp can't trigger a re-render in that circumstance.
 
-    const [reload, setReload] = React.useState(false);
+    const [reload, _setReload] = React.useState(false);
+
+    function setReload(tf: boolean) {
+        _setReload(tf);
+    }
 
     const show = (flow: DynamicHelp.FlowInfo) => {
         enableFlow(flow.id);

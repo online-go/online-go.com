@@ -23,7 +23,7 @@ import { errorAlerter } from "misc";
 import { BlockPlayerModal, getAllBlocksWithUsernames } from "BlockPlayer";
 
 export function BlockedPlayerPreferences(): JSX.Element {
-    const [blocked_players, setBlockedPlayers]: [
+    const [blocked_players, _setBlockedPlayers]: [
         Array<any> | null,
         (x: Array<any> | null) => void,
     ] = React.useState(null);
@@ -33,6 +33,10 @@ export function BlockedPlayerPreferences(): JSX.Element {
             .then((blocks) => setBlockedPlayers(blocks))
             .catch(errorAlerter);
     }, []);
+
+    function setBlockedPlayers(blocks) {
+        _setBlockedPlayers(blocks);
+    }
 
     if (blocked_players === null) {
         return <div id="BlockedPlayers"></div>;

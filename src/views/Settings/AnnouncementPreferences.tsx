@@ -33,7 +33,7 @@ import { Toggle } from "Toggle";
 import { PreferenceLine } from "SettingsCommon";
 
 export function AnnouncementPreferences(): JSX.Element {
-    const [blocked_players, setBlockedPlayers]: [
+    const [blocked_players, _setBlockedPlayers]: [
         Array<any> | null,
         (x: Array<any> | null) => void,
     ] = React.useState(null);
@@ -47,12 +47,24 @@ export function AnnouncementPreferences(): JSX.Element {
             .catch(errorAlerter);
     }, []);
 
-    const [mute_stream_announcements, toggleMuteStreamAnnouncements] = usePreference(
+    function setBlockedPlayers(blocks) {
+        _setBlockedPlayers(blocks);
+    }
+
+    const [mute_stream_announcements, _toggleMuteStreamAnnouncements] = usePreference(
         "mute-stream-announcements",
     );
-    const [mute_event_announcements, toggleMuteEventAnnouncements] = usePreference(
+    const [mute_event_announcements, _toggleMuteEventAnnouncements] = usePreference(
         "mute-event-announcements",
     );
+
+    function toggleMuteStreamAnnouncements() {
+        _toggleMuteStreamAnnouncements;
+    }
+
+    function toggleMuteEventAnnouncements() {
+        _toggleMuteEventAnnouncements;
+    }
 
     return (
         <div id="AnnouncementPreferences">
