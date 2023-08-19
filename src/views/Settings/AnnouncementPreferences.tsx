@@ -47,7 +47,7 @@ export function AnnouncementPreferences(): JSX.Element {
             .catch(errorAlerter);
     }, []);
 
-    function setBlockedPlayers(blocks) {
+    function setBlockedPlayers(blocks: Array<any> | null) {
         _setBlockedPlayers(blocks);
     }
 

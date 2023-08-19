@@ -24,19 +24,41 @@ import { SettingGroupPageProps, PreferenceLine } from "SettingsCommon";
 import { ReportsCenterSettings } from "ReportsCenter";
 
 export function ModeratorPreferences(_props: SettingGroupPageProps): JSX.Element {
-    const [incident_report_notifications, setIncidentReportNotifications] = usePreference(
+    const [incident_report_notifications, _setIncidentReportNotifications] = usePreference(
         "notify-on-incident-report",
     );
-    const [hide_incident_reports, setHideIncidentReports] = usePreference("hide-incident-reports");
-    const [hide_claimed_reports, setHideClaimedReports] = usePreference("hide-claimed-reports");
-    const [join_games_anonymously, setJoinGamesAnonymously] = usePreference(
+    const [hide_incident_reports, _setHideIncidentReports] = usePreference("hide-incident-reports");
+    const [hide_claimed_reports, _setHideClaimedReports] = usePreference("hide-claimed-reports");
+    const [join_games_anonymously, _setJoinGamesAnonymously] = usePreference(
         "moderator.join-games-anonymously",
     );
-    const [hide_flags, setHideFlags] = usePreference("moderator.hide-flags");
-    const [hide_profile, setHideProfile] = usePreference("moderator.hide-profile-information");
-    const [hide_player_card_mod_controls, setHidePlayerCardModControls] = usePreference(
+    const [hide_flags, _setHideFlags] = usePreference("moderator.hide-flags");
+    const [hide_profile, _setHideProfile] = usePreference("moderator.hide-profile-information");
+    const [hide_player_card_mod_controls, _setHidePlayerCardModControls] = usePreference(
         "moderator.hide-player-card-mod-controls",
     );
+
+    function setIncidentReportNotifications() {
+        _setIncidentReportNotifications;
+    }
+    function setHideIncidentReports() {
+        _setHideIncidentReports;
+    }
+    function setHideClaimedReports() {
+        _setHideClaimedReports;
+    }
+    function setJoinGamesAnonymously() {
+        _setJoinGamesAnonymously;
+    }
+    function setHideFlags() {
+        _setHideFlags;
+    }
+    function setHideProfile() {
+        _setHideProfile;
+    }
+    function setHidePlayerCardModControls() {
+        _setHidePlayerCardModControls;
+    }
 
     const user = data.get("user");
 

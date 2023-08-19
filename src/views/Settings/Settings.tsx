@@ -53,11 +53,11 @@ import { Supporter } from "Supporter";
 
 export function Settings(): JSX.Element {
     const { category } = useParams();
-    const [settings_state, setSettingsState]: [SettingsState, (s: SettingsState) => void] =
+    const [settings_state, _setSettingsState]: [SettingsState, (s: SettingsState) => void] =
         React.useState({});
-    const [vacation_base_time, set_vacation_base_time]: [number, (s: number) => void] =
+    const [vacation_base_time, _set_vacation_base_time]: [number, (s: number) => void] =
         React.useState(Date.now());
-    const [loaded, set_loaded]: [number, (b: number) => void] = React.useState(0);
+    const [loaded, _set_loaded]: [number, (b: number) => void] = React.useState(0);
 
     const { registerTargetItem, signalUsed } = React.useContext(DynamicHelp.Api);
 
@@ -66,6 +66,16 @@ export function Settings(): JSX.Element {
     const { ref: accountSettingsButton } = registerTargetItem("account-settings-button"); // cleared on AccountSettings page
 
     React.useEffect(refresh, []);
+
+    function setSettingsState(s: SettingsState) {
+        _setSettingsState(s);
+    }
+    function set_vacation_base_time(s: number) {
+        _set_vacation_base_time(s);
+    }
+    function set_loaded(b: number) {
+        _set_loaded(b);
+    }
 
     function select(s: string): void {
         data.set("settings.page-selected", s);

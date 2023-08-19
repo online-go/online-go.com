@@ -219,6 +219,9 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
     function setEnableV6(tf: boolean) {
         _setEnableV6(tf);
     }
+    function setTranslationDialogNeverShow() {
+        _setTranslationDialogNeverShow;
+    }
 
     // Render...
     return (
