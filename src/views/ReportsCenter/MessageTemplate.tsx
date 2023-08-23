@@ -283,7 +283,7 @@ export const WARNING_TEMPLATES: MessageTemplates = {
 
 export const REPORTER_RESPONSE_TEMPLATES: MessageTemplates = {
     "Good Report": {
-        "Asked beginner opponent to be respectful of time": {
+        "Beginner escaper": {
             message: `
                 Thanks for your report about #REPORTED, I have asked your newcomer opponent to be more
                 respectful of people’s time.`,
