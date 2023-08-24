@@ -418,20 +418,22 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
             </div>
 
             <div className="actions">
-                {related.length > 0 && (
-                    <div className="related-reports">
-                        <h4>{_("Related Reports")}</h4>
-                        <ul>
-                            {related.map((r) => (
-                                <li key={r.report.id}>
-                                    <Link to={`/reports-center/all/${r.report.id}`}>
-                                        {R(r.report.id)}: {r.relationship}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
+                <div className="related-reports">
+                    {related.length > 0 && (
+                        <>
+                            <h4>{_("Related Reports")}</h4>
+                            <ul>
+                                {related.map((r) => (
+                                    <li key={r.report.id}>
+                                        <Link to={`/reports-center/all/${r.report.id}`}>
+                                            {R(r.report.id)}: {r.relationship}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </>
+                    )}
+                </div>
 
                 <div className="actions-right">
                     {reportState !== "resolved" && claimed_by_me && (
