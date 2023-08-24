@@ -1326,7 +1326,7 @@ export function Game(): JSX.Element {
         if (review_id) {
             get("reviews/%%", review_id)
                 .then((review) => {
-                    if (review.game) {
+                    if (review.game && review.game.historical_ratings) {
                         set_historical_black(review.game.historical_ratings.black);
                         set_historical_white(review.game.historical_ratings.white);
                     }
