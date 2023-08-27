@@ -61,6 +61,7 @@ declare namespace rest_api {
         is_moderator: boolean;
         is_superuser: boolean;
         is_tournament_moderator: boolean;
+        moderator_powers: number;
         supporter: boolean;
         supporter_level: number;
         tournament_admin: boolean;
@@ -115,6 +116,7 @@ declare namespace rest_api {
             ui_class_extra: null;
             is_moderator: boolean;
             is_superuser: boolean;
+            moderator_powers: number;
             is_tournament_moderator: boolean;
             is_bot: boolean;
             timeout_provisional: boolean;

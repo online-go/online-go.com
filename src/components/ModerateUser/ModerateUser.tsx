@@ -50,6 +50,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                 this.setState(
                     Object.assign({ loading: false }, result.user, {
                         bot_owner: result.user.bot_owner ? result.user.bot_owner.id : null,
+                        can_annul: result.user.moderator_powers & 1,
                     }),
                 );
             })
@@ -92,6 +93,10 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                     settings[f] = this.state[f];
                 }
 
+                // Can-annul is bit zero of moderator_powers
+                settings["moderator_powers"] =
+                    (this.state.moderator_powers & ~1) | this.state.can_annul;
+
                 settings.moderation_note = reason;
 
                 put(`players/${this.props.playerId}/moderate`, settings)
@@ -104,6 +109,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     setLockedUsername = (ev) => this.setState({ locked_username: ev.target.checked });
     setSupporter = (ev) => this.setState({ supporter: ev.target.checked });
     setAnnouncer = (ev) => this.setState({ is_announcer: ev.target.checked });
+    setCanAnnul = (ev) => this.setState({ can_annul: ev.target.checked });
     setProfessional = (ev) => this.setState({ professional: ev.target.checked });
     //setBanned = (ev) => this.setState({ is_banned: ev.target.checked });
     setShadowbanned = (ev) => this.setState({ is_shadowbanned: ev.target.checked });
@@ -221,6 +227,17 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                                                 onChange={this.setBotOwner}
                                             />
                                         )}
+                                    </dd>
+                                    <dt>
+                                        <label htmlFor="annul">Can Annul</label>
+                                    </dt>
+                                    <dd>
+                                        <input
+                                            id="annul"
+                                            type="checkbox"
+                                            checked={this.state.can_annul}
+                                            onChange={this.setCanAnnul}
+                                        />
                                     </dd>
                                 </dl>
                             </div>

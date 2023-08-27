@@ -51,6 +51,7 @@ const categories: (ReportDescription | OtherView)[] = [
         { special: "history", title: "History" },
         { special: "settings", title: "Settings" },
     ]);
+
 const category_priorities: { [type: string]: number } = {};
 for (let i = 0; i < report_categories.length; ++i) {
     category_priorities[report_categories[i].type] = i;
@@ -118,7 +119,7 @@ export function ReportsCenter(): JSX.Element {
         navigateTo(`/reports-center/${category}`);
     }, []);
 
-    if (!user.is_moderator) {
+    if (!user.is_moderator && !user.moderator_powers) {
         return null;
     }
 
@@ -130,6 +131,11 @@ export function ReportsCenter(): JSX.Element {
         }
     };
 
+    const visible_categories = user.is_moderator
+        ? categories
+        : // community moderators only get to see score cheating reports at the moment
+          [report_categories.find((category) => category.type === "score_cheating")];
+
     return (
         <div className="ReportsCenter container">
             <h2 className="page-title">
@@ -139,7 +145,7 @@ export function ReportsCenter(): JSX.Element {
 
             <div id="ReportsCenterContainer">
                 <div id="ReportsCenterCategoryList">
-                    {categories.map((report_type, idx) => {
+                    {visible_categories.map((report_type, idx) => {
                         if ("type" in report_type) {
                             const ct = counts[report_type.type] || 0;
                             return (

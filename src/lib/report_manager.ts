@@ -180,11 +180,11 @@ class ReportManager extends EventEmitter<Events> {
     public getAvailableReports(): Report[] {
         const user = data.get("user");
 
+        console.log(this.sorted_active_incident_reports);
         return this.sorted_active_incident_reports.filter((report) => {
             if (this.getIgnored(report.id)) {
                 return false;
             }
-
             return report.moderator === null || report.moderator.id === user.id;
         });
     }
