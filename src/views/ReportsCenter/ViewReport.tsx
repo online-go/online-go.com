@@ -352,7 +352,6 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     )}
                 </span>
             </div>
-
             <div className="reported-user">
                 <h3 className="users">
                     <span className="reported-user">
@@ -371,7 +370,6 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     </div>
                 </h3>
             </div>
-
             <div className="notes-container">
                 {(report.reporter_note || null) && (
                     <div className="notes">
@@ -416,10 +414,9 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     </div>
                 )}
             </div>
-
             <div className="actions">
                 <div className="related-reports">
-                    {related.length > 0 && (
+                    {related.length > 0 && user.is_moderator && (
                         <>
                             <h4>{_("Related Reports")}</h4>
                             <ul>
@@ -470,14 +467,11 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     )}
                 </div>
             </div>
-
             <hr />
-
             <div className="automod-analysis">
                 <b>Automod Analysis:</b>{" "}
                 <span className="analysis">{report.automod_to_moderator}</span>
             </div>
-
             <div className="message-templates">
                 <MessageTemplate
                     title="Accused"
@@ -498,35 +492,27 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     templates={REPORTER_RESPONSE_TEMPLATES}
                     game_id={report.reported_game}
                     gpt={report.automod_to_reporter}
-                    logByDefault={false}
+                    logByDefault={!user.is_moderator} // log community moderator actions
                     onSelect={claimReport}
                     onMessage={claimReport}
                 />
             </div>
-
             <hr />
-
-            <UserHistory user={report.reported_user} />
-
+            {(user.is_moderator || null) && <UserHistory user={report.reported_user} />}
             <hr />
-
             {(report.url || null) && (
                 <a href={report.url} target="_blank">
                     {report.url}
                 </a>
             )}
-
             {report.reported_game && <ReportedGame game_id={report.reported_game} />}
-
             {report.report_type === "appeal" && <AppealView user_id={report.reported_user.id} />}
-
             {report.reported_review && (
                 <span>
                     {_("Review")}:{" "}
                     <Link to={`/review/${report.reported_review}`}>##{report.reported_review}</Link>
                 </span>
             )}
-
             {report.reported_conversation && (
                 <div className="reported-conversation">
                     {report.reported_conversation.content.map((line, index) => (

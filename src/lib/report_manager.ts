@@ -180,9 +180,11 @@ class ReportManager extends EventEmitter<Events> {
     public getAvailableReports(): Report[] {
         const user = data.get("user");
 
-        console.log(this.sorted_active_incident_reports);
         return this.sorted_active_incident_reports.filter((report) => {
             if (this.getIgnored(report.id)) {
+                return false;
+            }
+            if (!user.is_moderator && !(report.report_type === "score_cheating")) {
                 return false;
             }
             return report.moderator === null || report.moderator.id === user.id;
@@ -210,7 +212,6 @@ class ReportManager extends EventEmitter<Events> {
             }
 
             if (report.reported_review && other.reported_review === report.reported_review) {
-                console.log(other.reported_review, report.reported_review);
                 relationships.push("Same review");
             }
 
