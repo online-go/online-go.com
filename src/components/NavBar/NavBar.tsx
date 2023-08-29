@@ -69,9 +69,9 @@ const setThemeDark = setTheme.bind(null, "dark");
 const setThemeAccessible = setTheme.bind(null, "accessible");
 
 export function NavBar(): JSX.Element {
-    const user = useUser();
     const location = useLocation();
-
+    const userData = useUser();
+    const [user, setUser] = React.useState(userData);
     const [search, setSearch] = React.useState<string>("");
     const [search_focus, setSearchFocus] = React.useState<boolean>(false);
     const [omniMouseOver, setOmniMouseOver] = React.useState<boolean>(false);
@@ -81,7 +81,6 @@ export function NavBar(): JSX.Element {
     const search_input = React.useRef<HTMLInputElement>(null);
     const [force_nav_close, setForceNavClose] = React.useState(false);
     const [banned_user_id] = useData("appeals.banned_user_id");
-
     const { registerTargetItem } = React.useContext(DynamicHelp.Api);
 
     const { /* ref: toggleRightNavButton, */ used: rightNavToggled } =
@@ -137,6 +136,12 @@ export function NavBar(): JSX.Element {
         // remote-storage update mechanism, which doesn't call setTheme()
         data.watch("theme", _update_theme);
     }, []);
+
+    // Whenever the data held in user config changes we set user state to that
+    // Changing user state causes the component to re-render with the correct user information
+    React.useEffect(() => {
+        setUser(userData);
+    }, [userData]);
 
     //const valid_user = user.anonymous ? null : user;
 
@@ -449,12 +454,10 @@ function Menu({ title, to, children, className }: MenuProps): JSX.Element {
 }
 
 function ProfileAndQuickSettingsBits({ settingsNavLink }: { settingsNavLink: any }): JSX.Element {
-    const user = useUser();
-
     return (
         <>
-            <Link to={`/user/view/${user.id}`}>
-                <PlayerIcon user={user} size={16} />
+            <Link to={`/user/view/${this?.user?.id}`}>
+                <PlayerIcon user={this?.user} size={16} />
                 {_("Profile")}
             </Link>
 
