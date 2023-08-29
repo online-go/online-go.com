@@ -186,3 +186,111 @@
 }
 
 
+/* from play.styl */
+
+.automatch-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+
+        .small-spinner {
+            width: 20px;
+            height: 20px;
+            position: relative;
+        }
+    }
+
+.automatch-header {
+        flex-shrink: 0;
+        flex-grow: 0;
+        flex-basis: 2.5rem;
+        font-size: 1.3rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .btn-group {
+            display: flex;
+            flex-wrap: nowrap;
+        }
+    }
+
+.automatch-row-container {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .automatch-row {
+        display: flex;
+        justify-content: space-around;
+        align-content: stretch
+        width: 100%;
+        flex-wrap: wrap;
+
+        button {
+            font-size: 1.1rem;
+            font-weight: bold;
+            flex-grow: 1;
+            flex-basis: 13rem;
+            max-width: 13rem;
+            height: 4rem;
+            margin: 0.5rem;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            align-content: center;
+            justify-content: center;
+
+            .play-button-text-root {
+                position: relative;
+                height: 1.5rem;
+
+
+                .time-per-move {
+                    position: absolute;
+                    bottom: -1.2rem;
+                    left: 0;
+                    right: 0;
+                    text-align: center;
+                }
+            }
+
+            .fa, .ogs-turtle {
+                margin: 0.2rem;
+            }
+
+            .ogs-turtle {
+                position: relative;
+                width: 1.0rem;
+            }
+            .ogs-turtle::before {
+                position: absolute;
+                top: -0.5rem;
+                left: 0;
+            }
+
+            .time-per-move {
+                font-size: font-size-smaller;
+            }
+        }
+    }
+
+    .automatch-settings {
+        font-size: 1rem;
+        flex: 0;
+        text-align: left;
+        white-space: nowrap;
+
+        .automatch-settings-link {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        i {
+            padding-right: 0.25rem;
+        }
+    }

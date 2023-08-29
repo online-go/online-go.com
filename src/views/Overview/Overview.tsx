@@ -44,6 +44,12 @@ import { EmailBanner } from "EmailBanner";
 import { PaymentProblemBanner } from "PaymentProblemBanner";
 import { ActiveDroppedGameList } from "ActiveDroppedGameList";
 
+import { automatch_manager, AutomatchPreferences } from "automatch_manager";
+import { getAutomatchSettings } from "AutomatchSettings";
+import { Size } from "src/lib/types";
+import { dup, uuid } from "misc";
+import { pgettext } from "translate";
+
 declare let ogs_missing_translation_count: number;
 
 type UserType = rest_api.UserConfig;
@@ -152,6 +158,7 @@ export class OldOverview extends React.Component<{}, OverviewState> {
                 <div style={{ marginBottom: "1rem" }}>
                     {_("You're not currently playing any games.")}
                 </div>
+                <MiniAutomatch />
                 <Link to="/play" className="btn primary">
                     {_("Find a game")}
                 </Link>
@@ -402,5 +409,185 @@ export class LadderList extends React.PureComponent<{}, LadderListState> {
                 {(this.state.ladders.length === 0 || null) && null}
             </div>
         );
+    }
+}
+
+interface MiniAutomatchState {
+    automatch_size_options: Size[];
+}
+
+class MiniAutomatch extends React.PureComponent<{}, MiniAutomatchState> {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            automatch_size_options: data.get("automatch.size_options", ["9x9", "13x13", "19x19"]),
+        };
+    }
+
+    componentDidMount() {
+        automatch_manager.on("entry", this.onAutomatchEntry);
+        automatch_manager.on("start", this.onAutomatchStart);
+        automatch_manager.on("cancel", this.onAutomatchCancel);
+    }
+
+    componentWillUnmount() {
+        automatch_manager.off("entry", this.onAutomatchEntry);
+        automatch_manager.off("start", this.onAutomatchStart);
+        automatch_manager.off("cancel", this.onAutomatchCancel);
+    }
+
+    user = data.get("user");
+    anon = this.user.anonymous;
+    warned = this.user.has_active_warning_flag;
+
+    onAutomatchEntry = () => {
+        this.forceUpdate();
+    };
+
+    onAutomatchStart = () => {
+        this.forceUpdate();
+    };
+
+    onAutomatchCancel = () => {
+        this.forceUpdate();
+    };
+
+    toggleSize(size) {
+        let size_options = dup(this.state.automatch_size_options);
+        if (size_options.indexOf(size) >= 0) {
+            size_options = size_options.filter((x) => x !== size);
+        } else {
+            size_options.push(size);
+        }
+        if (size_options.length === 0) {
+            size_options.push("19x19");
+        }
+        data.set("automatch.size_options", size_options);
+        this.setState({ automatch_size_options: size_options });
+    }
+
+    size_enabled = (size) => {
+        return this.state.automatch_size_options.indexOf(size) >= 0;
+    };
+
+    findMatch = (speed: "blitz" | "live") => {
+        const settings = getAutomatchSettings(speed);
+        const preferences: AutomatchPreferences = {
+            uuid: uuid(),
+            size_speed_options: this.state.automatch_size_options.map((size) => {
+                return {
+                    size: size,
+                    speed: speed,
+                };
+            }),
+            lower_rank_diff: settings.lower_rank_diff,
+            upper_rank_diff: settings.upper_rank_diff,
+            rules: {
+                condition: settings.rules.condition,
+                value: settings.rules.value,
+            },
+            time_control: {
+                condition: settings.time_control.condition,
+                value: settings.time_control.value,
+            },
+            handicap: {
+                condition: settings.handicap.condition,
+                value: settings.handicap.value,
+            },
+        };
+        preferences.uuid = uuid();
+        automatch_manager.findMatch(preferences);
+        this.onAutomatchEntry();
+    };
+
+    cancelActiveAutomatch = () => {
+        if (automatch_manager.active_live_automatcher) {
+            automatch_manager.cancel(automatch_manager.active_live_automatcher.uuid);
+        }
+        this.forceUpdate();
+    };
+
+    render() {
+        if (automatch_manager.active_live_automatcher) {
+            return (
+                <div className="automatch-container">
+                    <div className="automatch-header">{_("Finding you a game...")}</div>
+                    <div className="automatch-row-container">
+                        <div className="spinner">
+                            <div className="double-bounce1"></div>
+                            <div className="double-bounce2"></div>
+                        </div>
+                    </div>
+                    <div className="automatch-settings">
+                        <button className="danger sm" onClick={this.cancelActiveAutomatch}>
+                            {pgettext("Cancel automatch", "Cancel")}
+                        </button>
+                    </div>
+                </div>
+            );
+        } else {
+            return (
+                <div className="automatch-container">
+                    <div className="automatch-header">
+                        <div>{_("Automatch finder")}</div>
+                        <div className="btn-group">
+                            <button
+                                className={this.size_enabled("9x9") ? "primary sm" : "sm"}
+                                onClick={() => this.toggleSize("9x9")}
+                            >
+                                9x9
+                            </button>
+                            <button
+                                className={this.size_enabled("13x13") ? "primary sm" : "sm"}
+                                onClick={() => this.toggleSize("13x13")}
+                            >
+                                13x13
+                            </button>
+                            <button
+                                className={this.size_enabled("19x19") ? "primary sm" : "sm"}
+                                onClick={() => this.toggleSize("19x19")}
+                            >
+                                19x19
+                            </button>
+                        </div>
+                    </div>
+                    <div className="automatch-row-container">
+                        <div className="automatch-row">
+                            <button
+                                className="primary"
+                                onClick={() => this.findMatch("blitz")}
+                                disabled={this.anon || this.warned}
+                            >
+                                <div className="play-button-text-root">
+                                    <i className="fa fa-bolt" /> {_("Blitz")}
+                                    <span className="time-per-move">
+                                        {pgettext(
+                                            "Automatch average time per move",
+                                            "~10s per move",
+                                        )}
+                                    </span>
+                                </div>
+                            </button>
+                            <button
+                                className="primary"
+                                onClick={() => this.findMatch("live")}
+                                disabled={this.anon || this.warned}
+                            >
+                                <div className="play-button-text-root">
+                                    <i className="fa fa-clock-o" /> {_("Normal")}
+                                    <span className="time-per-move">
+                                        {pgettext(
+                                            "Automatch average time per move",
+                                            "~30s per move",
+                                        )}
+                                    </span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
     }
 }
