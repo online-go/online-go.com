@@ -69,7 +69,7 @@ const setThemeDark = setTheme.bind(null, "dark");
 const setThemeAccessible = setTheme.bind(null, "accessible");
 
 export function NavBar(): JSX.Element {
-    const user = useUser();
+    const [user, setUserData] = React.useState(useUser());
     const location = useLocation();
 
     const [search, setSearch] = React.useState<string>("");
@@ -119,6 +119,14 @@ export function NavBar(): JSX.Element {
         closeNavbar();
         createDemoBoard();
     };
+
+    // Watch for changes in config.user checking if these changes differ from current user state
+    data.watch("config.user", (userConfig) => {
+        // Check if user state current id differs from that in config.user
+        if (userConfig.id !== user.id) {
+            setUserData(userConfig);
+        }
+    });
 
     React.useEffect(() => {
         setForceNavClose(true);
