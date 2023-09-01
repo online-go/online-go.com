@@ -46,6 +46,7 @@ export const GoResources = () => {
     const cn = getLanguageFlag("chinese", country, "cn");
     const jp = getLanguageFlag("japanese", country, "jp");
     const kr = getLanguageFlag("korean", country, "kr");
+    const pt = getLanguageFlag("portugese", country, "pt");
     const un = getLanguageFlag("un", country, "un");
     const us = getLanguageFlag("us", country, "us");
     const eu = getLanguageFlag("eu", country, "eu");
@@ -157,6 +158,11 @@ export const GoResources = () => {
                                         title: "2019 Edition (epub)",
                                         country: en,
                                         href: "https://cdn.online-go.com/81_little_lions/Immanuel%20deVillers%20-%2081%20Little%20Lions%20-%20An%20Introduction%20to%20the%209x9%20Board%20for%20Advanced%20Beginners%20-%20Revised%20Edition%20(2019).epub",
+                                    },
+                                    {
+                                        title: "81 Pequenos Leões (pdf)",
+                                        country: pt,
+                                        href: "https://cdn.online-go.com/81_little_lions/81_Pequenos_Le%C3%B5es_Uma_introdu%C3%A7%C3%A3o_ao_tabuleiro_9x9_para_iniciantes%20avan%C3%A7ados_2308.pdf",
                                     },
                                     {
                                         title: "81 львёнок (pdf)",
