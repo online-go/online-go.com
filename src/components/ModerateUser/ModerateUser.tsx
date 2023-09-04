@@ -24,6 +24,8 @@ import { proRankList } from "rank_utils";
 import { Modal, openModal } from "Modal";
 import { lookup } from "player_cache";
 
+import { MOD_POWER_ANNUL } from "misc";
+
 interface Events {}
 
 interface ModerateUserProperties {
@@ -50,7 +52,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                 this.setState(
                     Object.assign({ loading: false }, result.user, {
                         bot_owner: result.user.bot_owner ? result.user.bot_owner.id : null,
-                        can_annul: result.user.moderator_powers & 1,
+                        can_annul: result.user.moderator_powers & MOD_POWER_ANNUL,
                     }),
                 );
             })

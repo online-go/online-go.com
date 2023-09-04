@@ -21,6 +21,8 @@ import { browserHistory } from "ogsHistory";
 import * as preferences from "preferences";
 import { alert } from "swal_config";
 
+export const MOD_POWER_ANNUL = 1; // Matches back-end MOD_POWER
+
 export type Timeout = ReturnType<typeof setTimeout>;
 
 export function updateDup(obj: any, field: string, value: any) {
