@@ -41,6 +41,7 @@ import { Goban } from "goban";
 import { Resizable } from "Resizable";
 import { socket } from "sockets";
 import { Player } from "Player";
+import { useUser } from "hooks";
 
 export function ReportedGame({ game_id }: { game_id: number }): JSX.Element {
     const [goban, setGoban] = React.useState<Goban>(null);
@@ -53,6 +54,8 @@ export function ReportedGame({ game_id }: { game_id: number }): JSX.Element {
     const [game, setGame] = React.useState<rest_api.GameDetails>(null);
     const [, /* aiReviewUuid */ setAiReviewUuid] = React.useState<string | null>(null);
     const [annulled, setAnnulled] = React.useState<boolean>(false);
+
+    const user = useUser();
 
     const decide = React.useCallback(
         (winner: string) => {
@@ -221,18 +224,20 @@ export function ReportedGame({ game_id }: { game_id: number }): JSX.Element {
                         </div>
 
                         <div className="col">
-                            <GameTimings
-                                moves={goban.engine.config.moves}
-                                start_time={goban.engine.config.start_time}
-                                end_time={goban.engine.config.end_time}
-                                free_handicap_placement={
-                                    goban.engine.config.free_handicap_placement
-                                }
-                                handicap={goban.engine.config.handicap}
-                                black_id={goban.engine.config.black_player_id}
-                                white_id={goban.engine.config.white_player_id}
-                            />
-
+                            {(user.is_moderator /* community moderators don't see this secret stuff :o */ ||
+                                null) && (
+                                <GameTimings
+                                    moves={goban.engine.config.moves}
+                                    start_time={goban.engine.config.start_time}
+                                    end_time={goban.engine.config.end_time}
+                                    free_handicap_placement={
+                                        goban.engine.config.free_handicap_placement
+                                    }
+                                    handicap={goban.engine.config.handicap}
+                                    black_id={goban.engine.config.black_player_id}
+                                    white_id={goban.engine.config.white_player_id}
+                                />
+                            )}
                             <GameLog goban={goban} />
                         </div>
 
@@ -284,7 +289,7 @@ function GameLog({ goban }: { goban: Goban }): JSX.Element {
                                 <td className="timestamp">
                                     {moment(entry.timestamp).format("L LTS")}
                                 </td>
-                                <td className="event">{entry.event}</td>
+                                <td className="event">{entry.event.replace(/_/g, " ")}</td>
                                 <td className="data">
                                     <LogData
                                         config={goban.engine.config}

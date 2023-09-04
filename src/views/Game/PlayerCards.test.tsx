@@ -23,6 +23,7 @@ const TEST_USER = {
     can_create_tournaments: true,
     is_moderator: false,
     is_superuser: false,
+    moderator_powers: 0,
     is_tournament_moderator: false,
     supporter: true,
     supporter_level: 4,
