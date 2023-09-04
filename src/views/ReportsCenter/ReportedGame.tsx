@@ -289,7 +289,7 @@ function GameLog({ goban }: { goban: Goban }): JSX.Element {
                                 <td className="timestamp">
                                     {moment(entry.timestamp).format("L LTS")}
                                 </td>
-                                <td className="event">{entry.event}</td>
+                                <td className="event">{entry.event.replace(/_/g, " ")}</td>
                                 <td className="data">
                                     <LogData
                                         config={goban.engine.config}
