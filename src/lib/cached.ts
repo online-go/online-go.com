@@ -69,6 +69,8 @@ export const cached = {
                     disable_refresh_callback_on_user_change = true;
                     try {
                         data.set(cached.config, config);
+                        data.set("user", config.user);
+                        data.set("config.user", config.user);
                         data.set("config", config);
                         if (cb) {
                             cb();
