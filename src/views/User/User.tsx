@@ -195,7 +195,7 @@ export function User(props: { user_id?: number }): JSX.Element {
 
     const openModerateUser = () => {
         const modal = openModerateUserModal(user);
-        modal.on("close", () => {
+        modal?.on("close", () => {
             // reload after moderator changes something
             resolve(user_id);
         });
