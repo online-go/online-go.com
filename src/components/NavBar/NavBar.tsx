@@ -275,7 +275,7 @@ export function NavBar(): JSX.Element {
                         {_("Rating Calculator")}
                     </Link>
 
-                    {(user.is_moderator || user.moderator_powers & 1) && (
+                    {(user.is_moderator || !!(user.moderator_powers & 1)) && (
                         <Link className="admin-link" to="/reports-center">
                             <i className="fa fa-exclamation-triangle"></i>
                             {_("Reports Center")}
