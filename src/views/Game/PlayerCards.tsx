@@ -277,7 +277,7 @@ export function PlayerCard({
     const highlight_their_turn = their_turn ? `their-turn` : "";
 
     const show_points =
-        (engine.phase === "finished" || engine.phase === "stone removal") &&
+        engine.phase === "finished" &&
         goban.mode !== "analyze" &&
         engine.outcome !== "Timeout" &&
         engine.outcome !== "Resignation" &&
