@@ -44,6 +44,7 @@ export function AIDemoReview({
     const [engine, setEngine] = React.useState(goban?.engine);
     const [prediction, setPrediction] = React.useState<Prediction>(null);
     const [useScore, setUseScore] = usePreference("ai-review-use-score");
+    const [aiReviewEnabled] = usePreference("ai-review-enabled");
 
     React.useEffect(() => {
         if (goban) {
@@ -230,6 +231,30 @@ export function AIDemoReview({
         };
     }, [goban, engine, is_controller]);
 
+    React.useEffect(() => {
+        if (!aiReviewEnabled) {
+            clearAnalysis(goban);
+            return;
+        }
+
+        const move = goban.engine.cur_move;
+        const board_string = stringifyBoardState(move);
+        const last_data = cached_data[goban?.review_id || 0]?.[board_string];
+
+        if (last_data) {
+            setPrediction(computePrediction(last_data));
+            renderAnalysis(goban, last_data);
+            return;
+        } else {
+            setPrediction(null);
+            clearAnalysis(goban);
+        }
+    }, [aiReviewEnabled]);
+
+    if (!aiReviewEnabled) {
+        return null;
+    }
+
     if (!prediction) {
         return <div className="AIDemoReview" />;
     }
@@ -290,8 +315,6 @@ export function AIDemoReview({
             </div>
         </>
     );
-
-    //return null;
 }
 
 function stringifyBoardState(move: MoveTree): string {
@@ -312,6 +335,10 @@ function computePrediction(data: any): any {
 }
 
 function renderAnalysis(goban: Goban, data: any) {
+    if (!preferences.get("ai-review-enabled")) {
+        return;
+    }
+
     const analysis = data.analysis;
     const branches = analysis.branches;
 
