@@ -80,8 +80,6 @@ export function AIDemoReview({
                             return;
                         }
 
-                        console.log(data?.board_string, board_string);
-
                         renderAnalysis(goban, data);
                     },
                 );
@@ -105,6 +103,8 @@ export function AIDemoReview({
     }, [goban.review_id]);
 
     React.useEffect(() => {
+        let last_call_board_string = "";
+
         if (!engine) {
             console.warn("No engine", goban, goban.engine);
             return;
@@ -112,20 +112,39 @@ export function AIDemoReview({
 
         engine.on("cur_move", onMove);
         engine.on("cur_review_move", onMove);
-        onMove(engine.cur_move);
+        //onMove(engine.cur_move);
+        let pending_request = null;
 
-        function onMove(move: MoveTree) {
+        function onMove() {
+            const move = goban.engine.cur_move;
+            const board_string = stringifyBoardState(move);
+            const last_data = cached_data[goban?.review_id || 0]?.[board_string];
+
+            if (board_string === last_call_board_string) {
+                /* We need both cur_move and cur_review_move events to catch
+                 * all cases, but sometimes we are called back to back and we
+                 * don't need that, so debounce */
+                if (!last_data) {
+                    clearAnalysis(goban);
+                }
+                return;
+            }
+            last_call_board_string = board_string;
+
             /* This request animation frame exists because other part of the
              * code clears the board and redraws any stored marks and drawings
              * on the board, which can happen after this code runs (which
              * blanks out what we want to draw). So, we do this code next frame
              * so we always run after that other code. */
-            const board_string = stringifyBoardState(move);
-            const last_data = cached_data[goban?.review_id || 0]?.[board_string];
-
             requestAnimationFrame(() => {
+                // we can't use the data from the outside call because there's times
+                // where the cur_move/cur_review_move get updated in such a way that would cause
+                // this logic to run when we don't want it to
+                const move = goban.engine.cur_move;
+                const board_string = stringifyBoardState(move);
+                const last_data = cached_data[goban?.review_id || 0]?.[board_string];
+
                 if (last_data) {
-                    console.log("Showing last data apparently", board_string);
                     renderAnalysis(goban, last_data);
                     return;
                 } else {
@@ -137,46 +156,60 @@ export function AIDemoReview({
                 return;
             }
 
-            /* If we already have a final position, broadcast this to anyone
-             * who may be listening instead of re-analyzing */
-            if (last_data && last_data.final) {
-                console.log("Already have analyzed position");
-                ai_socket
-                    .sendPromise("ai-relay-analyzed-position", {
-                        channel_id: `ai-position-analysis-stream-review-${goban.review_id}`,
-                        data: last_data,
-                    })
-                    .catch((error) => {
-                        console.error("Relay error", error);
-                    });
-                return;
+            if (pending_request) {
+                clearTimeout(pending_request);
             }
 
-            /* If we don't have any data, request an analysis */
-            if (!last_data) {
-                ai_socket
-                    .sendPromise("ai-analyze-position", {
-                        uuid: uuid(),
-                        channel_id: `ai-position-analysis-stream-review-${goban.review_id}`,
-                        rules: engine.rules,
-                        board: move.state.board,
-                        player: move.state.player,
-                    })
-                    .then((_response) => {
-                        //console.log("ai-analyze-position response", response);
-                    })
-                    .catch((error) => {
-                        console.error("ai-analyze-position error", error);
-                    });
-            } else {
-                /* If we're here, we have some data but not the final data, so
-                 * it's still coming in and any other viewers will also be
-                 * receiving the updates so no need to do anything. */
-            }
+            /* We debounce here because if we hover over a variation link
+             * shared by a player we'd trigger an analysis for every move in
+             * the variation, which could be problematic. With the debounce, we
+             * only analyze the final move. */
+            pending_request = setTimeout(() => {
+                pending_request = null;
+                const move = goban.engine.cur_move;
+                const board_string = stringifyBoardState(move);
+                const last_data = cached_data[goban?.review_id || 0]?.[board_string];
+                /* If we already have a final position, broadcast this to anyone
+                 * who may be listening instead of re-analyzing */
+                if (last_data && last_data.final) {
+                    ai_socket
+                        .sendPromise("ai-relay-analyzed-position", {
+                            channel_id: `ai-position-analysis-stream-review-${goban.review_id}`,
+                            data: last_data,
+                        })
+                        .catch((error) => {
+                            console.error("Relay error", error);
+                        });
+                    return;
+                }
+
+                /* If we don't have any data, request an analysis */
+                if (!last_data) {
+                    ai_socket
+                        .sendPromise("ai-analyze-position", {
+                            uuid: uuid(),
+                            channel_id: `ai-position-analysis-stream-review-${goban.review_id}`,
+                            rules: engine.rules,
+                            board: move.state.board,
+                            player: move.state.player,
+                        })
+                        .then((_response) => {
+                            //console.log("ai-analyze-position response", response);
+                        })
+                        .catch((error) => {
+                            console.error("ai-analyze-position error", error);
+                        });
+                } else {
+                    /* If we're here, we have some data but not the final data, so
+                     * it's still coming in and any other viewers will also be
+                     * receiving the updates so no need to do anything. */
+                }
+            }, 50);
         }
 
         return () => {
             engine.off("cur_move", onMove);
+            engine.off("cur_review_move", onMove);
         };
     }, [goban, engine, is_controller]);
 
