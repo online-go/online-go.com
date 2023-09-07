@@ -16,13 +16,21 @@
  */
 
 import * as React from "react";
+import { pgettext, interpolate } from "translate";
 import { ai_socket } from "sockets";
+import { Toggle } from "Toggle";
 import { uuid } from "misc";
 import * as preferences from "preferences";
+import { usePreference } from "preferences";
 import { JGOFNumericPlayerColor, ColoredCircle, MoveTree, Goban } from "goban";
 import { useUser } from "hooks";
 
 const cached_data: { [review_id: number]: { [board_string: string]: any } } = {};
+
+interface Prediction {
+    score?: number;
+    win_rate?: number;
+}
 
 export function AIDemoReview({
     goban,
@@ -34,6 +42,8 @@ export function AIDemoReview({
     const user = useUser();
     const is_controller = user?.id === controller;
     const [engine, setEngine] = React.useState(goban?.engine);
+    const [prediction, setPrediction] = React.useState<Prediction>(null);
+    const [useScore, setUseScore] = usePreference("ai-review-use-score");
 
     React.useEffect(() => {
         if (goban) {
@@ -76,10 +86,10 @@ export function AIDemoReview({
                         cached_data[goban.review_id][data.board_string] = data;
 
                         if (data?.board_string !== board_string) {
-                            clearAnalysis(goban);
                             return;
                         }
 
+                        setPrediction(computePrediction(data));
                         renderAnalysis(goban, data);
                     },
                 );
@@ -125,6 +135,7 @@ export function AIDemoReview({
                  * all cases, but sometimes we are called back to back and we
                  * don't need that, so debounce */
                 if (!last_data) {
+                    setPrediction(null);
                     clearAnalysis(goban);
                 }
                 return;
@@ -145,14 +156,20 @@ export function AIDemoReview({
                 const last_data = cached_data[goban?.review_id || 0]?.[board_string];
 
                 if (last_data) {
+                    setPrediction(computePrediction(last_data));
                     renderAnalysis(goban, last_data);
                     return;
                 } else {
+                    setPrediction(null);
                     clearAnalysis(goban);
                 }
             });
 
             if (!is_controller) {
+                return;
+            }
+
+            if (!user.supporter_level) {
                 return;
             }
 
@@ -213,7 +230,68 @@ export function AIDemoReview({
         };
     }, [goban, engine, is_controller]);
 
-    return null;
+    if (!prediction) {
+        return <div className="AIDemoReview" />;
+    }
+
+    const score = prediction.score;
+    const win_rate_p = prediction.win_rate * 100.0;
+
+    return (
+        <>
+            <div className="AIDemoReview">
+                {useScore ? (
+                    <div className="progress">
+                        {score > 0 ? (
+                            <div
+                                className="progress-bar black-background"
+                                style={{ width: "100%" }}
+                            >
+                                {interpolate(
+                                    pgettext("AI Review: Black ahead by {score}", "B+{{score}}"),
+                                    { score: score.toFixed(1) },
+                                )}
+                            </div>
+                        ) : (
+                            <div
+                                className="progress-bar white-background"
+                                style={{ width: "100%" }}
+                            >
+                                {interpolate(
+                                    pgettext("AI Review: White ahead by {score}", "W+{{score}}"),
+                                    { score: (-score).toFixed(1) },
+                                )}
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <div className="progress">
+                        <div
+                            className="progress-bar black-background"
+                            style={{ width: win_rate_p + "%" }}
+                        >
+                            {win_rate_p.toFixed(1)}%
+                        </div>
+                        <div
+                            className="progress-bar white-background"
+                            style={{ width: 100.0 - win_rate_p + "%" }}
+                        >
+                            {(100 - win_rate_p).toFixed(1)}%
+                        </div>
+                    </div>
+                )}
+
+                <Toggle
+                    checked={useScore}
+                    onChange={(b) => {
+                        setUseScore(b);
+                    }}
+                />
+            </div>
+        </>
+    );
+
+    //return null;
 }
 
 function stringifyBoardState(move: MoveTree): string {
@@ -227,6 +305,10 @@ function clearAnalysis(goban) {
     goban.setMarks(marks, true); /* draw the remaining AI sequence as ghost marks, if any */
     goban.setHeatmap(heatmap, true);
     goban.setColoredCircles(colored_circles, false);
+}
+
+function computePrediction(data: any): any {
+    return { score: data.analysis.score, win_rate: data.analysis.win_rate };
 }
 
 function renderAnalysis(goban: Goban, data: any) {
