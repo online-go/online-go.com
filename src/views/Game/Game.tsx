@@ -47,6 +47,7 @@ import { Resizable } from "Resizable";
 import { chat_manager, ChatChannelProxy, inGameModChannel } from "chat_manager";
 import { sfx, SFXSprite, ValidSound } from "sfx";
 import { AIReview } from "./AIReview";
+import { AIDemoReview } from "./AIDemoReview";
 import { GameChat, ChatMode } from "./GameChat";
 import { JGOFClock } from "goban";
 import { GameTimings } from "./GameTimings";
@@ -222,7 +223,7 @@ export function Game(): JSX.Element {
         console.log("nav_prev_10", Date.now() - start);
     };
     const nav_prev = () => {
-        const start = Date.now();
+        //const start = Date.now();
         const last_estimate_move = stopEstimatingScore();
         stopAutoplay();
         checkAndEnterAnalysis(last_estimate_move);
@@ -235,10 +236,10 @@ export function Game(): JSX.Element {
         }
 
         goban.current.syncReviewMove();
-        console.log("nav_prev", Date.now() - start);
+        //console.log("nav_prev", Date.now() - start);
     };
     const nav_next = (event?: React.MouseEvent<any>, dont_stop_autoplay?: boolean) => {
-        const start = Date.now();
+        //const start = Date.now();
         const last_estimate_move = stopEstimatingScore();
         if (!dont_stop_autoplay) {
             stopAutoplay();
@@ -246,7 +247,7 @@ export function Game(): JSX.Element {
         checkAndEnterAnalysis(last_estimate_move);
         goban.current.showNext();
         goban.current.syncReviewMove();
-        console.log("nav_next", Date.now() - start);
+        //console.log("nav_next", Date.now() - start);
     };
     const nav_next_10 = () => {
         const start = Date.now();
@@ -767,6 +768,7 @@ export function Game(): JSX.Element {
     );
 
     const frag_ai_review = () => {
+        // Games
         if (
             goban &&
             goban.current.engine &&
@@ -782,6 +784,22 @@ export function Game(): JSX.Element {
                     game_id={game_id}
                     move={cur_move}
                     hidden={!ai_review_enabled}
+                />
+            );
+        }
+
+        if (
+            goban &&
+            goban.current.engine &&
+            goban.current.review_id === review_id &&
+            ((goban.current.engine.width === 19 && goban.current.engine.height === 19) ||
+                (goban.current.engine.width === 13 && goban.current.engine.height === 13) ||
+                (goban.current.engine.width === 9 && goban.current.engine.height === 9))
+        ) {
+            return (
+                <AIDemoReview
+                    goban={goban.current}
+                    controller={goban.current.review_controller_id}
                 />
             );
         }

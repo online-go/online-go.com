@@ -16,7 +16,6 @@
  */
 
 import * as React from "react";
-import * as data from "data";
 import { ai_socket } from "sockets";
 import { MoveTree, GobanSocketEvents } from "goban";
 import { IdType } from "src/lib/types";
@@ -47,24 +46,8 @@ export function AIReviewStream(props: AIReviewStreamProperties): JSX.Element {
             }
         }
 
-        function onJwtChange() {
-            const user = data.get("config.user");
-            const user_jwt = data.get("config.user_jwt");
-            if (!user.anonymous && user_jwt) {
-                ai_socket?.send("authenticate", { jwt: user_jwt });
-            }
-        }
-
-        function watch_jwt() {
-            data.watch("config.user_jwt", onJwtChange);
-        }
-        function unwatch_jwt() {
-            data.unwatch("config.user_jwt", onJwtChange);
-        }
-
         function onConnect() {
             ai_socket?.send("ai-review-connect", { uuid, game_id, ai_review_id });
-            watch_jwt();
         }
 
         function onMessage(data: any) {
@@ -77,7 +60,6 @@ export function AIReviewStream(props: AIReviewStreamProperties): JSX.Element {
             }
             ai_socket?.off("connect", onConnect);
             ai_socket?.off(uuid as keyof GobanSocketEvents, onMessage);
-            unwatch_jwt();
         };
     }, [uuid]);
 
