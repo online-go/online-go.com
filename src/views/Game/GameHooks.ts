@@ -127,7 +127,7 @@ export const useUserIsParticipant = generateGobanHook((goban: GobanCore | null) 
 /** React hook that returns the current move number from goban */
 export const useCurrentMoveNumber = generateGobanHook(
     (goban: GobanCore | null) => goban?.engine.cur_move?.move_number || -1,
-    ["cur_move", "last_official_move"],
+    ["cur_move"],
 );
 
 /** React hook that returns the phase */
