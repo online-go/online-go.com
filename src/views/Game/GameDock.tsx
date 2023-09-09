@@ -20,7 +20,7 @@ import * as data from "data";
 import * as preferences from "preferences";
 import { MAX_DOCK_DELAY } from "SettingsCommon";
 import { useUser } from "hooks";
-import { api1, post, del } from "requests";
+import { api1, post, del, get } from "requests";
 import { Dock } from "Dock";
 import { Link } from "react-router-dom";
 import { toast } from "toast";
@@ -28,6 +28,7 @@ import { _, pgettext } from "translate";
 import { openACLModal } from "ACLModal";
 import { openGameLinkModal } from "./GameLinkModal";
 import { openGameLogModal } from "./GameLogModal";
+import { openGameLibraryModal } from "./GameLibraryModal";
 import { sfx } from "sfx";
 import { alert } from "swal_config";
 import { challengeFromBoardPosition } from "ChallengeModal/ForkModal";
@@ -311,6 +312,18 @@ export function GameDock({
             ? engine.playerToMove()
             : engine.playerNotToMove();
 
+    const showLibraryModal = () => {
+        const user = data.get("user");
+        const promise = get("library/%%", user.id);
+        promise
+            .then(async (library) => {
+                const test = await library.collections;
+                console.log(typeof library.collections);
+                openGameLibraryModal(test);
+            })
+            .catch(errorAlerter);
+    };
+
     return (
         <Dock>
             {(tournament_id || null) && (
@@ -501,6 +514,16 @@ export function GameDock({
                     <i className="fa fa-download"></i> {_("Download SGF")}
                 </a>
             )}
+
+            {/* Flotsam */}
+            {
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Yur")}>
+                    <a onClick={showLibraryModal}>
+                        <i className="fa fa-download"></i> {_("Yur")}
+                    </a>
+                </Tooltip>
+            }
+
             {sgf_download_enabled && sgf_with_ai_review_url && (
                 <Tooltip tooltipRequired={tooltipRequired} title={_("SGF with AI Review")}>
                     <a href={sgf_with_ai_review_url} target="_blank">
