@@ -23,7 +23,7 @@ import * as preferences from "preferences";
 import { Goban } from "goban";
 import * as data from "data";
 import { PersistentElement } from "PersistentElement";
-import { getUserRating } from "rank_utils";
+import { getUserRating, PROVISIONAL_RATING_CUTOFF } from "rank_utils";
 import { Clock } from "Clock";
 import { fetch } from "player_cache";
 import { getGameResultText } from "misc";
@@ -113,11 +113,12 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                     // the goban engine doesn't come with the full player rating structure
                     fetch(goban.current.engine.players.black.id)
                         .then((player) => {
-                            setBlackRank(
-                                preferences.get("hide-ranks")
-                                    ? ""
-                                    : " [" + getUserRating(player).bounded_rank_label + "]",
-                            );
+                            const blackRating = getUserRating(player);
+                            let rank_text = blackRating.bounded_rank_label;
+                            if (blackRating.deviation >= PROVISIONAL_RATING_CUTOFF) {
+                                rank_text = "?";
+                            }
+                            setBlackRank(preferences.get("hide-ranks") ? "" : `[${rank_text}]`);
                         })
                         .catch(() => {
                             console.log("Couldn't work out black rank");
@@ -133,11 +134,12 @@ export function MiniGoban(props: MiniGobanProps): JSX.Element {
                     // the goban engine doesn't come with the full player rating structure
                     fetch(goban.current.engine.players.white.id)
                         .then((player) => {
-                            setWhiteRank(
-                                preferences.get("hide-ranks")
-                                    ? ""
-                                    : " [" + getUserRating(player).bounded_rank_label + "]",
-                            );
+                            const whiteRating = getUserRating(player);
+                            let rank_text = whiteRating.bounded_rank_label;
+                            if (whiteRating.deviation >= PROVISIONAL_RATING_CUTOFF) {
+                                rank_text = "?";
+                            }
+                            setWhiteRank(preferences.get("hide-ranks") ? "" : `[${rank_text}]`);
                         })
                         .catch(() => {
                             console.log("Couldn't work out white rank");
