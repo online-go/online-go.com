@@ -79,6 +79,7 @@ interface ChallengeModalProperties {
     config?: ChallengeModalConfig;
     autoCreate?: boolean;
     playersList?: Array<{ name: string; rank: number }>;
+    minified?: boolean;
     tournamentRecordId?: number;
     tournamentRecordRoundId?: number;
     created?: (c: CreatedChallengeInfo) => void;
@@ -163,6 +164,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         super(props);
 
         const speed = data.get("challenge.speed", "live");
+        //console.log(this.props);
 
         const challenge: ChallengeDetails = data.get(`challenge.challenge.${speed}`, {
             initialized: false,
@@ -1347,6 +1349,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
     };
 
     advancedSettings = () => {
+        const minified = this.props.minified;
         const mode = this.props.mode;
         const challenge = this.state.challenge;
         const conf = this.state.conf;
@@ -1397,6 +1400,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         boardWidth={challenge.game.width}
                         boardHeight={challenge.game.height}
                         forceSystem={forceSystem}
+                        minified={minified}
                     />
                 </div>
 
@@ -1493,22 +1497,28 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                     </div>
 
                     <div>
-                        <div className="form-group" style={{ position: "relative" }}>
-                            <label className="control-label" htmlFor="challenge-disable-analysis">
-                                {_("Disable Analysis")}
-                            </label>
-                            <div className="controls">
-                                <div className="checkbox">
-                                    <input
-                                        checked={this.state.challenge.game.disable_analysis}
-                                        onChange={this.update_disable_analysis}
-                                        id="challenge-disable-analysis"
-                                        type="checkbox"
-                                    />{" "}
-                                    *
+                        {!minified ||
+                            (null && (
+                                <div className="form-group" style={{ position: "relative" }}>
+                                    <label
+                                        className="control-label"
+                                        htmlFor="challenge-disable-analysis"
+                                    >
+                                        {_("Disable Analysis")}
+                                    </label>
+                                    <div className="controls">
+                                        <div className="checkbox">
+                                            <input
+                                                checked={this.state.challenge.game.disable_analysis}
+                                                onChange={this.update_disable_analysis}
+                                                id="challenge-disable-analysis"
+                                                type="checkbox"
+                                            />{" "}
+                                            *
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
+                            ))}
 
                         {(mode === "open" || null) && (
                             <div>
@@ -1662,6 +1672,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
     render() {
         const mode = this.props.mode;
+        const minified = this.props.minified;
         const player_id = this.props.playerId;
         const player = player_id && player_cache.lookup(player_id);
         const player_username = player ? player.username : "...";
@@ -1741,7 +1752,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                         </button>
                     )}
                 </div>
-                {(mode !== "demo" || null) && this.preferredGameSettings()}
+                {((mode !== "demo" && !minified) || null) && this.preferredGameSettings()}
             </div>
         );
     }
@@ -1834,6 +1845,25 @@ export function challenge(
         />,
     );
 }
+
+export function challengeCompMini(
+    config?: ChallengeModalConfig,
+    created?: (c: CreatedChallengeInfo) => void,
+) {
+    const mode: ChallengeModes = "computer";
+    const minified = true;
+    return openModal(
+        <ChallengeModal
+            playerId={null}
+            initialState={null}
+            config={config}
+            mode={mode}
+            created={created}
+            minified={minified}
+        />,
+    );
+}
+
 export function createDemoBoard(
     players_list?: Array<{ name: string; rank: number }>,
     tournament_record_id?: number,
@@ -1851,6 +1881,9 @@ export function createDemoBoard(
 }
 export function challengeComputer() {
     return challenge(null, null, true);
+}
+export function challengeComputerMini() {
+    return challengeCompMini();
 }
 export function challengeRematch(
     goban: Goban,

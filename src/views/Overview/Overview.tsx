@@ -44,11 +44,14 @@ import { EmailBanner } from "EmailBanner";
 import { PaymentProblemBanner } from "PaymentProblemBanner";
 import { ActiveDroppedGameList } from "ActiveDroppedGameList";
 
+import { bot_count } from "bots";
+import { challengeComputerMini } from "ChallengeModal";
 import { automatch_manager, AutomatchPreferences } from "automatch_manager";
 import { getAutomatchSettings } from "AutomatchSettings";
 import { Size } from "src/lib/types";
 import { dup, uuid } from "misc";
 import { pgettext } from "translate";
+import { alert } from "swal_config";
 
 declare let ogs_missing_translation_count: number;
 
@@ -158,9 +161,8 @@ export class OldOverview extends React.Component<{}, OverviewState> {
                 <div style={{ marginBottom: "1rem" }}>
                     {_("You're not currently playing any games.")}
                 </div>
-                <MiniAutomatch />
                 <Link to="/play" className="btn primary">
-                    {_("Find a game")}
+                    {_("The play page has more game options")}
                 </Link>
             </div>
         );
@@ -193,11 +195,14 @@ export class OldOverview extends React.Component<{}, OverviewState> {
                         )}
 
                         {this.state.resolved && (
-                            <ActiveDroppedGameList
-                                games={this.state.overview.active_games}
-                                user={user}
-                                noActiveGamesView={this.noActiveGames()}
-                            ></ActiveDroppedGameList>
+                            <React.Fragment>
+                                <ActiveDroppedGameList
+                                    games={this.state.overview.active_games}
+                                    user={user}
+                                    noActiveGamesView={this.noActiveGames()}
+                                ></ActiveDroppedGameList>
+                                <MiniAutomatch />
+                            </React.Fragment>
                         )}
                     </div>
                     <div className="right">
@@ -414,6 +419,7 @@ export class LadderList extends React.PureComponent<{}, LadderListState> {
 
 interface MiniAutomatchState {
     automatch_size_options: Size[];
+    showLoadingSpinnerForCorrespondence: boolean;
 }
 
 class MiniAutomatch extends React.PureComponent<{}, MiniAutomatchState> {
@@ -422,6 +428,7 @@ class MiniAutomatch extends React.PureComponent<{}, MiniAutomatchState> {
 
         this.state = {
             automatch_size_options: data.get("automatch.size_options", ["9x9", "13x13", "19x19"]),
+            showLoadingSpinnerForCorrespondence: false,
         };
     }
 
@@ -471,7 +478,7 @@ class MiniAutomatch extends React.PureComponent<{}, MiniAutomatchState> {
         return this.state.automatch_size_options.indexOf(size) >= 0;
     };
 
-    findMatch = (speed: "blitz" | "live") => {
+    findMatch = (speed: "blitz" | "live" | "correspondence") => {
         const settings = getAutomatchSettings(speed);
         const preferences: AutomatchPreferences = {
             uuid: uuid(),
@@ -499,6 +506,14 @@ class MiniAutomatch extends React.PureComponent<{}, MiniAutomatchState> {
         preferences.uuid = uuid();
         automatch_manager.findMatch(preferences);
         this.onAutomatchEntry();
+
+        if (speed === "correspondence") {
+            this.setState({ showLoadingSpinnerForCorrespondence: true });
+        }
+    };
+
+    dismissCorrespondenceSpinner = () => {
+        this.setState({ showLoadingSpinnerForCorrespondence: false });
     };
 
     cancelActiveAutomatch = () => {
@@ -506,6 +521,14 @@ class MiniAutomatch extends React.PureComponent<{}, MiniAutomatchState> {
             automatch_manager.cancel(automatch_manager.active_live_automatcher.uuid);
         }
         this.forceUpdate();
+    };
+
+    newComputerGame = () => {
+        if (bot_count() === 0) {
+            void alert.fire(_("Sorry, all bots seem to be offline, please try again later."));
+            return;
+        }
+        challengeComputerMini();
     };
 
     render() {
@@ -522,6 +545,30 @@ class MiniAutomatch extends React.PureComponent<{}, MiniAutomatchState> {
                     <div className="automatch-settings">
                         <button className="danger sm" onClick={this.cancelActiveAutomatch}>
                             {pgettext("Cancel automatch", "Cancel")}
+                        </button>
+                    </div>
+                </div>
+            );
+        } else if (this.state.showLoadingSpinnerForCorrespondence) {
+            return (
+                <div className="automatch-container">
+                    <div className="automatch-header">{_("Finding you a game...")}</div>
+                    <div className="automatch-settings-corr">
+                        {_(
+                            'This can take several minutes. You will be notified when your match has been found. To view or cancel your automatch requests, please Play page section labeled "Your Automatch Requests".',
+                        )}
+                        <Link to="/play" className="btn primary">
+                            {_("Play page")}
+                        </Link>
+                    </div>
+                    <div className="automatch-row-container">
+                        <button className="primary" onClick={this.dismissCorrespondenceSpinner}>
+                            {_(
+                                pgettext(
+                                    "Dismiss the 'finding correspondence automatch' message",
+                                    "Got it",
+                                ),
+                            )}
                         </button>
                     </div>
                 </div>
@@ -584,6 +631,47 @@ class MiniAutomatch extends React.PureComponent<{}, MiniAutomatchState> {
                                     </span>
                                 </div>
                             </button>
+                            <button
+                                className="primary"
+                                onClick={() => this.findMatch("correspondence")}
+                                disabled={this.anon || this.warned}
+                            >
+                                <div className="play-button-text-root">
+                                    <span>
+                                        <i className="ogs-turtle" /> {_("Correspondence")}
+                                    </span>
+                                    <span className="time-per-move">
+                                        {pgettext(
+                                            "Automatch average time per move",
+                                            "~1 day per move",
+                                        )}
+                                    </span>
+                                </div>
+                            </button>
+                        </div>
+
+                        <div className="automatch-header">
+                            <div>{_("Challenge Computer")}</div>
+                        </div>
+                        <div className="automatch-row">
+                            <button
+                                className="primary"
+                                onClick={this.newComputerGame}
+                                disabled={this.anon || this.warned}
+                            >
+                                <div className="play-button-text-root">
+                                    <i className="fa fa-desktop" /> {_("Computer")}
+                                    <span className="time-per-move"></span>
+                                </div>
+                            </button>
+                        </div>
+                        <div className="automatch-header">
+                            <div>{_("For more game options see the")}</div>
+                        </div>
+                        <div className="automatch-row">
+                            <Link to="/play" className="btn primary">
+                                {_("Play page")}
+                            </Link>
                         </div>
                     </div>
                 </div>

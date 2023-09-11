@@ -189,10 +189,13 @@
 /* from play.styl */
 
 .automatch-container {
-        flex: 1;
+        flex-grow: 1;
+        flex-basis: 20rem;
         display: flex;
+        max-height: 80vh;
         flex-direction: column;
-        align-items: stretch;
+        align-items: center;
+        justify-content: center;
 
         .small-spinner {
             width: 20px;

@@ -32,6 +32,7 @@ interface TimeControlPickerProperties {
     forceSystem: boolean;
     boardWidth: number;
     boardHeight: number;
+    minified?: boolean;
 }
 
 const numeric = (ev: React.ChangeEvent<HTMLSelectElement>) => parseInt(ev.target.value);
@@ -148,6 +149,8 @@ export function TimeControlPicker(props: TimeControlPickerProperties): JSX.Eleme
             ? TimeControlTypes.ALL_SYSTEMS
             : TimeControlTypes.ALL_SYSTEMS_EXCEPT_NONE;
 
+    const minified = props.minified || false;
+
     return (
         <div className="TimeControlPicker">
             <div className="form-group">
@@ -172,50 +175,56 @@ export function TimeControlPicker(props: TimeControlPickerProperties): JSX.Eleme
                     </div>
                 </div>
             </div>
-            <div className="form-group">
-                <label className="control-label" htmlFor="challenge-time-control">
-                    {_("Time Control")}
-                </label>
-                <div className="controls">
-                    <div className="checkbox">
-                        <select
-                            disabled={props.forceSystem}
-                            value={tc.system}
-                            onChange={(ev) => onChangeSystem(ev.target.value as TimeControlSystem)}
-                            id="challenge-time-control"
-                            className="challenge-dropdown form-control"
-                        >
-                            {valid_systems.map((system) => (
-                                <option value={system} key={system}>
-                                    {_(timeControlSystemText(system))}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-            </div>
-            {selectors}
-            {tc.speed === "correspondence" && tc.system !== "none" && (
-                <div
-                    id="challenge-pause-on-weekends-div"
-                    className="form-group"
-                    style={{ position: "relative" }}
-                >
-                    <label className="control-label" htmlFor="challenge-pause-on-weekends">
-                        {_("Pause on Weekends")}
-                    </label>
-                    <div className="controls">
-                        <div className="checkbox">
-                            <input
-                                checked={tc.pause_on_weekends}
-                                onChange={(ev) => onChangePauseOnWeekends(ev.target.checked)}
-                                id="challenge-pause-on-weekends"
-                                type="checkbox"
-                            />
+            {!minified ||
+                (null && (
+                    <div className="form-group">
+                        <label className="control-label" htmlFor="challenge-time-control">
+                            {_("Time Control")}
+                        </label>
+                        <div className="controls">
+                            <div className="checkbox">
+                                <select
+                                    disabled={props.forceSystem}
+                                    value={tc.system}
+                                    onChange={(ev) =>
+                                        onChangeSystem(ev.target.value as TimeControlSystem)
+                                    }
+                                    id="challenge-time-control"
+                                    className="challenge-dropdown form-control"
+                                >
+                                    {valid_systems.map((system) => (
+                                        <option value={system} key={system}>
+                                            {_(timeControlSystemText(system))}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                ))}
+            {!minified || null ? selectors || null : null}
+            {(tc.speed === "correspondence" && tc.system !== "none" && !minified) ||
+                (null && (
+                    <div
+                        id="challenge-pause-on-weekends-div"
+                        className="form-group"
+                        style={{ position: "relative" }}
+                    >
+                        <label className="control-label" htmlFor="challenge-pause-on-weekends">
+                            {_("Pause on Weekends")}
+                        </label>
+                        <div className="controls">
+                            <div className="checkbox">
+                                <input
+                                    checked={tc.pause_on_weekends}
+                                    onChange={(ev) => onChangePauseOnWeekends(ev.target.checked)}
+                                    id="challenge-pause-on-weekends"
+                                    type="checkbox"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                ))}
         </div>
     );
 }
