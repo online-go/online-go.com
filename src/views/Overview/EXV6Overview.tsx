@@ -37,7 +37,7 @@ import { ActiveTournamentList, Group } from "src/lib/types";
 import { DismissableMessages } from "DismissableMessages";
 import { EmailBanner } from "EmailBanner";
 import { ActiveDroppedGameList } from "ActiveDroppedGameList";
-import { MiniAutomatch } from "./Overview";
+import { MiniAutomatch } from "MiniAutomatch";
 
 declare let ogs_missing_translation_count: number;
 
