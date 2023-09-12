@@ -51,7 +51,8 @@ if (
 } else if (typeof process !== "undefined" && process.env.NODE_ENV === "test") {
     // don't set ai host because we dont use it in tests (stubbed)
 } else {
-    console.warn("AI Host not set, AI reviews will not work", window.location.hostname);
+    console.warn("AI Host not set, defaulting to localhost", window.location.hostname);
+    ai_host = "http://localhost:13284";
 }
 
 export const ai_socket = ai_host
