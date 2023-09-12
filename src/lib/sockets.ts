@@ -30,14 +30,16 @@ if (
     // if we're developing locally but connecting to the production system, use our local system for estimation
     ai_host = `http://localhost:13284`;
     console.log("AI Host set to: ", ai_host);
-} else if (process.env.OGS_BACKEND === "LOCAL") {
+} else if (typeof process !== "undefined" && process.env.OGS_BACKEND === "LOCAL") {
     // if we're a developer using a local server, then use it for ai
     ai_host = "http://localhost:13284";
 } else if (
     // The CI doesn't work with beta.  Note that jest in the CI has NODE_ENV==="test".
     // the .org exception is for anoek's development environment
     // This logic causes web developers who are _not_ using a local server to use Beta for AI.
-    (process.env.NODE_ENV === "development" && window.location.hostname.indexOf(".org") < 0) ||
+    (typeof process !== "undefined" &&
+        process.env.NODE_ENV === "development" &&
+        window.location.hostname.indexOf(".org") < 0) ||
     window.location.hostname.indexOf("beta") >= 0 ||
     window.location.hostname.indexOf("dev") >= 0
 ) {
@@ -46,7 +48,7 @@ if (
     ai_host = "https://ai.online-go.com";
 } else if (window.location.hostname.indexOf("ogs") >= 0) {
     ai_host = `${window.location.protocol}//ai-${window.location.hostname}`;
-} else if (process.env.NODE_ENV === "test") {
+} else if (typeof process !== "undefined" && process.env.NODE_ENV === "test") {
     // don't set ai host because we dont use it in tests (stubbed)
 } else {
     console.warn("AI Host not set, AI reviews will not work", window.location.hostname);
