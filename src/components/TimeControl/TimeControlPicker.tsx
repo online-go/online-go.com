@@ -32,7 +32,6 @@ interface TimeControlPickerProperties {
     forceSystem: boolean;
     boardWidth: number;
     boardHeight: number;
-    minified?: boolean;
 }
 
 const numeric = (ev: React.ChangeEvent<HTMLSelectElement>) => parseInt(ev.target.value);
@@ -149,8 +148,6 @@ export function TimeControlPicker(props: TimeControlPickerProperties): JSX.Eleme
             ? TimeControlTypes.ALL_SYSTEMS
             : TimeControlTypes.ALL_SYSTEMS_EXCEPT_NONE;
 
-    const minified = props.minified || false;
-
     return (
         <div className="TimeControlPicker">
             <div className="form-group">
@@ -175,35 +172,30 @@ export function TimeControlPicker(props: TimeControlPickerProperties): JSX.Eleme
                     </div>
                 </div>
             </div>
-            {!minified ||
-                (null && (
-                    <div className="form-group">
-                        <label className="control-label" htmlFor="challenge-time-control">
-                            {_("Time Control")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <select
-                                    disabled={props.forceSystem}
-                                    value={tc.system}
-                                    onChange={(ev) =>
-                                        onChangeSystem(ev.target.value as TimeControlSystem)
-                                    }
-                                    id="challenge-time-control"
-                                    className="challenge-dropdown form-control"
-                                >
-                                    {valid_systems.map((system) => (
-                                        <option value={system} key={system}>
-                                            {_(timeControlSystemText(system))}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
+            <div className="form-group">
+                <label className="control-label" htmlFor="challenge-time-control">
+                    {_("Time Control")}
+                </label>
+                <div className="controls">
+                    <div className="checkbox">
+                        <select
+                            disabled={props.forceSystem}
+                            value={tc.system}
+                            onChange={(ev) => onChangeSystem(ev.target.value as TimeControlSystem)}
+                            id="challenge-time-control"
+                            className="challenge-dropdown form-control"
+                        >
+                            {valid_systems.map((system) => (
+                                <option value={system} key={system}>
+                                    {_(timeControlSystemText(system))}
+                                </option>
+                            ))}
+                        </select>
                     </div>
-                ))}
-            {!minified || null ? selectors || null : null}
-            {(tc.speed === "correspondence" && tc.system !== "none" && !minified) ||
+                </div>
+            </div>
+            {selectors}
+            {(tc.speed === "correspondence" && tc.system !== "none") ||
                 (null && (
                     <div
                         id="challenge-pause-on-weekends-div"

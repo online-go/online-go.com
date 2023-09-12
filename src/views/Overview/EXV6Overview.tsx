@@ -37,6 +37,7 @@ import { ActiveTournamentList, Group } from "src/lib/types";
 import { DismissableMessages } from "DismissableMessages";
 import { EmailBanner } from "EmailBanner";
 import { ActiveDroppedGameList } from "ActiveDroppedGameList";
+import { MiniAutomatch } from "./Overview";
 
 declare let ogs_missing_translation_count: number;
 
@@ -164,11 +165,14 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
                         )}
 
                         {this.state.resolved && (
-                            <ActiveDroppedGameList
-                                games={this.state.overview.active_games}
-                                user={user}
-                                noActiveGamesView={this.noActiveGames()}
-                            ></ActiveDroppedGameList>
+                            <React.Fragment>
+                                <MiniAutomatch />
+                                <ActiveDroppedGameList
+                                    games={this.state.overview.active_games}
+                                    user={user}
+                                    noActiveGamesView={this.noActiveGames()}
+                                ></ActiveDroppedGameList>
+                            </React.Fragment>
                         )}
                     </div>
                 </div>

@@ -191,17 +191,19 @@
 .automatch-container {
         flex-grow: 1;
         flex-basis: 20rem;
-        display: flex;
-        max-height: 80vh;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+        width: 100%;
+        max-width: 100%;
+        align-self: center;
 
         .small-spinner {
             width: 20px;
             height: 20px;
             position: relative;
         }
+    }
+
+.more-options{
+    margin-right: 1rem;
     }
 
 .automatch-header {
@@ -216,6 +218,7 @@
         .btn-group {
             display: flex;
             flex-wrap: nowrap;
+            margin-left: 1rem;
         }
     }
 

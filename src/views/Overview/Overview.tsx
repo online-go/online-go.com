@@ -45,7 +45,7 @@ import { PaymentProblemBanner } from "PaymentProblemBanner";
 import { ActiveDroppedGameList } from "ActiveDroppedGameList";
 
 import { bot_count } from "bots";
-import { challengeComputerMini } from "ChallengeModal";
+import { challengeComputer } from "ChallengeModal";
 import { automatch_manager, AutomatchPreferences } from "automatch_manager";
 import { getAutomatchSettings } from "AutomatchSettings";
 import { Size } from "src/lib/types";
@@ -196,12 +196,12 @@ export class OldOverview extends React.Component<{}, OverviewState> {
 
                         {this.state.resolved && (
                             <React.Fragment>
+                                <MiniAutomatch />
                                 <ActiveDroppedGameList
                                     games={this.state.overview.active_games}
                                     user={user}
                                     noActiveGamesView={this.noActiveGames()}
                                 ></ActiveDroppedGameList>
-                                <MiniAutomatch />
                             </React.Fragment>
                         )}
                     </div>
@@ -417,12 +417,12 @@ export class LadderList extends React.PureComponent<{}, LadderListState> {
     }
 }
 
-interface MiniAutomatchState {
+export interface MiniAutomatchState {
     automatch_size_options: Size[];
     showLoadingSpinnerForCorrespondence: boolean;
 }
 
-class MiniAutomatch extends React.PureComponent<{}, MiniAutomatchState> {
+export class MiniAutomatch extends React.PureComponent<{}, MiniAutomatchState> {
     constructor(props) {
         super(props);
 
@@ -528,13 +528,14 @@ class MiniAutomatch extends React.PureComponent<{}, MiniAutomatchState> {
             void alert.fire(_("Sorry, all bots seem to be offline, please try again later."));
             return;
         }
-        challengeComputerMini();
+        challengeComputer();
     };
 
     render() {
         if (automatch_manager.active_live_automatcher) {
             return (
                 <div className="automatch-container">
+                    <h2>{_("New Game")}</h2>
                     <div className="automatch-header">{_("Finding you a game...")}</div>
                     <div className="automatch-row-container">
                         <div className="spinner">
@@ -552,6 +553,7 @@ class MiniAutomatch extends React.PureComponent<{}, MiniAutomatchState> {
         } else if (this.state.showLoadingSpinnerForCorrespondence) {
             return (
                 <div className="automatch-container">
+                    <h2>{_("New Game")}</h2>
                     <div className="automatch-header">{_("Finding you a game...")}</div>
                     <div className="automatch-settings-corr">
                         {_(
@@ -576,8 +578,8 @@ class MiniAutomatch extends React.PureComponent<{}, MiniAutomatchState> {
         } else {
             return (
                 <div className="automatch-container">
+                    <h2>{_("New Game")}</h2>
                     <div className="automatch-header">
-                        <div>{_("Automatch finder")}</div>
                         <div className="btn-group">
                             <button
                                 className={this.size_enabled("9x9") ? "primary sm" : "sm"}
@@ -597,6 +599,9 @@ class MiniAutomatch extends React.PureComponent<{}, MiniAutomatchState> {
                             >
                                 19x19
                             </button>
+                        </div>
+                        <div className="more-options">
+                            <a href="/play"> More Options</a>
                         </div>
                     </div>
                     <div className="automatch-row-container">
@@ -648,12 +653,6 @@ class MiniAutomatch extends React.PureComponent<{}, MiniAutomatchState> {
                                     </span>
                                 </div>
                             </button>
-                        </div>
-
-                        <div className="automatch-header">
-                            <div>{_("Challenge Computer")}</div>
-                        </div>
-                        <div className="automatch-row">
                             <button
                                 className="primary"
                                 onClick={this.newComputerGame}
@@ -664,14 +663,6 @@ class MiniAutomatch extends React.PureComponent<{}, MiniAutomatchState> {
                                     <span className="time-per-move"></span>
                                 </div>
                             </button>
-                        </div>
-                        <div className="automatch-header">
-                            <div>{_("For more game options see the")}</div>
-                        </div>
-                        <div className="automatch-row">
-                            <Link to="/play" className="btn primary">
-                                {_("Play page")}
-                            </Link>
                         </div>
                     </div>
                 </div>
