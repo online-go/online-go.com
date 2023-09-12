@@ -318,8 +318,7 @@ export function GameDock({
         promise
             .then(async (library) => {
                 const test = await library.collections;
-                console.log(typeof library.collections);
-                openGameLibraryModal(test);
+                openGameLibraryModal(test, game_id);
             })
             .catch(errorAlerter);
     };
@@ -515,11 +514,11 @@ export function GameDock({
                 </a>
             )}
 
-            {/* Flotsam */}
+            {/* Add To Library functionality */}
             {
-                <Tooltip tooltipRequired={tooltipRequired} title={_("Yur")}>
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Save to Library")}>
                     <a onClick={showLibraryModal}>
-                        <i className="fa fa-download"></i> {_("Yur")}
+                        <i className="fa fa-book"></i> {_("Save to Library")}
                     </a>
                 </Tooltip>
             }
