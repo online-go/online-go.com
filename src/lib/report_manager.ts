@@ -31,6 +31,8 @@ import { emitNotification } from "Notifications";
 import { browserHistory } from "ogsHistory";
 import { get, post } from "requests";
 
+export const DAILY_REPORT_GOAL = 4;
+
 export interface Report {
     id: number;
     created: string;
@@ -317,6 +319,15 @@ class ReportManager extends EventEmitter<Events> {
         });
         this.updateIncidentReport(res);
         return res;
+    }
+
+    public getHandledTodayCount(): number {
+        return data.get("user").reports_handled_today || 0;
+    }
+    public getReportsLeftUntilGoal(): number {
+        const count = this.getAvailableReports().length;
+        const handled_today = this.getHandledTodayCount();
+        return Math.max(0, Math.min(count, DAILY_REPORT_GOAL - handled_today));
     }
 }
 

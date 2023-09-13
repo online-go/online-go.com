@@ -72,6 +72,7 @@ declare namespace rest_api {
         email_validated: boolean | string; // VerifyEmail sets this to a Date string
         is_announcer: boolean;
         has_active_warning_flag?: boolean;
+        reports_handled_today?: number;
     }
 
     type AccountLinks = {
