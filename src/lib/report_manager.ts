@@ -192,7 +192,7 @@ class ReportManager extends EventEmitter<Events> {
             if (!user.is_moderator && !(report.report_type === "score_cheating")) {
                 return false;
             }
-            return report.moderator === null || report.moderator.id === user.id;
+            return !report.moderator || report.moderator?.id === user.id;
         });
     }
 
