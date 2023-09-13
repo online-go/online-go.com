@@ -31,7 +31,7 @@ import { emitNotification } from "Notifications";
 import { browserHistory } from "ogsHistory";
 import { get, post } from "requests";
 
-export const DAILY_REPORT_GOAL = 4;
+export const DAILY_REPORT_GOAL = 10;
 
 export interface Report {
     id: number;
