@@ -195,28 +195,27 @@ export function TimeControlPicker(props: TimeControlPickerProperties): JSX.Eleme
                 </div>
             </div>
             {selectors}
-            {(tc.speed === "correspondence" && tc.system !== "none") ||
-                (null && (
-                    <div
-                        id="challenge-pause-on-weekends-div"
-                        className="form-group"
-                        style={{ position: "relative" }}
-                    >
-                        <label className="control-label" htmlFor="challenge-pause-on-weekends">
-                            {_("Pause on Weekends")}
-                        </label>
-                        <div className="controls">
-                            <div className="checkbox">
-                                <input
-                                    checked={tc.pause_on_weekends}
-                                    onChange={(ev) => onChangePauseOnWeekends(ev.target.checked)}
-                                    id="challenge-pause-on-weekends"
-                                    type="checkbox"
-                                />
-                            </div>
+            {tc.speed === "correspondence" && tc.system !== "none" && (
+                <div
+                    id="challenge-pause-on-weekends-div"
+                    className="form-group"
+                    style={{ position: "relative" }}
+                >
+                    <label className="control-label" htmlFor="challenge-pause-on-weekends">
+                        {_("Pause on Weekends")}
+                    </label>
+                    <div className="controls">
+                        <div className="checkbox">
+                            <input
+                                checked={tc.pause_on_weekends}
+                                onChange={(ev) => onChangePauseOnWeekends(ev.target.checked)}
+                                id="challenge-pause-on-weekends"
+                                type="checkbox"
+                            />
                         </div>
                     </div>
-                ))}
+                </div>
+            )}
         </div>
     );
 }
