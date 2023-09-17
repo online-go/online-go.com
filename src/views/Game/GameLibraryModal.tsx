@@ -32,6 +32,7 @@ export class GameLibraryModal extends Modal<Events, GameLibraryModalProperties, 
         super(props);
     }
 
+    /*
     addToLibrary = () => {
         //goto url endpoint that downloads the sgf file
         fetch(api1(`games/${this.props.gameID}/sgf`))
@@ -44,6 +45,29 @@ export class GameLibraryModal extends Modal<Events, GameLibraryModalProperties, 
 
         // If im correct then we call post("me/games/sgf/%%", collection_id, file) to have this file saved to the given library
     };
+    */
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async addToLibrary(collection_id) {
+        const url = api1(`games/${this.props.gameID}/sgf`);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const gameSGF = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                const blob = new Blob([data as BlobPart]);
+                const file = new File([blob], "foo.txt", { type: "application/json" });
+                return file;
+            })
+            .catch(errorAlerter);
+
+        // This part comes later once i manipulate the response correctly
+        //post("me/games/sgf/%%", collection_id, gameSGF).catch(errorAlerter);
+    }
 
     render() {
         const data: any = JSON.stringify(this.props.userLibrary);
@@ -61,7 +85,7 @@ export class GameLibraryModal extends Modal<Events, GameLibraryModalProperties, 
                                 <h1>{data[index]}</h1>
                             </span>
                             <span className="cell">
-                                <button onClick={() => this.addToLibrary()}>add</button>
+                                <button onClick={() => this.addToLibrary(data.id)}>add</button>
                             </span>
                         </div>
                     ))}
