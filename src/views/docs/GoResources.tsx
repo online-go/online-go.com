@@ -475,7 +475,7 @@ export const GoResources = () => {
                                 href="https://www.youtube.com/channel/UCGAASXnrt4FtYfFZ608PqHA"
                             />,
                             <span>
-                                <Flag country={"th"} />{" "}
+                                <Flag country={"vn"} />{" "}
                                 <a
                                     rel="noopener"
                                     href="https://www.youtube.com/channel/UCSGi8F-nO1ECuNxsNapYxAg"
