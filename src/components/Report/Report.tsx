@@ -27,7 +27,8 @@ import { setIgnore } from "BlockPlayer";
 import { useUser } from "hooks";
 
 export type ReportType =
-    | "all"
+    | "all" // not a type, just useful for the enumeration
+    // These need to match those defined in the IncidentReport model on the back end
     | "stalling"
     | "inappropriate_content"
     | "score_cheating"
