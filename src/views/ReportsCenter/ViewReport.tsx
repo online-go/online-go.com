@@ -33,6 +33,7 @@ import { ReportedGame } from "./ReportedGame";
 import { AppealView } from "./AppealView";
 import { get } from "requests";
 import { MessageTemplate, WARNING_TEMPLATES, REPORTER_RESPONSE_TEMPLATES } from "./MessageTemplate";
+import { ModerationActionSelector } from "./ModerationActionSelector";
 
 // Used for saving updates to the report
 let report_note_id = 0;
@@ -55,6 +56,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     const [error, setError] = React.useState(null);
     const [moderator_id, setModeratorId] = React.useState(report?.moderator?.id);
     const [reportState, setReportState] = React.useState(report?.state);
+
     const related = report_manager.getRelatedReports(report_id);
 
     React.useEffect(() => {
@@ -227,6 +229,10 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
         }
     };
 
+    const onActionSubmitted = (action: string) => {
+        console.log(action);
+    };
+
     return (
         <div id="ViewReport">
             <div className="header">
@@ -371,11 +377,11 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                 </h3>
             </div>
             <div className="notes-container">
-                {(report.reporter_note || null) && (
-                    <div className="notes">
-                        <h4>Reporter Notes</h4>
-                        <div className="Card">
-                            {report.reporter_note_translation ? (
+                <div className="notes">
+                    <h4>Reporter Notes</h4>
+                    <div className="Card">
+                        {(report.reporter_note || null) &&
+                            (report.reporter_note_translation ? (
                                 <>
                                     {report.reporter_note_translation.source_text}
                                     {(report.reporter_note_translation.target_language !==
@@ -395,10 +401,9 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                                 </>
                             ) : (
                                 <AutoTranslate source={report.reporter_note} />
-                            )}
-                        </div>
+                            ))}
                     </div>
-                )}
+                </div>
 
                 {(report.system_note || null) && (
                     <div className="notes">
@@ -413,97 +418,113 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                         <textarea value={moderatorNote} onChange={setAndSaveModeratorNote} />
                     </div>
                 )}
-            </div>
-            <div className="actions">
-                <div className="related-reports">
-                    {related.length > 0 && user.is_moderator && (
-                        <>
-                            <h4>{_("Related Reports")}</h4>
-                            <ul>
-                                {related.map((r) => (
-                                    <li key={r.report.id}>
-                                        <Link to={`/reports-center/all/${r.report.id}`}>
-                                            {R(r.report.id)}: {r.relationship}
-                                        </Link>
-                                    </li>
-                                ))}
-                            </ul>
-                        </>
-                    )}
-                </div>
 
-                <div className="actions-right">
-                    {reportState !== "resolved" && claimed_by_me && (
-                        <button
-                            className="success"
-                            onClick={() => {
-                                void report_manager.good_report(report.id);
-                                next();
-                            }}
-                        >
-                            Close as good report
-                        </button>
-                    )}
-
-                    {reportState !== "resolved" && claimed_by_me && (
-                        <button
-                            className="reject"
-                            onClick={() => {
-                                void report_manager.bad_report(report.id);
-                                next();
-                            }}
-                        >
-                            Close as bad report
-                        </button>
-                    )}
-
-                    {reportState === "resolved" && (
-                        <button
-                            className="default"
-                            onClick={() => void report_manager.reopen(report.id)}
-                        >
-                            Re-open
-                        </button>
-                    )}
-                </div>
+                {((!user.is_moderator && user.moderator_powers) || null) && (
+                    <div className="voting">
+                        <ModerationActionSelector
+                            report={report}
+                            submit={onActionSubmitted}
+                            enable={claimed_by_me}
+                        />
+                    </div>
+                )}
             </div>
-            <hr />
-            <div className="automod-analysis">
-                <b>Automod Analysis:</b>{" "}
-                <span className="analysis">{report.automod_to_moderator}</span>
-            </div>
-            <div className="message-templates">
-                <MessageTemplate
-                    title="Accused"
-                    player={report.reported_user}
-                    reported={report.reported_user}
-                    templates={WARNING_TEMPLATES}
-                    game_id={report.reported_game}
-                    gpt={report.automod_to_reported}
-                    logByDefault={true}
-                    onSelect={claimReport}
-                    onMessage={claimReport}
-                />
 
-                <MessageTemplate
-                    title="Reporter"
-                    player={report.reporting_user}
-                    reported={report.reported_user}
-                    templates={REPORTER_RESPONSE_TEMPLATES}
-                    game_id={report.reported_game}
-                    gpt={report.automod_to_reporter}
-                    logByDefault={!user.is_moderator} // log community moderator actions
-                    onSelect={claimReport}
-                    onMessage={claimReport}
-                />
-            </div>
-            <hr />
-            {(user.is_moderator || null) && <UserHistory user={report.reported_user} />}
-            <hr />
-            {(report.url || null) && (
-                <a href={report.url} target="_blank">
-                    {report.url}
-                </a>
+            {(user.is_moderator || null) && (
+                <>
+                    <div className="actions">
+                        <div className="related-reports">
+                            {related.length > 0 && (
+                                <>
+                                    <h4>{_("Related Reports")}</h4>
+                                    <ul>
+                                        {related.map((r) => (
+                                            <li key={r.report.id}>
+                                                <Link to={`/reports-center/all/${r.report.id}`}>
+                                                    {R(r.report.id)}: {r.relationship}
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </>
+                            )}
+                        </div>
+
+                        <div className="actions-right">
+                            {reportState !== "resolved" && claimed_by_me && (
+                                <button
+                                    className="success"
+                                    onClick={() => {
+                                        void report_manager.good_report(report.id);
+                                        next();
+                                    }}
+                                >
+                                    Close as good report
+                                </button>
+                            )}
+
+                            {reportState !== "resolved" && claimed_by_me && (
+                                <button
+                                    className="reject"
+                                    onClick={() => {
+                                        void report_manager.bad_report(report.id);
+                                        next();
+                                    }}
+                                >
+                                    Close as bad report
+                                </button>
+                            )}
+
+                            {reportState === "resolved" && (
+                                <button
+                                    className="default"
+                                    onClick={() => void report_manager.reopen(report.id)}
+                                >
+                                    Re-open
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    <hr />
+                    <div className="automod-analysis">
+                        <b>Automod Analysis:</b>{" "}
+                        <span className="analysis">{report.automod_to_moderator}</span>
+                    </div>
+                    <div className="message-templates">
+                        <MessageTemplate
+                            title="Accused"
+                            player={report.reported_user}
+                            reported={report.reported_user}
+                            templates={WARNING_TEMPLATES}
+                            game_id={report.reported_game}
+                            gpt={report.automod_to_reported}
+                            logByDefault={true}
+                            onSelect={claimReport}
+                            onMessage={claimReport}
+                        />
+
+                        <MessageTemplate
+                            title="Reporter"
+                            player={report.reporting_user}
+                            reported={report.reported_user}
+                            templates={REPORTER_RESPONSE_TEMPLATES}
+                            game_id={report.reported_game}
+                            gpt={report.automod_to_reporter}
+                            logByDefault={!user.is_moderator} // log community moderator actions
+                            onSelect={claimReport}
+                            onMessage={claimReport}
+                        />
+                    </div>
+                    <hr />
+                    {(user.is_moderator || null) && <UserHistory user={report.reported_user} />}
+                    <hr />
+                    {(report.url || null) && (
+                        <a href={report.url} target="_blank">
+                            {report.url}
+                        </a>
+                    )}
+                </>
             )}
             {report.reported_game && <ReportedGame game_id={report.reported_game} />}
             {report.report_type === "appeal" && <AppealView user_id={report.reported_user.id} />}

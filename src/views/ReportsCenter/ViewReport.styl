@@ -107,6 +107,27 @@
             margin-right: 0;
         }
     }
+
+    .notes {
+        flex-basis: 50%;
+    }
+
+    .voting {
+        flex-basis: 50%;
+
+        .action-selector {
+            display: flex;
+            align-items: center
+
+            input {
+                margin-bottom: 3px; // override bizarre default 0 margin bottom so text lines up properly
+            }
+        }
+    }
+
+    .reported-game h3 {
+        margin-bottom: 0;
+    }
 }
 
 @media (max-width: 767px) {

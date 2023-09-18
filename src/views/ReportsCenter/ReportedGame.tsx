@@ -174,34 +174,39 @@ export function ReportedGame({ game_id }: { game_id: number }): JSX.Element {
                                 </div>
                             )}
 
-                            {goban.engine.phase === "finished" ? (
-                                <div className="decide-buttons">
-                                    {goban.engine.config.ranked && !annulled && (
-                                        <button onClick={() => do_annul(true)}>{_("Annul")}</button>
+                            {user.is_moderator && (
+                                <>
+                                    {goban.engine.phase === "finished" ? (
+                                        <div className="decide-buttons">
+                                            {goban.engine.config.ranked && !annulled && (
+                                                <button onClick={() => do_annul(true)}>
+                                                    {_("Annul")}
+                                                </button>
+                                            )}
+                                            {goban.engine.config.ranked && annulled && (
+                                                <button onClick={() => do_annul(false)}>
+                                                    {"Remove annulment"}
+                                                </button>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="decide-buttons">
+                                            <button
+                                                className="decide-button"
+                                                onClick={() => decide("black")}
+                                            >
+                                                Black ({goban.engine.players?.black?.username}) Wins
+                                            </button>
+                                            <button
+                                                className="decide-button"
+                                                onClick={() => decide("white")}
+                                            >
+                                                White ({goban.engine.players?.white?.username}) Wins
+                                            </button>
+                                        </div>
                                     )}
-                                    {goban.engine.config.ranked && annulled && (
-                                        <button onClick={() => do_annul(false)}>
-                                            {"Remove annulment"}
-                                        </button>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="decide-buttons">
-                                    <button
-                                        className="decide-button"
-                                        onClick={() => decide("black")}
-                                    >
-                                        Black ({goban.engine.players?.black?.username}) Wins
-                                    </button>
-                                    <button
-                                        className="decide-button"
-                                        onClick={() => decide("white")}
-                                    >
-                                        White ({goban.engine.players?.white?.username}) Wins
-                                    </button>
-                                </div>
+                                </>
                             )}
-
                             {((goban.engine.phase === "finished" &&
                                 goban.engine.game_id === game_id &&
                                 ((goban.engine.width === 19 && goban.engine.height === 19) ||

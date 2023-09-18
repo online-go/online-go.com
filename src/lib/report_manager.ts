@@ -63,6 +63,8 @@ export interface Report {
     automod_to_reporter?: string;
     automod_to_reported?: string;
 
+    available_actions: Array<string>; // community moderator actions
+
     unclaim: () => void;
     claim: () => void;
     steal: () => void;
