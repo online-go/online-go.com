@@ -20,12 +20,134 @@ import { Card } from "material";
 import { pgettext, _ } from "translate";
 import { useGoban } from "./goban_context";
 import { useUser } from "hooks";
+import { JGOFClockWithTransmitting, JGOFTimeControl } from "goban";
 
 export function AntiGrief(): JSX.Element {
     return (
         <>
+            <AntiEscaping />
             <AntiStalling />
         </>
+    );
+}
+function AntiEscaping(): JSX.Element {
+    const user = useUser();
+    const goban = useGoban();
+    const [phase, setPhase] = React.useState(goban?.engine?.phase);
+    const [clock, setClock] = React.useState<JGOFClockWithTransmitting>(goban?.last_clock as any);
+    const [expiration, setExpiration] = React.useState<number>(null);
+    const [show, setShow] = React.useState(false);
+
+    React.useEffect(() => {
+        setShow(false);
+        setClock(goban?.last_clock as any);
+        goban.on("clock", setClock);
+
+        return () => {
+            goban.off("clock", setClock);
+        };
+    }, [goban, setClock]);
+
+    React.useEffect(() => {
+        setPhase(goban?.engine?.phase);
+    }, [goban?.engine?.phase]);
+
+    React.useEffect(() => {
+        const handleAutoResign = (data?: { player_id: number; expiration: number }) => {
+            setShow(false);
+            setExpiration(data?.expiration);
+        };
+        const handleClearAutoResign = () => {
+            setShow(false);
+            setExpiration(null);
+        };
+
+        goban.on("auto-resign", handleAutoResign);
+        goban.on("clear-auto-resign", handleClearAutoResign);
+
+        return () => {
+            goban.off("auto-resign", handleAutoResign);
+            goban.off("clear-auto-resign", handleClearAutoResign);
+        };
+    }, [goban]);
+
+    React.useEffect(() => {
+        if (expiration) {
+            const timer = setTimeout(() => {
+                setExpiration(null);
+                setShow(true);
+            }, 30 * 1000);
+            return () => {
+                clearTimeout(timer);
+            };
+        }
+    }, [expiration]);
+
+    if (phase !== "play") {
+        return null;
+    }
+
+    const time_control: JGOFTimeControl = goban?.engine?.time_control;
+
+    if (!time_control) {
+        return null;
+    }
+
+    if (time_control.speed === "correspondence") {
+        return null;
+    }
+
+    if (!clock || clock.pause_state) {
+        return null;
+    }
+
+    if (
+        user.id !== goban?.engine?.config?.black_player_id &&
+        user.id !== goban?.engine?.config?.white_player_id &&
+        !user.is_moderator
+    ) {
+        return null;
+    }
+
+    if (!show) {
+        return null;
+    }
+
+    const my_color = user.id === goban?.engine?.config?.black_player_id ? "black" : "white";
+
+    return (
+        <Card className="AntiEscaping">
+            <div>
+                {pgettext(
+                    "This message is shown when one player has left the game",
+                    "Your opponent is no longer connected. You can wait and see if they come back, or end the game.",
+                )}
+            </div>
+            <div>
+                <button
+                    className="danger"
+                    onClick={() => goban?.sendPreventEscaping(my_color, false)}
+                >
+                    {pgettext(
+                        "This button is shown when one player has left the game, it allows the other player to end the game and claim victory",
+                        "End game",
+                    )}
+                </button>
+
+                <button
+                    className="danger"
+                    onClick={() => goban?.sendPreventEscaping(my_color, true)}
+                >
+                    {pgettext(
+                        "This button is shown when one player has left the game, it allows the other player to end the game and claim victory",
+                        "End game and annul the result",
+                    )}
+                </button>
+            </div>
+            <div>
+                <button onClick={() => goban?.pauseGame()}>{_("Pause game")}</button>
+            </div>
+        </Card>
     );
 }
 
