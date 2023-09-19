@@ -21,8 +21,63 @@ import { pgettext, _ } from "translate";
 import { useGoban } from "./goban_context";
 import { useUser } from "hooks";
 import { JGOFClockWithTransmitting, JGOFTimeControl } from "goban";
+import { browserHistory } from "../../ogsHistory";
+import { toast } from "toast";
+
+let on_game_page = false;
+let live_game = false;
+let live_game_id = 0;
+let live_game_phase = null;
+let last_toast = null;
+
+function checkForLeavingLiveGame(pathname: string) {
+    try {
+        const goban = window["global_goban"];
+        const was_on_page = on_game_page;
+        const was_live_game = live_game;
+
+        if (goban) {
+            const path = `/game/${goban.game_id}`;
+            if (pathname === path) {
+                on_game_page = true;
+                live_game = goban.engine.time_control.speed !== "correspondence";
+                live_game_id = goban.game_id;
+                live_game_phase = goban.engine?.phase;
+                if (last_toast) {
+                    last_toast.close();
+                }
+            } else {
+                on_game_page = false;
+            }
+        }
+
+        if (was_on_page && !on_game_page && was_live_game && live_game_phase === "play") {
+            const t = toast(
+                <div>
+                    {_(
+                        "You are leaving a live game. If you do not return you will forfeit the match.",
+                    )}
+                </div>,
+            );
+            last_toast = t;
+
+            const game_id = live_game_id; // capture the game id
+            t.on("close", () => {
+                last_toast = null;
+                browserHistory.push(`/game/${game_id}`);
+            });
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+browserHistory.listen((obj) => {
+    checkForLeavingLiveGame(obj?.location?.pathname);
+});
 
 export function AntiGrief(): JSX.Element {
+    checkForLeavingLiveGame(location?.pathname);
+
     return (
         <>
             <AntiEscaping />
