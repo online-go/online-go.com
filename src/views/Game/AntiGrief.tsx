@@ -178,7 +178,7 @@ function AntiStalling(): JSX.Element {
         return null;
     }
 
-    if (phase !== "play") {
+    if (phase !== "play" && phase !== "stone removal") {
         return null;
     }
 
@@ -187,6 +187,11 @@ function AntiStalling(): JSX.Element {
         user.id !== goban?.engine?.config?.white_player_id &&
         !user.is_moderator
     ) {
+        return null;
+    }
+
+    if (estimate.move_number + 1 < goban.engine?.cur_move?.move_number) {
+        // If we've placed a move since the estimate was made, we don't need to show it anymore
         return null;
     }
 

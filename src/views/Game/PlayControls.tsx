@@ -271,8 +271,6 @@ export function PlayControls({
                     </span>
                 )}
 
-                <AntiGrief />
-
                 {((mode === "play" && phase === "stone removal") || null) && (
                     <span>{_("Stone Removal Phase")}</span>
                 )}
@@ -472,6 +470,7 @@ export function PlayControls({
                     </div>
                 </div>
             )}
+            <AntiGrief />
             {(mode === "conditional" || null) && (
                 <div className="conditional-move-planner">
                     <div className="buttons">
