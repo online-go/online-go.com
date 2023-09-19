@@ -54,7 +54,7 @@ export function Clock({
                 goban.off("submitting-move", setSubmittingMove);
             }
         };
-    });
+    }, [goban]);
 
     if (!clock || !goban || !goban?.engine?.time_control) {
         return null;

@@ -71,12 +71,6 @@ export function GobanContainer({
             resize_debounce.current = null;
         }
 
-        // this forces a clock refresh, important after a layout when the dom
-        // could have been replaced
-        // TODO: When we are revamping this view we should see if we can either remove this
-        // or move it into a clock component or something.
-        goban.setGameClock(goban.last_clock ?? null);
-
         if (!ref_goban_container.current) {
             return;
         }
