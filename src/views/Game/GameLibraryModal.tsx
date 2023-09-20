@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import { openModal, Modal } from "Modal";
-import { api1 } from "requests";
+import { api1, post } from "requests";
 import { errorAlerter } from "misc";
 
 interface Events {}
@@ -48,20 +48,27 @@ export class GameLibraryModal extends Modal<Events, GameLibraryModalProperties, 
     */
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async addToLibrary(collection_id) {
+    async addToLibrary(collection) {
         const url = api1(`games/${this.props.gameID}/sgf`);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const gameSGF = await fetch(url, {
+        await fetch(url, {
             method: "GET",
+            // Specifically set header otherwise 415 error
             headers: {
                 "Content-Type": "application/json",
             },
         })
-            .then((response) => response.json())
+            .then((response) => response.blob())
             .then((data) => {
-                const blob = new Blob([data as BlobPart]);
-                const file = new File([blob], "foo.txt", { type: "application/json" });
-                return file;
+                const gameFile = new File([data as BlobPart], `Game# ${this.props.gameID}.sgf`, {
+                    type: "application/x-go-sgf",
+                    lastModified: new Date().getTime(),
+                });
+                const reader = new FileReader();
+                reader.readAsText(gameFile);
+                reader.onload = function () {
+                    //console.log(collection);
+                };
+                post("me/games/sgf/%%", collection[0], gameFile).catch(errorAlerter);
             })
             .catch(errorAlerter);
 
@@ -85,7 +92,7 @@ export class GameLibraryModal extends Modal<Events, GameLibraryModalProperties, 
                                 <h1>{data[index]}</h1>
                             </span>
                             <span className="cell">
-                                <button onClick={() => this.addToLibrary(data.id)}>add</button>
+                                <button onClick={() => this.addToLibrary(data)}>add</button>
                             </span>
                         </div>
                     ))}
