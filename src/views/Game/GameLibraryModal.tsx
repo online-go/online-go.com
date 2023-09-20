@@ -19,6 +19,7 @@ import * as React from "react";
 import { openModal, Modal } from "Modal";
 import { api1, post } from "requests";
 import { errorAlerter } from "misc";
+import { _ } from "translate";
 
 interface Events {}
 
@@ -27,27 +28,19 @@ interface GameLibraryModalProperties {
     gameID: number;
 }
 
-export class GameLibraryModal extends Modal<Events, GameLibraryModalProperties, {}> {
+export class GameLibraryModal extends Modal<Events, GameLibraryModalProperties, any> {
     constructor(props) {
         super(props);
+        this.state = {
+            gameName: "",
+        };
     }
 
-    /*
-    addToLibrary = () => {
-        //goto url endpoint that downloads the sgf file
-        fetch(api1(`games/${this.props.gameID}/sgf`))
-            .then((data) => {
-                // data should contain the sgf file which is automatically downloaded when a user visits the same endpoint
-                const file = data;
-                console.log(file);
-            })
-            .catch(errorAlerter);
-
-        // If im correct then we call post("me/games/sgf/%%", collection_id, file) to have this file saved to the given library
+    setGameName = (ev) => {
+        console.log("HERE " + ev.target.value);
+        this.setState({ gameName: ev.target.value });
     };
-    */
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async addToLibrary(collection) {
         const url = api1(`games/${this.props.gameID}/sgf`);
         await fetch(url, {
@@ -59,21 +52,15 @@ export class GameLibraryModal extends Modal<Events, GameLibraryModalProperties, 
         })
             .then((response) => response.blob())
             .then((data) => {
-                const gameFile = new File([data as BlobPart], `Game# ${this.props.gameID}.sgf`, {
+                const sgfName = `${this.state.gameName}.sgf`;
+                const gameFile = new File([data as BlobPart], sgfName, {
                     type: "application/x-go-sgf",
                     lastModified: new Date().getTime(),
                 });
-                const reader = new FileReader();
-                reader.readAsText(gameFile);
-                reader.onload = function () {
-                    //console.log(collection);
-                };
+                this.setState({ gameName: "" });
                 post("me/games/sgf/%%", collection[0], gameFile).catch(errorAlerter);
             })
             .catch(errorAlerter);
-
-        // This part comes later once i manipulate the response correctly
-        //post("me/games/sgf/%%", collection_id, gameSGF).catch(errorAlerter);
     }
 
     render() {
@@ -83,13 +70,19 @@ export class GameLibraryModal extends Modal<Events, GameLibraryModalProperties, 
             <div className="Modal GameLibraryModal">
                 <div className="collection-list">
                     <h1>Libraries</h1>
-                    {json.map((data, index) => (
+                    <input
+                        type="text"
+                        value={this.state.gameName}
+                        onChange={this.setGameName}
+                        placeholder={_("Insert SGF File Name")}
+                    />
+                    {json.map((data) => (
                         <div className="collection-row" key={data.id}>
                             <span className="cell">
                                 <i className="fa fa-book" />
                             </span>
                             <span className="cell">
-                                <h1>{data[index]}</h1>
+                                <h1>{data[1]}</h1>
                             </span>
                             <span className="cell">
                                 <button onClick={() => this.addToLibrary(data)}>add</button>
