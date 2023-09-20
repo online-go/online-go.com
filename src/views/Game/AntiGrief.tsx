@@ -55,7 +55,7 @@ function checkForLeavingLiveGame(pathname: string) {
             const t = toast(
                 <div>
                     {_(
-                        "You are leaving a live game. If you do not return you will forfeit the match.",
+                        "You have left a live game. If you do not return you will forfeit the match.",
                     )}
                 </div>,
             );
@@ -189,17 +189,18 @@ function AntiEscaping(): JSX.Element {
                     )}
                 </button>
 
+                {/*
                 <button
                     className="danger"
                     onClick={() => goban?.sendPreventEscaping(my_color, true)}
                 >
                     {pgettext(
                         "This button is shown when one player has left the game, it allows the other player to end the game and claim victory",
-                        "End game and annul the result",
+                        "End game and don't rate",
                     )}
                 </button>
-            </div>
-            <div>
+                </div> <div>
+                */}
                 <button onClick={() => goban?.pauseGame()}>{_("Pause game")}</button>
             </div>
         </Card>

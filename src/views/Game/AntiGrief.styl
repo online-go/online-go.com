@@ -17,10 +17,18 @@
 
 
 .AntiStalling, .AntiEscaping {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: space-around;
     flex-direction: column;
+    margin: 0.5rem;
+    width: calc(100% - 2.2rem) !important;
     min-height: 8rem;
+    text-align: center;
     font-size: 1.1rem;
+    border-radius: 0.5rem;
+
+    button {
+        white-space: nowrap !important;
+    }
 }
