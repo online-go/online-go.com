@@ -318,7 +318,7 @@ export function GameDock({
         promise
             .then(async (library) => {
                 const userLibrary = await library.collections;
-                openGameLibraryModal(userLibrary, game_id);
+                openGameLibraryModal(user.id, userLibrary, game_id);
             })
             .catch(errorAlerter);
     };

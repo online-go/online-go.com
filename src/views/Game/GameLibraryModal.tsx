@@ -24,6 +24,7 @@ import { _ } from "translate";
 interface Events {}
 
 interface GameLibraryModalProperties {
+    userID: number;
     userLibrary: any;
     gameID: number;
 }
@@ -33,12 +34,23 @@ export class GameLibraryModal extends Modal<Events, GameLibraryModalProperties, 
         super(props);
         this.state = {
             gameName: "",
+            collectionName: "",
+            collections: [],
         };
     }
 
+    componentDidMount(): void {
+        const data: any = JSON.stringify(this.props.userLibrary);
+        const json = JSON.parse(data);
+        this.setState({ collections: json });
+    }
+
     setGameName = (ev) => {
-        console.log("HERE " + ev.target.value);
         this.setState({ gameName: ev.target.value });
+    };
+
+    setCollectionName = (ev) => {
+        this.setState({ collectionName: ev.target.value });
     };
 
     async addToLibrary(collection) {
@@ -63,9 +75,20 @@ export class GameLibraryModal extends Modal<Events, GameLibraryModalProperties, 
             .catch(errorAlerter);
     }
 
+    createCollection() {
+        console.log("clicked!");
+        post("library/%%/collections", this.props.userID, {
+            name: this.state.collectionName,
+        })
+            .then((res) => {
+                const collection_id = [res.collection_id];
+                console.log("HERE " + collection_id);
+                this.addToLibrary(collection_id).catch(errorAlerter);
+            })
+            .catch(errorAlerter);
+    }
+
     render() {
-        const data: any = JSON.stringify(this.props.userLibrary);
-        const json = JSON.parse(data);
         return (
             <div className="Modal GameLibraryModal">
                 <div className="collection-list">
@@ -76,25 +99,43 @@ export class GameLibraryModal extends Modal<Events, GameLibraryModalProperties, 
                         onChange={this.setGameName}
                         placeholder={_("Insert SGF File Name")}
                     />
-                    {json.map((data) => (
-                        <div className="collection-row" key={data.id}>
+                    {this.state.collections.length > 0 ? (
+                        this.state.collections.map((data) => (
+                            <div className="collection-row" key={data.id}>
+                                <span className="cell">
+                                    <i className="fa fa-book" />
+                                </span>
+                                <span className="cell">
+                                    <h1>{data[1]}</h1>
+                                </span>
+                                <span className="cell">
+                                    <button onClick={() => this.addToLibrary(data)}>add</button>
+                                </span>
+                            </div>
+                        ))
+                    ) : (
+                        <div>
                             <span className="cell">
-                                <i className="fa fa-book" />
-                            </span>
-                            <span className="cell">
-                                <h1>{data[1]}</h1>
-                            </span>
-                            <span className="cell">
-                                <button onClick={() => this.addToLibrary(data)}>add</button>
+                                <input
+                                    type="text"
+                                    value={this.state.collectionName}
+                                    onChange={this.setCollectionName}
+                                    placeholder={_("Insert Collection Name")}
+                                />
+                                <button onClick={() => this.createCollection()}>
+                                    Create Collection
+                                </button>
                             </span>
                         </div>
-                    ))}
+                    )}
                 </div>
             </div>
         );
     }
 }
 
-export function openGameLibraryModal(userLibrary: any, gameID: number): void {
-    openModal(<GameLibraryModal userLibrary={userLibrary} gameID={gameID} fastDismiss />);
+export function openGameLibraryModal(userID: number, userLibrary: any, gameID: number): void {
+    openModal(
+        <GameLibraryModal userID={userID} userLibrary={userLibrary} gameID={gameID} fastDismiss />,
+    );
 }
