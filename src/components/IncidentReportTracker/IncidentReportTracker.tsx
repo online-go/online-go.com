@@ -125,6 +125,12 @@ export function IncidentReportTracker(): JSX.Element {
 
         function updateCt(count: number) {
             const user = data.get("user");
+
+            if (user.is_superuser) {
+                setNormalCt(count);
+                return;
+            }
+
             if (user.is_moderator || user.moderator_powers > 0) {
                 const handled_today = user.reports_handled_today || 0;
                 setNormalCt(Math.max(0, Math.min(count, DAILY_REPORT_GOAL - handled_today)));
