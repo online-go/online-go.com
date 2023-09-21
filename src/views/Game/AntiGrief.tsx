@@ -185,7 +185,7 @@ function AntiEscaping(): JSX.Element {
                 >
                     {pgettext(
                         "This button is shown when one player has left the game, it allows the other player to end the game and claim victory",
-                        "End game",
+                        "Claim victory",
                     )}
                 </button>
 
