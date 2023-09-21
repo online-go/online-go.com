@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as data from "data";
 import { Card } from "material";
 import { pgettext, _ } from "translate";
 import { useGoban } from "./goban_context";
@@ -29,9 +30,11 @@ let live_game = false;
 let live_game_id = 0;
 let live_game_phase = null;
 let last_toast = null;
+let was_player = false;
 
 function checkForLeavingLiveGame(pathname: string) {
     try {
+        const user = data.get("user");
         const goban = window["global_goban"];
         const was_on_page = on_game_page;
         const was_live_game = live_game;
@@ -43,6 +46,9 @@ function checkForLeavingLiveGame(pathname: string) {
                 live_game = goban.engine.time_control.speed !== "correspondence";
                 live_game_id = goban.game_id;
                 live_game_phase = goban.engine?.phase;
+                was_player =
+                    goban.engine?.config?.black_player_id === user?.id ||
+                    goban.engine?.config?.white_player_id === user?.id;
                 if (last_toast) {
                     last_toast.close();
                 }
@@ -51,7 +57,13 @@ function checkForLeavingLiveGame(pathname: string) {
             }
         }
 
-        if (was_on_page && !on_game_page && was_live_game && live_game_phase === "play") {
+        if (
+            was_on_page &&
+            was_player &&
+            !on_game_page &&
+            was_live_game &&
+            live_game_phase === "play"
+        ) {
             const t = toast(
                 <div>
                     {_(
