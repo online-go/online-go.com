@@ -17,28 +17,35 @@
 
 .GameLibraryModal.Modal {
   width: 100%;
-  max-width 40rem;
-  justify-content: center;
-  align-items: center;
+  max-width: 40rem;
+  padding: 1rem;
   display: flex;
-  
-  
-  h1 {
-    text-align: center;
+  flex-direction: row;
+  align-items: center;
+
+  .file-name-inputfield{
+    margin: 1rem;  
   }
+}
+.collection-list {
+  display:flex;
+  width: 100%;
+  flex-direction: column;
+  align-content: stretch;
+  align-items: center;
+}
 
-  // long specifier to make sure this specific column is not overriden
-    #collection-list .collection-row .cell.rengo-list-buttons {
-        text-align: center;
-        width: 10rem;
-        padding-right: 1rem;
-        //vertical-align: baseline; // attempting to line up with rest of cell rows
+.collection-row {
+  width: 100%
+  display:flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
 
-
-  .cell {
-            padding-left: 0.5em;
-            display: table-cell;
-            text-align: left;
-            position: relative;
-        }
+.cell {
+  max-width: 20rem;
+  padding-left: 0.5em;
+  display: table-cell;
+  text-align: left;
+  position: relative;
 }

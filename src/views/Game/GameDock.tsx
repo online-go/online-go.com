@@ -313,6 +313,7 @@ export function GameDock({
             : engine.playerNotToMove();
 
     const showLibraryModal = () => {
+        // Pull user data prior to opening modal preventing component from rendering prior to obtaining needed data
         const user = data.get("user");
         const promise = get("library/%%", user.id);
         promise

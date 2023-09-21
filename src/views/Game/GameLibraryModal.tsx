@@ -40,9 +40,9 @@ export class GameLibraryModal extends Modal<Events, GameLibraryModalProperties, 
     }
 
     componentDidMount(): void {
-        const data: any = JSON.stringify(this.props.userLibrary);
-        const json = JSON.parse(data);
-        this.setState({ collections: json });
+        const userLibrary: any = JSON.stringify(this.props.userLibrary);
+        const userlibraryJSON = JSON.parse(userLibrary);
+        this.setState({ collections: userlibraryJSON });
     }
 
     setGameName = (ev) => {
@@ -53,36 +53,50 @@ export class GameLibraryModal extends Modal<Events, GameLibraryModalProperties, 
         this.setState({ collectionName: ev.target.value });
     };
 
+    resetTextFields = () => {
+        this.setState({ gameName: "" });
+        this.setState({ collectionName: "" });
+    };
+
     async addToLibrary(collection) {
         const url = api1(`games/${this.props.gameID}/sgf`);
         await fetch(url, {
             method: "GET",
-            // Specifically set header otherwise 415 error
+            // Specify the content-type of the request otherwise the "games/%%/sgf" endpoint will respond with a 415 error code
             headers: {
                 "Content-Type": "application/json",
             },
         })
             .then((response) => response.blob())
             .then((data) => {
-                const sgfName = `${this.state.gameName}.sgf`;
-                const gameFile = new File([data as BlobPart], sgfName, {
+                // Pull sgfName from value implemented by user setting a default value if empty
+                let gameName = this.state.gameName;
+                if (this.state.gameName === "") {
+                    gameName = `My Game #${this.props.gameID}`;
+                }
+                const gameFile = new File([data as BlobPart], `${gameName}.sgf`, {
                     type: "application/x-go-sgf",
                     lastModified: new Date().getTime(),
                 });
-                this.setState({ gameName: "" });
+                // Create post request adding SGF File to the given collection using collection's id
                 post("me/games/sgf/%%", collection[0], gameFile).catch(errorAlerter);
+                this.resetTextFields();
+                this.close(); // Closes modal after creating post request
             })
             .catch(errorAlerter);
     }
 
-    createCollection() {
-        console.log("clicked!");
+    async createCollection() {
+        if (this.state.collectionName === "") {
+            await this.setState({ collectionName: "My_Collection" });
+        }
+        // Create a new library within the user's libraries
         post("library/%%/collections", this.props.userID, {
             name: this.state.collectionName,
         })
             .then((res) => {
+                // Pull the newly created collection's id to be used to identify which collection we add our SGF File too
                 const collection_id = [res.collection_id];
-                console.log("HERE " + collection_id);
                 this.addToLibrary(collection_id).catch(errorAlerter);
             })
             .catch(errorAlerter);
@@ -94,17 +108,16 @@ export class GameLibraryModal extends Modal<Events, GameLibraryModalProperties, 
                 <div className="collection-list">
                     <h1>Libraries</h1>
                     <input
+                        className="file-name-inputfield"
                         type="text"
                         value={this.state.gameName}
                         onChange={this.setGameName}
                         placeholder={_("Insert SGF File Name")}
                     />
+                    {/* If user has collections in their library map and render them. Otherwise; allow user to create collection */}
                     {this.state.collections.length > 0 ? (
                         this.state.collections.map((data) => (
                             <div className="collection-row" key={data.id}>
-                                <span className="cell">
-                                    <i className="fa fa-book" />
-                                </span>
                                 <span className="cell">
                                     <h1>{data[1]}</h1>
                                 </span>
@@ -122,6 +135,8 @@ export class GameLibraryModal extends Modal<Events, GameLibraryModalProperties, 
                                     onChange={this.setCollectionName}
                                     placeholder={_("Insert Collection Name")}
                                 />
+                            </span>
+                            <span className="cell">
                                 <button onClick={() => this.createCollection()}>
                                     Create Collection
                                 </button>
