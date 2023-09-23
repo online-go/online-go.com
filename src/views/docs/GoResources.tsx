@@ -475,6 +475,19 @@ export const GoResources = () => {
                                 href="https://www.youtube.com/channel/UCGAASXnrt4FtYfFZ608PqHA"
                             />,
                             <span>
+                                <Flag country={"vn"} />{" "}
+                                <a
+                                    rel="noopener"
+                                    href="https://www.youtube.com/channel/UCSGi8F-nO1ECuNxsNapYxAg"
+                                >
+                                    Vương Đánh Cờ Vây
+                                </a>{" "}
+                                /{" "}
+                                <a rel="noopener" href="https://www.tiktok.com/@vuongdanhcovay">
+                                    TikTok
+                                </a>
+                            </span>,
+                            <span>
                                 <Flag country={en} />{" "}
                                 <a rel="noopener" href="https://www.twitch.tv/battsgo">
                                     Dwyrin Twitch

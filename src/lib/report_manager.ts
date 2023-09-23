@@ -185,13 +185,16 @@ class ReportManager extends EventEmitter<Events> {
         const user = data.get("user");
 
         return this.sorted_active_incident_reports.filter((report) => {
+            if (!report) {
+                return false;
+            }
             if (this.getIgnored(report.id)) {
                 return false;
             }
             if (!user.is_moderator && !(report.report_type === "score_cheating")) {
                 return false;
             }
-            return report.moderator === null || report.moderator.id === user.id;
+            return !report.moderator || report.moderator?.id === user.id;
         });
     }
 

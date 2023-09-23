@@ -155,8 +155,9 @@ export function uuid(): string {
     });
 }
 export function getOutcomeTranslation(outcome: string) {
-    /* Note: for the case statements, don't simply do `pgettext("Game outcome", outcome)`,
-     * the system to parse out strings to translate needs the text. */
+    /* Note: Do not simply do `pgettext("Game outcome", outcome)`
+     * The translation system needs to read these strings to parse them out and
+     * prepare them for translating. */
     switch (outcome) {
         case "resign":
         case "r":
@@ -176,6 +177,10 @@ export function getOutcomeTranslation(outcome: string) {
             return pgettext("Game outcome", "Moderator Decision");
         case "Abandonment":
             return pgettext("Game outcome", "Abandonment");
+    }
+
+    if (outcome.indexOf("Server Decision") === 0) {
+        return pgettext("Game outcome", "Server Decision") + " " + outcome.substring(16);
     }
 
     if (/[0-9.]+/.test(outcome)) {
