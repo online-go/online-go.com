@@ -25,14 +25,18 @@ interface ModerationActionSelectorProps {
     submit: (action: string) => void;
 }
 
-const ACTIONS = {
+const ACTION_PROMPTS = {
     annul_score_cheat: pgettext(
-        "Label for a moderator to select this option",
-        "Annul the game and warn the cheater",
+        "A label for a moderator to select this option",
+        "Annul the game and warn the cheater.",
     ),
     warn_score_cheat: pgettext(
         "Label for a moderator to select this option",
-        "Just warn the cheater",
+        "The accused tried to cheat - warn the cheater.",
+    ),
+    no_score_cheat: pgettext(
+        "Label for a moderator to select this option",
+        "No cheating - inform the reporter.",
     ),
 };
 
@@ -62,7 +66,7 @@ export function ModerationActionSelector({
                         value={a}
                         onChange={updateSelectedAction}
                     />
-                    <label htmlFor={a}>{ACTIONS[a]}</label>
+                    <label htmlFor={a}>{ACTION_PROMPTS[a]}</label>
                 </div>
             ))}
             {(report.available_actions || null) && (

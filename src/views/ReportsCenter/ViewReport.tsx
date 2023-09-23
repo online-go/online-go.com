@@ -18,6 +18,7 @@
 import * as React from "react";
 import * as moment from "moment";
 import Select from "react-select";
+import { toast } from "toast";
 import { useUser } from "hooks";
 import { report_categories } from "Report";
 import { report_manager, Report } from "report_manager";
@@ -231,6 +232,19 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
 
     const onActionSubmitted = (action: string) => {
         console.log(action);
+        post(`moderation/action_vote/${report.id}`, { action: action })
+            .then(() => {
+                toast(
+                    <div>
+                        {pgettext(
+                            "Thanking a community moderator for voting",
+                            "Submitted, thanks!",
+                        )}
+                    </div>,
+                    2000,
+                );
+            })
+            .catch(errorAlerter);
     };
 
     return (
