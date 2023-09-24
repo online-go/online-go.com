@@ -34,6 +34,8 @@ import { get, post } from "requests";
 export const DAILY_REPORT_GOAL = 10;
 
 export interface Report {
+    // TBD put this into /models, in a suitable namespace?
+    // TBD: relationship between this and SeverToClient['incident-report']
     id: number;
     created: string;
     updated: string;
@@ -64,6 +66,7 @@ export interface Report {
     automod_to_reported?: string;
 
     available_actions: Array<string>; // community moderator actions
+    voters: Array<number>; // community moderators who've voted on this report
 
     unclaim: () => void;
     claim: () => void;
@@ -124,6 +127,7 @@ class ReportManager extends EventEmitter<Events> {
     }
 
     public updateIncidentReport(report: Report) {
+        const user = data.get("user");
         report.id = parseInt(report.id as unknown as string);
 
         if (!(report.id in this.active_incident_reports)) {
@@ -148,7 +152,7 @@ class ReportManager extends EventEmitter<Events> {
             }
         }
 
-        if (report.state === "resolved") {
+        if (report.state === "resolved" || (report.voters && report.voters.includes(user.id))) {
             delete this.active_incident_reports[report.id];
         } else {
             this.active_incident_reports[report.id] = report;
