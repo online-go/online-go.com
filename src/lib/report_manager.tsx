@@ -353,7 +353,8 @@ class ReportManager extends EventEmitter<Events> {
         return res;
     }
     public async vote(report_id: number, voted_action: string) {
-        console.log(voted_action);
+        delete this.active_incident_reports[report_id];
+        this.update();
         const res = await post(`moderation/incident/${report_id}`, {
             action: "vote", // darn, yes, two different uses of the word "action" collide here
             voted_action: voted_action,
