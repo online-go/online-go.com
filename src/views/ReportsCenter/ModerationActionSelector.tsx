@@ -65,6 +65,7 @@ export function ModerationActionSelector({
                         checked={selectedOption === a}
                         value={a}
                         onChange={updateSelectedAction}
+                        disabled={!enable}
                     />
                     <label htmlFor={a}>{ACTION_PROMPTS[a]}</label>
                 </div>

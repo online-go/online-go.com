@@ -20,18 +20,27 @@
  * which is used by our IncidentReportTracker widget and our ReportsCenter view.
  */
 
+import * as React from "react";
 import * as data from "data";
 import * as preferences from "preferences";
+import { toast } from "toast";
 import { alert } from "swal_config";
 import { socket } from "sockets";
+import { pgettext } from "translate";
 import { ReportedConversation } from "Report";
 import { PlayerCacheEntry } from "player_cache";
 import { EventEmitter } from "eventemitter3";
 import { emitNotification } from "Notifications";
 import { browserHistory } from "ogsHistory";
 import { get, post } from "requests";
+import { MOD_POWER_HANDLE_SCORE_CHEAT } from "./misc";
 
 export const DAILY_REPORT_GOAL = 10;
+
+interface Vote {
+    voter_id: number;
+    action: string;
+}
 
 export interface Report {
     // TBD put this into /models, in a suitable namespace?
@@ -66,7 +75,7 @@ export interface Report {
     automod_to_reported?: string;
 
     available_actions: Array<string>; // community moderator actions
-    voters: Array<number>; // community moderators who've voted on this report
+    voters: Vote[]; // votes from community moderators on this report
 
     unclaim: () => void;
     claim: () => void;
@@ -152,7 +161,10 @@ class ReportManager extends EventEmitter<Events> {
             }
         }
 
-        if (report.state === "resolved" || (report.voters && report.voters.includes(user.id))) {
+        if (
+            report.state === "resolved" ||
+            report.voters?.some((vote) => vote.voter_id === user.id)
+        ) {
             delete this.active_incident_reports[report.id];
         } else {
             this.active_incident_reports[report.id] = report;
@@ -195,7 +207,18 @@ class ReportManager extends EventEmitter<Events> {
             if (this.getIgnored(report.id)) {
                 return false;
             }
-            if (!user.is_moderator && !(report.report_type === "score_cheating")) {
+            if (!user.is_moderator && !user.moderator_powers) {
+                return false;
+            }
+            if (
+                !user.is_moderator &&
+                user.moderator_powers &&
+                (!(
+                    report.report_type === "score_cheating" &&
+                    user.moderator_powers & MOD_POWER_HANDLE_SCORE_CHEAT
+                ) ||
+                    report.voters?.some((vote) => vote.voter_id === user.id))
+            ) {
                 return false;
             }
             return !report.moderator || report.moderator?.id === user.id;
@@ -328,6 +351,22 @@ class ReportManager extends EventEmitter<Events> {
         });
         this.updateIncidentReport(res);
         return res;
+    }
+    public async vote(report_id: number, voted_action: string) {
+        console.log(voted_action);
+        const res = await post(`moderation/incident/${report_id}`, {
+            action: "vote", // darn, yes, two different uses of the word "action" collide here
+            voted_action: voted_action,
+        }).then((res) => {
+            toast(
+                <div>
+                    {pgettext("Thanking a community moderator for voting", "Submitted, thanks!")}
+                </div>,
+                2000,
+            );
+            return res;
+        });
+        this.updateIncidentReport(res);
     }
 
     public getHandledTodayCount(): number {
