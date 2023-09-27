@@ -450,7 +450,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                             {report.voters.length > 0 && (
                                 <>
                                     <h4>{_("Voters:")}</h4>
-                                    {report.voters.map((vote) => (
+                                    {report.voters?.map((vote) => (
                                         <li key={vote.voter_id}>
                                             <Player user={vote.voter_id} />: {vote.action}
                                         </li>
