@@ -22,6 +22,7 @@ import { _, pgettext } from "translate";
 interface ModerationActionSelectorProps {
     report: Report;
     enable: boolean;
+    claim: () => void;
     submit: (action: string) => void;
 }
 
@@ -43,12 +44,14 @@ const ACTION_PROMPTS = {
 export function ModerationActionSelector({
     report,
     enable,
+    claim,
     submit,
 }: ModerationActionSelectorProps): JSX.Element {
     const [selectedOption, setSelectedOption] = React.useState("");
 
     const updateSelectedAction = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSelectedOption(e.target.value);
+        claim();
     };
 
     return (
@@ -65,7 +68,6 @@ export function ModerationActionSelector({
                         checked={selectedOption === a}
                         value={a}
                         onChange={updateSelectedAction}
-                        disabled={!enable}
                     />
                     <label htmlFor={a}>{ACTION_PROMPTS[a]}</label>
                 </div>

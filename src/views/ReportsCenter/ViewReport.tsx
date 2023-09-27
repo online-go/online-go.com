@@ -419,6 +419,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     <div className="voting">
                         <ModerationActionSelector
                             report={report}
+                            claim={claimReport}
                             submit={(action) => {
                                 void report_manager.vote(report.id, action);
                                 next();
