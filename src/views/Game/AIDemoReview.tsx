@@ -208,6 +208,9 @@ export function AIDemoReview({
                             uuid: uuid(),
                             channel_id: `ai-position-analysis-stream-review-${goban.review_id}`,
                             rules: engine.rules,
+                            black_prisoners: goban.engine?.getBlackPrisoners() || 0,
+                            white_prisoners: goban.engine?.getWhitePrisoners() || 0,
+                            komi: goban.engine?.komi || 0,
                             board: move.state.board,
                             player: move.state.player,
                         })
