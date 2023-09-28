@@ -201,7 +201,7 @@ export function getGameResultText(
         return "";
     }
     /* SGFs will encode the full result in the outcome */
-    if (/[+]/.test(outcome)) {
+    if (/[+]/.test(outcome) && !/Server Decision/.test(outcome)) {
         return outcome;
     }
 
