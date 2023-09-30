@@ -176,7 +176,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     );
 
     const claimReport = () => {
-        if (report.moderator?.id !== user.id) {
+        if (report.moderator?.id !== user.id && user.is_moderator) {
             setReportState("claimed");
             void report_manager.claim(report.id);
         }
@@ -324,25 +324,28 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                         Next &gt;
                     </button>
 
-                    {report.moderator ? (
-                        <>
-                            {(report.moderator.id === user.id || null) && (
-                                <button
-                                    className="danger xs"
-                                    onClick={() => {
-                                        setReportState(report?.moderator ? "claimed" : "pending");
-                                        void report_manager.unclaim(report.id);
-                                    }}
-                                >
-                                    {_("Unclaim")}
-                                </button>
-                            )}
-                        </>
-                    ) : (
-                        <button className="primary" onClick={claimReport}>
-                            {_("Claim")}
-                        </button>
-                    )}
+                    {(user.is_moderator || null) &&
+                        (report.moderator ? (
+                            <>
+                                {(report.moderator.id === user.id || null) && (
+                                    <button
+                                        className="danger xs"
+                                        onClick={() => {
+                                            setReportState(
+                                                report?.moderator ? "claimed" : "pending",
+                                            );
+                                            void report_manager.unclaim(report.id);
+                                        }}
+                                    >
+                                        {_("Unclaim")}
+                                    </button>
+                                )}
+                            </>
+                        ) : (
+                            <button className="primary" onClick={claimReport}>
+                                {_("Claim")}
+                            </button>
+                        ))}
                     {!claimed_by_me && (
                         <button
                             className="default"
@@ -421,12 +424,14 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     <div className="voting">
                         <ModerationActionSelector
                             report={report}
-                            claim={claimReport}
+                            claim={() => {
+                                /* dont claim*/
+                            }}
                             submit={(action) => {
                                 void report_manager.vote(report.id, action);
                                 next();
                             }}
-                            enable={claimed_by_me}
+                            enable={report.state === "pending"}
                         />
                     </div>
                 )}
