@@ -229,6 +229,8 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
         }
     };
 
+    console.log(related.length, report.voters);
+
     return (
         <div id="ViewReport">
             <div className="header">
@@ -451,11 +453,13 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                             {report.voters.length > 0 && (
                                 <>
                                     <h4>{_("Voters:")}</h4>
-                                    {report.voters?.map((vote) => (
-                                        <li key={vote.voter_id}>
-                                            <Player user={vote.voter_id} />: {vote.action}
-                                        </li>
-                                    ))}
+                                    <ul>
+                                        {report.voters?.map((vote) => (
+                                            <li key={vote.voter_id}>
+                                                <Player user={vote.voter_id} />: {vote.action}
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </>
                             )}
                         </div>

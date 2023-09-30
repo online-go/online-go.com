@@ -15,6 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// An "AccountWarning" was initially "warn them not to do bad things" and ensure they acknowledge
+// Now it is extended to "notify them about something (maybe just information)" and record that they saw it
+// So the word "warning" kind of means "message" now.
+
 import * as React from "react";
 import { _, pgettext } from "translate";
 import { get, patch } from "requests";
@@ -22,14 +26,14 @@ import { useUser } from "hooks";
 import { AutoTranslate } from "AutoTranslate";
 import { useLocation } from "react-router";
 
+import { CANNED_MESSAGES } from "./CannedMessages";
+
 const BUTTON_COUNTDOWN_TIME = 10000; // ms;
 
 export function AccountWarning() {
     const user = useUser();
     const location = useLocation();
-    const [warning, setWarning] = React.useState(null);
-    const [acceptTimer, setAcceptTimer] = React.useState(null);
-    const [boxChecked, setBoxChecked] = React.useState(false);
+    const [warning, setWarning] = React.useState<rest_api.warnings.Warning>(null);
 
     React.useEffect(() => {
         if (user && !user.anonymous && user.has_active_warning_flag) {
@@ -38,14 +42,6 @@ export function AccountWarning() {
                     console.log(warning);
                     if (Object.keys(warning).length > 0) {
                         setWarning(warning);
-
-                        const now = Date.now();
-                        const interval = setInterval(() => {
-                            setAcceptTimer(BUTTON_COUNTDOWN_TIME - (Date.now() - now));
-                            if (Date.now() - now > BUTTON_COUNTDOWN_TIME) {
-                                clearInterval(interval);
-                            }
-                        }, 100);
                     } else {
                         setWarning(null);
                     }
@@ -75,15 +71,87 @@ export function AccountWarning() {
         void patch(`me/warning/${warning.id}`, { accept: true });
     };
 
+    const Renderers = {
+        warning: WarningModal,
+        acknowledgement: AckModal,
+    };
+
+    const MessageRenderer = Renderers[warning.severity];
+
+    return (
+        <>
+            <MessageRenderer warning={warning} accept={ok} />
+        </>
+    );
+}
+
+// Support warnings that carry messages either as a reference to a a canned message, or explicit text...
+
+interface MessageTextRenderProps {
+    warning: rest_api.warnings.Warning;
+}
+function MessageTextRender(props: MessageTextRenderProps): JSX.Element {
+    console.log("rendering", props);
+    if (props.warning.message_id) {
+        return (
+            <div>{CANNED_MESSAGES[props.warning.message_id](props.warning.interpolation_data)}</div>
+        );
+    } else {
+        return (
+            <AutoTranslate
+                source={props.warning.text.trim()}
+                source_language={"en"}
+                markdown={true}
+            />
+        );
+    }
+}
+
+// Support "warnings" that should be displayed differently depending on severity...
+
+interface WarningModalProps {
+    warning: rest_api.warnings.Warning;
+    accept: () => void;
+}
+
+function AckModal(props: WarningModalProps): JSX.Element {
+    return (
+        <>
+            <div className="AccountWarning-backdrop" />
+            <div className="AccountWarningAck">
+                <MessageTextRender warning={props.warning} />
+                <div className="space" />
+                <div className="buttons">
+                    <button className="primary" onClick={props.accept}>
+                        {_("OK")}
+                    </button>
+                </div>
+            </div>
+        </>
+    );
+}
+
+function WarningModal(props: WarningModalProps): JSX.Element {
+    const [acceptTimer, setAcceptTimer] = React.useState(null);
+    const [boxChecked, setBoxChecked] = React.useState(false);
+
+    React.useEffect(() => {
+        if (props.warning) {
+            const now = Date.now();
+            const interval = setInterval(() => {
+                setAcceptTimer(BUTTON_COUNTDOWN_TIME - (Date.now() - now));
+                if (Date.now() - now > BUTTON_COUNTDOWN_TIME) {
+                    clearInterval(interval);
+                }
+            }, 100);
+        }
+    }, [props.warning]);
+
     return (
         <>
             <div className="AccountWarning-backdrop" />
             <div className="AccountWarning">
-                <AutoTranslate
-                    source={warning.text.trim()}
-                    source_language={"en"}
-                    markdown={true}
-                />
+                <MessageTextRender warning={props.warning} />
                 <div className="space" />
                 <div className="buttons">
                     <input
@@ -102,7 +170,7 @@ export function AccountWarning() {
                     <button
                         className="primary"
                         disabled={acceptTimer > 0 || !boxChecked}
-                        onClick={ok}
+                        onClick={props.accept}
                     >
                         {_("OK") +
                             (acceptTimer > 0 ? " (" + Math.ceil(acceptTimer / 1000) + ")" : "")}

@@ -39,6 +39,10 @@ const ACTION_PROMPTS = {
         "Label for a moderator to select this option",
         "No cheating - inform the reporter.",
     ),
+    escalate: pgettext(
+        "A label for a community moderator to select this option - send report to to full moderators",
+        "Escalate.",
+    ),
 };
 
 export function ModerationActionSelector({
@@ -57,7 +61,10 @@ export function ModerationActionSelector({
     return (
         <div className="voting">
             <h4>
-                {pgettext("The heading for community moderation action choices section", "Actions")}
+                {pgettext(
+                    "The heading for community moderators 'action choices' section",
+                    "Actions",
+                )}
             </h4>
             {report.available_actions.map((a) => (
                 <div key={a} className="action-selector">
