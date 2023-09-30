@@ -19,7 +19,7 @@ import * as React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUser, useRefresh } from "hooks";
 import { report_categories, ReportDescription } from "Report";
-import { report_manager } from "report_manager";
+import { report_manager, DAILY_REPORT_GOAL } from "report_manager";
 import Select from "react-select";
 import { _ } from "translate";
 import { ViewReport } from "./ViewReport";
@@ -51,6 +51,7 @@ const categories: (ReportDescription | OtherView)[] = [
         { special: "history", title: "History" },
         { special: "settings", title: "Settings" },
     ]);
+
 const category_priorities: { [type: string]: number } = {};
 for (let i = 0; i < report_categories.length; ++i) {
     category_priorities[report_categories[i].type] = i;
@@ -118,7 +119,7 @@ export function ReportsCenter(): JSX.Element {
         navigateTo(`/reports-center/${category}`);
     }, []);
 
-    if (!user.is_moderator) {
+    if (!user.is_moderator && !user.moderator_powers) {
         return null;
     }
 
@@ -130,6 +131,11 @@ export function ReportsCenter(): JSX.Element {
         }
     };
 
+    const visible_categories = user.is_moderator
+        ? categories
+        : // community moderators only get to see score cheating reports at the moment
+          [report_categories.find((category) => category.type === "score_cheating")];
+
     return (
         <div className="ReportsCenter container">
             <h2 className="page-title">
@@ -137,9 +143,38 @@ export function ReportsCenter(): JSX.Element {
                 {_("Reports Center")}
             </h2>
 
+            <div className="progress" style={{ minWidth: "10rem" }}>
+                <div
+                    className="progress-bar primary"
+                    style={{
+                        width: `${
+                            (Math.min(DAILY_REPORT_GOAL, report_manager.getHandledTodayCount()) /
+                                DAILY_REPORT_GOAL) *
+                            100
+                        }%`,
+                    }}
+                >
+                    {report_manager.getReportsLeftUntilGoal() <= 0
+                        ? "All done, thank you!"
+                        : report_manager.getHandledTodayCount() || ""}
+                </div>
+                <div
+                    className="progress-bar empty"
+                    style={{
+                        width: `${
+                            (report_manager.getReportsLeftUntilGoal() / DAILY_REPORT_GOAL) * 100
+                        }%`,
+                    }}
+                >
+                    {report_manager.getHandledTodayCount() === 0
+                        ? "Daily report goal: " + DAILY_REPORT_GOAL
+                        : ""}
+                </div>
+            </div>
+
             <div id="ReportsCenterContainer">
                 <div id="ReportsCenterCategoryList">
-                    {categories.map((report_type, idx) => {
+                    {visible_categories.map((report_type, idx) => {
                         if ("type" in report_type) {
                             const ct = counts[report_type.type] || 0;
                             return (
@@ -154,9 +189,11 @@ export function ReportsCenter(): JSX.Element {
                                     onClick={() => setCategory(report_type.type)}
                                 >
                                     <span className="title">{report_type.title}</span>
+                                    {/*
                                     <span className={"count " + (ct > 0 ? "active" : "")}>
                                         {ct > 0 ? `(${ct})` : ""}
                                     </span>
+                                    */}
                                 </div>
                             );
                         }
@@ -212,17 +249,21 @@ export function ReportsCenter(): JSX.Element {
                                 }
                             >
                                 {data.title}{" "}
-                                {"type" in data && counts[data.type] > 0
+                                {/*
+                                "type" in data && counts[data.type] > 0
                                     ? `(${counts[data.type] || 0})`
-                                    : ""}
+                                    : ""
+                                */}
                             </div>
                         ),
                         SingleValue: ({ innerProps, data }) => (
                             <span {...innerProps} className="reports-center-category">
                                 {data.title}{" "}
-                                {"type" in data && counts[data.type] > 0
+                                {/*
+                                "type" in data && counts[data.type] > 0
                                     ? `(${counts[data.type] || 0})`
-                                    : ""}
+                                    : ""
+                                */}
                             </span>
                         ),
                         ValueContainer: ({ children }) => (

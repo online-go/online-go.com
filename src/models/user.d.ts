@@ -27,6 +27,7 @@ type Server =
     | "yike"
     | "goquest"
     | "badukpop";
+
 declare namespace rest_api {
     interface RatingsConfig {
         rating: number;
@@ -61,6 +62,7 @@ declare namespace rest_api {
         is_moderator: boolean;
         is_superuser: boolean;
         is_tournament_moderator: boolean;
+        moderator_powers: number; // a bit-field of MOD_POWER (see lib/misc)
         supporter: boolean;
         supporter_level: number;
         tournament_admin: boolean;
@@ -70,6 +72,7 @@ declare namespace rest_api {
         email_validated: boolean | string; // VerifyEmail sets this to a Date string
         is_announcer: boolean;
         has_active_warning_flag?: boolean;
+        reports_handled_today?: number;
     }
 
     type AccountLinks = {
@@ -115,6 +118,7 @@ declare namespace rest_api {
             ui_class_extra: null;
             is_moderator: boolean;
             is_superuser: boolean;
+            moderator_powers: number;
             is_tournament_moderator: boolean;
             is_bot: boolean;
             timeout_provisional: boolean;

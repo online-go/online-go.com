@@ -23,6 +23,7 @@ import { alert } from "swal_config";
 import { post, put } from "requests";
 import { errorAlerter } from "misc";
 import { toast } from "toast";
+import { useUser } from "hooks";
 
 interface TemplateEntry {
     message: string;
@@ -41,7 +42,7 @@ export const WARNING_TEMPLATES: MessageTemplates = {
 
                 Please consider resigning games rather than letting them time
                 out, as this is fairer to your opponents than making them wait for
-                your clock to run out.`,
+                your clock to run out. Thank you.`,
             show_warning_button: true,
         },
     },
@@ -434,6 +435,7 @@ export function MessageTemplate({
     const [template, setTemplate] = React.useState<TemplateEntry | null>(null);
     const [text, setText] = React.useState<string>(gpt ? gpt : "");
     const [log, setLog] = React.useState<boolean>(logByDefault);
+    const user = useUser();
 
     React.useEffect(() => {
         if (selectedTemplate && selectedTemplate !== "gpt") {
@@ -545,15 +547,17 @@ export function MessageTemplate({
                 <button className="clear" onClick={clear}>
                     Clear
                 </button>
-                <span className="log">
-                    <label htmlFor={"log" + uid}>Log</label>
-                    <input
-                        type="checkbox"
-                        id={"log" + uid}
-                        checked={log}
-                        onChange={(e) => setLog(e.target.checked)}
-                    />
-                </span>
+                {(user.is_moderator || null) && (
+                    <span className="log">
+                        <label htmlFor={"log" + uid}>Log</label>
+                        <input
+                            type="checkbox"
+                            id={"log" + uid}
+                            checked={log}
+                            onChange={(e) => setLog(e.target.checked)}
+                        />
+                    </span>
+                )}
             </div>
 
             <textarea value={text} onChange={(e) => setText(e.target.value)} />

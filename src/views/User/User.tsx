@@ -120,6 +120,7 @@ export function User(props: { user_id?: number }): JSX.Element {
                     professional: responses[0].ui_class.indexOf("professional") >= 0,
                     is_moderator: responses[0].ui_class.indexOf("moderator") >= 0,
                     is_superuser: responses[0].ui_class.indexOf("admin") >= 0,
+                    moderator_powers: 0,
                     is_tournament_moderator: false,
                     is_watched: false,
                     on_vacation: false,
@@ -194,7 +195,7 @@ export function User(props: { user_id?: number }): JSX.Element {
 
     const openModerateUser = () => {
         const modal = openModerateUserModal(user);
-        modal.on("close", () => {
+        modal?.on("close", () => {
             // reload after moderator changes something
             resolve(user_id);
         });

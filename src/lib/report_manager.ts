@@ -31,6 +31,8 @@ import { emitNotification } from "Notifications";
 import { browserHistory } from "ogsHistory";
 import { get, post } from "requests";
 
+export const DAILY_REPORT_GOAL = 10;
+
 export interface Report {
     id: number;
     created: string;
@@ -181,11 +183,16 @@ class ReportManager extends EventEmitter<Events> {
         const user = data.get("user");
 
         return this.sorted_active_incident_reports.filter((report) => {
+            if (!report) {
+                return false;
+            }
             if (this.getIgnored(report.id)) {
                 return false;
             }
-
-            return report.moderator === null || report.moderator.id === user.id;
+            if (!user.is_moderator && !(report.report_type === "score_cheating")) {
+                return false;
+            }
+            return !report.moderator || report.moderator?.id === user.id;
         });
     }
 
@@ -210,7 +217,6 @@ class ReportManager extends EventEmitter<Events> {
             }
 
             if (report.reported_review && other.reported_review === report.reported_review) {
-                console.log(other.reported_review, report.reported_review);
                 relationships.push("Same review");
             }
 
@@ -316,6 +322,15 @@ class ReportManager extends EventEmitter<Events> {
         });
         this.updateIncidentReport(res);
         return res;
+    }
+
+    public getHandledTodayCount(): number {
+        return data.get("user").reports_handled_today || 0;
+    }
+    public getReportsLeftUntilGoal(): number {
+        const count = this.getAvailableReports().length;
+        const handled_today = this.getHandledTodayCount();
+        return Math.max(0, Math.min(count, DAILY_REPORT_GOAL - handled_today));
     }
 }
 

@@ -18,6 +18,7 @@
 import * as React from "react";
 import * as moment from "moment";
 import * as preferences from "preferences";
+import * as data from "data";
 import { Link, useNavigate } from "react-router-dom";
 import { alert } from "swal_config";
 import { _, pgettext } from "translate";
@@ -28,7 +29,7 @@ import { ignore, errorAlerter } from "misc";
 import { openReportedConversationModal } from "ReportedConversationModal";
 import { AutoTranslate } from "AutoTranslate";
 import { report_categories } from "Report";
-import { Report, report_manager } from "report_manager";
+import { Report, report_manager, DAILY_REPORT_GOAL } from "report_manager";
 import { useRefresh, useUser } from "hooks";
 
 export function IncidentReportTracker(): JSX.Element {
@@ -122,14 +123,36 @@ export function IncidentReportTracker(): JSX.Element {
             }
         };
 
+        function updateCt(count: number) {
+            const user = data.get("user");
+
+            if (user.is_superuser) {
+                setNormalCt(count);
+                return;
+            }
+
+            if (user.is_moderator || user.moderator_powers > 0) {
+                const handled_today = user.reports_handled_today || 0;
+                setNormalCt(Math.max(0, Math.min(count, DAILY_REPORT_GOAL - handled_today)));
+            } else {
+                setNormalCt(count);
+            }
+        }
+
+        function updateUser() {
+            updateCt(report_manager.getAvailableReports().length);
+        }
+
+        data.watch("user", updateUser);
         report_manager.on("incident-report", onReport);
-        report_manager.on("active-count", setNormalCt);
+        report_manager.on("active-count", updateCt);
         report_manager.on("update", refresh);
 
         return () => {
             report_manager.off("incident-report", onReport);
-            report_manager.off("active-count", setNormalCt);
+            report_manager.off("active-count", updateCt);
             report_manager.off("update", refresh);
+            data.unwatch("user", updateUser);
         };
     }, []);
 

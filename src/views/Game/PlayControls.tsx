@@ -57,6 +57,7 @@ import { is_valid_url } from "url_validation";
 import { enableTouchAction } from "./touch_actions";
 import { ConditionalMoveTreeDisplay } from "./ConditionalMoveTreeDisplay";
 import { useUser } from "hooks";
+import { AntiGrief } from "./AntiGrief";
 
 import * as moment from "moment";
 
@@ -269,6 +270,7 @@ export function PlayControls({
                         )}
                     </span>
                 )}
+
                 {((mode === "play" && phase === "stone removal") || null) && (
                     <span>{_("Stone Removal Phase")}</span>
                 )}
@@ -468,6 +470,7 @@ export function PlayControls({
                     </div>
                 </div>
             )}
+            <AntiGrief />
             {(mode === "conditional" || null) && (
                 <div className="conditional-move-planner">
                     <div className="buttons">

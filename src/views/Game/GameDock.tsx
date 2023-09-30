@@ -379,17 +379,15 @@ export function GameDock({
                 </a>
             </Tooltip>
 
-            {game && (
-                <Tooltip
-                    tooltipRequired={tooltipRequired}
-                    title={ai_review_enabled ? _("Disable AI review") : _("Enable AI review")}
-                >
-                    <a onClick={onAIReviewClicked}>
-                        <i className="fa fa-desktop"></i>{" "}
-                        {ai_review_enabled ? _("Disable AI review") : _("Enable AI review")}
-                    </a>
-                </Tooltip>
-            )}
+            <Tooltip
+                tooltipRequired={tooltipRequired}
+                title={ai_review_enabled ? _("Disable AI review") : _("Enable AI review")}
+            >
+                <a onClick={onAIReviewClicked}>
+                    <i className="fa fa-desktop"></i>{" "}
+                    {ai_review_enabled ? _("Disable AI review") : _("Enable AI review")}
+                </a>
+            </Tooltip>
             <Tooltip tooltipRequired={tooltipRequired} title={_("Game information")}>
                 <a onClick={showGameInfo}>
                     <i className="fa fa-info"></i> {_("Game information")}

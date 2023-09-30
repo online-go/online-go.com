@@ -214,12 +214,8 @@ try {
 }
 
 /** Connect to the chat service */
-let auth_connect_fn = () => {
-    return;
-};
-
-auth_connect_fn = (): void => {
-    sockets.socket.send("authenticate", {
+for (const socket of [sockets.socket, sockets.ai_socket]) {
+    socket.authenticate({
         jwt: data.get("config.user_jwt"),
         device_id: get_device_id(),
         user_agent: navigator.userAgent,
@@ -227,13 +223,21 @@ auth_connect_fn = (): void => {
         language_version: ogs_language_version,
         client_version: ogs_version,
     });
-};
-if (sockets.socket.connected) {
-    auth_connect_fn();
 }
 
-sockets.socket.on("connect", () => {
-    auth_connect_fn();
+data.watch("config.user_jwt", (jwt: string) => {
+    if (jwt) {
+        if (sockets.ai_socket.connected) {
+            sockets.ai_socket.authenticate({
+                jwt: data.get("config.user_jwt"),
+                device_id: get_device_id(),
+                user_agent: navigator.userAgent,
+                language: ogs_current_language,
+                language_version: ogs_language_version,
+                client_version: ogs_version,
+            });
+        }
+    }
 });
 
 sockets.socket.on("user/jwt", (jwt: string) => {

@@ -21,6 +21,8 @@ import { browserHistory } from "ogsHistory";
 import * as preferences from "preferences";
 import { alert } from "swal_config";
 
+export const MOD_POWER_ANNUL = 1; // Matches back-end MOD_POWER
+
 export type Timeout = ReturnType<typeof setTimeout>;
 
 export function updateDup(obj: any, field: string, value: any) {
@@ -153,8 +155,9 @@ export function uuid(): string {
     });
 }
 export function getOutcomeTranslation(outcome: string) {
-    /* Note: for the case statements, don't simply do `pgettext("Game outcome", outcome)`,
-     * the system to parse out strings to translate needs the text. */
+    /* Note: Do not simply do `pgettext("Game outcome", outcome)`
+     * The translation system needs to read these strings to parse them out and
+     * prepare them for translating. */
     switch (outcome) {
         case "resign":
         case "r":
@@ -176,6 +179,10 @@ export function getOutcomeTranslation(outcome: string) {
             return pgettext("Game outcome", "Abandonment");
     }
 
+    if (outcome.indexOf("Server Decision") === 0) {
+        return pgettext("Game outcome", "Server Decision") + " " + outcome.substring(16);
+    }
+
     if (/[0-9.]+/.test(outcome)) {
         const num: number = +outcome.match(/([0-9.]+)/)[1];
         const rounded_num = Math.round(num * 2) / 2;
@@ -194,7 +201,7 @@ export function getGameResultText(
         return "";
     }
     /* SGFs will encode the full result in the outcome */
-    if (/[+]/.test(outcome)) {
+    if (/[+]/.test(outcome) && !/Server Decision/.test(outcome)) {
         return outcome;
     }
 

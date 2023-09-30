@@ -23,7 +23,7 @@ import { DataSchema } from "./data_schema";
 
 export const defaults = {
     "ai-review-enabled": true,
-    "ai-review-use-score": false,
+    "ai-review-use-score": true,
     "ai-summary-table-show": false,
     "always-disable-analysis": false,
     "asked-to-enable-desktop-notifications": false,
