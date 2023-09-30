@@ -516,13 +516,6 @@ export function GameDock({
             )}
 
             {/* Add To Library functionality */}
-            {
-                <Tooltip tooltipRequired={tooltipRequired} title={_("Save to Library")}>
-                    <a onClick={showLibraryModal}>
-                        <i className="fa fa-book"></i> {_("Save to Library")}
-                    </a>
-                </Tooltip>
-            }
 
             {sgf_download_enabled && sgf_with_ai_review_url && (
                 <Tooltip tooltipRequired={tooltipRequired} title={_("SGF with AI Review")}>
@@ -531,6 +524,13 @@ export function GameDock({
                     </a>
                 </Tooltip>
             )}
+            {
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Save to Library")}>
+                    <a onClick={showLibraryModal}>
+                        <i className="fa fa-book"></i> {_("Save to Library")}
+                    </a>
+                </Tooltip>
+            }
             {sgf_download_enabled && sgf_with_comments_url && (
                 <Tooltip tooltipRequired={tooltipRequired} title={_("SGF with comments")}>
                     <a href={sgf_with_comments_url} target="_blank">

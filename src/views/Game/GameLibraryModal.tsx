@@ -36,6 +36,7 @@ export class GameLibraryModal extends Modal<Events, GameLibraryModalProperties, 
             gameName: "",
             collectionName: "",
             collections: [],
+            gameAdded: false,
         };
     }
 
@@ -82,6 +83,7 @@ export class GameLibraryModal extends Modal<Events, GameLibraryModalProperties, 
                 post("me/games/sgf/%%", collection[0], gameFile).catch(errorAlerter);
                 this.resetTextFields();
                 this.close(); // Closes modal after creating post request
+                this.setState({ gameAdded: true });
             })
             .catch(errorAlerter);
     }
@@ -107,28 +109,46 @@ export class GameLibraryModal extends Modal<Events, GameLibraryModalProperties, 
             <div className="Modal GameLibraryModal">
                 <div className="collection-list">
                     <h1>Libraries</h1>
-                    <input
-                        className="file-name-inputfield"
-                        type="text"
-                        value={this.state.gameName}
-                        onChange={this.setGameName}
-                        placeholder={_("Insert SGF File Name")}
-                    />
+
                     {/* If user has collections in their library map and render them. Otherwise; allow user to create collection */}
                     {this.state.collections.length > 0 ? (
-                        this.state.collections.map((data) => (
-                            <div className="collection-row" key={data.id}>
-                                <span className="cell">
-                                    <h1>{data[1]}</h1>
-                                </span>
-                                <span className="cell">
-                                    <button onClick={() => this.addToLibrary(data)}>add</button>
-                                </span>
-                            </div>
-                        ))
+                        <>
+                            <span>
+                                <i className="fa fa-file" />
+                                <input
+                                    className="file-name-inputfield"
+                                    type="text"
+                                    value={this.state.gameName}
+                                    onChange={this.setGameName}
+                                    placeholder={_("Insert SGF File Name")}
+                                />
+                            </span>
+
+                            {this.state.collections.map((data) => (
+                                <div className="collection-row" key={data.id}>
+                                    <span className="cell">
+                                        <h1>{data[1]}</h1>
+                                    </span>
+                                    <span className="cell">
+                                        <button onClick={() => this.addToLibrary(data)}>add</button>
+                                    </span>
+                                </div>
+                            ))}
+                        </>
                     ) : (
-                        <div>
+                        <div className="collection-row">
                             <span className="cell">
+                                <i className="fa fa-file" />
+                                <input
+                                    className="file-name-inputfield"
+                                    type="text"
+                                    value={this.state.gameName}
+                                    onChange={this.setGameName}
+                                    placeholder={_("Insert SGF File Name")}
+                                />
+                            </span>
+                            <span className="cell">
+                                <i className="fa fa-folder" />
                                 <input
                                     type="text"
                                     value={this.state.collectionName}
