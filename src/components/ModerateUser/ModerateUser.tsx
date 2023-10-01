@@ -230,7 +230,9 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                                         )}
                                     </dd>
                                     <dt>
-                                        <label htmlFor="annul">Handle Score Cheat</label>
+                                        <label className="avoid-wrap" htmlFor="annul">
+                                            Handle Score Cheat
+                                        </label>
                                     </dt>
                                     <dd>
                                         <input
