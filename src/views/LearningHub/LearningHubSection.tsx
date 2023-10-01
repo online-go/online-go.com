@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { LearningPage, DummyPage } from "./LearningPage";
+import { LearningPage, DummyPage, LearningPageProperties } from "./LearningPage";
 import { getFirstUncompletedPage } from "./util";
 
 interface LearningHubSectionProperties {
@@ -24,7 +24,7 @@ interface LearningHubSectionProperties {
     title: string;
     nextSection: string;
     section: string;
-    pages: Array<typeof LearningPage>;
+    pages: React.ComponentType<LearningPageProperties>[];
 }
 
 export abstract class LearningHubSection extends React.PureComponent<LearningHubSectionProperties> {
@@ -49,7 +49,7 @@ export abstract class LearningHubSection extends React.PureComponent<LearningHub
         let page = this.props.page || getFirstUncompletedPage(this.props.section);
         page = Math.min(page, this.props.pages.length);
         page = Math.max(page, 0);
-        const P: typeof LearningPage = this.props.pages[page];
+        const P = this.props.pages[page];
         return (
             <P
                 title={this.props.title}
