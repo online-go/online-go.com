@@ -15,7 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 channel-utils-height=8.4rem;
-channel-width=12rem;
+channel-width=20%;
+channel-max-width=25rem;
+channel-min-width=12rem;
 
 .ChatList {
     display: flex;
@@ -23,12 +25,16 @@ channel-width=12rem;
     height: "calc(100vh - %s - %s)" % (navbar-height channel-utils-height);
     overflow-y: auto;
     width: channel-width;
+    max-width: channel-max-width;
+    min-width: channel-min-width;
 
     .channel-container {
         flex-basis: channel-width;
         flex-shrink: 1;
         flex-grow: 1;
         width: channel-width;
+        max-width: channel-max-width;
+        min-width: channel-min-width;
 
         border-right: 1px solid transparent;
         themed border-right-color shade3
