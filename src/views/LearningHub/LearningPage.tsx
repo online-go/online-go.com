@@ -24,7 +24,7 @@ import { browserHistory } from "ogsHistory";
 import { setSectionPageCompleted, getSectionPageCompleted } from "./util";
 import { _ } from "translate";
 
-interface LearningPageProperties {
+export interface LearningPageProperties {
     title: string;
     npages: number;
     curpage: number;
