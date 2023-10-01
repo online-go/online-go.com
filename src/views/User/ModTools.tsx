@@ -196,7 +196,9 @@ export function ModTools(props: ModToolsProps): JSX.Element {
                     {
                         header: "",
                         className: "",
-                        render: (X) => <Player user={X.moderator} />,
+                        render: (X) => {
+                            return X?.moderator?.id ? <Player user={X.moderator} /> : "-";
+                        },
                     },
                     {
                         header: "",
