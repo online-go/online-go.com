@@ -20,7 +20,12 @@ import { socket } from "sockets";
 
 //interface NetworkStatusProps {}
 
+// Don't warn about the network for this amount of time
+const INITIAL_CONNECTION_TIME = 6000;
+
 export function NetworkStatus(): JSX.Element {
+    // Note: we start "hidden" so that it doesn't flash up while
+    // making the initial connection.
     const [hidden, setHidden] = React.useState(true);
 
     React.useEffect(() => {
@@ -31,14 +36,29 @@ export function NetworkStatus(): JSX.Element {
         socket.on("timeout", show);
         socket.on("disconnect", show);
 
+        const check_startup_connection = setTimeout(() => {
+            if (!socket.connected) {
+                setHidden(false);
+            }
+        }, INITIAL_CONNECTION_TIME);
+
         return () => {
             socket.off("latency", hide);
             socket.off("timeout", show);
             socket.off("disconnect", show);
+            clearTimeout(check_startup_connection);
         };
     }, []);
 
+    // let's leave this here - it might be handy if someone is having problems
+    console.log("Network status: ", hidden ? "connected" : "warn");
+
     return (
+        // This funky little thing builds an icon that is intended to say
+        // "no wifi!", by superimposing a large "ban" icon over a normal sized
+        // "wifi" icon.
+        // That is a achieved by the accompanying css - which also causes
+        // the whole thing to be hidden if `hidden` is true.
         <div className={"NetworkStatus" + (hidden ? " hidden" : "")}>
             <i className="fa fa-2x fa-ban" />
             <i className="fa fa-wifi" />

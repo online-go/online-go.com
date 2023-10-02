@@ -22,8 +22,12 @@ const debug = new Debug("sockets");
 
 export const socket = new GobanSocket(window["websocket_host"] ?? window.location.origin);
 
+// Updated to be more helpful (shorter) when we know latencies
 socket.options.ping_interval = 10000;
-socket.options.timeout_delay = 2000;
+socket.options.timeout_delay = 8000;
+
+const MIN_PING_INTERVAL = 3000; // blitz players would really like to know ASAP...
+const MIN_TIMEOUT_DELAY = 1000;
 
 export let ai_host;
 if (
@@ -85,7 +89,24 @@ socket.on("hostinfo", (hostinfo) => {
 socket.on("latency", (latency, drift) => {
     last_latency = latency;
     last_clock_drift = drift;
-    //console.log("latency update", latency, drift);
+    // Ping more quickly for people with fast connections (to detect outages fast)
+    if (latency * 3 < Math.max(socket.options.ping_interval, MIN_PING_INTERVAL)) {
+        socket.options.ping_interval = Math.max(latency * 3, MIN_PING_INTERVAL);
+    }
+
+    // Wait less time for timeout for people with fast connections (to detect outages fast)
+    if (!last_latency || latency * 2 < Math.max(socket.options.timeout_delay, MIN_TIMEOUT_DELAY)) {
+        socket.options.timeout_delay = Math.max(latency * 2, MIN_TIMEOUT_DELAY);
+    }
+    /*
+    console.log(
+        "latency update",
+        latency,
+        drift,
+        socket.options.timeout_delay,
+        socket.options.ping_interval,
+    );
+    */
 });
 
 /* Returns the time in ms since the last time a connection was established to
