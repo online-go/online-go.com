@@ -24,15 +24,18 @@ export function NetworkStatus(): JSX.Element {
     const [hidden, setHidden] = React.useState(true);
 
     React.useEffect(() => {
-        socket.on("latency", () => {
-            setHidden(true);
-        });
-        socket.on("timeout", () => {
-            setHidden(false);
-        });
-        socket.on("disconnect", () => {
-            setHidden(false);
-        });
+        const show = () => setHidden(false);
+        const hide = () => setHidden(true);
+
+        socket.on("latency", hide);
+        socket.on("timeout", show);
+        socket.on("disconnect", show);
+
+        return () => {
+            socket.off("latency", hide);
+            socket.off("timeout", show);
+            socket.off("disconnect", show);
+        };
     }, []);
 
     return (
