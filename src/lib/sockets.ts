@@ -22,6 +22,8 @@ const debug = new Debug("sockets");
 
 export const socket = new GobanSocket(window["websocket_host"] ?? window.location.origin);
 
+socket.options.ping_interval = 10000;
+
 export let ai_host;
 if (
     window.location.hostname.indexOf("dev.beta") >= 0 &&
@@ -58,6 +60,10 @@ if (
 export const ai_socket = ai_host
     ? new GobanSocket<protocol.ClientToAIServer, protocol.AIServerToClient>(ai_host)
     : undefined;
+
+if (ai_socket) {
+    ai_socket.options.ping_interval = 20000;
+}
 
 let last_clock_drift = 0.0;
 let last_latency = 0.0;
