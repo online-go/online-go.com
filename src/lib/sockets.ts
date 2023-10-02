@@ -16,7 +16,7 @@
  */
 
 import Debug from "debug";
-import { GobanSocket, niceInterval, protocol } from "goban";
+import { GobanSocket, protocol } from "goban";
 
 const debug = new Debug("sockets");
 
@@ -59,73 +59,42 @@ export const ai_socket = ai_host
     ? new GobanSocket<protocol.ClientToAIServer, protocol.AIServerToClient>(ai_host)
     : undefined;
 
-let connect_time = Date.now();
+let last_clock_drift = 0.0;
+let last_latency = 0.0;
+let connect_time = null;
+
 socket.on("connect", () => {
     debug.log("Connection to server established.");
     socket.send("hostinfo", {});
     connect_time = Date.now();
 });
+
 socket.on("HUP", () => window.location.reload());
 socket.on("hostinfo", (hostinfo) => {
     debug.log("Termination server", hostinfo);
     //console.warn("Termination server", hostinfo);
 });
 
-let last_clock_drift = 0.0;
-let last_latency = 0.0;
-let last_ai_latency = 0.0;
-
-/* Returns the time in ms since the last time a connection was established to
- * the server. */
-export function time_since_connect() {
-    return Date.now() - connect_time;
-}
-
-function ping() {
-    if (socket.connected) {
-        socket.send("net/ping", {
-            client: Date.now(),
-            drift: last_clock_drift,
-            latency: last_latency,
-        });
-    }
-}
-function handle_pong(data) {
-    const now = Date.now();
-    const latency = now - data.client;
-    const drift = now - latency / 2 - data.server;
+socket.on("latency", (latency, drift) => {
     last_latency = latency;
     last_clock_drift = drift;
-    (window as any)["latency"] = last_latency;
+    //console.log("latency update", latency, drift);
+});
+
+/* Returns the time in ms since the last time a connection was established to
+ * the server.
+ * (Zero if we've never connected)
+ */
+export function time_since_connect() {
+    return connect_time ? Date.now() - connect_time : 0;
 }
+
 export function get_network_latency(): number {
     return last_latency;
 }
 export function get_clock_drift(): number {
     return last_clock_drift;
 }
-socket.on("net/pong", handle_pong);
-socket.on("connect", ping);
-niceInterval(ping, 10000);
-
-function ai_ping() {
-    if (ai_socket && ai_socket.connected) {
-        ai_socket.send("net/ping", {
-            client: Date.now(),
-            drift: last_clock_drift,
-            latency: last_ai_latency,
-        });
-    }
-}
-function ai_handle_pong(data) {
-    const now = Date.now();
-    const latency = now - data.client;
-    last_ai_latency = latency;
-}
-
-ai_socket?.on("connect", ai_ping);
-ai_socket?.on("net/pong", ai_handle_pong);
-niceInterval(ai_ping, 20000);
 
 export default {
     socket: socket,
