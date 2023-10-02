@@ -23,6 +23,7 @@ const debug = new Debug("sockets");
 export const socket = new GobanSocket(window["websocket_host"] ?? window.location.origin);
 
 socket.options.ping_interval = 10000;
+socket.options.timeout_delay = 2000;
 
 export let ai_host;
 if (
