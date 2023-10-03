@@ -110,9 +110,6 @@ function Main(props): JSX.Element {
                         <NavBar />
                     </ErrorBoundary>
                     <ErrorBoundary>
-                        <NetworkStatus />
-                    </ErrorBoundary>
-                    <ErrorBoundary>
                         <Announcements />
                     </ErrorBoundary>
                     <ErrorBoundary>{props.children}</ErrorBoundary>
