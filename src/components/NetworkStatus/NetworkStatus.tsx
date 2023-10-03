@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { _ } from "translate";
 import { socket } from "sockets";
 
 //interface NetworkStatusProps {}
@@ -24,34 +25,43 @@ import { socket } from "sockets";
 const INITIAL_CONNECTION_TIME = 6000;
 
 export function NetworkStatus(): JSX.Element {
-    // Note: we start "hidden" so that it doesn't flash up while
-    // making the initial connection.
-    const [hidden, setHidden] = React.useState(true);
+    const [state, setState] = React.useState("connected");
 
     React.useEffect(() => {
-        const show = () => setHidden(false);
-        const hide = () => setHidden(true);
+        const clear = () => {
+            setState("connected");
+        };
+        const timeout = () => {
+            setState("timeout");
+        };
+        const disconnected = () => {
+            setState("disconnected");
+        };
 
-        socket.on("latency", hide);
-        socket.on("timeout", show);
-        socket.on("disconnect", show);
+        socket.on("latency", clear);
+        socket.on("timeout", timeout);
+        socket.on("disconnect", disconnected);
 
         const check_startup_connection = setTimeout(() => {
             if (!socket.connected) {
-                setHidden(false);
+                setState("disconnected");
             }
         }, INITIAL_CONNECTION_TIME);
 
         return () => {
-            socket.off("latency", hide);
-            socket.off("timeout", show);
-            socket.off("disconnect", show);
+            socket.off("latency", clear);
+            socket.off("timeout", timeout);
+            socket.off("disconnect", disconnected);
             clearTimeout(check_startup_connection);
         };
     }, []);
 
     // let's leave this here - it might be handy if someone is having problems
-    console.log("Network status: ", hidden ? "connected" : "warn");
+    console.log("Network status: ", state);
+
+    if (state === "connected") {
+        return null;
+    }
 
     return (
         // This funky little thing builds an icon that is intended to say
@@ -59,9 +69,16 @@ export function NetworkStatus(): JSX.Element {
         // "wifi" icon.
         // That is a achieved by the accompanying css - which also causes
         // the whole thing to be hidden if `hidden` is true.
-        <div className={"NetworkStatus" + (hidden ? " hidden" : "")}>
-            <i className="fa fa-2x fa-ban" />
-            <i className="fa fa-wifi" />
+        <div className={"NetworkStatus " + state}>
+            <span className="icon">
+                <i className="fa fa-2x fa-ban" />
+                <i className="fa fa-wifi" />
+            </span>
+
+            <span>
+                {(state === "timeout" || null) && _("Slow internet")}
+                {(state === "disconnected" || null) && _("Disconnected")}
+            </span>
         </div>
     );
 }

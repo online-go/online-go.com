@@ -9,15 +9,30 @@
 // coolness.
 
 .NetworkStatus {
+    display: inline-flex;
     position: absolute;
     z-index: z.network-warning;
-    top: 4rem;  // into the gap between nav-bar and dock, or under the Z for zen.
-    right: 1.5rem;
-    display: flex;
+    top: navbar-height;
+    right: 0;
+    min-width: 10rem;
+    height: 2.5rem;
+    white-space: nowrap;
+    themed background-color reject
+    themed color colored-background-fg
     align-items: center;
     justify-content: center;
-    background-color: #eee;
-    color: red;
+    font-weight: bold;
+    padding-right: 1rem;
+
+    .icon {
+        position: relative;
+        display: inline-flex;
+        width: 2rem;
+        height: 2rem;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+    }
 
     @keyframes fadeInOut {
         0% { opacity: 1; }
@@ -28,12 +43,9 @@
         position: absolute;
     }
     i.fa-2x {
-        opacity: 0.7;
+        opacity: 0.6;
     }
     i.fa-wifi{
-        animation: fadeInOut 1s infinite;
+        animation: fadeInOut 2.0s infinite;
     }
-}
-.NetworkStatus.hidden {
-    display: none;
 }
