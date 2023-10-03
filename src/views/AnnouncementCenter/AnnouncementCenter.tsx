@@ -160,7 +160,7 @@ export function AnnouncementCenter(): JSX.Element {
                             <input
                                 type="range"
                                 min={0}
-                                max={duration_options.length}
+                                max={duration_options.length - 1}
                                 value={duration_idx}
                                 onChange={(e) => {
                                     setDurationIdx(parseInt(e.target.value));
@@ -169,7 +169,7 @@ export function AnnouncementCenter(): JSX.Element {
                             <span className="text">
                                 {moment
                                     .duration(duration_options[duration_idx], "seconds")
-                                    .humanize()}
+                                    .humanize(true, { h: 24, m: 59, s: 59 })}
                             </span>
                         </div>
                     </dd>
