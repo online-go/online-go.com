@@ -1,0 +1,39 @@
+// This element is intended to be a red "no wifi" indicator
+// positioned over the top of almost everything, and in a
+// place on the screen that is relatively uncluttered in both
+// normal and zen mode for games.
+
+// The "no wifi" indicator is assembled from two font awesome icons
+// superimposed on each other at their centres by using flex `center`,
+// and has the "wifi" element flashing for extra attention grabbing
+// coolness.
+
+.NetworkStatus {
+    position: absolute;
+    z-index: z.network-warning;
+    top: 4rem;  // into the gap between nav-bar and dock, or under the Z for zen.
+    right: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #eee;
+    color: red;
+
+    @keyframes fadeInOut {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    i {
+        position: absolute;
+    }
+    i.fa-2x {
+        opacity: 0.7;
+    }
+    i.fa-wifi{
+        animation: fadeInOut 1s infinite;
+    }
+}
+.NetworkStatus.hidden {
+    display: none;
+}
