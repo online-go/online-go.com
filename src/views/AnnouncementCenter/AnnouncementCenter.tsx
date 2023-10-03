@@ -28,6 +28,8 @@ import * as moment from "moment";
 //import { Announcement } from "src/components/Announcements";
 import { useUser } from "hooks";
 
+moment.relativeTimeThreshold("m", 59);
+
 const all_duration_options = [
     900,
     1800,
@@ -169,7 +171,7 @@ export function AnnouncementCenter(): JSX.Element {
                             <span className="text">
                                 {moment
                                     .duration(duration_options[duration_idx], "seconds")
-                                    .humanize(true, { h: 24, m: 59, s: 59 })}
+                                    .humanize(false, { h: 24, m: 59, s: 59 })}
                             </span>
                         </div>
                     </dd>
