@@ -77,7 +77,7 @@ export function AnnouncementCenter(): JSX.Element {
     }, []);
 
     const create = () => {
-        const duration = all_duration_options[duration_idx] * 1000;
+        const duration = all_duration_options[duration_idx] * 1000 + 1000;
         const expiration = moment.utc(Date.now() + duration).format("YYYY-MM-DD HH:mm:ss Z");
         data.set("announcement.last-type", announcementType);
         data.set("announcement.last-duration", duration_idx);
