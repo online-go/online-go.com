@@ -253,6 +253,7 @@ export interface DataSchema
     "device.uuid": string;
     "settings.page-selected": string;
     "announcement.last-type": string;
+    "announcement.last-duration": number;
     "demo.settings": DemoSettings;
 
     "preferred-game-settings": rest_api.ChallengeDetails[];
