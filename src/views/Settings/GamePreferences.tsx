@@ -36,6 +36,9 @@ export function GamePreferences(): JSX.Element {
         preferences.get("dock-delay"),
     );
     const [ai_review_enabled, _setAiReviewEnabled] = usePreference("ai-review-enabled");
+    const [notify_on_ai_review_done, setNotifyOnAiReviewDone] = usePreference(
+        "notify-on-ai-review-done",
+    );
     const [variations_in_chat, _setVariationsInChat] = usePreference("variations-in-chat-enabled");
     const [_live_submit_mode, _setLiveSubmitMode]: [string, (x: string) => void] = React.useState(
         getSubmitMode("live"),
@@ -227,6 +230,15 @@ export function GamePreferences(): JSX.Element {
                 )}
             >
                 <Toggle checked={!ai_review_enabled} onChange={toggleAIReview} />
+            </PreferenceLine>
+
+            <PreferenceLine
+                title={_("Notify on AI review done")}
+                description={_(
+                    'This will enable or disable the "Computer has finished analyzing your game..." notifications.',
+                )}
+            >
+                <Toggle checked={notify_on_ai_review_done} onChange={setNotifyOnAiReviewDone} />
             </PreferenceLine>
 
             <PreferenceLine

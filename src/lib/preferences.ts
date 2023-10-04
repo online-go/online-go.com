@@ -57,6 +57,7 @@ export const defaults = {
     "new-game-board-size": 19,
     "notification-timeout": 10,
     "notify-on-incident-report": true,
+    "notify-on-ai-review-done": true,
     "hide-incident-reports": false,
     "hide-claimed-reports": false,
     "observed-games-page-size": 9,
