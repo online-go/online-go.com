@@ -93,12 +93,12 @@ socket.on("latency", (latency, drift) => {
     last_latency = latency;
     last_clock_drift = drift;
     // Ping more quickly for people with fast connections (to detect outages fast)
-    if (latency * 3 < Math.max(socket.options.ping_interval, MIN_PING_INTERVAL)) {
+    if (latency < Math.max(3 * socket.options.ping_interval, MIN_PING_INTERVAL)) {
         socket.options.ping_interval = Math.max(latency * 3, MIN_PING_INTERVAL);
     }
 
     // Wait less time for timeout for people with fast connections (to detect outages fast)
-    if (!last_latency || latency * 2 < Math.max(socket.options.timeout_delay, MIN_TIMEOUT_DELAY)) {
+    if (!last_latency || latency < Math.max(2 * socket.options.timeout_delay, MIN_TIMEOUT_DELAY)) {
         socket.options.timeout_delay = Math.max(latency * 2, MIN_TIMEOUT_DELAY);
     }
     /*
