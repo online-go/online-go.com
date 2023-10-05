@@ -24,10 +24,16 @@ import { socket } from "sockets";
 // Don't warn about the network for this amount of time
 const INITIAL_CONNECTION_TIME = 6000;
 
-type NetworkStatusState = "connected" | "disconnected" | "timeout";
+type NetworkStatusState = "connected" | "went-away" | "disconnected" | "timeout";
 
 export function NetworkStatus(): JSX.Element {
     const [state, setState] = React.useState<NetworkStatusState>("connected");
+
+    const stateRef = React.useRef(state);
+
+    React.useEffect(() => {
+        stateRef.current = state; // needed so we can refer to the current value in the async timer below
+    }, [state]);
 
     React.useEffect(() => {
         const clear = () => {
@@ -36,8 +42,9 @@ export function NetworkStatus(): JSX.Element {
         const timeout = () => {
             setState("timeout");
         };
-        const disconnected = () => {
-            setState("disconnected");
+        const disconnected = (code: number) => {
+            // Note that when the socket comes up again, a fresh `latency` will clear this
+            setState(code === 1001 ? "went-away" : "disconnected");
         };
 
         socket.on("latency", clear);
@@ -45,7 +52,7 @@ export function NetworkStatus(): JSX.Element {
         socket.on("disconnect", disconnected);
 
         const check_startup_connection = setTimeout(() => {
-            if (!socket.connected) {
+            if (!socket.connected && stateRef.current !== "went-away") {
                 setState("disconnected");
             }
         }, INITIAL_CONNECTION_TIME);
@@ -61,7 +68,7 @@ export function NetworkStatus(): JSX.Element {
     // let's leave this here - it might be handy if someone is having problems
     console.log("Network status: ", state);
 
-    if (state === "connected") {
+    if (state === "connected" || state === "went-away") {
         return null;
     }
 
