@@ -24,8 +24,10 @@ import { socket } from "sockets";
 // Don't warn about the network for this amount of time
 const INITIAL_CONNECTION_TIME = 6000;
 
+type NetworkStatusState = "connected" | "disconnected" | "timeout";
+
 export function NetworkStatus(): JSX.Element {
-    const [state, setState] = React.useState("connected");
+    const [state, setState] = React.useState<NetworkStatusState>("connected");
 
     React.useEffect(() => {
         const clear = () => {
@@ -67,8 +69,9 @@ export function NetworkStatus(): JSX.Element {
         // This funky little thing builds an icon that is intended to say
         // "no wifi!", by superimposing a large "ban" icon over a normal sized
         // "wifi" icon.
-        // That is a achieved by the accompanying css - which also causes
-        // the whole thing to be hidden if `hidden` is true.
+
+        // We don't show this if they're 'connected' (see above, return null)
+
         <div className={"NetworkStatus " + state}>
             <span className="icon">
                 <i className="fa fa-2x fa-ban" />
