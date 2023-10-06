@@ -24,269 +24,269 @@ import { Card } from "material";
 import { UIPush } from "UIPush";
 import { errorAlerter } from "misc";
 import { Player } from "Player";
-import Datetime from "react-datetime";
 import * as moment from "moment";
-import { Announcement } from "src/components/Announcements";
+//import { Announcement } from "src/components/Announcements";
+import { useUser } from "hooks";
 
-interface AnnouncementCenterState {
-    announcements: Announcement[];
-    type: string;
-    expiration_date: Date;
-    expiration: string;
-    expiration_message?: string;
-    text: string;
-    link: string;
+moment.relativeTimeThreshold("m", 59);
+
+const all_duration_options = [
+    900,
+    1800,
+    2700,
+    3600,
+    5400,
+    7200,
+    9000,
+    10800,
+    12600,
+    14400,
+    16200,
+    18000,
+    19800,
+    21600,
+
+    86400,
+    86400 * 2,
+    86400 * 3,
+    86400 * 5,
+    86400 * 6,
+    86400 * 7,
+];
+
+if (process.env.NODE_ENV === "development") {
+    all_duration_options.unshift(60);
+    all_duration_options.unshift(5);
 }
 
-const MAX_ANNOUNCEMENT_DURATION = 6 * 3600 * 1000; /* 6 hours */
+export function AnnouncementCenter(): JSX.Element {
+    const user = useUser();
+    const [announcementType, setAnnouncementType] = React.useState(
+        user.is_superuser ? "system" : data.get("announcement.last-type", "stream"),
+    );
+    const [text, setText] = React.useState("");
+    const [link, setLink] = React.useState("");
+    //const [duration, setDuration] = React.useState(7200);
+    const [duration_idx, setDurationIdx] = React.useState(
+        data.get("announcement.last-duration", 4),
+    );
+    const duration_options = all_duration_options.filter((x) => x < 86400 || user.is_superuser);
+    const [announcements, setAnnouncements] = React.useState([]);
 
-export class AnnouncementCenter extends React.PureComponent<{}, AnnouncementCenterState> {
-    constructor(props) {
-        super(props);
-        const exp = new Date();
-        exp.setSeconds(exp.getSeconds() + 300);
-        const user = data.get("user");
-
-        this.state = {
-            announcements: [],
-            type: user.is_superuser ? "system" : data.get("announcement.last-type", "stream"),
-            expiration_date: exp,
-            expiration: moment(exp).toISOString(),
-            text: "",
-            link: "",
-        };
-    }
-
-    componentDidMount() {
+    React.useEffect(() => {
         window.document.title = _("Announcement Center");
-        this.refresh();
-    }
+        refresh();
+    }, []);
 
-    setType = (ev) => {
-        this.setState({ type: ev.target.value });
-    };
-    setExpiration = (moment_date) => {
-        let message: string = null;
-        const announcement_duration = moment_date.toDate().getTime() - Date.now();
-        if (announcement_duration > MAX_ANNOUNCEMENT_DURATION && !data.get("user").is_superuser) {
-            message = _("Announcement durations must be 6 hours or less");
-        }
-
-        this.setState({
-            expiration_date: moment_date._d,
-            expiration: moment_date._d.toISOString(),
-            expiration_message: message,
-        });
-    };
-    setText = (ev) => {
-        this.setState({ text: ev.target.value });
-    };
-    setLink = (ev) => {
-        const link = ev.target.value.trim();
-        this.setState({
-            link: link,
-        });
-    };
-    create = () => {
-        const announcement_duration = moment(this.state.expiration).toDate().getTime() - Date.now();
-        if (announcement_duration > MAX_ANNOUNCEMENT_DURATION && !data.get("user").is_superuser) {
-            return;
-        }
-        data.set("announcement.last-type", this.state.type);
+    const create = () => {
+        const duration = all_duration_options[duration_idx] * 1000 + 1000;
+        const expiration = moment.utc(Date.now() + duration).format("YYYY-MM-DD HH:mm:ss Z");
+        data.set("announcement.last-type", announcementType);
+        data.set("announcement.last-duration", duration_idx);
 
         post("announcements", {
-            type: this.state.type,
+            type: announcementType,
             user_ids: "",
-            text: this.state.text,
-            link: this.state.link,
+            text,
+            link,
             button_text: "",
             button_link: "",
             button_class: "",
-            expiration: this.state.expiration,
+            expiration,
         })
-            .then(this.refresh)
+            .then(refresh)
             .catch(errorAlerter);
     };
-    refresh = () => {
+    const refresh = () => {
         get("announcements")
             .then((list) => {
                 console.log(list);
-                this.setState({ announcements: list });
+                setAnnouncements(list);
             })
             .catch(errorAlerter);
     };
-    deleteAnnouncement(announcement) {
-        del("announcements/%%", announcement.id).then(this.refresh).catch(errorAlerter);
-    }
+    const deleteAnnouncement = (announcement) => {
+        del("announcements/%%", announcement.id).then(refresh).catch(errorAlerter);
+    };
 
-    render() {
-        const user = data.get("user");
+    const can_create = !!text;
 
-        // TODO: cast to boolean
-        let can_create: string | boolean = this.state.expiration && this.state.text;
-        const announcement_duration = moment(this.state.expiration).toDate().getTime() - Date.now();
-        if (announcement_duration > MAX_ANNOUNCEMENT_DURATION && !data.get("user").is_superuser) {
-            can_create = false;
-        }
-
-        return (
-            <div className="AnnouncementCenter container">
-                <UIPush event="refresh" channel="announcement-center" action={this.refresh} />
-                <Card>
-                    <dl className="horizontal">
-                        <dt>Type</dt>
-                        {user.is_superuser ? (
-                            <dd>
-                                <select value={this.state.type} onChange={this.setType}>
-                                    <option value="system">System</option>
-                                    <option value="stream">Stream</option>
-                                    <option value="event">Event</option>
-                                    <option value="advertisement">Advertisement</option>
-                                    <option value="tournament">Tournament</option>
-                                    <option value="non-supporter">Non-Supporters</option>
-                                    <option value="uservoice">Uservoice</option>
-                                </select>
-                            </dd>
-                        ) : user.is_moderator ? (
-                            <dd>
-                                <select value={this.state.type} onChange={this.setType}>
-                                    <option value="system">System</option>
-                                    <option value="stream">Stream</option>
-                                    <option value="event">Event</option>
-                                    <option value="advertisement">Advertisement</option>
-                                </select>
-                            </dd>
-                        ) : (
-                            <dd>
-                                <select value={this.state.type} onChange={this.setType}>
-                                    <option value="stream">Stream</option>
-                                    <option value="event">Event</option>
-                                </select>
-                            </dd>
-                        )}
-
-                        <dt>{_("Expiration")}</dt>
+    return (
+        <div className="AnnouncementCenter container">
+            <UIPush event="refresh" channel="announcement-center" action={refresh} />
+            <Card>
+                <dl className="horizontal">
+                    <dt>Type</dt>
+                    {user.is_superuser ? (
                         <dd>
-                            <Datetime
-                                value={this.state.expiration_date}
-                                onChange={this.setExpiration}
-                            />
-                        </dd>
-
-                        <dt>{_("Text")}</dt>
-                        <dd>
-                            <input type="text" value={this.state.text} onChange={this.setText} />
-                        </dd>
-
-                        <dt>{_("Link")}</dt>
-                        <dd>
-                            <input type="text" value={this.state.link} onChange={this.setLink} />
-                        </dd>
-                        <dt></dt>
-                        <dd>
-                            {this.state.expiration_message && (
-                                <div className="danger">{this.state.expiration_message} </div>
-                            )}
-                            <button
-                                className="primary"
-                                disabled={!can_create}
-                                onClick={this.create}
+                            <select
+                                value={announcementType}
+                                onChange={(e) => setAnnouncementType(e.target.value)}
                             >
-                                {_("Create announcement")}
-                            </button>
+                                <option value="system">System</option>
+                                <option value="stream">Stream</option>
+                                <option value="event">Event</option>
+                                <option value="advertisement">Advertisement</option>
+                                <option value="tournament">Tournament</option>
+                                <option value="non-supporter">Non-Supporters</option>
+                                <option value="uservoice">Uservoice</option>
+                            </select>
                         </dd>
-                    </dl>
-                    <div className="announcements">
-                        {this.state.announcements.map((announcement, idx) => (
-                            <div className="announcement" key={idx}>
-                                <div className="cell">
-                                    {(user.is_moderator ||
-                                        user.id === announcement.creator.id ||
-                                        null) && (
-                                        <button
-                                            className="reject xs"
-                                            onClick={this.deleteAnnouncement.bind(
-                                                this,
-                                                announcement,
-                                            )}
-                                        >
-                                            <i className="fa fa-trash-o" />
-                                        </button>
-                                    )}
-                                </div>
-                                <div className="cell">
-                                    <Player user={announcement.creator} />
-                                </div>
-                                <div className="cell">{announcement.text}</div>
-                                <div className="cell">
-                                    <a target="_blank" href={announcement.link}>
-                                        {announcement.link}
-                                    </a>
-                                </div>
-                                <div className="cell">
-                                    expires {moment(announcement.expiration).fromNow()}
-                                </div>
+                    ) : user.is_moderator ? (
+                        <dd>
+                            <select
+                                value={announcementType}
+                                onChange={(e) => setAnnouncementType(e.target.value)}
+                            >
+                                <option value="system">System</option>
+                                <option value="stream">Stream</option>
+                                <option value="event">Event</option>
+                                <option value="advertisement">Advertisement</option>
+                            </select>
+                        </dd>
+                    ) : (
+                        <dd>
+                            <select
+                                value={announcementType}
+                                onChange={(e) => setAnnouncementType(e.target.value)}
+                            >
+                                <option value="stream">Stream</option>
+                                <option value="event">Event</option>
+                            </select>
+                        </dd>
+                    )}
+
+                    <dt>{_("Duration")}</dt>
+                    <dd>
+                        <div className="duration">
+                            <input
+                                type="range"
+                                min={0}
+                                max={duration_options.length - 1}
+                                value={duration_idx}
+                                onChange={(e) => {
+                                    setDurationIdx(parseInt(e.target.value));
+                                }}
+                            />
+                            <span className="text">
+                                {moment
+                                    .duration(duration_options[duration_idx], "seconds")
+                                    .humanize(false, { h: 24, m: 59, s: 59 })}
+                            </span>
+                        </div>
+                    </dd>
+
+                    <dt>{_("Text")}</dt>
+                    <dd>
+                        <input
+                            type="text"
+                            value={text}
+                            onChange={(ev) => setText(ev.target.value)}
+                        />
+                    </dd>
+
+                    <dt>{_("Link")}</dt>
+                    <dd>
+                        <input
+                            type="text"
+                            value={link}
+                            onChange={(ev) => setLink(ev.target.value)}
+                        />
+                    </dd>
+                    <dt></dt>
+                    <dd>
+                        <button className="primary" disabled={!can_create} onClick={create}>
+                            {_("Create announcement")}
+                        </button>
+                    </dd>
+                </dl>
+                <div className="announcements">
+                    {announcements.map((announcement, idx) => (
+                        <div className="announcement" key={idx}>
+                            <div className="cell">
+                                {(user.is_moderator ||
+                                    user.id === announcement.creator.id ||
+                                    null) && (
+                                    <button
+                                        className="reject xs"
+                                        onClick={() => deleteAnnouncement(announcement)}
+                                    >
+                                        <i className="fa fa-trash-o" />
+                                    </button>
+                                )}
                             </div>
-                        ))}
-                    </div>
-                </Card>
+                            <div className="cell">
+                                <Player user={announcement.creator} />
+                            </div>
+                            <div className="cell">{announcement.text}</div>
+                            <div className="cell">
+                                <a target="_blank" href={announcement.link}>
+                                    {announcement.link}
+                                </a>
+                            </div>
+                            <div className="cell">
+                                expires {moment(announcement.expiration).fromNow()}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </Card>
 
-                <Card>
-                    <h3>{_("Announcement History")}</h3>
+            <Card>
+                <h3>{_("Announcement History")}</h3>
 
-                    <PaginatedTable
-                        className="announcement-history"
-                        source={`announcements/history`}
-                        orderBy={["-timestamp"]}
-                        columns={[
-                            {
-                                header: "Time",
-                                className: "",
-                                render: (a) => moment(a.timestamp).format("YYYY-MM-DD LTS"),
+                <PaginatedTable
+                    className="announcement-history"
+                    source={`announcements/history`}
+                    orderBy={["-timestamp"]}
+                    columns={[
+                        {
+                            header: "Time",
+                            className: "",
+                            render: (a) => moment(a.timestamp).format("YYYY-MM-DD LTS"),
+                        },
+                        {
+                            header: "Duration",
+                            className: "",
+                            render: (a) => {
+                                const ms = moment(a.expiration).diff(moment(a.timestamp));
+                                const d = moment.duration(ms);
+                                return Math.floor(d.asHours()) + moment.utc(ms).format(":mm");
+                                //.format('HH:mm')
                             },
-                            {
-                                header: "Duration",
-                                className: "",
-                                render: (a) => {
-                                    const ms = moment(a.expiration).diff(moment(a.timestamp));
-                                    const d = moment.duration(ms);
-                                    return Math.floor(d.asHours()) + moment.utc(ms).format(":mm");
-                                    //.format('HH:mm')
-                                },
+                        },
+                        {
+                            header: "Type",
+                            className: "announcement-type ",
+                            render: (a) => {
+                                switch (a.type) {
+                                    case "system":
+                                        return pgettext("Announcement type", "System");
+                                    case "event":
+                                        return pgettext("Announcement type", "Event");
+                                    case "stream":
+                                        return pgettext(
+                                            "Announcement type (video stream)",
+                                            "Stream",
+                                        );
+                                }
+                                return a.type;
                             },
-                            {
-                                header: "Type",
-                                className: "announcement-type ",
-                                render: (a) => {
-                                    switch (a.type) {
-                                        case "system":
-                                            return pgettext("Announcement type", "System");
-                                        case "event":
-                                            return pgettext("Announcement type", "Event");
-                                        case "stream":
-                                            return pgettext(
-                                                "Announcement type (video stream)",
-                                                "Stream",
-                                            );
-                                    }
-                                    return a.type;
-                                },
-                            },
-                            {
-                                header: "Player",
-                                className: "",
-                                render: (a) => <Player user={a.creator} />,
-                            },
-                            { header: "Message", className: "", render: (a) => a.text },
-                            {
-                                header: "Link",
-                                className: "",
-                                render: (a) => <a href={a.link}>{a.link}</a>,
-                            },
-                        ]}
-                    />
-                </Card>
-            </div>
-        );
-    }
+                        },
+                        {
+                            header: "Player",
+                            className: "",
+                            render: (a) => <Player user={a.creator} />,
+                        },
+                        { header: "Message", className: "", render: (a) => a.text },
+                        {
+                            header: "Link",
+                            className: "",
+                            render: (a) => <a href={a.link}>{a.link}</a>,
+                        },
+                    ]}
+                />
+            </Card>
+        </div>
+    );
 }
