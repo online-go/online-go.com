@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import { useLocation } from "react-router-dom";
 import { _ } from "translate";
 import { socket } from "sockets";
 
@@ -30,6 +31,9 @@ export function NetworkStatus(): JSX.Element {
     const [state, setState] = React.useState<NetworkStatusState>("connected");
 
     const stateRef = React.useRef(state);
+
+    const location = useLocation();
+    const on_game_page = location.pathname.includes("/game/");
 
     React.useEffect(() => {
         stateRef.current = state; // needed so we can refer to the current value in the async timer below
@@ -74,22 +78,20 @@ export function NetworkStatus(): JSX.Element {
     }
 
     return (
-        // This funky little thing builds an icon that is intended to say
-        // "no wifi!", by superimposing a large "ban" icon over a normal sized
-        // "wifi" icon.
-
         // We don't show this if they're 'connected' (see above, return null)
-
-        <div className={"NetworkStatus " + state}>
+        <div className={"NetworkStatus" + (on_game_page ? "" : " non-game")}>
+            {/* This funky little thing builds an icon that is intended to say "no wifi!",
+                by superimposing a large "ban" icon over a normal sized "wifi" icon. */}
             <span className="icon">
                 <i className="fa fa-2x fa-ban" />
                 <i className="fa fa-wifi" />
             </span>
-
-            <span>
-                {(state === "timeout" || null) && _("Slow internet")}
-                {(state === "disconnected" || null) && _("Disconnected")}
-            </span>
+            {on_game_page && (
+                <span>
+                    {(state === "timeout" || null) && _("Slow internet")}
+                    {(state === "disconnected" || null) && _("Disconnected")}
+                </span>
+            )}
         </div>
     );
 }
