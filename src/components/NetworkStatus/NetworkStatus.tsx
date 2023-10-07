@@ -41,9 +41,10 @@ export function NetworkStatus(): JSX.Element {
         };
         const timeout = () => {
             setState("timeout");
+            console.log("Network status timeout: ", socket.options.timeout_delay);
         };
         const disconnected = (code: number) => {
-            // Note that when the socket comes up again, a fresh `latency` will clear this
+            // When the socket comes up again, a fresh `latency` will clear this
             setState(code === 1001 ? "went-away" : "disconnected");
         };
 

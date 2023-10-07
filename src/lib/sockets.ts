@@ -29,6 +29,9 @@ socket.options.timeout_delay = 8000;
 const MIN_PING_INTERVAL = 3000; // blitz players would really like to know ASAP...
 const MIN_TIMEOUT_DELAY = 1000;
 
+const MAX_PING_INTERVAL = 15000;
+const MAX_TIMEOUT_DELAY = 14000;
+
 export let ai_host;
 if (
     window.location.hostname.indexOf("dev.beta") >= 0 &&
@@ -107,6 +110,12 @@ socket.on("latency", (latency, drift) => {
         socket.options.ping_interval,
     );
     */
+});
+
+// If we timed out, maybe their internet just went slow...
+socket.on("timeout", () => {
+    socket.options.ping_interval = Math.min(socket.options.ping_interval * 2, MAX_PING_INTERVAL);
+    socket.options.timeout_delay = Math.min(socket.options.timeout_delay * 2, MAX_TIMEOUT_DELAY);
 });
 
 /* Returns the time in ms since the last time a connection was established to
