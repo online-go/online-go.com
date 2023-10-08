@@ -16,7 +16,7 @@
  */
 
 import Debug from "debug";
-import { GobanSocket, protocol } from "goban";
+import { GobanSocket, protocol, Goban, JGOFTimeControl } from "goban";
 
 const debug = new Debug("sockets");
 
@@ -76,6 +76,7 @@ if (ai_socket) {
 let last_clock_drift = 0.0;
 let last_latency = 0.0;
 let connect_time = null;
+let timing_needed = 0; // if non zero, this is the speed that they are playing at (in ms)
 
 socket.on("connect", () => {
     debug.log("Connection to server established.");
@@ -92,15 +93,64 @@ socket.on("hostinfo", (hostinfo) => {
 socket.on("latency", (latency, drift) => {
     last_latency = latency;
     last_clock_drift = drift;
-    // Ping more quickly for people with fast connections (to detect outages fast)
-    if (latency < Math.max(3 * socket.options.ping_interval, MIN_PING_INTERVAL)) {
-        socket.options.ping_interval = Math.max(latency * 3, MIN_PING_INTERVAL);
+
+    // If they are playing a live game at the moment, work out what timing they would like
+    // us to make sure that they have...
+    if (
+        typeof window !== "undefined" &&
+        window["global_goban"] &&
+        window["global_goban"].engine.phase === "play"
+    ) {
+        const goban = window["global_goban"] as Goban;
+        const time_control = goban.engine.time_control as JGOFTimeControl;
+        if (time_control.speed !== "correspondence") {
+            console.log(goban.engine.player_pool);
+            switch (time_control.system) {
+                case "fischer":
+                    timing_needed = time_control.time_increment || time_control.initial_time;
+                    break;
+
+                case "byoyomi":
+                    timing_needed = time_control.period_time || time_control.main_time;
+                    break;
+
+                case "canadian":
+                    timing_needed = time_control.period_time || time_control.main_time;
+                    break;
+
+                case "simple":
+                    timing_needed = time_control.per_move;
+                    break;
+
+                case "absolute":
+                    // actually, they'd like it as fast as possible, but this probably suffices
+                    timing_needed = time_control.total_time;
+                    break;
+            }
+        }
+    } else {
+        timing_needed = 0;
     }
 
-    // Wait less time for timeout for people with fast connections (to detect outages fast)
-    if (!last_latency || latency < Math.max(2 * socket.options.timeout_delay, MIN_TIMEOUT_DELAY)) {
-        socket.options.timeout_delay = Math.max(latency * 2, MIN_TIMEOUT_DELAY);
+    if (timing_needed && socket.options.timeout_delay > timing_needed / 2) {
+        // if we're going slower than the timing they need, we better at least as fast as they need
+        socket.options.timeout_delay = timing_needed / 2;
+        socket.options.ping_interval = timing_needed;
+        console.log("Set network timeout for game:", socket.options.timeout_delay);
+    } else {
+        // Ping more quickly for people with fast connections (to detect outages fast)
+        if (latency < Math.max(3 * socket.options.ping_interval, MIN_PING_INTERVAL)) {
+            socket.options.ping_interval = Math.max(latency * 3, MIN_PING_INTERVAL);
+        }
+        if (
+            !last_latency ||
+            latency < Math.max(2 * socket.options.timeout_delay, MIN_TIMEOUT_DELAY)
+        ) {
+            // wind down the timeout for people with fast connections (to detect outages fast)
+            socket.options.timeout_delay = Math.max(latency * 2, MIN_TIMEOUT_DELAY);
+        }
     }
+
     /*
     console.log(
         "latency update",
