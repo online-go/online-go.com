@@ -99,12 +99,16 @@ socket.on("latency", (latency, drift) => {
     if (
         typeof window !== "undefined" &&
         window["global_goban"] &&
-        window["global_goban"].engine.phase === "play"
+        window["global_goban"].engine.phase === "play" &&
+        window["user"]
     ) {
         const goban = window["global_goban"] as Goban;
         const time_control = goban.engine.time_control as JGOFTimeControl;
-        if (time_control.speed !== "correspondence") {
-            console.log(goban.engine.player_pool);
+
+        if (
+            time_control.speed !== "correspondence" &&
+            window["user"].id in goban.engine.player_pool
+        ) {
             switch (time_control.system) {
                 case "fischer":
                     timing_needed = time_control.time_increment || time_control.initial_time;
@@ -131,6 +135,8 @@ socket.on("latency", (latency, drift) => {
     } else {
         timing_needed = 0;
     }
+
+    timing_needed = timing_needed * 1000; // Time control is seconds, we need milliseconds
 
     if (timing_needed && socket.options.timeout_delay > timing_needed / 2) {
         // if we're going slower than the timing they need, we better at least as fast as they need
@@ -166,6 +172,7 @@ socket.on("latency", (latency, drift) => {
 socket.on("timeout", () => {
     socket.options.ping_interval = Math.min(socket.options.ping_interval * 2, MAX_PING_INTERVAL);
     socket.options.timeout_delay = Math.min(socket.options.timeout_delay * 2, MAX_TIMEOUT_DELAY);
+    console.log("Network ping timeout, increased delay to:", socket.options.timeout_delay);
 });
 
 /* Returns the time in ms since the last time a connection was established to
