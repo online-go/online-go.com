@@ -24,7 +24,7 @@ import { Card } from "material";
 import { errorAlerter, uuid } from "misc";
 import { post } from "requests";
 import cached from "cached";
-import { Md5 } from "ts-md5/dist/md5";
+import { Md5 } from "ts-md5/dist/esm/md5";
 import { useUser } from "hooks";
 
 import { SocialLoginButtons } from "SocialLoginButtons";
