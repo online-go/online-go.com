@@ -40,8 +40,10 @@ export function NetworkStatus(): JSX.Element {
     }, [state]);
 
     React.useEffect(() => {
-        const clear = () => {
-            setState("connected");
+        const clear = (current_latency: number) => {
+            if (current_latency < socket.options.timeout_delay) {
+                setState("connected");
+            }
         };
         const timeout = () => {
             setState("timeout");
