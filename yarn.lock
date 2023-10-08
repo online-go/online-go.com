@@ -10263,10 +10263,10 @@ ts-loader@^9.4.2:
     micromatch "^4.0.0"
     semver "^7.3.4"
 
-ts-md5@^1.2.7:
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/ts-md5/-/ts-md5-1.3.1.tgz#f5b860c0d5241dd9bb4e909dd73991166403f511"
-  integrity sha512-DiwiXfwvcTeZ5wCE0z+2A9EseZsztaiZtGrtSaY5JOD7ekPnR/GoIVD5gXZAlK9Na9Kvpo9Waz5rW64WKAWApg==
+ts-md5@=1.2.11:
+  version "1.2.11"
+  resolved "https://registry.yarnpkg.com/ts-md5/-/ts-md5-1.2.11.tgz#0bbdf884eecf7da3952fe8671a109d7e55d322c6"
+  integrity sha512-vAwy9rEuRE6a8xa1MavIVkLFyyU0ydk4CLMFA5vOVccmQKLOuGb/BHm3oEN7XHf2FoqS+z0pSvhaad/ombd1Vg==
 
 ts-toolbelt@^9.6.0:
   version "9.6.0"
