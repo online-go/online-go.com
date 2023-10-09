@@ -295,7 +295,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
     }
 
     const common_description = [
-        _("Double the max vacation time and accural rate"),
+        _("Double the max vacation time and accrual rate"),
         _("Golden name (optional)"),
         _("Access to Site Supporters channel"),
         pgettext("Easily cancel the supporter subscription plan anytime", "Easily cancel anytime"),
