@@ -122,10 +122,13 @@ export class Announcements extends React.PureComponent<{}, AnnouncementsState> {
             this.state.announcements.push(announcement);
             this.forceUpdate();
 
-            setTimeout(() => {
-                this.clearAnnouncement(announcement.id, true);
-                delete active_announcements[announcement.id];
-            }, moment(announcement.expiration).toDate().getTime() - Date.now());
+            setTimeout(
+                () => {
+                    this.clearAnnouncement(announcement.id, true);
+                    delete active_announcements[announcement.id];
+                },
+                moment(announcement.expiration).toDate().getTime() - Date.now(),
+            );
         } else {
             const t = moment(announcement.expiration).toDate().getTime() - Date.now();
             // Tournaments are announced 30 minutes prior, but allow

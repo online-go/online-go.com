@@ -191,10 +191,13 @@ export class ObserveGamesComponent extends React.PureComponent<
         const now = Date.now();
         if (this.last_refresh != null && now - this.last_refresh < 1000.0) {
             if (!this.next_refresh) {
-                this.next_refresh = setTimeout(() => {
-                    this.next_refresh = null;
-                    this.refresh();
-                }, 1000 - (now - this.last_refresh));
+                this.next_refresh = setTimeout(
+                    () => {
+                        this.next_refresh = null;
+                        this.refresh();
+                    },
+                    1000 - (now - this.last_refresh),
+                );
             }
             return;
         }

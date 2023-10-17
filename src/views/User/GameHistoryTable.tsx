@@ -40,8 +40,11 @@ interface GameHistoryProps {
     user_id: number;
 }
 
-type ResultClass =
-    | `library-${"won" | "lost" | "tie"}-result${"-vs-stronger" | "-vs-weaker" | "-unranked" | ""}`;
+type ResultClass = `library-${"won" | "lost" | "tie"}-result${
+    | "-vs-stronger"
+    | "-vs-weaker"
+    | "-unranked"
+    | ""}`;
 
 interface GroomedGame {
     id: number;

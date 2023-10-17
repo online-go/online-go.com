@@ -146,20 +146,23 @@ export function Clock({
                     </div>
                 )}
 
-                {time_control.system === "canadian" && (!compact || player_clock.main_time <= 0) && (
-                    <React.Fragment>
-                        <span className="canadian-clock-container">
-                            {player_clock.main_time > 0 && (
-                                <span className="periods-delimiter"> + </span>
-                            )}
-                            <span className="period-time boxed">
-                                {prettyTime(player_clock.block_time_left)}
+                {time_control.system === "canadian" &&
+                    (!compact || player_clock.main_time <= 0) && (
+                        <React.Fragment>
+                            <span className="canadian-clock-container">
+                                {player_clock.main_time > 0 && (
+                                    <span className="periods-delimiter"> + </span>
+                                )}
+                                <span className="period-time boxed">
+                                    {prettyTime(player_clock.block_time_left)}
+                                </span>
+                                <span className="periods-delimiter">/</span>
+                                <span className="period-moves boxed">
+                                    {player_clock.moves_left}
+                                </span>
                             </span>
-                            <span className="periods-delimiter">/</span>
-                            <span className="period-moves boxed">{player_clock.moves_left}</span>
-                        </span>
-                    </React.Fragment>
-                )}
+                        </React.Fragment>
+                    )}
 
                 <div className="pause-and-transmit">
                     {(submitting_move && player_id !== data.get("user").id) || transmitting > 0 ? (

@@ -70,6 +70,9 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
     const [enable_v6, setEnableV6]: [boolean, (x: boolean) => void] = React.useState(
         data.get("experiments.v6") === "enabled",
     );
+    const [show_slow_internet_warning, setShowSlowInternetWarning] = usePreference(
+        "show-slow-internet-warning",
+    );
 
     const user = data.get("user");
     const desktop_notifications_enableable: boolean = typeof Notification !== "undefined";
@@ -323,6 +326,13 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
                     disabled={!preferences.get("rating-graph-always-use")}
                 />
                 <span>{_("games")}</span>
+            </PreferenceLine>
+
+            <PreferenceLine title={_("Warn when internet slowdowns are detected")}>
+                <Toggle
+                    checked={show_slow_internet_warning}
+                    onChange={setShowSlowInternetWarning}
+                />
             </PreferenceLine>
         </div>
     );

@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { useLocation } from "react-router-dom";
+import * as preferences from "preferences";
 import { _ } from "translate";
 import { socket } from "sockets";
 
@@ -29,11 +29,22 @@ type NetworkStatusState = "connected" | "went-away" | "disconnected" | "timeout"
 
 export function NetworkStatus(): JSX.Element {
     const [state, setState] = React.useState<NetworkStatusState>("connected");
+    const [show_slow_internet_warning] = preferences.usePreference("show-slow-internet-warning");
 
     const stateRef = React.useRef(state);
 
-    const location = useLocation();
-    const on_game_page = location.pathname.includes("/game/");
+    // If they're in a live game then we make sure that they see this with a banner
+    // Otherwise it's a discreet little icon
+    // (note: we don't check if it's their turn because it might become their turn at any time, they
+    //  could do with knowing their internet is bad anyhow.)
+    const in_live_game =
+        typeof window !== "undefined" &&
+        window["global_goban"] &&
+        window["global_goban"].engine &&
+        window["global_goban"].engine.phase === "play" &&
+        window["global_goban"].engine.time_control !== "correspondence" &&
+        window["user"] &&
+        window["user"].id in window["global_goban"].engine.player_pool;
 
     React.useEffect(() => {
         stateRef.current = state; // needed so we can refer to the current value in the async timer below
@@ -79,16 +90,20 @@ export function NetworkStatus(): JSX.Element {
         return null;
     }
 
+    if (state === "timeout" && !show_slow_internet_warning) {
+        return null;
+    }
+
     return (
         // We don't show this if they're 'connected' (see above, return null)
-        <div className={"NetworkStatus" + (on_game_page ? "" : " non-game")}>
+        <div className={"NetworkStatus" + (in_live_game ? "" : " non-game")}>
             {/* This funky little thing builds an icon that is intended to say "no wifi!",
                 by superimposing a large "ban" icon over a normal sized "wifi" icon. */}
             <span className="icon">
                 <i className="fa fa-2x fa-ban" />
                 <i className="fa fa-wifi" />
             </span>
-            {on_game_page && (
+            {in_live_game && (
                 <span>
                     {(state === "timeout" || null) && _("Slow internet")}
                     {(state === "disconnected" || null) && _("Disconnected")}

@@ -99,6 +99,7 @@ socket.on("latency", (latency, drift) => {
     if (
         typeof window !== "undefined" &&
         window["global_goban"] &&
+        window["global_goban"].engine &&
         window["global_goban"].engine.phase === "play" &&
         window["user"]
     ) {
