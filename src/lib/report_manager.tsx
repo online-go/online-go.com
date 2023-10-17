@@ -49,6 +49,7 @@ export interface Report {
     created: string;
     updated: string;
     state: string;
+    escalated: boolean;
     source: string;
     report_type: string;
     reporting_user: any;
@@ -210,6 +211,8 @@ class ReportManager extends EventEmitter<Events> {
             if (!user.is_moderator && !user.moderator_powers) {
                 return false;
             }
+            // Community moderators only get to see score_cheating reports that they
+            // have not yet voted on.
             if (
                 !user.is_moderator &&
                 user.moderator_powers &&
@@ -219,6 +222,11 @@ class ReportManager extends EventEmitter<Events> {
                 ) ||
                     report.voters?.some((vote) => vote.voter_id === user.id))
             ) {
+                return false;
+            }
+            // don't hand score cheating reports to full mods unless the report is escalated,
+            // because community moderators are supposed to do these!
+            if (user.is_moderator && report.report_type === "score_cheating" && !report.escalated) {
                 return false;
             }
             return !report.moderator || report.moderator?.id === user.id;

@@ -229,8 +229,6 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
         }
     };
 
-    console.log(related.length, report.voters);
-
     return (
         <div id="ViewReport">
             <div className="header">
