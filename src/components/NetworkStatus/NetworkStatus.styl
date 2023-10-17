@@ -25,6 +25,19 @@
     padding-right: 1rem;
     border-radius: 0.3rem;
 
+    // if we're not on the game page, we make this more discreet...
+    &.non-game {
+        transform: scale(0.5);
+        top: -0.75rem; // its peculiar why 0 doesn't work - something about scaling after positioning?
+        themed color reject
+        background-color: transparent !important; // important needed to override "theme" specifier
+        min-width: 0;
+        padding-right: 0;
+        .icon {
+            margin-right: 0;
+        }
+    }
+
     .icon {
         position: relative;
         display: inline-flex;
