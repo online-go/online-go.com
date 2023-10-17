@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as preferences from "preferences";
 import { _ } from "translate";
 import { socket } from "sockets";
 
@@ -28,6 +29,7 @@ type NetworkStatusState = "connected" | "went-away" | "disconnected" | "timeout"
 
 export function NetworkStatus(): JSX.Element {
     const [state, setState] = React.useState<NetworkStatusState>("connected");
+    const [show_slow_internet_warning] = preferences.usePreference("show-slow-internet-warning");
 
     const stateRef = React.useRef(state);
 
@@ -85,6 +87,10 @@ export function NetworkStatus(): JSX.Element {
     console.log("Network status: ", state);
 
     if (state === "connected" || state === "went-away") {
+        return null;
+    }
+
+    if (state === "timeout" && !show_slow_internet_warning) {
         return null;
     }
 

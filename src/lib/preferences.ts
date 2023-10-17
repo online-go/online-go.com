@@ -87,6 +87,7 @@ export const defaults = {
     "show-tournament-indicator": true, // implicitly on desktop
     "show-tournament-indicator-on-mobile": false,
     "show-variation-move-numbers": false,
+    "show-slow-internet-warning": true,
 
     "sound-voice-countdown-main": false,
     "sound-voice-countdown": true,
