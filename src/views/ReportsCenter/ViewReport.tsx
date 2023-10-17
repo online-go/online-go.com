@@ -144,7 +144,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
 
                 if (!report_note_update_timeout) {
                     report_note_update_timeout = setTimeout(() => {
-                        post("moderation/incident/%%", report.id, {
+                        post(`moderation/incident/${report.id}`, {
                             id: report.id,
                             action: "note",
                             note: report_note_text,
@@ -164,7 +164,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     const assignToModerator = React.useCallback(
         (id: number) => {
             setModeratorId(id);
-            post("moderation/incident/%%", report.id, {
+            post(`moderation/incident/${report.id}`, {
                 id: report.id,
                 action: "assign",
                 moderator_id: id,

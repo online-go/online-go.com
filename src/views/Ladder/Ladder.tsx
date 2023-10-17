@@ -77,7 +77,7 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
     }
 
     resolve(ladder_id) {
-        get("ladders/%%", ladder_id)
+        get(`ladders/${ladder_id}`)
             .then((ladder) => {
                 this.setState({
                     ladder: ladder,
@@ -91,7 +91,7 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
     }
 
     join = () => {
-        post("ladders/%%/players", this.props.match.params.ladder_id, {})
+        post(`ladders/${this.props.match.params.ladder_id}/players`, {})
             .then(() => {
                 this.invalidate();
                 this.resolve(this.props.match.params.ladder_id);
@@ -112,7 +112,7 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
             })
             .then(({ value: yes }) => {
                 if (yes) {
-                    del("ladders/%%/players", this.props.match.params.ladder_id)
+                    del(`ladders/${this.props.match.params.ladder_id}/players`)
                         .then(() => {
                             this.invalidate();
                             this.resolve(this.props.match.params.ladder_id);
@@ -472,8 +472,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
             .then(({ value: new_rank }) => {
                 if (new_rank) {
                     put(
-                        "ladders/%%/players/moderate",
-                        this.props.ladder.props.match.params.ladder_id,
+                        `ladders/${this.props.ladder.props.match.params.ladder_id}/players/moderate`,
                         {
                             moderation_note: "Adjusting ladder position",
                             player_id: player.id,
@@ -619,8 +618,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
             .then(({ value: yes }) => {
                 if (yes) {
                     post(
-                        "ladders/%%/players/challenge",
-                        this.props.ladder.props.match.params.ladder_id,
+                        `ladders/${this.props.ladder.props.match.params.ladder_id}/players/challenge`,
                         {
                             player_id: ladder_player.player.id,
                         },

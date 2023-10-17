@@ -282,7 +282,7 @@ export class Play extends React.Component<{}, PlayState> {
     };
 
     cancelOpenChallenge = (challenge: Challenge) => {
-        del("challenges/%%", challenge.challenge_id).catch(errorAlerter);
+        del(`challenges/${challenge.challenge_id}`).catch(errorAlerter);
         this.unfreezeChallenges();
     };
 

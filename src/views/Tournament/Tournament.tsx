@@ -200,7 +200,7 @@ export function Tournament(): JSX.Element {
             resolve();
         }
         if (new_tournament_group_id) {
-            get("groups/%%", new_tournament_group_id)
+            get(`groups/${new_tournament_group_id}`)
                 .then((group) => {
                     tournament_ref.current.group = group;
                     refresh();
@@ -222,7 +222,7 @@ export function Tournament(): JSX.Element {
     const resolve = () => {
         abort_requests();
 
-        const tournament_info_promise = get("tournaments/%%", tournament_id).then((t) => {
+        const tournament_info_promise = get(`tournaments/${tournament_id}`).then((t) => {
             tournament_ref.current = t;
             setInfoLoaded(true);
             refresh();
@@ -231,7 +231,7 @@ export function Tournament(): JSX.Element {
 
         Promise.all([
             tournament_info_promise,
-            get("tournaments/%%/rounds", tournament_id),
+            get(`tournaments/${tournament_id}/rounds`),
             refreshPlayerList(),
         ])
             .then((res) => {
@@ -280,7 +280,7 @@ export function Tournament(): JSX.Element {
         resolve();
     };
     const refreshPlayerList = () => {
-        const ret = get("tournaments/%%/players/all", tournament_id);
+        const ret = get(`tournaments/${tournament_id}/players/all`);
 
         ret.then((players) => {
             for (const id in players) {
@@ -402,7 +402,7 @@ export function Tournament(): JSX.Element {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    post("tournaments/%%/start", tournament_ref.current.id, {})
+                    post(`tournaments/${tournament_ref.current.id}/start`, {})
                         .then(ignore)
                         .catch(errorAlerter);
                 }
@@ -417,7 +417,7 @@ export function Tournament(): JSX.Element {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    del("tournaments/%%", tournament_ref.current.id)
+                    del(`tournaments/${tournament_ref.current.id}`)
                         .then(() => {
                             browserHistory.push("/");
                         })
@@ -434,7 +434,7 @@ export function Tournament(): JSX.Element {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    post("tournaments/%%/end", tournament_ref.current.id, {})
+                    post(`tournaments/${tournament_ref.current.id}/end`, {})
                         .then(() => {
                             reloadTournament();
                         })
@@ -448,7 +448,7 @@ export function Tournament(): JSX.Element {
         }
 
         const username = user_to_invite.username;
-        post("tournaments/%%/players", tournament_id, { username })
+        post(`tournaments/${tournament_id}/players`, { username })
             .then((res) => {
                 console.log(res);
                 setInviteResult(interpolate(_("Invited {{username}}"), { username }));
@@ -465,14 +465,14 @@ export function Tournament(): JSX.Element {
             });
     };
     const joinTournament = () => {
-        post("tournaments/%%/players", tournament_id, {})
+        post(`tournaments/${tournament_id}/players`, {})
             .then(() => {
                 setIsJoined(true);
             })
             .catch(errorAlerter);
     };
     const partTournament = () => {
-        post("tournaments/%%/players", tournament_id, { delete: true })
+        post(`tournaments/${tournament_id}/players`, { delete: true })
             .then(() => {
                 setIsJoined(false);
             })
@@ -1373,7 +1373,7 @@ export function Tournament(): JSX.Element {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    post("tournaments/%%/players", tournament_ref.current.id, {
+                    post(`tournaments/${tournament_ref.current.id}/players`, {
                         delete: true,
                         player_id: user.id,
                     })
@@ -1422,7 +1422,7 @@ export function Tournament(): JSX.Element {
                 const adjustments = {};
                 adjustments[user.id] = v;
 
-                put("tournaments/%%/players", tournament_ref.current.id, {
+                put(`tournaments/${tournament_ref.current.id}/players`, {
                     adjust: adjustments,
                 })
                     .then(ignore)
@@ -1442,7 +1442,7 @@ export function Tournament(): JSX.Element {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    put("tournaments/%%/players", tournament_ref.current.id, {
+                    put(`tournaments/${tournament_ref.current.id}/players`, {
                         disqualify: user.id,
                     })
                         .then(ignore)
@@ -3236,7 +3236,7 @@ function OpenGothaTournamentUploadDownload({
     }
 
     function uploadFile(files) {
-        put("tournaments/%%/opengotha", tournament.id, files[0])
+        put(`tournaments/${tournament.id}/opengotha`, files[0])
             .then((res) => {
                 console.log("Upload successful", res);
                 openMergeReportModal(res.merge_report);

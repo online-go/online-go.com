@@ -109,8 +109,8 @@ export function User(props: { user_id?: number }): JSX.Element {
             return;
         }
 
-        // Cheaper API calls provide partial profile data before players/%%/full
-        Promise.all([get("players/%%", user_id), get("/termination-api/player/%%", user_id)])
+        // Cheaper API calls provide partial profile data before players/{user_id}/full
+        Promise.all([get(`players/${user_id}`), get(`/termination-api/player/${user_id}`)])
             .then((responses: [rest_api.PlayerDetail, rest_api.termination_api.Player]) => {
                 if (resolved) {
                     return;
@@ -138,7 +138,7 @@ export function User(props: { user_id?: number }): JSX.Element {
             })
             .catch(console.log);
 
-        get("players/%%/full", user_id)
+        get(`players/${user_id}/full`)
             .then((response: rest_api.FullPlayerDetail) => {
                 setResolved(true);
                 try {
@@ -184,7 +184,7 @@ export function User(props: { user_id?: number }): JSX.Element {
             }),
         );
         if (user) {
-            put("players/%%", user.id, {
+            put(`players/${user.id}`, {
                 ...profile_card_changes,
                 about: user.about,
             })

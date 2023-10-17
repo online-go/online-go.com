@@ -16,7 +16,6 @@
  */
 
 import { deepCompare } from "misc";
-import { IdType } from "./types";
 
 /**
  * If a non-absolute path is provided, appends "/api/v1/" to the input.
@@ -61,10 +60,10 @@ function initialize() {
 }
 
 interface Request {
-    promise?: Promise<any>;
+    method: Method;
     url: string;
-    type: Method;
     data: object;
+    promise?: Promise<any>;
     request?: JQueryXHR;
 }
 
@@ -73,54 +72,21 @@ let last_request_id = 0;
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface RequestFunction {
-    (url: string): Promise<any>;
-    (url: string, id_or_data: IdType | object): Promise<any>;
-    (url: string, id: IdType, data: object): Promise<any>;
+    (url: string, data?: object): Promise<any>;
 }
 
 function request(method: Method): RequestFunction {
-    return (url: string, ...rest: [] | [number | string | object] | [number | string, object]) => {
+    return (url: string, data?: object) => {
         initialize();
-
-        let id: IdType | undefined;
-        let data: object;
-        switch (typeof rest[0]) {
-            case "number":
-            case "string":
-                id = rest[0];
-                data = rest[1] || {};
-                break;
-            case "object":
-                id = undefined;
-                data = rest[0];
-                break;
-            case "undefined":
-                id = undefined;
-                data = {};
-                break;
-        }
-        if (url.indexOf("%%") < 0 && id !== undefined) {
-            console.warn("Url doesn't contain an id but one was given.", url, id);
-            console.trace();
-        }
-        if (url.indexOf("%%") >= 0 && id === undefined) {
-            console.error("Url contains an id but none was given.", url);
-            console.trace();
-        }
-
-        const real_url: string =
-            (typeof id === "number" && isFinite(id)) || typeof id === "string"
-                ? url.replace("%%", id.toString())
-                : url;
-        const real_data = data;
+        url = api1ify(url);
 
         for (const req_id in requests_in_flight) {
             const req = requests_in_flight[req_id];
             if (
                 req.promise &&
-                req.url === real_url &&
-                method === req.type &&
-                deepCompare(req.data, real_data)
+                req.url === url &&
+                method === req.method &&
+                deepCompare(req.data, data)
             ) {
                 //console.log("Duplicate in flight request, chaining");
                 return req.promise;
@@ -131,15 +97,15 @@ function request(method: Method): RequestFunction {
         const traceback = new Error();
 
         requests_in_flight[request_id] = {
-            type: method,
-            url: real_url,
-            data: real_data,
+            method,
+            url,
+            data,
         };
 
         requests_in_flight[request_id].promise = new Promise((resolve, reject) => {
             const opts: JQueryAjaxSettings = {
-                url: api1ify(real_url),
-                type: method,
+                method,
+                url,
                 data: undefined,
                 dataType: "json",
                 contentType: "application/json",
@@ -151,22 +117,19 @@ function request(method: Method): RequestFunction {
                     delete requests_in_flight[request_id];
                     if (err.status !== 0) {
                         /* Ignore aborts */
-                        console.warn(api1ify(real_url), err.status, err.statusText);
+                        console.warn(url, err.status, err.statusText);
                         console.warn(traceback.stack);
                     }
                     reject(err);
                 },
             };
-            if (real_data) {
-                if (
-                    real_data instanceof Blob ||
-                    (Array.isArray(real_data) && real_data[0] instanceof Blob)
-                ) {
+            if (data) {
+                if (data instanceof Blob || (Array.isArray(data) && data[0] instanceof Blob)) {
                     opts.data = new FormData();
-                    if (real_data instanceof Blob) {
-                        opts.data.append("file", real_data);
+                    if (data instanceof Blob) {
+                        opts.data.append("file", data);
                     } else {
-                        for (const file of real_data as Array<Blob>) {
+                        for (const file of data as Array<Blob>) {
                             opts.data.append("file", file);
                         }
                     }
@@ -174,9 +137,9 @@ function request(method: Method): RequestFunction {
                     opts.contentType = false;
                 } else {
                     if (method === "GET") {
-                        opts.data = real_data;
+                        opts.data = data;
                     } else {
-                        opts.data = JSON.stringify(real_data);
+                        opts.data = JSON.stringify(data);
                     }
                 }
             }
@@ -208,8 +171,6 @@ export function getCookie(name: string) {
  * Fetches data using the GET method.
  * @param url the URL for the request. If a relative path is passed, /api/vi/
  *     will be appended.
- * @param [id] providing an id is optional.  It will be interpolated into the
- *     URL where "%%" appears.
  * @param [data] providing data is optional. This is used as the request payload
  *     in JSON format.
  * @returns a Promise that resolves with the response payload.
@@ -219,8 +180,6 @@ export const get = request("GET");
  * Fetches data using the POST method.
  * @param url the URL for the request. If a relative path is passed, /api/vi/
  *     will be appended.
- * @param [id] providing an id is optional.  It will be interpolated into the
- *     URL where "%%" appears.
  * @param [data] providing data is optional. This is used as the request payload
  *     in JSON format.
  * @returns a Promise that resolves with the response payload.
@@ -230,8 +189,6 @@ export const post = request("POST");
  * Fetches data using the PUT method.
  * @param url the URL for the request. If a relative path is passed, /api/vi/
  *     will be appended.
- * @param [id] providing an id is optional.  It will be interpolated into the
- *     URL where "%%" appears.
  * @param [data] providing data is optional. This is used as the request payload
  *     in JSON format.
  * @returns a Promise that resolves with the response payload.
@@ -241,8 +198,6 @@ export const put = request("PUT");
  * Fetches data using the PATCH method.
  * @param url the URL for the request. If a relative path is passed, /api/vi/
  *     will be appended.
- * @param [id] providing an id is optional.  It will be interpolated into the
- *     URL where "%%" appears.
  * @param [data] providing data is optional. This is used as the request payload
  *     in JSON format.
  * @returns a Promise that resolves with the response payload.
@@ -252,8 +207,6 @@ export const patch = request("PATCH");
  * Fetches data using the DELETE method.
  * @param url the URL for the request. If a relative path is passed, /api/vi/
  *     will be appended.
- * @param [id] providing an id is optional.  It will be interpolated into the
- *     URL where "%%" appears.
  * @param [data] providing data is optional. This is used as the request payload
  *     in JSON format.
  * @returns a Promise that resolves with the response payload.
@@ -269,7 +222,7 @@ export const del = request("DELETE");
 export function abort_requests_in_flight(url: string, method?: Method): void {
     for (const id in requests_in_flight) {
         const req = requests_in_flight[id];
-        if (req.url === url && (!method || method === req.type)) {
+        if (req.url === url && (!method || method === req.method)) {
             req.request.abort();
         }
     }

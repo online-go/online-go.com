@@ -157,7 +157,7 @@ export function AvatarCard({
 
         image_resizer(files[0], 512, 512)
             .then((file: Blob) => {
-                put("players/%%/icon", user.id, file)
+                put(`players/${user.id}/icon`, file)
                     .then((res) => {
                         console.log("Upload successful", res);
                         user.icon = res.icon;
@@ -172,7 +172,7 @@ export function AvatarCard({
     };
     const clearIcon = () => {
         setNewIcon(null);
-        del("players/%%/icon", user.id)
+        del(`players/${user.id}/icon`)
             .then((res) => {
                 console.log("Cleared icon", res);
                 user.icon = res.icon;
