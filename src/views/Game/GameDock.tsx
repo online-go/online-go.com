@@ -558,13 +558,11 @@ export function GameDock({
                 </Tooltip>
             )}
             {
-                user_can_annul &&
-                    !annulable &&
-                    !unannulable && (
-                        <div>
-                            <i className="fa fa-gavel greyed"></i> {_("Annul")}
-                        </div>
-                    ) /* This is a "do nothing" icon for when the game is unranked */
+                user_can_annul && !annulable && !unannulable && (
+                    <div>
+                        <i className="fa fa-gavel greyed"></i> {_("Annul")}
+                    </div>
+                ) /* This is a "do nothing" icon for when the game is unranked */
             }
 
             {(user_can_intervene || user_can_annul) && <hr />}

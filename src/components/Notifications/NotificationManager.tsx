@@ -154,14 +154,17 @@ export function emitNotification(title, body, cb?) {
                         notification.onclick = cb;
                     }
 
-                    setTimeout(() => {
-                        try {
-                            /* this isn't supported on MS Edge yet */
-                            notification.close();
-                        } catch (e) {
-                            console.warn(e);
-                        }
-                    }, preferences.get("notification-timeout") * 1000);
+                    setTimeout(
+                        () => {
+                            try {
+                                /* this isn't supported on MS Edge yet */
+                                notification.close();
+                            } catch (e) {
+                                console.warn(e);
+                            }
+                        },
+                        preferences.get("notification-timeout") * 1000,
+                    );
                 } catch (e) {
                     console.info(e);
                 }
