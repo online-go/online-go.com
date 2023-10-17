@@ -112,6 +112,9 @@ function Main(props): JSX.Element {
                     <ErrorBoundary>
                         <Announcements />
                     </ErrorBoundary>
+                    <ErrorBoundary>
+                        <NetworkStatus />
+                    </ErrorBoundary>
                     <ErrorBoundary>{props.children}</ErrorBoundary>
                     <ErrorBoundary>
                         <AccountWarning />
