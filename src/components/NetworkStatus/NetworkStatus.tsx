@@ -19,6 +19,7 @@ import * as React from "react";
 import * as preferences from "preferences";
 import { _ } from "translate";
 import { socket } from "sockets";
+import { lookingAtOurLiveGame } from "TimeControl";
 
 //interface NetworkStatusProps {}
 
@@ -37,14 +38,7 @@ export function NetworkStatus(): JSX.Element {
     // Otherwise it's a discreet little icon
     // (note: we don't check if it's their turn because it might become their turn at any time, they
     //  could do with knowing their internet is bad anyhow.)
-    const in_live_game =
-        typeof window !== "undefined" &&
-        window["global_goban"] &&
-        window["global_goban"].engine &&
-        window["global_goban"].engine.phase === "play" &&
-        window["global_goban"].engine.time_control !== "correspondence" &&
-        window["user"] &&
-        window["user"].id in window["global_goban"].engine.player_pool;
+    const in_live_game = lookingAtOurLiveGame();
 
     React.useEffect(() => {
         stateRef.current = state; // needed so we can refer to the current value in the async timer below
@@ -84,7 +78,14 @@ export function NetworkStatus(): JSX.Element {
     }, []);
 
     // let's leave this here - it might be handy if someone is having problems
-    console.log("Network status: ", state);
+    console.log(
+        "Network status: ",
+        state,
+        show_slow_internet_warning ? ": warning toggle on," : ": warning toggle off,",
+        in_live_game ? "in live game," : "not in live game,",
+        "time control:",
+        window["global_goban"]?.engine?.time_control,
+    );
 
     if (state === "connected" || state === "went-away") {
         return null;

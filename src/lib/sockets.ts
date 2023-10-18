@@ -17,6 +17,7 @@
 
 import Debug from "debug";
 import { GobanSocket, protocol, Goban, JGOFTimeControl } from "goban";
+import { lookingAtOurLiveGame } from "TimeControl";
 
 const debug = new Debug("sockets");
 
@@ -106,10 +107,7 @@ socket.on("latency", (latency, drift) => {
         const goban = window["global_goban"] as Goban;
         const time_control = goban.engine.time_control as JGOFTimeControl;
 
-        if (
-            time_control.speed !== "correspondence" &&
-            window["user"].id in goban.engine.player_pool
-        ) {
+        if (lookingAtOurLiveGame()) {
             switch (time_control.system) {
                 case "fischer":
                     timing_needed = time_control.time_increment || time_control.initial_time;
