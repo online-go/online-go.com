@@ -248,6 +248,10 @@ export function getPrintableError(err) {
     }
 
     if (err instanceof Error) {
+        if (err.name === "AbortError") {
+            /* ignore aborted requests' */
+            return;
+        }
         console.error(err.stack);
         return err.toString();
     }
@@ -277,11 +281,6 @@ export function getPrintableError(err) {
             }
             return "An unknown error has occurred!";
         }
-    }
-
-    if (obj.status === 0 && obj.statusText === "abort") {
-        /* ignore aborted requests' */
-        return;
     }
 
     /*

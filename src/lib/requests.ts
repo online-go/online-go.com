@@ -39,35 +39,16 @@ export function api1ify(path: string) {
 /** alias for api1ify */
 export const api1 = api1ify;
 
-let initialized = false;
-function initialize() {
-    if (initialized) {
-        return;
-    }
-    initialized = true;
-
-    function csrfSafeMethod(method) {
-        return /^(GET|HEAD|OPTIONS|TRACE)$/.test(method);
-    }
-    $.ajaxSetup({
-        crossDomain: false, // obviates need for sameOrigin test
-        beforeSend: (xhr, settings) => {
-            if (!csrfSafeMethod(settings.type)) {
-                xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
-            }
-        },
-    });
-}
-
-interface Request {
+interface OgsRequest {
     method: Method;
     url: string;
     data: object;
     promise?: Promise<any>;
-    request?: JQueryXHR;
+    controller: AbortController;
+    signal: AbortSignal;
 }
 
-const requests_in_flight: { [id: string]: Request } = {};
+const requests_in_flight: { [id: string]: OgsRequest } = {};
 let last_request_id = 0;
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -76,8 +57,10 @@ interface RequestFunction {
 }
 
 function request(method: Method): RequestFunction {
-    return (url: string, data?: object) => {
-        initialize();
+    const csrf_safe = /^(GET|HEAD|OPTIONS|TRACE)$/.test(method);
+    const cacheable = /^(GET|HEAD|OPTIONS|TRACE)$/.test(method);
+
+    return async (url: string, data?: object): Promise<any> => {
         url = api1ify(url);
 
         for (const req_id in requests_in_flight) {
@@ -88,7 +71,7 @@ function request(method: Method): RequestFunction {
                 method === req.method &&
                 deepCompare(req.data, data)
             ) {
-                //console.log("Duplicate in flight request, chaining");
+                //console.log(`Duplicate in flight request: ${url} , chaining`);
                 return req.promise;
             }
         }
@@ -96,75 +79,84 @@ function request(method: Method): RequestFunction {
         const request_id = ++last_request_id;
         const traceback = new Error();
 
+        const controller = new AbortController();
+        const signal = controller.signal;
+
         requests_in_flight[request_id] = {
             method,
             url,
             data,
+            controller,
+            signal,
         };
 
         requests_in_flight[request_id].promise = new Promise((resolve, reject) => {
-            const opts: JQueryAjaxSettings = {
-                method,
-                url,
-                data: undefined,
-                dataType: "json",
-                contentType: "application/json",
-                success: (res) => {
-                    delete requests_in_flight[request_id];
-                    resolve(res);
-                },
-                error: (err) => {
-                    delete requests_in_flight[request_id];
-                    if (err.status !== 0) {
-                        /* Ignore aborts */
-                        console.warn(url, err.status, err.statusText);
-                        console.warn(traceback.stack);
-                    }
-                    reject(err);
-                },
-            };
+            let prepared_data: string | FormData | undefined;
+            const headers: Headers = new Headers();
+            headers.append("Accept", "application/json");
+
+            if (!csrf_safe) {
+                headers.append("X-CSRFToken", getCookie("csrftoken"));
+            }
+
             if (data) {
                 if (data instanceof Blob || (Array.isArray(data) && data[0] instanceof Blob)) {
-                    opts.data = new FormData();
+                    prepared_data = new FormData();
                     if (data instanceof Blob) {
-                        opts.data.append("file", data);
+                        prepared_data.append("file", data);
                     } else {
                         for (const file of data as Array<Blob>) {
-                            opts.data.append("file", file);
+                            prepared_data.append("file", file);
                         }
                     }
-                    opts.processData = false;
-                    opts.contentType = false;
                 } else {
                     if (method === "GET") {
-                        opts.data = data;
+                        url +=
+                            (url.indexOf("?") >= 0 ? "&" : "?") +
+                            Object.keys(data)
+                                .map((k) => `${k}=` + encodeURIComponent(data[k]))
+                                .join("&");
                     } else {
-                        opts.data = JSON.stringify(data);
+                        prepared_data = JSON.stringify(data);
+                        headers.append("Content-Type", "application/json");
                     }
                 }
             }
 
-            requests_in_flight[request_id].request = $.ajax(opts);
+            fetch(url, {
+                signal,
+                method,
+                credentials: "include",
+                keepalive: true,
+                mode: csrf_safe ? "no-cors" : "cors",
+                cache: cacheable ? "default" : "no-cache",
+                body: prepared_data as any,
+                headers,
+            })
+                .then((res) => {
+                    delete requests_in_flight[request_id];
+                    if (res.status >= 200 && res.status < 300) {
+                        if (res.status === 204) {
+                            resolve({});
+                        } else {
+                            resolve(res.json());
+                        }
+                    } else {
+                        reject(res);
+                    }
+                })
+                .catch((err) => {
+                    delete requests_in_flight[request_id];
+                    if (err.name !== "AbortError") {
+                        console.warn(url, err.name);
+                        console.warn(traceback.stack);
+                    }
+                    reject(err);
+                });
         });
 
         return requests_in_flight[request_id].promise;
     };
-}
-
-/** Returns the cookie value for a given key */
-export function getCookie(name: string) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== "") {
-        const cookies = document.cookie.split(";");
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = jQuery.trim(cookies[i]);
-            if (cookie.substring(0, name.length + 1) === name + "=") {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
 }
 
 /**
@@ -219,11 +211,34 @@ export const del = request("DELETE");
  * @param [method] providing a method is optional.  If no method is provided,
  *     all requests to the URL will be cancelled.
  */
-export function abort_requests_in_flight(url: string, method?: Method): void {
-    for (const id in requests_in_flight) {
-        const req = requests_in_flight[id];
+export function abort_requests_in_flight(url: string, method?: Method): boolean {
+    let aborted = false;
+    url = api1ify(url);
+
+    for (const request_id in requests_in_flight) {
+        const req = requests_in_flight[request_id];
         if (req.url === url && (!method || method === req.method)) {
-            req.request.abort();
+            console.log("Aborting request", url);
+            req.controller.abort();
+            aborted = true;
+            delete requests_in_flight[request_id];
         }
     }
+
+    return aborted;
+}
+
+export function getCookie(name: string) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = jQuery.trim(cookies[i]);
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }

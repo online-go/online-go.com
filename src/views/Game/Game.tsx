@@ -1328,15 +1328,15 @@ export function Game(): JSX.Element {
                     }
                 })
                 .catch((e) => {
-                    if (e.statusText === "abort") {
-                        console.error("Error: abort", e);
+                    if (e.name === "AbortError") {
+                        //console.error("Error: abort", e);
                         return;
                     }
-                    if (e.statusText === "Not Found") {
+                    if (e.status === 404 || e.statusText === "Not Found") {
                         console.error("Error: not found, handled 10s later by socket.ts", e);
                         return;
                     }
-                    console.error(e);
+                    console.error(e.name, e);
                     void alert.fire({
                         title: "Failed to load game data: " + e.statusText,
                         icon: "error",
