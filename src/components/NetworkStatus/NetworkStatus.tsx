@@ -19,7 +19,7 @@ import * as React from "react";
 import * as preferences from "preferences";
 import { _ } from "translate";
 import { socket } from "sockets";
-import { lookingAtOurLiveGame } from "TimeControl";
+import { lookingAtOurLiveGame } from "TimeControl/util";
 
 //interface NetworkStatusProps {}
 

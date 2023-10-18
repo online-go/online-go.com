@@ -17,7 +17,7 @@
 
 import Debug from "debug";
 import { GobanSocket, protocol, Goban, JGOFTimeControl } from "goban";
-import { lookingAtOurLiveGame } from "TimeControl";
+import { lookingAtOurLiveGame } from "TimeControl/util";
 
 const debug = new Debug("sockets");
 
@@ -97,39 +97,30 @@ socket.on("latency", (latency, drift) => {
 
     // If they are playing a live game at the moment, work out what timing they would like
     // us to make sure that they have...
-    if (
-        typeof window !== "undefined" &&
-        window["global_goban"] &&
-        window["global_goban"].engine &&
-        window["global_goban"].engine.phase === "play" &&
-        window["user"]
-    ) {
+    if (lookingAtOurLiveGame()) {
         const goban = window["global_goban"] as Goban;
         const time_control = goban.engine.time_control as JGOFTimeControl;
+        switch (time_control.system) {
+            case "fischer":
+                timing_needed = time_control.time_increment || time_control.initial_time;
+                break;
 
-        if (lookingAtOurLiveGame()) {
-            switch (time_control.system) {
-                case "fischer":
-                    timing_needed = time_control.time_increment || time_control.initial_time;
-                    break;
+            case "byoyomi":
+                timing_needed = time_control.period_time || time_control.main_time;
+                break;
 
-                case "byoyomi":
-                    timing_needed = time_control.period_time || time_control.main_time;
-                    break;
+            case "canadian":
+                timing_needed = time_control.period_time || time_control.main_time;
+                break;
 
-                case "canadian":
-                    timing_needed = time_control.period_time || time_control.main_time;
-                    break;
+            case "simple":
+                timing_needed = time_control.per_move;
+                break;
 
-                case "simple":
-                    timing_needed = time_control.per_move;
-                    break;
-
-                case "absolute":
-                    // actually, they'd like it as fast as possible, but this probably suffices
-                    timing_needed = time_control.total_time;
-                    break;
-            }
+            case "absolute":
+                // actually, they'd like it as fast as possible, but this probably suffices
+                timing_needed = time_control.total_time;
+                break;
         }
     } else {
         timing_needed = 0;
