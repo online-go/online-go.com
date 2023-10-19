@@ -19,12 +19,10 @@ import * as React from "react";
 import * as data from "data";
 import { _ } from "translate";
 import { put, get, del } from "requests";
-import { errorAlerter } from "misc";
+import { MOD_POWER_HANDLE_SCORE_CHEAT, errorAlerter } from "misc";
 import { proRankList } from "rank_utils";
 import { Modal, openModal } from "Modal";
 import { lookup } from "player_cache";
-
-import { MOD_POWER_ANNUL } from "misc";
 
 interface Events {}
 
@@ -52,7 +50,8 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                 this.setState(
                     Object.assign({ loading: false }, result.user, {
                         bot_owner: result.user.bot_owner ? result.user.bot_owner.id : null,
-                        can_annul: result.user.moderator_powers & MOD_POWER_ANNUL,
+                        can_handle_score_cheat:
+                            result.user.moderator_powers & MOD_POWER_HANDLE_SCORE_CHEAT,
                     }),
                 );
             })
@@ -95,9 +94,9 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                     settings[f] = this.state[f];
                 }
 
-                // Can-annul is bit zero of moderator_powers
+                // handle_score_cheat is bit zero of moderator_powers
                 settings["moderator_powers"] =
-                    (this.state.moderator_powers & ~1) | this.state.can_annul;
+                    (this.state.moderator_powers & ~1) | this.state.can_handle_score_cheat;
 
                 settings.moderation_note = reason;
 
@@ -111,7 +110,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     setLockedUsername = (ev) => this.setState({ locked_username: ev.target.checked });
     setSupporter = (ev) => this.setState({ supporter: ev.target.checked });
     setAnnouncer = (ev) => this.setState({ is_announcer: ev.target.checked });
-    setCanAnnul = (ev) => this.setState({ can_annul: ev.target.checked });
+    setHandleScoreCheat = (ev) => this.setState({ can_handle_score_cheat: ev.target.checked });
     setProfessional = (ev) => this.setState({ professional: ev.target.checked });
     //setBanned = (ev) => this.setState({ is_banned: ev.target.checked });
     setShadowbanned = (ev) => this.setState({ is_shadowbanned: ev.target.checked });
@@ -231,14 +230,16 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                                         )}
                                     </dd>
                                     <dt>
-                                        <label htmlFor="annul">Can Annul</label>
+                                        <label className="avoid-wrap" htmlFor="annul">
+                                            Handle Score Cheat
+                                        </label>
                                     </dt>
                                     <dd>
                                         <input
                                             id="annul"
                                             type="checkbox"
-                                            checked={this.state.can_annul}
-                                            onChange={this.setCanAnnul}
+                                            checked={this.state.can_handle_score_cheat}
+                                            onChange={this.setHandleScoreCheat}
                                         />
                                     </dd>
                                 </dl>

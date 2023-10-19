@@ -143,34 +143,39 @@ export function ReportsCenter(): JSX.Element {
                 {_("Reports Center")}
             </h2>
 
-            <div className="progress" style={{ minWidth: "10rem" }}>
-                <div
-                    className="progress-bar primary"
-                    style={{
-                        width: `${
-                            (Math.min(DAILY_REPORT_GOAL, report_manager.getHandledTodayCount()) /
-                                DAILY_REPORT_GOAL) *
-                            100
-                        }%`,
-                    }}
-                >
-                    {report_manager.getReportsLeftUntilGoal() <= 0
-                        ? "All done, thank you!"
-                        : report_manager.getHandledTodayCount() || ""}
+            {user.is_moderator && (
+                <div className="progress" style={{ minWidth: "10rem" }}>
+                    <div
+                        className="progress-bar primary"
+                        style={{
+                            width: `${
+                                (Math.min(
+                                    DAILY_REPORT_GOAL,
+                                    report_manager.getHandledTodayCount(),
+                                ) /
+                                    DAILY_REPORT_GOAL) *
+                                100
+                            }%`,
+                        }}
+                    >
+                        {report_manager.getReportsLeftUntilGoal() <= 0
+                            ? "All done, thank you!"
+                            : report_manager.getHandledTodayCount() || ""}
+                    </div>
+                    <div
+                        className="progress-bar empty"
+                        style={{
+                            width: `${
+                                (report_manager.getReportsLeftUntilGoal() / DAILY_REPORT_GOAL) * 100
+                            }%`,
+                        }}
+                    >
+                        {report_manager.getHandledTodayCount() === 0
+                            ? "Daily report goal: " + DAILY_REPORT_GOAL
+                            : ""}
+                    </div>
                 </div>
-                <div
-                    className="progress-bar empty"
-                    style={{
-                        width: `${
-                            (report_manager.getReportsLeftUntilGoal() / DAILY_REPORT_GOAL) * 100
-                        }%`,
-                    }}
-                >
-                    {report_manager.getHandledTodayCount() === 0
-                        ? "Daily report goal: " + DAILY_REPORT_GOAL
-                        : ""}
-                </div>
-            </div>
+            )}
 
             <div id="ReportsCenterContainer">
                 <div id="ReportsCenterCategoryList">

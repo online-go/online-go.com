@@ -41,7 +41,7 @@ import { logout } from "auth";
 import { useUser, useData } from "hooks";
 import { OmniSearch } from "./OmniSearch";
 
-import { MOD_POWER_ANNUL } from "misc";
+import { MOD_POWER_HANDLE_SCORE_CHEAT } from "misc";
 
 const body = $(document.body);
 
@@ -277,7 +277,8 @@ export function NavBar(): JSX.Element {
                         {_("Rating Calculator")}
                     </Link>
 
-                    {(user.is_moderator || !!(user.moderator_powers & MOD_POWER_ANNUL)) && (
+                    {(user.is_moderator ||
+                        !!(user.moderator_powers & MOD_POWER_HANDLE_SCORE_CHEAT)) && (
                         <Link className="admin-link" to="/reports-center">
                             <i className="fa fa-exclamation-triangle"></i>
                             {_("Reports Center")}

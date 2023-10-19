@@ -1,0 +1,50 @@
+/*
+ * Copyright (C)   Online-Go.com
+ * Copyright (C)   Ben Jones
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+declare namespace rest_api {
+    namespace warnings {
+        type WarningMessageId =
+            | "warn_beginner_score_cheat"
+            | "warn_score_cheat"
+            | "ack_educated_beginner_score_cheat"
+            | "ack_educated_beginner_score_cheat_and_annul"
+            | "ack_warned_score_cheat"
+            | "ack_warned_score_cheat_and_annul"
+            | "no_score_cheating_evident";
+
+        type Severity = "warning" | "acknowledgement";
+
+        type InterpolatedMessage = (data) => string;
+
+        type WarningMessages = {
+            [K in WarningMessageId]: InterpolatedMessage;
+        };
+
+        interface Warning {
+            id: number;
+            created: string;
+            acknowledged: string | null; // date
+            player_id: number;
+            moderator: number | null;
+            text: string | null;
+            message_id: WarningMessageId | null;
+            severity: Severity;
+            interpolation_data: string | null;
+        }
+    }
+}

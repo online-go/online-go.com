@@ -96,7 +96,7 @@ export function ReportsCenterHistory(): JSX.Element {
                     },
                     {
                         header: "State",
-                        className: () => "state",
+                        className: (X) => `state ${X?.state}`,
                         render: (X) => X.state,
                     },
                     {
