@@ -453,7 +453,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                                     </ul>
                                 </>
                             )}
-                            {report.voters.length > 0 && (
+                            {report.voters?.length > 0 && (
                                 <>
                                     <h4>{_("Voters:")}</h4>
                                     <ul>
