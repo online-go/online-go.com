@@ -89,6 +89,7 @@ interface PlayControlsProps {
     variationKeyPress: React.KeyboardEventHandler<HTMLInputElement>;
 
     annulled: boolean;
+    annulment_reason: null | rest_api.AnnulmentReason;
 
     zen_mode: boolean;
 
@@ -112,6 +113,7 @@ export function PlayControls({
     show_title,
     renderEstimateScore,
     annulled,
+    annulment_reason,
     renderAnalyzeButtonBar,
     setMoveTreeContainer,
     zen_mode,
@@ -250,7 +252,7 @@ export function PlayControls({
     };
 
     return (
-        <div className="play-controls">
+        <div className="PlayControls">
             <div className="game-action-buttons">
                 {mode === "play" && phase === "play" && user_is_player && (
                     <PlayButtons show_cancel={show_cancel} />
@@ -313,6 +315,9 @@ export function PlayControls({
             <div className="annulled-indicator">
                 {annulled &&
                     pgettext("Displayed to the user when the game is annulled", "Game Annulled")}
+                {annulled && <i className="fa fa-question-circle" />}
+
+                {annulled && annulment_reason && <AnnulmentReason reason={annulment_reason} />}
             </div>
             {((phase === "play" &&
                 mode === "play" &&
@@ -1062,7 +1067,7 @@ export function ReviewControls({
     }, [goban]);
 
     return (
-        <div className="play-controls">
+        <div className="PlayControls">
             <div className="game-state">
                 {(mode === "analyze" || null) && (
                     <div>
@@ -1299,4 +1304,60 @@ function currentPlayer(goban: Goban): number {
     const ret = engine.playerToMove();
     engine.jumpTo(backup);
     return ret;
+}
+
+function AnnulmentReason({ reason }: { reason: rest_api.AnnulmentReason }): JSX.Element {
+    if (!reason) {
+        return null;
+    }
+
+    const arr: JSX.Element[] = [];
+
+    for (const key in reason) {
+        switch (key) {
+            case "bot_game_abandoned":
+                // don't explicitly point out that we won't rate these games
+                break;
+            case "mass_correspondence_timeout_protection":
+                arr.push(
+                    <div key={key}>
+                        {_(
+                            "The server's mass correspondence timeout protection system has annulled this game. This system protects the rating system by annulling games when a player leaves the server for an extended period of time and as a result times out of many correspondence games. While unfortunate, this is a necessary behavior to protect the integrity of the rating system as a whole.",
+                        )}
+                    </div>,
+                );
+                break;
+            case "correspondence_disconnection":
+                // There was a bug that affected a few thousand games years
+                // ago. Since this is not actively used going forward, this is
+                // left untranslated.
+                arr.push(<div key={key}>Correspondence disconnection</div>);
+                break;
+            case "moderator_annulled":
+                arr.push(<div key={key}>{_("This game has been annulled by a moderator.")}</div>);
+                break;
+            case "bad_bot":
+                // "Bad bots" are bots that were decidably horrible and harmful
+                // for the rating system. These primarily consist of older bots
+                // and is not generally used for modern games, hence the reason
+                // this is left untranslated.
+                arr.push(<div key={key}>Bad bot</div>);
+                break;
+            case "handicap_out_of_range":
+                // Some older games had extreme handicaps that were not within a meaningful range
+                // and so have been annulled. This is left untranslated as it's not applicable to
+                // modern games.
+                arr.push(<div key={key}>Handicap out of range</div>);
+                break;
+            default:
+                arr.push(<div key={key}>{key}</div>);
+                break;
+        }
+    }
+
+    if (arr.length === 0) {
+        return null;
+    }
+
+    return <div className="annulment-reason">{arr}</div>;
 }

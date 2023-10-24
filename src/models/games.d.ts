@@ -56,6 +56,7 @@ declare namespace rest_api {
         black_lost: boolean;
         white_lost: boolean;
         annulled: boolean;
+        annulment_reason: null | AnnulmentReason;
         started: string; // ISODate
         ended: string; // ISODate
         // For Game History, guaranteed to include the player of interest.
@@ -199,6 +200,28 @@ declare namespace rest_api {
 
     interface GamePlayerFlags {
         [flag_key: string]: number | boolean;
+    }
+
+    interface AnnulmentReason {
+        /** If a player leaves a bot game, or a bot crashes, don't rate the game.  */
+        bot_game_abandoned?: boolean;
+
+        /** Accounts for players who leave the site with a number of
+         * correspondence games going on */
+        mass_correspondence_timeout_protection?: boolean;
+
+        /* This accounts for a bug in our disconnection code which triggered
+         * incorrectly for correspondence games */
+        correspondence_disconnection?: boolean;
+
+        /** Manually annulled by a moderator */
+        moderator_annulled?: boolean;
+
+        /** We have had some terrible bots, we don't count some of them */
+        bad_bot?: boolean;
+
+        /** For invalid handicaps that got into the system, don't rate */
+        handicap_out_of_range?: boolean;
     }
 
     /**
