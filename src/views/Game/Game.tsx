@@ -125,6 +125,7 @@ export function Game(): JSX.Element {
     const [black_flags, set_black_flags] = React.useState<null | rest_api.GamePlayerFlags>(null);
     const [white_flags, set_white_flags] = React.useState<null | rest_api.GamePlayerFlags>(null);
     const [annulled, set_annulled] = React.useState(false);
+    const [annulment_reason, set_annulment_reason] = React.useState<rest_api.AnnulmentReason>(null);
     const [ai_review_enabled, set_ai_review_enabled] = React.useState(
         preferences.get("ai-review-enabled"),
     );
@@ -761,6 +762,7 @@ export function Game(): JSX.Element {
             updateVariationName={updateVariationName}
             variationKeyPress={variationKeyPress}
             annulled={annulled}
+            annulment_reason={annulment_reason}
             zen_mode={zen_mode}
             selected_chat_log={selected_chat_log}
             stopEstimatingScore={stopEstimatingScore}
@@ -1293,6 +1295,7 @@ export function Game(): JSX.Element {
                     tournament_id.current = game.tournament;
 
                     set_annulled(game.annulled);
+                    set_annulment_reason(game.annulment_reason);
                     set_historical_black(game.historical_ratings.black);
                     set_historical_white(game.historical_ratings.white);
 

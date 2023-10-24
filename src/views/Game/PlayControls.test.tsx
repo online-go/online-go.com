@@ -67,6 +67,7 @@ const PLAY_CONTROLS_DEFAULTS = {
         return;
     },
     annulled: false,
+    annulment_reason: null,
     zen_mode: false,
     selected_chat_log: "main",
     stopEstimatingScore: () => {
