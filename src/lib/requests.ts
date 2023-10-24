@@ -123,12 +123,14 @@ function request(method: Method): RequestFunction {
                 }
             }
 
+            const same_origin = url.indexOf("://") < 0 || url.indexOf(window.location.origin) === 0;
+
             fetch(url, {
                 signal,
                 method,
-                credentials: "include",
+                credentials: same_origin ? "include" : undefined,
                 keepalive: true,
-                mode: csrf_safe ? "no-cors" : "cors",
+                mode: same_origin ? (csrf_safe ? "no-cors" : "cors") : undefined,
                 cache: cacheable ? "default" : "no-cache",
                 body: prepared_data as any,
                 headers,
