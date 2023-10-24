@@ -317,7 +317,14 @@ export function PlayControls({
                     pgettext("Displayed to the user when the game is annulled", "Game Annulled")}
                 {annulled && <i className="fa fa-question-circle" />}
 
-                {annulled && annulment_reason && <AnnulmentReason reason={annulment_reason} />}
+                {annulled && (
+                    <AnnulmentReason
+                        reason={
+                            annulment_reason ||
+                            (engine.outcome === "Cancellation" ? { cancellation: true } : null)
+                        }
+                    />
+                )}
             </div>
             {((phase === "play" &&
                 mode === "play" &&
@@ -1306,7 +1313,11 @@ function currentPlayer(goban: Goban): number {
     return ret;
 }
 
-function AnnulmentReason({ reason }: { reason: rest_api.AnnulmentReason }): JSX.Element {
+function AnnulmentReason({
+    reason,
+}: null | {
+    reason: rest_api.AnnulmentReason | { cancellation: true };
+}): JSX.Element {
     if (!reason) {
         return null;
     }
@@ -1348,6 +1359,9 @@ function AnnulmentReason({ reason }: { reason: rest_api.AnnulmentReason }): JSX.
                 // and so have been annulled. This is left untranslated as it's not applicable to
                 // modern games.
                 arr.push(<div key={key}>Handicap out of range</div>);
+                break;
+            case "cancellation":
+                arr.push(<div key={key}>{_("The game was canceled so will not be rated.")}</div>);
                 break;
             default:
                 arr.push(<div key={key}>{key}</div>);
