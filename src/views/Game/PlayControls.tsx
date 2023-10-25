@@ -321,7 +321,11 @@ export function PlayControls({
                     <AnnulmentReason
                         reason={
                             annulment_reason ||
-                            (engine.outcome === "Cancellation" ? { cancellation: true } : null)
+                            (engine.outcome === "Cancellation" ? { cancellation: true } : null) ||
+                            (engine.outcome === "Timeout" &&
+                            engine.last_official_move.move_number < 20
+                                ? { premature_timeout: true }
+                                : null)
                         }
                     />
                 )}
@@ -1316,7 +1320,7 @@ function currentPlayer(goban: Goban): number {
 function AnnulmentReason({
     reason,
 }: null | {
-    reason: rest_api.AnnulmentReason | { cancellation: true };
+    reason: rest_api.AnnulmentReason | { cancellation?: true; premature_timeout?: true };
 }): JSX.Element {
     if (!reason) {
         return null;
@@ -1362,6 +1366,13 @@ function AnnulmentReason({
                 break;
             case "cancellation":
                 arr.push(<div key={key}>{_("The game was canceled so will not be rated.")}</div>);
+                break;
+            case "premature_timeout":
+                arr.push(
+                    <div key={key}>
+                        {_("Not enough moves were made for this game to be rated.")}
+                    </div>,
+                );
                 break;
             default:
                 arr.push(<div key={key}>{key}</div>);
