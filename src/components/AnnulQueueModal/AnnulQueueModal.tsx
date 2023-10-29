@@ -189,14 +189,12 @@ export function AnnulQueueModal({
     // Annul the specified games
     const annul = (validGameIds: number[], moderationNote: string) => {
         setShowAnnulOverlay(true);
-        console.debug("posting");
         post("moderation/annul", {
             games: validGameIds,
             annul: true,
             moderation_note: moderationNote,
         })
             .then((res) => {
-                console.debug("posted");
                 const successful = res.done;
                 const failed = res.failed;
 
