@@ -34,6 +34,7 @@ import { AppealView } from "./AppealView";
 import { get } from "requests";
 import { MessageTemplate, WARNING_TEMPLATES, REPORTER_RESPONSE_TEMPLATES } from "./MessageTemplate";
 import { ModerationActionSelector } from "./ModerationActionSelector";
+import { openAnnulQueueModal, AnnulQueueModal } from "AnnulQueueModal";
 
 // Used for saving updates to the report
 let report_note_id = 0;
@@ -56,6 +57,8 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     const [error, setError] = React.useState(null);
     const [moderator_id, setModeratorId] = React.useState(report?.moderator?.id);
     const [reportState, setReportState] = React.useState(report?.state);
+    const [isAnnulQueueModalOpen, setIsAnnulQueueModalOpen] = React.useState(false);
+    const [annulQueue, setAnnulQueue] = React.useState<null | any[]>(report?.detected_ai_games);
 
     const related = report_manager.getRelatedReports(report_id);
 
@@ -68,6 +71,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     setReport(report);
                     setModeratorId(report?.moderator?.id);
                     setReportState(report?.state);
+                    setAnnulQueue(report?.detected_ai_games);
                 })
                 .catch((err) => {
                     console.error(err);
@@ -229,8 +233,21 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
         }
     };
 
+    const handleCloseAnnulQueueModal = () => {
+        setIsAnnulQueueModalOpen(false);
+    };
+
     return (
         <div id="ViewReport">
+            {isAnnulQueueModalOpen && (
+                <AnnulQueueModal
+                    annulQueue={annulQueue}
+                    setAnnulQueue={setAnnulQueue}
+                    onClose={handleCloseAnnulQueueModal}
+                    forDetectedAI={true}
+                    player={report.reported_user}
+                />
+            )}
             <div className="header">
                 {report_in_reports ? (
                     <Select
