@@ -473,6 +473,13 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                         </div>
 
                         <div className="actions-right">
+                            {reportState !== "resolved" && report.detected_ai_games ? (
+                                <button
+                                    onClick={() => openAnnulQueueModal(setIsAnnulQueueModalOpen)}
+                                >
+                                    Inspect & Annul Games
+                                </button>
+                            ) : null}
                             {reportState !== "resolved" && claimed_by_me && (
                                 <button
                                     className="success"
