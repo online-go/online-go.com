@@ -379,7 +379,10 @@ export function AnnulQueueModal({
                         </div>
                         <div className="close">
                             {forDetectedAI && (
-                                <button className="false-pos-btn" onClick={markFalsePositive}>
+                                <button
+                                    className="false-pos-btn danger"
+                                    onClick={markFalsePositive}
+                                >
                                     Mark False Positive
                                 </button>
                             )}
