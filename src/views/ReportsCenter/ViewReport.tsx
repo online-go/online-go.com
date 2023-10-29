@@ -533,17 +533,19 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                             onMessage={claimReport}
                         />
 
-                        <MessageTemplate
-                            title="Reporter"
-                            player={report.reporting_user}
-                            reported={report.reported_user}
-                            templates={REPORTER_RESPONSE_TEMPLATES}
-                            game_id={report.reported_game}
-                            gpt={report.automod_to_reporter}
-                            logByDefault={!user.is_moderator} // log community moderator actions
-                            onSelect={claimReport}
-                            onMessage={claimReport}
-                        />
+                        {report.reporting_user && (
+                            <MessageTemplate
+                                title="Reporter"
+                                player={report.reporting_user}
+                                reported={report.reported_user}
+                                templates={REPORTER_RESPONSE_TEMPLATES}
+                                game_id={report.reported_game}
+                                gpt={report.automod_to_reporter}
+                                logByDefault={!user.is_moderator} // log community moderator actions
+                                onSelect={claimReport}
+                                onMessage={claimReport}
+                            />
+                        )}
                     </div>
                     <hr />
                     {(user.is_moderator || null) && <UserHistory user={report.reported_user} />}
