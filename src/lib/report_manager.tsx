@@ -70,6 +70,7 @@ export interface Report {
     };
     moderator_note: string;
     system_note: string;
+    detected_ai_games: Array<Object>;
 
     automod_to_moderator?: string; // Suggestions from "automod"
     automod_to_reporter?: string;
