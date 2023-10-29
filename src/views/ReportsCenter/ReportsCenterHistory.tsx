@@ -70,7 +70,8 @@ export function ReportsCenterHistory(): JSX.Element {
                     {
                         header: "Reporter",
                         className: () => "state",
-                        render: (X) => <Player user={X.reporting_user} />,
+                        render: (X) =>
+                            X.reporting_user ? <Player user={X.reporting_user} /> : "System",
                     },
                     {
                         header: "Type",

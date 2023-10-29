@@ -369,7 +369,12 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                                 "A label for the user name that reported an incident (followed by colon and the username)",
                                 "Reported by",
                             )}
-                            : <Player user={report.reporting_user} />
+                            :{" "}
+                            {report.reporting_user ? (
+                                <Player user={report.reporting_user} />
+                            ) : (
+                                "System"
+                            )}
                             <span className="when">{moment(report.created).fromNow()}</span>
                         </span>
                     </div>
