@@ -342,7 +342,7 @@ export function AnnulQueueModal({
                     </div>
 
                     <div className="button-bar">
-                        <div className="actions">
+                        <div className="modal-actions">
                             <button className="next-btn" onClick={goToNextGame}>
                                 Next
                             </button>
@@ -359,11 +359,6 @@ export function AnnulQueueModal({
                                     }
                                 }}
                             >{`Annul Games(${validGameIds.length})`}</button>
-                            {forDetectedAI && (
-                                <button className="false-pos-btn" onClick={markFalsePositive}>
-                                    Mark False Positive
-                                </button>
-                            )}
                         </div>
                         <div className="gamelist-nav">
                             <div className="nav-wrapper">
