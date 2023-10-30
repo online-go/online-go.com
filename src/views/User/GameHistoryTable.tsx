@@ -206,6 +206,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                             annulQueue={annulQueue}
                             setAnnulQueue={setAnnulQueue}
                             onClose={handleCloseAnnulQueueModal}
+                            forDetectedAI={false}
                         />
                     )}
                     {/* loading-container="game_history.settings().$loading" */}
@@ -226,12 +227,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                         <button
                                             className="sm info"
                                             onClick={() =>
-                                                openAnnulQueueModal(
-                                                    annulQueue,
-                                                    setSelectModeActive,
-                                                    setAnnulQueue,
-                                                    setIsAnnulQueueModalOpen,
-                                                )
+                                                openAnnulQueueModal(setIsAnnulQueueModalOpen)
                                             }
                                         >
                                             {_("View Queue")} {`(${annulQueue.length})`}
