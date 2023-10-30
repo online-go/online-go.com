@@ -145,9 +145,9 @@ export class PuzzleEditor {
         }
 
         Promise.all([
-            get("puzzles/%%", puzzle_id),
-            get("puzzles/%%/collection_summary", puzzle_id),
-            get("puzzles/%%/rate", puzzle_id),
+            get(`puzzles/${puzzle_id}`),
+            get(`puzzles/${puzzle_id}/collection_summary`),
+            get(`puzzles/${puzzle_id}/rate`),
         ])
             .then((arr: [rest_api.PuzzleDetail, any, any]) => {
                 const rating = arr[2];

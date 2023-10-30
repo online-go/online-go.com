@@ -128,7 +128,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         abort_requests_in_flight("library/");
     }
     refresh(player_id: IdType) {
-        const promise = get("library/%%", player_id);
+        const promise = get(`library/${player_id}`);
 
         promise
             .then((library) => {
@@ -256,9 +256,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
     uploadSGFs = (files) => {
         if (parseInt(this.props.match.params.player_id) === data.get("user").id) {
             files = files.filter((file) => /.sgf$/i.test(file.name));
-            Promise.all(
-                files.map((file) => post("me/games/sgf/%%", this.state.collection_id, file)),
-            )
+            Promise.all(files.map((file) => post(`me/games/sgf/${this.state.collection_id}`, file)))
                 .then(() => {
                     this.refresh(this.props.match.params.player_id).then(ignore).catch(ignore);
                 })
@@ -274,7 +272,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                 type: "application/x-go-sgf",
                 lastModified: new Date().getTime(),
             });
-            post("me/games/sgf/%%", this.state.collection_id, file)
+            post(`me/games/sgf/${this.state.collection_id}`, file)
                 .then(() => {
                     this.refresh(this.props.match.params.player_id).then(ignore).catch(ignore);
                 })
@@ -306,7 +304,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         this.setState({ new_collection_private: ev.target.checked });
     };
     createCollection = () => {
-        post("library/%%/collections", this.state.player_id, {
+        post(`library/${this.state.player_id}/collections`, {
             parent_id: this.state.collection_id,
             name: this.state.new_collection_name,
             private: this.state.new_collection_private ? 1 : 0,
@@ -320,7 +318,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
     };
     deleteCollection = () => {
         const parent = this.state.collections[this.state.collection_id].parent;
-        post("library/%%", this.state.player_id, {
+        post(`library/${this.state.player_id}`, {
             delete_collections: [this.state.collection_id],
         })
             .then(() => {
@@ -331,7 +329,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
             .catch(errorAlerter);
     };
     deleteGames = () => {
-        post("library/%%", this.state.player_id, {
+        post(`library/${this.state.player_id}`, {
             delete_entries: Object.keys(this.state.games_checked),
         })
             .then(() => {

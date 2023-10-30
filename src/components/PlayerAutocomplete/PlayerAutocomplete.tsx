@@ -164,8 +164,7 @@ function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Elem
                     //complete(value);
                 }
             }).catch((err) => {
-                if (err.status !== 0) {
-                    // status === 0 is an abort
+                if (err.name !== "AbortError") {
                     console.log(err);
                 }
             });

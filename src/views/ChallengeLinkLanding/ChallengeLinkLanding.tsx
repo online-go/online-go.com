@@ -61,7 +61,7 @@ export function ChallengeLinkLanding(): JSX.Element {
         });
 
         if (challenge.rengo) {
-            put("challenges/%%/join", challenge.challenge_id, {})
+            put(`challenges/${challenge.challenge_id}/join`, {})
                 .then(() => {
                     alert.close();
                     if (challenge.invite_only) {
@@ -77,7 +77,7 @@ export function ChallengeLinkLanding(): JSX.Element {
                     errorAlerter(err);
                 });
         } else {
-            post("challenges/%%/accept", challenge.challenge_id, {})
+            post(`challenges/${challenge.challenge_id}/accept`, {})
                 .then(() => {
                     alert.close();
                     navigate(`/game/${challenge.game_id}`, { replace: true });

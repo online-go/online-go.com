@@ -75,7 +75,7 @@ export function ReportedGame({ game_id }: { game_id: number }): JSX.Element {
                 moderation_note = moderation_note.trim();
             } while (moderation_note === "");
 
-            post("games/%%/moderate", game_id, {
+            post(`games/${game_id}/moderate`, {
                 decide: winner,
                 moderation_note: moderation_note,
             }).catch(errorAlerter);
@@ -122,7 +122,7 @@ export function ReportedGame({ game_id }: { game_id: number }): JSX.Element {
 
     React.useEffect(() => {
         if (game_id) {
-            get("games/%%", game_id)
+            get(`games/${game_id}`)
                 .then((game: rest_api.GameDetails) => {
                     setGame(game);
                     setAnnulled(game.annulled);

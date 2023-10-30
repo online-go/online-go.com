@@ -646,7 +646,7 @@ export function Game(): JSX.Element {
                 })
                 .then(({ value: accept }) => {
                     if (accept) {
-                        post("games/%%/reviews", game_id, {})
+                        post(`games/${game_id}/reviews`, {})
                             .then((res) => browserHistory.push(`/review/${res.id}`))
                             .catch(errorAlerter);
                     }
@@ -1271,7 +1271,7 @@ export function Game(): JSX.Element {
         }
 
         if (game_id) {
-            get("games/%%", game_id)
+            get(`games/${game_id}`)
                 .then((game: rest_api.GameDetails) => {
                     if (game.players.white.id) {
                         player_cache.update(game.players.white, true);
@@ -1328,15 +1328,15 @@ export function Game(): JSX.Element {
                     }
                 })
                 .catch((e) => {
-                    if (e.statusText === "abort") {
-                        console.error("Error: abort", e);
+                    if (e.name === "AbortError") {
+                        //console.error("Error: abort", e);
                         return;
                     }
-                    if (e.statusText === "Not Found") {
+                    if (e.status === 404 || e.statusText === "Not Found") {
                         console.error("Error: not found, handled 10s later by socket.ts", e);
                         return;
                     }
-                    console.error(e);
+                    console.error(e.name, e);
                     void alert.fire({
                         title: "Failed to load game data: " + e.statusText,
                         icon: "error",
@@ -1345,7 +1345,7 @@ export function Game(): JSX.Element {
         }
 
         if (review_id) {
-            get("reviews/%%", review_id)
+            get(`reviews/${review_id}`)
                 .then((review) => {
                     if (review.game && review.game.historical_ratings) {
                         set_historical_black(review.game.historical_ratings.black);

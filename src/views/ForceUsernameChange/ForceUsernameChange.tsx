@@ -36,7 +36,7 @@ export function ForceUsernameChange(): JSX.Element {
     });
 
     function saveUsername() {
-        put("players/%%", user.id, { username })
+        put(`players/${user.id}`, { username })
             .then(() => {
                 cached.refresh.config(() => window.location.reload());
             })

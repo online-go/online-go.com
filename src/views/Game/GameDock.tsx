@@ -225,7 +225,7 @@ export function GameDock({
             moderation_note = moderation_note.trim();
         } while (moderation_note === "");
 
-        post("games/%%/moderate", game_id, {
+        post(`games/${game_id}/moderate`, {
             decide: winner,
             moderation_note: moderation_note,
         }).catch(errorAlerter);
@@ -248,7 +248,7 @@ export function GameDock({
             moderation_note = moderation_note.trim();
         } while (moderation_note === "");
 
-        post("games/%%/moderate", game_id, {
+        post(`games/${game_id}/moderate`, {
             autoscore: true,
             moderation_note: moderation_note,
         }).catch(errorAlerter);

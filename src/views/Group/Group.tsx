@@ -161,7 +161,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
     resolve(group_id: number) {
         const user = data.get("user");
 
-        get("groups/%%", group_id)
+        get(`groups/${group_id}`)
             .then((group: GroupInfo) => {
                 window.document.title = group.name;
 
@@ -181,7 +181,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                 });
             })
             .catch(errorAlerter);
-        get("groups/%%/news/", group_id)
+        get(`groups/${group_id}/news/`)
             .then((news) => {
                 this.setState({ news: news.results });
             })
@@ -202,14 +202,14 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
     }
 
     leaveGroup = () => {
-        post("groups/%%/members", this.state.group_id, { delete: true })
+        post(`groups/${this.state.group_id}/members`, { delete: true })
             .then(() => {
                 this.resolve(this.state.group_id);
             })
             .catch(errorAlerter);
     };
     joinGroup = () => {
-        post("groups/%%/members", this.state.group_id, {})
+        post(`groups/${this.state.group_id}/members`, {})
             .then((res) => {
                 if (res.success) {
                     this.resolve(this.state.group_id);
@@ -245,7 +245,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
         });
         image_resizer(files[0], 512, 512)
             .then((file: Blob) => {
-                put("group/%%/icon", this.state.group_id, file)
+                put(`group/${this.state.group_id}/icon`, file)
                     .then((res) => {
                         console.log("Upload successful", res);
                     })
@@ -259,7 +259,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
         });
         image_resizer(files[0], 2560, 512)
             .then((file: Blob) => {
-                put("group/%%/banner", this.state.group_id, file)
+                put(`group/${this.state.group_id}/banner`, file)
                     .then((res) => {
                         console.log("Upload successful", res);
                     })
@@ -373,7 +373,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             return;
         }
         this.toggleNewNewsPost();
-        post("group/%%/news/", this.state.group_id, {
+        post(`group/${this.state.group_id}/news/`, {
             title: this.state.new_news_title,
             content: this.state.new_news_body,
         })
@@ -407,7 +407,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    post("group/%%/news/", this.state.group_id, {
+                    post(`group/${this.state.group_id}/news/`, {
                         id: entry.id,
                         delete: true,
                     })
@@ -459,7 +459,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
 
     inviteUser = () => {
         const username = this.state.user_to_invite.username;
-        post("group/%%/members", this.state.group_id, { username })
+        post(`group/${this.state.group_id}/members`, { username })
             .then((res) => {
                 console.log(res);
                 this.setState({
@@ -1185,7 +1185,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    del("groups/%%", this.state.group.id)
+                    del(`groups/${this.state.group_id}`)
                         .then(() => {
                             browserHistory.push("/groups/");
                         })
@@ -1203,7 +1203,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    put("groups/%%/members", this.state.group_id, {
+                    put(`groups/${this.state.group_id}/members`, {
                         player_id: player_id,
                         is_admin: true,
                     })
@@ -1222,7 +1222,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    put("groups/%%/members", this.state.group_id, {
+                    put(`groups/${this.state.group_id}/members`, {
                         player_id: player_id,
                         is_admin: false,
                     })
@@ -1241,7 +1241,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    post("groups/%%/members", this.state.group_id, {
+                    post(`groups/${this.state.group_id}/members`, {
                         delete: true,
                         player_id: player_id,
                     })

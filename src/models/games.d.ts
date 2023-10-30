@@ -259,7 +259,7 @@ declare namespace rest_api {
         }
 
         /**
-         * The active_games list in the /players/%%/full
+         * The active_games list in the /players/${id}/full
          */
         interface Game {
             black: game.Player;

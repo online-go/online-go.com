@@ -32,7 +32,7 @@ export function nominateForRengoChallenge(c: Challenge): Promise<RengoParticipan
         allowEscapeKey: false,
     });
 
-    return put("challenges/%%/join", c.challenge_id, {}).then((res) => {
+    return put(`challenges/${c.challenge_id}/join`, {}).then((res) => {
         alert.close();
         return res;
     });
@@ -50,7 +50,7 @@ export function assignToTeam(
             ? "assign_white"
             : "unassign";
 
-    return put("challenges/%%/team", challenge.challenge_id, {
+    return put(`challenges/${challenge.challenge_id}/team`, {
         [assignment]: [player_id], // back end expects an array of changes, but we only ever send one at a time.
     });
 }
@@ -70,13 +70,13 @@ export function startOwnRengoChallenge(the_challenge: Challenge): Promise<void> 
         allowEscapeKey: false,
     });
 
-    return post("challenges/%%/start", the_challenge.challenge_id, {}).then(() => {
+    return post(`challenges/${the_challenge.challenge_id}/start`, {}).then(() => {
         alert.close();
     });
 }
 
 export function cancelRengoChallenge(the_challenge: Challenge): Promise<void> {
-    return del("challenges/%%", the_challenge.challenge_id);
+    return del(`challenges/${the_challenge.challenge_id}`);
 }
 
 export function unNominate(the_challenge: Challenge): Promise<RengoParticipantsDTO> {
@@ -88,7 +88,7 @@ export function unNominate(the_challenge: Challenge): Promise<RengoParticipantsD
         allowEscapeKey: false,
     });
 
-    return del("challenges/%%/join", the_challenge.challenge_id, {}).then((res) => {
+    return del(`challenges/${the_challenge.challenge_id}/join`, {}).then((res) => {
         alert.close();
         return res;
     });

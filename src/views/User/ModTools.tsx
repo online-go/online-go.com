@@ -69,7 +69,7 @@ export function ModTools(props: ModToolsProps): JSX.Element {
 
     React.useEffect(() => {
         if (props.collapse_same_users) {
-            get(`players/${props.user_id}/aliases/`, undefined, { page_size: 100 })
+            get(`players/${props.user_id}/aliases/`, { page_size: 100 })
                 .then((data: any) => {
                     const aliases = data.results;
                     setAliases(aliases);

@@ -312,3 +312,6 @@ window["data"] = data;
 window["preferences"] = preferences;
 window["player_cache"] = player_cache;
 window["GoMath"] = GoMath;
+
+import * as requests from "requests";
+window["requests"] = requests;

@@ -70,7 +70,7 @@ export function LadderList(): JSX.Element {
     }
 
     const join = (ladder_id: number) => {
-        post("ladders/%%/players", ladder_id, {})
+        post(`ladders/${ladder_id}/players`, {})
             .then(() => {
                 fetchLadders();
             })

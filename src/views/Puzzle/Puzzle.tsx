@@ -371,7 +371,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     };
 
     ratePuzzle = (value) => {
-        put("puzzles/%%/rate", +this.props.match.params.puzzle_id, { rating: value })
+        put(`puzzles/${this.props.match.params.puzzle_id}/rate`, { rating: value })
             .then(ignore)
             .catch(errorAlerter);
         this.setState({
@@ -424,7 +424,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
         if (parseInt(this.props.match.params.puzzle_id)) {
             /* save */
-            put("puzzles/%%", +this.props.match.params.puzzle_id, { puzzle: puzzle })
+            put(`puzzles/${this.props.match.params.puzzle_id}`, { puzzle: puzzle })
                 .then(() => {
                     window.location.reload();
                 })
@@ -616,7 +616,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             })
             .then(({ value: accept }) => {
                 if (accept) {
-                    del("puzzles/%%", +this.props.match.params.puzzle_id)
+                    del(`puzzles/${this.props.match.params.puzzle_id}`)
                         .then(() =>
                             browserHistory.push(
                                 `/puzzle-collection/${this.state.puzzle.puzzle_collection}`,
