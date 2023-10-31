@@ -29,6 +29,7 @@ import { deepEqual } from "misc";
 import { isLiveGame, durationString } from "TimeControl";
 
 import { notification_manager } from "./NotificationManager";
+import { openModerationOfferModal } from "./ModerationOfferModal";
 
 export function NotificationList(): JSX.Element {
     const [, setCount] = React.useState(notification_manager.ordered_notifications.length);
@@ -509,6 +510,14 @@ class NotificationEntry extends React.Component<{ notification }, any> {
                                 username: notification.from.username,
                             })}
                         </a>
+                    </div>
+                );
+
+            case "moderationOffer":
+                return (
+                    <div className="moderation-offer">
+                        <span>{_("You qualify for access to community moderation tools!")}</span>
+                        <button onClick={openModerationOfferModal}>{_("Details")}</button>
                     </div>
                 );
 

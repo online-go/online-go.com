@@ -17,7 +17,7 @@
 
 import * as React from "react";
 import * as data from "data";
-import { _ } from "translate";
+import { _, pgettext } from "translate";
 import { put, get, del } from "requests";
 import { MOD_POWER_HANDLE_SCORE_CHEAT, errorAlerter } from "misc";
 import { proRankList } from "rank_utils";
@@ -31,6 +31,7 @@ interface ModerateUserProperties {
 }
 
 import { alert } from "swal_config";
+import { ModerationOfferControl } from "ModerationOfferControl";
 
 const pro_ranks = proRankList(false);
 
@@ -50,8 +51,6 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                 this.setState(
                     Object.assign({ loading: false }, result.user, {
                         bot_owner: result.user.bot_owner ? result.user.bot_owner.id : null,
-                        can_handle_score_cheat:
-                            result.user.moderator_powers & MOD_POWER_HANDLE_SCORE_CHEAT,
                     }),
                 );
             })
@@ -87,16 +86,15 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                     "ranking",
                     "professional",
                     "ui_class_extra",
+                    "offered_moderator_powers",
+                    "moderator_powers",
+                    "mod_powers_rejected",
                 ];
 
                 const settings: any = {};
                 for (const f of fields) {
                     settings[f] = this.state[f];
                 }
-
-                // handle_score_cheat is bit zero of moderator_powers
-                settings["moderator_powers"] =
-                    (this.state.moderator_powers & ~1) | this.state.can_handle_score_cheat;
 
                 settings.moderation_note = reason;
 
@@ -110,7 +108,6 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     setLockedUsername = (ev) => this.setState({ locked_username: ev.target.checked });
     setSupporter = (ev) => this.setState({ supporter: ev.target.checked });
     setAnnouncer = (ev) => this.setState({ is_announcer: ev.target.checked });
-    setHandleScoreCheat = (ev) => this.setState({ can_handle_score_cheat: ev.target.checked });
     setProfessional = (ev) => this.setState({ professional: ev.target.checked });
     //setBanned = (ev) => this.setState({ is_banned: ev.target.checked });
     setShadowbanned = (ev) => this.setState({ is_shadowbanned: ev.target.checked });
@@ -141,6 +138,24 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                         .catch(errorAlerter);
                 }
             });
+    };
+
+    makeOffer = (power_mask: number) => {
+        this.setState({
+            offered_moderator_powers: this.state.offered_moderator_powers | power_mask,
+        });
+    };
+
+    retractOffer = (power_mask: number) => {
+        this.setState({
+            offered_moderator_powers: this.state.offered_moderator_powers & ~power_mask,
+        });
+    };
+
+    removePower = (power_mask: number) => {
+        this.setState({
+            moderator_powers: this.state.moderator_powers & ~power_mask,
+        });
     };
 
     render() {
@@ -229,19 +244,6 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                                             />
                                         )}
                                     </dd>
-                                    <dt>
-                                        <label className="avoid-wrap" htmlFor="annul">
-                                            Handle Score Cheat
-                                        </label>
-                                    </dt>
-                                    <dd>
-                                        <input
-                                            id="annul"
-                                            type="checkbox"
-                                            checked={this.state.can_handle_score_cheat}
-                                            onChange={this.setHandleScoreCheat}
-                                        />
-                                    </dd>
                                 </dl>
                             </div>
                             <div className="col-sm-8">
@@ -315,12 +317,25 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                             </div>
                         </div>
                         {moderator.is_superuser && (
-                            <div style={{ textAlign: "center" }}>
+                            <div style={{ textAlign: "center", marginBottom: "0.5rem" }}>
                                 <button className="reject" onClick={this.deleteAccount}>
                                     Delete account
                                 </button>
                             </div>
                         )}
+                        <ModerationOfferControl
+                            ability={pgettext(
+                                "Label for a button to let a community moderator handle score cheating",
+                                "Handle Score Cheat",
+                            )}
+                            ability_mask={MOD_POWER_HANDLE_SCORE_CHEAT}
+                            currently_offered={this.state.offered_moderator_powers}
+                            moderator_powers={this.state.moderator_powers}
+                            previously_rejected={this.state.mod_powers_rejected}
+                            onMakeOffer={this.makeOffer}
+                            onRetractOffer={this.retractOffer}
+                            onRemovePower={this.removePower}
+                        />
                     </div>
                 )}
                 <div className="buttons">
@@ -335,6 +350,5 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
 }
 
 export function openModerateUserModal(user) {
-    // TODO
     return openModal(<ModerateUser playerId={user.id} />);
 }

@@ -320,6 +320,7 @@ export class NotificationManager {
                 case "groupRequest":
                 case "groupInvitation":
                 case "tournamentInvitation":
+                case "moderationOffer":
                     /* these are actionable, so skip */
                     continue;
             }
@@ -486,6 +487,10 @@ export class NotificationManager {
                         },
                     );
                 }
+            }
+
+            if (notification.type === "moderationOffer") {
+                console.log("Moderation offer notification received...");
             }
 
             this.rebuildNotificationList();
