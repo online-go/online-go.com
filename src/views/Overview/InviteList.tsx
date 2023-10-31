@@ -104,7 +104,7 @@ export function InviteList(): JSX.Element {
     };
 
     const deleteChallenge = (challenge: Challenge) => {
-        del("challenges/%%", challenge.challenge_id)
+        del(`challenges/${challenge.challenge_id}`)
             .then(() => {
                 removeChallenge(challenge);
             })

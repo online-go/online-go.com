@@ -47,13 +47,13 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
 
         if ("game_id" in props) {
             this.url = `games/${props.game_id}/acl`;
-            this.del_url = `games/acl/%%`;
+            this.del_url = `games/acl/`;
         } else if ("review_id" in props) {
             this.url = `reviews/${props.review_id}/acl`;
-            this.del_url = `reviews/acl/%%`;
+            this.del_url = `reviews/acl/`;
         } else if ("puzzle_collection_id" in props) {
             this.url = `puzzles/collections/${props.puzzle_collection_id}/acl`;
-            this.del_url = `puzzles/collections/acl/%%`;
+            this.del_url = `puzzles/collections/acl/`;
         } else {
             throw new Error(`ACLModal created with invalid parameters`);
         }
@@ -79,7 +79,7 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
         }
         this.setState({ acl: new_acl });
 
-        del(this.del_url, obj.id)
+        del(this.del_url + obj.id)
             .then(this.refresh)
             .catch((e) => {
                 this.refresh();

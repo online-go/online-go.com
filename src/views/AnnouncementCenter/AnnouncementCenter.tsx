@@ -106,7 +106,7 @@ export function AnnouncementCenter(): JSX.Element {
             .catch(errorAlerter);
     };
     const deleteAnnouncement = (announcement) => {
-        del("announcements/%%", announcement.id).then(refresh).catch(errorAlerter);
+        del(`announcements/${announcement.id}`).then(refresh).catch(errorAlerter);
     };
 
     const can_create = !!text;

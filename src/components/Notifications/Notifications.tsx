@@ -201,7 +201,7 @@ class NotificationEntry extends React.Component<{ notification }, any> {
                             <FabX
                                 onClick={() => {
                                     this.setState({ message: _("Declining") });
-                                    del("me/challenges/%%", notification.challenge_id)
+                                    del(`me/challenges/${notification.challenge_id}`)
                                         .then(this.del)
                                         .catch(this.onError);
                                 }}
@@ -209,7 +209,7 @@ class NotificationEntry extends React.Component<{ notification }, any> {
                             <FabCheck
                                 onClick={() => {
                                     this.setState({ message: _("Accepting") });
-                                    post("me/challenges/%%/accept", notification.challenge_id, {})
+                                    post(`me/challenges/${notification.challenge_id}/accept`, {})
                                         .then(() => {
                                             this.del();
                                             if (

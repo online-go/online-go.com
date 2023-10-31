@@ -804,7 +804,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                         .attr("title", _("Remove challenge"))
                         .click(() => {
                             //console.log("Remove");
-                            del("challenges/%%", C.challenge_id)
+                            del(`challenges/${C.challenge_id}`)
                                 .then(() => e.html(_("Challenge removed")))
                                 .catch(() => alert.fire(_("Error removing challenge")));
                         }),

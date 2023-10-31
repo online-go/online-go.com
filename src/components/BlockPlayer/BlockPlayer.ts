@@ -50,7 +50,7 @@ export function setIgnore(player_id: number, tf: boolean) {
             block_states[player_id] = new BlockState(player_id);
         }
         block_states[player_id].block_chat = tf;
-        put("players/%%/block", player_id, { block_chat: tf ? 1 : 0 })
+        put(`players/${player_id}/block`, { block_chat: tf ? 1 : 0 })
             .then(() => {
                 ITC.send("update-blocks", true);
             })
@@ -64,7 +64,7 @@ export function setGameBlock(player_id: number, tf: boolean) {
             block_states[player_id] = new BlockState(player_id);
         }
         block_states[player_id].block_games = tf;
-        put("players/%%/block", player_id, { block_games: tf ? 1 : 0 })
+        put(`players/${player_id}/block`, { block_games: tf ? 1 : 0 })
             .then(() => {
                 ITC.send("update-blocks", true);
             })
@@ -78,7 +78,7 @@ export function setAnnouncementBlock(player_id: number, tf: boolean) {
             block_states[player_id] = new BlockState(player_id);
         }
         block_states[player_id].block_announcements = tf;
-        put("players/%%/block", player_id, { block_announcements: tf ? 1 : 0 })
+        put(`players/${player_id}/block`, { block_announcements: tf ? 1 : 0 })
             .then(() => {
                 ITC.send("update-blocks", true);
             })

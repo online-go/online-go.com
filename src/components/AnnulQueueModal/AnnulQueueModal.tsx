@@ -22,14 +22,16 @@ import { Goban } from "goban";
 import { AIReview, GameTimings, ChatMode, GameChat, GobanContext } from "Game";
 import { Player } from "Player";
 import { Resizable } from "Resizable";
-import { post } from "requests";
+import { post, put } from "requests";
 
 // Define the AnnulQueueModalProps interface
 interface AnnulQueueModalProps {
     annulQueue: any[];
-    setSelectModeActive: React.Dispatch<boolean>;
+    setSelectModeActive?: React.Dispatch<boolean>;
     setAnnulQueue: React.Dispatch<any[]>;
     onClose: () => void;
+    forDetectedAI: boolean;
+    player?: any;
 }
 
 // Define the AnnulQueueModal component
@@ -38,6 +40,8 @@ export function AnnulQueueModal({
     setSelectModeActive,
     setAnnulQueue,
     onClose,
+    forDetectedAI,
+    player,
 }: AnnulQueueModalProps) {
     // Declare state variables
     const [selectedGameIndex, setSelectedGameIndex] = React.useState(0);
@@ -66,8 +70,12 @@ export function AnnulQueueModal({
 
     // Close the modal
     const closeModal = () => {
-        setAnnulQueue([]);
-        setSelectModeActive(false);
+        if (!forDetectedAI) {
+            setAnnulQueue([]);
+            if (setSelectModeActive) {
+                setSelectModeActive(false);
+            }
+        }
         setShowAnnulOverlay(false);
         setAnnulResponse(null);
         onClose();
@@ -158,27 +166,33 @@ export function AnnulQueueModal({
 
     // Prompt the user for a moderation note
     const promptForModerationNote = () => {
-        let moderation_note: string | null = null;
+        let moderationNote: string | null = null;
+        let currentPlayer: any;
+        if (forDetectedAI) {
+            currentPlayer = player;
+        } else {
+            currentPlayer = currentGame.player;
+        }
         do {
-            moderation_note = prompt(
-                `Annulling ${validGameIds.length} of ${currentGame.player.username}'s games.\nEnter moderation note: (will be entered with '${currentGame.player.username} mass annull:')`,
+            moderationNote = prompt(
+                `Annulling ${validGameIds.length} of ${currentPlayer.username}'s games.\nEnter moderation note: (will be entered with '${currentPlayer.username} mass annull:')`,
             );
 
-            if (moderation_note == null) {
+            if (moderationNote == null) {
                 return null;
             }
-            moderation_note = moderation_note.trim();
-        } while (moderation_note === "");
-        return `${currentGame.player.username} mass annul: ${moderation_note}`;
+            moderationNote = moderationNote.trim();
+        } while (moderationNote === "");
+        return `player ${currentPlayer.id} mass annul: ${moderationNote}`;
     };
 
     // Annul the specified games
-    const annul = (validGameIds: number[], moderation_note: string) => {
+    const annul = (validGameIds: number[], moderationNote: string) => {
         setShowAnnulOverlay(true);
         post("moderation/annul", {
             games: validGameIds,
             annul: true,
-            moderation_note: moderation_note,
+            moderation_note: moderationNote,
         })
             .then((res) => {
                 const successful = res.done;
@@ -205,6 +219,24 @@ export function AnnulQueueModal({
                 setAnnulResponse("Failed to annul games.\nCheck console for error.");
                 console.error("Annulment failed.", err);
             });
+    };
+
+    const markFalsePositive = () => {
+        if (confirm("Mark this game as a false positive detection?") === true) {
+            put("cheat_detection/false_positive", {
+                game_id: currentGame.id,
+                player_id: currentGame.player,
+                false_positive: true,
+            })
+                .then((res) => {
+                    if (res.success) {
+                        setDequeueRequested(true);
+                    }
+                })
+                .catch((err) => {
+                    console.error(err);
+                });
+        }
     };
 
     return (
@@ -239,10 +271,10 @@ export function AnnulQueueModal({
                             response={annulResponse}
                         />
                         <div className="game">
-                            {queue[selectedGameIndex] && (
+                            {currentGame && (
                                 <MiniGoban
                                     key={selectedGameIndex}
-                                    id={queue[selectedGameIndex].id}
+                                    id={currentGame.id}
                                     noLink={true}
                                     onGobanCreated={onGobanCreated}
                                     chat={true}
@@ -253,10 +285,10 @@ export function AnnulQueueModal({
                                 <GobanContext.Provider value={goban}>
                                     <div className="col">
                                         <div>
-                                            Black: <Player user={queue[selectedGameIndex]?.black} />
+                                            Black: <Player user={currentGame?.black} />
                                         </div>
                                         <div>
-                                            White: <Player user={queue[selectedGameIndex]?.white} />
+                                            White: <Player user={currentGame?.white} />
                                         </div>
                                         <div>
                                             Game Outcome: {winner} (
@@ -310,7 +342,7 @@ export function AnnulQueueModal({
                     </div>
 
                     <div className="button-bar">
-                        <div className="actions">
+                        <div className="modal-actions">
                             <button className="next-btn" onClick={goToNextGame}>
                                 Next
                             </button>
@@ -346,6 +378,14 @@ export function AnnulQueueModal({
                             </div>
                         </div>
                         <div className="close">
+                            {forDetectedAI && (
+                                <button
+                                    className="false-pos-btn danger"
+                                    onClick={markFalsePositive}
+                                >
+                                    Mark False Positive
+                                </button>
+                            )}
                             <button className="close-btn" onClick={() => closeModal()}>
                                 {_("Close")}
                             </button>
@@ -358,12 +398,7 @@ export function AnnulQueueModal({
 }
 
 // Open the AnnulQueueModal
-export function openAnnulQueueModal(
-    annulQueue,
-    setSelectModeActive,
-    setAnnulQueue,
-    setIsAnnulQueueModalOpen,
-) {
+export function openAnnulQueueModal(setIsAnnulQueueModalOpen) {
     setIsAnnulQueueModalOpen(true);
 
     // Disable body scroll

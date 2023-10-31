@@ -625,7 +625,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         this.saveSettings();
         this.close();
 
-        post(player_id ? "players/%%/challenge" : "challenges", player_id, challenge)
+        post(player_id ? `players/${player_id}/challenge` : "challenges", challenge)
             .then((res) => {
                 // console.log("Challenge response: ", res);
 
@@ -669,7 +669,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                 off();
                                 if (accept) {
                                     // cancel challenge
-                                    void del("me/challenges/%%", challenge_id);
+                                    void del(`me/challenges/${challenge_id}`);
                                 }
                             })
                             .catch(() => {

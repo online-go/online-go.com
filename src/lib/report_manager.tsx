@@ -70,6 +70,7 @@ export interface Report {
     };
     moderator_note: string;
     system_note: string;
+    detected_ai_games: Array<Object>;
 
     automod_to_moderator?: string; // Suggestions from "automod"
     automod_to_reporter?: string;
@@ -318,7 +319,7 @@ class ReportManager extends EventEmitter<Events> {
     public async close(report_id: number, helpful: boolean): Promise<Report> {
         delete this.active_incident_reports[report_id];
         this.update();
-        const res = await post("moderation/incident/%%", report_id, {
+        const res = await post(`moderation/incident/${report_id}`, {
             id: report_id,
             action: "resolve",
             was_helpful: helpful,
@@ -337,7 +338,7 @@ class ReportManager extends EventEmitter<Events> {
         return res;
     }
     public async unclaim(report_id: number): Promise<Report> {
-        const res = await post("moderation/incident/%%", report_id, {
+        const res = await post(`moderation/incident/${report_id}`, {
             id: report_id,
             action: "unclaim",
         });
@@ -345,7 +346,7 @@ class ReportManager extends EventEmitter<Events> {
         return res;
     }
     public async claim(report_id: number): Promise<Report> {
-        const res = await post("moderation/incident/%%", report_id, {
+        const res = await post(`moderation/incident/${report_id}`, {
             id: report_id,
             action: "claim",
         }).then((res) => {

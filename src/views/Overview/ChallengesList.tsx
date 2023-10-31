@@ -48,11 +48,11 @@ export class ChallengesList extends React.PureComponent<{ onAccept: () => void }
     };
 
     deleteChallenge(challenge) {
-        del("me/challenges/%%", challenge.id).then(ignore).catch(ignore);
+        del(`me/challenges/${challenge.id}`).then(ignore).catch(ignore);
         this.setState({ challenges: this.state.challenges.filter((c) => c.id !== challenge.id) });
     }
     acceptChallenge(challenge) {
-        post("me/challenges/%%/accept", challenge.id, {})
+        post(`me/challenges/${challenge.id}/accept`, {})
             .then((res) => {
                 if (res.time_per_move > 0 && res.time_per_move < 1800) {
                     browserHistory.push(`/game/${res.game}`);

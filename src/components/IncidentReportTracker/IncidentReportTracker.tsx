@@ -52,12 +52,12 @@ export function IncidentReportTracker(): JSX.Element {
         const onReport = (report: Report) => {
             if (report.state !== "resolved") {
                 report.unclaim = () => {
-                    post("moderation/incident/%%", report.id, { id: report.id, action: "unclaim" })
+                    post(`moderation/incident/${report.id}`, { id: report.id, action: "unclaim" })
                         .then(ignore)
                         .catch(errorAlerter);
                 };
                 report.good_report = () => {
-                    post("moderation/incident/%%", report.id, {
+                    post(`moderation/incident/${report.id}`, {
                         id: report.id,
                         action: "resolve",
                         was_helpful: true,
@@ -66,7 +66,7 @@ export function IncidentReportTracker(): JSX.Element {
                         .catch(errorAlerter);
                 };
                 report.bad_report = () => {
-                    post("moderation/incident/%%", report.id, {
+                    post(`moderation/incident/${report.id}`, {
                         id: report.id,
                         action: "resolve",
                         was_helpful: false,
@@ -75,7 +75,7 @@ export function IncidentReportTracker(): JSX.Element {
                         .catch(errorAlerter);
                 };
                 report.steal = () => {
-                    post("moderation/incident/%%", report.id, { id: report.id, action: "steal" })
+                    post(`moderation/incident/${report.id}`, { id: report.id, action: "steal" })
                         .then((res) => {
                             if (res.vanished) {
                                 void alert.fire("Report was removed");
@@ -84,7 +84,7 @@ export function IncidentReportTracker(): JSX.Element {
                         .catch(errorAlerter);
                 };
                 report.claim = () => {
-                    post("moderation/incident/%%", report.id, { id: report.id, action: "claim" })
+                    post(`moderation/incident/${report.id}`, { id: report.id, action: "claim" })
                         .then((res) => {
                             if (res.vanished) {
                                 void alert.fire("Report was removed");
@@ -96,7 +96,7 @@ export function IncidentReportTracker(): JSX.Element {
                         .catch(errorAlerter);
                 };
                 report.cancel = () => {
-                    post("moderation/incident/%%", report.id, { id: report.id, action: "cancel" })
+                    post(`moderation/incident/${report.id}`, { id: report.id, action: "cancel" })
                         .then(ignore)
                         .catch(errorAlerter);
                 };
@@ -110,7 +110,7 @@ export function IncidentReportTracker(): JSX.Element {
                         })
                         .then(({ value: txt, isConfirmed }) => {
                             if (isConfirmed) {
-                                post("moderation/incident/%%", report.id, {
+                                post(`moderation/incident/${report.id}`, {
                                     id: report.id,
                                     action: "note",
                                     note: txt,

@@ -45,7 +45,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     }
 
     componentDidMount() {
-        get("players/%%/full", this.props.playerId)
+        get(`players/${this.props.playerId}/full`)
             .then((result) => {
                 console.log(result);
                 this.setState(

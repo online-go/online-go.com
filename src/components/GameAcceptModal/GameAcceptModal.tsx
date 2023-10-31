@@ -48,7 +48,7 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
             allowEscapeKey: false,
         });
 
-        post("challenges/%%/accept", this.props.challenge.challenge_id, {})
+        post(`challenges/${this.props.challenge.challenge_id}/accept`, {})
             .then(() => {
                 alert.close();
                 this.close();

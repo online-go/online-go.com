@@ -230,7 +230,7 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
 
         image_resizer(files[0], 512, 512)
             .then((file: Blob) => {
-                put("players/%%/icon", user.id, file)
+                put(`players/${user.id}/icon`, file)
                     .then((res) => {
                         console.log("Upload successful", res);
                         user.icon = res.icon;
@@ -245,7 +245,7 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
     };
     const clearIcon = () => {
         setNewIcon(null);
-        del("players/%%/icon", user.id)
+        del(`players/${user.id}/icon`)
             .then((res) => {
                 console.log("Cleared icon", res);
                 user.icon = res.icon;
@@ -268,7 +268,7 @@ export function AccountSettings(props: SettingGroupPageProps): JSX.Element {
                 email,
                 website,
             };
-            put("players/%%", user.id, data)
+            put(`players/${user.id}`, data)
                 .then(() => {
                     cached.refresh.config(() => window.location.reload());
                     toast(<span>{_("Account settings updated successfully!")}</span>, 5000);
