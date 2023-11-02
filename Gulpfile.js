@@ -227,6 +227,14 @@ function dev_server(done) {
                 console.log("-->", path);
                 return path;
             },
+            proxyReqOptDecorator: function (proxyReqOpts, srcReq) {
+                return new Promise(function (resolve, reject) {
+                    if (!("Content-Type" in srcReq.headers)) {
+                        proxyReqOpts.headers["Content-Type"] = "application/json";
+                    }
+                    resolve(proxyReqOpts);
+                });
+            },
         });
 
     devserver.use("/api", backend_proxy("/api"));
