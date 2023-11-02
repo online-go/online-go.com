@@ -517,7 +517,16 @@ class NotificationEntry extends React.Component<{ notification }, any> {
                 return (
                     <div className="moderation-offer">
                         <span>{_("You qualify for access to community moderation tools!")}</span>
-                        <button onClick={openModerationOfferModal}>{_("Details")}</button>
+                        <button
+                            onClick={() =>
+                                openModerationOfferModal(
+                                    notification.player_id,
+                                    notification.offered_powers,
+                                )
+                            }
+                        >
+                            {_("Details")}
+                        </button>
                     </div>
                 );
 

@@ -19,11 +19,15 @@ import * as React from "react";
 import { _ } from "translate";
 import { openModal, Modal } from "Modal";
 import { alert } from "swal_config";
+import { put } from "requests";
+
+import { errorAlerter } from "misc";
 
 interface Events {}
 
 interface ModerationOfferModalProperties {
-    onAccept: (challenge) => void;
+    player_id: number;
+    offered_powers: number; // Must be the full bitfield that the person is going to get
 }
 
 export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProperties, {}> {
@@ -39,6 +43,14 @@ export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProp
             showConfirmButton: false,
             allowEscapeKey: false,
         });
+
+        put("players/" + this.props.player_id + "/moderate", {
+            moderator_powers: this.props.offered_powers,
+        })
+            .then(() => {
+                alert.close();
+            })
+            .catch(errorAlerter);
     };
 
     reject = () => {
@@ -49,6 +61,14 @@ export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProp
             showConfirmButton: false,
             allowEscapeKey: false,
         });
+
+        put("players/" + this.props.player_id + "/moderate", {
+            mod_powers_rejected: true,
+        })
+            .then(() => {
+                alert.close();
+            })
+            .catch(errorAlerter);
     };
 
     render() {
@@ -61,7 +81,7 @@ export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProp
                     </p>
                     <p>
                         You'll get access to tools to vote on reports blah blah. We need you to
-                        agree to be nice about it, and vote correctly.
+                        agree to be nice about it, and to vote correctly, or somefink like that.
                     </p>
                 </div>
                 <button onClick={this.accept}>Yes, please.</button>
@@ -71,8 +91,8 @@ export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProp
     }
 }
 
-export function openModerationOfferModal(): Promise<any> {
-    return new Promise((resolve) => {
-        openModal(<ModerationOfferModal onAccept={resolve} fastDismiss />);
-    });
+export function openModerationOfferModal(player_id, offered_powers) {
+    openModal(
+        <ModerationOfferModal player_id={player_id} offered_powers={offered_powers} fastDismiss />,
+    );
 }
