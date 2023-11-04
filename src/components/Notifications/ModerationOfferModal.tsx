@@ -19,7 +19,7 @@ import * as React from "react";
 import { _ } from "translate";
 import { openModal, Modal } from "Modal";
 import { alert } from "swal_config";
-import { put } from "requests";
+import { patch } from "requests";
 
 import { errorAlerter } from "misc";
 
@@ -44,7 +44,7 @@ export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProp
             allowEscapeKey: false,
         });
 
-        put("players/" + this.props.player_id + "/moderate", {
+        patch("me/moderation", {
             moderator_powers: this.props.offered_powers,
         })
             .then(() => {
@@ -62,7 +62,7 @@ export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProp
             allowEscapeKey: false,
         });
 
-        put("players/" + this.props.player_id + "/moderate", {
+        patch("me/moderation", {
             mod_powers_rejected: true,
         })
             .then(() => {
