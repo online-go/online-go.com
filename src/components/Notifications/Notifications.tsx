@@ -156,6 +156,10 @@ class NotificationEntry extends React.Component<{ notification }, any> {
         return null;
     }
 
+    isDismissable() {
+        return this.props.notification.type !== "moderationOffer";
+    }
+
     render() {
         if (this.state.message) {
             return <div>{this.state.message + "..."}</div>;
@@ -173,7 +177,7 @@ class NotificationEntry extends React.Component<{ notification }, any> {
                 }`}
                 onClick={this.open}
             >
-                <i className="fa fa-times-circle" onClick={this.del} />
+                {this.isDismissable() && <i className="fa fa-times-circle" onClick={this.del} />}
                 {inner}
             </div>
         );
@@ -522,6 +526,7 @@ class NotificationEntry extends React.Component<{ notification }, any> {
                                 openModerationOfferModal(
                                     notification.player_id,
                                     notification.offered_powers,
+                                    this.del,
                                 )
                             }
                         >

@@ -28,6 +28,7 @@ interface Events {}
 interface ModerationOfferModalProperties {
     player_id: number;
     offered_powers: number; // Must be the full bitfield that the person is going to get
+    onResolved: () => void;
 }
 
 export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProperties, {}> {
@@ -49,8 +50,10 @@ export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProp
         })
             .then(() => {
                 alert.close();
+                this.props.onResolved();
             })
             .catch(errorAlerter);
+        this.close();
     };
 
     reject = () => {
@@ -67,8 +70,10 @@ export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProp
         })
             .then(() => {
                 alert.close();
+                this.props.onResolved();
             })
             .catch(errorAlerter);
+        this.close();
     };
 
     render() {
@@ -91,8 +96,13 @@ export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProp
     }
 }
 
-export function openModerationOfferModal(player_id, offered_powers) {
+export function openModerationOfferModal(player_id, offered_powers, onResolved) {
     openModal(
-        <ModerationOfferModal player_id={player_id} offered_powers={offered_powers} fastDismiss />,
+        <ModerationOfferModal
+            player_id={player_id}
+            offered_powers={offered_powers}
+            onResolved={onResolved}
+            fastDismiss
+        />,
     );
 }

@@ -38,7 +38,7 @@ export function ModerationOfferControl(props: ModerationOfferControlProps) {
             <span className="moderation-ability">
                 {props.ability}
                 {(has_power && <i className="fa fa-check" />) ||
-                    (props.previously_rejected && <i className="fa fa-cross" />)}
+                    (props.previously_rejected && <i className="fa fa-times-circle" />)}
             </span>
 
             {has_power ? (
