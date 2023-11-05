@@ -31,6 +31,7 @@ import { AutoTranslate } from "AutoTranslate";
 import { report_categories } from "Report";
 import { Report, report_manager, DAILY_REPORT_GOAL } from "report_manager";
 import { useRefresh, useUser } from "hooks";
+import * as DynamicHelp from "react-dynamic-help";
 
 export function IncidentReportTracker(): JSX.Element {
     const user = useUser();
@@ -40,13 +41,23 @@ export function IncidentReportTracker(): JSX.Element {
     const [hide_icon] = usePreference("hide-incident-reports");
     const refresh = useRefresh();
 
+    const { registerTargetItem, triggerFlow, signalUsed } = React.useContext(DynamicHelp.Api);
+    const { ref: incident_report_indicator } = registerTargetItem("incident-report-indicator");
+
     function toggleList() {
         if (user.is_moderator) {
             navigate("/reports-center/");
         } else {
             setShowIncidentList(!show_incident_list);
+            signalUsed("incident-report-indicator");
         }
     }
+
+    React.useEffect(() => {
+        if (incident_report_indicator && user.moderator_powers) {
+            triggerFlow("community-moderator-intro");
+        }
+    }, [incident_report_indicator]);
 
     React.useEffect(() => {
         const onReport = (report: Report) => {
@@ -185,7 +196,11 @@ export function IncidentReportTracker(): JSX.Element {
 
     return (
         <>
-            <div className="IncidentReportIndicator" onClick={toggleList}>
+            <div
+                className="IncidentReportIndicator"
+                onClick={toggleList}
+                ref={incident_report_indicator}
+            >
                 <i className={`fa fa-exclamation-triangle ${normal_ct > 0 ? "active" : ""}`} />
                 <span className={`count ${normal_ct > 0 ? "active" : ""}`}>{normal_ct}</span>
             </div>
