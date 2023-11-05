@@ -530,7 +530,10 @@ class NotificationEntry extends React.Component<{ notification }, any> {
                                 )
                             }
                         >
-                            {_("Details")}
+                            {pgettext(
+                                "Label of a button to get details of community moderation offer",
+                                "Details",
+                            )}
                         </button>
                     </div>
                 );

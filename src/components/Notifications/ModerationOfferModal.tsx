@@ -16,7 +16,7 @@
  */
 
 import * as React from "react";
-import { _ } from "translate";
+import { pgettext } from "translate";
 import { openModal, Modal } from "Modal";
 import { alert } from "swal_config";
 import { patch } from "requests";
@@ -79,18 +79,38 @@ export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProp
     render() {
         return (
             <div className="Modal ModerationOfferModal">
-                <div className="header">{_("Community Moderation")}</div>
+                <div className="header">
+                    {pgettext(
+                        "Header telling people about community moderation powers they are offered",
+                        "Community Moderation",
+                    )}
+                </div>
                 <div className="moderation-offer-details">
                     <p>
-                        If you're willing, we'd love to have you on board as a community moderator.
+                        {pgettext(
+                            "Part of the description offering community moderation powers to a user.",
+                            "If you're willing, we'd love to have you on board as a community moderator.",
+                        )}
                     </p>
                     <p>
-                        You'll get access to tools to vote on reports blah blah. We need you to
-                        agree to be nice about it, and to vote correctly, or somefink like that.
+                        {pgettext(
+                            "Part of the description offering community moderation powers to a user.",
+                            "You'll get access to tools that will allow you to vote on reports raised by users - that will tell us how to handle those reports.",
+                        )}
+                    </p>
+                    <p>
+                        {pgettext(
+                            "Part of the description offering community moderation powers to a user.",
+                            "We just need your agreement to use the powers in the best interests of the OGS community, and in line with current policies and practices.",
+                        )}
                     </p>
                 </div>
-                <button onClick={this.accept}>Yes, please.</button>
-                <button onClick={this.reject}>No, thanks.</button>
+                <button onClick={this.accept}>
+                    {pgettext("Button for accepting community moderator powers", "Yes, please.")}
+                </button>
+                <button onClick={this.reject}>
+                    {pgettext("Button for declining community moderator powers", "No, thanks.")}
+                </button>
             </div>
         );
     }
