@@ -22,27 +22,47 @@ import { HelpFlow, HelpItem } from "react-dynamic-help";
 import { pgettext } from "translate";
 
 /**
- * A help flow for people who just got Community Moderator powers
+ * Help flows for people who just got Community Moderator powers
  */
 
 export function CommunityModeratorIntro(): JSX.Element {
     return (
-        <HelpFlow
-            id="community-moderator-intro"
-            showInitially={false /* it's triggered by getting powers */}
-            description={pgettext(
-                "Name of a dynamic help flow",
-                "Community Moderator Introduction Message",
-            )}
-        >
-            <HelpItem target="incident-report-indicator" position={"bottom-left"}>
-                <div>
-                    {pgettext(
-                        "A message describing the community moderator incident report indicator",
-                        "Incident report indicator - click it to see your report list",
-                    )}
-                </div>
-            </HelpItem>
-        </HelpFlow>
+        <>
+            <HelpFlow
+                id="community-moderator-with-reports-intro"
+                showInitially={false /* it's triggered by getting powers */}
+                description={pgettext(
+                    "Name of a dynamic help flow",
+                    "Community Moderator Introduction To Reports",
+                )}
+            >
+                <HelpItem target="incident-report-indicator" position={"bottom-left"}>
+                    <div>
+                        {pgettext(
+                            "A message describing the community moderator incident report indicator",
+                            "Incident report indicator - click it to see your report list",
+                        )}
+                    </div>
+                </HelpItem>
+            </HelpFlow>
+
+            <HelpFlow
+                id="community-moderator-no-reports-intro"
+                showInitially={false /* it's triggered by getting powers */}
+                description={pgettext(
+                    "Name of a dynamic help flow",
+                    "Community Moderator Introduction (no reports yet)",
+                )}
+            >
+                <HelpItem target="incident-report-indicator" position={"bottom-left"}>
+                    <div>
+                        {pgettext(
+                            "A message describing the community moderator incident report indicator",
+                            "The Incident Report Indicator will display here when you have reports to look at!",
+                        )}
+                    </div>
+                </HelpItem>
+            </HelpFlow>
+        </>
     );
 }

@@ -90,6 +90,9 @@ export function NavBar(): JSX.Element {
         registerTargetItem("toggle-right-nav");
 
     const { ref: settingsNavLink } = registerTargetItem("settings-nav-link");
+    const { ref: incidentReportIndicatorPosition } = registerTargetItem(
+        "incident-report-indicator-position-hide",
+    );
 
     const closeNavbar = () => {
         setRightNavActive(false);
@@ -381,7 +384,7 @@ export function NavBar(): JSX.Element {
                     </>
                 ) : (
                     <>
-                        <span className="spacer" />
+                        <div className="spacer" ref={incidentReportIndicatorPosition} />
                         <IncidentReportTracker />
                         <ChatIndicator />
                         <TournamentIndicator />
