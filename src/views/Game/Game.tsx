@@ -1310,6 +1310,17 @@ export function Game(): JSX.Element {
                         }
                     }
 
+                    // folk think auto-zen-mode makes no sense for correspondence...
+                    const live = isLiveGame(
+                        JSON.parse(game.time_control_parameters),
+                        game.width,
+                        game.height,
+                    );
+
+                    if (!live) {
+                        set_zen_mode(false);
+                    }
+
                     if (ladder_id.current) {
                         goban_div.current.setAttribute(
                             "data-ladder-id",
