@@ -155,7 +155,7 @@ export function AvatarCard({
         const file = files[0];
         setNewIcon(Object.assign(file, { preview: URL.createObjectURL(file) }));
 
-        image_resizer(files[0], 512, 512)
+        image_resizer(files[0], 512, 512, 65535)
             .then((file: Blob) => {
                 put(`players/${user.id}/icon`, file)
                     .then((res) => {
