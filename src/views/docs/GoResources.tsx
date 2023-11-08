@@ -21,7 +21,7 @@ import { Flag } from "Flag";
 import * as data from "data";
 import { Markdown } from "Markdown";
 
-function shuffleArray<T>(array: T[]) {
+function shuffleArray(array: JSX.Element[]) {
     for (let i = array.length - 1; i >= 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         const temp = array[i];
@@ -31,8 +31,34 @@ function shuffleArray<T>(array: T[]) {
     return array;
 }
 
-function scramble<T>(...args: T[]) {
+function scramble(...args: JSX.Element[]) {
     return shuffleArray(args);
+}
+
+function findTitle(e: JSX.Element): string | null {
+    console.log(e);
+    if (e.props.title) {
+        return e.props.title;
+    } else {
+        for (const child in e.props.children) {
+            if (typeof child === "string") {
+                return child;
+            }
+            return findTitle(child);
+        }
+    }
+    return null;
+}
+
+function ordered(...args: JSX.Element[]) {
+    return args.sort((a, b) => {
+        const a_title = findTitle(a);
+        const b_title = findTitle(b);
+        if (a_title && b_title) {
+            return a_title.localeCompare(b_title);
+        }
+        return 0;
+    });
 }
 
 export const GoResources = () => {
@@ -1012,7 +1038,7 @@ export const GoResources = () => {
                                 href="http://tigersmouth.org/"
                             />,
                             <BasicResource
-                                countries={[de]}
+                                countries={["de"]}
                                 title="DGoB"
                                 href="http://www.dgob.de/yabbse/index.php"
                             />,
@@ -1091,7 +1117,7 @@ export const GoResources = () => {
 
                     <dl>
                         <dt>{_("Organizations")}</dt>
-                        {scramble(
+                        {ordered(
                             <BasicResource
                                 countries={["in"]}
                                 title="Association of Indian Go Players"
@@ -1123,9 +1149,14 @@ export const GoResources = () => {
                                 href="http://go-canada.org/"
                             />,
                             <BasicResource
-                                countries={[de]}
+                                countries={["de"]}
                                 title="Deutscher Go-Bund"
                                 href="http://dgob.de/"
+                            />,
+                            <BasicResource
+                                countries={["at"]}
+                                title="Österreichischer GO-Verband"
+                                href="https://goverband.at/wp2/"
                             />,
                             <BasicResource
                                 countries={[au]}
@@ -1218,7 +1249,7 @@ export const GoResources = () => {
                                 href="http://www.nihonkiin.com.br/"
                             />,
 
-                            <span>
+                            <span title="日本棋院 (Nihon Ki-in), Tokyo Japan">
                                 <a rel="noopener" href="http://www.nihonkiin.or.jp/">
                                     <Flag country={jp} />
                                 </a>
@@ -1229,7 +1260,7 @@ export const GoResources = () => {
                                     日本棋院 (Nihon Ki-in), Tokyo Japan
                                 </a>
                             </span>,
-                            <span>
+                            <span title="Japan Pair Go Association">
                                 <a rel="noopener" href="http://www.pairgo.or.jp/homej.php">
                                     <Flag country={jp} />
                                 </a>
