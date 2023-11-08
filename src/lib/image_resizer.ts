@@ -17,7 +17,12 @@
 
 import { allocateCanvasOrError, validateCanvas } from "goban";
 
-export function image_resizer(file: File, max_width: number, max_height?: number): Promise<File> {
+export function image_resizer(
+    file: File,
+    max_width: number,
+    max_height: number,
+    max_file_size: number,
+): Promise<File> {
     if (!max_height) {
         max_height = max_width;
     }
@@ -28,46 +33,6 @@ export function image_resizer(file: File, max_width: number, max_height?: number
     const reader = new FileReader();
     const image = new Image();
     const canvas = allocateCanvasOrError();
-    const dataURItoBlob = (dataURI: string) => {
-        const bytes =
-            dataURI.split(",")[0].indexOf("base64") >= 0
-                ? atob(dataURI.split(",")[1])
-                : decodeURIComponent(dataURI.split(",")[1]);
-        const mime = dataURI.split(",")[0].split(":")[1].split(";")[0];
-        const max = bytes.length;
-        const ia = new Uint8Array(max);
-        for (let i = 0; i < max; i++) {
-            ia[i] = bytes.charCodeAt(i);
-        }
-        return new Blob([ia], { type: mime });
-    };
-    const resize = (): File => {
-        let width = image.width;
-        let height = image.height;
-        const aspect = width / height;
-
-        if (width > max_width) {
-            width = max_width;
-            height = width / aspect;
-        }
-        if (height > max_height) {
-            width = Math.min(width, max_height * aspect);
-            height = width / aspect;
-        }
-        width = Math.floor(width);
-        height = Math.floor(height);
-
-        canvas.width = width;
-        canvas.height = height;
-        validateCanvas(canvas);
-        canvas.getContext("2d").drawImage(image, 0, 0, width, height);
-        const dataUrl = canvas.toDataURL("image/png");
-        const blob: any = dataURItoBlob(dataUrl);
-        //blob.lastModifiedDate = file.lastModifiedDate;
-        blob.lastModified = file.lastModified;
-        blob.name = file.name;
-        return blob as File;
-    };
 
     return new Promise<File>((resolve, reject) => {
         if (!file.type.match(/image.*/)) {
@@ -76,7 +41,59 @@ export function image_resizer(file: File, max_width: number, max_height?: number
         }
 
         reader.onload = (readerEvent: any) => {
-            image.onload = () => resolve(resize());
+            image.onload = () => {
+                let width = image.width;
+                let height = image.height;
+                const aspect = width / height;
+
+                if (width > max_width) {
+                    width = max_width;
+                    height = width / aspect;
+                }
+                if (height > max_height) {
+                    width = Math.min(width, max_height * aspect);
+                    height = width / aspect;
+                }
+                width = Math.floor(width);
+                height = Math.floor(height);
+
+                canvas.width = width;
+                canvas.height = height;
+                validateCanvas(canvas);
+                canvas.getContext("2d").drawImage(image, 0, 0, width, height);
+                canvas.toBlob((blob: Blob) => {
+                    const new_filename = file.name.replace(
+                        /(\.[^\.]+)$/,
+                        "-resized." + (blob.type === "image/webp" ? "webp" : "png"),
+                    );
+
+                    const ret = new File([blob], new_filename, {
+                        type: blob.type,
+                        lastModified: file.lastModified,
+                    });
+
+                    console.log(`File size was ${ret.size}.`, ret);
+
+                    if (max_file_size && ret.size > max_file_size) {
+                        const scale = Math.sqrt(max_file_size / ret.size) * 0.9;
+                        console.log(
+                            `Target size was ${ret.size}. Resizing to ${width * scale}x${
+                                height * scale
+                            } scale = ${scale}`,
+                        );
+                        resolve(
+                            image_resizer(
+                                ret,
+                                Math.max(1, Math.floor(width * scale)),
+                                Math.max(1, Math.floor(height * scale)),
+                                max_file_size,
+                            ),
+                        );
+                    } else {
+                        resolve(ret);
+                    }
+                }, "image/webp");
+            };
             image.src = readerEvent.target.result;
         };
         reader.readAsDataURL(file);
