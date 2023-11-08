@@ -490,7 +490,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                         </div>
 
                         <div className="actions-right">
-                            {reportState !== "resolved" && report.detected_ai_games ? (
+                            {reportState !== "resolved" && report.detected_ai_games.length > 0 ? (
                                 <button
                                     onClick={() => openAnnulQueueModal(setIsAnnulQueueModalOpen)}
                                 >
