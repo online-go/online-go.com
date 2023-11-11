@@ -100,6 +100,10 @@ export function Clock({
         // use use a smaller font
         const need_small_main_time_font = prettyTime(player_clock.main_time).length > 8;
 
+        const show_pause = !compact && clock.pause_state;
+        const show_transmitting =
+            (submitting_move && player_id !== data.get("user").id) || transmitting > 0;
+
         return (
             <span className={clock_className}>
                 {player_clock.main_time > 0 && (
@@ -164,16 +168,19 @@ export function Clock({
                         </React.Fragment>
                     )}
 
-                <div className="pause-and-transmit">
-                    {(submitting_move && player_id !== data.get("user").id) || transmitting > 0 ? (
-                        <span className="transmitting fa fa-wifi" title={transmitting.toFixed(0)} />
-                    ) : (
-                        <span className="transmitting" />
-                    )}
-                    {!compact && clock.pause_state && (
-                        <ClockPauseReason clock={clock} player_id={player_id} />
-                    )}
-                </div>
+                {(show_pause || show_transmitting) && (
+                    <div className="pause-and-transmit">
+                        {show_transmitting ? (
+                            <span
+                                className="transmitting fa fa-wifi"
+                                title={transmitting.toFixed(0)}
+                            />
+                        ) : (
+                            <span className="transmitting" />
+                        )}
+                        {show_pause && <ClockPauseReason clock={clock} player_id={player_id} />}
+                    </div>
+                )}
             </span>
         );
     }
