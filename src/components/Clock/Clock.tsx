@@ -28,11 +28,13 @@ export function Clock({
     color,
     className,
     compact,
+    lineSummary,
 }: {
     goban: Goban;
     color: clock_color;
     className?: string;
     compact?: boolean;
+    lineSummary?: boolean;
 }): JSX.Element {
     const [clock, setClock] = useState<JGOFClockWithTransmitting>(null);
     const [submitting_move, _setSubmittingMove] = useState<boolean>(false);
@@ -101,8 +103,6 @@ export function Clock({
         const need_small_main_time_font = prettyTime(player_clock.main_time).length > 8;
 
         const show_pause = !compact && clock.pause_state;
-        const show_transmitting =
-            (submitting_move && player_id !== data.get("user").id) || transmitting > 0;
 
         return (
             <span className={clock_className}>
@@ -168,9 +168,10 @@ export function Clock({
                         </React.Fragment>
                     )}
 
-                {(show_pause || show_transmitting) && (
+                {(show_pause || !lineSummary) && (
                     <div className="pause-and-transmit">
-                        {show_transmitting ? (
+                        {(submitting_move && player_id !== data.get("user").id) ||
+                        transmitting > 0 ? (
                             <span
                                 className="transmitting fa fa-wifi"
                                 title={transmitting.toFixed(0)}
