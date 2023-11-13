@@ -35,6 +35,13 @@ interface UserType {
     professional?: boolean;
 }
 
+export type GameNameForList = {
+    original: string;
+    text: string;
+    span?: string;
+    prefix?: string;
+};
+
 interface GobanLineSummaryProps {
     id: number;
     black: UserType;
@@ -177,6 +184,7 @@ export class GobanLineSummary extends React.Component<
             opponent = player_color === "black" ? this.props.white : this.props.black;
         }
 
+        const list_name = parseGameName(this.state.game_name);
         return (
             <Link
                 to={`/game/${this.props.id}`}
@@ -187,7 +195,14 @@ export class GobanLineSummary extends React.Component<
                 }
             >
                 <div className="move-number">{this.state.move_number}</div>
-                <div className="game-name">{this.state.game_name}</div>
+                <div className="game-name">
+                    {list_name.span && (
+                        <>
+                            <span className={list_name.span} />
+                        </>
+                    )}
+                    <span title={list_name.original}>{list_name.text}</span>
+                </div>
 
                 {this.props.lineSummaryMode === "opponent-only" && (
                     <>
@@ -248,4 +263,28 @@ function playerColor(props: GobanLineSummaryProps): PlayerColor | null {
         }
     }
     return null;
+}
+
+function stripNamePrefix(name: string, prefix: string): string | null {
+    if (!name) {
+        return null;
+    }
+    return name.startsWith(prefix) ? name.substr(prefix.length) : null;
+}
+
+export function parseGameName(name: string): GameNameForList | null {
+    const spans = {
+        "Tournament Game:": "fa fa-trophy",
+        "Ladder Challenge:": "fa fa-list-ol",
+    };
+    const list_name: GameNameForList = { original: name };
+    for (const prefix in spans) {
+        if ((list_name.text = stripNamePrefix(name, prefix))) {
+            list_name.prefix = prefix;
+            list_name.span = spans[prefix];
+            return list_name;
+        }
+    }
+    list_name.text = name;
+    return list_name;
 }

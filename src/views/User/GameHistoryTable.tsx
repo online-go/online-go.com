@@ -35,6 +35,7 @@ import { Speed } from "src/lib/types";
 import { usePreference } from "preferences";
 import { openAnnulQueueModal, AnnulQueueModal } from "AnnulQueueModal";
 import { useUser } from "hooks";
+import { parseGameName, GameNameForList } from "GobanLineSummary";
 
 interface GameHistoryProps {
     user_id: number;
@@ -60,7 +61,7 @@ interface GroomedGame {
     width: number;
     height: number;
     href: `/game/${number}`;
-    name: string;
+    name: GameNameForList;
     black: PlayerCacheEntry;
     white: PlayerCacheEntry;
     result_class: ResultClass;
@@ -180,10 +181,10 @@ export function GameHistoryTable(props: GameHistoryProps) {
             item.speed = capitalize(speed);
             item.speed_icon_class = getSpeedClass(speed);
 
-            item.name = r.name;
+            item.name = parseGameName(r.name);
 
-            if (item.name && item.name.trim() === "") {
-                item.name = item.href;
+            if (item.name && item.name.text.trim() === "") {
+                item.name.text = item.href;
             }
 
             item.href = `/game/${item.id}`;
@@ -390,7 +391,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                     "game_name" + (X && X.annulled ? " annulled" : ""),
                                 render: (X) => (
                                     <Link to={X.href} onClick={(e) => handleLinkClick(e)}>
-                                        {X.name ||
+                                        {!X.name &&
                                             interpolate(
                                                 "{{black_username}} vs. {{white_username}}",
                                                 {
@@ -398,6 +399,16 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                                     white_username: X.white.username,
                                                 },
                                             )}
+                                        {X.name && (
+                                            <>
+                                                {X.name.span && (
+                                                    <>
+                                                        <span className={X.name.span} />
+                                                    </>
+                                                )}
+                                                <span title={X.name.original}>{X.name.text}</span>
+                                            </>
+                                        )}
                                     </Link>
                                 ),
                             },
