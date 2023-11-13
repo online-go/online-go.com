@@ -195,10 +195,10 @@ export class GobanLineSummary extends React.Component<
                             <Player user={opponent} fakelink rank />
                         </div>
                         <div>
-                            <Clock goban={this.goban} color={player_color} />
+                            <Clock goban={this.goban} color={player_color} lineSummary={true} />
                         </div>
                         <div>
-                            <Clock goban={this.goban} color={opponent_color} />
+                            <Clock goban={this.goban} color={opponent_color} lineSummary={true} />
                         </div>
                     </>
                 )}
@@ -209,13 +209,13 @@ export class GobanLineSummary extends React.Component<
                             <Player user={this.props.black} fakelink rank />
                         </div>
                         <div>
-                            <Clock goban={this.goban} color="black" />
+                            <Clock goban={this.goban} color="black" lineSummary={true} />
                         </div>
                         <div className="player">
                             <Player user={this.props.white} fakelink />
                         </div>
                         <div>
-                            <Clock goban={this.goban} color="white" />
+                            <Clock goban={this.goban} color="white" lineSummary={true} />
                         </div>
                     </>
                 )}
