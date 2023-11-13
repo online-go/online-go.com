@@ -25,6 +25,8 @@ import { JGOFClockWithTransmitting, JGOFTimeControl } from "goban";
 import { browserHistory } from "../../ogsHistory";
 import { toast } from "toast";
 
+const ANTI_ESCAPING_TIMEOUT = 60; // number of seconds to wait before allowing the "Claim victory" button to be appear and be clicked
+
 let on_game_page = false;
 let live_game = false;
 let live_game_id = 0;
@@ -143,7 +145,7 @@ function AntiEscaping(): JSX.Element {
             const timer = setTimeout(() => {
                 setExpiration(null);
                 setShow(true);
-            }, 30 * 1000);
+            }, ANTI_ESCAPING_TIMEOUT * 1000);
             return () => {
                 clearTimeout(timer);
             };
