@@ -40,6 +40,7 @@ const BASE_PROPS = {
     ai_review_enabled: false,
     historical_black: undefined,
     historical_white: undefined,
+    ai_suspected: false,
     onZenClicked: jest.fn(),
     onCoordinatesClicked: jest.fn(),
     onAIReviewClicked: jest.fn(),
@@ -51,6 +52,7 @@ const BASE_PROPS = {
     onTimingClicked: jest.fn(),
     onCoordinatesMarked: jest.fn(),
     onReviewClicked: jest.fn(),
+    onDetectionResultsClicked: jest.fn(),
 };
 
 test("providing both Game ID and Review ID cause SGF buttons to link to review SGFs", () => {

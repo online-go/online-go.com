@@ -42,6 +42,7 @@ const BASE_PROPS = {
     show_score_breakdown: false,
     zen_mode: false,
     flags: null,
+    ai_suspected: false,
     onScoreClick: jest.fn(),
 };
 
