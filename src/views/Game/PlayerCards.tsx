@@ -46,6 +46,8 @@ interface PlayerCardsProps {
     zen_mode: boolean;
     black_flags: null | rest_api.GamePlayerFlags;
     white_flags: null | rest_api.GamePlayerFlags;
+    black_ai_suspected: boolean;
+    white_ai_suspected: boolean;
 }
 
 export function PlayerCards({
@@ -55,6 +57,8 @@ export function PlayerCards({
     zen_mode,
     black_flags,
     white_flags,
+    black_ai_suspected,
+    white_ai_suspected,
 }: PlayerCardsProps): JSX.Element {
     const goban = useGoban();
     const engine = goban.engine;
@@ -107,6 +111,7 @@ export function PlayerCards({
                     onScoreClick={toggleScorePopup}
                     zen_mode={zen_mode}
                     flags={black_flags}
+                    ai_suspected={black_ai_suspected}
                 />
                 <PlayerCard
                     historical={historical_white}
@@ -117,6 +122,7 @@ export function PlayerCards({
                     onScoreClick={toggleScorePopup}
                     zen_mode={zen_mode}
                     flags={white_flags}
+                    ai_suspected={white_ai_suspected}
                 />
             </div>
             {(engine.rengo || null) && (
@@ -201,6 +207,7 @@ interface PlayerCardProps {
     onScoreClick: () => void;
     zen_mode: boolean;
     flags: null | rest_api.GamePlayerFlags;
+    ai_suspected: boolean;
 }
 
 export function PlayerCard({
@@ -212,6 +219,7 @@ export function PlayerCard({
     onScoreClick,
     zen_mode,
     flags,
+    ai_suspected,
 }: PlayerCardProps) {
     const engine = goban.engine;
     const player = engine.players[color];
@@ -354,6 +362,12 @@ export function PlayerCard({
                 <div id={`${color}-score-details`} className="score-details">
                     <ScorePopup goban={goban} color={color} show={show_score_breakdown} />
                 </div>
+                {!hide_flags && ai_suspected && (
+                    <div className="player-flags">
+                        <i className="fa fa-flag" />
+                        {" AI Suspected"}
+                    </div>
+                )}
                 {!hide_flags && flags && (
                     <div className="player-flags">
                         {Object.keys(flags).map((flag) => (

@@ -48,6 +48,7 @@ interface DockProps {
     ai_review_enabled: boolean;
     historical_black: rest_api.games.Player | null;
     historical_white: rest_api.games.Player | null;
+    ai_suspected: boolean;
     onZenClicked: () => void;
     onCoordinatesClicked: () => void;
     onAIReviewClicked: () => void;
@@ -59,6 +60,7 @@ interface DockProps {
     onTimingClicked: () => void;
     onCoordinatesMarked: (stones: string) => void;
     onReviewClicked: () => void;
+    onDetectionResultsClicked: () => void;
 }
 
 export function GameDock({
@@ -68,6 +70,7 @@ export function GameDock({
     ladder_id,
     historical_black,
     historical_white,
+    ai_suspected,
     onZenClicked,
     onCoordinatesClicked,
     ai_review_enabled,
@@ -80,6 +83,7 @@ export function GameDock({
     onTimingClicked,
     onCoordinatesMarked,
     onReviewClicked,
+    onDetectionResultsClicked,
 }: DockProps): JSX.Element {
     const goban = useGoban();
     const engine = goban.engine;
@@ -570,6 +574,13 @@ export function GameDock({
                 <Tooltip tooltipRequired={tooltipRequired} title={_("Timing")}>
                     <a onClick={onTimingClicked}>
                         <i className="fa fa-clock-o"></i> {_("Timing")}
+                    </a>
+                </Tooltip>
+            )}
+            {(user_can_intervene || user_can_annul) && ai_suspected && (
+                <Tooltip tooltipRequired={tooltipRequired} title={_("Bot Detection Results")}>
+                    <a onClick={onDetectionResultsClicked}>
+                        <i className="fa fa-exclamation"></i> {_("Bot Detection Results")}
                     </a>
                 </Tooltip>
             )}
