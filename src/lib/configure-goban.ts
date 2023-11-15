@@ -64,6 +64,10 @@ export function configure_goban() {
         },
 
         isAnalysisDisabled: (goban: Goban, perGameSettingAppliesToNonPlayers = false): boolean => {
+            if (goban.engine.phase === "finished") {
+                return false;
+            }
+
             // The player's preference setting to always disable analysis overrides the per-game setting for
             // their own games.
             if (
