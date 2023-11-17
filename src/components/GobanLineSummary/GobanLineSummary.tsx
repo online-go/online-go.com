@@ -272,19 +272,23 @@ function stripNamePrefix(name: string, prefix: string): string | null {
     return name.startsWith(prefix) ? name.substr(prefix.length) : null;
 }
 
-export function parseGameName(name: string): GameNameForList | null {
+export function parseGameName(name: string): GameNameForList {
     const spans = {
         "Tournament Game:": "fa fa-trophy",
         "Ladder Challenge:": "fa fa-list-ol",
     };
-    const list_name: GameNameForList = { original: name };
     for (const prefix in spans) {
-        if ((list_name.text = stripNamePrefix(name, prefix))) {
-            list_name.prefix = prefix;
-            list_name.span = spans[prefix];
+        let text: string = null;
+        if ((text = stripNamePrefix(name, prefix))) {
+            const list_name: GameNameForList = {
+                original: name,
+                text: text,
+                prefix: prefix,
+                span: spans[prefix],
+            };
             return list_name;
         }
     }
-    list_name.text = name;
+    const list_name: GameNameForList = { original: name, text: name };
     return list_name;
 }

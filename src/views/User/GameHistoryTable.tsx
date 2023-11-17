@@ -181,7 +181,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
             item.speed = capitalize(speed);
             item.speed_icon_class = getSpeedClass(speed);
 
-            item.name = parseGameName(r.name);
+            item.name = r.name ? parseGameName(r.name) : null;
 
             if (item.name && item.name.text.trim() === "") {
                 item.name.text = item.href;
