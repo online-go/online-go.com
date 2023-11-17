@@ -43,7 +43,7 @@ const ACTION_PROMPTS = {
     ),
     escalate: pgettext(
         "A label for a community moderator to select this option - send report to to full moderators",
-        "Escalate.",
+        "Escalate: send direct to moderators.",
     ),
 };
 
