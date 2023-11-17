@@ -292,7 +292,7 @@ export function GamePreferences(): JSX.Element {
             <PreferenceLine
                 title={_("Activate Zen Mode by default")}
                 description={_(
-                    'When enabled, games you play or view will start off in the full screen "Zen Mode". This can be toggled off in game by clicking the Z icon.',
+                    'When enabled, live games you play or view will start off in the full screen "Zen Mode". This can be toggled off in game by clicking the Z icon.',
                 )}
             >
                 <Toggle checked={zen_mode_by_default} onChange={toggleZenMode} />

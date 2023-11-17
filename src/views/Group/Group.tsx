@@ -243,7 +243,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
         this.setState({
             new_icon: Object.assign(files[0], { preview: URL.createObjectURL(files[0]) }),
         });
-        image_resizer(files[0], 512, 512)
+        image_resizer(files[0], 512, 512, 65535)
             .then((file: Blob) => {
                 put(`group/${this.state.group_id}/icon`, file)
                     .then((res) => {
@@ -257,7 +257,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
         this.setState({
             new_banner: Object.assign(files[0], { preview: URL.createObjectURL(files[0]) }),
         });
-        image_resizer(files[0], 2560, 512)
+        image_resizer(files[0], 2560, 512, 65535)
             .then((file: Blob) => {
                 put(`group/${this.state.group_id}/banner`, file)
                     .then((res) => {
