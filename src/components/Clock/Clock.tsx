@@ -170,15 +170,16 @@ export function Clock({
 
                 {(show_pause || !lineSummary) && (
                     <div className="pause-and-transmit">
-                        {(submitting_move && player_id !== data.get("user").id) ||
-                        transmitting > 0 ? (
-                            <span
-                                className="transmitting fa fa-wifi"
-                                title={transmitting.toFixed(0)}
-                            />
-                        ) : (
-                            <span className="transmitting" />
-                        )}
+                        {!lineSummary &&
+                            ((submitting_move && player_id !== data.get("user").id) ||
+                            transmitting > 0 ? (
+                                <span
+                                    className="transmitting fa fa-wifi"
+                                    title={transmitting.toFixed(0)}
+                                />
+                            ) : (
+                                <span className="transmitting" />
+                            ))}
                         {show_pause && <ClockPauseReason clock={clock} player_id={player_id} />}
                     </div>
                 )}
