@@ -23,29 +23,15 @@ import { pgettext } from "translate";
 
 /**
  * Help flows for people who just got Community Moderator powers
+ *
+ * 'community-moderator-no-reports-intro' is for the case when they get powers but there are no actual reports
+ *  waiting for use to show them.   If they see this, they'll still see `community-moderator-with-reports-intro` later,
+ *  when there's an actual report to walk them through.
  */
 
 export function CommunityModeratorIntro(): JSX.Element {
     return (
         <>
-            <HelpFlow
-                id="community-moderator-with-reports-intro"
-                showInitially={false /* it's triggered by getting powers */}
-                description={pgettext(
-                    "Name of a dynamic help flow",
-                    "Community Moderator Introduction To Reports",
-                )}
-            >
-                <HelpItem target="incident-report-indicator" position={"bottom-left"}>
-                    <div>
-                        {pgettext(
-                            "A message describing the community moderator incident report indicator",
-                            "Incident report indicator - click it to see your report list",
-                        )}
-                    </div>
-                </HelpItem>
-            </HelpFlow>
-
             <HelpFlow
                 id="community-moderator-no-reports-intro"
                 showInitially={false /* it's triggered by getting powers */}
@@ -54,11 +40,54 @@ export function CommunityModeratorIntro(): JSX.Element {
                     "Community Moderator Introduction (no reports yet)",
                 )}
             >
-                <HelpItem target="incident-report-indicator" position={"bottom-left"}>
+                <HelpItem target="hidden-incident-report-indicator" position={"bottom-left"}>
                     <div>
                         {pgettext(
                             "A message describing the community moderator incident report indicator",
-                            "The Incident Report Indicator will display here when you have reports to look at!",
+                            "You have access to moderation reports!  The Incident Report Indicator will display here when you have reports to look at!",
+                        )}
+                    </div>
+                </HelpItem>
+            </HelpFlow>
+
+            <HelpFlow
+                id="community-moderator-with-reports-intro"
+                showInitially={false /* it's triggered by getting powers */}
+                debug={true}
+                description={pgettext(
+                    "Name of a dynamic help flow",
+                    "Community Moderator Introduction To Reports",
+                )}
+            >
+                <HelpItem target="incident-report-indicator" position={"bottom-left"}>
+                    <div>
+                        {pgettext(
+                            "A help message describing the community moderator incident report indicator",
+                            "Incident report indicator - click it to see your report list",
+                        )}
+                    </div>
+                </HelpItem>
+                <HelpItem target="first-report-button" position={"centre-left"}>
+                    <div>
+                        {pgettext(
+                            "A help message describing the how to see a report",
+                            "Press the 'report button' to see a report",
+                        )}
+                    </div>
+                </HelpItem>
+                <HelpItem target="voting-pane" position={"bottom-centre"}>
+                    <div>
+                        {pgettext(
+                            "A help message describing about community moderator voting",
+                            "After considering the report details, select one of these options and press 'vote'.",
+                        )}
+                    </div>
+                </HelpItem>
+                <HelpItem target="escalate-option" position={"bottom-centre"}>
+                    <div>
+                        {pgettext(
+                            "A help message describing a community moderator voting option",
+                            "Use this option if a full moderator needs to act on this report.",
                         )}
                     </div>
                 </HelpItem>

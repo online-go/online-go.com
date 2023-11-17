@@ -43,13 +43,18 @@ export function IncidentReportTracker(): JSX.Element {
 
     const { registerTargetItem, triggerFlow, signalUsed } = React.useContext(DynamicHelp.Api);
     const { ref: incident_report_indicator } = registerTargetItem("incident-report-indicator");
+    const { ref: hidden_incident_report_indicator } = registerTargetItem(
+        "hidden-incident-report-indicator",
+    );
+    const { ref: first_report_button, used: reportButtonUsed } =
+        registerTargetItem("first-report-button");
 
     function toggleList() {
         if (user.is_moderator) {
             navigate("/reports-center/");
         } else {
-            setShowIncidentList(!show_incident_list);
             signalUsed("incident-report-indicator");
+            setShowIncidentList(!show_incident_list);
         }
     }
 
@@ -171,6 +176,11 @@ export function IncidentReportTracker(): JSX.Element {
         };
     }, []);
 
+    const reportButtonClicked = (report_id) => {
+        reportButtonUsed();
+        navigate(`/reports-center/all/${report_id}`);
+    };
+
     const reports = report_manager.sorted_active_incident_reports;
     const hide_indicator = (reports.length === 0 && !user.is_moderator) || prefer_hidden;
 
@@ -196,7 +206,7 @@ export function IncidentReportTracker(): JSX.Element {
             {hide_indicator && (
                 /* this is a target for a dynamic help popup talking about why this isn't shown,
                 so we need it rendered while hidden */
-                <div className={"IncidentReportIndicator"} ref={incident_report_indicator}>
+                <div className={"IncidentReportIndicator"} ref={hidden_incident_report_indicator}>
                     <i className={`fa fa-exclamation-triangle`} style={{ visibility: "hidden" }} />
                 </div>
             )}
@@ -227,14 +237,15 @@ export function IncidentReportTracker(): JSX.Element {
                                 )}
                             </div>
                         )}
-                        {filtered_reports.map((report) => (
+                        {filtered_reports.map((report, index) => (
                             <div className="incident" key={report.id}>
                                 <div className="report-header">
-                                    <div className="report-id">
+                                    <div
+                                        className="report-id"
+                                        ref={index === 0 ? first_report_button : null}
+                                    >
                                         <button
-                                            onClick={() =>
-                                                navigate(`/reports-center/all/${report.id}`)
-                                            }
+                                            onClick={() => reportButtonClicked(report.id)}
                                             className="small"
                                         >
                                             {"R" + report.id.toString().slice(-3)}
