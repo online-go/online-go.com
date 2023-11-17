@@ -53,7 +53,6 @@ export function CommunityModeratorIntro(): JSX.Element {
             <HelpFlow
                 id="community-moderator-with-reports-intro"
                 showInitially={false /* it's triggered by getting powers */}
-                debug={true}
                 description={pgettext(
                     "Name of a dynamic help flow",
                     "Community Moderator Introduction To Reports",
