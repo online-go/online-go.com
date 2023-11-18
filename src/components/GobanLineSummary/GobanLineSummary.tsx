@@ -35,13 +35,6 @@ interface UserType {
     professional?: boolean;
 }
 
-export type GameNameForList = {
-    original: string;
-    text: string;
-    span?: string;
-    prefix?: string;
-};
-
 interface GobanLineSummaryProps {
     id: number;
     black: UserType;
@@ -184,7 +177,6 @@ export class GobanLineSummary extends React.Component<
             opponent = player_color === "black" ? this.props.white : this.props.black;
         }
 
-        const list_name = parseGameName(this.state.game_name);
         return (
             <Link
                 to={`/game/${this.props.id}`}
@@ -195,14 +187,7 @@ export class GobanLineSummary extends React.Component<
                 }
             >
                 <div className="move-number">{this.state.move_number}</div>
-                <div className="game-name">
-                    {list_name.span && (
-                        <>
-                            <span className={list_name.span} />
-                        </>
-                    )}
-                    <span title={list_name.original}>{list_name.text}</span>
-                </div>
+                <GameNameForList original_name={this.state.game_name} />
 
                 {this.props.lineSummaryMode === "opponent-only" && (
                     <>
@@ -272,7 +257,8 @@ function stripNamePrefix(name: string, prefix: string): string | null {
     return name.startsWith(prefix) ? name.substr(prefix.length) : null;
 }
 
-export function parseGameName(name: string): GameNameForList {
+export function GameNameForList(props: { original_name: string }): JSX.Element {
+    const name = props.original_name;
     const spans = {
         "Tournament Game:": "fa fa-trophy",
         "Ladder Challenge:": "fa fa-list-ol",
@@ -280,15 +266,18 @@ export function parseGameName(name: string): GameNameForList {
     for (const prefix in spans) {
         let text: string = null;
         if ((text = stripNamePrefix(name, prefix))) {
-            const list_name: GameNameForList = {
-                original: name,
-                text: text,
-                prefix: prefix,
-                span: spans[prefix],
-            };
-            return list_name;
+            const icon_class = spans[prefix];
+            return (
+                <div className="game-name">
+                    <span className={icon_class} />
+                    <span title={name}>{text}</span>
+                </div>
+            );
         }
     }
-    const list_name: GameNameForList = { original: name, text: name };
-    return list_name;
+    return (
+        <div className="game-name">
+            <span title={name}>{name}</span>
+        </div>
+    );
 }
