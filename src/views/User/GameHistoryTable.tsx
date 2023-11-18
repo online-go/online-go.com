@@ -35,7 +35,7 @@ import { Speed } from "src/lib/types";
 import { usePreference } from "preferences";
 import { openAnnulQueueModal, AnnulQueueModal } from "AnnulQueueModal";
 import { useUser } from "hooks";
-import { parseGameName, GameNameForList } from "GobanLineSummary";
+import { GameNameForList } from "GobanLineSummary";
 
 interface GameHistoryProps {
     user_id: number;
@@ -61,7 +61,7 @@ interface GroomedGame {
     width: number;
     height: number;
     href: `/game/${number}`;
-    name: GameNameForList;
+    name: string;
     black: PlayerCacheEntry;
     white: PlayerCacheEntry;
     result_class: ResultClass;
@@ -181,10 +181,10 @@ export function GameHistoryTable(props: GameHistoryProps) {
             item.speed = capitalize(speed);
             item.speed_icon_class = getSpeedClass(speed);
 
-            item.name = r.name ? parseGameName(r.name) : null;
+            item.name = r.name;
 
-            if (item.name && item.name.text.trim() === "") {
-                item.name.text = item.href;
+            if (item.name && item.name.trim() === "") {
+                item.name = item.href;
             }
 
             item.href = `/game/${item.id}`;
@@ -399,16 +399,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                                     white_username: X.white.username,
                                                 },
                                             )}
-                                        {X.name && (
-                                            <>
-                                                {X.name.span && (
-                                                    <>
-                                                        <span className={X.name.span} />
-                                                    </>
-                                                )}
-                                                <span title={X.name.original}>{X.name.text}</span>
-                                            </>
-                                        )}
+                                        {X.name && <GameNameForList original_name={X.name} />}
                                     </Link>
                                 ),
                             },
