@@ -92,4 +92,62 @@ export const CANNED_MESSAGES: rest_api.warnings.WarningMessages = {
         Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`),
             { reported },
         ),
+    warn_beginner_escaper: (game_id) =>
+        interpolate(
+            _(`
+        Hi, welcome to OGS!
+
+        Please consider resigning games rather than letting them time out, as this is fairer to your opponents than making them wait for your clock to run out. Thank you.
+        `),
+            { game_id },
+        ),
+    warn_escaper: (game_id) =>
+        interpolate(
+            _(`
+        It has come to our attention that you abandoned game #{{game_id}} and allowed it to time out rather than resigning.
+
+        Players are required to end their games properly, as letting them time out can cause opponents to wait unnecessarily,
+        and prevent them from moving on to the next game.
+
+        Please ensure that you end your games properly by accepting the correct score immediately after passing,
+        or by resigning if you feel the position is hopeless.
+
+        This helps maintain a positive gaming environment for everyone involved.`),
+            { game_id },
+        ),
+    ack_educated_beginner_escaper: (reported) =>
+        interpolate(
+            _(`
+        Thanks for the report about {{reported}}, we've asked your newcomer opponent to be more respectful of people’s time.`),
+            { reported },
+        ),
+    ack_educated_beginner_escaper_and_annul: (reported) =>
+        interpolate(
+            _(`
+        Thanks for the report about {{reported}}, we've asked your newcomer opponent to be more respectful of people’s time.
+        That incorrectly scored game has been annulled.`),
+            { reported },
+        ),
+    ack_warned_escaper: (reported) =>
+        interpolate(
+            _(`
+        Thank you for your report, {{reported}} has been given a formal warning about finishing games properly.`),
+            { reported },
+        ),
+    ack_warned_escaper_and_annul: (reported) =>
+        interpolate(
+            _(`
+        Thank you for your report, {{reported}} has been given a formal warning about finishing games properly, and that abandonned game annulled.`),
+            reported,
+        ),
+    no_escaping_evident: (reported) =>
+        interpolate(
+            _(`
+        Thank you for bringing the possible instance of escaping by {{reported}} to
+        our attention. We looked into the report and their actions seemed approprate. If a pattern of
+        complaints emerges, we will investigate further.
+
+        Thank you for helping keep OGS enjoyable for everyone. We appreciate it.`),
+            { reported },
+        ),
 };

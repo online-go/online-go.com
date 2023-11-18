@@ -41,6 +41,11 @@ export type ReportType =
     | "warning" // for moderators only
     | "troll"; // system generated, for moderators only
 
+export const CommunityModeratorReportTypes: ReadonlyArray<ReportType> = [
+    "escaping",
+    "score_cheating",
+];
+
 export interface ReportDescription {
     type: ReportType;
     title: string;

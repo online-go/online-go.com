@@ -21,7 +21,9 @@ import { browserHistory } from "ogsHistory";
 import * as preferences from "preferences";
 import { alert } from "swal_config";
 
-export const MOD_POWER_HANDLE_SCORE_CHEAT = 1; // Matches back-end MOD_POWER
+// Must match back-end MODERATOR_POWER
+export const MOD_POWER_HANDLE_SCORE_CHEAT = 0b01;
+export const MOD_POWER_HANDLE_ESCAPING = 0b10;
 
 export type Timeout = ReturnType<typeof setTimeout>;
 
