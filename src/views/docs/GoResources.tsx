@@ -208,7 +208,7 @@ export const GoResources = () => {
                                         <Flag country={en} /> <Flag country={gr} />
                                         <Flag country={fr} /> <Flag country={br} />
                                         <Flag country={es} /> <Flag country={ru} />
-                                        <Flag country={ro} /> <Flag country={cat} />
+                                        <Flag country={ro} /> <Flag country={_cat} />
                                     </span>{" "}
                                     <a rel="noopener" href="https://www.gobook.eu/">
                                         A Go Guide{" "}
