@@ -207,6 +207,8 @@ export const GoResources = () => {
                                     <span style={{ display: "inline-block", width: "2.5rem" }}>
                                         <Flag country={en} /> <Flag country={gr} />
                                         <Flag country={fr} /> <Flag country={br} />
+                                        <Flag country={es} /> <Flag country={ru} />
+                                        <Flag country={ro} /> <Flag country={cat} />
                                     </span>{" "}
                                     <a rel="noopener" href="https://www.gobook.eu/">
                                         A Go Guide{" "}
