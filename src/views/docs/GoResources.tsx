@@ -86,6 +86,8 @@ export const GoResources = () => {
     const gr = "gr";
     const br = "br";
     const _in = "in";
+    const ro = "ro";
+    const _cat = "_cat";
     const ar = getLanguageFlag("spanish", country, "ar");
 
     return (
