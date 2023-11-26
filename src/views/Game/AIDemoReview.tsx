@@ -341,6 +341,7 @@ function renderAnalysis(goban: Goban, data: any) {
     if (!preferences.get("ai-review-enabled")) {
         return;
     }
+    const use_score = preferences.get("ai-review-use-score");
 
     const analysis = data.analysis;
     const branches = analysis.branches;
@@ -381,7 +382,6 @@ function renderAnalysis(goban: Goban, data: any) {
                 ? JGOFNumericPlayerColor.WHITE
                 : JGOFNumericPlayerColor.BLACK;
 
-        const use_score = false;
         const delta: number = use_score
             ? next_player === JGOFNumericPlayerColor.WHITE
                 ? analysis.score - branch.score
