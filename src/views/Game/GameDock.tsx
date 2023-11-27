@@ -113,7 +113,7 @@ export function GameDock({
 
     let sgf_download_enabled = false;
     try {
-        sgf_download_enabled = phase === "finished" || !goban.isAnalysisDisabled(true);
+        sgf_download_enabled = !goban.isAnalysisDisabled(true);
     } catch (e) {
         // ignore error
     }
@@ -138,11 +138,7 @@ export function GameDock({
     };
 
     const fork = () => {
-        if (
-            !user.anonymous &&
-            !engine.rengo &&
-            (!goban.isAnalysisDisabled() || phase === "finished")
-        ) {
+        if (!user.anonymous && !engine.rengo && !goban.isAnalysisDisabled()) {
             challengeFromBoardPosition(goban);
         }
     };
@@ -388,9 +384,7 @@ export function GameDock({
                 <Tooltip tooltipRequired={tooltipRequired} title={_("Analyze game")}>
                     <a
                         onClick={onAnalyzeClicked}
-                        className={
-                            phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""
-                        }
+                        className={goban.isAnalysisDisabled() ? "disabled" : ""}
                     >
                         <i className="fa fa-sitemap"></i> {_("Analyze game")}
                     </a>
@@ -405,9 +399,7 @@ export function GameDock({
                                     ? "visible"
                                     : "hidden",
                         }}
-                        className={
-                            phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""
-                        }
+                        className={goban.isAnalysisDisabled() ? "disabled" : ""}
                         onClick={onConditionalMovesClicked}
                     >
                         <i className="fa fa-exchange"></i> {_("Plan conditional moves")}
@@ -430,11 +422,7 @@ export function GameDock({
                                 return onReviewClicked();
                             }
                         }}
-                        className={
-                            (phase !== "finished" && goban.isAnalysisDisabled()) || user.anonymous
-                                ? "disabled"
-                                : ""
-                        }
+                        className={goban.isAnalysisDisabled() || user.anonymous ? "disabled" : ""}
                     >
                         <i className="fa fa-refresh"></i> {_("Review this game")}
                     </a>
@@ -443,7 +431,7 @@ export function GameDock({
             <Tooltip tooltipRequired={tooltipRequired} title={_("Estimate score")}>
                 <a
                     onClick={onEstimateClicked}
-                    className={phase !== "finished" && goban.isAnalysisDisabled() ? "disabled" : ""}
+                    className={goban.isAnalysisDisabled() ? "disabled" : ""}
                 >
                     <i className="fa fa-tachometer"></i> {_("Estimate score")}
                 </a>
@@ -452,9 +440,7 @@ export function GameDock({
                 <a
                     onClick={fork}
                     className={
-                        user.anonymous ||
-                        engine.rengo ||
-                        (goban.isAnalysisDisabled() && phase !== "finished")
+                        user.anonymous || engine.rengo || goban.isAnalysisDisabled()
                             ? "disabled"
                             : ""
                     }

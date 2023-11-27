@@ -338,7 +338,7 @@ export function Game(): JSX.Element {
         if (
             goban.current.mode === "play" &&
             goban.current.engine.phase !== "stone removal" &&
-            (!goban.current.isAnalysisDisabled() || goban.current.engine.phase === "finished")
+            !goban.current.isAnalysisDisabled()
         ) {
             set_variation_name("");
             goban.current.setMode("analyze");
@@ -473,7 +473,7 @@ export function Game(): JSX.Element {
         }
     };
     const gameAnalyze = () => {
-        if (goban.current.isAnalysisDisabled() && goban.current.engine.phase !== "finished") {
+        if (goban.current.isAnalysisDisabled()) {
             //alert.fire(_("Analysis mode has been disabled for this game"));
         } else {
             const last_estimate_move = stopEstimatingScore();
@@ -623,7 +623,7 @@ export function Game(): JSX.Element {
         goban.current.score_estimate = null;
     };
     const enterConditionalMovePlanner = () => {
-        if (goban.current.isAnalysisDisabled() && goban.current.engine.phase !== "finished") {
+        if (goban.current.isAnalysisDisabled()) {
             //alert.fire(_("Conditional moves have been disabled for this game."));
         } else {
             stashed_conditional_moves.current = goban.current.conditional_tree.duplicate();
@@ -639,11 +639,7 @@ export function Game(): JSX.Element {
             user.id === goban.current.engine.players.black.id ||
             user.id === goban.current.engine.players.white.id;
 
-        if (
-            goban.current.isAnalysisDisabled() &&
-            goban.current.engine.phase !== "finished" &&
-            is_player
-        ) {
+        if (goban.current.isAnalysisDisabled() && is_player) {
             //alert.fire(_("Analysis mode has been disabled for this game, you can start a review after the game has concluded."));
         } else {
             alert
@@ -668,11 +664,7 @@ export function Game(): JSX.Element {
             user.id === goban.current.engine.players.white.id ||
             shared_ip_with_player_map[game_id];
 
-        if (
-            goban.current.isAnalysisDisabled() &&
-            goban.current.engine.phase !== "finished" &&
-            is_player
-        ) {
+        if (goban.current.isAnalysisDisabled() && is_player) {
             return null;
         }
 
