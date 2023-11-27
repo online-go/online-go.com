@@ -18,7 +18,7 @@
 import * as React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUser, useRefresh } from "hooks";
-import { report_categories, ReportDescription } from "Report";
+import { CommunityModeratorReportTypes, report_categories, ReportDescription } from "Report";
 import { report_manager, DAILY_REPORT_GOAL } from "report_manager";
 import Select from "react-select";
 import { _ } from "translate";
@@ -133,8 +133,10 @@ export function ReportsCenter(): JSX.Element {
 
     const visible_categories = user.is_moderator
         ? categories
-        : // community moderators only get to see score cheating reports at the moment
-          [report_categories.find((category) => category.type === "score_cheating")];
+        : // community moderators supported report types
+          report_categories.filter((category) =>
+              CommunityModeratorReportTypes.includes(category.type),
+          );
 
     return (
         <div className="ReportsCenter container">

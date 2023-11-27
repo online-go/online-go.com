@@ -25,7 +25,14 @@ declare namespace rest_api {
             | "ack_educated_beginner_score_cheat_and_annul"
             | "ack_warned_score_cheat"
             | "ack_warned_score_cheat_and_annul"
-            | "no_score_cheating_evident";
+            | "no_score_cheating_evident"
+            | "warn_beginner_escaper"
+            | "warn_escaper"
+            | "ack_educated_beginner_escaper"
+            | "ack_educated_beginner_escaper_and_annul"
+            | "ack_warned_escaper"
+            | "ack_warned_escaper_and_annul"
+            | "no_escaping_evident";
 
         type Severity = "warning" | "acknowledgement";
 

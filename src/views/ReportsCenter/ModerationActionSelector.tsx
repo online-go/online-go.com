@@ -30,7 +30,7 @@ interface ModerationActionSelectorProps {
 
 const ACTION_PROMPTS = {
     annul_score_cheat: pgettext(
-        "A label for a moderator to select this option",
+        "Label for a moderator to select this option",
         "Annul the game and warn the cheater.",
     ),
     warn_score_cheat: pgettext(
@@ -40,6 +40,18 @@ const ACTION_PROMPTS = {
     no_score_cheat: pgettext(
         "Label for a moderator to select this option",
         "No cheating - inform the reporter.",
+    ),
+    annul_escaped: pgettext(
+        "Label for a moderator to select this option",
+        "Wrong result due to escape - annull and warn the escaper.",
+    ),
+    warn_escaper: pgettext(
+        "Label for a moderator to select this option",
+        "The accused escaped - warn them.",
+    ),
+    no_escaping: pgettext(
+        "Label for a moderator to select this option",
+        "No escaping evident - inform the reporter.",
     ),
     escalate: pgettext(
         "A label for a community moderator to select this option - send report to to full moderators",

@@ -33,7 +33,7 @@ import { EventEmitter } from "eventemitter3";
 import { emitNotification } from "Notifications";
 import { browserHistory } from "ogsHistory";
 import { get, post } from "requests";
-import { MOD_POWER_HANDLE_SCORE_CHEAT } from "./misc";
+import { MOD_POWER_HANDLE_SCORE_CHEAT, MOD_POWER_HANDLE_ESCAPING } from "./misc";
 
 export const DAILY_REPORT_GOAL = 10;
 
@@ -212,22 +212,27 @@ class ReportManager extends EventEmitter<Events> {
             if (!user.is_moderator && !user.moderator_powers) {
                 return false;
             }
-            // Community moderators only get to see score_cheating reports that they
+            // Community moderators only get to see reports that they have the power for and
             // have not yet voted on.
+            const has_handle_score_cheat =
+                (user.moderator_powers & MOD_POWER_HANDLE_SCORE_CHEAT) > 0;
+            const has_handle_escaping = (user.moderator_powers & MOD_POWER_HANDLE_ESCAPING) > 0;
             if (
                 !user.is_moderator &&
                 user.moderator_powers &&
-                (!(
-                    report.report_type === "score_cheating" &&
-                    user.moderator_powers & MOD_POWER_HANDLE_SCORE_CHEAT
-                ) ||
+                ((!(report.report_type === "score_cheating" && has_handle_score_cheat) &&
+                    !(report.report_type === "escaping" && has_handle_escaping)) ||
                     report.voters?.some((vote) => vote.voter_id === user.id))
             ) {
                 return false;
             }
-            // don't hand score cheating reports to full mods unless the report is escalated,
+            // don't hand community moderation reports to full mods unless the report is escalated,
             // because community moderators are supposed to do these!
-            if (user.is_moderator && report.report_type === "score_cheating" && !report.escalated) {
+            if (
+                user.is_moderator &&
+                (report.report_type === "score_cheating" || report.report_type === "escaping") &&
+                !report.escalated
+            ) {
                 return false;
             }
             return !report.moderator || report.moderator?.id === user.id;
