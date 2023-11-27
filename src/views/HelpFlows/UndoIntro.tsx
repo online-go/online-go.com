@@ -34,7 +34,7 @@ export function UndoRequestedIntro(): JSX.Element {
                 "OGS Undo policy notification (requested)",
             )}
         >
-            <HelpItem target="undo-requested-message" position={"bottom-center"} hideOptOut>
+            <HelpItem target="undo-requested-message" position={"bottom-center"}>
                 <div>
                     {_(
                         "Your opponent may now decide to accept the undo request or not. Please note they are not obliged to do so.",
@@ -59,7 +59,7 @@ export function UndoRequestReceivedIntro(): JSX.Element {
                 "OGS Undo policy notification (received)",
             )}
         >
-            <HelpItem target="accept-undo-button" position={"bottom-left"} hideOptOut>
+            <HelpItem target="accept-undo-button" position={"bottom-left"}>
                 <div>
                     {_(
                         "Your opponent requested an undo: you may decide to accept the undo request or not - you are not obliged to do so.",

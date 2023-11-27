@@ -26,6 +26,7 @@ import { OOLUserIntro } from "./OOLUserIntro";
 import { OOLSpectatorIntro } from "./OOLSpectatorIntro";
 import { UndoRequestedIntro } from "./UndoIntro";
 import { UndoRequestReceivedIntro } from "./UndoIntro";
+import { CommunityModeratorIntro } from "./CommunityModertatorIntro";
 
 /**
  * This component is a handy wrapper for all the Help Flows, and reset on login/logout
@@ -83,6 +84,8 @@ export function HelpFlows(): JSX.Element {
 
             <UndoRequestedIntro />
             <UndoRequestReceivedIntro />
+
+            <CommunityModeratorIntro />
         </>
     );
 }

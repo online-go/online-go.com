@@ -381,7 +381,7 @@ export function NavBar(): JSX.Element {
                     </>
                 ) : (
                     <>
-                        <span className="spacer" />
+                        <div className="spacer" />
                         <IncidentReportTracker />
                         <ChatIndicator />
                         <TournamentIndicator />

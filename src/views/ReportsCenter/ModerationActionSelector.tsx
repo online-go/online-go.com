@@ -17,7 +17,9 @@
 
 import * as React from "react";
 import { Report } from "report_manager";
-import { _, pgettext } from "translate";
+import { pgettext } from "translate";
+
+import * as DynamicHelp from "react-dynamic-help";
 
 interface ModerationActionSelectorProps {
     report: Report;
@@ -41,7 +43,7 @@ const ACTION_PROMPTS = {
     ),
     escalate: pgettext(
         "A label for a community moderator to select this option - send report to to full moderators",
-        "Escalate.",
+        "Escalate: send direct to moderators.",
     ),
 };
 
@@ -58,8 +60,12 @@ export function ModerationActionSelector({
         claim();
     };
 
+    const { registerTargetItem } = React.useContext(DynamicHelp.Api);
+    const { ref: voting_pane } = registerTargetItem("voting-pane");
+    const { ref: escalate_option } = registerTargetItem("escalate-option");
+
     return (
-        <div className="voting">
+        <div className="voting" ref={voting_pane}>
             <h4>
                 {pgettext(
                     "The heading for community moderators 'action choices' section",
@@ -67,7 +73,11 @@ export function ModerationActionSelector({
                 )}
             </h4>
             {report.available_actions.map((a) => (
-                <div key={a} className="action-selector">
+                <div
+                    key={a}
+                    className="action-selector"
+                    ref={a === "escalate" ? escalate_option : null}
+                >
                     <input
                         id={a}
                         name="availableActions"
@@ -85,7 +95,7 @@ export function ModerationActionSelector({
                     disabled={!enable}
                     onClick={() => submit(selectedOption)}
                 >
-                    {_("Submit")}
+                    {pgettext("A label on a button for submitting a vote", "Vote")}
                 </button>
             )}
         </div>

@@ -248,7 +248,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     player={report.reported_user}
                 />
             )}
-            <div className="header">
+            <div className="view-report-header">
                 {report_in_reports ? (
                     <Select
                         id="ReportsCenterSelectReport"
@@ -290,47 +290,52 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                 ) : (
                     <span className="historical-report-number">{R(report.id)}</span>
                 )}
-
-                <span className="moderator">
-                    <Select
-                        id="ReportsCenterSelectModerator"
-                        className="reports-center-category-option-select"
-                        classNamePrefix="ogs-react-select"
-                        value={moderators.filter((m) => m.id === moderator_id)[0]}
-                        getOptionValue={(data) => data.type}
-                        onChange={(m: any) => assignToModerator(m.id)}
-                        options={moderators}
-                        isClearable={false}
-                        isSearchable={false}
-                        blurInputOnSelect={true}
-                        placeholder={"Moderator.."}
-                        components={{
-                            Option: ({ innerRef, innerProps, isFocused, isSelected, data }) => (
-                                <div
-                                    ref={innerRef}
-                                    {...innerProps}
-                                    className={
-                                        "reports-center-assigned-moderator" +
-                                        (isFocused ? "focused " : "") +
-                                        (isSelected ? "selected" : "")
-                                    }
-                                >
-                                    {data.username}
-                                </div>
-                            ),
-                            SingleValue: ({ innerProps, data }) => (
-                                <span {...innerProps} className="reports-center-assigned-moderator">
-                                    {data.username}
-                                </span>
-                            ),
-                            ValueContainer: ({ children }) => (
-                                <div className="reports-center-assigned-moderator-container">
-                                    {children}
-                                </div>
-                            ),
-                        }}
-                    />
-
+                {(user.is_moderator || null) && (
+                    <span className="moderator">
+                        <Select
+                            id="ReportsCenterSelectModerator"
+                            className="reports-center-category-option-select"
+                            classNamePrefix="ogs-react-select"
+                            value={moderators.filter((m) => m.id === moderator_id)[0]}
+                            getOptionValue={(data) => data.type}
+                            onChange={(m: any) => assignToModerator(m.id)}
+                            options={moderators}
+                            isClearable={false}
+                            isSearchable={false}
+                            blurInputOnSelect={true}
+                            placeholder={"Moderator.."}
+                            components={{
+                                Option: ({ innerRef, innerProps, isFocused, isSelected, data }) => (
+                                    <div
+                                        ref={innerRef}
+                                        {...innerProps}
+                                        className={
+                                            "reports-center-assigned-moderator" +
+                                            (isFocused ? "focused " : "") +
+                                            (isSelected ? "selected" : "")
+                                        }
+                                    >
+                                        {data.username}
+                                    </div>
+                                ),
+                                SingleValue: ({ innerProps, data }) => (
+                                    <span
+                                        {...innerProps}
+                                        className="reports-center-assigned-moderator"
+                                    >
+                                        {data.username}
+                                    </span>
+                                ),
+                                ValueContainer: ({ children }) => (
+                                    <div className="reports-center-assigned-moderator-container">
+                                        {children}
+                                    </div>
+                                ),
+                            }}
+                        />
+                    </span>
+                )}
+                <span>
                     <button className={"default" + (prev_report ? "" : " hide")} onClick={prev}>
                         &lt; Prev
                     </button>

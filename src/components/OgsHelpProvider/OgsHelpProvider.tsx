@@ -26,12 +26,8 @@ import { HelpProvider, HelpPopupDictionary } from "react-dynamic-help";
 import * as DynamicHelp from "react-dynamic-help";
 
 const helpPopupDictionary: HelpPopupDictionary = {
-    "Don't show me these": pgettext(
-        "A button to turn off help popups completely",
-        "Don't show me these",
-    ),
-    Skip: pgettext("A button to dismiss a help popup", "Skip"),
-    OK: pgettext("A button to dismiss the last help popup", "OK"),
+    "Skip this topic": pgettext("A button to dismiss a help popup topic", "Skip this topic"),
+    OK: pgettext("A button to dismiss the current help popup", "OK"),
 };
 
 type OgsHelpProviderProps = {
