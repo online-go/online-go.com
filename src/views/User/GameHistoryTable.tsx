@@ -35,6 +35,7 @@ import { Speed } from "src/lib/types";
 import { usePreference } from "preferences";
 import { openAnnulQueueModal, AnnulQueueModal } from "AnnulQueueModal";
 import { useUser } from "hooks";
+import { GameNameForList } from "GobanLineSummary";
 
 interface GameHistoryProps {
     user_id: number;
@@ -392,7 +393,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                     "game_name" + (X && X.annulled ? " annulled" : ""),
                                 render: (X) => (
                                     <Link to={X.href} onClick={(e) => handleLinkClick(e)}>
-                                        {X.name ||
+                                        {!X.name &&
                                             interpolate(
                                                 "{{black_username}} vs. {{white_username}}",
                                                 {
@@ -400,6 +401,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                                     white_username: X.white.username,
                                                 },
                                             )}
+                                        {X.name && <GameNameForList original_name={X.name} />}
                                     </Link>
                                 ),
                             },

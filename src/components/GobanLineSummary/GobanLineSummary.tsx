@@ -187,7 +187,7 @@ export class GobanLineSummary extends React.Component<
                 }
             >
                 <div className="move-number">{this.state.move_number}</div>
-                <div className="game-name">{this.state.game_name}</div>
+                <GameNameForList original_name={this.state.game_name} />
 
                 {this.props.lineSummaryMode === "opponent-only" && (
                     <>
@@ -248,4 +248,36 @@ function playerColor(props: GobanLineSummaryProps): PlayerColor | null {
         }
     }
     return null;
+}
+
+function stripNamePrefix(name: string, prefix: string): string | null {
+    if (!name) {
+        return null;
+    }
+    return name.startsWith(prefix) ? name.substr(prefix.length) : null;
+}
+
+export function GameNameForList(props: { original_name: string }): JSX.Element {
+    const name = props.original_name;
+    const spans = {
+        "Tournament Game:": "fa fa-trophy",
+        "Ladder Challenge:": "fa fa-list-ol",
+    };
+    for (const prefix in spans) {
+        let text: string = null;
+        if ((text = stripNamePrefix(name, prefix))) {
+            const icon_class = spans[prefix];
+            return (
+                <div className="game-name">
+                    <span className={icon_class} />
+                    <span title={name}>{text}</span>
+                </div>
+            );
+        }
+    }
+    return (
+        <div className="game-name">
+            <span title={name}>{name}</span>
+        </div>
+    );
 }
