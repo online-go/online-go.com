@@ -103,13 +103,13 @@ function AntiEscaping(): JSX.Element {
     const user = useUser();
     const goban = useGoban();
     const [phase, setPhase] = React.useState(goban?.engine?.phase);
-    const [clock, setClock] = React.useState<JGOFClockWithTransmitting>(goban?.last_clock as any);
+    const [clock, setClock] = React.useState<JGOFClockWithTransmitting>(goban?.last_emitted_clock);
     const [expiration, setExpiration] = React.useState<number>(null);
     const [show, setShow] = React.useState(false);
 
     React.useEffect(() => {
         setShow(false);
-        setClock(goban?.last_clock as any);
+        setClock(goban?.last_emitted_clock);
         goban.on("clock", setClock);
 
         return () => {
