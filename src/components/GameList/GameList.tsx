@@ -80,67 +80,49 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
         }
     };
 
+    extractClockSortFields(game: GameType) {
+        try {
+            const clock =
+                game.goban && game.goban.last_clock ? game.goban.last_clock : game.json.clock;
+            return [
+                1,
+                clock.current_player === this.props.player.id ? 1 : 0,
+                clock.expiration,
+                game.id,
+            ];
+        } catch (e) {
+            console.error(game, e);
+            return [0, 0, 0, game.id];
+        }
+    }
+
     applyCurrentSort(games: GameType[]) {
         switch (this.state.sort_order) {
             case "-clock":
             case "clock":
                 games.sort((a, b) => {
-                    try {
-                        const a_clock =
-                            a.goban && a.goban.last_clock ? a.goban.last_clock : a.json.clock;
-                        const b_clock =
-                            b.goban && b.goban.last_clock ? b.goban.last_clock : b.json.clock;
-
-                        /* not my move? push to bottom (or top) */
-                        if (
-                            a_clock.current_player === this.props.player.id &&
-                            b_clock.current_player !== this.props.player.id
-                        ) {
-                            return -1;
-                        }
-                        if (
-                            b_clock.current_player === this.props.player.id &&
-                            a_clock.current_player !== this.props.player.id
-                        ) {
-                            return 1;
-                        }
-
-                        return a_clock.expiration - b_clock.expiration || a.id - b.id;
-                    } catch (e) {
-                        console.error(a, b, e);
-                        return 0;
-                    }
+                    const a_clock = this.extractClockSortFields(a);
+                    const b_clock = this.extractClockSortFields(b);
+                    return (
+                        b_clock[0] - a_clock[0] ||
+                        b_clock[1] - a_clock[1] ||
+                        a_clock[2] - b_clock[2] ||
+                        a_clock[3] - b_clock[3]
+                    );
                 });
                 break;
 
             case "-opponent-clock":
             case "opponent-clock":
                 games.sort((a, b) => {
-                    try {
-                        const a_clock =
-                            a.goban && a.goban.last_clock ? a.goban.last_clock : a.json.clock;
-                        const b_clock =
-                            b.goban && b.goban.last_clock ? b.goban.last_clock : b.json.clock;
-
-                        /* not my move? push to bottom (or top) */
-                        if (
-                            a_clock.current_player === this.props.player.id &&
-                            b_clock.current_player !== this.props.player.id
-                        ) {
-                            return 1;
-                        }
-                        if (
-                            b_clock.current_player === this.props.player.id &&
-                            a_clock.current_player !== this.props.player.id
-                        ) {
-                            return -1;
-                        }
-
-                        return a_clock.expiration - b_clock.expiration || a.id - b.id;
-                    } catch (e) {
-                        console.error(a, b, e);
-                        return 0;
-                    }
+                    const a_clock = this.extractClockSortFields(a);
+                    const b_clock = this.extractClockSortFields(b);
+                    return (
+                        b_clock[0] - a_clock[0] ||
+                        a_clock[1] - b_clock[1] ||
+                        a_clock[2] - b_clock[2] ||
+                        a_clock[3] - b_clock[3]
+                    );
                 });
                 break;
 
