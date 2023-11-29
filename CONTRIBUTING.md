@@ -1,6 +1,6 @@
 # Development Environment
 
-Make sure you have at least 4 GB of physical memoty allocation to your OS and 4GB swap space allocated or npm run dev will probably freeze the system.
+Make sure you have at least 4 GB of physical memory allocation to your OS and 4GB swap space allocated or `npm run dev` will probably freeze the system.
 
 Getting setup is easy, you'll need to have [Node.js](https://nodejs.org/) installed,
 then simply clone the repository and within the working directory run the following:
@@ -14,7 +14,7 @@ npx husky install
 # Run this to start the development server and build system
 npm run dev
 ```
-If you get react dependency errors with npm install yarn, try this instead:
+If you get React dependency errors with npm install yarn, try this instead:
 ```
 sudo npm install --global yarn
 ```
@@ -22,7 +22,7 @@ If you're on Linux, you can simply type `make` and it will do all this for you a
 
 If you're on Windows and need specific help getting tools installed and the repo cloned, see [Detailed Setup Steps](#detailed-setup-steps-windows-but-applicable-mostly-to-others) below.
 
-(And ... those detailed steps may even be a useful pointer about how to get started under linux/macos: they're broadly applicable, even if details differ slightly.)
+(And ... those detailed steps may even be a useful pointer about how to get started under Linux/macOS: they're broadly applicable, even if details differ slightly.)
 
 Once running, you can then navigate to [http://dev.beta.online-go.com:8080/](http://dev.beta.online-go.com:8080/)
 which loads the interface from your local server that you just started with gulp, and
@@ -35,7 +35,7 @@ connects to the beta server for testing.
 -   Submit an issue if one does not exist. Please include as much of the below information as possible:
     -   A clear summary.
     -   Operating System tested on.
-    -   Browser used when bug appeared (or multiple browsers if you have replicated the bug.)
+    -   Browser used when bug appeared (or multiple browsers if you have replicated the bug).
     -   Browser version.
     -   Steps to reproduce the issue.
     -   Any additional information that you might think is useful.
@@ -91,18 +91,18 @@ This project is largely built with TypeScript and React. If you are unfamiliar w
 5. Open VSCode
  - Choose "clone git repository"
  - Chose "clone from github"
- - Allow it to log you into gitbhub
+ - Allow it to log you into GitHub
  - Choose *your fork* of online-go.com to clone
-    - ** make sure it's your fork - VSCode may offer the official repo at the top of the list, don't chose that one
+    - **make sure it's your fork** - VSCode may offer the official repo at the top of the list, don't chose that one
  - Chose a local folder somewhere sensible to clone it into (definitely distinct from anything left over from before!)
  - Agree to install the recommended extensions
      (you definitely need these for OGS, they setup the editor for coding standards that are enforced, and provide linting while editing)
 
-... you should now see a code explorer on the left pane of VS Code showing the OGS repo file structure (maybe you need to click on the top icon in the left pane to get this view).
+... you should now see a code explorer on the left pane of VSCode showing the OGS repo file structure (maybe you need to click on the top icon in the left pane to get this view).
 
 ... now you have online-go.com checked out, without silly CRLF problems!
 
-You could poke around in src/ if you are already curious
+You could poke around in `src/` if you are already curious
 
 6. in a command window, cd to the folder that was created when you cloned the repo and do
 
@@ -121,7 +121,7 @@ You can immediately edit something:
  - Click on the search magnifying glass top left pane of VSCode
  - Type `no games being played` into the search bar
 
-It should show you where this string is in ObserveGamesComponent.tsx.
+It should show you where this string is in [ObserveGamesComponent.tsx](../src/components/ObserveGamesComponent/ObserveGamesComponent.tsx).
 
  - click on that to be taken to that place in the code
  - Edit the string, save the file
@@ -131,9 +131,9 @@ It should show you where this string is in ObserveGamesComponent.tsx.
 
 7.  Commit your change (locally)
 
-You will want to commit your changes regularly locally.   To prepare for this you need to make a branch for them.
+You will want to commit your changes regularly locally. To prepare for this you need to make a branch for them.
 
-This is easiest done in VSCode - down the bottom left is a label telling you what branch you are in fact on now.    It has the "source control" symbol (branchy thing) and the name of the branch.      To make a branch and commit to it:
+This is easiest done in VSCode - down the bottom left is a label telling you what branch you are in fact on now. It has the "source control" symbol (branchy thing) and the name of the branch. To make a branch and commit to it:
  - Click the branch label
  - "Create a branch"
  - Give it a name
@@ -146,13 +146,13 @@ Then
 
 Do the last three steps often :slight_smile:
 
-8. Publish your change (to github)
+8. Publish your change (to GitHub)
 
  When your change is ready for incorporation into OGS:
 
  - Click "source control" in the left
  - Click "publish change"
 
-Note: it might be saying "Sync" instead of "Publish" - this means that github knows about your branch already from something you did previously, that's OK.
+**Note**: it might be saying "Sync" instead of "Publish" - this means that GitHub knows about your branch already from something you did previously, that's OK.
 
 🎉   Now your code is available ready for a Pull Request into the main repo.
