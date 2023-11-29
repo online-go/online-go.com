@@ -20,7 +20,7 @@ sudo npm install --global yarn
 ```
 If you're on Linux, you can simply type `make` and it will do all this for you as well.
 
-If you're on Windows and need specific help getting tools installed and the repo cloned, see [Detailed Setup Steps](#detailed-setup-steps) below.
+If you're on Windows and need specific help getting tools installed and the repo cloned, see [Detailed Setup Steps](#detailed-setup-steps-windows-but-applicable-mostly-to-others) below.
 
 (And ... those detailed steps may even be a useful pointer about how to get started under linux/macos: they're broadly applicable, even if details differ slightly.)
 
