@@ -76,8 +76,8 @@ This project is largely built with TypeScript and React. If you are unfamiliar w
 
 1. Install VSCode 
 
-2. Install git from the windows installer: [Git - Downloading Package (git-scm.com)](https://git-scm.com/download/win)
-   ** Choose all defaults _except_ "**Configuring Line Ending Conversions**".
+2. Install git from the windows installer: [Git - Downloading Package (git-scm.com)](https://git-scm.com/download/win).
+       Choose all defaults _except_ "**Configuring Line Ending Conversions**".
        No matter what the description says, chose `checkout-as-is, commit-as-is` (the description makes it sound like you would not want this)
 3. Download and run `nvm-setup.exe` from https://github.com/coreybutler/nvm-windows/releases
 4. In a command window, run
