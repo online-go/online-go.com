@@ -86,6 +86,8 @@ export const GoResources = () => {
     const gr = "gr";
     const br = "br";
     const _in = "in";
+    const ro = "ro";
+    const _cat = "_cat";
     const ar = getLanguageFlag("spanish", country, "ar");
 
     return (
@@ -207,6 +209,8 @@ export const GoResources = () => {
                                     <span style={{ display: "inline-block", width: "2.5rem" }}>
                                         <Flag country={en} /> <Flag country={gr} />
                                         <Flag country={fr} /> <Flag country={br} />
+                                        <Flag country={es} /> <Flag country={ru} />
+                                        <Flag country={ro} /> <Flag country={_cat} />
                                     </span>{" "}
                                     <a rel="noopener" href="https://www.gobook.eu/">
                                         A Go Guide{" "}
