@@ -121,7 +121,7 @@ You can immediately edit something:
  - Click on the search magnifying glass top left pane of VSCode
  - Type `no games being played` into the search bar
 
-It should show you where this string is in [ObserveGamesComponent.tsx](../src/components/ObserveGamesComponent/ObserveGamesComponent.tsx).
+It should show you where this string is in [ObserveGamesComponent.tsx](src/components/ObserveGamesComponent/ObserveGamesComponent.tsx).
 
  - click on that to be taken to that place in the code
  - Edit the string, save the file
