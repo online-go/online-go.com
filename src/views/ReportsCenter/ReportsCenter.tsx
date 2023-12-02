@@ -166,18 +166,22 @@ export function ReportsCenter(): JSX.Element {
                             ? "All done, thank you!"
                             : report_manager.getHandledTodayCount() || ""}
                     </div>
-                    <div
-                        className="progress-bar empty"
-                        style={{
-                            width: `${
-                                (report_manager.getReportsLeftUntilGoal() / DAILY_REPORT_GOAL) * 100
-                            }%`,
-                        }}
-                    >
-                        {report_manager.getHandledTodayCount() === 0
-                            ? "Daily report goal: " + DAILY_REPORT_GOAL
-                            : ""}
-                    </div>
+
+                    {report_manager.getReportsLeftUntilGoal() > 0 && (
+                        <div
+                            className="progress-bar empty"
+                            style={{
+                                width: `${
+                                    (report_manager.getReportsLeftUntilGoal() / DAILY_REPORT_GOAL) *
+                                    100
+                                }%`,
+                            }}
+                        >
+                            {report_manager.getHandledTodayCount() === 0
+                                ? "Daily report goal: " + DAILY_REPORT_GOAL
+                                : ""}
+                        </div>
+                    )}
                 </div>
             )}
 
