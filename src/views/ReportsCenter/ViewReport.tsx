@@ -59,11 +59,15 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     const [reportState, setReportState] = React.useState(report?.state);
     const [isAnnulQueueModalOpen, setIsAnnulQueueModalOpen] = React.useState(false);
     const [annulQueue, setAnnulQueue] = React.useState<null | any[]>(report?.detected_ai_games);
+    const [availableActions, setAvailableActions] = React.useState<string[]>(null);
 
     const related = report_manager.getRelatedReports(report_id);
 
     React.useEffect(() => {
         if (report_id) {
+            // For some reason we have to capture the state of the report at the time that report_id goes valid
+            // It's not clear why, but there are subsequent renders where the report state goes away, so ...
+            // capture what you want to use here! ...
             report_manager
                 .getReport(report_id)
                 .then((report) => {
@@ -72,6 +76,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                     setModeratorId(report?.moderator?.id);
                     setReportState(report?.state);
                     setAnnulQueue(report?.detected_ai_games);
+                    setAvailableActions(report?.available_actions);
                 })
                 .catch((err) => {
                     console.error(err);
@@ -448,9 +453,9 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                 {((!user.is_moderator && user.moderator_powers) || null) && (
                     <div className="voting">
                         <ModerationActionSelector
-                            report={report}
+                            available_actions={availableActions}
                             claim={() => {
-                                /* dont claim*/
+                                /* community moderators don't claim reports */
                             }}
                             submit={(action) => {
                                 void report_manager.vote(report.id, action);

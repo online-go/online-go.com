@@ -181,7 +181,7 @@ export function IncidentReportTracker(): JSX.Element {
         navigate(`/reports-center/all/${report_id}`);
     };
 
-    const reports = report_manager.sorted_active_incident_reports;
+    const reports = report_manager.getAvailableReports();
     const hide_indicator = (reports.length === 0 && !user.is_moderator) || prefer_hidden;
 
     function getReportType(report: Report): string {

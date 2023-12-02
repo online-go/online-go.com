@@ -37,6 +37,8 @@ import { MOD_POWER_HANDLE_SCORE_CHEAT, MOD_POWER_HANDLE_ESCAPING } from "./misc"
 
 export const DAILY_REPORT_GOAL = 10;
 
+const DONT_OFFER_COMMUNITY_MODERATION_TYPES_TO_MODERATORS = false;
+
 interface Vote {
     voter_id: number;
     action: string;
@@ -229,13 +231,27 @@ class ReportManager extends EventEmitter<Events> {
             // don't hand community moderation reports to full mods unless the report is escalated,
             // because community moderators are supposed to do these!
             if (
+                DONT_OFFER_COMMUNITY_MODERATION_TYPES_TO_MODERATORS &&
                 user.is_moderator &&
+                !(report.moderator?.id === user.id) && // maybe they already have it, so they need to see it
                 (report.report_type === "score_cheating" || report.report_type === "escaping") &&
                 !report.escalated
             ) {
                 return false;
             }
-            return !report.moderator || report.moderator?.id === user.id;
+
+            // Never give a claimed report to community moderators
+            if (!user.is_moderator && report.moderator?.id) {
+                console.log("Not giving to community moderator", report.id);
+                return false;
+            }
+
+            if (report.moderator && report.moderator.id !== user.id) {
+                // claimed reports are not given out to others
+                return false;
+            }
+
+            return true;
         });
     }
 
