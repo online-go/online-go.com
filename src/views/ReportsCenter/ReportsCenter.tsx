@@ -151,12 +151,14 @@ export function ReportsCenter(): JSX.Element {
                         className="progress-bar primary"
                         style={{
                             width: `${
-                                (Math.min(
-                                    DAILY_REPORT_GOAL,
-                                    report_manager.getHandledTodayCount(),
-                                ) /
-                                    DAILY_REPORT_GOAL) *
-                                100
+                                report_manager.getReportsLeftUntilGoal() <= 0
+                                    ? 100
+                                    : (Math.min(
+                                          DAILY_REPORT_GOAL,
+                                          report_manager.getHandledTodayCount(),
+                                      ) /
+                                          DAILY_REPORT_GOAL) *
+                                      100
                             }%`,
                         }}
                     >
