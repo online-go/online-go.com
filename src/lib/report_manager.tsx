@@ -242,7 +242,6 @@ class ReportManager extends EventEmitter<Events> {
 
             // Never give a claimed report to community moderators
             if (!user.is_moderator && report.moderator?.id) {
-                console.log("Not giving to community moderator", report.id);
                 return false;
             }
 
