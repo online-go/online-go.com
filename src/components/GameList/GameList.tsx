@@ -82,17 +82,94 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
 
     extractClockSortFields(game: GameType) {
         try {
+            // In the initial sort, game.goban is null. In later sorts, it's
+            // valid.
+            //
+            // This is why:
+            //
+            //   - GameList.render() calls:
+            //       - applyCurrentSort()   [game.goban null]
+            //       - LineSummaryTable()
+            //           - GobanLineSummary() [game.goban gets initialized]
+            //
+            //   - Later, something triggers a re-sort:
+            //       - applyCurrentSort()   [game.goban valid]
+            //
+            // For the initial sort, we can use game.json.clock, which comes
+            // directly with the game list.
             const clock =
                 game.goban && game.goban.last_clock ? game.goban.last_clock : game.json.clock;
-            return [
-                1,
-                clock.current_player === this.props.player.id ? 1 : 0,
-                clock.expiration,
-                game.id,
-            ];
+
+            // Unfortunately, game.json lacks an AdHocPauseControl. Thus, the
+            // initial sort cannot take into account the pause state.
+            //
+            // In later sorts, we have game.goban, which has the pause state in
+            // game.last_emitted_clock.last_clock.
+            //
+            // However, applying the pause state later makes the list
+            // "glitchy", since sometimes the first re-sort isn't for a while,
+            // and paused games will hang out in the wrong place until that
+            // happens. For now, continue to ignore the pause state.
+            const paused = false;
+            // const paused =
+            //     game.goban &&
+            //     game.goban.last_emitted_clock &&
+            //     game.goban.last_emitted_clock.pause_state
+            //         ? true
+            //         : false;
+
+            // AdHocClock.expiration is useful, but insufficient, for sorting.
+            //
+            //   - For unpaused games, the value is a timestamp (in the future)
+            //     when the game will time out if no one makes a move.
+            //   - For paused games, the value is (at least sometimes) the
+            //     timestamp (in the past) when the game was paused.
+            //   - It's tied to the clock of the player whose turn it is, and
+            //     tells you nothing about the other player's clock.
+            //
+            // A useful property of AdHocClock.expiration is that it doesn't
+            // change as the clock counts down. It only changes when a move is
+            // made (or the pause state is changed).
+            //
+            // Ideally what we'd have available:
+            //
+            //   - AdHocClock.expiration: Valid for un-paused games. Timestamp
+            //     when game will time out if no moves are made. (Same as we
+            //     have...)
+            //   - black_remaining: Valid on white's turn or if the game is
+            //     paused. Amount of time remaining when it becomes black's turn
+            //     and the game is unpaused.
+            //   - white_remaining: Valid on black's turn or if the game is
+            //     paused. Amount of time remaining when it becomes white's turn
+            //     and the game is unpaused.
+            //
+            // All three of these have stable values (they don't change unless
+            // someone moves, pauses, or unpauses).
+            //
+            // Then we could sort the Clock field by:
+            //
+            //  1. this player's turn, then opponent's turn
+            //  2. unpaused, then paused
+            //  3. expired OR ..._remaining, as relevant
+            //
+            // Unfortunately, game.json lacks JGOFTimeControl.  While
+            // black_remaining and white_remaining could be computed from
+            // game.goban, they can't be computed for the initial sort because
+            // we can't discriminate the AdHocClock.black_time and
+            // AdHocClock.white_time unions.
+            const expiration = clock.expiration;
+            return {
+                paused: paused,
+                is_current_player: clock.current_player === this.props.player.id,
+                expiration: expiration,
+            };
         } catch (e) {
             console.error(game, e);
-            return [0, 0, 0, game.id];
+            return {
+                paused: true,
+                is_current_player: false,
+                expiration: Number.MAX_SAFE_INTEGER,
+            };
         }
     }
 
@@ -104,10 +181,10 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                     const a_clock = this.extractClockSortFields(a);
                     const b_clock = this.extractClockSortFields(b);
                     return (
-                        b_clock[0] - a_clock[0] ||
-                        b_clock[1] - a_clock[1] ||
-                        a_clock[2] - b_clock[2] ||
-                        a_clock[3] - b_clock[3]
+                        +b_clock.is_current_player - +a_clock.is_current_player ||
+                        +a_clock.paused - +b_clock.paused ||
+                        a_clock.expiration - b_clock.expiration ||
+                        a.id - b.id
                     );
                 });
                 break;
@@ -118,10 +195,10 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                     const a_clock = this.extractClockSortFields(a);
                     const b_clock = this.extractClockSortFields(b);
                     return (
-                        b_clock[0] - a_clock[0] ||
-                        a_clock[1] - b_clock[1] ||
-                        a_clock[2] - b_clock[2] ||
-                        a_clock[3] - b_clock[3]
+                        +a_clock.is_current_player - +b_clock.is_current_player ||
+                        +a_clock.paused - +b_clock.paused ||
+                        a_clock.expiration - b_clock.expiration ||
+                        a.id - b.id
                     );
                 });
                 break;
