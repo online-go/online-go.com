@@ -137,21 +137,34 @@ function request(method: Method): RequestFunction {
             })
                 .then((res) => {
                     delete requests_in_flight[request_id];
-                    if (res.status >= 200 && res.status < 300) {
-                        if (res.status === 204) {
-                            resolve({});
+
+                    const onJson = (data: any) => {
+                        if (res.status >= 200 && res.status < 300) {
+                            if (res.status === 204) {
+                                resolve({});
+                            } else {
+                                resolve(data);
+                            }
                         } else {
-                            resolve(res.json());
+                            console.error(res.status, url, data);
+                            console.error(traceback.stack);
+                            reject(data);
                         }
+                    };
+
+                    const data_or_promise = res.json();
+
+                    if (data_or_promise instanceof Promise) {
+                        data_or_promise.then(onJson).catch(reject);
                     } else {
-                        reject(res);
+                        onJson(data_or_promise);
                     }
                 })
                 .catch((err) => {
                     delete requests_in_flight[request_id];
                     if (err.name !== "AbortError") {
-                        console.warn(url, err.name);
-                        console.warn(traceback.stack);
+                        console.error(err.name, url);
+                        console.error(traceback.stack);
                     }
                     reject(err);
                 });
