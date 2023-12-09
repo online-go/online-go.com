@@ -37,7 +37,7 @@ interface GameType {
     json?: {
         clock: AdHocClock;
         moves: AdHocPackedMove[];
-        pause_control: AdHocPauseControl;
+        pause_control?: AdHocPauseControl;
         rengo_teams: {
             black: Array<UserType>;
             white: Array<UserType>;
