@@ -211,11 +211,19 @@ class ReportManager extends EventEmitter<Events> {
             if (this.getIgnored(report.id)) {
                 return false;
             }
+
+            // we can always see our own reports
+            if (user.id === report.reporting_user.id) {
+                return true;
+            }
+
+            // if it's not ours, we need special powers to see it...
             if (!user.is_moderator && !user.moderator_powers) {
                 return false;
             }
+
             // Community moderators only get to see reports that they have the power for and
-            // have not yet voted on.
+            // that they have not yet voted on.
             const has_handle_score_cheat =
                 (user.moderator_powers & MOD_POWER_HANDLE_SCORE_CHEAT) > 0;
             const has_handle_escaping = (user.moderator_powers & MOD_POWER_HANDLE_ESCAPING) > 0;
@@ -228,16 +236,19 @@ class ReportManager extends EventEmitter<Events> {
             ) {
                 return false;
             }
-            // don't hand community moderation reports to full mods unless the report is escalated,
-            // because community moderators are supposed to do these!
-            if (
-                DONT_OFFER_COMMUNITY_MODERATION_TYPES_TO_MODERATORS &&
-                user.is_moderator &&
-                !(report.moderator?.id === user.id) && // maybe they already have it, so they need to see it
-                (report.report_type === "score_cheating" || report.report_type === "escaping") &&
-                !report.escalated
-            ) {
-                return false;
+
+            if (DONT_OFFER_COMMUNITY_MODERATION_TYPES_TO_MODERATORS) {
+                // don't hand community moderation reports to full mods unless the report is escalated,
+                // because community moderators are supposed to do these!
+                if (
+                    user.is_moderator &&
+                    !(report.moderator?.id === user.id) && // maybe they already have it, so they need to see it
+                    (report.report_type === "score_cheating" ||
+                        report.report_type === "escaping") &&
+                    !report.escalated
+                ) {
+                    return false;
+                }
             }
 
             // Never give a claimed report to community moderators
