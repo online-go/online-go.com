@@ -98,25 +98,26 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
 
     computeRemainingTime(
         time_control: JGOFTimeControl | undefined,
-        clock: AdHocPlayerClock | number,
+        clock: AdHocClock,
+        player_clock: AdHocPlayerClock | number,
     ) {
         switch (time_control?.system) {
             case "simple": {
-                const time: number = clock as number;
-                return time;
+                const time: number = player_clock as number;
+                return time - clock.last_move;
             }
             case "absolute":
             case "fischer": {
-                const time: AdHocPlayerClock = clock as AdHocPlayerClock;
-                return time.thinking_time;
+                const time: AdHocPlayerClock = player_clock as AdHocPlayerClock;
+                return time.thinking_time * 1000;
             }
             case "byoyomi": {
-                const time: AdHocPlayerClock = clock as AdHocPlayerClock;
-                return time.thinking_time + time.period_time * time.periods;
+                const time: AdHocPlayerClock = player_clock as AdHocPlayerClock;
+                return (time.thinking_time + time.period_time * time.periods) * 1000;
             }
             case "canadian": {
-                const time: AdHocPlayerClock = clock as AdHocPlayerClock;
-                return time.thinking_time + time.block_time;
+                const time: AdHocPlayerClock = player_clock as AdHocPlayerClock;
+                return (time.thinking_time + time.block_time) * 1000;
             }
             case "none":
             default:
@@ -175,6 +176,7 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                 const is_black = clock.black_player_id === this.props.player.id;
                 expiration_or_rem = this.computeRemainingTime(
                     time_control,
+                    clock,
                     is_black === use_this_player ? clock.black_time : clock.white_time,
                 );
             }
