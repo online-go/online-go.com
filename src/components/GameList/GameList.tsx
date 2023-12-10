@@ -96,7 +96,10 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
         return false;
     }
 
-    computeRemainingTime(time_control: JGOFTimeControl, clock: AdHocPlayerClock | number) {
+    computeRemainingTime(
+        time_control: JGOFTimeControl | undefined,
+        clock: AdHocPlayerClock | number,
+    ) {
         switch (time_control?.system) {
             case "simple": {
                 const time: number = clock as number;
