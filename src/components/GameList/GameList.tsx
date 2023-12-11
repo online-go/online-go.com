@@ -21,7 +21,7 @@ import * as preferences from "preferences";
 import { MiniGoban } from "MiniGoban";
 import { GobanLineSummary } from "GobanLineSummary";
 import { Player } from "Player";
-import { AdHocClock, AdHocPackedMove, Goban } from "goban";
+import { AdHocPauseControl, AdHocClock, AdHocPackedMove, Goban } from "goban";
 
 interface UserType {
     id: number;
@@ -37,6 +37,7 @@ interface GameType {
     json?: {
         clock: AdHocClock;
         moves: AdHocPackedMove[];
+        pause_control?: AdHocPauseControl;
         rengo_teams: {
             black: Array<UserType>;
             white: Array<UserType>;
@@ -80,6 +81,13 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
         }
     };
 
+    isPaused(pause_control: AdHocPauseControl | undefined) {
+        for (const _key in pause_control) {
+            return true;
+        }
+        return false;
+    }
+
     extractClockSortFields(game: GameType) {
         try {
             // In the initial sort, game.goban is null. In later sorts, it's
@@ -99,24 +107,9 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
             // directly with the game list.
             const clock =
                 game.goban && game.goban.last_clock ? game.goban.last_clock : game.json.clock;
-
-            // Unfortunately, game.json lacks an AdHocPauseControl. Thus, the
-            // initial sort cannot take into account the pause state.
-            //
-            // In later sorts, we have game.goban, which has the pause state in
-            // game.last_emitted_clock.last_clock.
-            //
-            // However, applying the pause state later makes the list
-            // "glitchy", since sometimes the first re-sort isn't for a while,
-            // and paused games will hang out in the wrong place until that
-            // happens. For now, continue to ignore the pause state.
-            const paused = false;
-            // const paused =
-            //     game.goban &&
-            //     game.goban.last_emitted_clock &&
-            //     game.goban.last_emitted_clock.pause_state
-            //         ? true
-            //         : false;
+            const paused = game.goban
+                ? this.isPaused(game.goban.config?.pause_control)
+                : this.isPaused(game.json?.pause_control);
 
             // AdHocClock.expiration is useful, but insufficient, for sorting.
             //
