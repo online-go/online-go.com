@@ -21,7 +21,14 @@ import * as preferences from "preferences";
 import { MiniGoban } from "MiniGoban";
 import { GobanLineSummary } from "GobanLineSummary";
 import { Player } from "Player";
-import { AdHocPauseControl, AdHocClock, AdHocPackedMove, Goban } from "goban";
+import {
+    JGOFTimeControl,
+    AdHocPauseControl,
+    AdHocClock,
+    AdHocPlayerClock,
+    AdHocPackedMove,
+    Goban,
+} from "goban";
 
 interface UserType {
     id: number;
@@ -38,6 +45,7 @@ interface GameType {
         clock: AdHocClock;
         moves: AdHocPackedMove[];
         pause_control?: AdHocPauseControl;
+        time_control?: JGOFTimeControl;
         rengo_teams: {
             black: Array<UserType>;
             white: Array<UserType>;
@@ -88,7 +96,36 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
         return false;
     }
 
-    extractClockSortFields(game: GameType) {
+    computeRemainingTime(
+        time_control: JGOFTimeControl | undefined,
+        clock: AdHocClock,
+        player_clock: AdHocPlayerClock | number,
+    ) {
+        switch (time_control?.system) {
+            case "simple": {
+                const time: number = player_clock as number;
+                return time - clock.last_move;
+            }
+            case "absolute":
+            case "fischer": {
+                const time: AdHocPlayerClock = player_clock as AdHocPlayerClock;
+                return time.thinking_time * 1000;
+            }
+            case "byoyomi": {
+                const time: AdHocPlayerClock = player_clock as AdHocPlayerClock;
+                return (time.thinking_time + time.period_time * time.periods) * 1000;
+            }
+            case "canadian": {
+                const time: AdHocPlayerClock = player_clock as AdHocPlayerClock;
+                return (time.thinking_time + time.block_time) * 1000;
+            }
+            case "none":
+            default:
+                return Number.MAX_SAFE_INTEGER;
+        }
+    }
+
+    extractClockSortFields(game: GameType, use_this_player: boolean) {
         try {
             // In the initial sort, game.goban is null. In later sorts, it's
             // valid.
@@ -111,57 +148,49 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                 ? this.isPaused(game.goban.config?.pause_control)
                 : this.isPaused(game.json?.pause_control);
 
-            // AdHocClock.expiration is useful, but insufficient, for sorting.
+            // Figure out whose turn it is.
+            const is_current_player = clock.current_player === this.props.player.id;
+
+            // 'expiration_or_rem' has two different meanings: an expiration
+            // timestamp or the time remaining on a clock. It's only coherent
+            // to compare for the same value of 'paused' and
+            // 'is_current_player'. Which is what the callers do.
             //
-            //   - For unpaused games, the value is a timestamp (in the future)
-            //     when the game will time out if no one makes a move.
-            //   - For paused games, the value is (at least sometimes) the
-            //     timestamp (in the past) when the game was paused.
-            //   - It's tied to the clock of the player whose turn it is, and
-            //     tells you nothing about the other player's clock.
-            //
-            // A useful property of AdHocClock.expiration is that it doesn't
-            // change as the clock counts down. It only changes when a move is
-            // made (or the pause state is changed).
-            //
-            // Ideally what we'd have available:
-            //
-            //   - AdHocClock.expiration: Valid for un-paused games. Timestamp
-            //     when game will time out if no moves are made. (Same as we
-            //     have...)
-            //   - black_remaining: Valid on white's turn or if the game is
-            //     paused. Amount of time remaining when it becomes black's turn
-            //     and the game is unpaused.
-            //   - white_remaining: Valid on black's turn or if the game is
-            //     paused. Amount of time remaining when it becomes white's turn
-            //     and the game is unpaused.
-            //
-            // All three of these have stable values (they don't change unless
-            // someone moves, pauses, or unpauses).
-            //
-            // Then we could sort the Clock field by:
-            //
-            //  1. this player's turn, then opponent's turn
-            //  2. unpaused, then paused
-            //  3. expired OR ..._remaining, as relevant
-            //
-            // Unfortunately, game.json lacks JGOFTimeControl.  While
-            // black_remaining and white_remaining could be computed from
-            // game.goban, they can't be computed for the initial sort because
-            // we can't discriminate the AdHocClock.black_time and
-            // AdHocClock.white_time unions.
-            const expiration = clock.expiration;
+            // It would be possible to express the time remaining as an
+            // expiration time by adding it to some distant future timestamp.
+            // That seems unnecessary for now.
+            let expiration_or_rem: number;
+            if (!paused && is_current_player === use_this_player) {
+                // AdHocClock.expiration is perfect for sorting when the game
+                // is not paused, and we're sorting by the player whose turn it
+                // is. The value is a timestamp (in the future) when the game
+                // will time out if no one makes a move.
+                expiration_or_rem = clock.expiration;
+            } else {
+                // For paused games, or when sorting by the clock of the player
+                // whose turn it is NOT, the expiration timestamp is not useful.
+                // Compute the time remaining and sort by that.
+                const time_control = game.goban
+                    ? game.goban.config?.time_control
+                    : game.json?.time_control;
+                const is_black = clock.black_player_id === this.props.player.id;
+                expiration_or_rem = this.computeRemainingTime(
+                    time_control,
+                    clock,
+                    is_black === use_this_player ? clock.black_time : clock.white_time,
+                );
+            }
             return {
                 paused: paused,
-                is_current_player: clock.current_player === this.props.player.id,
-                expiration: expiration,
+                is_current_player: is_current_player,
+                expiration_or_rem: expiration_or_rem,
             };
         } catch (e) {
             console.error(game, e);
             return {
                 paused: true,
                 is_current_player: false,
-                expiration: Number.MAX_SAFE_INTEGER,
+                expiration_or_rem: Number.MAX_SAFE_INTEGER,
             };
         }
     }
@@ -171,12 +200,12 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
             case "-clock":
             case "clock":
                 games.sort((a, b) => {
-                    const a_clock = this.extractClockSortFields(a);
-                    const b_clock = this.extractClockSortFields(b);
+                    const a_clock = this.extractClockSortFields(a, true);
+                    const b_clock = this.extractClockSortFields(b, true);
                     return (
                         +b_clock.is_current_player - +a_clock.is_current_player ||
                         +a_clock.paused - +b_clock.paused ||
-                        a_clock.expiration - b_clock.expiration ||
+                        a_clock.expiration_or_rem - b_clock.expiration_or_rem ||
                         a.id - b.id
                     );
                 });
@@ -185,12 +214,12 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
             case "-opponent-clock":
             case "opponent-clock":
                 games.sort((a, b) => {
-                    const a_clock = this.extractClockSortFields(a);
-                    const b_clock = this.extractClockSortFields(b);
+                    const a_clock = this.extractClockSortFields(a, false);
+                    const b_clock = this.extractClockSortFields(b, false);
                     return (
                         +a_clock.is_current_player - +b_clock.is_current_player ||
                         +a_clock.paused - +b_clock.paused ||
-                        a_clock.expiration - b_clock.expiration ||
+                        a_clock.expiration_or_rem - b_clock.expiration_or_rem ||
                         a.id - b.id
                     );
                 });
