@@ -229,10 +229,12 @@ export function IncidentReportTracker(): JSX.Element {
                             </h1>
                         )}
                         <hr />
-                        {filtered_reports.length === 0 && (
+                        {filtered_reports.length === 0 && user.is_moderator && (
+                            // note: normal users would see this if they have the last report and cancel it,
+                            // that's why we need to filter for only moderators to see it
                             <div>
                                 {pgettext(
-                                    "Shown to moderators when there are no active reports", // because users don't see the tracker when there are none for them
+                                    "Shown to moderators when there are no active reports",
                                     "No reports left, great job team!",
                                 )}
                             </div>

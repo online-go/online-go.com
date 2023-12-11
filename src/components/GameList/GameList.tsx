@@ -89,7 +89,7 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
         }
     };
 
-    isPaused(pause_control: AdHocPauseControl) {
+    isPaused(pause_control: AdHocPauseControl | undefined) {
         for (const _key in pause_control) {
             return true;
         }
