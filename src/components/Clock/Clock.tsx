@@ -192,7 +192,7 @@ export function Clock({
         );
     }
 
-    function update(clock: JGOFClockWithTransmitting) {
+    function update(clock?: JGOFClockWithTransmitting | null) {
         if (clock) {
             setClock(Object.assign({}, clock));
         }

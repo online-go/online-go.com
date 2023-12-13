@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as ReactSelect from "react-select";
 import { _ } from "translate";
 
 import * as player_cache from "player_cache";
@@ -87,7 +88,7 @@ export function JosekiVariationFilter(props: JosekiVariationFilterProps) {
             });
     }, []);
 
-    const onTagChange = (tags: JosekiTag[]) => {
+    const onTagChange = (tags: ReactSelect.MultiValue<JosekiTag>) => {
         const new_filter = { ...props.current_filter, tags };
 
         props.set_variation_filter(new_filter); // tell parent the filter changed, so the view needs to change

@@ -71,17 +71,16 @@ function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Elem
     }, [props.playerId]);
 
     function onBlur(
-        ev: unknown,
-        { highlightedSuggestion }: { highlightedSuggestion: SuggestionEntry },
+        ev: React.FocusEvent<HTMLElement, Element>,
+        params?: Autosuggest.BlurEvent<SuggestionEntry> | undefined,
     ): void {
-        //if (tabbed_out.current) {
+        const highlightedSuggestion = params?.highlightedSuggestion;
         if (highlightedSuggestion) {
             setValue(getSuggestionValue(highlightedSuggestion));
             complete(getSuggestionValue(highlightedSuggestion));
         } else {
             complete(value);
         }
-        //}
     }
     function onKeyDown(ev: React.KeyboardEvent<HTMLInputElement>) {
         if (ev.keyCode === 9) {
@@ -94,7 +93,7 @@ function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Elem
             complete(value);
         }
     }
-    function onChange(ev: React.ChangeEvent<HTMLInputElement>, { newValue }: { newValue: string }) {
+    function onChange(ev: React.FormEvent<HTMLElement>, { newValue }: { newValue: string }) {
         setValue(newValue);
         //complete(newValue);
         console.log("on change fired");

@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as ReactSelect from "react-select";
 import Select from "react-select";
 
 import * as data from "data";
@@ -86,7 +87,9 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
         /* not all browsers support the Notification API */
     }
 
-    function updateProfanityFilter(langs: { value: string; label: string }[]) {
+    function updateProfanityFilter(
+        langs: ReactSelect.MultiValue<{ value: string; label: string }>,
+    ) {
         if (!langs) {
             langs = [];
         }

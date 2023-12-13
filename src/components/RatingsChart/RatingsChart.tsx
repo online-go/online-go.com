@@ -272,8 +272,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
         const width = this.graph_width;
         const height = this.height;
 
-        this.rank_axis.tickFormat((rating: number) => {
-            const rank = Math.round(rating_to_rank(rating));
+        this.rank_axis.tickFormat((rating: d3.NumberValue) => {
+            const rank = Math.round(rating_to_rank(rating as number));
             if (!is_rank_bounded(rank)) {
                 return rankString(rank);
             }

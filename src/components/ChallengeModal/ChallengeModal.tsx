@@ -316,7 +316,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
         this.setState({ view_mode: goban_view_mode() });
     };
 
-    preferredSettingsUpdated = (preferred_settings: ChallengeDetails[]) => {
+    preferredSettingsUpdated = (preferred_settings?: ChallengeDetails[]) => {
+        if (!preferred_settings) {
+            return;
+        }
         this.setState({ preferred_settings: preferred_settings });
     };
 

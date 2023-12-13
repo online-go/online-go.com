@@ -71,7 +71,7 @@
  *   values for replication:
  *
  *      Replication.NONE
- *          No replication is performed. This is the same as not passing this paramter.
+ *          No replication is performed. This is the same as not passing this parameter.
  *
  *          When to use: When you don't want the value replicated to other devices
  *
@@ -255,7 +255,7 @@ export function watch<KeyT extends Extract<keyof DataSchema, string>>(
 
 export function unwatch<KeyT extends Extract<keyof DataSchema, string>>(
     key: KeyT,
-    cb: (data: DataSchema[KeyT]) => void,
+    cb: (data: DataSchema[KeyT] | undefined) => void,
 ): void {
     event_emitter.off(key, cb);
 }

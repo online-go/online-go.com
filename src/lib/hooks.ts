@@ -25,15 +25,21 @@ import { DataSchema } from "./data_schema";
  */
 export function useData<KeyT extends Extract<keyof DataSchema, string>>(
     key: KeyT,
-): [DataSchema[KeyT] | undefined, React.Dispatch<React.SetStateAction<DataSchema[KeyT]>>];
+): [
+    DataSchema[KeyT] | undefined,
+    React.Dispatch<React.SetStateAction<DataSchema[KeyT] | undefined>>,
+];
 export function useData<KeyT extends Extract<keyof DataSchema, string>>(
     key: KeyT,
     default_value: DataSchema[KeyT],
-): [DataSchema[KeyT], React.Dispatch<React.SetStateAction<DataSchema[KeyT]>>];
+): [DataSchema[KeyT], React.Dispatch<React.SetStateAction<DataSchema[KeyT] | undefined>>];
 export function useData<KeyT extends Extract<keyof DataSchema, string>>(
     key: KeyT,
     default_value?: DataSchema[KeyT],
-): [DataSchema[KeyT] | undefined, React.Dispatch<React.SetStateAction<DataSchema[KeyT]>>] {
+): [
+    DataSchema[KeyT] | undefined,
+    React.Dispatch<React.SetStateAction<DataSchema[KeyT] | undefined>>,
+] {
     const [val, setVal] = React.useState<DataSchema[KeyT] | undefined>(
         data.get(key, default_value as DataSchema[KeyT]),
     );

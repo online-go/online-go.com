@@ -42,7 +42,11 @@ import { OmniSearch } from "./OmniSearch";
 
 const body = $(document.body);
 
-function _update_theme(theme: string) {
+function _update_theme(theme?: string) {
+    if (!theme) {
+        return;
+    }
+
     if (body.hasClass(theme)) {
         return;
     }

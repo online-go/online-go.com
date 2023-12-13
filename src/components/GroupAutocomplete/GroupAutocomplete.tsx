@@ -116,7 +116,11 @@ export class GroupAutocomplete extends React.PureComponent<
         });
     };
     //onBlur = (ev, {focusedSuggestion}) => {
-    onBlur = (ev, { highlightedSuggestion }) => {
+    onBlur = (
+        ev: React.FocusEvent<HTMLElement, Element>,
+        params?: Autosuggest.BlurEvent<Suggestion> | undefined,
+    ) => {
+        const highlightedSuggestion = params?.highlightedSuggestion;
         if (this.tabbed_out) {
             if (highlightedSuggestion) {
                 this.setState({ value: getSuggestionValue(highlightedSuggestion) });

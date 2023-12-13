@@ -40,7 +40,7 @@ export function AIReviewStream(props: AIReviewStreamProperties): null {
             return;
         } else {
             ai_socket.on("connect", onConnect);
-            ai_socket.on(uuid as keyof GobanSocketEvents, onMessage);
+            ai_socket.on(uuid as keyof GobanSocketEvents, onMessage as any);
             if (ai_socket.connected) {
                 onConnect();
             }
@@ -50,7 +50,7 @@ export function AIReviewStream(props: AIReviewStreamProperties): null {
             ai_socket.send("ai-review-connect", { uuid, game_id, ai_review_id });
         }
 
-        function onMessage(data: any) {
+        function onMessage(data?: any) {
             props.callback(data);
         }
 
@@ -59,7 +59,7 @@ export function AIReviewStream(props: AIReviewStreamProperties): null {
                 ai_socket.send("ai-review-disconnect", { uuid });
             }
             ai_socket.off("connect", onConnect);
-            ai_socket.off(uuid as keyof GobanSocketEvents, onMessage);
+            ai_socket.off(uuid as keyof GobanSocketEvents, onMessage as any);
         };
     }, [uuid]);
 

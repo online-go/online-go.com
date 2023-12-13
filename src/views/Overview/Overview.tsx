@@ -291,8 +291,10 @@ export class GroupList extends React.PureComponent<{}, GroupState> {
         data.watch(cached.group_invitations, this.updateGroupInvitations);
     }
 
-    updateGroups = (groups: Group[]) => {
-        this.setState({ groups: groups });
+    updateGroups = (groups?: Group[]) => {
+        if (groups) {
+            this.setState({ groups: groups });
+        }
     };
     updateGroupInvitations = (invitations: InvitationType[]) => {
         this.setState({ invitations: invitations });
@@ -349,8 +351,10 @@ export class TournamentList extends React.PureComponent<{}, TournamentListState>
     componentDidMount() {
         data.watch(cached.active_tournaments, this.update);
     }
-    update = (tournaments: ActiveTournamentList) => {
-        this.setState({ my_tournaments: tournaments });
+    update = (tournaments?: ActiveTournamentList) => {
+        if (tournaments) {
+            this.setState({ my_tournaments: tournaments });
+        }
     };
 
     componentWillUnmount() {
@@ -384,8 +388,10 @@ export class LadderList extends React.PureComponent<{}, LadderListState> {
         data.watch(cached.ladders, this.update);
     }
 
-    update = (ladders: LadderType[]) => {
-        this.setState({ ladders: ladders });
+    update = (ladders?: LadderType[]) => {
+        if (ladders) {
+            this.setState({ ladders: ladders });
+        }
     };
 
     componentWillUnmount() {

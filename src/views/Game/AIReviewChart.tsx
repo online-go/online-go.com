@@ -149,7 +149,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
         this.x_axis = this.prediction_graph.append("g");
         this.y_axis = this.prediction_graph.append("g");
 
-        this.highlighted_move_circle_container = this.prediction_graph.append("g");
+        this.highlighted_move_circle_container = this.prediction_graph.append("g") as any;
 
         this.move_crosshair = this.prediction_graph
             .append("g")
@@ -371,9 +371,9 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
         if (use_score_safe) {
             this.y.domain(
                 d3.extent(
-                    d3.merge([entries, variation_entries]),
+                    d3.merge([entries, variation_entries]) as any,
                     (e: AIReviewEntry) => e.score,
-                ) as [number, number],
+                ) as any,
             );
         } else {
             this.y.domain([0, 100]);
@@ -504,12 +504,7 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
 
         this.highlighted_move_circles = this.highlighted_move_circle_container
             .selectAll("circle")
-            .data(circle_coords) as d3.Selection<
-            SVGCircleElement,
-            AIReviewEntry,
-            SVGSVGElement,
-            unknown
-        >;
+            .data(circle_coords) as any;
         // remove any data points that were removed
         const removes = this.highlighted_move_circles.exit().remove();
         // add circles that were added

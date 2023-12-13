@@ -101,7 +101,11 @@ export function ReportedGame({ game_id }: { game_id: number }): JSX.Element | nu
             goban.on("update", refresh);
         }
 
-        const gotoMove = (move_number: number) => {
+        const gotoMove = (move_number?: number) => {
+            if (typeof move_number !== "number") {
+                return;
+            }
+
             if (goban) {
                 goban.showFirst(move_number > 0);
                 for (let i = 0; i < move_number; ++i) {

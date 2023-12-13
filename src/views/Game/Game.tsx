@@ -300,7 +300,11 @@ export function Game(): JSX.Element | null {
             startAutoplay();
         }
     };
-    const nav_goto_move = (move_number: number) => {
+    const nav_goto_move = (move_number?: number) => {
+        if (typeof move_number !== "number") {
+            return;
+        }
+
         if (!goban.current) {
             return;
         }

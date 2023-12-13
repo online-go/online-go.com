@@ -30,7 +30,7 @@
         "noImplicitReturns": false,
         "noImplicitThis": false,
         "strictBindCallApply": false,
-        "strictFunctionTypes": false,
+        "strictFunctionTypes": true,
         "strictNullChecks": true,
         "strictPropertyInitialization": false,
         "noUnusedLocals": true,
@@ -44,7 +44,7 @@
         "./src/main.tsx",
         "typings_manual/index.d.ts",
         "node_modules/@types/jquery/index.d.ts",
-        "node_modules/jest-chain/types/index.d.ts",
+        "node_modules/jest-chain/types/index.d.ts"
     ],
     "include": ["src"]
 }

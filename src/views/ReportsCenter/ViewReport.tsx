@@ -17,6 +17,7 @@
 
 import * as React from "react";
 import * as moment from "moment";
+import * as ReactSelect from "react-select";
 import Select from "react-select";
 import { useUser } from "hooks";
 import { report_categories } from "Report";
@@ -274,7 +275,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
                         classNamePrefix="ogs-react-select"
                         value={reports.filter((r) => r.id === report.id)[0]}
                         getOptionValue={(r) => r.id.toString()}
-                        onChange={(r: Report) => onChange(r.id)}
+                        onChange={(r: ReactSelect.SingleValue<Report>) => r && onChange(r.id)}
                         options={reports}
                         isClearable={false}
                         isSearchable={false}

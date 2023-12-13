@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* spell-checker: disable */
+
 import cached from "cached";
 import * as data from "data";
 import * as preferences from "preferences";
@@ -244,10 +246,18 @@ export function resolveChannelDisplayName(channel: string): string {
 export let group_channels: GroupList = [];
 export let tournament_channels: ActiveTournamentList = [];
 
-function updateGroups(groups: GroupList) {
+function updateGroups(groups?: GroupList) {
+    if (!groups) {
+        return;
+    }
+
     group_channels = groups;
 }
-function updateTournaments(tournaments: ActiveTournamentList) {
+function updateTournaments(tournaments?: ActiveTournamentList) {
+    if (!tournaments) {
+        return;
+    }
+
     tournament_channels = tournaments;
 }
 data.watch(cached.groups, updateGroups);
@@ -964,7 +974,11 @@ export function chatSoftUid(user_id: number): string {
 for (const chan of global_channels) {
     updateCachedChannelInformation(chan.id, chan);
 }
-data.watch(cached.active_tournaments, (tournaments: ActiveTournamentList) => {
+data.watch(cached.active_tournaments, (tournaments?: ActiveTournamentList) => {
+    if (!tournaments) {
+        return;
+    }
+
     for (const tournament of tournaments) {
         updateCachedChannelInformation(`tournament-${tournament.id}`, {
             id: `tournament-${tournament.id}`,

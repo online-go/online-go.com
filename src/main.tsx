@@ -225,7 +225,7 @@ for (const socket of [sockets.socket, sockets.ai_socket]) {
     });
 }
 
-data.watch("config.user_jwt", (jwt: string) => {
+data.watch("config.user_jwt", (jwt?: string) => {
     if (jwt) {
         if (sockets.ai_socket.connected) {
             sockets.ai_socket.authenticate({

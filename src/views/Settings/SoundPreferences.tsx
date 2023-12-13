@@ -16,6 +16,7 @@
  */
 
 import * as React from "react";
+import * as ReactSelect from "react-select";
 import Select from "react-select";
 
 import { current_language, pgettext } from "translate";
@@ -968,9 +969,11 @@ function SoundPackSelect(props: {
         return false;
     }
 
-    function setPackId(pack: SpritePack): void {
-        __setPackId(pack.pack_id);
-        sfx.setPackId(props.group, pack.pack_id);
+    function setPackId(pack: ReactSelect.SingleValue<SpritePack>): void {
+        if (pack) {
+            __setPackId(pack.pack_id);
+            sfx.setPackId(props.group, pack.pack_id);
+        }
     }
 
     return (

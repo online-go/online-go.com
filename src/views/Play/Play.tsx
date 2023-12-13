@@ -414,8 +414,8 @@ export class Play extends React.Component<{}, PlayState> {
     anyChallengesToShow = (challenge_list: Challenge[]): boolean => {
         return (
             (this.state.filter.showIneligible && (challenge_list.length as any)) ||
-            challenge_list.reduce((prev, current) => {
-                return prev || current.eligible || current.user_challenge;
+            challenge_list.reduce((accumulator, current) => {
+                return accumulator || current.eligible || !!current.user_challenge;
             }, false)
         );
     };

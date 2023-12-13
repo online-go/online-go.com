@@ -143,7 +143,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
         });
     };
 
-    onJoinedChanged = (joined: { [channel: string]: true | 1 }) => {
+    onJoinedChanged = (joined?: { [channel: string]: true | 1 }) => {
         if (joined === undefined) {
             joined = {};
         }

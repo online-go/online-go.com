@@ -20,7 +20,7 @@ import * as data from "data";
 import * as Sentry from "@sentry/browser";
 import { get_clock_drift, get_network_latency, socket } from "sockets";
 import { current_language } from "translate";
-import { Goban, GoEngine, GoThemes } from "goban";
+import { Goban, GobanCore, GoEngine, GoThemes } from "goban";
 import { sfx } from "sfx";
 
 window["Goban"] = Goban;
@@ -63,7 +63,10 @@ export function configure_goban() {
             }
         },
 
-        isAnalysisDisabled: (goban: Goban, perGameSettingAppliesToNonPlayers = false): boolean => {
+        isAnalysisDisabled: (
+            goban: GobanCore,
+            perGameSettingAppliesToNonPlayers = false,
+        ): boolean => {
             if (goban.engine.phase === "finished") {
                 return false;
             }
