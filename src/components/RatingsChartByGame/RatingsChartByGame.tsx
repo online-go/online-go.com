@@ -90,13 +90,13 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     dateLegend; //  We use this to tell them what date was associated with the game they moused over
     dateLegendBackground;
     dateLegendText;
-    subselect_extents: number[];
+    subselect_extents!: number[];
     range_label;
     legend_label;
 
     win_loss_aggregate;
 
-    game_entries: Array<RatingEntry>;
+    game_entries!: Array<RatingEntry>;
 
     destroyed = false;
 

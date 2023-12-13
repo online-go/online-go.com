@@ -77,11 +77,11 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
     // selected_ai_review which will just contain some metadata from the
     // postgres database
     ai_review?: JGOFAIReview;
-    table_rows: string[][];
-    avg_score_loss: number[];
-    median_score_loss: number[];
-    moves_pending: number;
-    max_entries: number;
+    table_rows!: string[][];
+    avg_score_loss!: number[];
+    median_score_loss!: number[];
+    moves_pending!: number;
+    max_entries!: number;
 
     static contextType = GobanContext;
     declare context: React.ContextType<typeof GobanContext>;

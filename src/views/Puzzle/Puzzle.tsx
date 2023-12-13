@@ -97,9 +97,9 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     ref_settings_button: React.RefObject<HTMLButtonElement>;
     ref_edit_button: React.RefObject<HTMLButtonElement>;
     ref_hint_button: React.RefObject<HTMLButtonElement>;
-    ref_toggle_coordinates_button: React.RefObject<HTMLButtonElement>;
+    ref_toggle_coordinates_button?: React.RefObject<HTMLButtonElement>;
 
-    goban: Goban;
+    goban!: Goban;
     goban_div: HTMLDivElement;
     goban_opts: any = {};
     solve_time_start: number = Date.now();

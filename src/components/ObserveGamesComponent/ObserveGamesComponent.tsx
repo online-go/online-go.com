@@ -70,9 +70,9 @@ export class ObserveGamesComponent extends React.PureComponent<
     ObserveGamesComponentProperties,
     ObserveGamesComponentState
 > {
-    private last_refresh: number;
+    private last_refresh?: number;
     private next_refresh: any;
-    private auto_refresh: number;
+    private auto_refresh?: number;
     private channel?: string;
 
     constructor(props) {
@@ -189,7 +189,7 @@ export class ObserveGamesComponent extends React.PureComponent<
     };
     refresh = () => {
         const now = Date.now();
-        if (this.last_refresh != null && now - this.last_refresh < 1000.0) {
+        if (this.last_refresh !== undefined && now - this.last_refresh < 1000.0) {
             if (!this.next_refresh) {
                 this.next_refresh = setTimeout(
                     () => {

@@ -24,7 +24,7 @@ interface UIPushProperties {
     action: (data: any) => any;
 }
 
-class Handler {
+interface Handler {
     id: number;
     event: string;
     cb: (data, event?) => void;
@@ -59,9 +59,11 @@ class UIPushManager {
     }
 
     on(event, cb) {
-        const handler = new Handler();
-        (handler.id = ++last_handler_id), (handler.event = event);
-        handler.cb = cb;
+        const handler: Handler = {
+            id: ++last_handler_id,
+            event: event,
+            cb: cb,
+        };
 
         if (!(event in this.handlers)) {
             this.handlers[event] = [];

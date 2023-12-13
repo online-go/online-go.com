@@ -191,10 +191,10 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     legend_size = 25;
     list_locked: boolean = false;
     modal?: SeekGraphModal;
-    $list: JQuery;
+    $list!: JQuery;
     list_open: boolean = false;
-    width: number;
-    height: number;
+    width!: number;
+    height!: number;
 
     constructor(config: SeekGraphConfig) {
         super();

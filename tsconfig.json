@@ -32,7 +32,7 @@
         "strictBindCallApply": true,
         "strictFunctionTypes": true,
         "strictNullChecks": true,
-        "strictPropertyInitialization": false,
+        "strictPropertyInitialization": true,
         "noUnusedLocals": true,
 
         "allowSyntheticDefaultImports": true,
@@ -46,5 +46,6 @@
         "node_modules/@types/jquery/index.d.ts",
         "node_modules/jest-chain/types/index.d.ts"
     ],
-    "include": ["src"]
+    "include": ["src"],
+    "exclude": ["node_modules", "dist"]
 }

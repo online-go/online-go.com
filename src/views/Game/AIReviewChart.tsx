@@ -74,8 +74,13 @@ export class AIReviewChart extends React.Component<AIReviewChartProperties> {
     full_crosshair?: d3.Selection<SVGLineElement, unknown, null, undefined>;
     x: d3.ScaleLinear<number, number> = d3.scaleLinear().rangeRound([0, 0]);
     y: d3.ScaleLinear<number, number> = d3.scaleLinear().rangeRound([0, 0]);
-    highlighted_move_circle_container: d3.Selection<SVGElement, unknown, null, undefined>;
-    highlighted_move_circles: d3.Selection<SVGCircleElement, AIReviewEntry, SVGSVGElement, unknown>;
+    highlighted_move_circle_container!: d3.Selection<SVGElement, unknown, null, undefined>;
+    highlighted_move_circles!: d3.Selection<
+        SVGCircleElement,
+        AIReviewEntry,
+        SVGSVGElement,
+        unknown
+    >;
 
     constructor(props: AIReviewChartProperties) {
         super(props);

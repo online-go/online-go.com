@@ -21,7 +21,7 @@ import { Link } from "react-router-dom";
 import { Player } from "Player";
 import { profanity_filter } from "profanity_filter";
 
-export class TextReplacement {
+export interface TextReplacement {
     split: RegExp;
     pattern: RegExp;
     replacement: (m: RegExpExecArray, idx: number) => JSX.Element;

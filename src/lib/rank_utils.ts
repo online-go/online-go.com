@@ -22,7 +22,7 @@ export interface IRankInfo {
     label: string;
 }
 
-export class Rating {
+export interface Rating {
     unset: boolean;
     rating: number;
     deviation: number;
@@ -139,7 +139,7 @@ export function getUserRating(
     speed: "overall" | "blitz" | "live" | "correspondence" = "overall",
     size: 0 | 9 | 13 | 19 = 0,
 ): Rating {
-    const ret = new Rating();
+    const ret: Partial<Rating> = {};
     const ratings = user.ratings || {};
     ret.professional = user.pro || user.professional || false;
 
@@ -192,7 +192,7 @@ export function getUserRating(
         ret.rank_deviation_labels = ["", ""];
     }
 
-    return ret;
+    return ret as Rating;
 }
 
 /** Like rankString, but clamped to the range [25k, 9d] */

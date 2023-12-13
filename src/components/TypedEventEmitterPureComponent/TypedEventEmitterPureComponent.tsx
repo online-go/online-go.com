@@ -22,7 +22,7 @@ export class TypedEventEmitterPureComponent<Events, Props, State> extends React.
     Props,
     State
 > {
-    event_emitter: TypedEventEmitter<Events>;
+    event_emitter?: TypedEventEmitter<Events>;
 
     constructor(props: Props | Readonly<Props>) {
         super(props);
@@ -39,7 +39,7 @@ export class TypedEventEmitterPureComponent<Events, Props, State> extends React.
         listener: (arg?: Events[K]) => any,
     ): this {
         this.__initialize_event_emitter();
-        this.event_emitter.on(event, listener);
+        this.event_emitter!.on(event, listener);
         return this;
     }
     once<K extends Extract<keyof Events, string>>(
@@ -47,7 +47,7 @@ export class TypedEventEmitterPureComponent<Events, Props, State> extends React.
         listener: (arg?: Events[K]) => any,
     ): this {
         this.__initialize_event_emitter();
-        this.event_emitter.once(event, listener);
+        this.event_emitter!.once(event, listener);
         return this;
     }
     off<K extends Extract<keyof Events, string>>(
@@ -55,7 +55,7 @@ export class TypedEventEmitterPureComponent<Events, Props, State> extends React.
         listener: (arg?: Events[K]) => any,
     ): this {
         this.__initialize_event_emitter();
-        this.event_emitter.off(event, listener);
+        this.event_emitter!.off(event, listener);
         return this;
     }
     removeAllListeners<K extends Extract<keyof Events, string>>(event?: K): this {

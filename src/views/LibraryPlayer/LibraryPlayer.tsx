@@ -63,7 +63,7 @@ interface LibraryPlayerState {
 }
 
 class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, LibraryPlayerState> {
-    dropzone: DropzoneRef;
+    dropzone?: DropzoneRef;
 
     constructor(props) {
         super(props);
@@ -500,7 +500,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                             </button>
                                             <button
                                                 className="primary"
-                                                onClick={() => this.dropzone.open()}
+                                                onClick={() => this.dropzone?.open()}
                                             >
                                                 {_("Upload")}
                                             </button>

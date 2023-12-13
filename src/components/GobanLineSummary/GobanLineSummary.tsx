@@ -61,7 +61,7 @@ export class GobanLineSummary extends React.Component<
     GobanLineSummaryProps,
     GobanLineSummaryState
 > {
-    goban: Goban;
+    goban!: Goban;
 
     constructor(props: GobanLineSummaryProps) {
         super(props);

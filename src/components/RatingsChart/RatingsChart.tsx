@@ -85,10 +85,10 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
     win_loss_aggregate;
     win_loss_graphs: Array<any> = [];
     win_loss_bars: Array<any> = [];
-    game_entries: Array<RatingEntry>;
-    games_by_month: Array<RatingEntry>;
-    games_by_day: Array<RatingEntry>;
-    max_games_played_in_a_month: number;
+    game_entries!: Array<RatingEntry>;
+    games_by_month!: Array<RatingEntry>;
+    games_by_day!: Array<RatingEntry>;
+    max_games_played_in_a_month!: number;
     destroyed = false;
 
     show_pie;

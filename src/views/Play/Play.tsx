@@ -74,10 +74,10 @@ interface PlayState {
 }
 
 export class Play extends React.Component<{}, PlayState> {
-    ref_container: HTMLDivElement;
+    ref_container?: HTMLDivElement;
     canvas: HTMLCanvasElement;
 
-    seekgraph: SeekGraph;
+    seekgraph!: SeekGraph;
     resize_check_interval;
 
     static contextType: React.Context<DynamicHelp.AppApi> = DynamicHelp.Api;

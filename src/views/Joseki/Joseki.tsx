@@ -191,17 +191,17 @@ interface JosekiState {
 }
 
 class _Joseki extends React.Component<JosekiProps, JosekiState> {
-    goban: Goban;
+    goban!: Goban;
     goban_div: HTMLDivElement;
     goban_opts: any = {};
-    goban_container: HTMLDivElement;
+    goban_container!: HTMLDivElement;
 
-    joseki_tags: JosekiTag[]; // the list of valid tags, collected from the server
-    the_joseki_tag: JosekiTag; //  the tag that represents "Joseki Done"
+    joseki_tags!: JosekiTag[]; // the list of valid tags, collected from the server
+    the_joseki_tag!: JosekiTag; //  the tag that represents "Joseki Done"
     last_server_position = ""; // the most recent position that the server returned to us, used in backstepping
     last_placement = "";
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
-    current_marks: Array<{ label: string; position: string }>; // the marks on the board - from the server, or from editing
+    current_marks!: Array<{ label: string; position: string }>; // the marks on the board - from the server, or from editing
     load_sequence_to_board = false; // True if we need to load the stones from the whole sequence received from the server onto the board
     show_comments_requested = false; //  If there is a "show_comments" parameter in the URL
     previous_position = {} as any; // Saving the information of the node we have moved from, so we can get back to it
@@ -217,7 +217,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
     prefetching = false; // if we have a prefetch of node positions in flight
     prefetched = {}; // Nodes that we have already prefetched, so don't do it again
 
-    last_click: number; // most recent time (ms) we got a click from the goban
+    last_click!: number; // most recent time (ms) we got a click from the goban
 
     constructor(props) {
         super(props);

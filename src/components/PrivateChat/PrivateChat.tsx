@@ -48,7 +48,7 @@ class PrivateChat {
     dom!: JQuery;
     lines: any[] = [];
     received_messages: { [k: string]: any } = {};
-    last_uid: string;
+    last_uid?: string;
     last_date = new Date(Date.now() - 864e5).toLocaleDateString(undefined, date_format);
     floating = false;
     superchat_enabled = false;

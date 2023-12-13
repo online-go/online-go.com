@@ -31,7 +31,7 @@ interface InstructionalGobanProps {
 
 export class InstructionalGoban extends React.Component<InstructionalGobanProps> {
     goban_div: HTMLDivElement;
-    goban: Goban;
+    goban?: Goban;
 
     constructor(props) {
         super(props);

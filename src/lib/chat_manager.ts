@@ -330,7 +330,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
     last_seen_timestamp: number;
     send_tokens = 5;
     flood_protection: Timeout | null = null;
-    topic: TopicMessage;
+    topic?: TopicMessage;
 
     constructor(channel: string, display_name: string) {
         super();
