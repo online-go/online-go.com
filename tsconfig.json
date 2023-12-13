@@ -29,7 +29,7 @@
         "noImplicitAny": false,
         "noImplicitReturns": true,
         "noImplicitThis": false,
-        "strictBindCallApply": false,
+        "strictBindCallApply": true,
         "strictFunctionTypes": true,
         "strictNullChecks": true,
         "strictPropertyInitialization": false,

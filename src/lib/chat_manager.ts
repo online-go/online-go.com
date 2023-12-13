@@ -757,22 +757,22 @@ export class ChatChannelProxy extends TypedEventEmitter<Events> {
     }
 
     _onChat = (...args) => {
-        this.emit.apply(this, ["chat"].concat(args));
+        this.emit.apply(this, ["chat", args]);
     };
     _onTopic = (...args) => {
-        this.emit.apply(this, ["topic"].concat(args));
+        this.emit.apply(this, ["topic", args]);
     };
     _onJoin = (...args) => {
-        this.emit.apply(this, ["join"].concat(args));
+        this.emit.apply(this, ["join", args]);
     };
     _onPart = (...args) => {
-        this.emit.apply(this, ["part"].concat(args));
+        this.emit.apply(this, ["part", args]);
     };
     _onChatRemoved = (...args) => {
-        this.emit.apply(this, ["chat-removed"].concat(args));
+        this.emit.apply(this, ["chat-removed", args]);
     };
     _onUnreadChanged = (...args) => {
-        this.emit.apply(this, ["unread-count-changed"].concat(args));
+        this.emit.apply(this, ["unread-count-changed", args]);
     };
     _destroy() {
         this.channel.off("chat", this._onChat);

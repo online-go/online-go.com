@@ -417,7 +417,7 @@ export function chat_markup(
 
     let fragments = [profanity_filter(body)];
     for (const r of replacements) {
-        fragments = [].concat.apply(
+        fragments = ([] as any[]).concat.apply(
             [],
             fragments.map((text_fragment) => {
                 return text_fragment.split(r.split);

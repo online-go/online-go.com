@@ -256,7 +256,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         });
     }
 
-    replacementSettingFunction(): PuzzlePlacementSetting | undefined {
+    replacementSettingFunction(): PuzzlePlacementSetting {
         if (this.state.edit_step === "setup") {
             return {
                 mode: "setup",
@@ -270,7 +270,8 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                 color: 0,
             };
         }
-        return;
+
+        throw new Error("Invalid edit step");
     }
 
     reset(editing?: boolean) {
