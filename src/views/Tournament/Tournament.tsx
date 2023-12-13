@@ -997,7 +997,7 @@ export function Tournament(): JSX.Element {
             }
         }
     };
-    const groupify = (round, players) => {
+    const groupify = (round, players): any => {
         try {
             const match_map: any = {};
             const result_map: any = {};
@@ -1462,7 +1462,7 @@ export function Tournament(): JSX.Element {
         close_all_popovers();
     };
 
-    const renderExtraPlayerActions = (player_id: number) => {
+    const renderExtraPlayerActions = (player_id: number): any => {
         const tournament = tournament_ref.current;
         if (
             !(
@@ -3378,7 +3378,7 @@ function fromNow(t) {
     return moment(d).fromNow();
 }
 
-function nthPlace(n) {
+function nthPlace(n): string | null {
     switch (n) {
         case 1:
             return _("First place");
@@ -3387,9 +3387,11 @@ function nthPlace(n) {
         case 3:
             return _("Third place");
     }
+
+    return null;
 }
 
-function trophyFilename(tournament, rank) {
+function trophyFilename(tournament, rank): string | null {
     const size = tournament.board_size;
     switch (rank) {
         case 1:
@@ -3399,6 +3401,8 @@ function trophyFilename(tournament, rank) {
         case 3:
             return `bronze_tourn_${size}.png`;
     }
+
+    return null;
 }
 function sortDropoutsToBottom(player_a, player_b) {
     // Sorting the players structure from a group array

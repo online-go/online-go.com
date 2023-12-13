@@ -427,6 +427,7 @@ export function Game(): JSX.Element | null {
         }
         goban.current.syncReviewMove({ clearpen: true });
         goban.current.clearAnalysisDrawing();
+        return true;
     };
     const delete_branch = () => {
         goban_deleteBranch();
@@ -777,7 +778,7 @@ export function Game(): JSX.Element | null {
 
     /* Review stuff */
 
-    const variationKeyPress = (ev) => {
+    const variationKeyPress = (ev): boolean | void => {
         if (ev.keyCode === 13) {
             shareAnalysis();
             return false;
@@ -883,7 +884,7 @@ export function Game(): JSX.Element | null {
         return null;
     };
 
-    const frag_bot_detection_results = () => {
+    const frag_bot_detection_results = (): JSX.Element | null => {
         if (bot_detection_results?.ai_suspected.length > 0) {
             return (
                 <BotDetectionResults
@@ -893,6 +894,8 @@ export function Game(): JSX.Element | null {
                 />
             );
         }
+
+        return null;
     };
 
     const frag_timings = () => {

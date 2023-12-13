@@ -28,7 +28,7 @@ export function TournamentIndicator(): JSX.Element | null {
     const [enabled] = usePreference("show-tournament-indicator");
     const [enabled_on_mobile] = usePreference("show-tournament-indicator-on-mobile");
 
-    React.useEffect(() => {
+    React.useEffect((): (() => void) | void => {
         if (enabled) {
             const onActiveTournament = (tournament) => {
                 setTournament(tournament);
@@ -42,7 +42,7 @@ export function TournamentIndicator(): JSX.Element | null {
         }
     }, [enabled]);
 
-    React.useEffect(() => {
+    React.useEffect((): (() => void) | void => {
         if (tournament && enabled) {
             const update = () => {
                 const t = (moment(tournament.expiration).toDate().getTime() - Date.now()) / 1000;

@@ -183,7 +183,7 @@ class NotificationEntry extends React.Component<{ notification }, any> {
         );
     }
 
-    renderNotification() {
+    renderNotification(): JSX.Element | null {
         const notification = this.props.notification;
 
         switch (notification.type) {
@@ -540,6 +540,7 @@ class NotificationEntry extends React.Component<{ notification }, any> {
 
             default:
                 console.error("Unsupported notification: ", notification.type, notification);
+                return null;
                 break;
         }
     }

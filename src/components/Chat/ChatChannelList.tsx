@@ -320,7 +320,7 @@ export function ChatChannel({
         }
     }, [channel, name]);
 
-    useEffect(() => {
+    useEffect((): (() => void) | void => {
         let proxy;
 
         if (joined) {

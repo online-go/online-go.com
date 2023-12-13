@@ -95,6 +95,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
             case "19x19":
                 return 19;
         }
+        throw new Error(`Unknown size filter: ${size_filter}`);
     }
 
     function handleRowClick(row, ev) {

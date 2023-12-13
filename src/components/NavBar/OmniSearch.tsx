@@ -45,7 +45,7 @@ export function OmniSearch(props: OmniSearchProperties): JSX.Element | null {
         omnisearch_groups.length +
         omnisearch_sitemap.length;
 
-    React.useEffect(() => {
+    React.useEffect((): (() => void) | void => {
         if (search) {
             const q = search.trim();
             setOmnisearchString(q);

@@ -277,7 +277,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                 text: _("Tournament Name"),
                 input: "text",
                 showCancelButton: true,
-                inputValidator: (value) => {
+                inputValidator: (value): string | void => {
                     if (!value) {
                         return pgettext(
                             "They have to supply a name for a tournament they want to create",

@@ -469,7 +469,7 @@ const last_navigateTo = {
     timestamp: null as number | null,
 };
 
-export function navigateTo(path: string, event?) {
+export function navigateTo(path: string, event?): boolean {
     if (last_navigateTo.path === path && Date.now() - (last_navigateTo.timestamp || 0) < 100) {
         /* debounce, this is for elements that need to have both onClick and onMouseUp to
          * handle various use cases in different browsers */
@@ -485,6 +485,8 @@ export function navigateTo(path: string, event?) {
     } else {
         browserHistory.push(path);
     }
+
+    return true;
 }
 
 export function deepCompare(x: any, y: any) {

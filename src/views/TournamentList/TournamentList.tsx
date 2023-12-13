@@ -476,7 +476,7 @@ function timeIcon(time_per_move) {
     return "ogs-turtle";
 }
 
-function rrule_description(entry) {
+function rrule_description(entry): string {
     const m = moment(new Date(entry.next_run)).add(entry.lead_time_seconds, "seconds");
 
     const rrule = entry.rrule;
@@ -568,6 +568,7 @@ function rrule_description(entry) {
         }
     }
     console.log("Failed: ", unit, interval);
+    return "error formatting rrule";
 }
 function typeDescription(e) {
     return TOURNAMENT_TYPE_NAMES[e.tournament_type];

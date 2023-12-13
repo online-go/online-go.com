@@ -142,7 +142,7 @@ function AntiEscaping(): JSX.Element | null {
         };
     }, [goban]);
 
-    React.useEffect(() => {
+    React.useEffect((): (() => void) | void => {
         if (expiration) {
             const timer = setTimeout(() => {
                 setExpiration(null);

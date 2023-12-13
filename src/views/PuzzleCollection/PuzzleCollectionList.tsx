@@ -156,7 +156,7 @@ export function PuzzleCollectionList(): JSX.Element {
                 text: _("Collection name"),
                 input: "text",
                 showCancelButton: true,
-                inputValidator: (name) => {
+                inputValidator: (name): string | void => {
                     if (!name || name.length < 5) {
                         return _("Please provide a longer name for your new puzzle collection");
                     }

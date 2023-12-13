@@ -41,7 +41,7 @@ export function Register(): JSX.Element {
         navigate("/");
     }
 
-    const register = (event) => {
+    const register = (event): boolean | void => {
         const actually_register = () => {
             post("/api/v0/register", {
                 username: ref_username.current?.value.trim(),
@@ -132,6 +132,8 @@ export function Register(): JSX.Element {
         if (event.type === "click" || event.charCode === 13) {
             return false;
         }
+
+        return;
     };
 
     const validateUsername = () => {

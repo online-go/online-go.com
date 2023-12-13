@@ -170,7 +170,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
         };
     }, []);
 
-    const onKeyPress = (event: React.KeyboardEvent<HTMLElement>) => {
+    const onKeyPress = (event: React.KeyboardEvent<HTMLElement>): boolean | void => {
         if (event.key === "Enter") {
             const input = event.target as HTMLInputElement;
             if (input.className === "qc-option") {

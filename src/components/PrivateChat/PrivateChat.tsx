@@ -317,7 +317,7 @@ class PrivateChat {
 
         const input = (this.input = $("<input>")
             .attr("type", "text")
-            .keypress((ev) => {
+            .keypress((ev): boolean | void => {
                 if (
                     !data.get("user").email_validated &&
                     (this.player.ui_class?.indexOf("moderator") || 0) < 0 &&
@@ -823,7 +823,7 @@ ITC.register("private-chat-close", (data) => {
         pc.close(false);
     }
 });
-function chat_markup(body) {
+function chat_markup(body): string | undefined {
     if (typeof body === "string") {
         let ret = $("<div>").text(body).html();
         // Some link urls can have an @-sign in. Be careful not to cause the link_matcher
@@ -856,4 +856,5 @@ function chat_markup(body) {
     } else {
         console.log("Attempted to markup non-text object: ", body);
     }
+    return;
 }

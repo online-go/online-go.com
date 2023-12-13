@@ -414,6 +414,7 @@ export class SFXManager {
         } catch (e) {
             console.error(e);
         }
+        return;
     }
     public stop(group_name?: string): void {
         try {

@@ -216,24 +216,27 @@ export function resolveChannelDisplayName(channel: string): string {
         return global_channels[channel];
     }
     if (channel.startsWith("global-")) {
-        global_channels.forEach((element) => {
+        global_channels.forEach((element): string | void => {
             if (channel === element.id) {
                 return element.name;
             }
+            return;
         });
     } else if (channel.startsWith("tournament-")) {
         const id: number = parseInt(channel.substring(11));
-        tournament_channels.forEach((element) => {
+        tournament_channels.forEach((element): string | void => {
             if (id === element.id) {
                 return element.name;
             }
+            return;
         });
     } else if (channel.startsWith("group-")) {
         const id: number = parseInt(channel.substring(6));
-        group_channels.forEach((element) => {
+        group_channels.forEach((element): string | void => {
             if (id === element.id) {
                 return element.name;
             }
+            return;
         });
     } else if (channel.startsWith("game-")) {
         return interpolate(_("Game {{number}}"), { number: channel.substring(5) }); // eslint-disable-line id-denylist

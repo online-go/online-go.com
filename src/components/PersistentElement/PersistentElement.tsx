@@ -27,7 +27,7 @@ interface PersistentElementProps {
 export function PersistentElement(props: PersistentElementProps): JSX.Element {
     const container = React.useRef<HTMLDivElement>(null);
 
-    React.useEffect(() => {
+    React.useEffect((): (() => void) | void => {
         if (container.current) {
             const elt = props.elt instanceof jQuery ? props.elt[0] : props.elt;
             if (elt) {

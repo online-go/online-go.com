@@ -93,7 +93,7 @@ export function SignIn(): JSX.Element {
 
     const login = (
         event: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLInputElement>,
-    ) => {
+    ): boolean | void => {
         const actually_login = () => {
             post("/api/v0/login", {
                 username: ref_username.current!.value.trim(),
@@ -187,7 +187,7 @@ export function SignIn(): JSX.Element {
                 text: _("What is your username?"),
                 input: "text",
                 showCancelButton: true,
-                inputValidator: (username) => {
+                inputValidator: (username): string | void => {
                     if (!username) {
                         return _("Please supply a username!");
                     }

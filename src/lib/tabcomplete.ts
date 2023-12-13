@@ -129,6 +129,7 @@ function matchName(input, nicknames) {
                     letter = "";
                     return false;
                 }
+                return;
             });
             if (letter) {
                 letters += letter;
@@ -164,6 +165,7 @@ function matchFullName(input, nicknames) {
                     letter = "";
                     return false;
                 }
+                return;
             });
             if (letter) {
                 letters += letter;

@@ -187,7 +187,7 @@ export function ReportsCenter(): JSX.Element | null {
 
             <div id="ReportsCenterContainer">
                 <div id="ReportsCenterCategoryList">
-                    {visible_categories.map((report_type, idx) => {
+                    {visible_categories.map((report_type, idx): JSX.Element | null => {
                         if ("type" in report_type) {
                             const ct = counts[report_type.type] || 0;
                             return (
@@ -233,6 +233,8 @@ export function ReportsCenter(): JSX.Element | null {
                                     );
                             }
                         }
+
+                        return null;
                     })}
                 </div>
                 <Select

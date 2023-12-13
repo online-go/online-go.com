@@ -316,6 +316,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             ev.preventDefault();
             return false;
         }
+        return;
     };
     onPointerMove = (ev: JQueryEventObject) => {
         const new_list = this.getHits(ev);

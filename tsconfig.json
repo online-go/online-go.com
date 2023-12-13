@@ -27,7 +27,7 @@
         "forceConsistentCasingInFileNames": true,
 
         "noImplicitAny": false,
-        "noImplicitReturns": false,
+        "noImplicitReturns": true,
         "noImplicitThis": false,
         "strictBindCallApply": false,
         "strictFunctionTypes": true,

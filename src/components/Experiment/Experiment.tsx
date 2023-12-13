@@ -39,7 +39,7 @@ export function Experiment({ name, children }: ExperimentProps): JSX.Element | u
         console.warn("Experiment", name, "has no matching child for value", selected);
     }
 
-    React.useEffect(() => {
+    React.useEffect((): (() => void) | void => {
         const body_class = matching_child?.props?.bodyclass;
         if (body_class) {
             document.body.classList.add(body_class);
