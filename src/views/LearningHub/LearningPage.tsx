@@ -112,7 +112,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
             sfx.play("tutorial-fail");
         }
         if (this.complete() || this.failed()) {
-            this.instructional_goban?.goban.disableStonePlacement();
+            this.instructional_goban?.goban?.disableStonePlacement();
         }
 
         this.setState({
@@ -128,13 +128,13 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         this.correct_answer_triggered = true;
         sfx.play("tutorial-pass");
         setTimeout(this.next, 1000);
-        this.instructional_goban?.goban.disableStonePlacement();
+        this.instructional_goban?.goban?.disableStonePlacement();
         this.forceUpdate();
     };
     onWrongAnswer = () => {
         this.wrong_answer_triggered = true;
         sfx.play("tutorial-fail");
-        this.instructional_goban?.goban.disableStonePlacement();
+        this.instructional_goban?.goban?.disableStonePlacement();
         this.forceUpdate();
     };
     onError = () => {
@@ -215,8 +215,10 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
     setGobanRef = (r) => {
         this.instructional_goban = r;
         if (this.instructional_goban) {
-            this.instructional_goban.goban.on("set-for-removal", () => {
-                this.onStoneRemoval(this.instructional_goban!.goban.engine.getStoneRemovalString());
+            this.instructional_goban.goban?.on("set-for-removal", () => {
+                this.onStoneRemoval(
+                    this.instructional_goban!.goban!.engine.getStoneRemovalString(),
+                );
             });
             window["global_goban"] = r.goban;
         }

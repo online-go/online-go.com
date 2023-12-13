@@ -215,10 +215,10 @@ function ChannelTopic({
         const proxy = chat_manager.join(channel);
         setProxy(proxy);
         set_topic(proxy.channel?.topic?.topic || "");
-        set_title_hover(getTitleHover(proxy.channel?.topic));
+        set_title_hover(getTitleHover(proxy.channel?.topic ?? null));
         proxy.on("topic", () => {
             set_topic(proxy.channel?.topic?.topic || "");
-            set_title_hover(getTitleHover(proxy.channel?.topic));
+            set_title_hover(getTitleHover(proxy.channel?.topic ?? null));
         });
 
         function getTitleHover(topic: TopicMessage | null): string {

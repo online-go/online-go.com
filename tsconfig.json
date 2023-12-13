@@ -25,17 +25,17 @@
         },
 
         "forceConsistentCasingInFileNames": true,
+        "allowSyntheticDefaultImports": true,
 
         "noImplicitAny": false,
         "noImplicitReturns": true,
-        "noImplicitThis": false,
         "strictBindCallApply": true,
         "strictFunctionTypes": true,
         "strictNullChecks": true,
         "strictPropertyInitialization": true,
         "noUnusedLocals": true,
 
-        "allowSyntheticDefaultImports": true,
+        "noImplicitThis": false,
 
         "sourceMap": true,
         "jsx": "react"
