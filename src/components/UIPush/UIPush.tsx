@@ -111,7 +111,7 @@ class UIPushManager {
 
 export const push_manager = new UIPushManager();
 
-export function UIPush({ event, channel, action }: UIPushProperties): JSX.Element {
+export function UIPush({ event, channel, action }: UIPushProperties): JSX.Element | null {
     React.useEffect(() => {
         if (event && action) {
             const handler = push_manager.on(event, action);

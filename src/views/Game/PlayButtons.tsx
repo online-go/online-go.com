@@ -49,11 +49,13 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): JSX.Eleme
     React.useEffect(() => {
         const syncShowSubmit = () => {
             setShowSubmit(
-                !!goban.submit_move &&
+                !!(
+                    goban.submit_move &&
                     goban.engine.cur_move &&
                     goban.engine.cur_move.parent &&
                     goban.engine.last_official_move &&
-                    goban.engine.cur_move.parent.id === goban.engine.last_official_move.id,
+                    goban.engine.cur_move.parent.id === goban.engine.last_official_move.id
+                ),
             );
         };
         syncShowSubmit();
@@ -73,8 +75,7 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): JSX.Eleme
             setShowAcceptUndo(
                 goban.engine.playerToMove() === data.get("user").id ||
                     (goban.submit_move != null &&
-                        goban.engine.playerNotToMove() === data.get("user").id) ||
-                    null,
+                        goban.engine.playerNotToMove() === data.get("user").id),
             );
         };
         syncShowAcceptUndo();
@@ -128,7 +129,7 @@ export function PlayButtons({ show_cancel = true }: PlayButtonsProps): JSX.Eleme
                         {((cur_move_number >= 1 &&
                             !engine.rengo &&
                             player_to_move !== data.get("user").id &&
-                            !(engine.undo_requested >= engine.getMoveNumber()) &&
+                            !((engine.undo_requested ?? -1) >= engine.getMoveNumber()) &&
                             goban.submit_move == null) ||
                             null) && (
                             <button className="bold undo-button xs" onClick={onUndo}>
@@ -202,10 +203,10 @@ export function CancelButton({ className = "" }: CancelButtonProps) {
         let dropping_from_casual_rengo = false;
 
         if (goban.engine.rengo && goban.engine.rengo_casual_mode) {
-            const team = goban.engine.rengo_teams.black.find((p) => p.id === data.get("user").id)
+            const team = goban.engine.rengo_teams!.black.find((p) => p.id === data.get("user").id)
                 ? "black"
                 : "white";
-            dropping_from_casual_rengo = goban.engine.rengo_teams[team].length > 1;
+            dropping_from_casual_rengo = goban.engine.rengo_teams![team].length > 1;
         }
 
         const text =

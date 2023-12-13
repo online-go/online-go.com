@@ -29,15 +29,15 @@ interface OmniSearchProperties {
     onMouseOut: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
-export function OmniSearch(props: OmniSearchProperties): JSX.Element {
+export function OmniSearch(props: OmniSearchProperties): JSX.Element | null {
     const { search } = props;
     const [omnisearch_string, setOmnisearchString] = React.useState("");
     const [omnisearch_loading, setOmnisearchLoading] = React.useState(false);
-    const [omnisearch_sitemap, setOmnisearchSitemap] = React.useState([]);
-    const [omnisearch_players, setOmnisearchPlayers] = React.useState([]);
-    const [omnisearch_groups, setOmnisearchGroups] = React.useState([]);
-    const [omnisearch_tournaments, setOmnisearchTournaments] = React.useState([]);
-    const [omnisearch_games, setOmnisearchGames] = React.useState([]);
+    const [omnisearch_sitemap, setOmnisearchSitemap] = React.useState<[string, string][]>([]);
+    const [omnisearch_players, setOmnisearchPlayers] = React.useState<any[]>([]);
+    const [omnisearch_groups, setOmnisearchGroups] = React.useState<any[]>([]);
+    const [omnisearch_tournaments, setOmnisearchTournaments] = React.useState<any[]>([]);
+    const [omnisearch_games, setOmnisearchGames] = React.useState<any[]>([]);
 
     const omnisearch_result_count =
         omnisearch_players.length +

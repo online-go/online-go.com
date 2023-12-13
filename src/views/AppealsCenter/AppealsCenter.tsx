@@ -24,7 +24,7 @@ import { PaginatedTable } from "PaginatedTable";
 import * as data from "data";
 //import { alert } from "swal_config";
 
-export function AppealsCenter(): JSX.Element {
+export function AppealsCenter(): JSX.Element | null {
     const user = data.get("user");
     const [show_all, set_show_all] = React.useState(false);
 

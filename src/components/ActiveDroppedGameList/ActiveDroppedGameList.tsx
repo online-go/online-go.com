@@ -76,8 +76,8 @@ export function ActiveDroppedGameList(props: ActiveDroppedGameListProps): JSX.El
 }
 
 function splitDroppedRengo(games: any[], playerId: number) {
-    const active = [];
-    const dropped = [];
+    const active: any[] = [];
+    const dropped: any[] = [];
     const isPlayer = (player) => player.id === playerId;
     const isActivePlayer = (game) => {
         if (game.json?.rengo === true) {

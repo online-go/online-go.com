@@ -28,12 +28,12 @@ interface ChatUsersListProperties {
     channel: string;
 }
 
-let deferred_users_update: Timeout = null;
+let deferred_users_update: Timeout | null = null;
 
 export function ChatUsersList({ channel }: ChatUsersListProperties): JSX.Element {
     const [, refresh]: [number, (n: number) => void] = useState(0);
     const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] =
-        useState(null);
+        useState<ChatChannelProxy | null>(null);
     const [user_sort_order, set_user_sort_order]: [string, (s: string) => void] = useState(
         preferences.get("chat.user-sort-order"),
     );
@@ -72,7 +72,7 @@ export function ChatUsersList({ channel }: ChatUsersListProperties): JSX.Element
         return <div className="ChatUsersList" />;
     }
 
-    const sorted_user_list = [];
+    const sorted_user_list: any[] = [];
     for (const id in proxy?.channel.user_list) {
         sorted_user_list.push(proxy?.channel.user_list[id]);
     }

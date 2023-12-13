@@ -100,7 +100,7 @@ export class GobanLineSummary extends React.Component<
 
         requestAnimationFrame(() => {
             this.goban = new Goban({
-                board_div: null,
+                board_div: undefined,
                 draw_top_labels: false,
                 draw_bottom_labels: false,
                 draw_left_labels: false,
@@ -157,9 +157,9 @@ export class GobanLineSummary extends React.Component<
     }
 
     render() {
-        let opponent: UserType;
-        let player_color: PlayerColor;
-        let opponent_color: PlayerColor;
+        let opponent: UserType | null = null;
+        let player_color: PlayerColor | null | null = null;
+        let opponent_color: PlayerColor | null = null;
 
         if (this.props.lineSummaryMode === "opponent-only") {
             if (this.props.player == null) {
@@ -168,7 +168,7 @@ export class GobanLineSummary extends React.Component<
                 );
             }
             player_color = playerColor(this.props);
-            if (player_color == null) {
+            if (player_color === null) {
                 console.error(
                     `You are using the line summary mode ${this.props.lineSummaryMode}, but the current player is not in the game ${this.state.game_name}. This will cause display problems!`,
                 );
@@ -187,21 +187,28 @@ export class GobanLineSummary extends React.Component<
                 }
             >
                 <div className="move-number">{this.state.move_number}</div>
-                <GameNameForList original_name={this.state.game_name} />
+                <GameNameForList original_name={this.state.game_name || ""} />
 
-                {this.props.lineSummaryMode === "opponent-only" && (
-                    <>
-                        <div className="player">
-                            <Player user={opponent} fakelink rank />
-                        </div>
-                        <div>
-                            <Clock goban={this.goban} color={player_color} lineSummary={true} />
-                        </div>
-                        <div>
-                            <Clock goban={this.goban} color={opponent_color} lineSummary={true} />
-                        </div>
-                    </>
-                )}
+                {this.props.lineSummaryMode === "opponent-only" &&
+                    opponent &&
+                    player_color &&
+                    opponent_color && (
+                        <>
+                            <div className="player">
+                                <Player user={opponent} fakelink rank />
+                            </div>
+                            <div>
+                                <Clock goban={this.goban} color={player_color} lineSummary={true} />
+                            </div>
+                            <div>
+                                <Clock
+                                    goban={this.goban}
+                                    color={opponent_color}
+                                    lineSummary={true}
+                                />
+                            </div>
+                        </>
+                    )}
 
                 {this.props.lineSummaryMode === "both-players" && (
                     <>
@@ -238,7 +245,7 @@ function playerColor(props: GobanLineSummaryProps): PlayerColor | null {
         return "white";
     }
 
-    const isPlayer = (p) => p.id === props.player.id;
+    const isPlayer = (p) => p.id === props.player?.id;
     if (props.rengo_teams) {
         if (props.rengo_teams.black.some(isPlayer)) {
             return "black";
@@ -264,7 +271,7 @@ export function GameNameForList(props: { original_name: string }): JSX.Element {
         "Ladder Challenge:": "fa fa-list-ol",
     };
     for (const prefix in spans) {
-        let text: string = null;
+        let text: string | null = null;
         if ((text = stripNamePrefix(name, prefix))) {
             const icon_class = spans[prefix];
             return (

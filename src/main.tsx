@@ -216,7 +216,7 @@ try {
 /** Connect to the chat service */
 for (const socket of [sockets.socket, sockets.ai_socket]) {
     socket.authenticate({
-        jwt: data.get("config.user_jwt"),
+        jwt: data.get("config.user_jwt", "err"),
         device_id: get_device_id(),
         user_agent: navigator.userAgent,
         language: ogs_current_language,
@@ -229,7 +229,7 @@ data.watch("config.user_jwt", (jwt: string) => {
     if (jwt) {
         if (sockets.ai_socket.connected) {
             sockets.ai_socket.authenticate({
-                jwt: data.get("config.user_jwt"),
+                jwt: data.get("config.user_jwt", "err"),
                 device_id: get_device_id(),
                 user_agent: navigator.userAgent,
                 language: ogs_current_language,
@@ -261,7 +261,7 @@ sockets.socket.on("user/update", (user: any) => {
 set_remote_scorer(remote_score_estimator);
 function remote_score_estimator(req: ScoreEstimateRequest): Promise<ScoreEstimateResponse> {
     return new Promise<ScoreEstimateResponse>((resolve) => {
-        req.jwt = data.get("config.user_jwt");
+        req.jwt = data.get("config.user_jwt", "");
         resolve(post(`${ai_host}/api/score`, req));
     });
 }
@@ -295,9 +295,9 @@ if (user.anonymous) {
 
 /* Initialization done, render!! */
 const svg_loader = document.getElementById("loading-svg-container");
-svg_loader.parentNode.removeChild(svg_loader);
+svg_loader?.parentNode?.removeChild(svg_loader);
 
-const react_root = ReactDOM.createRoot(document.getElementById("main-content"));
+const react_root = ReactDOM.createRoot(document.getElementById("main-content") as HTMLElement);
 
 react_root.render(
     <React.StrictMode>

@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* spell-checker: disable */
+
 import * as React from "react";
 import { _, pgettext, getLanguageFlag } from "translate";
 import { get } from "requests";

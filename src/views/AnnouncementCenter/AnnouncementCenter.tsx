@@ -71,7 +71,7 @@ export function AnnouncementCenter(): JSX.Element {
         data.get("announcement.last-duration", 4),
     );
     const duration_options = all_duration_options.filter((x) => x < 86400 || user.is_superuser);
-    const [announcements, setAnnouncements] = React.useState([]);
+    const [announcements, setAnnouncements] = React.useState<any[]>([]);
 
     React.useEffect(() => {
         window.document.title = _("Announcement Center");

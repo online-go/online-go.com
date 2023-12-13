@@ -90,7 +90,7 @@ export function get_handicap_adjustment(rating: number, handicap: number): numbe
     return rank_to_rating(rating_to_rank(rating) + handicap) - rating;
 }
 function overall_rank(user_or_rank: UserOrRank): number {
-    let rank = null;
+    let rank: number;
     if (typeof user_or_rank === "number") {
         rank = user_or_rank;
     } else {
@@ -141,7 +141,7 @@ export function getUserRating(
 ): Rating {
     const ret = new Rating();
     const ratings = user.ratings || {};
-    ret.professional = user.pro || user.professional;
+    ret.professional = user.pro || user.professional || false;
 
     let key: string = speed;
     if (size > 0) {
@@ -214,7 +214,7 @@ export function rankString(r: UserOrRank, with_tenths?: boolean): string {
     if (typeof r === "object") {
         provisional = is_provisional(r);
 
-        const ranking = "ranking" in r ? r.ranking : r.rank;
+        const ranking: number = ("ranking" in r ? r.ranking : r.rank) as number;
         if (r.pro || r.professional) {
             if (ranking > 900) {
                 return interpolate(pgettext("Pro", "%sp"), [ranking - 1000 - 36]);
@@ -270,7 +270,7 @@ export function longRankString(r: UserOrRank): string {
     if (typeof r === "object") {
         provisional = is_provisional(r);
 
-        const ranking = "ranking" in r ? r.ranking : r.rank;
+        const ranking = ("ranking" in r ? r.ranking : r.rank) as number;
         if (r.pro || r.professional) {
             return interpolate(_("%s Pro"), [ranking - 36]);
         }
@@ -308,7 +308,7 @@ export function rankList(
     maxRank: number = MaxRank,
     usePlusOnLast: boolean = false,
 ): Array<IRankInfo> {
-    const result = [];
+    const result: IRankInfo[] = [];
     for (let i = minRank; i <= maxRank; ++i) {
         let label = longRankString(i);
         if (usePlusOnLast && i === maxRank) {
@@ -327,7 +327,7 @@ export function rankList(
  * @param bigranknums if true, ranks will start at 1037
  */
 export function proRankList(bigranknums: boolean = true): Array<IRankInfo> {
-    const result = [];
+    const result: IRankInfo[] = [];
     for (let i = 37; i <= 45; ++i) {
         result.push({
             rank: i + (bigranknums ? 1000 : 0),

@@ -150,7 +150,7 @@ function load_checkout_libraries(): void {
             script.async = true;
             //script.charset = "utf-8";
             script.onload = () => {
-                window["stripe"] = stripe = new Stripe(data.get("config").stripe_pk);
+                window["stripe"] = stripe = new Stripe(data.get("config")?.stripe_pk);
                 resolve();
             };
             script.onerror = () => {
@@ -192,13 +192,15 @@ export function Supporter(props: SupporterProperties): JSX.Element {
     const inline = props?.inline;
     const account_id = parseInt((params?.account_id || user?.id || "0") as string);
     const [loading, setLoading] = React.useState(true);
-    const [config, setConfig]: [Config, (h: Config) => void] = React.useState({
+    const [config, setConfig]: [Config, (h: Config) => void] = React.useState<Config>({
         loading: true,
         country_code: "US",
         payments: [],
         subscriptions: [],
         services: [],
         plans: [],
+        sandbox: true,
+        country_currency_list: {},
     } as Config);
     const [error, setError]: [string, (e: string) => void] = React.useState("");
     const [overrides, setOverrides]: [SupporterOverrides, (e: SupporterOverrides) => void] =
@@ -439,7 +441,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
 
             {(!inline || null) && (
                 <>
-                    <DeprecatedPlanNote slug={current_plan_slug} />
+                    <DeprecatedPlanNote slug={current_plan_slug as string} />
 
                     <SupporterOverridesEditor
                         account_id={account_id}
@@ -562,7 +564,7 @@ export function PriceBox({
     config,
     account_id,
     overrides,
-}: PriceBoxProperties): JSX.Element {
+}: PriceBoxProperties): JSX.Element | null {
     const user = data.get("user");
     const [mor_locations, setMorLocations] = React.useState<string[]>(
         data.get("config.billing_mor_locations") || [],
@@ -682,11 +684,7 @@ export function PriceBox({
         <div className="PriceBox">
             <h1>{price.title}</h1>
 
-            <ul>
-                {price.description.map((s, idx) => (
-                    <li key={idx}>{s}</li>
-                ))}
-            </ul>
+            <ul>{price.description?.map((s, idx) => <li key={idx}>{s}</li>)}</ul>
 
             {
                 /* don't remove this. We want the translations to stick around
@@ -822,7 +820,7 @@ function Subscription({
 }: {
     subscription: Subscription;
     prices: Price[];
-}): JSX.Element {
+}): JSX.Element | null {
     const user = data.get("user");
 
     let text: string;
@@ -877,7 +875,9 @@ function Subscription({
                             break;
 
                         case "paddle":
-                            window.location.assign(subscription.paddle_cancel_url);
+                            if (subscription.paddle_cancel_url) {
+                                window.location.assign(subscription.paddle_cancel_url);
+                            }
                             //promise = post(`/billing/paddle/cancel_subscription`, {'ref_id': subscription.ref_id});
                             break;
 
@@ -914,7 +914,7 @@ function Subscription({
             .catch(errorAlerter);
     }
 
-    function updatePaymentMethod() {
+    function updatePaymentMethod(): void {
         let promise;
 
         switch (subscription.payment_processor) {
@@ -942,7 +942,9 @@ function Subscription({
                 break;
 
             case "paddle":
-                window.location.assign(subscription.paddle_update_url);
+                if (subscription.paddle_update_url) {
+                    window.location.assign(subscription.paddle_update_url);
+                }
                 //promise = post(`/billing/paddle/cancel_subscription`, {'ref_id': subscription.ref_id});
                 break;
 
@@ -958,7 +960,7 @@ function Subscription({
         }
     }
 
-    let amount: string;
+    let amount: string | undefined;
 
     if (subscription?.plan?.amount) {
         amount = formatMoney(subscription.plan.currency, subscription.plan.amount);
@@ -1009,8 +1011,8 @@ function Subscription({
 
 function PaymentMethod({ payment }: { payment: Payment }): JSX.Element {
     const user = data.get("user");
-    let details: JSX.Element | null;
-    let ret: JSX.Element | null;
+    let details: JSX.Element | undefined;
+    let ret: JSX.Element | undefined;
 
     if (payment.payment_method_details?.card) {
         const card = payment.payment_method_details?.card;
@@ -1097,7 +1099,7 @@ interface ManualServiceCreatorProperties {
     config: Config;
 }
 
-function ManualServiceCreator({ account_id }: ManualServiceCreatorProperties): JSX.Element {
+function ManualServiceCreator({ account_id }: ManualServiceCreatorProperties): JSX.Element | null {
     const user = data.get("user");
     const [level, setLevel]: [string, React.Dispatch<string>] = React.useState("");
     const [months, setMonths]: [string, React.Dispatch<string>] = React.useState("");
@@ -1143,7 +1145,7 @@ function ManualServiceCreator({ account_id }: ManualServiceCreatorProperties): J
     );
 }
 
-function ServiceLine({ service }: { service: Service }): JSX.Element {
+function ServiceLine({ service }: { service: Service }): JSX.Element | null {
     const user = data.get("user");
     const [active, setActive] = React.useState(service.active);
 
@@ -1184,7 +1186,7 @@ function SupporterOverridesEditor({
     overrides,
     onChange,
     config,
-}: SupporterOverridesProperties): JSX.Element {
+}: SupporterOverridesProperties): JSX.Element | null {
     const user = data.get("user");
     const prices = config.plans;
     const currency = overrides.currency;
@@ -1207,7 +1209,9 @@ function SupporterOverridesEditor({
 
     function upprice(slug: string, interval: string, value: any): void {
         if (!value) {
-            delete overrides.plan[slug][interval];
+            if (overrides.plan?.[slug]?.[interval]) {
+                delete overrides.plan[slug][interval];
+            }
         } else {
             value = parseInt(value);
             if (!overrides.plan) {
@@ -1399,7 +1403,7 @@ function SupporterOverridesEditor({
     );
 }
 
-function DeprecatedPlanNote({ slug }: { slug: string }): JSX.Element {
+function DeprecatedPlanNote({ slug }: { slug: string }): JSX.Element | null {
     if (slug === "aji" || slug === "hane" || slug === "tenuki" || slug === "meijin") {
         return null;
     }
@@ -1526,7 +1530,7 @@ function formatMoneyWithTrimmedZeros(currency_code: string, amount: number): str
     return ret.replace(".00", "");
 }
 
-function getCurentPlanSlug(config: Config): string {
+function getCurentPlanSlug(config: Config): string | null {
     const max_service_level = Math.max(0, ...config.services.map((s) => s.level));
     if (max_service_level >= 20) {
         return "meijin";

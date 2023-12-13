@@ -132,7 +132,7 @@ export class Play extends React.Component<{}, PlayState> {
             filter: this.state.filter,
         });
         this.onResize();
-        this.seekgraph.on("challenges", this.updateChallenges);
+        this.seekgraph.on("challenges", this.updateChallenges as any);
         automatch_manager.on("entry", this.onAutomatchEntry);
         automatch_manager.on("start", this.onAutomatchStart);
         automatch_manager.on("cancel", this.onAutomatchCancel);
@@ -207,9 +207,9 @@ export class Play extends React.Component<{}, PlayState> {
         }
 
         //console.log("Updating challenges with:", challenges);
-        const live = [];
-        const corr = [];
-        const rengo = [];
+        const live: any[] = [];
+        const corr: any[] = [];
+        const rengo: any[] = [];
         for (const i in challenges) {
             const C = challenges[i];
             player_cache
@@ -374,7 +374,7 @@ export class Play extends React.Component<{}, PlayState> {
     };
 
     newCustomGame = () => {
-        challenge(null, null, null, null, this.challengeCreated);
+        challenge(undefined, undefined, undefined, undefined, this.challengeCreated);
     };
 
     challengeCreated = (c: CreatedChallengeInfo) => {
@@ -404,7 +404,10 @@ export class Play extends React.Component<{}, PlayState> {
         if (this.seekgraph) {
             this.seekgraph.setFilter(newFilter);
         }
-        preferences.set(Play.filterPreferenceMapping.get(key), newValue);
+        const pref_key = Play.filterPreferenceMapping.get(key);
+        if (pref_key) {
+            preferences.set(pref_key, newValue);
+        }
         this.setState({ filter: newFilter });
     };
 
@@ -417,7 +420,7 @@ export class Play extends React.Component<{}, PlayState> {
         );
     };
 
-    liveOwnChallengePending = (): Challenge => {
+    liveOwnChallengePending = (): Challenge | undefined => {
         // a user should have only one of these at any time
         const locp = this.state.live_list.find((c) => c.user_challenge);
         return locp;
@@ -470,7 +473,7 @@ export class Play extends React.Component<{}, PlayState> {
         const corr_automatchers = corr_automatcher_uuids.map(
             (uuid) => automatch_manager.active_correspondence_automatchers[uuid],
         );
-        corr_automatchers.sort((a, b) => a.timestamp - b.timestamp);
+        corr_automatchers.sort((a, b) => (a.timestamp as number) - (b.timestamp as number));
         const showSeekGraph = preferences.get("show-seek-graph");
 
         return (
@@ -484,7 +487,7 @@ export class Play extends React.Component<{}, PlayState> {
                         <div className="col-sm-6 play-column">
                             <Card>
                                 <div
-                                    ref={(el) => (this.ref_container = el)}
+                                    ref={(el) => el && (this.ref_container = el)}
                                     className="seek-graph-container"
                                 >
                                     <OgsResizeDetector
@@ -856,7 +859,7 @@ export class Play extends React.Component<{}, PlayState> {
         }
     }
 
-    suspectChallengeIcon = (C: Challenge): JSX.Element =>
+    suspectChallengeIcon = (C: Challenge): JSX.Element | null =>
         /* Mark eligible suspect games with a warning icon and warning explanation popup.
            We do let users see the warning for their own challenges. */
         (((C.eligible || C.user_challenge) &&
@@ -989,7 +992,7 @@ export class Play extends React.Component<{}, PlayState> {
     }
 
     cellBreaks(amount) {
-        const result = [];
+        const result: JSX.Element[] = [];
         for (let i = 0; i < amount; ++i) {
             result.push(<span key={i} className="cell break"></span>);
         }

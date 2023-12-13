@@ -39,15 +39,15 @@ export function ChatUserList(props: ChatUserListProperties): JSX.Element {
 
     React.useEffect(() => {
         proxy.current = chat_manager.join(props.channel);
-        proxy.current.on("join", () => refresh(proxy.current.channel.users_by_name.length));
-        proxy.current.on("part", () => refresh(proxy.current.channel.users_by_name.length));
+        proxy.current.on("join", () => refresh(proxy?.current?.channel.users_by_name.length || 0));
+        proxy.current.on("part", () => refresh(proxy?.current?.channel.users_by_name.length || 0));
         proxy.current.on("join", () => console.log("JOin!"));
         proxy.current.on("part", () => console.log("Part!"));
         window["proxy"] = proxy.current;
         refresh(proxy.current.channel.users_by_name.length);
 
         return () => {
-            proxy.current.part();
+            proxy.current?.part();
         };
     }, [props.channel]);
 
@@ -97,7 +97,7 @@ export function ChatUserCount(props: ChatUserCountProperties): JSX.Element {
         set_num_users(proxy.current.channel.users_by_name.length);
 
         return () => {
-            proxy.current.part();
+            proxy.current?.part();
         };
     }, [props.channel]);
 

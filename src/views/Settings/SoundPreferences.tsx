@@ -770,7 +770,7 @@ export function SoundPreferences(): JSX.Element {
                             )}
                             preference="sound.positional-stone-placement-effect"
                         />
-                        {navigator.vibrate ? (
+                        {(navigator.vibrate as any) ? (
                             <PreferenceToggle
                                 name={pgettext(
                                     "On mobile devices, vibrate when a stone is placed?",
@@ -911,7 +911,9 @@ function PlayButton(props: { sample: ValidSound | Array<ValidSound> }): JSX.Elem
             if (_samples.length) {
                 const sample = _samples.shift();
                 play_timeout = setTimeout(process_next, 1000);
-                sfx.play(sample);
+                if (sample) {
+                    sfx.play(sample);
+                }
             } else {
                 setPlaying(false);
             }
@@ -923,7 +925,9 @@ function PlayButton(props: { sample: ValidSound | Array<ValidSound> }): JSX.Elem
 
     function stop(): void {
         play_emitter.emit("stop");
-        clearTimeout(play_timeout);
+        if (play_timeout) {
+            clearTimeout(play_timeout);
+        }
         play_timeout = null;
         sfx.stop();
         setPlaying(false);

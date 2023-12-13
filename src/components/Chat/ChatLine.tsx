@@ -58,7 +58,7 @@ export function ChatLine(props: ChatLineInterface): JSX.Element {
     const ts = message.t ? new Date(message.t * 1000) : null;
     let third_person = false;
     let body = message.m;
-    let show_date: JSX.Element = null;
+    let show_date: JSX.Element | null = null;
 
     if (!lastline || (ts && ts_ll)) {
         if (ts) {
@@ -80,7 +80,7 @@ export function ChatLine(props: ChatLineInterface): JSX.Element {
         if (/^\/senseis?\s/.test(body)) {
             body = generateChatSearchLine(
                 "http://senseis.xmp.net/?search=",
-                /^\/senseis?\s/.exec(body)[0],
+                (/^\/senseis?\s/.exec(body) as string[])[0],
                 body,
             );
         }

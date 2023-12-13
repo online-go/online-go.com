@@ -110,7 +110,7 @@ export class JosekiPermissionsPanel extends React.PureComponent<
     };
 
     render = () => {
-        const protect_self = data.get("config").user.id === parseInt(this.state.userid); // don't let people dis-admin themselves!
+        const protect_self = data.get("user").id === parseInt(this.state.userid); // don't let people dis-admin themselves!
 
         return (
             <div className="joseki-permissions-panel">

@@ -22,10 +22,10 @@ import { Card } from "material";
 import { useUser, useData } from "hooks";
 import { PaymentProblem } from "data_schema";
 
-export function PaymentProblemBanner(): JSX.Element {
+export function PaymentProblemBanner(): JSX.Element | null {
     const user = useUser();
     const [config, _setConfig] = useData("config");
-    const [dismissed, _setDismissed] = useData("payment-problem-banner-dismissed-timestamp");
+    const [dismissed, _setDismissed] = useData("payment-problem-banner-dismissed-timestamp", 0);
     const navigate = useNavigate();
 
     if (

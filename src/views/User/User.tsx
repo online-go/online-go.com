@@ -60,7 +60,8 @@ type RatingsSize = 0 | 9 | 13 | 19;
 export function User(props: { user_id?: number }): JSX.Element {
     const params = useParams();
     const user_id =
-        props.user_id || ("user_id" in params ? parseInt(params.user_id) : data.get("user").id);
+        props.user_id ||
+        ("user_id" in params ? parseInt(params.user_id as string) : data.get("user").id);
     const location = useLocation();
     const show_mod_log = parse(location.search)["show_mod_log"] === "1";
 
@@ -266,6 +267,10 @@ export function User(props: { user_id?: number }): JSX.Element {
     };
 
     const renderRatingOrRank = (speed: RatingsSpeed, size: RatingsSize, show_rating: boolean) => {
+        if (!user) {
+            return;
+        }
+
         const r = getUserRating(user, speed, size);
 
         return (
@@ -325,7 +330,7 @@ export function User(props: { user_id?: number }): JSX.Element {
                 <div className="profile-card">
                     <div className="avatar-and-ratings-row">
                         <AvatarCard
-                            user={user}
+                            user={user as any}
                             force_show_ratings={temporary_show_ratings}
                             editing={editing}
                             openModerateUser={openModerateUser}

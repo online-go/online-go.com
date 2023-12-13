@@ -164,6 +164,9 @@ function ChatRedirect(): JSX.Element {
                 channel = key;
                 break;
             }
+            if (!channel) {
+                channel = "global-english";
+            }
         } else {
             channel = "global-english";
             for (const chan of global_channels) {

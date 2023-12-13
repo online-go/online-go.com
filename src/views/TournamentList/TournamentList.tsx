@@ -254,7 +254,7 @@ function MyTournaments(): JSX.Element {
 }
 
 function Schedule(): JSX.Element {
-    const [schedules, setSchedules] = React.useState([]);
+    const [schedules, setSchedules] = React.useState<any[]>([]);
 
     React.useEffect(() => {
         get("tournament_schedules/", { page_size: 100 })

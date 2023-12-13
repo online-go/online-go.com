@@ -36,7 +36,7 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
         const goban = this.props.goban;
         let png_url: string;
         let sgf_url: string;
-        let embed_html: string;
+        let embed_html: string | undefined;
 
         if (goban.game_id) {
             sgf_url = `${window.location.protocol}//${window.location.hostname}/api/v1/games/${goban.game_id}/sgf/${goban.game_id}.sgf`;
@@ -58,14 +58,14 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
                                 disableCacheUpdate
                                 icon
                                 rank
-                                user={goban.engine.config.players.black}
+                                user={goban.engine.config.players!.black}
                             />{" "}
                             {_("vs.")}{" "}
                             <Player
                                 disableCacheUpdate
                                 icon
                                 rank
-                                user={goban.engine.config.players.white}
+                                user={goban.engine.config.players!.white}
                             />
                         </h3>
                     </div>

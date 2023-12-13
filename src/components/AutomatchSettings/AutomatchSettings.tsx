@@ -143,7 +143,7 @@ export class AutomatchSettings extends Modal<
             case "correspondence":
                 return dup(this.state.correspondence_settings);
         }
-        return null;
+        throw new Error("Invalid tab");
     }
     setSelectedSettings(settings) {
         settings = dup(settings);

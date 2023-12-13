@@ -23,13 +23,13 @@ import { IdType } from "src/lib/types";
 const analysis_requests_made: { [id: string]: boolean } = {};
 
 interface AIReviewStreamProperties {
-    uuid?: string;
-    game_id?: IdType;
-    ai_review_id?: IdType;
+    uuid: string;
+    game_id: IdType;
+    ai_review_id: IdType;
     callback: (data: any) => any;
 }
 
-export function AIReviewStream(props: AIReviewStreamProperties): JSX.Element {
+export function AIReviewStream(props: AIReviewStreamProperties): null {
     const uuid = props.uuid;
     const game_id = props.game_id;
     const ai_review_id = props.ai_review_id;
@@ -39,15 +39,15 @@ export function AIReviewStream(props: AIReviewStreamProperties): JSX.Element {
             console.log("No UUID for review stream");
             return;
         } else {
-            ai_socket?.on("connect", onConnect);
-            ai_socket?.on(uuid as keyof GobanSocketEvents, onMessage);
+            ai_socket.on("connect", onConnect);
+            ai_socket.on(uuid as keyof GobanSocketEvents, onMessage);
             if (ai_socket.connected) {
                 onConnect();
             }
         }
 
         function onConnect() {
-            ai_socket?.send("ai-review-connect", { uuid, game_id, ai_review_id });
+            ai_socket.send("ai-review-connect", { uuid, game_id, ai_review_id });
         }
 
         function onMessage(data: any) {
@@ -55,11 +55,11 @@ export function AIReviewStream(props: AIReviewStreamProperties): JSX.Element {
         }
 
         return () => {
-            if (ai_socket?.connected) {
-                ai_socket?.send("ai-review-disconnect", { uuid });
+            if (ai_socket.connected) {
+                ai_socket.send("ai-review-disconnect", { uuid });
             }
-            ai_socket?.off("connect", onConnect);
-            ai_socket?.off(uuid as keyof GobanSocketEvents, onMessage);
+            ai_socket.off("connect", onConnect);
+            ai_socket.off(uuid as keyof GobanSocketEvents, onMessage);
         };
     }, [uuid]);
 

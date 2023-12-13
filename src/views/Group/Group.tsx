@@ -92,12 +92,12 @@ interface GroupState {
     group_id: number;
     editing: boolean;
     show_new_news_post: boolean;
-    new_icon: { preview: string };
+    new_icon?: { preview: string };
     new_banner?: { preview: string };
     new_news_title: string;
     new_news_body: string;
     invite_result?: string;
-    editing_news: GroupNews;
+    editing_news?: GroupNews;
     refresh: number;
     user_to_invite?: PlayerCacheEntry;
 }
@@ -133,12 +133,12 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             group_id: parseInt(props.match.params.group_id),
             editing: false,
             show_new_news_post: false,
-            new_icon: null,
-            new_banner: null,
+            new_icon: undefined,
+            new_banner: undefined,
             new_news_title: "",
             new_news_body: "",
-            invite_result: null,
-            editing_news: null,
+            invite_result: undefined,
+            editing_news: undefined,
             refresh: 0,
         };
     }
@@ -359,17 +359,17 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
         if (this.state.new_news_title.trim().length < 5) {
             alert
                 .fire({ title: _("Please provide a title") })
-                .then(() => this.ref_new_news_title.current.focus())
+                .then(() => this.ref_new_news_title.current?.focus())
                 .catch(errorAlerter);
-            this.ref_new_news_title.current.focus();
+            this.ref_new_news_title.current?.focus();
             return;
         }
         if (this.state.new_news_body.trim().length < 16) {
             alert
                 .fire({ title: _("Please provide more content for your news") })
-                .then(() => this.ref_new_news_body.current.focus())
+                .then(() => this.ref_new_news_body.current?.focus())
                 .catch(errorAlerter);
-            this.ref_new_news_body.current.focus();
+            this.ref_new_news_body.current?.focus();
             return;
         }
         this.toggleNewNewsPost();
@@ -433,7 +433,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
         put(`group/${this.state.group_id}/news/`, this.state.editing_news)
             .then(() => {
                 this.setState({
-                    editing_news: null,
+                    editing_news: undefined,
                 });
                 this.news_ref.current?.refresh();
                 /* Since the removal of the refs I don't think we need to worry about this? - anoek 2021-12-23
@@ -458,7 +458,11 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
     };
 
     inviteUser = () => {
-        const username = this.state.user_to_invite.username;
+        const username = this.state.user_to_invite?.username;
+        if (!username) {
+            return;
+        }
+
         post(`group/${this.state.group_id}/members`, { username })
             .then((res) => {
                 console.log(res);
@@ -486,7 +490,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
         const group = this.state.group;
         const editing = this.state.editing;
 
-        let group_website_href = group.website;
+        let group_website_href: string | null = group.website;
         if (!/[/][/]/.test(group_website_href)) {
             // no protocol? Guess at http
             group_website_href = "http://" + group_website_href;
@@ -713,7 +717,10 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                         {((!editing && group_website_href) || null) && (
                                             <span>
                                                 {
-                                                    <a target="_blank" href={group_website_href}>
+                                                    <a
+                                                        target="_blank"
+                                                        href={group_website_href as string}
+                                                    >
                                                         {group_website_href}
                                                     </a>
                                                 }
@@ -1083,7 +1090,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                                     {
                                         header: _("Members"),
                                         className: "",
-                                        render: (X) => <Player icon user={X} online />,
+                                        render: (X) => <Player icon user={X as any} online />,
                                     },
                                 ]}
                             />

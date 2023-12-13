@@ -125,7 +125,7 @@ function ignoreUser(uid, dont_fetch = false) {
         player_cache
             .fetch(uid, ["ui_class"])
             .then((obj) => {
-                if (obj.ui_class.indexOf("moderator") < 0) {
+                if ((obj.ui_class?.indexOf("moderator") || 0) < 0) {
                     ignores[uid] = true;
                     $(
                         "<style type='text/css'> .chat-user-" +

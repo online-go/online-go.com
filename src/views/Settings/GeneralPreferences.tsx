@@ -54,7 +54,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
         "translation-dialog-never-show",
     );
     const [hide_ui_class, setHideUiClass]: [boolean, (x: boolean) => void] = React.useState(
-        props.state.hide_ui_class,
+        !!props.state.hide_ui_class,
     );
     const [show_tournament_indicator, setShowTournamentIndicator] = usePreference(
         "show-tournament-indicator",

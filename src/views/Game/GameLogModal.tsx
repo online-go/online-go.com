@@ -118,7 +118,7 @@ export function LogData({
     markCoords: (stones: string) => void;
     event: string;
     data: any;
-}): JSX.Element {
+}): JSX.Element | null {
     if (event === "game_created") {
         return null;
     }

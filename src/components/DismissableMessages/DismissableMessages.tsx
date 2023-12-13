@@ -22,8 +22,8 @@ import { DismissableMessagesSchema } from "data_schema";
 import { AutoTranslate } from "AutoTranslate";
 import { UIPush } from "UIPush";
 
-export function DismissableMessages(): JSX.Element {
-    const [messages, setMessages] = React.useState<DismissableMessagesSchema>(
+export function DismissableMessages(): JSX.Element | null {
+    const [messages, setMessages] = React.useState<DismissableMessagesSchema | undefined>(
         data.get("config.dismissable_messages"),
     );
 
@@ -36,6 +36,10 @@ export function DismissableMessages(): JSX.Element {
     }
 
     function dismiss(key: string) {
+        if (!messages) {
+            return;
+        }
+
         console.log("Should dismiss", key);
         delete messages[key];
         data.set("config.dismissable_messages", messages);

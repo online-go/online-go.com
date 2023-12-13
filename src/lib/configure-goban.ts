@@ -72,7 +72,7 @@ export function configure_goban() {
             // their own games.
             if (
                 preferences.get("always-disable-analysis") &&
-                goban.engine.isParticipant(data.get("user").id)
+                goban.engine.isParticipant(data.get("user")?.id || 0)
             ) {
                 return true;
             }
@@ -82,9 +82,9 @@ export function configure_goban() {
             if (perGameSettingAppliesToNonPlayers) {
                 // This is used for the SGF download which is disabled even for users that are not
                 // participating in the game (or not signed in)
-                return goban.engine.config.original_disable_analysis;
+                return !!goban.engine.config.original_disable_analysis;
             } else {
-                return goban.engine.config.disable_analysis;
+                return !!goban.engine.config.disable_analysis;
             }
         },
 
@@ -95,20 +95,20 @@ export function configure_goban() {
         getShowVariationMoveNumbers: (): boolean => preferences.get("show-variation-move-numbers"),
         getMoveTreeNumbering: (): "none" | "move-number" | "move-coordinates" =>
             preferences.get("move-tree-numbering"),
-        getCDNReleaseBase: (): string => data.get("config.cdn_release"),
+        getCDNReleaseBase: (): string => data.get("config.cdn_release", ""),
         getSoundEnabled: (): boolean => sfx.getVolume("master") > 0,
         getSoundVolume: (): number => sfx.getVolume("master"),
 
         watchSelectedThemes: (cb) => preferences.watchSelectedThemes(cb),
         getSelectedThemes: () => preferences.getSelectedThemes(),
 
-        discBlackStoneColor: (): string => data.get("custom.black"),
-        discBlackTextColor: (): string => data.get("custom.white"),
-        discWhiteStoneColor: (): string => data.get("custom.white"),
-        discWhiteTextColor: (): string => data.get("custom.black"),
-        plainBoardColor: (): string => data.get("custom.board"),
-        plainBoardLineColor: (): string => data.get("custom.line"),
-        plainBoardUrl: (): string => data.get("custom.url"),
+        discBlackStoneColor: (): string => data.get("custom.black", ""),
+        discBlackTextColor: (): string => data.get("custom.white", ""),
+        discWhiteStoneColor: (): string => data.get("custom.white", ""),
+        discWhiteTextColor: (): string => data.get("custom.black", ""),
+        plainBoardColor: (): string => data.get("custom.board", ""),
+        plainBoardLineColor: (): string => data.get("custom.line", ""),
+        plainBoardUrl: (): string => data.get("custom.url", ""),
 
         addCoordinatesToChatInput: (coordinates: string): void => {
             const chat_input = $(".chat-input");

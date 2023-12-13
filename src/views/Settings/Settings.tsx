@@ -135,7 +135,7 @@ export function Settings(): JSX.Element {
             { key: "logout", label: _("Logout") },
         ];
 
-    let SelectedPage: (props: SettingGroupPageProps) => JSX.Element = () => <div>Error</div>;
+    let SelectedPage: (props: SettingGroupPageProps) => JSX.Element | null = () => <div>Error</div>;
 
     switch (selected) {
         case "general":

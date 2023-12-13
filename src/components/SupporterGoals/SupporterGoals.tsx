@@ -46,7 +46,7 @@ export class SupporterGoals extends React.PureComponent<SupporterGoalsProperties
     }
 
     resetHoursVisitedSinceGoalsShown() {
-        data.set("last-visited-since-goals-shown", null);
+        data.set("last-visited-since-goals-shown", undefined);
         data.set("hours-visited-since-goals-shown", 0);
     }
 

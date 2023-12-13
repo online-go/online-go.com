@@ -113,11 +113,14 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
             }
             case "byoyomi": {
                 const time: AdHocPlayerClock = player_clock as AdHocPlayerClock;
-                return (time.thinking_time + time.period_time * time.periods) * 1000;
+                return (
+                    (time.thinking_time + (time.period_time as number) * (time.periods as number)) *
+                    1000
+                );
             }
             case "canadian": {
                 const time: AdHocPlayerClock = player_clock as AdHocPlayerClock;
-                return (time.thinking_time + time.block_time) * 1000;
+                return (time.thinking_time + (time.block_time as number)) * 1000;
             }
             case "none":
             default:
@@ -143,13 +146,16 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
             // For the initial sort, we can use game.json.clock, which comes
             // directly with the game list.
             const clock =
-                game.goban && game.goban.last_clock ? game.goban.last_clock : game.json.clock;
+                game.goban && game.goban.last_clock ? game.goban.last_clock : game.json?.clock;
             const paused = game.goban
                 ? this.isPaused(game.goban.config?.pause_control)
                 : this.isPaused(game.json?.pause_control);
+            if (!clock) {
+                throw new Error("No clock");
+            }
 
             // Figure out whose turn it is.
-            const is_current_player = clock.current_player === this.props.player.id;
+            const is_current_player = clock.current_player === this.props.player?.id;
 
             // 'expiration_or_rem' has two different meanings: an expiration
             // timestamp or the time remaining on a clock. It's only coherent
@@ -173,7 +179,7 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                 const time_control = game.goban
                     ? game.goban.config?.time_control
                     : game.json?.time_control;
-                const is_black = clock.black_player_id === this.props.player.id;
+                const is_black = clock.black_player_id === this.props.player?.id;
                 expiration_or_rem = this.computeRemainingTime(
                     time_control,
                     clock,
@@ -242,8 +248,8 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                 // TODO: this is old code that doesn't always work for rengo games
                 games.sort((a, b) => {
                     try {
-                        const a_opponent = a.black.id === this.props.player.id ? a.white : a.black;
-                        const b_opponent = b.black.id === this.props.player.id ? b.white : b.black;
+                        const a_opponent = a.black.id === this.props.player?.id ? a.white : a.black;
+                        const b_opponent = b.black.id === this.props.player?.id ? b.white : b.black;
                         return (
                             a_opponent.username.localeCompare(b_opponent.username) || a.id - b.id
                         );
@@ -260,10 +266,10 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                     try {
                         const a_move_num = a.goban
                             ? a.goban.engine.getMoveNumber()
-                            : a.json.moves.length;
+                            : a.json?.moves.length || 0;
                         const b_move_num = b.goban
                             ? b.goban.engine.getMoveNumber()
-                            : b.json.moves.length;
+                            : b.json?.moves.length || 0;
 
                         return a_move_num - b_move_num || a.id - b.id;
                     } catch (e) {
@@ -309,7 +315,7 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
             return (
                 <LineSummaryTable
                     list={games}
-                    disableSort={this.props.disableSort}
+                    disableSort={!!this.props.disableSort}
                     onSort={this.sortBy}
                     currentSort={this.state.sort_order}
                     player={this.props.player}
@@ -317,7 +323,7 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                 ></LineSummaryTable>
             );
         } else {
-            return MiniGobanList(games, this.props.namesByGobans, this.props.miniGobanProps);
+            return MiniGobanList(games, !!this.props.namesByGobans, this.props.miniGobanProps);
         }
     }
 }

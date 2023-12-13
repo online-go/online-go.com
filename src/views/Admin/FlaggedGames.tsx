@@ -22,7 +22,7 @@ import { Player } from "Player";
 //import * as moment from "moment";
 
 export function FlaggedGames(): JSX.Element {
-    const [flagged_games, setFlaggedGames] = React.useState([]);
+    const [flagged_games, setFlaggedGames] = React.useState<any[]>([]);
 
     React.useEffect(() => {
         get("admin/flaggedGames")

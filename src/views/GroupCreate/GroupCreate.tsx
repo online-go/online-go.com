@@ -58,7 +58,7 @@ export class GroupCreate extends React.PureComponent<{}, GroupCreateState> {
                 })
                 .catch(errorAlerter);
         } else {
-            this.ref_name.current.focus();
+            this.ref_name.current?.focus();
         }
     }
 

@@ -56,7 +56,7 @@ interface SeekGraphModal {
 }
 
 interface Events {
-    challenges: Challenge[];
+    challenges: { [k: string]: AnchoredChallenge };
 }
 
 interface SeekGraphConfig {
@@ -92,8 +92,8 @@ function timeRatio(tpm: number): number {
 }
 
 function dist(C: AnchoredChallenge, pos: Point) {
-    const dx = C.x - pos.x;
-    const dy = C.y - pos.y;
+    const dx = (C.x || 0) - pos.x;
+    const dy = (C.y || 0) - pos.y;
     return Math.sqrt(dx * dx + dy * dy);
 }
 
@@ -190,7 +190,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     padding = 14;
     legend_size = 25;
     list_locked: boolean = false;
-    modal?: SeekGraphModal = null;
+    modal?: SeekGraphModal;
     $list: JQuery;
     list_open: boolean = false;
     width: number;
@@ -302,7 +302,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             }
         }
         this.redraw();
-        this.emit("challenges", this.challenges as Challenge[]);
+        this.emit("challenges", this.challenges);
     };
 
     onTouchEnd = (ev: JQueryEventObject) => {
@@ -345,7 +345,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
             this.list_locked = true;
             this.modal = createModal(() => {
                 //console.log("Closing modal");
-                this.modal = null;
+                this.modal = undefined;
                 this.list_locked = false;
                 this.closeChallengeList();
             }, 49);
@@ -412,10 +412,13 @@ export class SeekGraph extends TypedEventEmitter<Events> {
     redraw() {
         validateCanvas(this.canvas);
         const ctx = this.canvas.getContext("2d");
+        if (!ctx) {
+            return;
+        }
 
         ctx.clearRect(0, 0, this.width, this.height);
 
-        const siteTheme = data.get("theme");
+        const siteTheme = data.get("theme", "light");
         const palette = SeekGraphPalettes.getPalette(siteTheme);
         this.drawAxes(ctx, palette);
         this.drawLegend(ctx, palette);
@@ -483,6 +486,10 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         this.canvas.height = h * scale;
 
         const ctx = this.canvas.getContext("2d");
+        if (!ctx) {
+            return;
+        }
+
         ctx.scale(scale, scale);
 
         this.padding = this.getFontHeight(ctx) + 4;
@@ -664,10 +671,10 @@ export class SeekGraph extends TypedEventEmitter<Events> {
         // The above was occurring for long lists on the bottom right of the seek graph (and was fixed),
         // but this function should probably be improved further
 
-        const pointerPos: Point = getRelativeEventPosition(ev);
+        const pointerPos: Point = getRelativeEventPosition(ev) || { x: 0, y: 0 };
         const listAnchor: Point = Object.assign({}, pointerPos);
 
-        const offset = $(ev.target).offset();
+        const offset = $(ev.target).offset() || { left: 0, top: 0 };
         listAnchor.x += offset.left + 10;
         listAnchor.y += offset.top + 5;
 
@@ -942,7 +949,7 @@ export class SeekGraph extends TypedEventEmitter<Events> {
 
 /* Modal stuff  */
 function createModal(close_callback, priority): SeekGraphModal {
-    let modal = null;
+    let modal: any = null;
     function onClose() {
         close_callback();
         removeModal(modal);

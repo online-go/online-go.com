@@ -124,7 +124,7 @@ const event_emitter = new TypedEventEmitter<DataSchema>();
 export function setWithoutEmit<KeyT extends Extract<keyof DataSchema, string>>(
     key: KeyT,
     value: DataSchema[KeyT] | undefined,
-): DataSchema[KeyT] {
+): DataSchema[KeyT] | undefined {
     if (value === undefined) {
         remove(key);
         return value;
@@ -140,7 +140,7 @@ export function set<KeyT extends Extract<keyof DataSchema, string>>(
     key: KeyT,
     value: DataSchema[KeyT] | undefined,
     replication?: Replication,
-): DataSchema[KeyT] {
+): typeof value {
     if (replication !== Replication.REMOTE_ONLY) {
         setWithoutEmit(key, value);
     }
@@ -198,9 +198,9 @@ export function removePrefix(key_prefix: string): any {
 }
 
 export function removeAll(): void {
-    const keys = [];
+    const keys: (keyof DataSchema)[] = [];
     for (const key in store) {
-        keys.push(key);
+        keys.push(key as keyof DataSchema);
     }
     for (const key of keys) {
         try {
@@ -211,10 +211,18 @@ export function removeAll(): void {
     }
 }
 
+export function get(key: "user"): DataSchema["user"];
 export function get<KeyT extends Extract<keyof DataSchema, string>>(
     key: KeyT,
-    default_value?: DataSchema[KeyT],
-): DataSchema[KeyT] | undefined {
+): DataSchema[KeyT] | undefined;
+export function get<KeyT extends Extract<keyof DataSchema, string>>(
+    key: KeyT,
+    default_value: DataSchema[KeyT],
+): DataSchema[KeyT];
+export function get<KeyT extends Extract<keyof DataSchema, string>>(
+    key: KeyT | "user",
+    default_value?: undefined | DataSchema[KeyT],
+): DataSchema[KeyT] | DataSchema["user"] | undefined {
     if (key in store) {
         return store[key] as DataSchema[KeyT];
     }
@@ -229,7 +237,7 @@ export function get<KeyT extends Extract<keyof DataSchema, string>>(
 
 export function watch<KeyT extends Extract<keyof DataSchema, string>>(
     key: KeyT,
-    cb: (data: DataSchema[KeyT]) => void,
+    cb: (data: DataSchema[KeyT] | undefined) => void,
     call_on_undefined?: boolean,
     dont_call_immediately?: boolean,
 ): void {
@@ -324,11 +332,13 @@ function safeLocalStorageRemove(key) {
 try {
     for (let i = 0; i < localStorage.length; ++i) {
         let key = localStorage.key(i);
-        if (key.indexOf("ogs.") === 0) {
+        if (key?.indexOf("ogs.") === 0) {
             key = key.substr(4);
             try {
                 const item = localStorage.getItem(`ogs.${key}`);
-                store[key] = JSON.parse(item);
+                if (item) {
+                    store[key] = JSON.parse(item);
+                }
             } catch (e) {
                 console.error(
                     `Data storage system failed to load ${key}. Value was: `,
@@ -671,10 +681,12 @@ function load_from_local_storage_and_sync() {
         for (let i = 0; i < localStorage.length; ++i) {
             const full_key = localStorage.key(i);
 
-            if (full_key.indexOf(store_prefix) === 0) {
+            if (full_key?.indexOf(store_prefix) === 0) {
                 const key = full_key.substr(store_prefix.length);
                 try {
-                    remote_store[key] = JSON.parse(localStorage.getItem(full_key)) as RemoteKV;
+                    remote_store[key] = JSON.parse(
+                        localStorage.getItem(full_key) as string,
+                    ) as RemoteKV;
                     if (remote_store[key].replication === Replication.REMOTE_OVERWRITES_LOCAL) {
                         store[key] = remote_store[key].value;
                         emitForKey(key as keyof DataSchema);
@@ -684,17 +696,17 @@ function load_from_local_storage_and_sync() {
                     localStorage.removeItem(full_key);
                 }
             }
-            if (full_key.indexOf(wal_prefix) === 0) {
+            if (full_key?.indexOf(wal_prefix) === 0) {
                 const key = full_key.substr(wal_prefix.length);
                 try {
-                    wal[key] = JSON.parse(localStorage.getItem(full_key));
+                    wal[key] = JSON.parse(localStorage.getItem(full_key) as string);
                 } catch (e) {
                     console.error(`Error loading WAL key ${full_key}, removing`, e);
                     localStorage.removeItem(full_key);
                 }
             }
             if (full_key === last_modified_key) {
-                last_modified = localStorage.getItem(full_key);
+                last_modified = localStorage.getItem(full_key) as string;
             }
         }
     } catch (e) {

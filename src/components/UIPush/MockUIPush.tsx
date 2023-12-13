@@ -44,7 +44,7 @@ interface UIPushProperties {
     action: () => void;
 }
 
-function MockUIPush({ event, action }: UIPushProperties): JSX.Element {
+function MockUIPush({ event, action }: UIPushProperties): JSX.Element | null {
     React.useEffect(() => {
         uiPushActions[event] = action;
     }, [event, action]);

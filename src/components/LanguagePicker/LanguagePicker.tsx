@@ -24,7 +24,7 @@ interface Events {}
 
 interface LanguagePickerProperties {}
 
-let language_modal = null;
+let language_modal: JSX.Element | null = null;
 
 function openLanguageModal() {
     language_modal = <LanguagePickerModal />;

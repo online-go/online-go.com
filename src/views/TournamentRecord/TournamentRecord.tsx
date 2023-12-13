@@ -55,19 +55,19 @@ interface TournamentRecordState {
 
 export function TournamentRecord(): JSX.Element {
     const params = useParams<"tournament_record_id">();
-    const tournament_record_id = parseInt(params.tournament_record_id);
+    const tournament_record_id = parseInt(params.tournament_record_id ?? "0");
 
     const [, refresh] = React.useState(0);
     const [editing, setEditing] = React.useState(false);
     const [loading, setLoading] = React.useState(true);
     const [name, setName] = React.useState("");
     const [new_round_name, setNewRoundName] = React.useState("");
-    const [rounds, setRounds] = React.useState([]);
+    const [rounds, setRounds] = React.useState<any[]>([]);
     const [new_player_name, setNewPlayerName] = React.useState("");
     const [new_player_rank, setNewPlayerRank] = React.useState(1037);
     const [description, setDescription] = React.useState("");
     const [location, setLocation] = React.useState("");
-    const [players, setPlayers] = React.useState([]);
+    const [players, setPlayers] = React.useState<any[]>([]);
     const [editable_by_current_user, setEditableByCurrentUser] = React.useState(false);
 
     const player_table_ref = React.useRef<PaginatedTableRef>(null);
@@ -88,14 +88,14 @@ export function TournamentRecord(): JSX.Element {
             return;
         }
 
-        setLoading(loaded_state.current.loading);
-        setEditing(loaded_state.current.editing);
-        setName(loaded_state.current.name);
-        setRounds(loaded_state.current.rounds);
-        setDescription(loaded_state.current.description);
-        setLocation(loaded_state.current.location);
-        setPlayers(loaded_state.current.players);
-        setEditableByCurrentUser(loaded_state.current.editable_by_current_user);
+        setLoading(!!loaded_state.current.loading);
+        setEditing(!!loaded_state.current.editing);
+        setName(loaded_state.current.name ?? "");
+        setRounds(loaded_state.current.rounds as any);
+        setDescription(loaded_state.current.description ?? "");
+        setLocation(loaded_state.current.location ?? "");
+        setPlayers(loaded_state.current.players as any);
+        setEditableByCurrentUser(loaded_state.current.editable_by_current_user as any);
     };
 
     const abort_requests = () => {

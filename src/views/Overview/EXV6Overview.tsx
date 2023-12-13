@@ -163,7 +163,7 @@ export class EXV6Overview extends React.Component<{}, OverviewState> {
                             </DismissableNotification>
                         )}
 
-                        {this.state.resolved && (
+                        {this.state.resolved && user && (
                             <ActiveDroppedGameList
                                 games={this.state.overview.active_games}
                                 user={user}

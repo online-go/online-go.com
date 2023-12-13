@@ -15,12 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-let current_tooltip = null;
+let current_tooltip: JQuery | undefined;
 
 function clearTooltip() {
     if (current_tooltip) {
         current_tooltip.remove();
-        current_tooltip = null;
+        current_tooltip = undefined;
     }
 }
 

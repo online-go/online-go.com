@@ -147,7 +147,7 @@ const ICON_SCALE = 2;
 function LegendIcon(draw: (ctx: CanvasRenderingContext2D) => void): JSX.Element {
     const canvas = React.useRef<HTMLCanvasElement>(null);
     React.useEffect(() => {
-        const ctx: CanvasRenderingContext2D = canvas?.current?.getContext("2d");
+        const ctx: CanvasRenderingContext2D | undefined | null = canvas?.current?.getContext("2d");
         if (ctx) {
             // ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.resetTransform();

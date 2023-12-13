@@ -71,7 +71,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         this.state = {
             player_id: parseInt(this.props.match.params.player_id),
             collection_id: this.props.match.params.collection_id || "0",
-            collections: null,
+            collections: undefined,
             games_checked: {},
             new_collection_name: "",
             new_collection_private: false,
@@ -134,12 +134,12 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
             .then((library) => {
                 const collections: { [id: number]: Collection } = {};
 
-                const root = {
+                const root: Collection = {
                     id: 0,
                     name: "",
                     private: "",
                     parent_id: 0,
-                    parent: null,
+                    parent: undefined,
                     collections: [],
                     games: [],
                 };
@@ -164,7 +164,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                     }
 
                     collections[id].parent = collections[collections[id].parent_id];
-                    collections[id].parent.collections.push(collections[id]);
+                    collections[id].parent?.collections.push(collections[id]);
                 }
 
                 for (const g of library.games) {
@@ -223,7 +223,11 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         return promise;
     }
 
-    setSortOrder = (order: SortOrder) => {
+    setSortOrder = (order?: SortOrder) => {
+        if (!order) {
+            return;
+        }
+
         if (this.state.sort_order === order) {
             this.toggleSortDirection();
         } else {
@@ -232,7 +236,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         }
     };
 
-    getSortableClass = (order: SortOrder) => {
+    getSortableClass = (order?: SortOrder) => {
         if (this.state.sort_order === order) {
             return "sortable " + (this.state.sort_descending ? "sorted-desc" : "sorted-asc");
         }
@@ -317,7 +321,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         });
     };
     deleteCollection = () => {
-        const parent = this.state.collections[this.state.collection_id].parent;
+        const parent = this.state.collections![this.state.collection_id].parent;
         post(`library/${this.state.player_id}`, {
             delete_collections: [this.state.collection_id],
         })
@@ -339,7 +343,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         this.setState({ games_checked: {} });
     };
     toggleAllGamesChecked = () => {
-        const collection = this.state.collections[this.state.collection_id];
+        const collection = this.state.collections![this.state.collection_id];
         let all_games_checked = true;
         for (const g of collection.games) {
             if (!(g.entry_id in this.state.games_checked)) {
@@ -386,7 +390,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
             return <div className="LibraryPlayer" />;
         }
 
-        const bread_crumbs = [];
+        const bread_crumbs: any[] = [];
         const collection = this.state.collections[this.state.collection_id];
 
         this.applyCurrentSort(collection.games);
@@ -473,7 +477,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                 </div>
 
                 <Dropzone
-                    ref={(r) => (this.dropzone = r)}
+                    ref={(r) => r && (this.dropzone = r)}
                     accept=".sgf"
                     onDrop={this.uploadSGFs}
                     multiple={true}
@@ -542,7 +546,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                     {hasCollections && <hr />}
 
                                     <div className="games">
-                                        {hasGames && this.renderColumnHeaders(owner)}
+                                        {hasGames && this.renderColumnHeaders(!!owner)}
                                         {owner && hasGames && (
                                             <div className="game-entry">
                                                 <span className="select">

@@ -110,11 +110,11 @@ export class PuzzleList extends React.PureComponent<{}, PuzzleListState> {
                                     render: (X) => (
                                         <MiniGoban
                                             noLink
-                                            id={null}
+                                            id={undefined}
                                             json={X.starting_puzzle}
                                             displayWidth={64}
-                                            white={null}
-                                            black={null}
+                                            white={undefined}
+                                            black={undefined}
                                         />
                                     ),
                                 },

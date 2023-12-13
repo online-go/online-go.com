@@ -95,7 +95,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
             join_joined: props.join_joined,
             collapsed_channel_groups: props.collapse_state_store_name
                 ? { global: false, groups: false, tournaments: false }
-                : undefined,
+                : {},
             collapse_state_store_name: props.collapse_state_store_name,
             highlight_active_channel: props.highlight_active_channel,
             active_channel: data.get("chat.active_channel", ""),
@@ -482,7 +482,7 @@ export class ChatList extends React.PureComponent<ChatListProperties, ChatListSt
                         >
                             <span className="channel-name" data-channel={chan.id}>
                                 <Flag
-                                    country={chan.country}
+                                    country={chan.country ?? ""}
                                     language={
                                         chan.language &&
                                         (typeof chan.language === "string"

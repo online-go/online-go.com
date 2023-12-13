@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* spell-checker: disable */
+
 interface CurrencyMap {
     [currency: string]: {
         decimal_digits: number;

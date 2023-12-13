@@ -23,7 +23,7 @@ import { JosekiTagSelector, JosekiTag } from "../JosekiTagSelector";
 import { PlayerCacheEntry } from "player_cache";
 import { get } from "requests";
 
-export type JosekiFilter = { contributor: number; tags: JosekiTag[]; source: number };
+export type JosekiFilter = { contributor?: number; tags: JosekiTag[]; source?: number };
 
 interface JosekiVariationFilterProps {
     contributor_list_url: string;
@@ -90,7 +90,7 @@ export function JosekiVariationFilter(props: JosekiVariationFilterProps) {
     const onTagChange = (tags: JosekiTag[]) => {
         const new_filter = { ...props.current_filter, tags };
 
-        props.set_variation_filter(new_filter); // tell parent the fiter changed, so the view needs to change
+        props.set_variation_filter(new_filter); // tell parent the filter changed, so the view needs to change
     };
 
     const onContributorChange = (e) => {

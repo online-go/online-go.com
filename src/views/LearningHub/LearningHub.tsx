@@ -44,7 +44,7 @@ export function LearningHub(): JSX.Element {
     }, [params.section, params.page]);
 
     const section_name = (params.section || "index").toLowerCase();
-    let section = null;
+    let section: any = null;
     let next_section_name = "";
 
     for (let i = 0; i < allsections.length; ++i) {
@@ -122,11 +122,11 @@ class Index extends React.PureComponent<{}, any> {
                                         >
                                             <MiniGoban
                                                 noLink
-                                                id={null}
+                                                id={undefined}
                                                 json={config}
                                                 displayWidth={64}
-                                                white={null}
-                                                black={null}
+                                                white={undefined}
+                                                black={undefined}
                                             />
                                             <div>
                                                 <h1>{S.title()}</h1>
@@ -297,7 +297,7 @@ function getSectionClassName(section_name: string): string {
     const sc = getSectionCompletion(section_name);
 
     const S = getSectionByName(section_name);
-    if (S.pages()[0].underConstruction()) {
+    if (S?.pages()[0].underConstruction()) {
         return "under-construction";
     }
 

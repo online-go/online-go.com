@@ -25,11 +25,11 @@ import { openACLModal } from "ACLModal";
 import { alert } from "swal_config";
 import { useParams } from "react-router-dom";
 
-export function PuzzleCollection(): JSX.Element {
+export function PuzzleCollection(): JSX.Element | null {
     const { collection_id } = useParams();
 
     const [collection, setCollection] = React.useState(null);
-    const [name, setName] = React.useState(null);
+    const [name, setName] = React.useState<string>();
     const [puzzle_is_private, setPrivate] = React.useState(false);
     const [color_transform_enabled, setColorTransformEnabled] = React.useState(false);
     const [position_transform_enabled, setPositionTransformEnabled] = React.useState(false);
@@ -153,7 +153,7 @@ export function PuzzleCollection(): JSX.Element {
                         </button>
                     </div>
 
-                    <SortablePuzzleList collection={collection_id} />
+                    {collection_id && <SortablePuzzleList collection={collection_id} />}
                 </div>
             </div>
         </div>

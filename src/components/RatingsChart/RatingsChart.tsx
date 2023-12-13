@@ -153,8 +153,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
         this.state = {
             loading: true,
             nodata: false,
-            hovered_date: null,
-            hovered_month: null,
+            hovered_date: undefined,
+            hovered_month: undefined,
             date_extents: [],
         };
         this.chart_div = $("<div>")[0];
@@ -202,13 +202,13 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
         }
 
         /* Otherwise, we only need to update if our win/loss stats needs updating */
-        if (this.state.hovered_date !== null && nextState.hovered_date !== null) {
-            if (this.state.hovered_date.getTime() !== nextState.hovered_date.getTime()) {
+        if (this.state.hovered_date !== undefined && nextState.hovered_date !== undefined) {
+            if (this.state.hovered_date?.getTime() !== nextState.hovered_date.getTime()) {
                 return true;
             }
         } else if (this.state.hovered_date !== nextState.hovered_date) {
             return true;
-        } else if (this.state.hovered_month !== null && nextState.hovered_month !== null) {
+        } else if (this.state.hovered_month && nextState.hovered_month !== undefined) {
             if (is_same_month(this.state.hovered_month, nextState.hovered_month)) {
                 return true;
             }
@@ -340,7 +340,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
                     .on("mouseout", () => {
                         this.helper.style("display", "none");
                         this.dateLegend.style("display", "none");
-                        this.setState({ hovered_month: null });
+                        this.setState({ hovered_month: undefined });
                     })
                     .on("mousemove", function (event) {
                         const x0 = self.ratings_x.invert(
@@ -348,7 +348,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
                             d3.pointer(event, this as d3.ContainerElement)[0],
                         );
 
-                        let d = null;
+                        let d: Date | null = null;
 
                         for (const entry of self.games_by_month) {
                             if (is_same_month(x0, entry.ended)) {
@@ -512,7 +512,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
                 //deviationTooltip.style('display', 'none');
                 //this.verticalCrosshairLine.style('display', 'none');
                 this.horizontalCrosshairLine.style("display", "none");
-                this.setState({ hovered_date: null });
+                this.setState({ hovered_date: undefined });
             })
             .on("mousemove", function (event) {
                 // eslint-disable-next-line @typescript-eslint/no-invalid-this
@@ -630,7 +630,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
     chart_sizes(): { width: number; height: number } {
         const width = Math.max(
             chart_min_width,
-            $(this.container.current).width() - margin.left - margin.right,
+            $(this.container.current as any).width() - margin.left - margin.right,
         );
         return {
             width: width,
@@ -864,8 +864,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
         if (this.game_entries.length > 0) {
             let last_month_key = "";
             let last_day_key = "";
-            let cur_day: RatingEntry = null;
-            let cur_month: RatingEntry = null;
+            let cur_day: RatingEntry | null = null;
+            let cur_month: RatingEntry | null = null;
             for (const d of this.game_entries) {
                 const day_key = daykey(d.ended);
                 if (last_day_key !== day_key) {
@@ -874,13 +874,13 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
                     cur_day.starting_rating = cur_day.rating;
                     cur_day.starting_deviation = cur_day.deviation;
                     cur_day.count = 1;
-                    cur_day.increase = null;
+                    cur_day.increase = false;
                     this.games_by_day.push(cur_day);
-                } else {
+                } else if (cur_day) {
                     cur_day.merge(d);
                 }
 
-                if (this.games_by_day.length >= 2) {
+                if (this.games_by_day.length >= 2 && cur_day) {
                     cur_day.increase =
                         this.games_by_day[this.games_by_day.length - 2].rating < cur_day.rating;
                 }
@@ -890,20 +890,20 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
                     last_month_key = month_key;
                     cur_month = d.copy();
                     this.games_by_month.push(cur_month);
-                } else {
+                } else if (cur_month) {
                     cur_month.merge(d);
                 }
-                if (this.games_by_month.length >= 2) {
+                if (this.games_by_month.length >= 2 && cur_month) {
                     cur_month.increase =
                         this.games_by_month[this.games_by_month.length - 2].rating <
                         cur_month.rating;
-                } else {
-                    cur_month.increase = null;
+                } else if (cur_month) {
+                    cur_month.increase = false;
                 }
 
                 this.max_games_played_in_a_month = Math.max(
                     this.max_games_played_in_a_month,
-                    cur_month.count,
+                    cur_month?.count || 0,
                 );
             }
         }
@@ -938,7 +938,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
             }),
         );
         game_count_extent[0] = 0;
-        this.win_loss_y.domain(d3.extent(game_count_extent));
+        this.win_loss_y.domain(d3.extent(game_count_extent as any) as any);
         this.timeline_x.domain(this.ratings_x.domain());
         this.timeline_y.domain(
             d3.extent(
@@ -1223,7 +1223,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
     }
 
     computeWinLossNumbers() {
-        let date_extents = [];
+        let date_extents: any[] = [];
 
         if (this.state.hovered_date) {
             date_extents[0] = new Date(this.state.hovered_date);
@@ -1250,7 +1250,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
             }
         }
 
-        let agg = null;
+        let agg: RatingEntry | null = null;
         const start_time = date_extents[0].getTime();
         const end_time = date_extents[1].getTime();
 
@@ -1268,15 +1268,15 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
         }
 
         if (agg === null) {
-            agg = {
+            this.win_loss_aggregate = {
                 weak_wins: 0,
                 strong_wins: 0,
                 weak_losses: 0,
                 strong_losses: 0,
             };
+        } else {
+            this.win_loss_aggregate = agg;
         }
-
-        this.win_loss_aggregate = agg;
     }
 
     renderWinLossNumbersAsText() {

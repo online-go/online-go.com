@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* spell-checker: disable */
+
 import * as React from "react";
 import * as moment from "moment";
 import * as data from "data";

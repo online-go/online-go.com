@@ -169,7 +169,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             loading: true,
             nodata: false,
             subselect_extents: [],
-            hovered_game_id: null,
+            hovered_game_id: undefined,
         };
         this.chart_div = $("<div>")[0];
     }
@@ -542,7 +542,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     }
 
     restorePie() {
-        this.setState({ hovered_game_id: null });
+        this.setState({ hovered_game_id: undefined });
         if (this.show_pie) {
             this.plotWinLossPie();
         }
@@ -552,7 +552,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
     chart_sizes() {
         const width = Math.max(
             chart_min_width,
-            $(this.container.current).width() - margin.left - margin.right,
+            $(this.container.current as any).width() - margin.left - margin.right,
         );
         return {
             width: width,
@@ -912,7 +912,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         this.computeWinLossNumbers();
 
         if (!this.state.loading && this.show_pie) {
-            this.setState({ hovered_game_id: null }); // make sure hovered game is not lingering while the are doing subselect
+            this.setState({ hovered_game_id: undefined }); // make sure hovered game is not lingering while the are doing subselect
             this.plotWinLossPie();
         }
     };
@@ -967,7 +967,7 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
             subselect_extents[1] = this.game_entries.length;
         }
 
-        let agg = null;
+        let agg: RatingEntry | null = null;
         const start_game = subselect_extents[0];
         const end_game = subselect_extents[1];
 
@@ -985,15 +985,15 @@ export class RatingsChartByGame extends React.Component<RatingsChartProperties, 
         }
 
         if (agg === null) {
-            agg = {
+            this.win_loss_aggregate = {
                 weak_wins: 0,
                 strong_wins: 0,
                 weak_losses: 0,
                 strong_losses: 0,
             };
+        } else {
+            this.win_loss_aggregate = agg;
         }
-
-        this.win_loss_aggregate = agg;
     }
 
     renderWinLossNumbersAsText() {

@@ -27,7 +27,7 @@ interface AdminState {
 }
 
 export class Admin extends React.PureComponent<{}, AdminState> {
-    results = [];
+    results: string[] = [];
 
     constructor(props) {
         super(props);

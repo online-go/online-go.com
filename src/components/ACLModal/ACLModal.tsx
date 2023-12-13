@@ -71,7 +71,7 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
 
     removeACLEntry(obj) {
         console.log("SHould be removing", obj);
-        const new_acl = [];
+        const new_acl: any[] = [];
         for (const entry of this.state.acl) {
             if (!(entry.player_id === obj.player_id && entry.group_id === obj.group_id)) {
                 new_acl.push(entry);

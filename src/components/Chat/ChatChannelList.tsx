@@ -66,7 +66,7 @@ interface ChatChannelListProperties {
 }
 
 function autojoin_channels() {
-    const joined_channels = data.get("chat.joined");
+    const joined_channels = data.get("chat.joined", {});
     const parted_channels = data.get("chat.parted", {});
 
     for (const chan of group_channels) {
@@ -95,7 +95,7 @@ function autojoin_channels() {
 export function ChatChannelList({ channel }: ChatChannelListProperties): JSX.Element {
     autojoin_channels();
 
-    const joined_channels = data.get("chat.joined");
+    const joined_channels = data.get("chat.joined", {});
     const using_resolved_channel = !(
         group_channels.filter((chan) => `group-${chan.id}` === channel).length +
         tournament_channels.filter((chan) => `tournament-${chan.id}` === channel).length +
@@ -105,9 +105,9 @@ export function ChatChannelList({ channel }: ChatChannelListProperties): JSX.Ele
     const [more, set_more]: [boolean, (tf: boolean) => void] = useState(false as boolean);
     const [search, set_search]: [string, (text: string) => void] = useState("");
     const [resolved_channel, set_resolved_channel]: [
-        ChannelInformation | null,
-        (s: ChannelInformation | null) => void,
-    ] = useState(null);
+        ChannelInformation | undefined | null,
+        (s: ChannelInformation | undefined | null) => void,
+    ] = useState<ChannelInformation | undefined | null>(null);
 
     //pgettext("Joining chat channel", "Joining"));
 
@@ -294,12 +294,12 @@ export function ChatChannel({
     }
 
     const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] =
-        useState(null);
+        useState<ChatChannelProxy | null>(null);
     const [unread_ct, set_unread_ct]: [number, (x: number) => void] = useState(0);
 
     const setChannel = useCallback(() => {
         if (!joined) {
-            const joined_channels = data.get("chat.joined");
+            const joined_channels = data.get("chat.joined", {});
             joined_channels[channel] = 1;
             data.set("chat.joined", joined_channels);
         }
@@ -353,20 +353,20 @@ export function ChatChannel({
         }
     }, [active, proxy]);
 
-    let icon_element: JSX.Element;
+    let icon_element: JSX.Element | null = null;
 
     if (channel.indexOf("tournament") === 0) {
         icon_element = <i className="fa fa-trophy" />;
     } else if (channel.indexOf("global") === 0 || channel === "shadowban") {
-        icon_element = (
+        icon_element = country ? (
             <Flag country={country} language={language as string} user_country={user_country} />
-        );
+        ) : null;
     } else if (channel.indexOf("group") === 0) {
         icon_element = <img src={icon} />;
     }
 
     const mentioned = proxy?.channel.mentioned;
-    let unread: JSX.Element;
+    let unread: JSX.Element | null = null;
 
     if (unread_ct) {
         unread = <span className="unread-count" data-count={`(${unread_ct})`} />;

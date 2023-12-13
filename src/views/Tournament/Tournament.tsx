@@ -97,12 +97,12 @@ interface TournamentInterface {
 export function Tournament(): JSX.Element {
     const user = useUser();
     const params = useParams<{ tournament_id: string; group_id: string }>();
-    const tournament_id = parseInt(params.tournament_id) || 0;
-    const new_tournament_group_id = parseInt(params.group_id) || 0;
+    const tournament_id = parseInt(params.tournament_id ?? "0");
+    const new_tournament_group_id = parseInt(params.group_id ?? "0");
 
-    const ref_tournament_name = React.useRef<HTMLInputElement>();
-    const ref_description = React.useRef<HTMLTextAreaElement>();
-    const ref_max_players = React.useRef<HTMLInputElement>();
+    const ref_tournament_name = React.useRef<HTMLInputElement>(null);
+    const ref_description = React.useRef<HTMLTextAreaElement>(null);
+    const ref_max_players = React.useRef<HTMLInputElement>(null);
 
     const elimination_tree_container = React.useRef<HTMLDivElement>(document.createElement("div"));
 
@@ -162,9 +162,9 @@ export function Tournament(): JSX.Element {
     const [sorted_players, setSortedPlayers] = React.useState<any[]>([]);
     const [players, setPlayers] = React.useState({});
     const [is_joined, setIsJoined] = React.useState(false);
-    const [invite_result, setInviteResult] = React.useState(null);
+    const [invite_result, setInviteResult] = React.useState<string | null>(null);
     const [use_elimination_trees, setUseEliminationTrees] = React.useState(false);
-    const [user_to_invite, setUserToInvite] = React.useState<PlayerCacheEntry>(null);
+    const [user_to_invite, setUserToInvite] = React.useState<PlayerCacheEntry | null>(null);
 
     //const tournament = tournament_ref.current;
 
@@ -537,7 +537,7 @@ export function Tournament(): JSX.Element {
                 });
             };
 
-            const all_objects = [];
+            const all_objects: any[] = [];
             for (let round_num = 0; round_num < rounds.length; ++round_num) {
                 const round = rounds[round_num];
 
@@ -645,7 +645,7 @@ export function Tournament(): JSX.Element {
                 curbucket = {};
             }
 
-            const lastcurbucket_arr = [];
+            const lastcurbucket_arr: any[] = [];
             for (const k in lastcurbucket) {
                 lastcurbucket_arr.push(lastcurbucket[k]);
             }
@@ -727,7 +727,7 @@ export function Tournament(): JSX.Element {
                     obj.visit_order = ++last_visit_order;
                 };
 
-                const arr = [];
+                const arr: any[] = [];
                 for (const k in collection) {
                     arr.push(collection[k]);
                 }
@@ -999,12 +999,12 @@ export function Tournament(): JSX.Element {
     };
     const groupify = (round, players) => {
         try {
-            const match_map = {};
-            const result_map = {};
-            const color_map = {};
-            const game_id_map = {};
-            let matches = [];
-            let byes = [];
+            const match_map: any = {};
+            const result_map: any = {};
+            const color_map: any = {};
+            const game_id_map: any = {};
+            let matches: any[] = [];
+            let byes: any[] = [];
 
             for (let i = 0; i < round.matches.length; ++i) {
                 const m = round.matches[i];
@@ -1089,7 +1089,7 @@ export function Tournament(): JSX.Element {
             }
 
             let groups = new Array(last_group);
-            let broken_list = [];
+            let broken_list: any[] = [];
             for (let i = 0; i < groups.length; ++i) {
                 groups[i] = { players: [] };
             }
@@ -1130,7 +1130,7 @@ export function Tournament(): JSX.Element {
                 broken_players[broken_list[i].player.id] = broken_list[i].player;
             }
             for (let i = 0; i < broken_list.length; ++i) {
-                const opponents = [];
+                const opponents: any[] = [];
                 for (const opponent_id in broken_list[i].matches) {
                     //let opponent_id = broken_list[i].matches[j].black === broken_list[i].id ? broken_list[i].matches[j].white : broken_list[i].matches[j].black;
                     opponents.push({
@@ -1171,25 +1171,25 @@ export function Tournament(): JSX.Element {
         tournament.description = tournament.description.trim();
 
         if (tournament.name.length < 5) {
-            ref_tournament_name.current.focus();
+            ref_tournament_name.current?.focus();
             void alert.fire(_("Please provide a name for the tournament"));
             return;
         }
 
         if (tournament.description.length < 5) {
-            ref_description.current.focus();
+            ref_description.current?.focus();
             void alert.fire(_("Please provide a description for the tournament"));
             return;
         }
 
         const max_players = parseInt(tournament.settings.maximum_players);
         if (max_players > 10 && tournament.tournament_type === "roundrobin") {
-            ref_max_players.current.focus();
+            ref_max_players.current?.focus();
             void alert.fire(_("Round Robin tournaments are limited to a maximum of 10 players"));
             return;
         }
         if (max_players < 2) {
-            ref_max_players.current.focus();
+            ref_max_players.current?.focus();
             void alert.fire(_("You need at least two players in a tournament"));
             return;
         }
@@ -1362,6 +1362,9 @@ export function Tournament(): JSX.Element {
 
     const kick = (player_id: number) => {
         const user = player_cache.lookup(player_id);
+        if (!user) {
+            return;
+        }
 
         void alert
             .fire({
@@ -1386,6 +1389,9 @@ export function Tournament(): JSX.Element {
     };
     const adjustPoints = (player_id: number) => {
         const user = player_cache.lookup(player_id);
+        if (!user) {
+            return;
+        }
 
         alert
             .fire({
@@ -1396,7 +1402,7 @@ export function Tournament(): JSX.Element {
                 ),
                 showCancelButton: true,
                 focusCancel: true,
-                inputValidator: (value): string => {
+                inputValidator: (value): string | undefined => {
                     const f = parseFloat(value);
                     if (isNaN(f)) {
                         return "Enter the number of points for the adjustment";
@@ -1433,6 +1439,9 @@ export function Tournament(): JSX.Element {
     };
     const disqualify = (player_id: number) => {
         const user = player_cache.lookup(player_id);
+        if (!user) {
+            return;
+        }
 
         void alert
             .fire({
@@ -3230,7 +3239,7 @@ function OpenGothaTournamentUploadDownload({
 }: {
     tournament: any;
     reloadCallback: () => void;
-}): JSX.Element {
+}): JSX.Element | null {
     if (!tournament.can_administer) {
         return null;
     }

@@ -28,7 +28,7 @@ const state = {};
 const event_emitter = new TypedEventEmitter<Events>();
 
 socket.on("connect", () => {
-    const list = [];
+    const list: number[] = [];
     for (const id in state) {
         list.push(parseInt(id));
     }

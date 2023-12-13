@@ -52,7 +52,7 @@ function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Elem
     const [suggestions, setSuggestions]: [SuggestionEntry[], (x: SuggestionEntry[]) => void] =
         React.useState([] as SuggestionEntry[]);
     const tabbed_out = React.useRef(false as boolean);
-    const last_on_complete_username = React.useRef("");
+    const last_on_complete_username = React.useRef<string | null>("");
     const search = React.useRef("");
 
     React.useImperativeHandle(ref, () => ({
@@ -147,7 +147,7 @@ function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Elem
                       username__istartswith: value,
                   });
             q.then((res) => {
-                const new_suggestions = [];
+                const new_suggestions: any[] = [];
                 for (let user of res.results) {
                     if (props.ladderId) {
                         user.player.ladder_rank = user.rank;

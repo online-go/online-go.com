@@ -41,7 +41,7 @@ interface Events {
 }
 
 const boot_time = Date.now();
-let notification_timeout = null;
+let notification_timeout: ReturnType<typeof setTimeout> | null = null;
 const sent = {};
 
 $(window).on("storage", (event) => {
@@ -222,7 +222,7 @@ export class NotificationManager {
             looking_at_game_id
         ];
 
-        const target_boards = [];
+        const target_boards: { id: number; expiration: number }[] = [];
         let we_have_moves_to_play = false;
 
         // If there are boards where we have a move, then we'll chose one of these.

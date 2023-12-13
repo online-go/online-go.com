@@ -182,7 +182,7 @@ class ReportManager extends EventEmitter<Events> {
         const prefs = preferences.get("moderator.report-settings");
         const user = data.get("user");
 
-        const reports = [];
+        const reports: Report[] = [];
         let normal_ct = 0;
         for (const id in this.active_incident_reports) {
             const report = this.active_incident_reports[id];
@@ -279,7 +279,7 @@ class ReportManager extends EventEmitter<Events> {
                 continue;
             }
 
-            const relationships = [];
+            const relationships: string[] = [];
 
             if (report.reported_game && other.reported_game === report.reported_game) {
                 relationships.push("Same game");

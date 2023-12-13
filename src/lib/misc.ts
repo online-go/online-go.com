@@ -65,7 +65,7 @@ export function dup<T>(obj: T): T {
     let ret;
     if (typeof obj === "object") {
         if (obj === null) {
-            return null;
+            return null as T;
         }
 
         if (Array.isArray(obj)) {
@@ -127,10 +127,14 @@ export function deepEqual(a: any, b: any) {
 export function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min)) + min;
 }
-export function getRelativeEventPosition(event) {
+export function getRelativeEventPosition(event): { x: number; y: number } | undefined {
     let x;
     let y;
     const offset = $(event.target).offset();
+
+    if (!offset) {
+        return;
+    }
 
     if (event.originalEvent.touches && event.originalEvent.touches.length) {
         x = event.originalEvent.touches[0].pageX - offset.left;
@@ -186,7 +190,7 @@ export function getOutcomeTranslation(outcome: string) {
     }
 
     if (/[0-9.]+/.test(outcome)) {
-        const num: number = +outcome.match(/([0-9.]+)/)[1];
+        const num: number = +(outcome.match(/([0-9.]+)/) as string[])[1];
         const rounded_num = Math.round(num * 2) / 2;
         return interpolate(pgettext("Game outcome", "{{number}} points"), { number: rounded_num }); // eslint-disable-line id-denylist
     }
@@ -373,7 +377,7 @@ export function errorLogger(...args) {
 export function string_splitter(str: string, max_length: number = 200): Array<string> {
     const words = str.split(/(\W+)/g);
 
-    const lines = [];
+    const lines: string[] = [];
     let cur = "";
     for (let word of words) {
         while (word.length > max_length) {
@@ -422,7 +426,7 @@ export function unicodeFilter(str: string): string {
 
 const n2s_alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 const n2s_alphalen = n2s_alphabet.length;
-export function n2s(n?: number) {
+export function n2s(n: number) {
     if (n < 0) {
         return "-" + n2s(-n);
     }
@@ -461,12 +465,12 @@ export function shouldOpenNewTab(event) {
 }
 
 const last_navigateTo = {
-    path: null,
-    timestamp: null,
+    path: null as string | null,
+    timestamp: null as number | null,
 };
 
-export function navigateTo(path, event?) {
-    if (last_navigateTo.path === path && Date.now() - last_navigateTo.timestamp < 100) {
+export function navigateTo(path: string, event?) {
+    if (last_navigateTo.path === path && Date.now() - (last_navigateTo.timestamp || 0) < 100) {
         /* debounce, this is for elements that need to have both onClick and onMouseUp to
          * handle various use cases in different browsers */
         console.log("navigate debounce");
@@ -485,8 +489,8 @@ export function navigateTo(path, event?) {
 
 export function deepCompare(x: any, y: any) {
     // http://stackoverflow.com/questions/1068834/object-comparison-in-javascript
-    const leftChain = [];
-    const rightChain = [];
+    const leftChain: any[] = [];
+    const rightChain: any[] = [];
 
     const compare2Objects = (x, y) => {
         // remember that NaN === NaN returns false
@@ -1142,7 +1146,7 @@ export function insert_into_sorted_list<T>(
     }
 }
 
-export function yesno(tf: boolean) {
+export function yesno(tf?: boolean) {
     return tf ? _("Yes") : _("No");
 }
 

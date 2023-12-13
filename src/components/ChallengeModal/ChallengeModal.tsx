@@ -118,8 +118,8 @@ interface RejectionDetails {
 
 /* Constants  */
 
-const negKomiRanges = [];
-const posKomiRanges = [];
+const negKomiRanges: number[] = [];
+const posKomiRanges: number[] = [];
 const maxKomi = 36.5;
 for (let komi = 0.0; komi <= maxKomi; komi += 0.5) {
     if (komi - maxKomi !== 0.0) {
@@ -128,7 +128,7 @@ for (let komi = 0.0; komi <= maxKomi; komi += 0.5) {
     posKomiRanges.push(komi);
 }
 
-const handicapRanges = [];
+const handicapRanges: number[] = [];
 for (let i = 1; i <= 36; ++i) {
     handicapRanges.push(i);
 }
@@ -585,7 +585,7 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
         let player_id = 0;
         if (this.props.mode === "player") {
-            player_id = this.props.playerId;
+            player_id = this.props.playerId as number;
             if (!player_id || player_id === data.get("user").id) {
                 return;
             }
@@ -688,7 +688,10 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
                                 // This can be fixed when HistoryRouter is properly supported, if we can be bothered.
                                 footer: `<a href='/'>${footer_text}</a>`,
                             });
-                            copyChallengeLinkURL(alert.getConfirmButton(), challenge_uuid);
+                            copyChallengeLinkURL(
+                                alert.getConfirmButton() as HTMLElement,
+                                challenge_uuid,
+                            );
                         } else {
                             void alert.fire(_("Challenge created!"));
                         }
@@ -857,16 +860,16 @@ export class ChallengeModal extends Modal<Events, ChallengeModalProperties, any>
 
     update_selected_demo_player_black = (ev) => {
         const idx = parseInt(ev.target.value);
-        this.upstate("demo.black_name", this.props.playersList[idx].name);
-        this.upstate("demo.black_ranking", this.props.playersList[idx].rank);
+        this.upstate("demo.black_name", this.props.playersList?.[idx].name);
+        this.upstate("demo.black_ranking", this.props.playersList?.[idx].rank);
         this.setState({
             selected_demo_player_black: idx,
         });
     };
     update_selected_demo_player_white = (ev) => {
         const idx = parseInt(ev.target.value);
-        this.upstate("demo.white_name", this.props.playersList[idx].name);
-        this.upstate("demo.white_ranking", this.props.playersList[idx].rank);
+        this.upstate("demo.white_name", this.props.playersList?.[idx].name);
+        this.upstate("demo.white_ranking", this.props.playersList?.[idx].rank);
         this.setState({
             selected_demo_player_white: idx,
         });
@@ -1850,7 +1853,7 @@ export function createDemoBoard(
     );
 }
 export function challengeComputer() {
-    return challenge(null, null, true);
+    return challenge(undefined, null, true);
 }
 export function challengeRematch(
     goban: Goban,
@@ -1879,7 +1882,7 @@ export function challengeRematch(
                 handicap: conf.handicap,
                 time_control: conf.time_control["time_control"],
                 rules: conf.rules,
-                ranked: conf.config.ranked,
+                ranked: !!conf.config.ranked,
                 width: conf.width,
                 height: conf.height,
                 komi_auto: "custom",

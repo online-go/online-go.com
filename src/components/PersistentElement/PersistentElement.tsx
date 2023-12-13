@@ -25,7 +25,7 @@ interface PersistentElementProps {
 }
 
 export function PersistentElement(props: PersistentElementProps): JSX.Element {
-    const container = React.useRef<HTMLDivElement>();
+    const container = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
         if (container.current) {

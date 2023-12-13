@@ -37,7 +37,7 @@ type LadderProperties = RouteComponentProps<{
 
 interface LadderState {
     ladder_id: IdType;
-    ladder: {
+    ladder?: {
         group: any; // doesn't appear this member is used
         name: string;
         player_is_member_of_group: boolean;
@@ -55,7 +55,7 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
         super(props);
         this.state = {
             ladder_id: this.props.match.params.ladder_id,
-            ladder: null,
+            ladder: undefined,
             ladder_size: 1,
             topVisibleEntry: 0,
             highlight_rank: -1,
@@ -324,11 +324,8 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
 
     constructor(props) {
         super(props);
-        this.state = null;
+        this.state = { row: undefined };
         this.sync();
-        if (!this.state) {
-            this.state = { row: null };
-        }
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -632,7 +629,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
     }
 }
 
-function canChallengeTooltip(obj: any): string {
+function canChallengeTooltip(obj: any): string | null {
     if (obj.reason_code) {
         switch (obj.reason_code) {
             case 0x001:

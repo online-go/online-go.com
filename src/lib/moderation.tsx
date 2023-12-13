@@ -26,7 +26,7 @@ import { toast } from "toast";
 export function doAnnul(
     engine: GoEngineConfig,
     tf: boolean,
-    onGameAnnulled: (tf: boolean) => void = null,
+    onGameAnnulled: ((tf: boolean) => void) | null = null,
     init_prompt: string = "",
 ): void {
     let moderation_note: string | null = null;
@@ -39,8 +39,8 @@ export function doAnnul(
         }
         moderation_note = moderation_note
             .trim()
-            .replace(/(black)\b/gi, `player ${engine.players.black.id}`)
-            .replace(/(white)\b/gi, `player ${engine.players.white.id}`);
+            .replace(/(black)\b/gi, `player ${engine.players?.black.id}`)
+            .replace(/(white)\b/gi, `player ${engine.players?.white.id}`);
     } while (moderation_note === "");
 
     const annul_request: rest_api.moderation.AnnulList = {

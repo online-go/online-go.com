@@ -129,12 +129,12 @@ export function GroupList(): JSX.Element {
 }
 
 function group_sort_fn(a, b) {
-    const aname = a.name.toLowerCase();
-    const bname = b.name.toLowerCase();
+    const a_name = a.name.toLowerCase();
+    const b_name = b.name.toLowerCase();
 
-    if (aname < bname) {
+    if (a_name < b_name) {
         return -1;
-    } else if (aname > bname) {
+    } else if (a_name > b_name) {
         return 1;
     } else {
         return 0;

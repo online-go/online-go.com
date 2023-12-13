@@ -61,7 +61,7 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
     const game_elapseds: Array<ReturnType<typeof moment.duration>> = []; // the time elapsed up to each move
 
     let non_handicap_moves = [...props.moves];
-    let handicap_moves = [];
+    let handicap_moves: any[] = [];
     let handicap_move_offset = 0;
 
     let white_first_turn = false;
@@ -192,7 +192,7 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
                             ]);
                         }
                         return acc;
-                    }, [])
+                    }, [] as any[])
                     // render them in a move pair per row
                     .map((move_pair, idx) => {
                         const black_move_time = move_pair[0];

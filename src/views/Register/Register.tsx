@@ -33,9 +33,9 @@ export function Register(): JSX.Element {
     const navigate = useNavigate();
     const user = useUser();
     const ref_username = React.useRef<HTMLInputElement>(null);
-    const ref_email = React.useRef<HTMLInputElement>();
-    const ref_password = React.useRef<HTMLInputElement>();
-    const [error, setError] = React.useState<string>(null);
+    const ref_email = React.useRef<HTMLInputElement | null>(null);
+    const ref_password = React.useRef<HTMLInputElement | null>(null);
+    const [error, setError] = React.useState<string>();
 
     if (!user.anonymous) {
         navigate("/");
@@ -44,9 +44,9 @@ export function Register(): JSX.Element {
     const register = (event) => {
         const actually_register = () => {
             post("/api/v0/register", {
-                username: ref_username.current.value.trim(),
-                password: ref_password.current.value,
-                email: ref_email.current.value.trim(),
+                username: ref_username.current?.value.trim(),
+                password: ref_password.current?.value,
+                email: ref_email.current?.value.trim(),
                 ebi: get_ebi(),
             })
                 .then((config) => {
@@ -82,6 +82,10 @@ export function Register(): JSX.Element {
         };
 
         const focus_empty = (focus_email?: boolean) => {
+            if (!ref_username.current || !ref_password.current || !ref_email.current) {
+                return false;
+            }
+
             if (ref_username.current.value.trim() === "" || !validateUsername()) {
                 ref_username.current.focus();
                 return true;
@@ -131,11 +135,15 @@ export function Register(): JSX.Element {
     };
 
     const validateUsername = () => {
+        if (!ref_username.current) {
+            return false;
+        }
+
         if (/@/.test(ref_username.current.value)) {
             $(ref_username.current).addClass("validation-error");
             setError(
                 _(
-                    "Your username will be publically visible, please do not use your email address here.",
+                    "Your username will be publicly visible, please do not use your email address here.",
                 ),
             );
             ref_username.current.focus();
@@ -143,7 +151,7 @@ export function Register(): JSX.Element {
         } else {
             if ($(ref_username.current).hasClass("validation-error")) {
                 $(ref_username.current).removeClass("validation-error");
-                setError(null);
+                setError(undefined);
             }
         }
         return true;

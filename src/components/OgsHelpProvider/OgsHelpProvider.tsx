@@ -65,14 +65,14 @@ export function OgsHelpProvider(props: OgsHelpProviderProps): JSX.Element {
                     "rdh-system-state",
                     rdhState,
                     data.Replication.REMOTE_OVERWRITES_LOCAL,
-                );
+                ) as string;
             } else {
                 debugDynamicHelp && console.log("NOT writing rdhState");
                 return rdhState;
             }
         },
         getState: (defaultValue?: string) => {
-            const newstate = data.get("rdh-system-state", defaultValue);
+            const newstate = data.get("rdh-system-state", defaultValue || "");
             debugDynamicHelp && console.log("Read rdhState", user.username, user.id, newstate);
             return newstate;
         },

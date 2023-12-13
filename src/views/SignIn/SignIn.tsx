@@ -96,8 +96,8 @@ export function SignIn(): JSX.Element {
     ) => {
         const actually_login = () => {
             post("/api/v0/login", {
-                username: ref_username.current.value.trim(),
-                password: ref_password.current.value,
+                username: ref_username.current!.value.trim(),
+                password: ref_password.current!.value,
                 ebi: get_ebi(),
             })
                 .then((config) => {
@@ -147,11 +147,11 @@ export function SignIn(): JSX.Element {
         };
 
         const focus_empty = () => {
-            if (ref_username.current.value.trim() === "") {
+            if (ref_username.current?.value.trim() === "") {
                 ref_username.current.focus();
                 return true;
             }
-            if (ref_password.current.value.trim() === "") {
+            if (ref_password.current?.value.trim() === "") {
                 ref_password.current.focus();
                 return true;
             }

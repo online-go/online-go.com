@@ -36,8 +36,8 @@ function star_class(rating, v) {
 }
 
 export class StarRating extends React.PureComponent<StarRatingProperties, { rating: number }> {
-    setters = [];
-    preview = [];
+    setters: any[] = [];
+    preview: any[] = [];
 
     constructor(props) {
         super(props);
@@ -46,7 +46,7 @@ export class StarRating extends React.PureComponent<StarRatingProperties, { rati
         };
 
         for (let i = 1; i <= 5; ++i) {
-            this.setters.push(this.props.onChange ? () => this.props.onChange(i) : () => 0);
+            this.setters.push(() => (this.props.onChange ? this.props.onChange(i) : 0));
         }
 
         for (let i = 1; i <= 5; ++i) {

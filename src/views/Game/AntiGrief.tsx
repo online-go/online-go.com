@@ -31,7 +31,7 @@ let on_game_page = false;
 let live_game = false;
 let live_game_id = 0;
 let live_game_phase = null;
-let last_toast = null;
+let last_toast: ReturnType<typeof toast> | null = null;
 let was_player = false;
 
 function checkForLeavingLiveGame(pathname: string) {
@@ -99,12 +99,14 @@ export function AntiGrief(): JSX.Element {
         </>
     );
 }
-function AntiEscaping(): JSX.Element {
+function AntiEscaping(): JSX.Element | null {
     const user = useUser();
     const goban = useGoban();
     const [phase, setPhase] = React.useState(goban?.engine?.phase);
-    const [clock, setClock] = React.useState<JGOFClockWithTransmitting>(goban?.last_emitted_clock);
-    const [expiration, setExpiration] = React.useState<number>(null);
+    const [clock, setClock] = React.useState<JGOFClockWithTransmitting | undefined | null>(
+        goban?.last_emitted_clock,
+    );
+    const [expiration, setExpiration] = React.useState<number | undefined | null>(null);
     const [show, setShow] = React.useState(false);
 
     React.useEffect(() => {
@@ -221,10 +223,10 @@ function AntiEscaping(): JSX.Element {
     );
 }
 
-function AntiStalling(): JSX.Element {
+function AntiStalling(): JSX.Element | null {
     const user = useUser();
     const goban = useGoban();
-    const [estimate, setEstimate] = React.useState(null);
+    const [estimate, setEstimate] = React.useState<any>(null);
     const [phase, setPhase] = React.useState(goban?.engine?.phase);
 
     React.useEffect(() => {

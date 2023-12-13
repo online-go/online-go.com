@@ -182,12 +182,16 @@ try {
         global_channels[0].primary_language = true; /* default to english as primary */
     }
 
-    global_channels.sort((a, b) => a.sort_order - b.sort_order);
+    global_channels.sort((a, b) => (a.sort_order as number) - (b.sort_order as number));
 } catch (e) {
     console.error(e);
 }
 
 data.watch("user", (user) => {
+    if (!user) {
+        return;
+    }
+
     if (user.supporter && global_channels.filter((c) => c.id === "global-supporter").length === 0) {
         global_channels.splice(0, 0, {
             id: "global-supporter",
@@ -277,7 +281,7 @@ let last_proxy_id = 0;
 
 export function inGameModChannel(channel_or_game_id: string | number): boolean {
     const user = data.get("user");
-    if (!user.is_moderator) {
+    if (!user?.is_moderator) {
         return false;
     }
 
@@ -305,14 +309,14 @@ class ChatChannel extends TypedEventEmitter<Events> {
     has_unread = false;
     unread_ct = 0;
     mentioned = false;
-    user_list = {};
-    users_by_rank = [];
-    users_by_name = [];
+    user_list: { [k: string]: any } = {};
+    users_by_rank: any[] = [];
+    users_by_name: any[] = [];
     user_count = 0;
     rtl_mode = false;
     last_seen_timestamp: number;
     send_tokens = 5;
-    flood_protection: Timeout = null;
+    flood_protection: Timeout | null = null;
     topic: TopicMessage;
 
     constructor(channel: string, display_name: string) {
@@ -327,7 +331,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         ); /* don't notify for name matches within 10s of joining a channel */
 
         const user = data.get("user");
-        if (user.is_moderator && channel.startsWith("game-")) {
+        if (user?.is_moderator && channel.startsWith("game-")) {
             data.watch(
                 `moderator.join-game-publicly.${channel}`,
                 this.handleAnonymousOverride,
@@ -413,6 +417,11 @@ class ChatChannel extends TypedEventEmitter<Events> {
     }
 
     handleChat(obj: ChatMessage) {
+        if (!obj.message.i) {
+            console.error("Chat message missing uuid: ", obj);
+            return;
+        }
+
         if (obj.message.i in this.chat_ids) {
             return;
         }
@@ -595,7 +604,9 @@ class ChatChannel extends TypedEventEmitter<Events> {
                         "flood",
                     );
                 } else {
-                    clearInterval(this.flood_protection);
+                    if (this.flood_protection) {
+                        clearInterval(this.flood_protection);
+                    }
                     this.flood_protection = null;
                 }
             }, 1000);
@@ -625,11 +636,20 @@ class ChatChannel extends TypedEventEmitter<Events> {
             message: { i: _send_obj.uuid, t: Math.floor(Date.now() / 1000), m: text },
         };
         this.chat_log.push(obj);
-        this.chat_ids[obj.message.i] = true;
+        if (obj.message.i) {
+            this.chat_ids[obj.message.i] = true;
+        } else {
+            console.error("Chat message missing uuid: ", obj);
+        }
         this.emit("chat", obj);
     }
     public setTopic(topic: string) {
         const user = data.get("user");
+
+        if (!user) {
+            console.error("No user logged in");
+            return;
+        }
 
         socket.send("chat/topic", {
             channel: this.channel,

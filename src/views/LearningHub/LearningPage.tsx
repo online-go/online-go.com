@@ -93,7 +93,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         this.correct_answer_triggered = false;
         this.error_triggered = false;
         this.wrong_answer_triggered = false;
-        this.instructional_goban.reset();
+        this.instructional_goban?.reset();
         this.forceUpdate();
     };
 
@@ -112,7 +112,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
             sfx.play("tutorial-fail");
         }
         if (this.complete() || this.failed()) {
-            this.instructional_goban.goban.disableStonePlacement();
+            this.instructional_goban?.goban.disableStonePlacement();
         }
 
         this.setState({
@@ -128,13 +128,13 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         this.correct_answer_triggered = true;
         sfx.play("tutorial-pass");
         setTimeout(this.next, 1000);
-        this.instructional_goban.goban.disableStonePlacement();
+        this.instructional_goban?.goban.disableStonePlacement();
         this.forceUpdate();
     };
     onWrongAnswer = () => {
         this.wrong_answer_triggered = true;
         sfx.play("tutorial-fail");
-        this.instructional_goban.goban.disableStonePlacement();
+        this.instructional_goban?.goban.disableStonePlacement();
         this.forceUpdate();
     };
     onError = () => {
@@ -216,7 +216,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         this.instructional_goban = r;
         if (this.instructional_goban) {
             this.instructional_goban.goban.on("set-for-removal", () => {
-                this.onStoneRemoval(this.instructional_goban.goban.engine.getStoneRemovalString());
+                this.onStoneRemoval(this.instructional_goban!.goban.engine.getStoneRemovalString());
             });
             window["global_goban"] = r.goban;
         }
@@ -228,7 +228,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
     }
 
     render() {
-        const links = [];
+        const links: JSX.Element[] = [];
         for (let i = 0; i < this.props.npages; ++i) {
             if (i === this.props.curpage) {
                 links.push(

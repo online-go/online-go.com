@@ -25,11 +25,11 @@ interface ResizableProperties {
 }
 
 export class Resizable extends React.Component<ResizableProperties, {}> {
-    div: HTMLDivElement = null;
+    div: HTMLDivElement | null = null;
 
     last_width = 0;
     last_height = 0;
-    check_interval = null;
+    check_interval: ReturnType<typeof setInterval> | null = null;
 
     constructor(props) {
         super(props);
@@ -79,13 +79,17 @@ export class Resizable extends React.Component<ResizableProperties, {}> {
 
     componentDidMount() {
         const div = this.div;
-        this.last_width = div.clientWidth;
-        this.last_height = div.clientHeight;
+        if (div) {
+            this.last_width = div.clientWidth;
+            this.last_height = div.clientHeight;
+        }
         this.check_interval = setInterval(this.checkForResize, 50);
     }
 
     componentWillUnmount() {
-        clearInterval(this.check_interval);
+        if (this.check_interval) {
+            clearInterval(this.check_interval);
+        }
     }
 
     setref_div = (el) => (this.div = el);

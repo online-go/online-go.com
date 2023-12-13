@@ -368,8 +368,8 @@ export class Styling extends React.PureComponent<{}, any> {
                             <FabCheck />
                         </Card>
                         <Card>
-                            <button onClick={smalltoast}>Small toast</button>
-                            <button onClick={bigtoast}>Large toast</button>
+                            <button onClick={small_toast}>Small toast</button>
+                            <button onClick={big_toast}>Large toast</button>
                             <button onClick={swal_popup}>Sweet alert</button>
                         </Card>
                         <Card>
@@ -488,7 +488,7 @@ export class Styling extends React.PureComponent<{}, any> {
                     <h4>H4 - Some big fat text</h4>
                     <h5>H5 - Some big fat text</h5>
                     <hr />
-                    <p>Pargraph block</p>
+                    <p>Paragraph block</p>
                     <div>Normal text</div>
                     <div>
                         <Link to="/styling">Link text</Link>
@@ -524,14 +524,14 @@ export class Styling extends React.PureComponent<{}, any> {
     }
 }
 
-function smalltoast() {
+function small_toast() {
     toast(<div>Hello world!</div>);
 }
-function bigtoast() {
+function big_toast() {
     toast(
         <div>
             <h1>Big stuff</h1>
-            is comming to a place near you!
+            is coming to a place near you!
             <button onClick={() => alert.fire("HI")}> Click me </button>
         </div>,
     ).on("close", () => {

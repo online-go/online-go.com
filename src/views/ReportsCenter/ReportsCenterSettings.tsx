@@ -20,7 +20,7 @@ import { usePreference } from "preferences";
 import { report_categories } from "Report";
 import { Toggle } from "Toggle";
 
-const categories = [].concat(report_categories).concat([
+const categories = ([] as any[]).concat(report_categories).concat([
     {
         type: "appeal",
         title: "Appeals",

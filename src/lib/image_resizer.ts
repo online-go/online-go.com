@@ -60,7 +60,7 @@ export function image_resizer(
                 canvas.width = width;
                 canvas.height = height;
                 validateCanvas(canvas);
-                canvas.getContext("2d").drawImage(image, 0, 0, width, height);
+                canvas.getContext("2d")?.drawImage(image, 0, 0, width, height);
                 canvas.toBlob((blob: Blob) => {
                     const new_filename = file.name.replace(
                         /(\.[^\.]+)$/,

@@ -19,7 +19,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { TypedEventEmitterPureComponent } from "TypedEventEmitterPureComponent";
 
-let current_modal = null;
+let current_modal: any = null;
 
 let open_modal_cb: ((modal: Modal<any, any, any>) => void) | null = null;
 

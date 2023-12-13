@@ -119,7 +119,7 @@ export function openBlockPlayerControls(ev, user_id): PopOver {
 
     return popover({
         elt: <BlockPlayerModal playerId={user_id} />,
-        at: { x: offset.left, y: offset.top + elt.height() },
+        at: { x: offset?.left || 0, y: (offset?.top || 0) + elt.height() },
         minWidth: 300,
         minHeight: 50,
     });

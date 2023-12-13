@@ -19,7 +19,6 @@ import * as React from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import * as DynamicHelp from "react-dynamic-help";
-
 import * as data from "data";
 
 import { _, pgettext } from "translate";
@@ -163,7 +162,7 @@ export function NavBar(): JSX.Element {
                 (force_nav_close ? " force-nav-close" : "")
             }
         >
-            <KBShortcut shortcut="`" action={() => search_input.current.focus()} />
+            <KBShortcut shortcut="`" action={() => search_input.current?.focus()} />
 
             {banned_user_id && show_appeal_box ? <BanIndicator /> : null}
 

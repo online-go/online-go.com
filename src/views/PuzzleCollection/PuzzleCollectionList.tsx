@@ -46,7 +46,7 @@ export function PuzzleCollectionList(): JSX.Element {
                         source={`puzzles/collections/`}
                         orderBy={["-name"]}
                         filter={{
-                            owner: player_id,
+                            owner: player_id as string,
                         }}
                         groom={(arr) => {
                             for (const e of arr) {
@@ -65,11 +65,11 @@ export function PuzzleCollectionList(): JSX.Element {
                                 render: (X) => (
                                     <MiniGoban
                                         noLink
-                                        id={null}
+                                        id={undefined}
                                         json={X.starting_puzzle}
                                         displayWidth={64}
-                                        white={null}
-                                        black={null}
+                                        white={undefined}
+                                        black={undefined}
                                     />
                                 ),
                             },

@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* spell-checker: disable */
+
 import * as React from "react";
 import { pgettext, _, getLanguageFlag, interpolate } from "translate";
 import { Flag } from "Flag";
@@ -72,7 +74,7 @@ export const GoResources = () => {
     const cn = getLanguageFlag("chinese", country, "cn");
     const jp = getLanguageFlag("japanese", country, "jp");
     const kr = getLanguageFlag("korean", country, "kr");
-    const pt = getLanguageFlag("portugese", country, "pt");
+    const pt = getLanguageFlag("portuguese", country, "pt");
     const un = getLanguageFlag("un", country, "un");
     const us = getLanguageFlag("us", country, "us");
     const eu = getLanguageFlag("eu", country, "eu");

@@ -116,7 +116,7 @@ export const cached = {
             get("me/groups/invitations", { page_size: 100 })
                 .then((res) => {
                     const invitations = res.results.filter(
-                        (invite) => invite.user === data.get("user").id && invite.is_invitation,
+                        (invite) => invite.user === data.get("user")?.id && invite.is_invitation,
                     );
                     data.set(cached.group_invitations, invitations);
                 })
@@ -209,7 +209,9 @@ export const cached = {
 } as const;
 
 let current_user_id = 0;
-let refresh_debounce = setTimeout(refresh_all, 10);
+let refresh_debounce: ReturnType<typeof setTimeout> | null = setTimeout(refresh_all, 10);
+// return type of setTimeout
+
 function refresh_all() {
     refresh_debounce = null;
     cached.refresh.config();
@@ -222,6 +224,10 @@ function refresh_all() {
 }
 
 data.watch("user", (user) => {
+    if (!user) {
+        return;
+    }
+
     if (user.id !== current_user_id) {
         current_user_id = user.id;
         if (refresh_debounce) {

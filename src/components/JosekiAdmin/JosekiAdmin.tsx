@@ -90,7 +90,7 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
             filter_user_id: "",
             filter_position_id: "",
             filter_audit_type: "",
-            page_visits: null,
+            page_visits: undefined,
             daily_visits: [],
         };
     }
@@ -343,8 +343,9 @@ export class JosekiAdmin extends React.PureComponent<JosekiAdminProps, JosekiAdm
                     isSelected={(key) => {
                         const key_string = `select-${key}`;
                         const result =
-                            this.state.selections.has(key_string) &&
-                            this.state.selections.get(key_string);
+                            (this.state.selections.has(key_string) &&
+                                this.state.selections.get(key_string)) ||
+                            false;
                         //console.log(`check for ${key_string}:`, result);
                         return result;
                     }}

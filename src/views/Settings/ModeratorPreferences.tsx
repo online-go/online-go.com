@@ -23,7 +23,7 @@ import { Toggle } from "Toggle";
 import { SettingGroupPageProps, PreferenceLine } from "SettingsCommon";
 import { ReportsCenterSettings } from "ReportsCenter";
 
-export function ModeratorPreferences(_props: SettingGroupPageProps): JSX.Element {
+export function ModeratorPreferences(_props: SettingGroupPageProps): JSX.Element | null {
     const [incident_report_notifications, setIncidentReportNotifications] = usePreference(
         "notify-on-incident-report",
     );

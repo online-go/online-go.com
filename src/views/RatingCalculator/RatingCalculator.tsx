@@ -62,8 +62,8 @@ interface RatingCalcTableState {
     p2newdeviation: string[];
     p1newvolatility: string[];
     p2newvolatility: string[];
-    auto_black: PlayerCacheEntry;
-    auto_white: PlayerCacheEntry;
+    auto_black: PlayerCacheEntry | null;
+    auto_white: PlayerCacheEntry | null;
 }
 
 export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableState> {

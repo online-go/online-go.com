@@ -58,7 +58,10 @@ data.watch(cached.friends, (friends_arr) => {
     }
 });
 
-let extraActionCallback: (user_id: number, user: any) => JSX.Element = null;
+let extraActionCallback:
+    | ((user_id: number, user: any) => JSX.Element | null | undefined)
+    | null
+    | undefined;
 
 interface PlayerDetailsState {
     id?: PlayerCacheEntry["id"];
@@ -90,7 +93,7 @@ export class PlayerDetails extends React.PureComponent<
         this.resolve(this.props.playerId);
     }
 
-    blankState() {
+    blankState(): PlayerDetailsState {
         return {
             resolved: false,
             username: "...",
@@ -100,7 +103,7 @@ export class PlayerDetails extends React.PureComponent<
             rating: "...",
             ui_class: "...",
             country: "un",
-            error: null,
+            error: undefined,
         };
     }
     resolve(player_id: number) {
@@ -222,7 +225,7 @@ export class PlayerDetails extends React.PureComponent<
             .catch(errorAlerter);
     };
     removeSingleLine = () => {
-        const m = this.props.chatId.match(/^([gr]).([^.]+).([^.]+).(.+)/);
+        const m = this.props.chatId?.match(/^([gr]).([^.]+).([^.]+).(.+)/);
         if (m) {
             const game = m[1] === "g";
             const id = parseInt(m[2]);
@@ -245,7 +248,9 @@ export class PlayerDetails extends React.PureComponent<
                 });
             }
         } else {
-            socket.send("chat/remove", { uuid: this.props.chatId });
+            if (this.props.chatId) {
+                socket.send("chat/remove", { uuid: this.props.chatId });
+            }
         }
 
         this.close_all_modals_and_popovers();
@@ -288,10 +293,11 @@ export class PlayerDetails extends React.PureComponent<
                     <div
                         className="icon"
                         style={{
-                            backgroundImage: 'url("' + icon_size_url(this.state.icon, 64) + '")',
+                            backgroundImage:
+                                'url("' + icon_size_url(this.state.icon || "", 64) + '")',
                         }}
                     >
-                        <Flag country={this.state.country} />
+                        <Flag country={this.state.country || ""} />
                     </div>
                     <div className="player-info">
                         <div>
@@ -448,6 +454,6 @@ export class PlayerDetails extends React.PureComponent<
     }
 }
 
-export function setExtraActionCallback(cb: (user_id: number, user: any) => JSX.Element) {
+export function setExtraActionCallback(cb?: typeof extraActionCallback) {
     extraActionCallback = cb;
 }

@@ -33,7 +33,7 @@ const BUTTON_COUNTDOWN_TIME = 10000; // ms;
 export function AccountWarning() {
     const user = useUser();
     const location = useLocation();
-    const [warning, setWarning] = React.useState<rest_api.warnings.Warning>(null);
+    const [warning, setWarning] = React.useState<rest_api.warnings.Warning | null>(null);
 
     React.useEffect(() => {
         if (user && !user.anonymous && user.has_active_warning_flag) {
@@ -99,7 +99,7 @@ function MessageTextRender(props: MessageTextRenderProps): JSX.Element {
     } else {
         return (
             <AutoTranslate
-                source={props.warning.text.trim()}
+                source={props.warning.text?.trim()}
                 source_language={"en"}
                 markdown={true}
             />
@@ -132,14 +132,14 @@ function AckModal(props: WarningModalProps): JSX.Element {
 }
 
 function WarningModal(props: WarningModalProps): JSX.Element {
-    const [acceptTimer, setAcceptTimer] = React.useState(null);
-    const [boxChecked, setBoxChecked] = React.useState(false);
+    const [acceptTime, setAcceptTime] = React.useState<number>(0);
+    const [boxChecked, setBoxChecked] = React.useState<boolean>(false);
 
     React.useEffect(() => {
         if (props.warning) {
             const now = Date.now();
             const interval = setInterval(() => {
-                setAcceptTimer(BUTTON_COUNTDOWN_TIME - (Date.now() - now));
+                setAcceptTime(BUTTON_COUNTDOWN_TIME - (Date.now() - now));
                 if (Date.now() - now > BUTTON_COUNTDOWN_TIME) {
                     clearInterval(interval);
                 }
@@ -169,11 +169,11 @@ function WarningModal(props: WarningModalProps): JSX.Element {
 
                     <button
                         className="primary"
-                        disabled={acceptTimer > 0 || !boxChecked}
+                        disabled={acceptTime > 0 || !boxChecked}
                         onClick={props.accept}
                     >
                         {_("OK") +
-                            (acceptTimer > 0 ? " (" + Math.ceil(acceptTimer / 1000) + ")" : "")}
+                            (acceptTime > 0 ? " (" + Math.ceil(acceptTime / 1000) + ")" : "")}
                     </button>
                 </div>
             </div>

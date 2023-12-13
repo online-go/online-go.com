@@ -33,8 +33,8 @@ export class ErrcodeModal extends Modal<Events, ErrcodeModalProperties, any> {
     }
 
     render() {
-        let header = null;
-        let body = null;
+        let header: JSX.Element | null = null;
+        let body: JSX.Element | null = null;
 
         switch (this.props.message_id) {
             case "ai_review_queue_full":

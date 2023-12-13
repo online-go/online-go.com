@@ -46,9 +46,9 @@ export const defaults = {
     "dynamic-title": true,
     "function-keys-enabled": false,
     "game-list-threshold": 10,
-    "goban-theme-black": null,
-    "goban-theme-board": null,
-    "goban-theme-white": null,
+    "goban-theme-black": null as null | string,
+    "goban-theme-board": null as null | string,
+    "goban-theme-white": null as null | string,
     "hide-ranks": false,
     "label-positioning": "all" as LabelPosition,
     "label-positioning-puzzles": "all" as LabelPosition,
@@ -179,7 +179,11 @@ export function set<KeyT extends ValidPreference>(
     value: PreferencesType[KeyT],
     replication?: data.Replication,
 ): DataSchema[`preferences.${KeyT}`] {
-    return data.set(`preferences.${key}`, value as any, replication);
+    return data.set(
+        `preferences.${key}`,
+        value as any,
+        replication,
+    ) as DataSchema[`preferences.${KeyT}`];
 }
 export function watch<KeyT extends ValidPreference>(
     key: KeyT,

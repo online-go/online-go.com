@@ -62,7 +62,7 @@ export class MerchantLog extends React.PureComponent<{}, any> {
                         },
                         { header: "Status", render: (X) => X.response_status_code },
                         {
-                            header: "Reponse",
+                            header: "Response",
                             render: (X) => <pre>{clean_body(X.response_body)}</pre>,
                         },
                         {

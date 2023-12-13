@@ -155,7 +155,7 @@ const zero: LabeledTimeOption = {
 };
 
 function gen(min, max): LabeledTimeOption[] {
-    const ret = [];
+    const ret: any[] = [];
     for (let i = 0; i < times.length; ++i) {
         if (times[i] >= min && times[i] <= max) {
             ret.push({
@@ -400,15 +400,16 @@ export function lookingAtOurLiveGame(): boolean {
     }
     const player_id = goban.config.player_id;
 
-    return (
+    return !!(
         goban &&
         goban.engine.phase !== "finished" &&
         isLiveGame(goban.engine.time_control, goban.engine.width, goban.engine.height) &&
+        player_id &&
         goban.engine.isParticipant(player_id)
     );
 }
 
-export function isLiveGame(time_control: JGOFTimeControl | TimeControl, w?: number, h?: number) {
+export function isLiveGame(time_control: JGOFTimeControl | TimeControl, w: number, h: number) {
     const speed = classifyGameSpeed(time_control, w, h);
     return speed === "live" || speed === "blitz";
 }
@@ -533,7 +534,7 @@ export function getTimeOptions(
     system: TimeControlSystem,
     property: string, // Difficult to get this typed properly
 ): LabeledTimeOption[] {
-    return time_options[speed][system][property] ?? [];
+    return time_options?.[speed]?.[system]?.[property] ?? [];
 }
 
 export function getInputRange(

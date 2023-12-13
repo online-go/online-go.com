@@ -69,7 +69,7 @@ interface InternalChatLogProperties extends ChatLogProperties {
     inputPlaceholdertext?: string;
 }
 
-let deferred_chat_update: Timeout = null;
+let deferred_chat_update: Timeout | null = null;
 
 function saveSplitSizes(sizes: Array<number>): void {
     data.set("chat.split-sizes", sizes);
@@ -174,7 +174,7 @@ function ChannelTopic({
     showingUsers,
     showingGames,
     canShowGames,
-}: InternalChatLogProperties): JSX.Element {
+}: InternalChatLogProperties): JSX.Element | null {
     const user = useUser();
 
     const [editing, set_editing]: [boolean, (tf: boolean) => void] = useState(false as boolean);
@@ -185,7 +185,7 @@ function ChannelTopic({
     const [name, set_name]: [string, (tf: string) => void] = useState(channel);
     const [banner, set_banner]: [string, (s: string) => void] = useState("");
     const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] =
-        useState(null);
+        useState<ChatChannelProxy | null>(null);
     const [title_hover, set_title_hover]: [string, (s: string) => void] = useState("");
 
     const groups = data.get("cached.groups", []);
@@ -204,7 +204,7 @@ function ChannelTopic({
         resolveChannelInformation(channel)
             .then((info: ChannelInformation) => {
                 set_name(info.name);
-                if (info.group_id) {
+                if (info.group_id && info.banner) {
                     set_banner(info.banner);
                 }
             })
@@ -239,9 +239,11 @@ function ChannelTopic({
     );
 
     const partChannel = useCallback(() => {
-        const joined = data.get("chat.joined");
-        data.set("chat.active_channel", null);
-        delete joined[channel];
+        const joined = data.get("chat.joined", {});
+        data.set("chat.active_channel", undefined);
+        if (channel) {
+            delete joined[channel];
+        }
         data.set("chat.joined", joined);
 
         const parted_channels = data.get("chat.parted", {});
@@ -271,7 +273,7 @@ function ChannelTopic({
     const saveEdits = useCallback(() => {
         set_editing(false);
         if (topic_updated) {
-            proxy.channel.setTopic(topic);
+            proxy?.channel.setTopic(topic);
         }
     }, [topic, topic_updated, proxy]);
 
@@ -309,10 +311,13 @@ function ChannelTopic({
                     (showingGames ? (
                         <i
                             className="header-icon ogs-goban active"
-                            onClick={() => onShowGames(false)}
+                            onClick={() => onShowGames && onShowGames(false)}
                         />
                     ) : (
-                        <i className="header-icon ogs-goban" onClick={() => onShowGames(true)} />
+                        <i
+                            className="header-icon ogs-goban"
+                            onClick={() => onShowGames && onShowGames(true)}
+                        />
                     ))}
 
                 {editing && topic_editable ? (
@@ -371,10 +376,10 @@ function ChatLines({
     onShowUsers,
 }: InternalChatLogProperties): JSX.Element {
     const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;
-    const chat_log_div = useRef(null);
+    const chat_log_div = useRef<HTMLDivElement>(null);
     const [, refresh]: [number, (n: number) => void] = useState(0);
     const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] =
-        useState(null);
+        useState<ChatChannelProxy | null>(null);
 
     useEffect(() => {
         const proxy = chat_manager.join(channel);
@@ -426,7 +431,7 @@ function ChatLines({
     }, [channel]);
 
     const focusInput = useCallback((): void => {
-        if (window.getSelection() && window.getSelection().toString() !== "") {
+        if (window.getSelection()?.toString() !== "") {
             // don't focus input if we're selecting text
             return;
         }
@@ -506,7 +511,7 @@ function ChatInput({
     const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;
     const input = useRef(null);
     const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] =
-        useState(null);
+        useState<ChatChannelProxy | null>(null);
     const [show_say_hi_placeholder, set_show_say_hi_placeholder] = useState(true);
     const [channel_name, set_channel_name] = useState(cachedChannelInformation(channel)?.name);
 
@@ -522,7 +527,7 @@ function ChatInput({
     }, [channel]);
 
     const onKeyPress = useCallback(
-        (event: React.KeyboardEvent<HTMLInputElement>): boolean => {
+        (event: React.KeyboardEvent<HTMLInputElement>): boolean | undefined => {
             if (event.charCode === 13) {
                 const input = event.target as HTMLInputElement;
                 if (!socket.connected) {

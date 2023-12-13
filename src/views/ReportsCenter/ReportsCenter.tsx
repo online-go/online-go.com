@@ -57,7 +57,7 @@ for (let i = 0; i < report_categories.length; ++i) {
     category_priorities[report_categories[i].type] = i;
 }
 
-export function ReportsCenter(): JSX.Element {
+export function ReportsCenter(): JSX.Element | null {
     const user = useUser();
     const navigateTo = useNavigate();
     const refresh = useRefresh();

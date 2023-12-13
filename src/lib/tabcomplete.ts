@@ -99,7 +99,7 @@ function setCaretToPos(input, pos) {
 /* The rest of this code is my code */
 function matchName(input, nicknames) {
     const match = input.toLowerCase();
-    const matches = [];
+    const matches: string[] = [];
     const length = input.length;
     let letters = "";
     let letter;
@@ -142,7 +142,7 @@ function matchName(input, nicknames) {
 }
 
 function matchFullName(input, nicknames) {
-    const matches = [];
+    const matches: string[] = [];
     let i = 0;
     let letter;
     let letters = "";
@@ -197,7 +197,7 @@ function onKeyPress(e, options) {
 
             text = val.substr(0, sel.start);
             if (options.nick_match.test(text)) {
-                text = text.match(options.nick_match)[1];
+                text = (text.match(options.nick_match) as string[])[1];
 
                 if (typeof options.nicknames === "function") {
                     match = matchName(text, options.nicknames());
@@ -233,7 +233,7 @@ function onKeyPress(e, options) {
                 // Part of a crazy hack for Opera
                 this.lastKey = 9;
             } else if (/( |: )$/.test(text)) {
-                const space = text.match(/( |: )$/)[1];
+                const space = (text.match(/( |: )$/) as string[])[1];
                 text = text.substring(0, text.length - space.length);
                 if (typeof options.nicknames === "function") {
                     match = matchFullName(text, options.nicknames());

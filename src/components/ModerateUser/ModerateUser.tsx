@@ -122,7 +122,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
 
     deleteAccount = () => {
         const user_id = this.props.playerId;
-        const username = lookup(user_id)?.username || "";
+        const username = (user_id && lookup(user_id)?.username) || "";
 
         void alert
             .fire({

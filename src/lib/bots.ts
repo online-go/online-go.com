@@ -19,7 +19,7 @@ import { socket } from "sockets";
 import { getUserRating } from "rank_utils";
 
 let active_bots = {};
-let _bots_list = [];
+let _bots_list: any[] = [];
 
 export function bots() {
     return active_bots;

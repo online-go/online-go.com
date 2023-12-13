@@ -98,7 +98,7 @@ export class ObserveGamesComponent extends React.PureComponent<
         if (this.props.preferenceNamespace) {
             return data.get(
                 `observed-games.${this.props.preferenceNamespace}.${key}`,
-                preferences.get(key),
+                preferences.get(key as any),
             );
         }
         return preferences.get(key);
@@ -224,6 +224,9 @@ export class ObserveGamesComponent extends React.PureComponent<
                 channel: this.channel,
             },
             (res) => {
+                if (!res) {
+                    return;
+                }
                 // console.log("gamelist/query res:", res);
 
                 const state_update: any = {

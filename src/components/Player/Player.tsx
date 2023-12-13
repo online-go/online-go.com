@@ -75,8 +75,9 @@ export interface PlayerProperties {
 
 export function Player(props: PlayerProperties): JSX.Element {
     const user = data.get("user");
-    const player_id =
-        typeof props.user !== "object" ? props.user : props.user?.id || props.user?.player_id;
+    const player_id: number =
+        (typeof props.user !== "object" ? props.user : props.user?.id || props.user?.player_id) ||
+        0;
     const historical = props.historical;
     //const navigate = useNavigate();
 
@@ -84,13 +85,13 @@ export function Player(props: PlayerProperties): JSX.Element {
     const [player, set_player] = React.useState<PlayerObjectType | null>(
         typeof props.user === "object" ? props.user : null,
     );
-    const [has_notes, set_has_notes] = React.useState<boolean>(
-        player && !!data.get(`player-notes.${user.id}.${player.id}`),
+    const [has_notes, set_has_notes] = React.useState<boolean | null>(
+        (player?.id && user?.id && !!data.get(`player-notes.${user?.id}.${player?.id}`)) || false,
     );
 
     const elt_ref = React.useRef<HTMLSpanElement | HTMLAnchorElement>();
     const player_id_ref = React.useRef<number>(player_id);
-    const username_ref = React.useRef<string>();
+    const username_ref = React.useRef<string | null | undefined>(null);
 
     player_id_ref.current = player_id;
     username_ref.current = typeof props.user !== "object" ? null : props.user?.username;
@@ -100,7 +101,7 @@ export function Player(props: PlayerProperties): JSX.Element {
 
     React.useEffect(() => {
         if (!props.disableCacheUpdate) {
-            if (player && player.id > 0) {
+            if (player?.id && player.id > 0) {
                 player_cache.update(player);
             }
 
@@ -109,12 +110,12 @@ export function Player(props: PlayerProperties): JSX.Element {
                 player_cache
                     .fetch(player_id, ["username", "ui_class", "ranking", "pro"])
                     .then((player) => {
-                        if (player_id_ref.current === player.id) {
+                        if (player_id_ref.current === player?.id) {
                             set_player(player);
                         }
                     })
                     .catch((err: any) => {
-                        if (player_id_ref.current === player.id) {
+                        if (player_id_ref.current === player?.id) {
                             set_player({
                                 id: player_id,
                                 username: "?player" + player_id + "?",
@@ -130,14 +131,14 @@ export function Player(props: PlayerProperties): JSX.Element {
                 player_cache
                     .fetch_by_username(username, ["username", "ui_class", "ranking", "pro"])
                     .then((player) => {
-                        if (username_ref.current === player.username) {
+                        if (username_ref.current === player?.username) {
                             set_player(player);
                         }
                     })
                     .catch((err: any) => {
-                        if (username_ref.current === player.username) {
+                        if (username_ref.current === player?.username) {
                             set_player({
-                                id: null,
+                                id: 0,
                                 username: username,
                                 ui_class: "provisional",
                                 pro: false,
@@ -172,7 +173,9 @@ export function Player(props: PlayerProperties): JSX.Element {
 
         return () => {
             if (props.shownotesindicator) {
-                data.unwatch(`player-notes.${user.id}.${player.id}`, updateHasNotes);
+                if (user?.id && player?.id) {
+                    data.unwatch(`player-notes.${user.id}.${player.id}`, updateHasNotes);
+                }
             }
             if (props.online) {
                 online_status.subscribe(player_id, set_online);
@@ -184,13 +187,9 @@ export function Player(props: PlayerProperties): JSX.Element {
         if (!player) {
             return;
         }
+        const _player_id = player.id || player.player_id;
 
-        if (
-            props.nolink ||
-            player.anonymous ||
-            !(player.id || player.player_id) ||
-            (player.id || player.player_id) < 0
-        ) {
+        if (props.nolink || player.anonymous || !_player_id || _player_id < 0) {
             return;
         }
 
@@ -202,12 +201,12 @@ export function Player(props: PlayerProperties): JSX.Element {
         event.stopPropagation();
         event.preventDefault();
 
-        const player_id = player.id || player.player_id;
+        const player_id = (player.id || player.player_id) as number;
         if (shouldOpenNewTab(event)) {
             let uri = `/player/${player_id}`;
             const player = player_cache.lookup(player_id);
             if (player) {
-                uri += "/" + encodeURIComponent(unicodeFilter(player.username));
+                uri += "/" + encodeURIComponent(unicodeFilter(player?.username || ""));
             }
             window.open(uri, "_blank");
         } else if (props.nodetails) {
@@ -217,9 +216,9 @@ export function Player(props: PlayerProperties): JSX.Element {
             //navigate(`/player/${player_id}/`);
             return;
         } else {
-            let chat_id = null;
+            let chat_id: string | null = null;
             try {
-                let cur = $(elt_ref.current);
+                let cur = $(elt_ref.current as HTMLElement);
 
                 while (cur && cur[0].nodeName !== "BODY") {
                     chat_id = cur.attr("data-chat-id");
@@ -238,7 +237,7 @@ export function Player(props: PlayerProperties): JSX.Element {
                         playerId={player_id}
                         noextracontrols={props.noextracontrols}
                         nochallenge={props.nochallenge}
-                        chatId={chat_id}
+                        chatId={chat_id || undefined}
                     />
                 ),
                 below: elt_ref.current,
@@ -269,7 +268,7 @@ export function Player(props: PlayerProperties): JSX.Element {
     }
 
     const nolink = !!props.nolink;
-    let rank: JSX.Element = null;
+    let rank: JSX.Element | null = null;
 
     const main_attrs: any = {
         className: "Player",
@@ -306,7 +305,7 @@ export function Player(props: PlayerProperties): JSX.Element {
 
         if (combined.pro || combined.professional) {
             rank_text = rankString(combined);
-        } else if (rating.unset && (combined.rank > 0 || combined.ranking > 0)) {
+        } else if (rating.unset && ((combined.rank || 0) > 0 || (combined.ranking || 0) > 0)) {
             /* This is to support displaying archived chat lines */
             rank_text = rankString(combined);
         } else if (rating.deviation >= PROVISIONAL_RATING_CUTOFF) {
@@ -328,7 +327,7 @@ export function Player(props: PlayerProperties): JSX.Element {
         main_attrs.className += is_online ? " online" : " offline";
     }
 
-    const username_string = unicodeFilter(combined.username || combined.name);
+    const username_string = unicodeFilter(combined.username || combined.name || "<error>");
     const username = <span className="Player-username">{username_string}</span>;
 
     const player_note_indicator =
@@ -343,7 +342,9 @@ export function Player(props: PlayerProperties): JSX.Element {
         return (
             <span ref={elt_ref} {...main_attrs} onClick={display_details}>
                 {(props.icon || null) && <PlayerIcon user={combined} size={props.iconSize || 16} />}
-                {(props.flag || null) && <Flag country={combined.country} />}
+                {((props.flag && combined.country) || null) && (
+                    <Flag country={combined.country as string} />
+                )}
                 {username}
                 {rank}
                 {player_note_indicator}
@@ -360,7 +361,9 @@ export function Player(props: PlayerProperties): JSX.Element {
                     {(props.icon || null) && (
                         <PlayerIcon user={combined} size={props.iconSize || 16} />
                     )}
-                    {(props.flag || null) && <Flag country={combined.country} />}
+                    {((props.flag && combined.country) || null) && (
+                        <Flag country={combined.country as string} />
+                    )}
                     {username}
                     {rank}
                 </a>

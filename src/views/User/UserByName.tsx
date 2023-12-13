@@ -22,9 +22,9 @@ import * as player_cache from "player_cache";
 import { useParams } from "react-router-dom";
 import { User } from "./User";
 
-export function UserByName(): JSX.Element {
+export function UserByName(): JSX.Element | null {
     const { username } = useParams();
-    const [user_id, set_user_id] = React.useState<number>(null);
+    const [user_id, set_user_id] = React.useState<number>();
 
     const doFetch = (username: string) => {
         get("players", { username: username })
@@ -45,7 +45,9 @@ export function UserByName(): JSX.Element {
             return;
         }
 
-        doFetch(username);
+        if (username) {
+            doFetch(username);
+        }
     }, [username]);
 
     if (user_id) {

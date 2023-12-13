@@ -142,7 +142,7 @@ export function GamePreferences(): JSX.Element {
         <div>
             <PreferenceLine
                 title={
-                    _("Game-control-dock pop-out delay") // translators: This is the text under settings for controling the slide out delay of the list of game buttons in the game (pause, review, sgf link, etc...)
+                    _("Game-control-dock pop-out delay") // translators: This is the text under settings for controlling the slide out delay of the list of game buttons in the game (pause, review, sgf link, etc...)
                 }
             >
                 <input

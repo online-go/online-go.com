@@ -72,7 +72,7 @@ interface GroomedGame {
 }
 
 export function GameHistoryTable(props: GameHistoryProps) {
-    const [player_filter, setPlayerFilter] = React.useState<number>(null);
+    const [player_filter, setPlayerFilter] = React.useState<number>();
     const [game_history_board_size_filter, setGameHistoryBoardSizeFilter] = React.useState<string>(
         preferences.get("game-history-size-filter"),
     );
@@ -86,7 +86,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
 
     const user = useUser();
 
-    function getBoardSize(size_filter: string): number {
+    function getBoardSize(size_filter: string): number | undefined {
         switch (size_filter) {
             case "9x9":
                 return 9;
@@ -140,7 +140,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
     }
 
     function game_history_groomer(results: rest_api.Game[]): GroomedGame[] {
-        const ret = [];
+        const ret: GroomedGame[] = [];
         for (let i = 0; i < results.length; ++i) {
             const r = results[i];
 
@@ -153,7 +153,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
 
             item.width = r.width;
             item.height = r.height;
-            item.date = r.ended ? new Date(r.ended) : null;
+            item.date = r.ended ? new Date(r.ended) : undefined;
             item.annulled = r.annulled || false;
             item.ranked = r.ranked;
 
@@ -173,7 +173,9 @@ export function GameHistoryTable(props: GameHistoryProps) {
             }
 
             if (r.rengo) {
-                item.rengo_vs_text = `${r.rengo_black_team.length} vs. ${r.rengo_white_team.length}`;
+                item.rengo_vs_text = `${r.rengo_black_team?.length ?? -1} vs. ${
+                    r.rengo_white_team?.length ?? -1
+                }`;
             }
 
             item.result_class = getResultClass(r, props.user_id);
@@ -188,12 +190,12 @@ export function GameHistoryTable(props: GameHistoryProps) {
                 item.name = item.href;
             }
 
-            item.href = `/game/${item.id}`;
+            item.href = `/game/${item.id as number}`;
             item.result = getGameResultRichText(r);
             item.flags = r.flags && props.user_id in r.flags ? r.flags[props.user_id] : undefined;
-            item.bot_detection_results = r.bot_detection_results;
+            item.bot_detection_results = r.bot_detection_results ?? undefined;
 
-            ret.push(item);
+            ret.push(item as GroomedGame);
         }
         return ret;
     }
@@ -311,7 +313,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                         filter={{
                             source: "play",
                             ended__isnull: false,
-                            ...(player_filter !== null && {
+                            ...(player_filter !== undefined && {
                                 alt_player: player_filter,
                             }),
                             ...(game_history_board_size_filter !== "all" && {
@@ -371,7 +373,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                         {X.rengo_vs_text ? (
                                             <strong>{X.rengo_vs_text}</strong>
                                         ) : (
-                                            <Player user={X.opponent} disableCacheUpdate />
+                                            <Player user={X.opponent as any} disableCacheUpdate />
                                         )}
                                     </>
                                 ),
@@ -552,10 +554,10 @@ function getSpeedClass(speed: Speed) {
 
 function playedBlack(game: rest_api.Game, user_id: number) {
     if (game.rengo) {
-        if (game.rengo_black_team.indexOf(user_id) !== -1) {
+        if (game.rengo_black_team?.indexOf(user_id) !== -1) {
             return true;
         }
-        if (game.rengo_white_team.indexOf(user_id) !== -1) {
+        if (game.rengo_white_team?.indexOf(user_id) !== -1) {
             return false;
         }
     }
