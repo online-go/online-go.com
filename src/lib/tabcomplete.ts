@@ -219,8 +219,8 @@ function onKeyPress(e, options) {
                         match.matches.length > 1 || (last.length && last.substr(0, 1) === " ")
                             ? ""
                             : first.trim().length === 0
-                            ? ": "
-                            : " ";
+                              ? ": "
+                              : " ";
                     $this.val(first + match.value + space + last);
                     setCaretToPos(
                         this,

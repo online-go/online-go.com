@@ -278,22 +278,22 @@ export function GameChat(props: GameChatProperties): JSX.Element {
                         user.anonymous
                             ? _("Sign in to chat")
                             : !data.get("user").email_validated
-                            ? _("Chat will be enabled once your email address has been validated")
-                            : selected_chat_log === "malkovich"
-                            ? pgettext(
-                                  "Malkovich logs are only visible after the game has ended",
-                                  "Visible after the game",
-                              )
-                            : selected_chat_log === "personal"
-                            ? _("Visible only to you")
-                            : selected_chat_log === "moderator"
-                            ? "Message players as a moderator"
-                            : selected_chat_log === "hidden"
-                            ? "Visible only to moderators"
-                            : pgettext(
-                                  "This is the placeholder text for the chat input field in games, chat channels, and private messages",
-                                  interpolate("Message {{who}}", { who: "..." }),
-                              )
+                              ? _("Chat will be enabled once your email address has been validated")
+                              : selected_chat_log === "malkovich"
+                                ? pgettext(
+                                      "Malkovich logs are only visible after the game has ended",
+                                      "Visible after the game",
+                                  )
+                                : selected_chat_log === "personal"
+                                  ? _("Visible only to you")
+                                  : selected_chat_log === "moderator"
+                                    ? "Message players as a moderator"
+                                    : selected_chat_log === "hidden"
+                                      ? "Visible only to moderators"
+                                      : pgettext(
+                                            "This is the placeholder text for the chat input field in games, chat channels, and private messages",
+                                            interpolate("Message {{who}}", { who: "..." }),
+                                        )
                     }
                     onKeyPress={onKeyPress}
                     onFocus={() => setShowQuickChat(false)}
@@ -504,8 +504,8 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
                 {"move_number" in (line as any)
                     ? line.move_number
                     : "moves" in line
-                    ? line.from + (line.moves.length ? " + " + line.moves.length / 2 : "")
-                    : ""}
+                      ? line.from + (line.moves.length ? " + " + line.moves.length / 2 : "")
+                      : ""}
             </LineText>
         );
     }

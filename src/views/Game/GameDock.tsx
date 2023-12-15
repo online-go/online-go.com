@@ -338,8 +338,8 @@ export function GameDock({
                             (volume === 0
                                 ? "fa-volume-off"
                                 : volume > 0.5
-                                ? "fa-volume-up"
-                                : "fa-volume-down")
+                                  ? "fa-volume-up"
+                                  : "fa-volume-down")
                         }
                         onClick={toggleVolume}
                     />{" "}
