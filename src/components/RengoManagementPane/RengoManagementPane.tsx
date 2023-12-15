@@ -83,8 +83,8 @@ export function RengoManagementPane(props: RengoManagementPaneProperties): JSX.E
                     {own_challenge && challenge_ready_to_start && !the_challenge.rengo_auto_start
                         ? _("Waiting for your decision to start...")
                         : challenge_ready_to_start && !the_challenge.rengo_auto_start
-                        ? _("Waiting for organiser to start...")
-                        : _("Waiting for Rengo players...")}
+                          ? _("Waiting for organiser to start...")
+                          : _("Waiting for Rengo players...")}
                 </span>
                 <span className="challenge-created-at">(created: {created_at})</span>
             </div>

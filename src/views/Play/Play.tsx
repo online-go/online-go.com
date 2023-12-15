@@ -572,8 +572,8 @@ export class Play extends React.Component<{}, PlayState> {
                                         {m.handicap.condition === "no-preference"
                                             ? pgettext("Automatch: no preference", "No preference")
                                             : m.handicap.value === "enabled"
-                                            ? pgettext("Handicap dnabled", "Enabled")
-                                            : pgettext("Handicap disabled", "Disabled")}
+                                              ? pgettext("Handicap dnabled", "Enabled")
+                                              : pgettext("Handicap disabled", "Disabled")}
                                     </span>
 
                                     <span className={m.rules.condition + " cell"}>

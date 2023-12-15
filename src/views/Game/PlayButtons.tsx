@@ -213,8 +213,8 @@ export function CancelButton({ className = "" }: CancelButtonProps) {
             resign_mode === "cancel"
                 ? _("Are you sure you wish to cancel this game?")
                 : dropping_from_casual_rengo
-                ? _("Are you sure you want to abandon your team?")
-                : _("Are you sure you wish to resign this game?");
+                  ? _("Are you sure you want to abandon your team?")
+                  : _("Are you sure you wish to resign this game?");
         const cb = resign_mode === "cancel" ? () => goban.cancelGame() : () => goban.resign();
 
         void alert

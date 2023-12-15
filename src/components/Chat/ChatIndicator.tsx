@@ -150,8 +150,8 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
                     (this.state.mentioned
                         ? " mentioned"
                         : this.state.unread_ct > 0
-                        ? " unread"
-                        : "")
+                          ? " unread"
+                          : "")
                 }
             >
                 {(this.state.show_empty_notification ||

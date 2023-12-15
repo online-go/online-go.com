@@ -345,8 +345,8 @@ export function GameHistoryTable(props: GameHistoryProps) {
                                             {X.played_black == null
                                                 ? "❓" // Some rengo games don't tell us which team the user is on. Needs backend fix.
                                                 : X.played_black
-                                                ? "⚫"
-                                                : "⚪"}
+                                                  ? "⚫"
+                                                  : "⚪"}
                                         </span>
                                         {X.played_black != null &&
                                             maskedRank(`[${rankString(X.player)}]`)}

@@ -894,8 +894,8 @@ export class SeekGraph extends TypedEventEmitter<Events> {
                 (C.handicap === 0
                     ? ", " + _("no handicap")
                     : C.handicap < 0
-                    ? ""
-                    : interpolate(_(", %s handicap"), [C.handicap])) +
+                      ? ""
+                      : interpolate(_(", %s handicap"), [C.handicap])) +
                 (C.disable_analysis ? ", " + _("analysis disabled") : "");
             if (C.challenger_color !== "automatic") {
                 let your_color = "";
