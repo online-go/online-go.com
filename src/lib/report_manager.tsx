@@ -213,7 +213,7 @@ class ReportManager extends EventEmitter<Events> {
             }
 
             // we can always see our own reports
-            if (user.id === report.reporting_user.id) {
+            if (user.id === report.reporting_user?.id) {
                 return true;
             }
 
