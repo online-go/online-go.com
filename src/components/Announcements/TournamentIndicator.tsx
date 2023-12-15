@@ -30,7 +30,7 @@ export function TournamentIndicator(): JSX.Element | null {
 
     React.useEffect((): (() => void) | void => {
         if (enabled) {
-            const onActiveTournament = (tournament) => {
+            const onActiveTournament = (tournament: any) => {
                 setTournament(tournament);
             };
             data.watch("active-tournament", onActiveTournament);

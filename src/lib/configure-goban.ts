@@ -23,9 +23,9 @@ import { current_language } from "translate";
 import { Goban, GobanCore, GoEngine, GoThemes } from "goban";
 import { sfx } from "sfx";
 
-window["Goban"] = Goban;
-window["GoThemes"] = GoThemes;
-window["GoEngine"] = GoEngine;
+(window as any)["Goban"] = Goban;
+(window as any)["GoThemes"] = GoThemes;
+(window as any)["GoEngine"] = GoEngine;
 
 data.setDefault("custom.black", "#000000");
 data.setDefault("custom.white", "#FFFFFF");

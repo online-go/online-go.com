@@ -19,7 +19,7 @@ import * as React from "react";
 import { ObserveGamesComponent } from "ObserveGamesComponent";
 
 export class ObserveGames extends React.PureComponent {
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
     }
 

@@ -29,7 +29,7 @@ interface ReportedConversationModalProps {
 interface Events {}
 
 export class ReportedConversationModal extends Modal<Events, ReportedConversationModalProps, any> {
-    constructor(props) {
+    constructor(props: ReportedConversationModalProps) {
         super(props);
     }
 

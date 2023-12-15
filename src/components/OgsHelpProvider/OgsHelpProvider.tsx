@@ -72,9 +72,9 @@ export function OgsHelpProvider(props: OgsHelpProviderProps): JSX.Element {
             }
         },
         getState: (defaultValue?: string) => {
-            const newstate = data.get("rdh-system-state", defaultValue || "");
-            debugDynamicHelp && console.log("Read rdhState", user.username, user.id, newstate);
-            return newstate;
+            const new_state = data.get("rdh-system-state", defaultValue || "");
+            debugDynamicHelp && console.log("Read rdhState", user.username, user.id, new_state);
+            return new_state;
         },
     };
 

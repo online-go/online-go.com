@@ -17,14 +17,15 @@
 
 import { socket } from "sockets";
 import { getUserRating } from "rank_utils";
+import { User } from "goban/lib/protocol";
 
-let active_bots = {};
-let _bots_list: any[] = [];
+let active_bots: { [id: number]: User } = {};
+let _bots_list: User[] = [];
 
 export function bots() {
     return active_bots;
 }
-export function bots_list(): Array<any> {
+export function bots_list(): Array<User> {
     return _bots_list;
 }
 export function one_bot() {
@@ -37,7 +38,7 @@ export function bot_count() {
     return Object.keys(active_bots).length;
 }
 
-socket.on("active-bots", (bots) => {
+socket.on("active-bots", (bots: { [id: number]: User }) => {
     active_bots = bots;
     _bots_list = [];
     for (const id in bots) {

@@ -119,13 +119,13 @@ export function OnlineLeaguePlayerLanding(): JSX.Element {
         set_im_ready(!im_ready);
     };
 
-    const jumpToGame = (details) => {
+    const jumpToGame = (details: any) => {
         if (details.matchId === match?.id) {
             navigate(`/game/${details.gameId}`, { replace: true });
         }
     };
 
-    const updateWaitingStatus = (details) => {
+    const updateWaitingStatus = (details: any) => {
         if (details.matchId === match?.id && match) {
             set_match({ ...match, black_ready: details.black, white_ready: details.white });
         }

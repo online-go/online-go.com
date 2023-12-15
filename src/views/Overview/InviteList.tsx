@@ -286,7 +286,7 @@ export function InviteList(): JSX.Element {
                                     )}
                                 </div>
                             </div>
-                            <div>{challenge_text_description(challenge)}</div>
+                            <div>{challenge_text_description(challenge as any)}</div>
                         </Card>
                     );
                 })}

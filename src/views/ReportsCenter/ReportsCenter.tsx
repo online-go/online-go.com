@@ -66,7 +66,7 @@ export function ReportsCenter(): JSX.Element | null {
     const category = params["category"] || "all";
 
     const reports = report_manager.getAvailableReports();
-    const counts = {};
+    const counts: any = {};
     for (const report of reports) {
         counts[report.report_type] = (counts[report.report_type] || 0) + 1;
         counts["all"] = (counts["all"] || 0) + 1;
@@ -115,7 +115,7 @@ export function ReportsCenter(): JSX.Element | null {
         };
     }, [category, report_id]);
 
-    const setCategory = React.useCallback((category) => {
+    const setCategory = React.useCallback((category: string) => {
         navigateTo(`/reports-center/${category}`);
     }, []);
 

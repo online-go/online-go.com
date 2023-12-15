@@ -155,7 +155,7 @@ type Challenge = socket_api.seekgraph_global.Challenge;
 type RengoParticipantsDTO = rest_api.RengoParticipantsDTO;
 
 export async function balanceTeams(challenge: Challenge): Promise<RengoParticipantsDTO> {
-    const user_id = (p) => p.user_id;
+    const user_id = (p: Participant) => p.user_id;
     const participants = await toParticipants(challenge.rengo_participants);
     const result = autoBalance(participants);
 

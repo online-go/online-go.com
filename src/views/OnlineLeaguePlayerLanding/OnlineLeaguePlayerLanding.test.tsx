@@ -258,7 +258,7 @@ describe("COOL Player landing tests", () => {
 
         // We need to update the opponent status when the server tells us
         await act(async () => {
-            uiPushActions["online-league-game-waiting"]({
+            (uiPushActions as any)["online-league-game-waiting"]({
                 matchId: 1,
                 black: false,
                 white: true,
@@ -270,7 +270,7 @@ describe("COOL Player landing tests", () => {
 
         // And go to game when the server tells us
         await act(async () => {
-            uiPushActions["online-league-game-commencement"]({
+            (uiPushActions as any)["online-league-game-commencement"]({
                 matchId: 1,
                 gameId: 999,
             });

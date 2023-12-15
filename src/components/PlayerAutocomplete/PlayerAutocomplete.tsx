@@ -45,7 +45,10 @@ export const PlayerAutocomplete = React.forwardRef<
     PlayerAutocompleteProperties
 >(_PlayerAutocomplete);
 
-function _PlayerAutocomplete(props: PlayerAutocompleteProperties, ref): JSX.Element {
+function _PlayerAutocomplete(
+    props: PlayerAutocompleteProperties,
+    ref: React.ForwardedRef<PlayerAutocompleteRef>,
+): JSX.Element {
     const [value, setValue]: [string, (x: string) => void] = React.useState(
         player_cache.lookup(props.playerId || 0)?.username || "",
     );

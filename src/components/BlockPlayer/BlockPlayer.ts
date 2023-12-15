@@ -35,8 +35,8 @@ export class BlockState {
     }
 }
 
-const ignores: { [player_id: number]: boolean } = {};
-let block_states: { [player_id: number]: BlockState } = {};
+const ignores: { [player_id: number | string]: boolean } = {};
+let block_states: { [player_id: number | string]: BlockState } = {};
 
 export function setIgnore(player_id: number, tf: boolean) {
     if (tf) {
@@ -91,11 +91,11 @@ export function getBlocks(player_id: number): BlockState {
 }
 
 export function getAllBlocks(): BlockState[] {
-    return Object.keys(block_states).map((k) => block_states[k]);
+    return Object.keys(block_states).map((k: number | string) => block_states[k]);
 }
 
 export function getAllBlocksWithUsernames(): Promise<BlockState[]> {
-    const ret = Object.keys(block_states).map((k) => block_states[k]);
+    const ret: BlockState[] = Object.keys(block_states).map((k) => block_states[k]);
 
     return Promise.all(
         ret
@@ -106,16 +106,16 @@ export function getAllBlocksWithUsernames(): Promise<BlockState[]> {
                     .then((player) => (bs.username = player.username)),
             ),
     ).then(() => {
-        ret.sort((a, b) => a.username.localeCompare(b.username));
+        ret.sort((a, b) => a.username?.localeCompare(b.username ?? "") ?? 0);
         return ret;
     });
 }
 
-export function player_is_ignored(user_id) {
+export function player_is_ignored(user_id: number) {
     return user_id in ignores;
 }
 
-function ignoreUser(uid, dont_fetch = false) {
+function ignoreUser(uid: number, dont_fetch = false) {
     if (dont_fetch) {
         ignores[uid] = true;
         $(
@@ -139,7 +139,7 @@ function ignoreUser(uid, dont_fetch = false) {
             .catch(errorLogger);
     }
 }
-function unIgnoreUser(uid) {
+function unIgnoreUser(uid: number) {
     delete ignores[uid];
     $(
         "<style type='text/css'> .chat-user-" + uid + " { display: block !important; } </style>",
@@ -163,12 +163,12 @@ data.watch(cached.blocks, (blocks: BlockState[]) => {
 
         for (const uid in new_ignores) {
             if (!(uid in ignores)) {
-                ignoreUser(uid, true);
+                ignoreUser(Number(uid), true);
             }
         }
         for (const uid in ignores) {
             if (!(uid in new_ignores)) {
-                unIgnoreUser(uid);
+                unIgnoreUser(Number(uid));
             }
         }
     } catch (e) {

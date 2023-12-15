@@ -110,7 +110,7 @@ export function ModerationActionSelector({
                             value={a}
                             onChange={updateSelectedAction}
                         />
-                        <label htmlFor={a}>{ACTION_PROMPTS[a]}</label>
+                        <label htmlFor={a}>{(ACTION_PROMPTS as any)[a]}</label>
                     </div>
                 ))}
             {((action_choices && enable) || null) && (

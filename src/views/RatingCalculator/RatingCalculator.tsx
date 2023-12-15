@@ -122,7 +122,7 @@ export class RatingCalculatorTable extends React.Component<{}, RatingCalcTableSt
         );
     }
 
-    setHandicap(event) {
+    setHandicap(event: React.ChangeEvent<HTMLInputElement>) {
         if (
             event.target.value !== "" &&
             !isNaN(Number(event.target.value)) &&

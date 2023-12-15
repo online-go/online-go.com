@@ -21,7 +21,7 @@ import { lookingAtOurLiveGame } from "TimeControl/util";
 
 const debug = new Debug("sockets");
 
-export const socket = new GobanSocket(window["websocket_host"] ?? window.location.origin);
+export const socket = new GobanSocket((window as any)["websocket_host"] ?? window.location.origin);
 
 // Updated to be more helpful (shorter) when we know latencies
 socket.options.ping_interval = 10000;
@@ -36,7 +36,7 @@ const MAX_TIMEOUT_DELAY = 14000;
 export let ai_host = "http://localhost:13284";
 if (
     window.location.hostname.indexOf("dev.beta") >= 0 &&
-    window["websocket_host"] === "https://online-go.com"
+    (window as any)["websocket_host"] === "https://online-go.com"
 ) {
     // if we're developing locally but connecting to the production system, use our local system for estimation
     ai_host = `http://localhost:13284`;
@@ -95,7 +95,7 @@ socket.on("latency", (latency, drift) => {
     // If they are playing a live game at the moment, work out what timing they would like
     // us to make sure that they have...
     if (lookingAtOurLiveGame()) {
-        const goban = window["global_goban"] as Goban;
+        const goban = (window as any)["global_goban"] as Goban;
         const time_control = goban.engine.time_control as JGOFTimeControl;
         switch (time_control.system) {
             case "fischer":

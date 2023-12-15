@@ -23,7 +23,7 @@ import { profanity_filter } from "profanity_filter";
 import { localize_time_strings } from "localize-time";
 
 interface MarkdownProps {
-    source: string;
+    source?: string;
     className?: string;
 }
 
@@ -35,7 +35,7 @@ const md = markdownit({
     typographer: true,
 });
 
-function sanitize(src) {
+function sanitize(src: string) {
     return sanitizeHtml(src, {
         allowedTags: [
             "a",
@@ -186,7 +186,7 @@ function sanitize(src) {
 // this component is protected from calling sanitizeHtml to often by memoising, below.
 
 class _Markdown extends React.PureComponent<MarkdownProps, MarkdownState> {
-    constructor(props) {
+    constructor(props: MarkdownProps) {
         super(props);
         this.state = {};
     }

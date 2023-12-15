@@ -29,7 +29,7 @@ interface ThrobberState {
 export class Throbber extends React.PureComponent<ThrobberProps, ThrobberState> {
     throb_delay_timer: any;
 
-    constructor(props) {
+    constructor(props: ThrobberProps) {
         super(props);
         this.state = {
             throbbing: this.props.throb,
@@ -41,7 +41,7 @@ export class Throbber extends React.PureComponent<ThrobberProps, ThrobberState> 
         this.setState({ throbbing: true });
     };
 
-    componentDidUpdate = (prevProps, prevState) => {
+    componentDidUpdate = (prevProps: ThrobberProps, prevState: ThrobberState) => {
         // console.log("throb request", this.props.throb);
         if (this.props.throb) {
             if (!prevState.throbbing) {

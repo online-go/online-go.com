@@ -18,4 +18,4 @@
 import { createBrowserHistory } from "history";
 
 export const browserHistory = createBrowserHistory();
-window["browserHistory"] = browserHistory;
+(window as any)["browserHistory"] = browserHistory;

@@ -38,7 +38,7 @@ export class JosekiPermissionsPanel extends React.PureComponent<
     JosekiAdminProps,
     JosekiAdminState
 > {
-    constructor(props) {
+    constructor(props: JosekiAdminProps) {
         super(props);
         this.state = {
             userid: "",
@@ -49,7 +49,7 @@ export class JosekiPermissionsPanel extends React.PureComponent<
         };
     }
 
-    onUserIdChange = (e) => {
+    onUserIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const new_id = e.target.value;
         if (!/^\d*$/.test(new_id)) {
             return;
@@ -72,25 +72,25 @@ export class JosekiPermissionsPanel extends React.PureComponent<
             });
     };
 
-    onCommentChange = (e) => {
+    onCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         this.updatePermission("can_comment", e.target.checked);
     };
 
-    onEditChange = (e) => {
+    onEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         this.updatePermission("can_edit", e.target.checked);
     };
 
-    onAdminChange = (e) => {
+    onAdminChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         this.updatePermission("can_admin", e.target.checked);
     };
 
-    updatePermission = (permission: keyof JosekiAdminState, value) => {
+    updatePermission = (permission: keyof JosekiAdminState, value: boolean) => {
         this.setState({
             [permission]: value,
             throb: true,
-        } as JosekiAdminState);
+        } as any);
 
-        const new_permissions = {
+        const new_permissions: any = {
             can_comment: this.state.can_comment,
             can_edit: this.state.can_edit,
             can_admin: this.state.can_admin,

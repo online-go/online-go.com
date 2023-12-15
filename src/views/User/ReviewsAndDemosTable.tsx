@@ -32,7 +32,7 @@ interface ReviewsAndDemosProps {
 export function ReviewsAndDemosTable(props: ReviewsAndDemosProps): JSX.Element {
     const [alt_player, setAltPlayer] = React.useState<number>();
 
-    const review_history_groomer = (results) => {
+    const review_history_groomer = (results: any) => {
         const ret: any[] = [];
 
         for (let i = 0; i < results.length; ++i) {

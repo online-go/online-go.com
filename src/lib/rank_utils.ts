@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { User } from "goban/lib/protocol";
 import { _, interpolate, pgettext } from "translate";
 
 export interface IRankInfo {
@@ -56,7 +57,8 @@ interface CompactRatingType {
     volatility: number;
 }
 interface RatingsType {
-    overall: CompactRatingType;
+    overall?: CompactRatingType;
+    [key: string]: CompactRatingType | undefined;
 }
 
 interface UserType {
@@ -66,7 +68,7 @@ interface UserType {
     professional?: boolean;
     ratings?: RatingsType;
 }
-type UserOrRank = UserType | number;
+type UserOrRank = UserType | rest_api.UserConfig | number;
 
 /** Returns the Glicko2 rating corresponding to OGS rank. */
 export function rank_to_rating(rank: number): number {
@@ -89,7 +91,7 @@ export function rank_deviation(rating: number, deviation: number): number {
 export function get_handicap_adjustment(rating: number, handicap: number): number {
     return rank_to_rating(rating_to_rank(rating) + handicap) - rating;
 }
-function overall_rank(user_or_rank: UserOrRank): number {
+function overall_rank(user_or_rank: UserOrRank | rest_api.FullPlayerDetail["user"]): number {
     let rank: number;
     if (typeof user_or_rank === "number") {
         rank = user_or_rank;
@@ -120,9 +122,9 @@ export function bounded_rank(user_or_rank: UserOrRank): number {
  * This determines whether rank shows up as [?] around OGS
  */
 export function is_provisional(user: { ratings?: RatingsType }): boolean {
-    const ratings = user.ratings || {};
+    const ratings: RatingsType = user.ratings || {};
 
-    const rating = ratings["overall"] || {
+    const rating = ratings.overall || {
         rating: 1500,
         deviation: 350,
         volatility: 0.06,
@@ -135,13 +137,13 @@ export function is_provisional(user: { ratings?: RatingsType }): boolean {
  * Computes ratings data for a user for a given size and speed.
  */
 export function getUserRating(
-    user: UserType,
+    user: UserType | User | rest_api.UserConfig | rest_api.FullPlayerDetail["user"],
     speed: "overall" | "blitz" | "live" | "correspondence" = "overall",
     size: 0 | 9 | 13 | 19 = 0,
 ): Rating {
     const ret: Partial<Rating> = {};
-    const ratings = user.ratings || {};
-    ret.professional = user.pro || user.professional || false;
+    const ratings: RatingsType = (user.ratings as any) || {};
+    ret.professional = (user as UserType).pro || user.professional || false;
 
     let key: string = speed;
     if (size > 0) {
@@ -160,7 +162,7 @@ export function getUserRating(
     ret.unset = true;
     if (key in ratings) {
         ret.unset = false;
-        rating = ratings[key];
+        rating = ratings[key] as CompactRatingType;
     }
 
     ret.rating = rating.rating;
@@ -208,14 +210,17 @@ export function boundedRankString(r: UserOrRank, with_tenths?: boolean): string 
  * @param with_tenths If true, 1 decimal of precision will be added to the output.
  * @returns a string representing the rank (e.g. "7.1k", "4d", "9p")
  */
-export function rankString(r: UserOrRank, with_tenths?: boolean): string {
+export function rankString(
+    r: UserOrRank | rest_api.FullPlayerDetail["user"],
+    with_tenths?: boolean,
+): string {
     let provisional = false;
 
     if (typeof r === "object") {
-        provisional = is_provisional(r);
+        provisional = is_provisional(r as User);
 
         const ranking: number = ("ranking" in r ? r.ranking : r.rank) as number;
-        if (r.pro || r.professional) {
+        if ((r as any).pro || r.professional) {
             if (ranking > 900) {
                 return interpolate(pgettext("Pro", "%sp"), [ranking - 1000 - 36]);
             } else {
@@ -268,10 +273,10 @@ export function longRankString(r: UserOrRank): string {
     let provisional = false;
 
     if (typeof r === "object") {
-        provisional = is_provisional(r);
+        provisional = is_provisional(r as User);
 
         const ranking = ("ranking" in r ? r.ranking : r.rank) as number;
-        if (r.pro || r.professional) {
+        if ((r as any).pro || r.professional) {
             return interpolate(_("%s Pro"), [ranking - 36]);
         }
         if ("ratings" in r) {

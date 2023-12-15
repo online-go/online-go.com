@@ -25,6 +25,7 @@ import { Player } from "Player";
 import { Clock } from "Clock";
 import { GobanInfoStateBase } from "src/lib/types";
 import { LineSummaryTableMode } from "../GameList";
+import { PlayerCacheEntry } from "src/lib/player_cache";
 
 interface UserType {
     id: number;
@@ -77,7 +78,7 @@ export class GobanLineSummary extends React.Component<
     componentWillUnmount() {
         this.destroy();
     }
-    componentDidUpdate(prev_props) {
+    componentDidUpdate(prev_props: GobanLineSummaryProps) {
         if (prev_props.id !== this.props.id) {
             this.destroy();
             this.initialize();
@@ -245,7 +246,7 @@ function playerColor(props: GobanLineSummaryProps): PlayerColor | null {
         return "white";
     }
 
-    const isPlayer = (p) => p.id === props.player?.id;
+    const isPlayer = (p: PlayerCacheEntry) => p.id === props.player?.id;
     if (props.rengo_teams) {
         if (props.rengo_teams.black.some(isPlayer)) {
             return "black";
@@ -273,7 +274,7 @@ export function GameNameForList(props: { original_name: string }): JSX.Element {
     for (const prefix in spans) {
         let text: string | null = null;
         if ((text = stripNamePrefix(name, prefix))) {
-            const icon_class = spans[prefix];
+            const icon_class = (spans as any)[prefix];
             return (
                 <div className="game-name">
                     <span className={icon_class} />

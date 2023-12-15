@@ -43,7 +43,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         return false;
     }
 
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
         this._config = Object.assign(
             {
@@ -159,13 +159,13 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
             wrong.push(GoMath.decodeMoves(s, width, height));
         }
 
-        const ret = {
+        const ret: any = {
             x: -1,
             y: -1,
             branches: [],
         };
 
-        function walk(cur, path, cb) {
+        function walk(cur: any, path: any, cb: (node: any) => void) {
             if (!path.length) {
                 cb(cur);
                 return;
@@ -177,7 +177,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
                         return;
                     }
                 }
-                const new_branch = {
+                const new_branch: any = {
                     x: path[0].x,
                     y: path[0].y,
                     branches: [],
@@ -200,7 +200,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         return ret;
     }
 
-    abstract text();
+    abstract text(): string;
     abstract config(): PuzzleConfig;
     button(): any {
         return null;
@@ -212,7 +212,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
         return false;
     }
 
-    setGobanRef = (r) => {
+    setGobanRef = (r: InstructionalGoban) => {
         this.instructional_goban = r;
         if (this.instructional_goban) {
             this.instructional_goban.goban?.on("set-for-removal", () => {
@@ -220,7 +220,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
                     this.instructional_goban!.goban!.engine.getStoneRemovalString(),
                 );
             });
-            window["global_goban"] = r.goban;
+            (window as any)["global_goban"] = r.goban;
         }
     };
 
@@ -312,7 +312,7 @@ export abstract class LearningPage extends React.Component<LearningPagePropertie
 }
 
 export class DummyPage extends LearningPage {
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
     }
     static underConstruction(): boolean {

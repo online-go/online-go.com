@@ -44,8 +44,8 @@ export function RengoManagementPane(props: RengoManagementPaneProperties): JSX.E
 
     const { ref: rengoManagementPane } = registerTargetItem("active-rengo-management-pane");
 
-    const rengoReadyToStart = (challenge): boolean => {
-        return (
+    const rengoReadyToStart = (challenge: Challenge): boolean => {
+        return !!(
             challenge.rengo_black_team.length &&
             challenge.rengo_white_team.length &&
             challenge.rengo_black_team.length + challenge.rengo_white_team.length > 2

@@ -27,7 +27,7 @@ interface UIPushProperties {
 interface Handler {
     id: number;
     event: string;
-    cb: (data, event?) => void;
+    cb: (data: any, event?: string) => void;
 }
 
 let last_handler_id = 0;
@@ -51,14 +51,14 @@ class UIPushManager {
             }
         });
         socket.on("connect", () => {
-            /* handle resubscriptions */
+            /* handle re-subscriptions */
             for (const channel in this.subscriptions) {
                 socket.send("ui-pushes/subscribe", { channel: channel });
             }
         });
     }
 
-    on(event, cb) {
+    on(event: string, cb: (data: any, event?: string) => void): Handler {
         const handler: Handler = {
             id: ++last_handler_id,
             event: event,
@@ -72,7 +72,7 @@ class UIPushManager {
         return handler;
     }
 
-    off(handler) {
+    off(handler: Handler) {
         for (let i = 0; i < this.handlers[handler.event].length; ++i) {
             if (this.handlers[handler.event][i].id === handler.id) {
                 this.handlers[handler.event].splice(i, 1);
@@ -81,7 +81,7 @@ class UIPushManager {
         }
     }
 
-    subscribe(channel) {
+    subscribe(channel: string) {
         if (!channel || channel === "" || channel === "undefined") {
             console.error("Invalid channel: ", channel, new Error().stack);
         } else {
@@ -95,7 +95,7 @@ class UIPushManager {
             }
         }
     }
-    unsubscribe(channel) {
+    unsubscribe(channel: string) {
         if (!channel || channel === "" || channel === "undefined") {
             console.error("Invalid channel: ", channel, new Error().stack);
         } else {

@@ -155,7 +155,7 @@ export function AnnulQueueModal({
     }, [queue, dequeueRequested, selectedGameIndex]);
 
     // Get only games that are ranked and not annulled
-    function getValidGameIds(games) {
+    function getValidGameIds(games: any[]) {
         return games
             .filter((game) => game.ranked === true && game.annulled === false)
             .map((game) => game.id);
@@ -175,7 +175,7 @@ export function AnnulQueueModal({
         }
         do {
             moderationNote = prompt(
-                `Annulling ${validGameIds.length} of ${currentPlayer.username}'s games.\nEnter moderation note: (will be entered with '${currentPlayer.username} mass annull:')`,
+                `Annulling ${validGameIds.length} of ${currentPlayer.username}'s games.\nEnter moderation note: (will be entered with '${currentPlayer.username} mass annul:')`,
             );
 
             if (moderationNote == null) {
@@ -400,7 +400,7 @@ export function AnnulQueueModal({
 }
 
 // Open the AnnulQueueModal
-export function openAnnulQueueModal(setIsAnnulQueueModalOpen) {
+export function openAnnulQueueModal(setIsAnnulQueueModalOpen: (tf: boolean) => void) {
     setIsAnnulQueueModalOpen(true);
 
     // Disable body scroll
@@ -413,7 +413,15 @@ function Spinner() {
 }
 
 // AnnulOverlay component
-function AnnulOverlay({ numGames, visible, response }) {
+function AnnulOverlay({
+    numGames,
+    visible,
+    response,
+}: {
+    numGames: number;
+    visible: boolean;
+    response: string | null;
+}) {
     return visible ? (
         <div className="AnnulOverlay">
             <div className="overlay">

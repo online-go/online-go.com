@@ -127,7 +127,7 @@ export function ChatLine(props: ChatLineInterface): JSX.Element {
     );
 }
 
-function generateChatSearchLine(urlString, command, body) {
+function generateChatSearchLine(urlString: string, command: string, body: string) {
     let target = "";
     const bodyString = body.substr(command.length);
     if (bodyString.split(" ")[0] === "-user") {
@@ -146,7 +146,7 @@ function generateChatSearchLine(urlString, command, body) {
     }
 }
 
-function searchString(site, parameters) {
+function searchString(site: string, parameters: string[]) {
     if (parameters.length === 1) {
         return site + parameters[0];
     }

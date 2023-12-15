@@ -67,15 +67,15 @@ export function AIReviewStream(props: AIReviewStreamProperties): null {
 }
 
 export function ai_request_variation_analysis(
-    uuid,
-    game_id,
-    ai_review_id,
+    uuid: string,
+    game_id: number,
+    ai_review_id: number,
     cur_move: MoveTree,
     trunk_move: MoveTree,
 ): void {
     if (!ai_socket?.connected) {
         console.warn(
-            "Not sending request for variation analysis since we wern't connected to the AI server",
+            "Not sending request for variation analysis since we weren't connected to the AI server",
         );
         return;
     }

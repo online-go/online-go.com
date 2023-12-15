@@ -20,7 +20,8 @@ import { _ } from "translate";
 import { Modal, openModal } from "Modal";
 import { dup } from "misc";
 import * as data from "data";
-import { AutomatchPreferencesBase, Size, Speed } from "src/lib/types";
+import { AutomatchPreferencesBase, AutomatchTimeControlSystem, Size, Speed } from "src/lib/types";
+import { AutomatchCondition, RuleSet } from "goban/lib/protocol";
 
 interface Events {}
 
@@ -93,7 +94,7 @@ const default_correspondence: AutomatchPreferences = {
     },
 };
 
-const ConditionSelect = (props) => (
+const ConditionSelect = (props: { value: any; onChange: (x: any) => void }) => (
     <div>
         <select {...props}>
             <option value="no-preference">{_("No preference")}</option>
@@ -119,7 +120,7 @@ export class AutomatchSettings extends Modal<
     AutomatchSettingsProperties,
     AutomatchSettingsState
 > {
-    constructor(props) {
+    constructor(props: AutomatchSettingsProperties) {
         super(props);
         this.state = {
             tab: data.get("automatch.last-tab", "live") as Speed,
@@ -134,7 +135,7 @@ export class AutomatchSettings extends Modal<
         this.setState({ tab: tab });
     };
 
-    getSelectedSettings() {
+    getSelectedSettings(): AutomatchPreferences {
         switch (this.state.tab) {
             case "blitz":
                 return dup(this.state.blitz_settings);
@@ -145,7 +146,7 @@ export class AutomatchSettings extends Modal<
         }
         throw new Error("Invalid tab");
     }
-    setSelectedSettings(settings) {
+    setSelectedSettings(settings: AutomatchPreferences) {
         settings = dup(settings);
         switch (this.state.tab) {
             case "blitz":
@@ -162,33 +163,34 @@ export class AutomatchSettings extends Modal<
                 break;
         }
     }
-    setLowerRankDiff = (ev) => {
+    setLowerRankDiff = (ev: React.ChangeEvent<HTMLInputElement>) => {
         const settings = this.getSelectedSettings();
         const diff = Math.max(0, Math.min(9, parseInt(ev.target.value)));
         settings.lower_rank_diff = diff;
         this.setSelectedSettings(settings);
     };
-    setUpperRankDiff = (ev) => {
+    setUpperRankDiff = (ev: React.ChangeEvent<HTMLInputElement>) => {
         const settings = this.getSelectedSettings();
         const diff = Math.max(0, Math.min(9, parseInt(ev.target.value)));
         settings.upper_rank_diff = diff;
         this.setSelectedSettings(settings);
     };
-    setHandicapCondition = (ev) => {
+    setHandicapCondition = (ev: React.ChangeEvent<HTMLInputElement>) => {
         const settings = this.getSelectedSettings();
-        settings.handicap.condition = ev.target.value;
+        settings.handicap.condition = ev.target.value as AutomatchCondition;
         this.setSelectedSettings(settings);
     };
-    setTimeControlCondition = (ev) => {
+    setTimeControlCondition = (ev: React.ChangeEvent<HTMLInputElement>) => {
         const settings = this.getSelectedSettings();
-        settings.time_control.condition = ev.target.value;
+        settings.time_control.condition = ev.target.value as AutomatchCondition;
         this.setSelectedSettings(settings);
     };
-    setRulesCondition = (ev) => {
+    setRulesCondition = (ev: React.ChangeEvent<HTMLInputElement>) => {
         const settings = this.getSelectedSettings();
-        settings.rules.condition = ev.target.value;
+        settings.rules.condition = ev.target.value as AutomatchCondition;
         this.setSelectedSettings(settings);
     };
+    /*
     toggleSize(size) {
         const settings = this.getSelectedSettings();
         if (settings.size_options.indexOf(size) >= 0) {
@@ -201,20 +203,21 @@ export class AutomatchSettings extends Modal<
         }
         this.setSelectedSettings(settings);
     }
+    */
 
-    setHandicapValue = (ev) => {
+    setHandicapValue = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const settings = this.getSelectedSettings();
-        settings.handicap.value = ev.target.value;
+        settings.handicap.value = ev.target.value as "enabled" | "disabled";
         this.setSelectedSettings(settings);
     };
-    setRulesValue = (ev) => {
+    setRulesValue = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const settings = this.getSelectedSettings();
-        settings.rules.value = ev.target.value;
+        settings.rules.value = ev.target.value as RuleSet;
         this.setSelectedSettings(settings);
     };
-    setTimeControlSystem = (ev) => {
+    setTimeControlSystem = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const settings = this.getSelectedSettings();
-        settings.time_control.value.system = ev.target.value;
+        settings.time_control.value.system = ev.target.value as AutomatchTimeControlSystem;
         this.setSelectedSettings(settings);
     };
 

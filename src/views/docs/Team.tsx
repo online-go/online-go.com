@@ -24,7 +24,7 @@ import { Flag } from "Flag";
 import { Player } from "Player";
 import * as data from "data";
 
-function shuffleArray(array) {
+function shuffleArray(array: any[]) {
     for (let i = array.length - 1; i >= 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         const temp = array[i];
@@ -35,7 +35,7 @@ function shuffleArray(array) {
 }
 
 export class Team extends React.PureComponent<{}, any> {
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
         this.state = {
             contributors: [],
@@ -155,7 +155,7 @@ export class Team extends React.PureComponent<{}, any> {
                         ))}
 
                         <h3>{_("Github Contributors")}</h3>
-                        {this.state.contributors.map((u, idx) => (
+                        {this.state.contributors.map((u: any, idx: number) => (
                             <div key={idx}>
                                 <span className="flags">
                                     <img src={u.avatar_url} width={15} height={15} />

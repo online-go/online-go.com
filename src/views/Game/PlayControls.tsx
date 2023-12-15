@@ -634,8 +634,8 @@ export function AnalyzeButtonBar({
         goban.on("analyze_subtool", set_analyze_subtool);
     });
 
-    const setPencilColor = (ev) => {
-        const color = (ev.target as HTMLInputElement).value;
+    const setPencilColor = (ev: React.ChangeEvent<HTMLInputElement>) => {
+        const color = ev.target.value;
         if (goban.analyze_tool === "draw") {
             goban.analyze_subtool = color;
         }
@@ -1066,7 +1066,7 @@ export function ReviewControls({
     }, [goban]);
 
     const [move_text, set_move_text] = React.useState<string>();
-    const updateMoveText = (ev) => {
+    const updateMoveText = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         set_move_text(ev.target.value);
         goban.syncReviewMove(undefined, ev.target.value);
     };

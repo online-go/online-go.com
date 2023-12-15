@@ -50,7 +50,7 @@ interface PlayerDetailsProperties {
     nochallenge?: boolean; // don't show challenge options for this player - typically due to ladder considerations
 }
 
-let friends = {};
+let friends: { [id: number]: true } = {};
 data.watch(cached.friends, (friends_arr) => {
     friends = {};
     for (const friend of friends_arr) {

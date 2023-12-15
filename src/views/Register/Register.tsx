@@ -41,7 +41,9 @@ export function Register(): JSX.Element {
         navigate("/");
     }
 
-    const register = (event): boolean | void => {
+    const register = (
+        event: React.MouseEvent | React.KeyboardEvent | React.TouchEvent | React.PointerEvent,
+    ): boolean | void => {
         const actually_register = () => {
             post("/api/v0/register", {
                 username: ref_username.current?.value.trim(),
@@ -120,7 +122,7 @@ export function Register(): JSX.Element {
             actually_register();
         }
         if (event.type === "keypress") {
-            if (event.charCode === 13) {
+            if ((event as React.KeyboardEvent).charCode === 13) {
                 event.preventDefault();
                 if (focus_empty(true)) {
                     return false;
@@ -129,7 +131,7 @@ export function Register(): JSX.Element {
             }
         }
 
-        if (event.type === "click" || event.charCode === 13) {
+        if (event.type === "click" || (event as React.KeyboardEvent).charCode === 13) {
             return false;
         }
 

@@ -321,7 +321,7 @@ export function ChatChannel({
     }, [channel, name]);
 
     useEffect((): (() => void) | void => {
-        let proxy;
+        let proxy: ChatChannelProxy;
 
         if (joined) {
             proxy = chat_manager.join(channel);

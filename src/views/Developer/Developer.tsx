@@ -20,7 +20,7 @@ import * as data from "data";
 import { _ } from "translate";
 
 export class Developer extends React.PureComponent {
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
         // TODO: remove this
         this.state = {};

@@ -22,7 +22,7 @@ import { put, get, del } from "requests";
 import { MOD_POWER_HANDLE_SCORE_CHEAT, MOD_POWER_HANDLE_ESCAPING, errorAlerter } from "misc";
 import { proRankList } from "rank_utils";
 import { Modal, openModal } from "Modal";
-import { lookup } from "player_cache";
+import { PlayerCacheEntry, lookup } from "player_cache";
 
 interface Events {}
 
@@ -36,7 +36,7 @@ import { ModerationOfferControl } from "ModerationOfferControl";
 const pro_ranks = proRankList(false);
 
 export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
-    constructor(props) {
+    constructor(props: ModerateUserProperties) {
         super(props);
         this.state = {
             loading: true,
@@ -105,20 +105,32 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                     .catch(errorAlerter);
             });
     };
-    setLockedUsername = (ev) => this.setState({ locked_username: ev.target.checked });
-    setSupporter = (ev) => this.setState({ supporter: ev.target.checked });
-    setAnnouncer = (ev) => this.setState({ is_announcer: ev.target.checked });
-    setProfessional = (ev) => this.setState({ professional: ev.target.checked });
+    setLockedUsername = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.setState({ locked_username: ev.target.checked });
+    setSupporter = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.setState({ supporter: ev.target.checked });
+    setAnnouncer = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.setState({ is_announcer: ev.target.checked });
+    setProfessional = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.setState({ professional: ev.target.checked });
     //setBanned = (ev) => this.setState({ is_banned: ev.target.checked });
-    setShadowbanned = (ev) => this.setState({ is_shadowbanned: ev.target.checked });
-    setBot = (ev) => this.setState({ is_bot: ev.target.checked });
-    setBotOwner = (ev) => this.setState({ bot_owner: parseInt(ev.target.value) });
+    setShadowbanned = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.setState({ is_shadowbanned: ev.target.checked });
+    setBot = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.setState({ is_bot: ev.target.checked });
+    setBotOwner = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.setState({ bot_owner: parseInt(ev.target.value) });
 
-    setUsername = (ev) => this.setState({ username: ev.target.value });
-    setEmail = (ev) => this.setState({ email: ev.target.value });
-    setPassword = (ev) => this.setState({ password: ev.target.value });
-    setRanking = (ev) => this.setState({ ranking: ev.target.value });
-    setUiClassExtra = (ev) => this.setState({ ui_class_extra: ev.target.value });
+    setUsername = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.setState({ username: ev.target.value });
+    setEmail = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.setState({ email: ev.target.value });
+    setPassword = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.setState({ password: ev.target.value });
+    setRanking = (ev: React.ChangeEvent<HTMLSelectElement>) =>
+        this.setState({ ranking: ev.target.value });
+    setUiClassExtra = (ev: React.ChangeEvent<HTMLInputElement>) =>
+        this.setState({ ui_class_extra: ev.target.value });
 
     deleteAccount = () => {
         const user_id = this.props.playerId;
@@ -362,6 +374,6 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
     }
 }
 
-export function openModerateUserModal(user) {
+export function openModerateUserModal(user: PlayerCacheEntry) {
     return openModal(<ModerateUser playerId={user.id} />);
 }

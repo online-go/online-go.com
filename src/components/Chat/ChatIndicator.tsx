@@ -38,7 +38,7 @@ import {
 export class ChatIndicator extends React.PureComponent<{}, any> {
     channels: { [channel: string]: ChatChannelProxy } = {};
 
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
         this.state = {
             unread_ct: 0,
@@ -62,7 +62,7 @@ export class ChatIndicator extends React.PureComponent<{}, any> {
         });
     }
 
-    onShowEmptyNotification = (pref) => {
+    onShowEmptyNotification = (pref: boolean) => {
         this.setState({ show_empty_notification: pref });
     };
 

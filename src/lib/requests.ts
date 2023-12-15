@@ -114,7 +114,7 @@ function request(method: Method): RequestFunction {
                         url +=
                             (url.indexOf("?") >= 0 ? "&" : "?") +
                             Object.keys(data)
-                                .map((k) => `${k}=` + encodeURIComponent(data[k]))
+                                .map((k) => `${k}=` + encodeURIComponent((data as any)[k]))
                                 .join("&");
                     } else {
                         prepared_data = JSON.stringify(data);

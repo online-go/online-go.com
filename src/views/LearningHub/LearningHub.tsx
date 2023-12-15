@@ -20,7 +20,7 @@ import * as data from "data";
 import { Link, useParams } from "react-router-dom";
 import { CardLink } from "material";
 import { _, pgettext } from "translate";
-import { sections, allsections } from "./sections";
+import { sections, all_sections } from "./sections";
 import { Ribbon } from "misc-ui";
 import { getSectionCompletion, getSectionByName } from "./util";
 import { browserHistory } from "ogsHistory";
@@ -47,11 +47,11 @@ export function LearningHub(): JSX.Element {
     let section: any = null;
     let next_section_name = "";
 
-    for (let i = 0; i < allsections.length; ++i) {
-        if (allsections[i].section() === section_name) {
-            section = allsections[i];
-            if (i + 1 < allsections.length) {
-                next_section_name = allsections[i + 1].section();
+    for (let i = 0; i < all_sections.length; ++i) {
+        if (all_sections[i].section() === section_name) {
+            section = all_sections[i];
+            if (i + 1 < all_sections.length) {
+                next_section_name = all_sections[i + 1].section();
             }
         }
     }
@@ -91,7 +91,7 @@ export function LearningHub(): JSX.Element {
 }
 
 class Index extends React.PureComponent<{}, any> {
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
     }
 
@@ -212,7 +212,7 @@ class Index extends React.PureComponent<{}, any> {
 }
 
 class SectionNav extends React.Component<{}, any> {
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
     }
 

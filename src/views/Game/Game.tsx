@@ -432,7 +432,7 @@ export function Game(): JSX.Element | null {
     const delete_branch = () => {
         goban_deleteBranch();
     };
-    const setLabelHandler = (event) => {
+    const setLabelHandler = (event: KeyboardEvent) => {
         if (!goban.current) {
             return;
         }
@@ -564,8 +564,8 @@ export function Game(): JSX.Element | null {
         }
         set_ai_review_enabled(!ai_review_enabled);
     };
-    const updateVariationName = (ev) => {
-        set_variation_name((ev.target as HTMLInputElement).value);
+    const updateVariationName = (ev: React.ChangeEvent<HTMLInputElement>) => {
+        set_variation_name(ev.target.value);
     };
     const shareAnalysis = () => {
         if (!goban.current) {
@@ -581,7 +581,7 @@ export function Game(): JSX.Element | null {
             name = "" + ++game_control.last_variation_number;
         }
 
-        const marks = {};
+        const marks: { [k: string]: string } = {};
         let mark_ct = 0;
         for (let y = 0; y < goban.current.height; ++y) {
             for (let x = 0; x < goban.current.width; ++x) {
@@ -778,7 +778,7 @@ export function Game(): JSX.Element | null {
 
     /* Review stuff */
 
-    const variationKeyPress = (ev): boolean | void => {
+    const variationKeyPress = (ev: React.KeyboardEvent): boolean | void => {
         if (ev.keyCode === 13) {
             shareAnalysis();
             return false;
@@ -1040,7 +1040,7 @@ export function Game(): JSX.Element | null {
         chat_proxy.current = game_id
             ? chat_manager.join(`game-${game_id}`)
             : chat_manager.join(`review-${review_id}`);
-        $(document).on("keypress", setLabelHandler);
+        document.addEventListener("keypress", setLabelHandler);
 
         const label_position = preferences.get("label-positioning");
         const opts: GobanCanvasConfig = {
@@ -1079,7 +1079,7 @@ export function Game(): JSX.Element | null {
         goban.current = new Goban(opts);
 
         onResize(true);
-        window["global_goban"] = goban.current;
+        (window as any)["global_goban"] = goban.current;
         if (review_id) {
             goban.current.setMode("analyze");
         }
@@ -1239,7 +1239,7 @@ export function Game(): JSX.Element | null {
             for (const k in engine.config.reviews) {
                 review_list.push({
                     id: k,
-                    owner: engine.config.reviews[k],
+                    owner: (engine.config.reviews as any)[k],
                 });
             }
             review_list.sort((a, b) => {
@@ -1498,7 +1498,7 @@ export function Game(): JSX.Element | null {
             delete game_control.creator_id;
             ladder_id.current = undefined;
             tournament_id.current = undefined;
-            $(document).off("keypress", setLabelHandler);
+            document.removeEventListener("keypress", setLabelHandler);
             try {
                 if (goban.current) {
                     goban.current.destroy();
@@ -1515,8 +1515,8 @@ export function Game(): JSX.Element | null {
             if (autoplay_timer.current) {
                 clearTimeout(autoplay_timer.current);
             }
-            window["Game"] = null;
-            window["global_goban"] = null;
+            (window as any)["Game"] = null;
+            (window as any)["global_goban"] = null;
 
             setExtraActionCallback(null as any);
             $(window).off("focus", onFocus);

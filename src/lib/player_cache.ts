@@ -121,7 +121,7 @@ export function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry 
         if (dont_overwrite && k in cache[id]) {
             continue;
         }
-        cache[id][k] = player[k];
+        (cache[id] as any)[k] = player[k];
     }
     const username = cache[id].username;
     if (username && !(username in cache_by_username)) {
@@ -136,7 +136,7 @@ export function update(player: any, dont_overwrite?: boolean): PlayerCacheEntry 
         cache[id]["pro"] = !!player.professional;
     }
     if ("pro" in player) {
-        cache[id]["professional"] = !!player.pro;
+        (cache[id] as any)["professional"] = !!player.pro;
     }
 
     publisher.publish(id.toString(), cache[id]);
@@ -275,7 +275,7 @@ const fetch_player = new Batcher<FetchEntry>((fetch_queue) => {
                         for (const field of required_fields) {
                             if (!(field in cache[player.id])) {
                                 debug.warn("Required field ", field, " was not resolved by fetch");
-                                cache[player.id][field] = "[ERROR]";
+                                (cache[player.id] as any)[field] = "[ERROR]";
                             }
                         }
                     }

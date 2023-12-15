@@ -79,7 +79,7 @@ export function PlayerIcon(props: PlayerIconProps): JSX.Element {
         }
     }, [id, props.size]);
 
-    if (url && !player_is_ignored(id)) {
+    if (url && id && !player_is_ignored(id)) {
         return (
             <img
                 className={`PlayerIcon PlayerIcon-${props.size} ${props.className || ""}`}

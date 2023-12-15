@@ -23,19 +23,20 @@ import { Player, PlayerObjectType } from "Player";
 import { errorAlerter } from "misc";
 import { alert } from "swal_config";
 import { ChallengeDetailsReviewPane } from "../ChallengeDetailsReviewPane";
+import { Challenge } from "src/lib/challenge_utils";
 
 interface Events {}
 
 interface GameAcceptModalProperties {
-    challenge: any;
-    onAccept: (challenge) => void;
+    challenge: Challenge;
+    onAccept: (challenge: Challenge) => void;
     // id?: any,
     // user?: any,
     // callback?: ()=>any,
 }
 
 export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}> {
-    constructor(props) {
+    constructor(props: GameAcceptModalProperties) {
         super(props);
     }
 
@@ -65,7 +66,7 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
         const challenger_details: PlayerObjectType = {
             id: challenge.user_id,
             username: challenge.username,
-            pro: challenge.pro,
+            pro: !!challenge.pro,
             rank: challenge.rank,
         };
 
@@ -93,13 +94,13 @@ export class GameAcceptModal extends Modal<Events, GameAcceptModalProperties, {}
     }
 }
 
-export function openGameAcceptModal(challenge): Promise<any> {
+export function openGameAcceptModal(challenge: Challenge): Promise<any> {
     return new Promise((resolve) => {
         openModal(<GameAcceptModal challenge={challenge} onAccept={resolve} fastDismiss />);
     });
 }
 
-export function handicapText(handicap) {
+export function handicapText(handicap: number) {
     if (handicap < 0) {
         return _("Auto");
     }

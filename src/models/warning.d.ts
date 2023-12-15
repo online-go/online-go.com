@@ -36,7 +36,7 @@ declare namespace rest_api {
 
         type Severity = "warning" | "acknowledgement";
 
-        type InterpolatedMessage = (data) => string;
+        type InterpolatedMessage = (data: any) => string;
 
         type WarningMessages = {
             [K in WarningMessageId]: InterpolatedMessage;

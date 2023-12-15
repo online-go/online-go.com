@@ -19,7 +19,7 @@ import { browserHistory } from "ogsHistory";
 import { shouldOpenNewTab } from "misc";
 import * as preferences from "preferences";
 
-export function openUrlIfALinkWasNotClicked(ev, url: string) {
+export function openUrlIfALinkWasNotClicked(ev: any, url: string) {
     if (ev.target.nodeName === "A" || ev.target.parentNode.nodeName === "A") {
         /* if a link was clicked, let the browser handle that. */
         return;

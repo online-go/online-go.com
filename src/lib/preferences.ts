@@ -151,7 +151,7 @@ export const defaults = {
 defaults["profanity-filter"][current_language] = true;
 
 for (const k in defaults) {
-    data.setDefault(`preferences.${k as ValidPreference}`, defaults[k]);
+    data.setDefault(`preferences.${k as ValidPreference}`, (defaults as any)[k]);
 }
 
 type PreferencesType = typeof defaults;

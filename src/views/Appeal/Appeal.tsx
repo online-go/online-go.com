@@ -176,14 +176,14 @@ export function Appeal(props: { player_id?: number }): JSX.Element | null {
         </div>
     );
 
-    function updateState(ev) {
+    function updateState(ev: React.ChangeEvent<HTMLSelectElement>) {
         setState(ev.target.value);
         patch(`appeal/${player_id}`, { state: ev.target.value })
             .then(() => 0)
             .catch(errorAlerter);
     }
 
-    function updateAllowFurtherAppeals(ev) {
+    function updateAllowFurtherAppeals(ev: React.ChangeEvent<HTMLInputElement>) {
         setAllowFurtherAppeals(ev.target.checked);
         patch(`appeal/${player_id}`, { allow_further_appeals: ev.target.checked })
             .then(() => 0)

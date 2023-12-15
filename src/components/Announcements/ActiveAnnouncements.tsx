@@ -61,7 +61,7 @@ export class ActiveAnnouncements extends React.PureComponent {
         this.forceUpdate();
     };
 
-    clearAnnouncement(id) {
+    clearAnnouncement(id: number) {
         hard_cleared_announcements[id] = Date.now() + 30 * 24 * 3600 * 1000;
         data.set("announcements.hard_cleared", hard_cleared_announcements);
         this.forceUpdate();

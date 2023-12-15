@@ -84,7 +84,7 @@ export class GobanThemePicker extends React.PureComponent<
                         theme.theme_name,
                     );
                     const up = {};
-                    up[k] = theme.theme_name;
+                    (up as any)[k] = theme.theme_name;
                     this.setState(up);
                 };
             }
@@ -110,7 +110,7 @@ export class GobanThemePicker extends React.PureComponent<
             data.remove(`custom.${key}`);
         }
         const up = {};
-        up[`${key}Custom`] = this.getCustom(key);
+        (up as any)[`${key}Custom`] = this.getCustom(key);
         this.setState(up);
         this.renderPickers();
 

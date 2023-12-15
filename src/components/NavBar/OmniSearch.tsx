@@ -158,7 +158,7 @@ export function OmniSearch(props: OmniSearchProperties): JSX.Element | null {
     );
 }
 
-const omnisearch_sitemap = {};
+const omnisearch_sitemap: { [s: string]: [string, string] } = {};
 
 omnisearch_sitemap[_("Home")] = [_("Home"), "/overview"];
 omnisearch_sitemap[_("Play")] = [_("Play"), "/play"];

@@ -101,7 +101,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             table_hidden: preferences.get("ai-summary-table-show"),
         };
         this.state = state;
-        window["aireview"] = this;
+        (window as any)["aireview"] = this;
     }
 
     componentDidMount() {
@@ -303,7 +303,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             for (const k in ai_review) {
                 //console.log("Updating", k, ai_review[k]);
                 if (k !== "moves" || !this.ai_review["moves"]) {
-                    this.ai_review[k] = ai_review[k];
+                    (this.ai_review as any)[k] = (ai_review as any)[k];
                 } else {
                     for (const move in ai_review["moves"]) {
                         this.ai_review["moves"][move] = ai_review["moves"][move];
@@ -734,7 +734,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
 
             // Convert teh array back into an object
             marks = marksArray.reduce(
-                (target, item) => ((target[item.key] = item.value), target),
+                (target, item) => (((target as any)[item.key] = item.value), target),
                 {},
             );
         }
@@ -781,7 +781,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
         ai_request_variation_analysis(
             this.ai_review.uuid,
             this.props.game_id,
-            this.state.selected_ai_review?.id,
+            Number(this.state.selected_ai_review?.id),
             cur_move,
             trunk_move,
         );
@@ -965,7 +965,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             // so subtract 1 if black goes second == b_player
             const check2 =
                 is_uploaded &&
-                goban.config["all_moves"].split("!").length - b_player !==
+                (goban.config as any)["all_moves"].split("!").length - b_player !==
                     this.ai_review?.scores?.length;
 
             // if there's less than 4 moves the worst moves doesn't seem to return 3 moves, otherwise look for these three moves.
@@ -994,7 +994,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             const worst_move_keys = Object.keys(this.ai_review?.moves);
 
             for (let j = 0; j < worst_move_keys.length; j++) {
-                scores[worst_move_keys[j]] = this.ai_review?.moves[worst_move_keys[j]].score;
+                (scores as any)[worst_move_keys[j]] =
+                    this.ai_review?.moves[worst_move_keys[j]].score;
             }
 
             for (let j = h_offset; j < scores.length - 1; j++) {
@@ -1081,7 +1082,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             // so subtract 1 if black goes second == b_player
             const check2 =
                 is_uploaded &&
-                goban.config["all_moves"].split("!").length - b_player !== move_keys.length;
+                (goban.config as any)["all_moves"].split("!").length - b_player !==
+                    move_keys.length;
 
             if (this.state.loading || this.ai_review.scores === undefined) {
                 for (let j = 0; j < ai_table_rows.length; j++) {

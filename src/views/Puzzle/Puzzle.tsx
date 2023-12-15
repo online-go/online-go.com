@@ -39,8 +39,9 @@ import { GobanContainer } from "GobanContainer";
 import { alert } from "swal_config";
 
 type PuzzleProperties = RouteComponentProps<{ puzzle_id: string }>;
+type TransformationOptions = "x" | "h" | "v" | "color" | "zoom";
 
-interface PuzzleState {
+export interface PuzzleState {
     puzzle?: any;
     show_wrong?: boolean;
     show_correct?: boolean;
@@ -112,7 +113,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
     set_analyze_tool: any = {};
 
-    constructor(props) {
+    constructor(props: PuzzleProperties) {
         super(props);
 
         this.editor = new PuzzleEditor(this, this.transform);
@@ -217,7 +218,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         this.editor.clearPuzzles();
     }
 
-    setAnalyzeTool(tool, subtool) {
+    setAnalyzeTool(tool: string, subtool: string | null | undefined) {
         if (this.navigation.checkAndEnterAnalysis()) {
             $("#game-analyze-button-bar .active").removeClass("active");
             $("#game-analyze-" + tool + "-tool").addClass("active");
@@ -286,7 +287,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
 
         this.goban = new Goban(opts);
         this.goban.setMode("puzzle");
-        window["global_goban"] = this.goban;
+        (window as any)["global_goban"] = this.goban;
         this.goban.on("update", () => this.onUpdate());
 
         this.goban.on("puzzle-wrong-answer", this.onWrongAnswer);
@@ -352,7 +353,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             $(window).scrollTop(position);
         }, 1);
     };
-    jumpToPuzzle = (ev) => {
+    jumpToPuzzle = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const next_puzzle_id = ev.target.value;
         browserHistory.push(`/puzzle/${next_puzzle_id}`);
     };
@@ -372,7 +373,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         });
     };
 
-    ratePuzzle = (value) => {
+    ratePuzzle = (value: number) => {
         put(`puzzles/${this.props.match.params.puzzle_id}/rate`, { rating: value })
             .then(ignore)
             .catch(errorAlerter);
@@ -381,16 +382,17 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             my_rating: value,
         });
     };
-    setTransformation(what): void {
+    setTransformation(what: TransformationOptions): void {
         const state = this.transform.stateForTransformation(what);
         if (state) {
-            this.setState(state);
+            this.setState(state as any);
             if (state.zoom) {
                 preferences.set("puzzle.zoom", this.transform.settings.zoom);
             }
         }
         this.doReset();
     }
+
     toggle_transform_x = () => {
         this.ref_transform_x_button.current?.blur();
         this.setTransformation("x");
@@ -454,7 +456,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
             .catch(errorAlerter);
     };
 
-    openPuzzleSettings = (ev) => {
+    openPuzzleSettings = (ev: React.MouseEvent) => {
         const puzzle_settings = openPuzzleSettingsControls(ev);
 
         const randomize_transform = preferences.get("puzzle.randomize.transform");
@@ -472,7 +474,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         });
     };
 
-    setPuzzleCollection = (ev) => {
+    setPuzzleCollection = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         if (parseInt(ev.target.value) > 0) {
             this.setState({
                 puzzle: Object.assign({}, this.state.puzzle, {
@@ -530,24 +532,24 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         }
         return true;
     };
-    setName = (ev) => {
+    setName = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ name: ev.target.value });
     };
-    setPuzzleType = (ev) => {
+    setPuzzleType = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         this.setState({
             puzzle: Object.assign({}, this.state.puzzle, { puzzle_type: ev.target.value }),
         });
     };
-    setDescription = (ev) => {
+    setDescription = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({
             puzzle: Object.assign({}, this.state.puzzle, { puzzle_description: ev.target.value }),
         });
     };
-    setSetupColor = (color) => {
+    setSetupColor = (color: string) => {
         this.navigation.checkAndEnterPuzzleMode();
         this.setState({ setup_color: color });
     };
-    setPuzzleSize = (ev) => {
+    setPuzzleSize = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const size = parseInt(ev.target.value);
         this.setState({
             puzzle: Object.assign({}, this.state.puzzle, { width: size, height: size }),
@@ -557,31 +559,31 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
         this.goban.load(this.goban_opts);
         this.goban.redraw(true);
     };
-    setPuzzleRank = (ev) => {
+    setPuzzleRank = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         this.setState({
             puzzle: Object.assign({}, this.state.puzzle, {
                 puzzle_rank: parseInt(ev.target.value),
             }),
         });
     };
-    setInitialPlayer = (ev) => {
+    setInitialPlayer = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         const color = ev.target.value;
 
         this.goban.engine.jumpTo(this.goban.engine.move_tree);
-        this.goban.engine.config.initial_player = color;
+        this.goban.engine.config.initial_player = color === "black" ? "black" : "white";
         this.goban.engine.player = color === "white" ? 2 : 1;
         this.goban.engine.resetMoveTree();
 
         this.setState({ puzzle: Object.assign({}, this.state.puzzle, { initial_player: color }) });
     };
-    setOpponentMoveMode = (ev) => {
+    setOpponentMoveMode = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         this.setState({
             puzzle: Object.assign({}, this.state.puzzle, {
                 puzzle_opponent_move_mode: ev.target.value,
             }),
         });
     };
-    setPlayerMoveMode = (ev) => {
+    setPlayerMoveMode = (ev: React.ChangeEvent<HTMLSelectElement>) => {
         this.setState({
             puzzle: Object.assign({}, this.state.puzzle, {
                 puzzle_player_move_mode: ev.target.value,
@@ -591,7 +593,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
     deleteBranch = () => {
         this.goban.deleteBranch();
     };
-    updateMoveText = (ev) => {
+    updateMoveText = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({ move_text: ev.target.value });
         this.goban.engine.cur_move.text = ev.target.value;
         this.goban.move_tree_redraw();
@@ -1016,7 +1018,7 @@ export class _Puzzle extends React.Component<PuzzleProperties, PuzzleState> {
                                     onChange={this.setPuzzleCollection}
                                 >
                                     <option value={0}> -- {_("Select collection")} -- </option>
-                                    {this.state.puzzle_collections.map((e, idx) => (
+                                    {this.state.puzzle_collections.map((e: any, idx: number) => (
                                         <option key={idx} value={e.id}>
                                             {e.name}
                                         </option>
@@ -1354,7 +1356,7 @@ export const Puzzle = rr6ClassShim(_Puzzle);
 import { PopOver, popover } from "popover";
 import { PuzzleSettingsModal } from "./PuzzleSettingsModal";
 
-export function openPuzzleSettingsControls(ev): PopOver {
+export function openPuzzleSettingsControls(ev: React.MouseEvent): PopOver {
     const elt = $(ev.target);
     const offset = elt.offset();
 

@@ -24,10 +24,15 @@ interface Events {
 }
 const event_emiter = new TypedEventEmitter<Events>();
 
-export let chat_subscriptions = {};
+export let chat_subscriptions: { [channel: string]: { [option: string]: boolean } } = {};
+
 data.watch("chat-indicator.chat-subscriptions", onChatSubscriptionUpdate);
-function onChatSubscriptionUpdate(pref) {
-    chat_subscriptions = pref;
+function onChatSubscriptionUpdate(
+    subs: { [channel: string]: { [option: string]: boolean } } | undefined,
+) {
+    if (subs) {
+        chat_subscriptions = subs;
+    }
     event_emiter.emit("subscription_changed");
 }
 let chat_subscribe_new_group_chat_messages = false;

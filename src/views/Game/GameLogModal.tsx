@@ -41,7 +41,7 @@ export interface LogEntry {
 export class GameLogModal extends Modal<Events, GameLogModalProperties, { log: Array<LogEntry> }> {
     config: any;
 
-    constructor(props) {
+    constructor(props: GameLogModalProperties) {
         super(props);
 
         this.state = {

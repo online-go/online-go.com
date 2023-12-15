@@ -41,8 +41,10 @@ export function SeekGraphLegend(props: SeekGraphLegendProps): JSX.Element {
         SeekGraphPalettes.DARK,
     );
     React.useEffect(() => {
-        const callback = (theme) => {
-            setCurrentPalette(SeekGraphPalettes.getPalette(theme));
+        const callback = (theme?: string) => {
+            if (theme) {
+                setCurrentPalette(SeekGraphPalettes.getPalette(theme));
+            }
         };
         data.watch("theme", callback);
         return () => data.unwatch("theme", callback);

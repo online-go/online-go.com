@@ -33,7 +33,7 @@ interface PuzzleListState {
 }
 
 export class PuzzleList extends React.PureComponent<{}, PuzzleListState> {
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
         this.state = {
             name_contains_filter: "",

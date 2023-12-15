@@ -29,7 +29,7 @@ import { fetch } from "player_cache";
 import { getGameResultText } from "misc";
 import { PlayerCacheEntry } from "player_cache";
 
-interface MiniGobanProps {
+export interface MiniGobanProps {
     id?: number;
     width?: number;
     height?: number;

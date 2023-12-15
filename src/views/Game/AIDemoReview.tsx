@@ -324,13 +324,10 @@ function stringifyBoardState(move: MoveTree): string {
     return move.state.board.reduce((a, b) => a + b.reduce((a, b) => a + b, ""), "");
 }
 
-function clearAnalysis(goban) {
-    const marks: { [mark: string]: string } = {};
-    const colored_circles: ColoredCircle[] = [];
-    const heatmap: Array<Array<number>> | null = null;
-    goban.setMarks(marks, true); /* draw the remaining AI sequence as ghost marks, if any */
-    goban.setHeatmap(heatmap, true);
-    goban.setColoredCircles(colored_circles, false);
+function clearAnalysis(goban: Goban) {
+    goban.setMarks({}, true); /* draw the remaining AI sequence as ghost marks, if any */
+    goban.setHeatmap(undefined, true);
+    goban.setColoredCircles([], false);
 }
 
 function computePrediction(data: any): any {
@@ -346,7 +343,7 @@ function renderAnalysis(goban: Goban, data: any) {
     const analysis = data.analysis;
     const branches = analysis.branches;
 
-    const total_visits = branches.reduce((a, b) => a + b.visits, 0);
+    const total_visits = branches.reduce((a: number, b: any) => a + b.visits, 0);
 
     let marks: { [mark: string]: string } = {};
     const colored_circles: ColoredCircle[] = [];
@@ -503,7 +500,10 @@ function trimMaxMoves(marks: { [mark: string]: string }): { [mark: string]: stri
         }
 
         // Convert teh array back into an object
-        marks = marksArray.reduce((target, item) => ((target[item.key] = item.value), target), {});
+        marks = marksArray.reduce(
+            (target, item) => (((target as any)[item.key] = item.value), target),
+            {},
+        );
     }
 
     //Return the result

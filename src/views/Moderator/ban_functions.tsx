@@ -21,7 +21,7 @@ import { openModal } from "Modal";
 import { post, put } from "requests";
 import { alert } from "swal_config";
 
-function moderate(player_id, prompt, obj) {
+function moderate(player_id: number, prompt: string, obj: any) {
     return new Promise((resolve, reject) => {
         alert
             .fire({
@@ -44,7 +44,7 @@ function moderate(player_id, prompt, obj) {
     });
 }
 
-export function ban(player_id) {
+export function ban(player_id: number) {
     if (player_id < 0) {
         return post("moderation/shadowban_anonymous_user", {
             ban: 1,
@@ -60,7 +60,7 @@ export function ban(player_id) {
     }
     return undefined;
 }
-export function shadowban(player_id) {
+export function shadowban(player_id: number) {
     if (player_id < 0) {
         return post("moderation/shadowban_anonymous_user", {
             ban: 1,
@@ -70,7 +70,7 @@ export function shadowban(player_id) {
         return moderate(player_id, "Reason for shadow banning?", { is_shadowbanned: 1 });
     }
 }
-export function remove_ban(player_id) {
+export function remove_ban(player_id: number) {
     if (player_id < 0) {
         return post("moderation/shadowban_anonymous_user", {
             ban: 0,
@@ -80,7 +80,7 @@ export function remove_ban(player_id) {
         return moderate(player_id, "Reason for restoring account?", { is_banned: 0 });
     }
 }
-export function remove_shadowban(player_id) {
+export function remove_shadowban(player_id: number) {
     if (player_id < 0) {
         return post("moderation/shadowban_anonymous_user", {
             ban: 0,

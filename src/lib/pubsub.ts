@@ -97,8 +97,9 @@ abstract class AbstractSubscriber<T, K extends Extract<keyof T, string>>
 
         const ch: Array<string> = typeof channels === "string" ? [channels] : channels;
         for (const channel of ch) {
-            (table[channel] || (table[channel] = {}))[this.serial] = this.callback;
-            this.subscribed_channels[channel] = true;
+            ((table as any)[channel] || ((table as any)[channel] = {}))[this.serial] =
+                this.callback;
+            (this.subscribed_channels as any)[channel] = true;
         }
         return this;
     }

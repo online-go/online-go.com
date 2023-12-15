@@ -30,7 +30,7 @@ interface BanModalProperties {
 }
 
 export class BanModal extends Modal<Events, BanModalProperties, any> {
-    constructor(props) {
+    constructor(props: BanModalProperties) {
         super(props);
         this.state = {
             details: {

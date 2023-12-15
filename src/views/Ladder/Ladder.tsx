@@ -30,6 +30,7 @@ import { browserHistory } from "ogsHistory";
 import { alert } from "swal_config";
 import { RouteComponentProps, rr6ClassShim } from "ogs-rr6-shims";
 import { IdType } from "src/lib/types";
+import { PlayerCacheEntry } from "src/lib/player_cache";
 
 type LadderProperties = RouteComponentProps<{
     ladder_id: string;
@@ -51,7 +52,7 @@ interface LadderState {
 }
 
 class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
-    constructor(props) {
+    constructor(props: LadderProperties) {
         super(props);
         this.state = {
             ladder_id: this.props.match.params.ladder_id,
@@ -76,7 +77,7 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
         }
     }
 
-    resolve(ladder_id) {
+    resolve(ladder_id: IdType) {
         get(`ladders/${ladder_id}`)
             .then((ladder) => {
                 this.setState({
@@ -122,7 +123,7 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
             });
     };
 
-    updateAutocompletedPlayer = (user) => {
+    updateAutocompletedPlayer = (user: null | (PlayerCacheEntry & { ladder_rank: number })) => {
         if (user) {
             this.setState({
                 scrollToIndex: Math.max(0, user.ladder_rank - 1),
@@ -131,7 +132,7 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
         }
     };
 
-    goToGroup = (ev) => {
+    goToGroup = (ev: React.MouseEvent) => {
         close_all_popovers();
 
         const url: string = "/group/" + this.state.ladder?.group.id;
@@ -169,7 +170,7 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
 
                         <PlayerAutocomplete
                             ladderId={this.props.match.params.ladder_id}
-                            onComplete={this.updateAutocompletedPlayer}
+                            onComplete={this.updateAutocompletedPlayer as any}
                         />
 
                         {this.state.ladder &&
@@ -217,7 +218,18 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    renderRow = ({ index, isScrolling, isVisible, key, style }) => {
+    renderRow = ({
+        index,
+        isScrolling,
+        key,
+        style,
+    }: {
+        index: number;
+        isScrolling: boolean;
+        isVisible: boolean;
+        key: string;
+        style: any;
+    }) => {
         return (
             <div className="LadderRow-container" key={key} style={style}>
                 <LadderRow
@@ -285,7 +297,7 @@ class _Ladder extends React.PureComponent<LadderProperties, LadderState> {
 
         return this.requests_in_flight[page].then(() => this.cache[idx]);
 
-        function by_ladder_rank(a, b) {
+        function by_ladder_rank(a: any, b: any) {
             let ar = a.player.ladder_rank;
             let br = b.player.ladder_rank;
             if (ar < 0) {
@@ -311,24 +323,24 @@ interface LadderRowProperties {
 
 interface LadderRowState {
     row?: {
-        incoming_challenges;
-        outgoing_challenges;
+        incoming_challenges: any;
+        outgoing_challenges: any;
         can_challenge: { challengeable: boolean };
         rank: number;
-        player;
+        player: PlayerCacheEntry;
     };
 }
 
 export class LadderRow extends React.Component<LadderRowProperties, LadderRowState> {
     unmounted: boolean = false;
 
-    constructor(props) {
+    constructor(props: LadderRowProperties) {
         super(props);
         this.state = { row: undefined };
         this.sync();
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
+    shouldComponentUpdate(nextProps: LadderRowProperties, nextState: LadderRowState) {
         if (!this.state || nextState !== this.state) {
             return true;
         }
@@ -352,7 +364,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
         return false;
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps: LadderRowProperties) {
         if (
             prevProps.index !== this.props.index ||
             this.props.isScrolling !== prevProps.isScrolling ||
@@ -380,7 +392,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
         } else {
             /* not scrolling, do actual loading */
             const index = this.props.index;
-            const resolve = (obj) => {
+            const resolve = (obj: any) => {
                 if (this.unmounted || index !== this.props.index) {
                     /* the row we're responsible for rendering has changed, abandon our work */
                     return;
@@ -457,7 +469,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
         );
     }
 
-    adjustLadderPosition(player) {
+    adjustLadderPosition(player: PlayerCacheEntry) {
         console.log(player);
 
         void alert
@@ -485,7 +497,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
             });
     }
 
-    challengeDetails = (event) => {
+    challengeDetails = (event: React.MouseEvent) => {
         if (!this.state.row) {
             return;
         }
@@ -533,7 +545,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                             </b>
 
                             <span className="challenge-list">
-                                {challenging.map((challenge, idx) => (
+                                {challenging.map((challenge: any, idx: number) => (
                                     <span
                                         key={idx}
                                         className="fake-link challenge-link"
@@ -563,7 +575,7 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                             </b>
 
                             <span className="challenge-list">
-                                {challenged_by.map((challenge, idx) => (
+                                {challenged_by.map((challenge: any, idx: number) => (
                                     <span
                                         key={idx}
                                         className="fake-link challenge-link"
@@ -593,13 +605,13 @@ export class LadderRow extends React.Component<LadderRowProperties, LadderRowSta
                     )}
                 </div>
             ),
-            below: event.target,
+            below: event.target as HTMLElement,
             minWidth: 240,
             minHeight: 200,
         });
     };
 
-    challenge(ladder_player) {
+    challenge(ladder_player: { player: PlayerCacheEntry }) {
         void alert
             .fire({
                 text: interpolate(

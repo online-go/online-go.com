@@ -32,7 +32,7 @@ interface ModerationOfferModalProperties {
 }
 
 export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProperties, {}> {
-    constructor(props) {
+    constructor(props: ModerationOfferModalProperties) {
         super(props);
     }
 
@@ -116,7 +116,11 @@ export class ModerationOfferModal extends Modal<Events, ModerationOfferModalProp
     }
 }
 
-export function openModerationOfferModal(player_id, offered_powers, onResolved) {
+export function openModerationOfferModal(
+    player_id: number,
+    offered_powers: number,
+    onResolved: () => void,
+) {
     openModal(
         <ModerationOfferModal
             player_id={player_id}

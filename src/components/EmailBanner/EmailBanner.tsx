@@ -22,7 +22,7 @@ import * as data from "data";
 import { Card } from "material";
 
 export class EmailBanner extends React.PureComponent {
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
         // TODO: Remove this
         this.state = {};

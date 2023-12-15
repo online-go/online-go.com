@@ -183,7 +183,7 @@ interface ModeratorState {
 }
 
 export class Moderator extends React.PureComponent<{}, ModeratorState> {
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
         this.state = {
             newuserany_filter: "",
@@ -422,12 +422,17 @@ export class Moderator extends React.PureComponent<{}, ModeratorState> {
     }
 }
 
-export class ColorTableToggle extends React.Component<{}, any> {
-    constructor(props) {
+interface ColorTableToggleState {
+    isToggleOn: boolean;
+    timerID?: ReturnType<typeof setInterval>;
+    onDefault: boolean;
+}
+
+export class ColorTableToggle extends React.Component<{}, ColorTableToggleState> {
+    constructor(props: {}) {
         super(props);
         this.state = {
             isToggleOn: false,
-            timerID: "",
             onDefault: false,
         };
 
@@ -437,18 +442,18 @@ export class ColorTableToggle extends React.Component<{}, any> {
     }
 
     handleClick() {
-        this.setState((prevState) => ({
+        this.setState((prevState: ColorTableToggleState) => ({
             isToggleOn: !prevState.isToggleOn,
         }));
 
-        if (this.state.timerID === "") {
+        if (!this.state.timerID) {
             this.setState(() => ({
                 timerID: setInterval(this.colorTable, 1000),
             }));
         } else {
             clearInterval(this.state.timerID);
             this.setState(() => ({
-                timerID: "",
+                timerID: undefined,
             }));
         }
     }
@@ -569,10 +574,10 @@ export class ColorTableToggle extends React.Component<{}, any> {
     }
 
     componentWillUnmount() {
-        if (this.state.timerID !== "") {
+        if (this.state.timerID) {
             clearInterval(this.state.timerID);
             this.setState(() => ({
-                timerID: "",
+                timerID: undefined,
             }));
         }
     }

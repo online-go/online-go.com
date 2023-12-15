@@ -28,7 +28,7 @@ interface GameLinkModalProperties {
 }
 
 export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
-    constructor(props) {
+    constructor(props: GameLinkModalProperties) {
         super(props);
     }
 
@@ -193,7 +193,7 @@ function AnimatedPngCreator({ goban }: { goban: Goban }): JSX.Element {
     );
 }
 
-export function openGameLinkModal(goban): void {
+export function openGameLinkModal(goban: Goban): void {
     openModal(<GameLinkModal goban={goban} fastDismiss />);
 }
 

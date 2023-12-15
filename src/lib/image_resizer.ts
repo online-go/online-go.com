@@ -28,7 +28,7 @@ export function image_resizer(
     }
 
     console.log(file);
-    window["file"] = file;
+    (window as any)["file"] = file;
 
     const reader = new FileReader();
     const image = new Image();

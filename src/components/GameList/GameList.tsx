@@ -18,7 +18,7 @@
 import * as React from "react";
 import { _, pgettext } from "translate";
 import * as preferences from "preferences";
-import { MiniGoban } from "MiniGoban";
+import { MiniGoban, MiniGobanProps } from "MiniGoban";
 import { GobanLineSummary } from "GobanLineSummary";
 import { Player } from "Player";
 import {
@@ -74,7 +74,7 @@ interface GameListState {
 }
 
 export class GameList extends React.PureComponent<GameListProps, GameListState> {
-    constructor(props) {
+    constructor(props: GameListProps) {
         super(props);
         this.state = {
             sort_order: "clock",
@@ -436,7 +436,11 @@ function LineSummaryTable({
     );
 }
 
-function MiniGobanList(games: GameType[], withNames: boolean, miniGobanProps?): JSX.Element {
+function MiniGobanList(
+    games: GameType[],
+    withNames: boolean,
+    miniGobanProps?: MiniGobanProps,
+): JSX.Element {
     return (
         <div className="GameList">
             {games.map((game) => {

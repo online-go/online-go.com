@@ -20,7 +20,7 @@ import * as React from "react";
 interface ResizableProperties {
     id?: string;
     className?: string;
-    onResize?: (w, h) => void;
+    onResize?: (w: number, h: number) => void;
     children?: React.ReactNode;
 }
 
@@ -31,7 +31,7 @@ export class Resizable extends React.Component<ResizableProperties, {}> {
     last_height = 0;
     check_interval: ReturnType<typeof setInterval> | null = null;
 
-    constructor(props) {
+    constructor(props: ResizableProperties) {
         super(props);
     }
 
@@ -92,12 +92,12 @@ export class Resizable extends React.Component<ResizableProperties, {}> {
         }
     }
 
-    setref_div = (el) => (this.div = el);
+    set_div_ref = (el: HTMLDivElement) => (this.div = el);
 
     render() {
         return (
             <div
-                ref={this.setref_div}
+                ref={this.set_div_ref}
                 id={this.props.id}
                 className={"Resizable " + (this.props.className || "")}
             >

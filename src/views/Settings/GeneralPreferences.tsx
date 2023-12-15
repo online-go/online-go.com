@@ -121,7 +121,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
     }
     */
 
-    function updateDesktopNotifications(enabled) {
+    function updateDesktopNotifications(enabled: boolean) {
         if (!enabled) {
             //this.setState({'desktop_notifications_enabled': false});
         }
@@ -146,7 +146,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
                 }
 
                 if ((Notification as any).permission === "default") {
-                    const onRequestResult = (perm) => {
+                    const onRequestResult = (perm: string) => {
                         if (perm === "granted") {
                             //this.setState({'desktop_notifications_enabled': true});
                             console.log("granted notification permission");
@@ -176,7 +176,7 @@ export function GeneralPreferences(props: SettingGroupPageProps): JSX.Element {
         }
     }
 
-    function updateHideUIClass(checked) {
+    function updateHideUIClass(checked: boolean) {
         setHideUiClass(!checked);
         put(`me/settings`, {
             site_preferences: {

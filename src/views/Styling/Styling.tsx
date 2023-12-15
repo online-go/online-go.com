@@ -31,11 +31,12 @@ import { Steps } from "Steps";
 import { errcodeAlerter } from "ErrcodeModal";
 import * as moment from "moment";
 import { alert } from "swal_config";
+import { PlayerCacheEntry } from "src/lib/player_cache";
 
 export class Styling extends React.PureComponent<{}, any> {
     ccinput = null;
 
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
         this.state = {
             star_ratings: [0, 0.1, 0.5, 1.0, 1.1, 1.6, 2.0, 2.7, 3.0, 3.8, 4.1, 4.7, 5, 6],
@@ -53,20 +54,20 @@ export class Styling extends React.PureComponent<{}, any> {
         };
     }
 
-    setStarRating(idx, v) {
+    setStarRating(idx: number, v: number) {
         const cpy = this.state.star_ratings.slice();
         cpy[idx] = v;
         this.setState({ star_ratings: cpy });
     }
 
-    updateAutocompletedPlayer = (user) => {
+    updateAutocompletedPlayer = (user: PlayerCacheEntry | null) => {
         this.setState({ autocompleted_player: user });
     };
-    updateAutocompletedGroup = (group) => {
+    updateAutocompletedGroup = (group: any) => {
         this.setState({ autocompleted_group: group });
     };
 
-    setMarkdown = (ev) => {
+    setMarkdown = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({ markdown_source: ev.target.value });
     };
 
@@ -375,21 +376,21 @@ export class Styling extends React.PureComponent<{}, any> {
                         <Card>
                             <div className="row">
                                 <Card>
-                                    {this.state.star_ratings.map((v, idx) => (
+                                    {this.state.star_ratings.map((v: number, idx: number) => (
                                         <div key={idx}>
                                             <StarRating value={v} /> {v}
                                         </div>
                                     ))}
                                 </Card>
                                 <Card>
-                                    {this.state.star_ratings.map((v, idx) => (
+                                    {this.state.star_ratings.map((v: number, idx: number) => (
                                         <div key={idx}>
                                             <StarRating rated value={v} /> {v}
                                         </div>
                                     ))}
                                 </Card>
                                 <Card>
-                                    {this.state.star_ratings.map((v, idx) => (
+                                    {this.state.star_ratings.map((v: number, idx: number) => (
                                         <div key={idx}>
                                             <StarRating
                                                 value={v}

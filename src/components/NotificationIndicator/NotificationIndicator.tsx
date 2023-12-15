@@ -20,7 +20,9 @@ import { notification_manager } from "Notifications";
 import { _ } from "translate";
 
 export function NotificationIndicator({ onClick }: { onClick: () => void }): JSX.Element {
-    const [count, setCount] = React.useState(notification_manager.unread_notification_count);
+    const [count, setCount] = React.useState<number | undefined>(
+        notification_manager.unread_notification_count,
+    );
 
     React.useEffect(() => {
         notification_manager.event_emitter.on("notification-count", setCount);
@@ -31,8 +33,8 @@ export function NotificationIndicator({ onClick }: { onClick: () => void }): JSX
 
     return (
         <span className="NotificationIndicator" title={_("Notifications")} onClick={onClick}>
-            <i className={"fa fa-bell " + (count > 0 ? "active" : "")} />
-            <span className={"count " + (count > 0 ? "active" : "")}>{count || 0}</span>
+            <i className={"fa fa-bell " + ((count ?? 0) > 0 ? "active" : "")} />
+            <span className={"count " + ((count ?? 0) > 0 ? "active" : "")}>{count || 0}</span>
         </span>
     );
 }

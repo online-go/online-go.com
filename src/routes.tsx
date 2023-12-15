@@ -74,7 +74,7 @@ import { NetworkStatus } from "NetworkStatus";
 import * as docs from "docs";
 
 /*** Layout our main view and routes ***/
-function Main(props): JSX.Element {
+function Main(props: { children: any }): JSX.Element {
     if (username_needs_to_be_updated()) {
         return (
             <div>

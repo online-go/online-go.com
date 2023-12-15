@@ -27,6 +27,7 @@ import { Player } from "Player";
 import * as moment from "moment";
 //import { Announcement } from "src/components/Announcements";
 import { useUser } from "hooks";
+import { Announcement } from "src/components/Announcements";
 
 moment.relativeTimeThreshold("m", 59);
 
@@ -105,7 +106,7 @@ export function AnnouncementCenter(): JSX.Element {
             })
             .catch(errorAlerter);
     };
-    const deleteAnnouncement = (announcement) => {
+    const deleteAnnouncement = (announcement: Announcement) => {
         del(`announcements/${announcement.id}`).then(refresh).catch(errorAlerter);
     };
 

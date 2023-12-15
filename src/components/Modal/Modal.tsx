@@ -62,7 +62,7 @@ export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<
             };
         }
 
-        const on_escape = (event) => {
+        const on_escape = (event: React.KeyboardEvent<HTMLInputElement>) => {
             if (event.keyCode === 27) {
                 this.close();
             }
@@ -71,11 +71,11 @@ export class Modal<Events, P, S> extends TypedEventEmitterPureComponent<
             //container.remove();
             backdrop.parentNode?.removeChild(backdrop);
             this.off("close", on_close);
-            $(document.body).off("keydown", on_escape);
+            $(document.body).off("keydown", on_escape as any);
         };
 
         this.on("close", on_close);
-        $(document.body).on("keydown", on_escape);
+        $(document.body).on("keydown", on_escape as any);
 
         this.emit("open");
     };

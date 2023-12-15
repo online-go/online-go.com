@@ -46,7 +46,7 @@ export function OnlineLeagueSpectatorLanding(): JSX.Element {
     const user = useUser();
     const logged_in = !user.anonymous;
 
-    const jumpToGame = (details) => {
+    const jumpToGame = (details: any) => {
         console.log("Jump to game?", details, match);
         if (details.matchId === match?.id) {
             console.log("yes, jumping...");
@@ -54,7 +54,7 @@ export function OnlineLeagueSpectatorLanding(): JSX.Element {
         }
     };
 
-    const updateWaitingStatus = (details) => {
+    const updateWaitingStatus = (details: any) => {
         if (details.matchId === match?.id && match) {
             set_match({ ...match, black_ready: details.black, white_ready: details.white });
         }

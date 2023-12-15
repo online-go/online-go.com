@@ -94,7 +94,7 @@ export const report_categories: ReportDescription[] = [
         title: pgettext("Report user for score cheating", "Score Cheating"),
         description: pgettext(
             "Report user for score cheating",
-            "User is attempting to cheat in the stone removal phase or the game has been miscored.",
+            "User is attempting to cheat in the stone removal phase or the game has been mis-scored.",
         ),
         game_id_required: true,
     },

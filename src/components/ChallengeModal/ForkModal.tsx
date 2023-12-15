@@ -23,6 +23,7 @@ import { Goban } from "goban";
 import { PlayerAutocomplete } from "PlayerAutocomplete";
 import { MiniGoban } from "MiniGoban";
 import { challenge } from "ChallengeModal";
+import { PlayerCacheEntry } from "src/lib/player_cache";
 
 interface Events {}
 
@@ -31,7 +32,7 @@ interface ForkModalProperties {
 }
 
 export class ForkModal extends Modal<Events, ForkModalProperties, any> {
-    constructor(props) {
+    constructor(props: ForkModalProperties) {
         super(props);
 
         const goban = this.props.goban;
@@ -60,7 +61,7 @@ export class ForkModal extends Modal<Events, ForkModalProperties, any> {
         challenge(this.state.player.id, this.state.fork_preview);
     };
 
-    setPlayer = (player) => {
+    setPlayer = (player: PlayerCacheEntry | null) => {
         this.setState({ player: player });
     };
 
@@ -98,10 +99,10 @@ export class ForkModal extends Modal<Events, ForkModalProperties, any> {
     }
 }
 
-export function openForkModal(goban) {
+export function openForkModal(goban: Goban) {
     return openModal(<ForkModal goban={goban} />);
 }
-export function challengeFromBoardPosition(goban) {
+export function challengeFromBoardPosition(goban: Goban) {
     if (!goban) {
         return;
     }

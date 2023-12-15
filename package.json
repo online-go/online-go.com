@@ -30,6 +30,8 @@
         "@testing-library/jest-dom": "^5.16.5",
         "@testing-library/react": "^13.2.0",
         "@types/jest": "^29.5.0",
+        "@types/valid-url": "^1.0.7",
+        "@types/react-linkify": "^1.0.4",
         "@types/testing-library__jest-dom": "^5.14.5",
         "@typescript-eslint/eslint-plugin": "^6.8.0",
         "@typescript-eslint/eslint-plugin-tslint": "^6.8.0",

@@ -23,7 +23,7 @@ declare namespace rest_api {
             id: number; // pk for OnlineLeagueChallenge
             name: string; // the match "name", also set as the game "name"
             league: string; // acronym/name
-            player_key: string; // shortuuid
+            player_key: string; // short uuid
             side: string; // black or white
             started: boolean;
             game: number; // pk
@@ -36,9 +36,9 @@ declare namespace rest_api {
         interface MatchDetails {
             id: number; // pk for OnlineLeagueChallenge
             name: string; // the match "name", also set as the game "name"
-            black_member_id: string; // shortuuid
+            black_member_id: string; // short uuid
             black_invite: string; // URL
-            white_member_id: string; // shortuuid
+            white_member_id: string; // short uuid
             white_invite: string; // URL
             spectator_link: string; // URL
             league: string; // acronym/name

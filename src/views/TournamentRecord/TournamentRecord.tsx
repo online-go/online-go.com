@@ -26,7 +26,7 @@ import { ignore, errorAlerter, dup } from "misc";
 import { rankString, allRanks } from "rank_utils";
 import { createDemoBoard } from "ChallengeModal";
 
-window["dup"] = dup;
+(window as any)["dup"] = dup;
 
 import { alert } from "swal_config";
 const ranks = allRanks();
@@ -36,7 +36,7 @@ interface Round {
     id: number;
     name: string;
     notes: string;
-    entries: any[];
+    entries: RoundEntry[];
 }
 interface TournamentRecordState {
     editing: boolean;
@@ -51,6 +51,10 @@ interface TournamentRecordState {
     location?: string;
     players?: { name: string; rank: number }[];
     editable_by_current_user?: boolean;
+}
+
+interface RoundEntry {
+    [k: string]: any;
 }
 
 export function TournamentRecord(): JSX.Element {
@@ -215,7 +219,7 @@ export function TournamentRecord(): JSX.Element {
             });
     };
 
-    const deleteEntry = (round: Round, entry) => {
+    const deleteEntry = (round: Round, entry: RoundEntry) => {
         alert
             .fire({
                 text: "Are you sure you wish to delete this entry? The original game or review content will not be affected, but the entry will be removed from this list of game in this round.",
@@ -463,7 +467,7 @@ export function TournamentRecord(): JSX.Element {
                     <div className="round-entries-container">
                         <table className="round-entries">
                             <tbody>
-                                {round.entries.map((entry) => (
+                                {round.entries.map((entry: RoundEntry) => (
                                     <tr key={entry.id} className="round-entry">
                                         {editable && (
                                             <td>

@@ -30,6 +30,7 @@ import { ActiveTournamentList, GroupList } from "types";
 import { _, interpolate } from "translate";
 import { getBlocks } from "BlockPlayer";
 import { insert_into_sorted_list, string_splitter, n2s, Timeout } from "misc";
+import { User } from "goban/lib/protocol";
 
 export interface ChatMessage {
     channel: string;
@@ -189,6 +190,11 @@ try {
     console.error(e);
 }
 
+export const global_channels_by_id: { [channel: string]: ChannelInformation | undefined } = {};
+for (const chan of global_channels) {
+    global_channels_by_id[chan.id] = chan;
+}
+
 data.watch("user", (user) => {
     if (!user) {
         return;
@@ -213,7 +219,7 @@ data.watch("user", (user) => {
 
 export function resolveChannelDisplayName(channel: string): string {
     if (channel === "shadowban") {
-        return global_channels[channel];
+        return global_channels_by_id[channel]?.name ?? channel;
     }
     if (channel.startsWith("global-")) {
         global_channels.forEach((element): string | void => {
@@ -318,13 +324,13 @@ class ChatChannel extends TypedEventEmitter<Events> {
     proxies: { [id: number]: ChatChannelProxy } = {};
     joining: boolean = false;
     chat_log: Array<ChatMessage> = [];
-    chat_ids = {};
+    chat_ids: { [id: string]: boolean } = {}; // used to prevent duplicate messages
     has_unread = false;
     unread_ct = 0;
     mentioned = false;
-    user_list: { [k: string]: any } = {};
-    users_by_rank: any[] = [];
-    users_by_name: any[] = [];
+    user_list: { [k: string]: User } = {};
+    users_by_rank: User[] = [];
+    users_by_name: User[] = [];
     user_count = 0;
     rtl_mode = false;
     last_seen_timestamp: number;
@@ -496,7 +502,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         }
     }
 
-    handleChatRemoved(obj) {
+    handleChatRemoved(obj: { channel: string; uuid: string }) {
         console.log("Chat message removed: ", obj);
         this.chat_ids[obj.uuid] = true;
         for (let idx = 0; idx < this.chat_log.length; ++idx) {
@@ -527,7 +533,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
             console.error(e);
         }
     }
-    handlePart(user): void {
+    handlePart(user: User): void {
         if (user.id in this.user_list) {
             this.user_count--;
             this._remove_from_sorted_lists(user);
@@ -540,7 +546,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
             console.error(e);
         }
     }
-    handleUserUpdate(old_player_id, user): void {
+    handleUserUpdate(_old_player_id: number, user: User): void {
         if (user.id in this.user_list) {
             const old_entry = this.user_list[user.id];
             this.handlePart(old_entry);
@@ -548,7 +554,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         this.handleJoins([user]);
     }
 
-    _insert_into_sorted_lists(new_user) {
+    _insert_into_sorted_lists(new_user: User) {
         insert_into_sorted_list(
             this.users_by_name,
             (a, b) => a.username.localeCompare(b.username),
@@ -558,7 +564,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
         insert_into_sorted_list(this.users_by_rank, users_by_rank, new_user);
     }
 
-    _remove_from_sorted_lists(user) {
+    _remove_from_sorted_lists(user: User) {
         this.users_by_name = this.users_by_name.filter(
             (existing_user) => existing_user.id !== user.id,
         );
@@ -717,7 +723,7 @@ class ChatChannel extends TypedEventEmitter<Events> {
     }
 }
 
-export function users_by_rank(a, b) {
+export function users_by_rank(a: User, b: User) {
     if (a.professional && !b.professional) {
         return -1;
     }
@@ -725,11 +731,11 @@ export function users_by_rank(a, b) {
         return 1;
     }
     if (a.professional && b.professional) {
-        return b.ranking - a.ranking;
+        return (b.ranking ?? 0) - (a.ranking ?? 0);
     }
 
-    const a_rank = Math.floor(bounded_rank(a));
-    const b_rank = Math.floor(bounded_rank(b));
+    const a_rank = Math.floor(bounded_rank(a as any));
+    const b_rank = Math.floor(bounded_rank(b as any));
 
     if (a_rank === b_rank && a.username && b.username) {
         return a.username.localeCompare(b.username);
@@ -741,7 +747,7 @@ export class ChatChannelProxy extends TypedEventEmitter<Events> {
     id: number = ++last_proxy_id;
     channel: ChatChannel;
 
-    constructor(channel) {
+    constructor(channel: ChatChannel) {
         super();
         this.channel = channel;
         this.channel.on("chat", this._onChat);
@@ -756,22 +762,22 @@ export class ChatChannelProxy extends TypedEventEmitter<Events> {
         this._destroy();
     }
 
-    _onChat = (...args) => {
+    _onChat = (...args: any[]) => {
         this.emit.apply(this, ["chat", args]);
     };
-    _onTopic = (...args) => {
+    _onTopic = (...args: any[]) => {
         this.emit.apply(this, ["topic", args]);
     };
-    _onJoin = (...args) => {
+    _onJoin = (...args: any[]) => {
         this.emit.apply(this, ["join", args]);
     };
-    _onPart = (...args) => {
+    _onPart = (...args: any[]) => {
         this.emit.apply(this, ["part", args]);
     };
-    _onChatRemoved = (...args) => {
+    _onChatRemoved = (...args: any[]) => {
         this.emit.apply(this, ["chat-removed", args]);
     };
-    _onUnreadChanged = (...args) => {
+    _onUnreadChanged = (...args: any[]) => {
         this.emit.apply(this, ["unread-count-changed", args]);
     };
     _destroy() {
@@ -840,14 +846,14 @@ class ChatManager {
 
         this.channels[obj.channel].handleChat(obj);
     };
-    onMessageRemoved = (obj) => {
+    onMessageRemoved = (obj: { channel: string; uuid: string }) => {
         if (!(obj.channel in this.channels)) {
             return;
         }
 
         this.channels[obj.channel].handleChatRemoved(obj);
     };
-    onJoin = (joins) => {
+    onJoin = (joins: { channel: string; users: User[] }) => {
         for (let i = 0; i < joins.users.length; ++i) {
             player_cache.update(joins.users[i]);
         }
@@ -858,14 +864,22 @@ class ChatManager {
 
         this.channels[joins.channel].handleJoins(joins.users);
     };
-    onPart = (part) => {
+    onPart = (part: { channel: string; user: User }) => {
         if (!(part.channel in this.channels)) {
             return;
         }
 
         this.channels[part.channel].handlePart(part.user);
     };
-    onUserUpdate = ({ channel, old_player_id, user }) => {
+    onUserUpdate = ({
+        channel,
+        old_player_id,
+        user,
+    }: {
+        channel: string;
+        old_player_id: number;
+        user: User;
+    }) => {
         if (!(channel in this.channels)) {
             return;
         }

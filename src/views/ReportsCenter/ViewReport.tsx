@@ -48,7 +48,7 @@ interface ViewReportProps {
     report_id: number;
 }
 
-let cached_moderators = [];
+let cached_moderators: PlayerCacheEntry[] = [];
 
 export function ViewReport({ report_id, reports, onChange }: ViewReportProps): JSX.Element {
     const user = useUser();
@@ -96,7 +96,7 @@ export function ViewReport({ report_id, reports, onChange }: ViewReportProps): J
     }, [report_id]);
 
     React.useEffect(() => {
-        const onUpdate = (r) => {
+        const onUpdate = (r: Report) => {
             if (r.id === report?.id) {
                 setReport(r);
                 setModeratorId(r?.moderator?.id);

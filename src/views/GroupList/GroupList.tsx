@@ -128,7 +128,7 @@ export function GroupList(): JSX.Element {
     );
 }
 
-function group_sort_fn(a, b) {
+function group_sort_fn(a: { name: string }, b: { name: string }) {
     const a_name = a.name.toLowerCase();
     const b_name = b.name.toLowerCase();
 

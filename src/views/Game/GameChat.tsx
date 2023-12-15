@@ -24,7 +24,7 @@ import { Link } from "react-router-dom";
 import { _, pgettext, interpolate, current_language } from "translate";
 import { Player } from "Player";
 import { profanity_filter } from "profanity_filter";
-import { Goban, GobanCore, protocol } from "goban";
+import { Goban, GobanCore, protocol, GobanChatLogLine } from "goban";
 import { ChatUserList, ChatUserCount } from "ChatUserList";
 import { TabCompleteInput } from "TabCompleteInput";
 import { chat_markup } from "components/Chat";
@@ -99,7 +99,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
             }, 1);
         };
 
-        const onChat = (line) => {
+        const onChat = (line: GobanChatLogLine) => {
             if (!(line.chat_id in chat_log_hash.current)) {
                 chat_log_hash.current[line.chat_id] = true;
                 chat_lines.current.push(line);
@@ -107,7 +107,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
             }
         };
 
-        const onChatRemove = (obj) => {
+        const onChatRemove = (obj: { chat_ids: string[] }) => {
             for (const chat_id of obj.chat_ids) {
                 for (let i = 0; i < chat_lines.current.length; ++i) {
                     if (chat_lines.current[i].chat_id === chat_id) {
@@ -128,8 +128,10 @@ export function GameChat(props: GameChatProperties): JSX.Element {
             debouncedChatUpdate();
         };
 
-        for (const line of goban.chat_log) {
-            onChat(line);
+        for (const log of goban.chat_log) {
+            for (const line of log.lines) {
+                onChat(line);
+            }
         }
 
         goban.on("chat", onChat);
@@ -502,7 +504,7 @@ export function GameChatLine(props: GameChatLineProperties): JSX.Element {
         };
 
         // It's unclear to me if we still need this "move_number" in (line as any) check,
-        // our typing says that field should always exist so the second case isn't necsesary,
+        // our typing says that field should always exist so the second case isn't necessary,
         // but I'm not sure why we had it to begin with then, so I'm leaving it in place
         // for the time being. - anoek 2023-01-02
         move_number = (

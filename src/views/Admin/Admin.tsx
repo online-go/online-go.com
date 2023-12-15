@@ -29,7 +29,7 @@ interface AdminState {
 export class Admin extends React.PureComponent<{}, AdminState> {
     results: string[] = [];
 
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
 
         this.state = {
@@ -43,7 +43,7 @@ export class Admin extends React.PureComponent<{}, AdminState> {
     }
 
     updating = false;
-    appendResult(text) {
+    appendResult(text: string) {
         this.results.push(typeof text === "string" ? text : JSON.stringify(text, null, 4));
         if (this.updating) {
             return;
@@ -55,7 +55,7 @@ export class Admin extends React.PureComponent<{}, AdminState> {
         }, 1);
     }
 
-    promptAndPost(txt, url, data?) {
+    promptAndPost(txt: string | null, url: string, data?: any) {
         const doPost = () => {
             this.appendResult(`POST ${url} ${JSON.stringify(data || {}, null, 4)}`);
 

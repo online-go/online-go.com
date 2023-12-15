@@ -63,7 +63,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
         }
 
         if (review_id) {
-            const settings = {
+            const settings: { [k: string]: any } = {
                 name: config.game_name,
                 outcome: config.outcome,
             };
@@ -307,7 +307,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                                 : ""}
                         </dd>
                         <dt>{_("Rules")}</dt>
-                        <dd>{rulesText(config.rules)}</dd>
+                        <dd>{rulesText(config.rules ?? "<error>")}</dd>
                         <dt>{_("Ranked")}</dt>
                         <dd>{yesno(config.ranked)}</dd>
                         <dt>{_("Annulled")}</dt>
@@ -317,7 +317,7 @@ export class GameInfoModal extends Modal<Events, GameInfoModalProperties, {}> {
                             {config.width}x{config.height}
                         </dd>
                         <dt>{_("Handicap")}</dt>
-                        <dd>{handicapText(config.handicap)}</dd>
+                        <dd>{handicapText(config.handicap ?? -1)}</dd>
                         <dt>{_("Result")}</dt>
                         <dd>
                             {editable && config.review_id && !config.game_id ? (

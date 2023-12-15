@@ -40,7 +40,7 @@ export function FriendIndicator(): JSX.Element | null {
                 let ct = 0;
                 for (const friend of friend_list.current) {
                     if (!(friend.id in online_subscriptions)) {
-                        online_subscriptions[friend.id] = true;
+                        (online_subscriptions as any)[friend.id] = true;
                         setTimeout(() => {
                             online_status.subscribe(friend.id, updateFriendCount);
                         }, 1);

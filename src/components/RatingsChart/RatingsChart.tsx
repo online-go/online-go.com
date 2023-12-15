@@ -69,20 +69,25 @@ const secondary_charts_height = chart_height - margin2.top - margin2.bottom;
 
 export class RatingsChart extends React.Component<RatingsChartProperties, RatingsChartState> {
     container = React.createRef<HTMLDivElement>();
-    chart_div;
-    svg;
-    clip;
-    resize_debounce;
-    rating_graph; // The main graph ( which does happen to be a timeline :o )
-    timeline_graph; // The secondary graph, where a slice of timeline can be selected to display on the main graph
-    legend;
-    dateLegend;
-    dateLegendBackground;
-    dateLegendText;
-    range_label;
-    legend_label;
-    date_extents;
-    win_loss_aggregate;
+    chart_div!: HTMLDivElement;
+    svg!: d3.Selection<SVGSVGElement, unknown, null, undefined>;
+    clip!: d3.Selection<SVGRectElement, unknown, null, undefined>;
+    resize_debounce: ReturnType<typeof setTimeout> | undefined;
+    rating_graph!: d3.Selection<SVGGElement, unknown, null, undefined>; // The main timeline graph
+    timeline_graph!: d3.Selection<SVGGElement, unknown, null, undefined>; // The secondary graph, where a slice of timeline can be selected to display on the main graph
+    legend!: d3.Selection<SVGGElement, unknown, null, undefined>;
+    dateLegend!: d3.Selection<SVGGElement, unknown, null, undefined>;
+    dateLegendBackground!: d3.Selection<SVGRectElement, unknown, null, undefined>;
+    dateLegendText!: d3.Selection<SVGTextElement, unknown, null, undefined>;
+    range_label!: d3.Selection<SVGTextElement, unknown, null, undefined>;
+    legend_label!: d3.Selection<SVGTextElement, unknown, null, undefined>;
+    date_extents!: Date[];
+    win_loss_aggregate?: {
+        weak_wins: number;
+        strong_wins: number;
+        weak_losses: number;
+        strong_losses: number;
+    };
     win_loss_graphs: Array<any> = [];
     win_loss_bars: Array<any> = [];
     game_entries!: Array<RatingEntry>;
@@ -91,8 +96,8 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
     max_games_played_in_a_month!: number;
     destroyed = false;
 
-    show_pie;
-    win_loss_pie;
+    show_pie: boolean = true;
+    win_loss_pie!: d3.Selection<SVGGElement, unknown, null, undefined>;
 
     ratings_x = d3.scaleTime();
     timeline_x = d3.scaleTime();
@@ -129,26 +134,26 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
         .y0(secondary_charts_height)
         .y1((d: RatingEntry) => this.timeline_y(humble_rating(d.rating, d.deviation)));
 
-    deviation_chart;
-    rating_chart;
-    x_axis_date_labels;
-    y_axis_rank_labels;
-    y_axis_rating_labels;
-    helper;
-    helperText;
-    ratingTooltip;
-    mouseArea;
+    deviation_chart!: d3.Selection<SVGPathElement, unknown, null, undefined>;
+    rating_chart!: d3.Selection<SVGPathElement, unknown, null, undefined>;
+    x_axis_date_labels!: d3.Selection<SVGGElement, unknown, null, undefined>;
+    y_axis_rank_labels!: d3.Selection<SVGGElement, unknown, null, undefined>;
+    y_axis_rating_labels!: d3.Selection<SVGGElement, unknown, null, undefined>;
+    helper!: d3.Selection<SVGGElement, unknown, null, undefined>;
+    helperText!: d3.Selection<SVGTextElement, unknown, null, undefined>;
+    ratingTooltip!: d3.Selection<SVGCircleElement, unknown, null, undefined>;
+    mouseArea!: d3.Selection<SVGRectElement, unknown, null, undefined>;
     //verticalCrosshairLine;
-    horizontalCrosshairLine;
-    timeline_chart;
-    timeline_axis_labels;
-    brush;
-    width; // whole width of this element
-    graph_width; // width of the part where the graph is drawn
-    pie_width; // width of the area for the pie chart
-    height;
+    horizontalCrosshairLine!: d3.Selection<SVGLineElement, unknown, null, undefined>;
+    timeline_chart!: d3.Selection<SVGPathElement, unknown, null, undefined>;
+    timeline_axis_labels!: d3.Selection<SVGGElement, unknown, null, undefined>;
+    brush!: d3.BrushBehavior<unknown>;
+    width: number = 0; // whole width of this element
+    graph_width: number = 0; // width of the part where the graph is drawn
+    pie_width: number = 0; // width of the area for the pie chart
+    height: number = 0;
 
-    constructor(props) {
+    constructor(props: RatingsChartProperties) {
         super(props);
         this.state = {
             loading: true,
@@ -157,38 +162,38 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
             hovered_month: undefined,
             date_extents: [],
         };
-        this.chart_div = $("<div>")[0];
+        this.chart_div = $("<div>")[0] as HTMLDivElement;
     }
     componentDidMount() {
         this.initialize();
         if (this.shouldDisplayRankInformation()) {
-            this.y_axis_rank_labels.style("display", null);
+            this.y_axis_rank_labels?.style("display", null);
         } else {
-            this.y_axis_rank_labels.style("display", "none");
+            this.y_axis_rank_labels?.style("display", "none");
         }
     }
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps: RatingsChartProperties) {
         if (
             this.props.playerId !== prevProps.playerId ||
             this.props.speed !== prevProps.speed ||
             this.props.size !== prevProps.size
         ) {
             const size_text = this.props.size ? `${this.props.size}x${this.props.size}` : "";
-            this.legend_label.text(`${speed_translation(this.props.speed)} ${size_text}`);
+            this.legend_label?.text(`${speed_translation(this.props.speed)} ${size_text}`);
 
             this.refreshData();
         }
         if (this.shouldDisplayRankInformation()) {
-            this.y_axis_rank_labels.style("display", null);
+            this.y_axis_rank_labels?.style("display", null);
         } else {
-            this.y_axis_rank_labels.style("display", "none");
+            this.y_axis_rank_labels?.style("display", "none");
         }
     }
     componentWillUnmount() {
         this.deinitialize();
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
+    shouldComponentUpdate(nextProps: RatingsChartProperties, nextState: RatingsChartState) {
         if (
             this.props.playerId !== nextProps.playerId ||
             this.props.speed !== nextProps.speed ||
@@ -334,12 +339,12 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
                             ")",
                     )
                     .on("mouseover", () => {
-                        this.helper.style("display", null);
-                        this.dateLegend.style("display", null);
+                        this.helper!.style("display", null);
+                        this.dateLegend!.style("display", null);
                     })
                     .on("mouseout", () => {
-                        this.helper.style("display", "none");
-                        this.dateLegend.style("display", "none");
+                        this.helper!.style("display", "none");
+                        this.dateLegend!.style("display", "none");
                         this.setState({ hovered_month: undefined });
                     })
                     .on("mousemove", function (event) {
@@ -374,9 +379,9 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
                                 (endOfMonth.getTime() - startOfMonth.getTime()) / 2,
                         );
 
-                        self.helperText.text(format_month(new Date(d)));
-                        self.dateLegendText.text(format_month(new Date(d)));
-                        self.dateLegend.attr(
+                        self.helperText!.text(format_month(new Date(d)));
+                        self.dateLegendText?.text(format_month(new Date(d)));
+                        self.dateLegend?.attr(
                             "transform",
                             "translate(" +
                                 (boundDataLegendX(self.ratings_x(midDate)) + margin.left) +
@@ -610,7 +615,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
         this.destroyed = true;
         if (this.resize_debounce) {
             clearTimeout(this.resize_debounce);
-            this.resize_debounce = null;
+            this.resize_debounce = undefined;
         }
         this.svg.remove();
     }
@@ -645,7 +650,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
 
         if (this.resize_debounce) {
             clearTimeout(this.resize_debounce);
-            this.resize_debounce = null;
+            this.resize_debounce = undefined;
         }
 
         if (!no_debounce) {
@@ -721,6 +726,10 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
 
         const agg = this.win_loss_aggregate;
 
+        if (!agg) {
+            return;
+        }
+
         /* with well spread data, the order here places wins on top, and stronger opponent on right of pie */
         const pie_data = [
             {
@@ -765,13 +774,13 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
             },
         ];
 
-        const pie_colour_class = ["strong-wins", "strong-losses", "weak-losses", "weak-wins"];
+        const pie_color_class = ["strong-wins", "strong-losses", "weak-losses", "weak-wins"];
 
         const pie_radius = Math.min(this.pie_width, this.height) / 2.0 - 15; // just looks about right.
 
         /* Pie plotting as per example at http://zeroviscosity.com/d3-js-step-by-step/step-1-a-basic-pie-chart */
 
-        const arc = d3.arc().innerRadius(0).outerRadius(pie_radius);
+        const arc: any = d3.arc().innerRadius(0).outerRadius(pie_radius);
 
         const pie_values = d3
             .pie()
@@ -786,7 +795,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
             .enter()
             .append("path")
             .attr("d", arc)
-            .attr("class", (d, i) => "pie " + pie_colour_class[i]);
+            .attr("class", (d, i) => "pie " + pie_color_class[i]);
 
         /* The legend with values */
 
@@ -821,7 +830,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
         legend_order.forEach((legend_item, i) => {
             this.win_loss_pie
                 .append("rect")
-                .attr("class", pie_colour_class[legend_item])
+                .attr("class", pie_color_class[legend_item])
                 .attr("x", legend_xoffset)
                 .attr("y", legend_yoffset + i * 20)
                 .attr("width", 15)
@@ -836,7 +845,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
 
     /* Callback function for data retrieval, which plots the retrieved data */
     //loadDataAndPlot = (err, data) => {
-    loadDataAndPlot = (data) => {
+    loadDataAndPlot = (data: RatingEntry[]) => {
         /* There's always a starting 1500 rating entry at least, so if that's all there
          * is let's just zero out the array and show a "No data" text */
         if (!data || data.length === 1) {
@@ -857,8 +866,9 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
         /* Group into days and process information like starting/ended rating/rank, increase/decrease, etc */
         this.games_by_day = new Array<RatingEntry>();
         this.games_by_month = new Array<RatingEntry>();
-        const daykey = (d: Date) => `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
-        const monthkey = (d: Date) => `${d.getUTCFullYear()}-${d.getUTCMonth()}`;
+        const day_key_formatter = (d: Date) =>
+            `${d.getUTCFullYear()}-${d.getUTCMonth()}-${d.getUTCDate()}`;
+        const month_key_formatter = (d: Date) => `${d.getUTCFullYear()}-${d.getUTCMonth()}`;
         this.max_games_played_in_a_month = 0;
 
         if (this.game_entries.length > 0) {
@@ -867,7 +877,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
             let cur_day: RatingEntry | null = null;
             let cur_month: RatingEntry | null = null;
             for (const d of this.game_entries) {
-                const day_key = daykey(d.ended);
+                const day_key = day_key_formatter(d.ended);
                 if (last_day_key !== day_key) {
                     last_day_key = day_key;
                     cur_day = d.copy();
@@ -885,7 +895,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
                         this.games_by_day[this.games_by_day.length - 2].rating < cur_day.rating;
                 }
 
-                const month_key = monthkey(d.ended);
+                const month_key = month_key_formatter(d.ended);
                 if (last_month_key !== month_key) {
                     last_month_key = month_key;
                     cur_month = d.copy();
@@ -1095,9 +1105,9 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
         return this.graph_width * (days_in_month / days_in_range);
     }
 
-    onTimelineBrush = (event) => {
-        this.date_extents = (event && event.selection) || this.timeline_x.range();
-        this.date_extents = this.date_extents.map(this.timeline_x.invert, this.timeline_x);
+    onTimelineBrush = (event: d3.D3BrushEvent<any> | null) => {
+        const tmp = (event && event.selection) || this.timeline_x.range();
+        this.date_extents = tmp.map(this.timeline_x.invert as any, this.timeline_x);
         this.date_extents[0].setHours(0, 0, 0, 0); /* start of day */
         this.date_extents[1].setHours(23, 59, 59, 0); /* end of day   */
         this.setState({ date_extents: this.date_extents.slice() });
@@ -1191,7 +1201,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
 
         this.rating_chart.attr("d", this.rating_line as any);
         this.deviation_chart.attr("d", this.deviation_area as any);
-        this.rating_graph.select(".x.axis").call(this.selected_axis);
+        this.rating_graph.select(".x.axis").call(this.selected_axis as any);
         this.y_axis_rating_labels.call(this.rating_axis);
         this.y_axis_rank_labels.call(this.rank_axis);
     };
@@ -1214,7 +1224,7 @@ export class RatingsChart extends React.Component<RatingsChartProperties, Rating
                             handleHeight
                             onResize={() => this.onResize()}
                         />
-                        <PersistentElement elt={this.chart_div} />
+                        <PersistentElement elt={this.chart_div as any} />
                     </div>
                 )}
                 {this.show_pie ? null : this.renderWinLossNumbersAsText()}

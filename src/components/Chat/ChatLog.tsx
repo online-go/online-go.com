@@ -29,7 +29,7 @@ import { Timeout, errorLogger } from "misc";
 //import { ChatChannelProxy, global_channels, group_channels, tournament_channels } from 'chat_manager';
 import {
     chat_manager,
-    global_channels,
+    global_channels_by_id,
     ChatChannelProxy,
     ChatMessage,
     TopicMessage,
@@ -278,7 +278,7 @@ function ChannelTopic({
     }, [topic, topic_updated, proxy]);
 
     const channelDetails = useCallback(
-        (event) => {
+        (event: React.MouseEvent<HTMLElement>) => {
             popover({
                 elt: (
                     <ChatDetails
@@ -375,7 +375,7 @@ function ChatLines({
     onShowChannels,
     onShowUsers,
 }: InternalChatLogProperties): JSX.Element {
-    const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;
+    const rtl_mode = !!global_channels_by_id[channel]?.rtl;
     const chat_log_div = useRef<HTMLDivElement>(null);
     const [, refresh]: [number, (n: number) => void] = useState(0);
     const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] =
@@ -508,7 +508,7 @@ function ChatInput({
     inputPlaceholdertText,
 }: InternalChatLogProperties): JSX.Element {
     const user = useUser();
-    const rtl_mode = channel in global_channels && !!global_channels[channel].rtl;
+    const rtl_mode = !!global_channels_by_id[channel]?.rtl;
     const input = useRef(null);
     const [proxy, setProxy]: [ChatChannelProxy | null, (x: ChatChannelProxy) => void] =
         useState<ChatChannelProxy | null>(null);

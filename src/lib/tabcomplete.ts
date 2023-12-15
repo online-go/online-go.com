@@ -16,14 +16,20 @@
 
 import * as player_cache from "player_cache";
 
-declare let $;
+declare let $: any;
+
+interface TabCompleteOptions {
+    nick_match: RegExp;
+    nicknames: string[] | (() => string[]);
+    on_complete: (event: any) => void;
+}
 
 /*!
  * This function adapted from: https://github.com/localhost/jquery-fieldselection
  * jQuery plugin: fieldSelection - v0.1.1 - last change: 2006-12-16
  * (c) 2006 Alex Brem <alex@0xab.cd> - http://blog.0xab.cd
  */
-function getSelection(field) {
+function getSelection(field: HTMLTextAreaElement) {
     const e = field;
 
     return (
@@ -72,7 +78,7 @@ function getSelection(field) {
     by CMS (http://stackoverflow.com/users/5445/cms) on Stack Overflow:
     http://stackoverflow.com/questions/499126/jquery-set-cursor-position-in-text-area
 */
-function setSelectionRange(input, selectionStart, selectionEnd) {
+function setSelectionRange(input: any, selectionStart: number, selectionEnd: number) {
     if (input.setSelectionRange) {
         input.focus();
         input.setSelectionRange(selectionStart, selectionEnd);
@@ -85,7 +91,7 @@ function setSelectionRange(input, selectionStart, selectionEnd) {
     }
 }
 
-function setCaretToPos(input, pos) {
+function setCaretToPos(input: HTMLInputElement, pos: number) {
     // Fix for difference between normalized val() and value
     // TODO: Need to fix IE test here and replace with support test
     if ($.fn.nicknameTabComplete.has_newline_bug && !$.browser.msie) {
@@ -97,15 +103,15 @@ function setCaretToPos(input, pos) {
 /* End functions from CMS */
 
 /* The rest of this code is my code */
-function matchName(input, nicknames) {
+function matchName(input: string, nicknames: string[]) {
     const match = input.toLowerCase();
     const matches: string[] = [];
     const length = input.length;
     let letters = "";
-    let letter;
+    let letter: string;
     let i = 0;
 
-    $.each(nicknames, (index, value) => {
+    $.each(nicknames, (_index: number, value: string) => {
         const components = value.toLowerCase().split(" ");
         for (let k = 0; k < components.length; ++k) {
             if (components[k].substr(0, length) === match) {
@@ -124,7 +130,7 @@ function matchName(input, nicknames) {
         for (; i < matches[0].length - length; i = i + 1) {
             letter = matches[0].toLowerCase().substr(length + i, 1);
 
-            $.each(matches, (index, value) => {
+            $.each(matches, (_index: number, value: string) => {
                 if (value.toLowerCase().substr(length + i, 1) !== letter) {
                     letter = "";
                     return false;
@@ -142,12 +148,12 @@ function matchName(input, nicknames) {
     return { value: "", matches: matches };
 }
 
-function matchFullName(input, nicknames) {
+function matchFullName(input: string, nicknames: string[]) {
     const matches: string[] = [];
     let i = 0;
-    let letter;
+    let letter: string;
     let letters = "";
-    $.each(nicknames, (index, value) => {
+    $.each(nicknames, (index: number, value: string) => {
         const idx = input.lastIndexOf(value);
         if (idx >= 0 && idx === input.length - value.length) {
             matches.push(value);
@@ -160,7 +166,7 @@ function matchFullName(input, nicknames) {
         for (; i < matches[0].length - length; i = i + 1) {
             letter = matches[0].toLowerCase().substr(length + i, 1);
 
-            $.each(matches, (index, value) => {
+            $.each(matches, (_index: number, value: string) => {
                 if (value.toLowerCase().substr(length + i, 1) !== letter) {
                     letter = "";
                     return false;
@@ -179,7 +185,7 @@ function matchFullName(input, nicknames) {
 }
 
 /* eslint-disable @typescript-eslint/no-invalid-this */
-function onKeyPress(e, options) {
+function onKeyPress(e: React.KeyboardEvent, options: TabCompleteOptions) {
     if (e.which === 9) {
         const $this = $(this);
         const val = $this.val();
@@ -279,9 +285,9 @@ function onKeyPress(e, options) {
 }
 /* eslint-enable @typescript-eslint/no-invalid-this */
 
-$.fn.nicknameTabComplete = function (options) {
+$.fn.nicknameTabComplete = function (options: TabCompleteOptions) {
     options = $.extend({}, $.fn.nicknameTabComplete.defaults, options);
-    this.bind("keydown.nickname", (e) => {
+    this.bind("keydown.nickname", (e: React.KeyboardEvent) => {
         onKeyPress.call(this, e, options);
     })
         .bind("focus.nickname", () => {

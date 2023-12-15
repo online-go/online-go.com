@@ -22,7 +22,7 @@ import { _, interpolate, pgettext } from "translate";
 
 import { post, del } from "requests";
 import { browserHistory } from "ogsHistory";
-import { challenge_text_description } from "ChallengeModal";
+import { challenge_text_description, ChallengeDetails } from "ChallengeModal";
 import { Player } from "Player";
 import { FabX, FabCheck } from "material";
 import { deepEqual } from "misc";
@@ -32,7 +32,9 @@ import { notification_manager } from "./NotificationManager";
 import { openModerationOfferModal } from "./ModerationOfferModal";
 
 export function NotificationList(): JSX.Element {
-    const [, setCount] = React.useState(notification_manager.ordered_notifications.length);
+    const [, setCount] = React.useState<number | undefined>(
+        notification_manager.ordered_notifications.length,
+    );
     const [, refresh] = React.useState(0);
 
     React.useEffect(() => {
@@ -71,8 +73,16 @@ export function NotificationList(): JSX.Element {
     );
 }
 
-class NotificationEntry extends React.Component<{ notification }, any> {
-    constructor(props) {
+interface Notification {
+    type: string;
+    [key: string]: any;
+}
+
+interface NotificationEntryProps {
+    notification: Notification;
+}
+class NotificationEntry extends React.Component<NotificationEntryProps, any> {
+    constructor(props: NotificationEntryProps) {
         super(props);
         this.state = {
             message: null,
@@ -86,7 +96,7 @@ class NotificationEntry extends React.Component<{ notification }, any> {
         }
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
+    shouldComponentUpdate(nextProps: NotificationEntryProps, nextState: any) {
         if (deepEqual(this.props, nextProps) && deepEqual(this.state, nextState)) {
             return false;
         }
@@ -97,7 +107,7 @@ class NotificationEntry extends React.Component<{ notification }, any> {
         notification_manager.deleteNotification(this.props.notification);
     }
 
-    onError(err) {
+    onError(err: any) {
         console.error(err);
         if (err.status === 404) {
             notification_manager.deleteNotification(this.props.notification);
@@ -106,7 +116,7 @@ class NotificationEntry extends React.Component<{ notification }, any> {
         }
     }
 
-    open = (ev) => {
+    open = (ev: any) => {
         if (!$(ev.target).hasClass("fab") && !$(ev.target).hasClass("fa")) {
             const url = this.getOpenUrl();
             if (url) {
@@ -199,7 +209,9 @@ class NotificationEntry extends React.Component<{ notification }, any> {
                     <div>
                         {_("Challenge from")} <Player user={notification.user} />
                         <div className="description">
-                            {challenge_text_description(notification)}
+                            {challenge_text_description(
+                                notification as unknown as ChallengeDetails,
+                            )}
                         </div>
                         <div className="buttons">
                             <FabX

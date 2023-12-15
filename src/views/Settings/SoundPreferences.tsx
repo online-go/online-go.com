@@ -60,20 +60,30 @@ export function SoundPreferences(): JSX.Element {
     const count_direction_computed =
         count_direction !== "auto" ? count_direction : count_direction_auto;
 
-    function setTickTockStart(opt): void {
-        __setTickTockStart(opt.value);
+    function setTickTockStart(opt: ReactSelect.SingleValue<{ value: number }>): void {
+        if (opt) {
+            __setTickTockStart(opt.value);
+        }
     }
-    function setTenSecondsStart(opt): void {
-        __setTenSecondsStart(opt.value);
+    function setTenSecondsStart(opt: ReactSelect.SingleValue<{ value: number }>): void {
+        if (opt) {
+            __setTenSecondsStart(opt.value);
+        }
     }
-    function setFiveSecondsStart(opt): void {
-        __setFiveSecondsStart(opt.value);
+    function setFiveSecondsStart(opt: ReactSelect.SingleValue<{ value: number }>): void {
+        if (opt) {
+            __setFiveSecondsStart(opt.value);
+        }
     }
-    function setEverySecondStart(opt): void {
-        __setEverySecondStart(opt.value);
+    function setEverySecondStart(opt: ReactSelect.SingleValue<{ value: number }>): void {
+        if (opt) {
+            __setEverySecondStart(opt.value);
+        }
     }
-    function setCountDirection(opt): void {
-        __setCountDirection(opt.value);
+    function setCountDirection(opt: ReactSelect.SingleValue<{ value: string }>): void {
+        if (opt) {
+            __setCountDirection(opt.value);
+        }
     }
 
     const start_options = [
@@ -953,7 +963,7 @@ function SoundPackSelect(props: {
         sfx.getPackId(props.group),
     );
 
-    function filter({ data }, text: string): boolean {
+    function filter({ data }: { data: SpritePack }, text: string): boolean {
         if (!text) {
             text = "";
         }

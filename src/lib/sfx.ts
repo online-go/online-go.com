@@ -643,7 +643,7 @@ const I = setInterval(() => {
 }, 100);
 
 /* Check and warn if we don't have an effect mapping for every sound voice sound */
-window["sprite_packs"] = sprite_packs;
+(window as any)["sprite_packs"] = sprite_packs;
 const effects = sprite_packs["zz-un-effects"];
 for (const pack of [GameVoiceSounds, CountdownSounds, StoneSounds, EffectsSounds]) {
     for (const name of pack) {

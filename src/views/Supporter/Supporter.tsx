@@ -150,7 +150,7 @@ function load_checkout_libraries(): void {
             script.async = true;
             //script.charset = "utf-8";
             script.onload = () => {
-                window["stripe"] = stripe = new Stripe(data.get("config")?.stripe_pk);
+                (window as any)["stripe"] = stripe = new Stripe(data.get("config")?.stripe_pk);
                 resolve();
             };
             script.onerror = () => {
@@ -215,7 +215,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
         if (search_params.get("payment_updated") === "true") {
             if (!already_showed_payment_updated_modal.current) {
                 already_showed_payment_updated_modal.current = true;
-                void alert.fire(_("Payment method upated, thank you!"));
+                void alert.fire(_("Payment method updated, thank you!"));
                 setSearchParams({});
             }
         }
@@ -410,7 +410,7 @@ export function Supporter(props: SupporterProperties): JSX.Element {
         ];
     }
 
-    const current_plan_slug = getCurentPlanSlug(config);
+    const current_plan_slug = getCurrentPlanSlug(config);
 
     return (
         <div className="Supporter">
@@ -671,7 +671,7 @@ export function PriceBox({
         overrides.payment_methods === "paddle" || (!overrides.payment_methods && mor_only);
 
     const has_subscription = config.subscriptions.length > 0;
-    const current_plan_slug = getCurentPlanSlug(config);
+    const current_plan_slug = getCurrentPlanSlug(config);
 
     const show_sign_up_before_box = null;
 
@@ -1203,14 +1203,14 @@ function SupporterOverridesEditor({
     }
 
     function up(key: string, value: any): void {
-        overrides[key] = value;
+        (overrides as any)[key] = value;
         onChange({ ...overrides }); // copy to force re-render
     }
 
-    function upprice(slug: string, interval: string, value: any): void {
+    function upPrice(slug: string, interval: string, value: any): void {
         if (!value) {
-            if (overrides.plan?.[slug]?.[interval]) {
-                delete overrides.plan[slug][interval];
+            if ((overrides as any).plan?.[slug]?.[interval]) {
+                delete (overrides as any).plan[slug][interval];
             }
         } else {
             value = parseInt(value);
@@ -1225,12 +1225,12 @@ function SupporterOverridesEditor({
             if (!overrides.plan.meijin) {
                 overrides.plan.meijin = {};
             }
-            overrides.plan[slug][interval] = value;
+            (overrides as any).plan[slug][interval] = value;
         }
         let found = false;
         for (const _slug of ["aji", "hane", "tenuki", "meijin"]) {
             for (const _interval of ["month", "year"]) {
-                if (overrides?.plan?.[_slug]?.[_interval]) {
+                if ((overrides as any)?.plan?.[_slug]?.[_interval]) {
                     found = true;
                 }
             }
@@ -1325,13 +1325,13 @@ function SupporterOverridesEditor({
                         type="text"
                         placeholder="Monthly"
                         value={overrides.plan?.aji?.month || ""}
-                        onChange={(ev) => upprice("aji", "month", ev.target.value || undefined)}
+                        onChange={(ev) => upPrice("aji", "month", ev.target.value || undefined)}
                     />
                     <input
                         placeholder="Yearly"
                         type="text"
                         value={overrides.plan?.aji?.year || ""}
-                        onChange={(ev) => upprice("aji", "year", ev.target.value || undefined)}
+                        onChange={(ev) => upPrice("aji", "year", ev.target.value || undefined)}
                     />
                 </dd>
                 <dd>
@@ -1341,13 +1341,13 @@ function SupporterOverridesEditor({
                         type="text"
                         placeholder="Monthly"
                         value={overrides.plan?.hane?.month || ""}
-                        onChange={(ev) => upprice("hane", "month", ev.target.value || undefined)}
+                        onChange={(ev) => upPrice("hane", "month", ev.target.value || undefined)}
                     />
                     <input
                         placeholder="Yearly"
                         type="text"
                         value={overrides.plan?.hane?.year || ""}
-                        onChange={(ev) => upprice("hane", "year", ev.target.value || undefined)}
+                        onChange={(ev) => upPrice("hane", "year", ev.target.value || undefined)}
                     />
                 </dd>
                 <dd>
@@ -1357,13 +1357,13 @@ function SupporterOverridesEditor({
                         type="text"
                         placeholder="Monthly"
                         value={overrides.plan?.tenuki?.month || ""}
-                        onChange={(ev) => upprice("tenuki", "month", ev.target.value || undefined)}
+                        onChange={(ev) => upPrice("tenuki", "month", ev.target.value || undefined)}
                     />
                     <input
                         type="text"
                         placeholder="Yearly"
                         value={overrides.plan?.tenuki?.year || ""}
-                        onChange={(ev) => upprice("tenuki", "year", ev.target.value || undefined)}
+                        onChange={(ev) => upPrice("tenuki", "year", ev.target.value || undefined)}
                     />
                 </dd>
                 <dd>
@@ -1373,13 +1373,13 @@ function SupporterOverridesEditor({
                         type="text"
                         placeholder="Monthly"
                         value={overrides.plan?.meijin?.month || ""}
-                        onChange={(ev) => upprice("meijin", "month", ev.target.value || undefined)}
+                        onChange={(ev) => upPrice("meijin", "month", ev.target.value || undefined)}
                     />
                     <input
                         type="text"
                         placeholder="Yearly"
                         value={overrides.plan?.meijin?.year || ""}
-                        onChange={(ev) => upprice("meijin", "year", ev.target.value || undefined)}
+                        onChange={(ev) => upPrice("meijin", "year", ev.target.value || undefined)}
                     />
                 </dd>
                 <dt>
@@ -1530,7 +1530,7 @@ function formatMoneyWithTrimmedZeros(currency_code: string, amount: number): str
     return ret.replace(".00", "");
 }
 
-function getCurentPlanSlug(config: Config): string | null {
+function getCurrentPlanSlug(config: Config): string | null {
     const max_service_level = Math.max(0, ...config.services.map((s) => s.level));
     if (max_service_level >= 20) {
         return "meijin";

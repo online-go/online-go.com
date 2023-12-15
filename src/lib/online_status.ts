@@ -24,7 +24,7 @@ interface Events {
 }
 
 const listeners: { [id: number]: Array<any> } = {};
-const state = {};
+const state: { [player_id: number]: boolean } = {};
 const event_emitter = new TypedEventEmitter<Events>();
 
 socket.on("connect", () => {

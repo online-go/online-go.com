@@ -40,7 +40,7 @@ export function OnlineLeaguesAdmin(): JSX.Element {
         }
     };
 
-    const removeLeague = (league_name) => {
+    const removeLeague = (league_name: string) => {
         if (league_name) {
             del("admin/adminOnlineLeagues", { name: league_name })
                 .then((response) => {

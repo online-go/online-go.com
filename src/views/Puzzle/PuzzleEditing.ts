@@ -106,7 +106,7 @@ export class PuzzleEditor {
      * @param puzzle Puzzle
      */
     createPuzzleCollection(puzzle: any, name: string): Promise<any> {
-        let postResult;
+        let postResult: any;
         return post("puzzles/collections/", {
             name: name,
             private: false,
@@ -280,7 +280,7 @@ export class PuzzleEditor {
             right: 0,
         };
 
-        const process = (pos, width, height) => {
+        const process = (pos: any, width: number, height: number) => {
             if (Array.isArray(pos)) {
                 for (let i = 0; i < pos.length; ++i) {
                     process(pos[i], width, height);

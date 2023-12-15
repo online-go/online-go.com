@@ -84,7 +84,7 @@ export function NetworkStatus(): JSX.Element | null {
         show_slow_internet_warning ? ": warning toggle on," : ": warning toggle off,",
         in_live_game ? "in live game," : "not in live game,",
         "time control:",
-        window["global_goban"]?.engine?.time_control,
+        (window as any)["global_goban"]?.engine?.time_control,
     );
 
     if (state === "connected" || state === "went-away") {

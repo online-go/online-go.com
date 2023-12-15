@@ -24,11 +24,11 @@ function clearTooltip() {
     }
 }
 
-export default function tooltip(event) {
+export default function tooltip(event: React.MouseEvent | React.TouchEvent) {
     const target = $(event.target);
     const title = target.attr("title") || target.attr("data-title");
-    const X = event.nativeEvent.pageX + 10;
-    const Y = event.nativeEvent.pageY + 10;
+    const X = (event.nativeEvent as any).pageX + 10;
+    const Y = (event.nativeEvent as any).pageY + 10;
 
     if (event.type === "click") {
         if (current_tooltip) {

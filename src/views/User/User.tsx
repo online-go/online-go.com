@@ -195,11 +195,16 @@ export function User(props: { user_id?: number }): JSX.Element {
     };
 
     const openModerateUser = () => {
-        const modal = openModerateUserModal(user);
-        modal?.on("close", () => {
-            // reload after moderator changes something
-            resolve(user_id);
-        });
+        if (user) {
+            const modal = openModerateUserModal(user);
+
+            modal?.on("close", () => {
+                // reload after moderator changes something
+                resolve(user_id);
+            });
+        } else {
+            console.error("user not set");
+        }
     };
 
     const updateTogglePosition = (_height: number, width: number) => {
@@ -209,7 +214,7 @@ export function User(props: { user_id?: number }): JSX.Element {
     const renderInvalidUser = () => {
         if (resolved) {
             return (
-                <div className="User flex stetch">
+                <div className="User flex stretch">
                     <div className="container flex fill center-both">
                         <h3>{_("User not found")}</h3>
                     </div>
@@ -217,7 +222,7 @@ export function User(props: { user_id?: number }): JSX.Element {
             );
         }
         return (
-            <div className="User flex stetch">
+            <div className="User flex stretch">
                 <div className="container flex fill center-both"></div>
             </div>
         );

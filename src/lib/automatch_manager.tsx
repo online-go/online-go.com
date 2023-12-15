@@ -37,7 +37,7 @@ export type AutomatchPreferences = AutomatchPreferencesBase & {
 class AutomatchToast extends React.PureComponent<{}, any> {
     timer: any;
 
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
         this.state = {
             start: Date.now(),
@@ -107,7 +107,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
 
         this.emit("entry", entry);
     };
-    private onAutomatchStart = (entry) => {
+    private onAutomatchStart = (entry: { uuid: string; game_id: number }) => {
         this.remove(entry.uuid);
 
         if (entry.uuid === this.last_find_match_uuid) {
@@ -117,7 +117,7 @@ class AutomatchManager extends TypedEventEmitter<Events> {
 
         this.emit("start", entry);
     };
-    private onAutomatchCancel = (entry) => {
+    private onAutomatchCancel = (entry: { uuid: string }) => {
         if (!entry) {
             if (this.active_live_automatcher) {
                 entry = this.active_live_automatcher;

@@ -42,7 +42,6 @@ import { Player } from "Player";
 import { openAutomatchSettings, getAutomatchSettings } from "AutomatchSettings";
 import { automatch_manager, AutomatchPreferences } from "automatch_manager";
 import { bot_count } from "bots";
-import { SupporterGoals } from "SupporterGoals";
 import { CreatedChallengeInfo } from "types";
 import { ChallengeLinkButton } from "ChallengeLinkButton";
 import { allocateCanvasOrError } from "goban";
@@ -78,12 +77,12 @@ export class Play extends React.Component<{}, PlayState> {
     canvas: HTMLCanvasElement;
 
     seekgraph!: SeekGraph;
-    resize_check_interval;
+    resize_check_interval: ReturnType<typeof setInterval> | undefined;
 
     static contextType: React.Context<DynamicHelp.AppApi> = DynamicHelp.Api;
     declare context: React.ContextType<typeof DynamicHelp.Api>;
 
-    private list_freeze_timeout;
+    private list_freeze_timeout: ReturnType<typeof setTimeout> | undefined;
 
     static filterPreferenceMapping: Map<ChallengeFilterKey, preferences.ValidPreference> = new Map([
         ["showIneligible", "show-all-challenges"],
@@ -96,12 +95,12 @@ export class Play extends React.Component<{}, PlayState> {
         ["showRengo", "show-rengo-challenges"],
     ]);
 
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
 
         const user = data.get("user");
 
-        const filter = {};
+        const filter: any = {};
         Play.filterPreferenceMapping.forEach((pref, key) => {
             if (user.anonymous) {
                 filter[key] = true;
@@ -122,7 +121,6 @@ export class Play extends React.Component<{}, PlayState> {
             show_in_rengo_management_pane: [],
         };
         this.canvas = allocateCanvasOrError();
-        this.list_freeze_timeout = null;
     }
 
     componentDidMount() {
@@ -150,11 +148,11 @@ export class Play extends React.Component<{}, PlayState> {
         this.seekgraph.destroy();
         if (this.list_freeze_timeout) {
             clearTimeout(this.list_freeze_timeout);
-            this.list_freeze_timeout = null;
+            this.list_freeze_timeout = undefined;
         }
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps: {}, prevState: PlayState) {
         if (
             prevState.freeze_challenge_list &&
             !this.state.freeze_challenge_list &&
@@ -383,7 +381,7 @@ export class Play extends React.Component<{}, PlayState> {
         }
     };
 
-    toggleSize(size) {
+    toggleSize(size: Size) {
         let size_options = dup(this.state.automatch_size_options);
         if (size_options.indexOf(size) >= 0) {
             size_options = size_options.filter((x) => x !== size);
@@ -462,7 +460,7 @@ export class Play extends React.Component<{}, PlayState> {
         this.setState({ freeze_challenge_list: false });
         if (this.list_freeze_timeout) {
             clearTimeout(this.list_freeze_timeout);
-            this.list_freeze_timeout = null;
+            this.list_freeze_timeout = undefined;
         }
     };
 
@@ -478,7 +476,6 @@ export class Play extends React.Component<{}, PlayState> {
 
         return (
             <div className="Play container">
-                <SupporterGoals />
                 <div className="row">
                     <div className="col-sm-6 play-column">
                         <Card>{this.automatchContainer()}</Card>
@@ -638,7 +635,7 @@ export class Play extends React.Component<{}, PlayState> {
     }
 
     automatchContainer() {
-        const size_enabled = (size) => {
+        const size_enabled = (size: Size) => {
             return this.state.automatch_size_options.indexOf(size) >= 0;
         };
 
@@ -897,7 +894,7 @@ export class Play extends React.Component<{}, PlayState> {
 
         const user = data.get("user");
 
-        const timeControlClassName = (config) => {
+        const timeControlClassName = (config: any) => {
             // This appears to be bolding live games compared to blitz?
             const isBold =
                 show_live_list && (config.time_per_move > 3600 || config.time_per_move === 0);
@@ -991,7 +988,7 @@ export class Play extends React.Component<{}, PlayState> {
         );
     }
 
-    cellBreaks(amount) {
+    cellBreaks(amount: number): JSX.Element[] {
         const result: JSX.Element[] = [];
         for (let i = 0; i < amount; ++i) {
             result.push(<span key={i} className="cell break"></span>);
@@ -1052,7 +1049,7 @@ export class Play extends React.Component<{}, PlayState> {
         );
     }
 
-    nominateAndShow = (C) => {
+    nominateAndShow = (C: Challenge) => {
         this.toggleRengoChallengePane(C.challenge_id);
         rengo_utils.nominateForRengoChallenge(C).catch(errorAlerter);
     };

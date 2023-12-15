@@ -46,7 +46,7 @@ export function GamePreferences(): JSX.Element {
     const [chat_mode, _setChatMode] = usePreference("chat-mode");
     const [board_labeling, setBoardLabeling] = usePreference("board-labeling");
 
-    const [autoadvance, setAutoAdvance] = usePreference("auto-advance-after-submit");
+    const [auto_advance, setAutoAdvance] = usePreference("auto-advance-after-submit");
     const [always_disable_analysis, setAlwaysDisableAnalysis] =
         usePreference("always-disable-analysis");
     const [dynamic_title, setDynamicTitle] = usePreference("dynamic-title");
@@ -63,32 +63,32 @@ export function GamePreferences(): JSX.Element {
     );
     const [zen_mode_by_default, _setZenModeByDefault] = usePreference("start-in-zen-mode");
 
-    function setDockDelay(ev) {
+    function setDockDelay(ev: React.ChangeEvent<HTMLInputElement>) {
         const new_delay = parseFloat(ev.target.value);
         preferences.set("dock-delay", new_delay);
         _setDockDelay(new_delay);
     }
-    function toggleAIReview(checked) {
+    function toggleAIReview(checked: boolean) {
         _setAiReviewEnabled(!checked);
     }
-    function toggleVariationsInChat(checked) {
+    function toggleVariationsInChat(checked: boolean) {
         _setVariationsInChat(!checked);
     }
-    function toggleZenMode(checked) {
+    function toggleZenMode(checked: boolean) {
         _setZenModeByDefault(checked);
     }
 
-    function getSubmitMode(speed) {
+    function getSubmitMode(speed: string) {
         const single = preferences.get(`one-click-submit-${speed}` as ValidPreference);
         const dbl = preferences.get(`double-click-submit-${speed}` as ValidPreference);
         return single ? "single" : dbl ? "double" : "button";
     }
 
-    function setChatMode(value) {
+    function setChatMode(value: string) {
         _setChatMode(value);
     }
 
-    function setSubmitMode(speed, mode) {
+    function setSubmitMode(speed: string, mode: string) {
         switch (mode) {
             case "single":
                 preferences.set(`double-click-submit-${speed}` as ValidPreference, false);
@@ -110,27 +110,27 @@ export function GamePreferences(): JSX.Element {
             _setCorrSubmitMode(getSubmitMode(speed));
         }
     }
-    function setLiveSubmitMode(value) {
+    function setLiveSubmitMode(value: string) {
         setSubmitMode("live", value);
     }
-    function setCorrSubmitMode(value) {
+    function setCorrSubmitMode(value: string) {
         setSubmitMode("correspondence", value);
     }
-    function setVariationStoneTransparency(ev) {
+    function setVariationStoneTransparency(ev: React.ChangeEvent<HTMLInputElement>) {
         const value = parseFloat(ev.target.value);
 
         if (value >= 0.0 && value <= 1.0) {
             _setVariationStoneTransparency(value);
         }
     }
-    function setVariationMoveCount(ev) {
+    function setVariationMoveCount(ev: React.ChangeEvent<HTMLInputElement>) {
         const value = parseInt(ev.target.value);
 
         if (value >= 1 && value <= 10) {
             _setVariationMoveCount(value);
         }
     }
-    function updateAutoplayDelay(ev) {
+    function updateAutoplayDelay(ev: React.ChangeEvent<HTMLInputElement>) {
         const value = parseInt(ev.target.value);
         if (value >= 1 && value <= 20) {
             _setAutoplayDelay(value);
@@ -200,7 +200,7 @@ export function GamePreferences(): JSX.Element {
             </PreferenceLine>
 
             <PreferenceLine title={_("Auto-advance to next game after making a move")}>
-                <Toggle checked={autoadvance} onChange={setAutoAdvance} />
+                <Toggle checked={auto_advance} onChange={setAutoAdvance} />
             </PreferenceLine>
 
             <PreferenceLine title={_("Autoplay delay (in seconds)")}>

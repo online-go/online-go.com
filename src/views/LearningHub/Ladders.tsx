@@ -16,7 +16,7 @@
  */
 
 import { PuzzleConfig } from "goban";
-import { LearningPage } from "./LearningPage";
+import { LearningPage, LearningPageProperties } from "./LearningPage";
 import { _, pgettext } from "translate";
 import { LearningHubSection } from "./LearningHubSection";
 
@@ -45,7 +45,7 @@ export class Ladders extends LearningHubSection {
 }
 
 class Page1 extends LearningPage {
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
     }
 
@@ -58,6 +58,7 @@ class Page1 extends LearningPage {
         return {
             mode: "puzzle",
 
+            /* cSpell:disable-next-line */
             initial_state: { black: "fceddegedfffeg", white: "fdgdeefeef" },
             move_tree: this.makePuzzleMoveTree(
                 [
@@ -73,7 +74,7 @@ class Page1 extends LearningPage {
 }
 
 class Page2 extends LearningPage {
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
     }
 
@@ -84,6 +85,7 @@ class Page2 extends LearningPage {
         return {
             mode: "puzzle",
 
+            /* cSpell:disable-next-line */
             initial_state: { black: "gccecfdg", white: "df" },
             move_tree: this.makePuzzleMoveTree(["e4d5d6e5f5e6e7f6g6f7f8"], ["d5e4"]),
         };
@@ -91,7 +93,7 @@ class Page2 extends LearningPage {
 }
 
 class Page3 extends LearningPage {
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
     }
 
@@ -102,6 +104,7 @@ class Page3 extends LearningPage {
         return {
             mode: "puzzle",
 
+            /* cSpell:disable-next-line */
             initial_state: { black: "fcef", white: "eedfegfg" },
             move_tree: this.makePuzzleMoveTree(
                 [

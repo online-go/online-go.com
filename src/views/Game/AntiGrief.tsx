@@ -24,20 +24,21 @@ import { useUser } from "hooks";
 import { JGOFClockWithTransmitting, JGOFTimeControl } from "goban";
 import { browserHistory } from "../../ogsHistory";
 import { toast } from "toast";
+import { StallingScoreEstimate } from "goban/lib/protocol";
 
 const ANTI_ESCAPING_TIMEOUT = 60; // number of seconds to wait before allowing the "Claim victory" button to be appear and be clicked
 
 let on_game_page = false;
 let live_game = false;
 let live_game_id = 0;
-let live_game_phase = null;
+let live_game_phase: string | null = null;
 let last_toast: ReturnType<typeof toast> | null = null;
 let was_player = false;
 
 function checkForLeavingLiveGame(pathname: string) {
     try {
         const user = data.get("user");
-        const goban = window["global_goban"];
+        const goban = (window as any)["global_goban"];
         const was_on_page = on_game_page;
         const was_live_game = live_game;
 
@@ -230,7 +231,7 @@ function AntiStalling(): JSX.Element | null {
     const [phase, setPhase] = React.useState(goban?.engine?.phase);
 
     React.useEffect(() => {
-        const onScoreEstimate = (estimate) => {
+        const onScoreEstimate = (estimate?: StallingScoreEstimate) => {
             setEstimate(estimate);
         };
 

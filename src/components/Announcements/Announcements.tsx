@@ -73,7 +73,7 @@ interface AnnouncementsState {
     announcements: Announcement[];
 }
 export class Announcements extends React.PureComponent<{}, AnnouncementsState> {
-    constructor(props) {
+    constructor(props: {}) {
         super(props);
         this.state = {
             announcements: [],
@@ -98,7 +98,7 @@ export class Announcements extends React.PureComponent<{}, AnnouncementsState> {
         }, 20);
     }
 
-    retract = (announcement) => {
+    retract = (announcement: Announcement) => {
         this.clearAnnouncement(announcement.id, true);
     };
     announce = (announcement: Announcement) => {
@@ -139,7 +139,7 @@ export class Announcements extends React.PureComponent<{}, AnnouncementsState> {
         }
     };
 
-    clearAnnouncement(id, dont_send_clear_announcement) {
+    clearAnnouncement(id: number, dont_send_clear_announcement: boolean) {
         cleared_announcements[id] = Date.now() + 30 * 24 * 3600 * 1000;
         announcement_event_emitter.emit("announcement-cleared", announced[id]);
         data.set("announcements.cleared", cleared_announcements);

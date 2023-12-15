@@ -31,6 +31,7 @@ import * as moment from "moment";
 import { IdType } from "src/lib/types";
 import { openSGFPasteModal } from "SGFPasteModal";
 import * as preferences from "preferences";
+import { PlayerCacheEntry } from "src/lib/player_cache";
 
 type LibraryPlayerProperties = RouteComponentProps<{
     player_id: string;
@@ -47,14 +48,14 @@ interface Collection {
     parent_id: number;
     parent?: Collection;
     collections: Collection[];
-    games: any[];
+    games: Entry[];
     game_ct?: number;
 }
 
 interface LibraryPlayerState {
     player_id: IdType;
     collection_id: string;
-    collections?: { [id: number]: Collection };
+    collections?: { [id: string]: Collection };
     games_checked: {};
     new_collection_name: string;
     new_collection_private: boolean;
@@ -62,10 +63,23 @@ interface LibraryPlayerState {
     sort_descending: boolean;
 }
 
+interface Entry {
+    entry_id: number;
+    game_id: number;
+    name: string;
+    started: string;
+    created: string;
+    black: PlayerCacheEntry;
+    white: PlayerCacheEntry;
+    outcome: string;
+    white_lost: boolean;
+    black_lost: boolean;
+}
+
 class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, LibraryPlayerState> {
     dropzone?: DropzoneRef;
 
-    constructor(props) {
+    constructor(props: LibraryPlayerProperties) {
         super(props);
 
         this.state = {
@@ -81,9 +95,9 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
     }
 
     sortOrders: { [id in SortOrder]: any } = {
-        name: (a, b) => a.name.localeCompare(b.name),
-        game_date: (a, b) => Date.parse(a.started) - Date.parse(b.started),
-        date_added: (a, b) => Date.parse(a.created) - Date.parse(b.created),
+        name: (a: Entry, b: Entry) => a.name.localeCompare(b.name),
+        game_date: (a: Entry, b: Entry) => Date.parse(a.started) - Date.parse(b.started),
+        date_added: (a: Entry, b: Entry) => Date.parse(a.created) - Date.parse(b.created),
     };
 
     columns: Column[] = [
@@ -205,7 +219,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                     collection.collections.sort((a, b) => a.name.localeCompare(b.name));
                 }
 
-                const ct = (collection) => {
+                const ct = (collection: Collection) => {
                     let acc = 0;
                     for (const c of collection.collections) {
                         acc += ct(c);
@@ -249,7 +263,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         preferences.set("sgf.sort-descending", descending);
     };
 
-    applyCurrentSort = (games) => {
+    applyCurrentSort = (games: Entry[]) => {
         const sort = this.sortOrders[this.state.sort_order];
         games.sort(sort);
         if (this.state.sort_descending) {
@@ -257,7 +271,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         }
     };
 
-    uploadSGFs = (files) => {
+    uploadSGFs = (files: File[]) => {
         if (parseInt(this.props.match.params.player_id) === data.get("user").id) {
             files = files.filter((file) => /.sgf$/i.test(file.name));
             Promise.all(files.map((file) => post(`me/games/sgf/${this.state.collection_id}`, file)))
@@ -286,25 +300,25 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         }
     };
 
-    setCollection(collection_id) {
+    setCollection(collection_id: number) {
         browserHistory.push(`/library/${this.state.player_id}/${collection_id}`);
     }
-    setCheckedGame(entry_id, event) {
+    setCheckedGame(entry_id: number, event: React.ChangeEvent<HTMLInputElement>) {
         const new_games_checked = Object.assign({}, this.state.games_checked);
         if (event.target.checked) {
-            new_games_checked[entry_id] = true;
+            (new_games_checked as any)[entry_id] = true;
         } else {
-            delete new_games_checked[entry_id];
+            delete (new_games_checked as any)[entry_id];
         }
 
         this.setState({
             games_checked: new_games_checked,
         });
     }
-    setNewCollectionName = (ev) => {
+    setNewCollectionName = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ new_collection_name: ev.target.value });
     };
-    setNewCollectionPrivate = (ev) => {
+    setNewCollectionPrivate = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ new_collection_private: ev.target.checked });
     };
     createCollection = () => {
@@ -322,12 +336,17 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
     };
     deleteCollection = () => {
         const parent = this.state.collections![this.state.collection_id].parent;
+
         post(`library/${this.state.player_id}`, {
             delete_collections: [this.state.collection_id],
         })
             .then(() => {
                 this.refresh(this.state.player_id)
-                    .then(() => this.setCollection(parent.id))
+                    .then(() => {
+                        if (parent) {
+                            this.setCollection(parent.id);
+                        }
+                    })
                     .catch(ignore);
             })
             .catch(errorAlerter);
@@ -354,7 +373,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         if (all_games_checked) {
             this.setState({ games_checked: {} });
         } else {
-            const new_checked = {};
+            const new_checked: any = {};
             for (const g of collection.games) {
                 new_checked[g.entry_id] = true;
             }
@@ -406,7 +425,11 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
         let cur = collection;
         do {
             bread_crumbs.unshift(cur);
-            cur = cur.parent;
+            if (cur.parent) {
+                cur = cur.parent;
+            } else {
+                break;
+            }
         } while (cur);
 
         let all_games_checked = true;
@@ -565,7 +588,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
                                                         <input
                                                             type="checkbox"
                                                             checked={
-                                                                this.state.games_checked[
+                                                                (this.state.games_checked as any)[
                                                                     game.entry_id
                                                                 ] || false
                                                             }
@@ -638,7 +661,7 @@ class _LibraryPlayer extends React.PureComponent<LibraryPlayerProperties, Librar
 
 export const LibraryPlayer = rr6ClassShim(_LibraryPlayer);
 
-function outcome_formatter(entry) {
+function outcome_formatter(entry: Entry) {
     if (entry.outcome && entry.outcome !== "?") {
         let ret = "T";
         if (entry.white_lost && !entry.black_lost) {

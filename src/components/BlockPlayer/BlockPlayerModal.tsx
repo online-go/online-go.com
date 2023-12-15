@@ -33,7 +33,7 @@ interface BlockPlayerModalProperties {
 }
 
 export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProperties, BlockState> {
-    constructor(props) {
+    constructor(props: BlockPlayerModalProperties) {
         super(props);
 
         this.state = Object.assign({}, getBlocks(this.props.playerId));
@@ -113,7 +113,10 @@ export class BlockPlayerModal extends React.PureComponent<BlockPlayerModalProper
     }
 }
 
-export function openBlockPlayerControls(ev, user_id): PopOver {
+export function openBlockPlayerControls(
+    ev: { target: HTMLElement } | React.MouseEvent<HTMLElement>,
+    user_id: number,
+): PopOver {
     const elt = $(ev.target);
     const offset = elt.offset();
 

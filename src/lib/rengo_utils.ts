@@ -41,7 +41,7 @@ export function nominateForRengoChallenge(c: Challenge): Promise<RengoParticipan
 export function assignToTeam(
     player_id: number,
     team: string,
-    challenge,
+    challenge: Challenge,
 ): Promise<RengoParticipantsDTO> {
     const assignment =
         team === "rengo_black_team"

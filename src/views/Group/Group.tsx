@@ -108,7 +108,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
 
     news_ref = React.createRef<PaginatedTableRef>();
 
-    constructor(props) {
+    constructor(props: GroupProperties) {
         super(props);
         this.state = {
             group: {
@@ -239,7 +239,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             })
             .catch(errorAlerter);
     }
-    updateIcon = (files) => {
+    updateIcon = (files: File[]) => {
         this.setState({
             new_icon: Object.assign(files[0], { preview: URL.createObjectURL(files[0]) }),
         });
@@ -253,7 +253,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             })
             .catch(errorAlerter);
     };
-    updateBanner = (files) => {
+    updateBanner = (files: File[]) => {
         this.setState({
             new_banner: Object.assign(files[0], { preview: URL.createObjectURL(files[0]) }),
         });
@@ -301,58 +301,58 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                     .catch(errorAlerter);
             });
     };
-    setGroupName = (ev) => {
+    setGroupName = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ group: Object.assign({}, this.state.group, { name: ev.target.value }) });
     };
-    setShortDescription = (ev) => {
+    setShortDescription = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({
             group: Object.assign({}, this.state.group, { short_description: ev.target.value }),
         });
     };
-    setDescription = (ev) => {
+    setDescription = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({
             group: Object.assign({}, this.state.group, { description: ev.target.value }),
         });
     };
-    setWebsite = (ev) => {
+    setWebsite = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ group: Object.assign({}, this.state.group, { website: ev.target.value }) });
     };
-    setLocation = (ev) => {
+    setLocation = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({
             group: Object.assign({}, this.state.group, { location: ev.target.value }),
         });
     };
-    setBulletin = (ev) => {
+    setBulletin = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({
             group: Object.assign({}, this.state.group, { bulletin: ev.target.value }),
         });
     };
-    setOpenToThePublic = (ev) => {
+    setOpenToThePublic = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({
             group: Object.assign({}, this.state.group, { is_public: ev.target.checked }),
         });
     };
-    setHideDetails = (ev) => {
+    setHideDetails = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({
             group: Object.assign({}, this.state.group, { hide_details: ev.target.checked }),
         });
     };
-    setDisableInvitationRequests = (ev) => {
+    setDisableInvitationRequests = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({
             group: Object.assign({}, this.state.group, { require_invitation: ev.target.checked }),
         });
     };
-    setAdminOnlyTournaments = (ev) => {
+    setAdminOnlyTournaments = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({
             group: Object.assign({}, this.state.group, {
                 admin_only_tournaments: ev.target.checked,
             }),
         });
     };
-    setNewNewsTitle = (ev) => {
+    setNewNewsTitle = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ new_news_title: ev.target.value });
     };
-    setNewNewsBody = (ev) => {
+    setNewNewsBody = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({ new_news_body: ev.target.value });
     };
     postNewNews = () => {
@@ -398,7 +398,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             }
         }, 1);
     };
-    deleteNewsPost(entry) {
+    deleteNewsPost(entry: GroupNews) {
         void alert
             .fire({
                 text: _("Delete this news post?"),
@@ -425,7 +425,7 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                 }
             });
     }
-    editNewsPost(entry) {
+    editNewsPost(entry: GroupNews) {
         this.setState({ editing_news: entry });
         this.news_ref.current?.refresh();
     }
@@ -446,12 +446,12 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
             })
             .catch(errorAlerter);
     };
-    updateNewsContent = (ev) => {
+    updateNewsContent = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({
             editing_news: Object.assign({}, this.state.editing_news, { content: ev.target.value }),
         });
     };
-    updateNewsTitle = (ev) => {
+    updateNewsTitle = (ev: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({
             editing_news: Object.assign({}, this.state.editing_news, { title: ev.target.value }),
         });
@@ -481,8 +481,10 @@ class _Group extends React.PureComponent<GroupProperties, GroupState> {
                 }
             });
     };
-    setUserToInvite = (user) => {
-        this.setState({ user_to_invite: user });
+    setUserToInvite = (user: PlayerCacheEntry | null) => {
+        if (user) {
+            this.setState({ user_to_invite: user });
+        }
     };
 
     render() {

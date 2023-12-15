@@ -226,7 +226,7 @@ function MyTournaments(): JSX.Element {
                         header: _("Time Control"),
                         className: "nobr",
                         render: (tournament) =>
-                            shortShortTimeControl(tournament.time_control_parameters),
+                            shortShortTimeControl(tournament.time_control_parameters as any),
                     },
                     {
                         header: _("Size"),
@@ -259,7 +259,7 @@ function Schedule(): JSX.Element {
     React.useEffect(() => {
         get("tournament_schedules/", { page_size: 100 })
             .then((res) => {
-                res.results.sort((a, b) => {
+                res.results.sort((a: { next_run: number }, b: { next_run: number }) => {
                     return new Date(a.next_run).getTime() - new Date(b.next_run).getTime();
                 });
                 setSchedules(res.results);
@@ -375,7 +375,7 @@ export function TournamentList(props: TournamentListProperties) {
                         header: _("Time Control"),
                         className: "nobr",
                         render: (tournament) =>
-                            shortShortTimeControl(tournament.time_control_parameters),
+                            shortShortTimeControl(tournament.time_control_parameters as any),
                     },
                     {
                         header: _("Size"),
@@ -452,10 +452,10 @@ function makeTournamentFilter(
     return filter;
 }
 
-function mk32icon(path) {
+function mk32icon(path: string) {
     return path.replace(/-[0-9]+.png/, "-32.png");
 }
-function speedIcon(e) {
+function speedIcon(e: any) {
     const tpm = computeAverageMoveTime(e.time_control_parameters, e.size, e.size);
     if (tpm === 0 || tpm > 3600) {
         return "ogs-turtle";
@@ -465,7 +465,7 @@ function speedIcon(e) {
     }
     return "fa fa-clock-o";
 }
-function timeIcon(time_per_move) {
+function timeIcon(time_per_move: number) {
     if (time_per_move === 0) {
         return "ogs-turtle";
     } else if (time_per_move < 20) {
@@ -476,7 +476,7 @@ function timeIcon(time_per_move) {
     return "ogs-turtle";
 }
 
-function rrule_description(entry): string {
+function rrule_description(entry: any): string {
     const m = moment(new Date(entry.next_run)).add(entry.lead_time_seconds, "seconds");
 
     const rrule = entry.rrule;
@@ -570,22 +570,22 @@ function rrule_description(entry): string {
     console.log("Failed: ", unit, interval);
     return "error formatting rrule";
 }
-function typeDescription(e) {
-    return TOURNAMENT_TYPE_NAMES[e.tournament_type];
+function typeDescription(e: any) {
+    return (TOURNAMENT_TYPE_NAMES as any)[e.tournament_type];
 }
-function datefmt(d, offset?) {
+function datefmt(d: number, offset?: number) {
     if (!offset) {
         offset = 0;
     }
     return moment(new Date(d)).add(offset, "seconds").format("llll");
 }
-function fromNow(d, offset?) {
+function fromNow(d: number, offset?: number) {
     if (!offset) {
         offset = 0;
     }
     return moment(new Date(d)).add(offset, "seconds").fromNow();
 }
-function when(t) {
+function when(t: number | string) {
     if (t) {
         const d = new Date(t);
         const diff = Math.round((d.getTime() - Date.now()) / 1000.0);

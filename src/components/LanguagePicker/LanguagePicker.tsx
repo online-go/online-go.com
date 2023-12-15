@@ -31,7 +31,7 @@ function openLanguageModal() {
     openModal(language_modal);
 }
 
-function language_sorter(a, b) {
+function language_sorter(a: string, b: string) {
     if (a === "auto") {
         return -1;
     }
@@ -55,14 +55,14 @@ export const LanguagePicker = () => (
 );
 
 class LanguagePickerModal extends Modal<Events, LanguagePickerProperties, any> {
-    constructor(props) {
+    constructor(props: LanguagePickerProperties) {
         super(props);
         this.state = {
             selected_language: current_language,
         };
     }
 
-    setLanguage(language_code) {
+    setLanguage(language_code: string) {
         preferences.set("language", language_code);
         setCurrentLanguage(language_code);
         this.close();
@@ -71,7 +71,7 @@ class LanguagePickerModal extends Modal<Events, LanguagePickerProperties, any> {
 
     render() {
         const auto = preferences.get("language") === "auto";
-        function computeClass(lc) {
+        function computeClass(lc: string) {
             let ret = "";
             if (auto) {
                 if (lc === "auto") {

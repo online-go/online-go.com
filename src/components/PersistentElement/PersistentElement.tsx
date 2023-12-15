@@ -29,7 +29,7 @@ export function PersistentElement(props: PersistentElementProps): JSX.Element {
 
     React.useEffect((): (() => void) | void => {
         if (container.current) {
-            const elt = props.elt instanceof jQuery ? props.elt[0] : props.elt;
+            const elt = props.elt instanceof jQuery ? (props.elt as any)[0] : props.elt;
             if (elt) {
                 const cont = container.current;
                 cont.appendChild(elt);

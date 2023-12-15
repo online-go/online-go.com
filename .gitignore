@@ -7,7 +7,6 @@ webpack-stats.json
 analyze.json
 stats.json
 src/components/base
-.vscode
 todo
 yarn-error.log
 deployment-staging-area
@@ -17,6 +16,7 @@ how_to_add_a_new_language.txt
 /.alm/
 package-lock.json
 report.*.json
+neovide_backtraces.log
 
 
 

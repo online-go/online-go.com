@@ -34,7 +34,7 @@ export class ChatPresenceIndicator extends React.PureComponent<
 > {
     proxy?: ChatChannelProxy;
 
-    constructor(props) {
+    constructor(props: ChatPresenceIndicatorProperties) {
         super(props);
         this.state = {
             online: false,
@@ -45,7 +45,7 @@ export class ChatPresenceIndicator extends React.PureComponent<
         this.init(this.props.channel, this.props.userId);
     }
 
-    componentDidUpdate(prev_props) {
+    componentDidUpdate(prev_props: ChatPresenceIndicatorProperties) {
         if (this.props.channel !== prev_props.channel || this.props.userId !== prev_props.userId) {
             this.deinit();
             this.init(this.props.channel, this.props.userId);
@@ -55,7 +55,7 @@ export class ChatPresenceIndicator extends React.PureComponent<
         this.deinit();
     }
 
-    init(channel, user_id) {
+    init(channel: string, user_id: number) {
         this.proxy = chat_manager.join(channel);
         this.proxy.on("join", () => this.update(user_id));
         this.proxy.on("part", () => this.update(user_id));
@@ -65,7 +65,7 @@ export class ChatPresenceIndicator extends React.PureComponent<
         this.proxy?.part();
         this.proxy = undefined;
     }
-    update = (user_id) => {
+    update = (user_id: number) => {
         if (this.proxy) {
             const online = user_id in this.proxy.channel.user_list;
             if (this.state.online !== online) {

@@ -27,7 +27,7 @@ interface PlayerNotesModalProperties {
 }
 
 export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, any> {
-    constructor(props) {
+    constructor(props: PlayerNotesModalProperties) {
         super(props);
         this.state = {
             notes: undefined,
@@ -40,7 +40,7 @@ export class PlayerNotesModal extends Modal<Events, PlayerNotesModalProperties, 
         this.setState({ notes: data.get(`player-notes.${user.id}.${this.props.playerId}`) });
     };
 
-    updateNotes = (ev) => {
+    updateNotes = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
         const new_notes = ev.target.value;
         if (new_notes.length < 5000) {
             this.setState({ notes: ev.target.value });

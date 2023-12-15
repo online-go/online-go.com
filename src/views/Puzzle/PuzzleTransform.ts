@@ -40,7 +40,7 @@ export class TransformSettings {
 export class PuzzleTransform {
     constructor(public settings: TransformSettings) {}
 
-    transformMoveText(puzzle, txt) {
+    transformMoveText(puzzle: any, txt: string) {
         if (this.settings.transform_color) {
             const colors = {
                 White: "Black",
@@ -64,7 +64,7 @@ export class PuzzleTransform {
             const Ttr = /Tttttttttttt/g;
             const TTr = /TTTTTTTTTTTT/g;
             for (const c1 in colors) {
-                const c2 = colors[c1];
+                const c2 = (colors as any)[c1];
 
                 // Replace first-letter-capitalized color.
                 const c1r = new RegExp("\\b" + c1 + "\\b", "gm");
@@ -95,7 +95,7 @@ export class PuzzleTransform {
                     .replace(Ttr, c2);
             }
             for (const c1 in utf8_colors) {
-                const c2 = utf8_colors[c1];
+                const c2 = (utf8_colors as any)[c1];
 
                 txt = txt.replace(c1, TT).replace(c2, c1).replace(TTr, c2);
             }
@@ -115,7 +115,7 @@ export class PuzzleTransform {
         return txt;
     }
 
-    transformCoordinate(puzzle, coord, width, height) {
+    transformCoordinate(puzzle: any, coord: any, width: number, height: number) {
         if (coord.marks && Array.isArray(coord.marks)) {
             for (let i = 0; i < coord.marks.length; ++i) {
                 this.transformCoordinate(puzzle, coord.marks[i], width, height);
@@ -142,7 +142,7 @@ export class PuzzleTransform {
         }
     }
 
-    transformCoordinates(puzzle, coords, width, height) {
+    transformCoordinates(puzzle: any, coords: any, width: number, height: number) {
         if (Array.isArray(coords)) {
             for (let i = 0; i < coords.length; ++i) {
                 this.transformCoordinate(puzzle, coords[i], width, height);
@@ -159,7 +159,7 @@ export class PuzzleTransform {
         return coords;
     }
 
-    transformPuzzle(puzzle) {
+    transformPuzzle(puzzle: any) {
         const width = puzzle.width;
         const height = puzzle.height;
 
@@ -217,7 +217,7 @@ export class PuzzleTransform {
      * @param what transformation key
      * @return Puzzle State
      */
-    stateForTransformation(what): any {
+    stateForTransformation(what: "h" | "v" | "x" | "color" | "zoom"): TransformSettings {
         let state: any = null;
 
         switch (what) {

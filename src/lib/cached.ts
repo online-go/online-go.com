@@ -116,7 +116,8 @@ export const cached = {
             get("me/groups/invitations", { page_size: 100 })
                 .then((res) => {
                     const invitations = res.results.filter(
-                        (invite) => invite.user === data.get("user")?.id && invite.is_invitation,
+                        (invite: any) =>
+                            invite.user === data.get("user")?.id && invite.is_invitation,
                     );
                     data.set(cached.group_invitations, invitations);
                 })
@@ -149,7 +150,9 @@ export const cached = {
             get("me/groups", { page_size: 100 })
                 .then((res) => {
                     const groups = res.results;
-                    groups.sort((a, b) => a.name.localeCompare(b.name));
+                    groups.sort((a: { name: string }, b: { name: string }) =>
+                        a.name.localeCompare(b.name),
+                    );
                     data.set(cached.groups, groups);
                 })
                 .catch((err) => {
@@ -166,7 +169,7 @@ export const cached = {
             get("me/tournaments", { ended__isnull: true, page_size: 100 })
                 .then((res) => {
                     const tournaments = res.results;
-                    tournaments.sort((a, b) => a.name.localeCompare(b.name));
+                    tournaments.sort((a: any, b: any) => a.name.localeCompare(b.name));
                     data.set(cached.active_tournaments, tournaments);
                 })
                 .catch((err) => {
@@ -183,7 +186,7 @@ export const cached = {
             get("me/ladders")
                 .then((res) => {
                     const ladders = res.results;
-                    ladders.sort((a, b) => a.name.localeCompare(b.name));
+                    ladders.sort((a: any, b: any) => a.name.localeCompare(b.name));
                     data.set(cached.ladders, ladders);
                 })
                 .catch((err) => {
@@ -218,7 +221,7 @@ function refresh_all() {
 
     for (const k in cached.refresh) {
         if (k !== "config") {
-            cached.refresh[k]();
+            (cached.refresh as any)[k]();
         }
     }
 }

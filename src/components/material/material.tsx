@@ -18,19 +18,19 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 
-export const Card = (props) => (
+export const Card = (props: JSX.IntrinsicElements["div"]) => (
     <div {...props} className={"Card " + (props.className || "")}>
         {props.children}
     </div>
 );
 
-export const CardLink = (props) => (
+export const CardLink = (props: any) => (
     <Link {...props} className={"Card " + (props.className || "")}>
         {props.children}
     </Link>
 );
 
-export const FabCheck = (props) => (
+export const FabCheck = (props: JSX.IntrinsicElements["div"]) => (
     <div {...props} className="fab primary raiser">
         <svg
             viewBox="0 0 24 24"
@@ -46,7 +46,7 @@ export const FabCheck = (props) => (
     </div>
 );
 
-export const FabX = (props) => (
+export const FabX = (props: JSX.IntrinsicElements["div"]) => (
     <div {...props} className="fab reject raiser">
         <svg
             viewBox="0 0 24 24"
@@ -62,7 +62,7 @@ export const FabX = (props) => (
     </div>
 );
 
-export const FabAdd = (props) => (
+export const FabAdd = (props: JSX.IntrinsicElements["div"]) => (
     <div {...props} className="fab info raiser">
         <svg
             viewBox="0 0 24 24"

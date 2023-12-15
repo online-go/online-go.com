@@ -62,7 +62,7 @@ export function LinkPreferences(props: SettingGroupPageProps): JSX.Element {
         <div id="LinkPreferences">
             <div className="LinkPreferencesDescription">
                 {_(
-                    "Here you can list other places you play and have a rating or a rank. You can choose to publicly display this information or not. Providing this even if you don't want it publically known helps us tune our ranking algorithm and provide guidance on converting ranks between servers and organizations for the community, so the information is important and greatly appreciated.",
+                    "Here you can list other places you play and have a rating or a rank. You can choose to publicly display this information or not. Providing this even if you don't want it publicly known helps us tune our ranking algorithm and provide guidance on converting ranks between servers and organizations for the community, so the information is important and greatly appreciated.",
                 )}
             </div>
 

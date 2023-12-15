@@ -244,6 +244,6 @@ export function ModTools(props: ModToolsProps): JSX.Element | null {
     );
 }
 
-function openNotes(notes) {
+function openNotes(notes: string) {
     openModal(<NotesModal notes={notes} fastDismiss />);
 }

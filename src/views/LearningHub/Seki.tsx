@@ -16,7 +16,7 @@
  */
 
 import { PuzzleConfig } from "goban";
-import { LearningPage } from "./LearningPage";
+import { LearningPage, LearningPageProperties } from "./LearningPage";
 import { _, pgettext } from "translate";
 import { LearningHubSection } from "./LearningHubSection";
 
@@ -45,7 +45,7 @@ export class Seki extends LearningHubSection {
 }
 
 class Page1 extends LearningPage {
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
     }
 
@@ -67,7 +67,7 @@ class Page1 extends LearningPage {
 }
 
 class Page2 extends LearningPage {
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
     }
 
@@ -89,7 +89,7 @@ class Page2 extends LearningPage {
 }
 
 class Page3 extends LearningPage {
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
     }
 
@@ -109,7 +109,7 @@ class Page3 extends LearningPage {
 }
 
 class Page4 extends LearningPage {
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
     }
 
@@ -132,7 +132,7 @@ class Page4 extends LearningPage {
 }
 
 class Page5 extends LearningPage {
-    constructor(props) {
+    constructor(props: LearningPageProperties) {
         super(props);
     }
 

@@ -98,7 +98,10 @@ export function GameHistoryTable(props: GameHistoryProps) {
         throw new Error(`Unknown size filter: ${size_filter}`);
     }
 
-    function handleRowClick(row, ev) {
+    function handleRowClick(
+        row: GroomedGame,
+        ev: React.MouseEvent | React.TouchEvent | React.PointerEvent,
+    ) {
         if (selectModeActive) {
             toggleQueued(row);
         } else {
@@ -106,7 +109,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
         }
     }
 
-    function toggleQueued(rowData) {
+    function toggleQueued(rowData: GroomedGame) {
         const alreadyInQueue = annulQueue.some((item) => item.id === rowData.id);
 
         if (!alreadyInQueue) {
@@ -116,7 +119,7 @@ export function GameHistoryTable(props: GameHistoryProps) {
         }
     }
 
-    function handleLinkClick(event) {
+    function handleLinkClick(event: React.MouseEvent) {
         if (selectModeActive) {
             event.preventDefault();
         }

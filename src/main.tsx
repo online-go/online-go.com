@@ -35,9 +35,9 @@ import { post } from "requests";
 import { ai_host } from "sockets";
 sfx.sync();
 
-declare let ogs_current_language;
-declare let ogs_language_version;
-declare let ogs_version;
+declare let ogs_current_language: string;
+declare let ogs_language_version: string;
+declare let ogs_version: string;
 
 let sentry_env = "production";
 
@@ -82,7 +82,9 @@ try {
     window.onunhandledrejection = (e) => {
         console.error(e);
         console.error(e.reason);
-        console.error(e.stack);
+        if (e.reason.stack) {
+            console.error(e.reason.stack);
+        }
     };
 } catch (e) {
     console.log(e);
@@ -94,7 +96,7 @@ import * as preferences from "preferences";
 
 try {
     // default_theme is set in index.html based on looking at the OS theme
-    data.setDefault("theme", window["default_theme"]);
+    data.setDefault("theme", (window as any)["default_theme"]);
 } catch (e) {
     data.setDefault("theme", "light");
 }
@@ -118,13 +120,16 @@ data.setDefault("config", { user: default_user });
 
 data.setDefault("config.user", default_user);
 
-data.setDefault("config.cdn", window["cdn_service"]);
+data.setDefault("config.cdn", (window as any)["cdn_service"]);
 data.setDefault(
     "config.cdn_host",
-    window["cdn_service"].replace("https://", "").replace("http://", "").replace("//", ""),
+    (window as any)["cdn_service"].replace("https://", "").replace("http://", "").replace("//", ""),
 );
-data.setDefault("config.cdn_release", window["cdn_service"] + "/" + window["ogs_release"]);
-data.setDefault("config.release", window["ogs_release"]);
+data.setDefault(
+    "config.cdn_release",
+    (window as any)["cdn_service"] + "/" + (window as any)["ogs_release"],
+);
+data.setDefault("config.release", (window as any)["ogs_release"]);
 
 configure_goban();
 
@@ -174,10 +179,10 @@ if (cached_config) {
      * that are depending on other parts of the config will fire without
      * having up to date information (in particular user / auth stuff) */
     for (const key in cached_config) {
-        data.setWithoutEmit(`config.${key as keyof ConfigSchema}`, cached_config[key]);
+        data.setWithoutEmit(`config.${key as keyof ConfigSchema}`, (cached_config as any)[key]);
     }
     for (const key in cached_config) {
-        data.set(`config.${key as keyof ConfigSchema}`, cached_config[key]);
+        data.set(`config.${key as keyof ConfigSchema}`, (cached_config as any)[key]);
     }
 }
 
@@ -194,7 +199,7 @@ try {
 
 player_cache.update(user);
 data.set("user", user);
-window["user"] = user;
+(window as any)["user"] = user;
 
 /***
  * Test if local storage is disabled for some reason (Either because the user
@@ -251,7 +256,7 @@ sockets.socket.on("user/update", (user: any) => {
         data.set("config.user", user);
         player_cache.update(user);
         data.set("user", user);
-        window["user"] = user;
+        (window as any)["user"] = user;
     } else {
         console.log("Ignoring user update for user", user);
     }
@@ -308,10 +313,10 @@ react_root.render(
     </React.StrictMode>,
 );
 
-window["data"] = data;
-window["preferences"] = preferences;
-window["player_cache"] = player_cache;
-window["GoMath"] = GoMath;
+(window as any)["data"] = data;
+(window as any)["preferences"] = preferences;
+(window as any)["player_cache"] = player_cache;
+(window as any)["GoMath"] = GoMath;
 
 import * as requests from "requests";
-window["requests"] = requests;
+(window as any)["requests"] = requests;

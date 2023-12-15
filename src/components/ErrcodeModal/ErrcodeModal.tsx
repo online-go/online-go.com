@@ -28,7 +28,7 @@ interface ErrcodeModalProperties {
 }
 
 export class ErrcodeModal extends Modal<Events, ErrcodeModalProperties, any> {
-    constructor(props) {
+    constructor(props: ErrcodeModalProperties) {
         super(props);
     }
 

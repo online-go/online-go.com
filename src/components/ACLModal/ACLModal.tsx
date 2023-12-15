@@ -23,6 +23,7 @@ import { Player } from "Player";
 import { PlayerAutocomplete, PlayerAutocompleteRef } from "PlayerAutocomplete";
 import { GroupAutocomplete } from "GroupAutocomplete";
 import { errorAlerter } from "misc";
+import { PlayerCacheEntry } from "src/lib/player_cache";
 
 interface Events {}
 
@@ -37,10 +38,10 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
     url: string;
     del_url: string;
 
-    constructor(props) {
+    constructor(props: ACLModalProperties) {
         super(props);
         this.state = {
-            acl: [],
+            acl: [] as any[],
             selected_player: null,
             selected_group: null,
         };
@@ -69,7 +70,7 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
             .catch(errorAlerter);
     };
 
-    removeACLEntry(obj) {
+    removeACLEntry(obj: any) {
         console.log("SHould be removing", obj);
         const new_acl: any[] = [];
         for (const entry of this.state.acl) {
@@ -87,10 +88,10 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
             });
     }
 
-    playerComplete = (user) => {
+    playerComplete = (user: PlayerCacheEntry | null) => {
         this.setState({ selected_player: user });
     };
-    groupComplete = (group) => {
+    groupComplete = (group: { name: string } | null) => {
         this.setState({ selected_group: group });
     };
 
@@ -138,7 +139,7 @@ export class ACLModal extends Modal<Events, ACLModalProperties, any> {
                     </div>
 
                     <div className="acl-entries">
-                        {this.state.acl.map((obj, idx) => (
+                        {this.state.acl.map((obj: any, idx: number) => (
                             <div key={idx} className="acl-entry">
                                 <i
                                     className="fa fa-remove clickable"

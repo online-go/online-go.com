@@ -65,7 +65,7 @@ export interface PlayerProperties {
     online?: boolean;
     nolink?: boolean;
     fakelink?: boolean;
-    nodetails?: boolean /* don't open the detials box, instead just open player page */;
+    nodetails?: boolean /* don't open the details box, instead just open player page */;
     nochallenge?: boolean /* don't show the challenge button in the details box */;
     noextracontrols?: boolean /* Disable extra controls */;
     shownotesindicator?: boolean /* add the notes icon if the player has notes */;
