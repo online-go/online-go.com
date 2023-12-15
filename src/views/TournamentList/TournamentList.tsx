@@ -219,8 +219,8 @@ function MyTournaments(): JSX.Element {
                             tournament.ended
                                 ? when(tournament.started) + " - " + when(tournament.ended)
                                 : tournament.started
-                                  ? when(tournament.started)
-                                  : when(tournament.time_start),
+                                ? when(tournament.started)
+                                : when(tournament.time_start),
                     },
                     {
                         header: _("Time Control"),

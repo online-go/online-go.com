@@ -1591,8 +1591,8 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
                                 (next_move_delta_p <= -0.1
                                     ? "negative"
                                     : next_move_delta_p >= 0.1
-                                      ? "positive"
-                                      : "")
+                                    ? "positive"
+                                    : "")
                             }
                         >
                             {next_move_delta_p <= -0.1 ? (

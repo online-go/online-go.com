@@ -65,7 +65,7 @@ const UnusedSounds = [
     "game_accepted",
     "challenge_accepted",
     "your_partner_has_disconnected",
-    "your_partner_has_reconnected",
+    "your_parnter_has_reconnected",
     "your_opponent_has_passed",
     "confirm_the_score",
 
@@ -462,10 +462,10 @@ export class SFXManager {
                       UnusedSounds as any,
                   ) as unknown as Array<ValidSound>)
                 : group_name === "countdown"
-                  ? (CountdownSounds as unknown as Array<ValidSound>)
-                  : group_name === "stones"
-                    ? (StoneSounds as unknown as Array<ValidSound>)
-                    : (EffectsSounds as unknown as Array<ValidSound>);
+                ? (CountdownSounds as unknown as Array<ValidSound>)
+                : group_name === "stones"
+                ? (StoneSounds as unknown as Array<ValidSound>)
+                : (EffectsSounds as unknown as Array<ValidSound>);
         for (const sprite_name in sprite_pack.definitions) {
             if (sound_list.indexOf(sprite_name as ValidSound) >= 0) {
                 this.sprites[sprite_name] = new SFXSprite(howl, group_name, sprite_name);

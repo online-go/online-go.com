@@ -1025,29 +1025,29 @@ export function Tournament(): JSX.Element {
                     ? m.result[0] === "B"
                         ? "win"
                         : m.result[0] === "W"
-                          ? "loss"
-                          : "?"
+                        ? "loss"
+                        : "?"
                     : "?";
                 result_map[m.white + "x" + m.black] = m.result
                     ? m.result[0] === "W"
                         ? "win"
                         : m.result[0] === "B"
-                          ? "loss"
-                          : "?"
+                        ? "loss"
+                        : "?"
                     : "?";
                 color_map[m.black + "x" + m.white] = m.result
                     ? m.result[0] === "B"
                         ? "win"
                         : m.result[0] === "W"
-                          ? "loss"
-                          : "no-result"
+                        ? "loss"
+                        : "no-result"
                     : "?";
                 color_map[m.white + "x" + m.black] = m.result
                     ? m.result[0] === "W"
                         ? "win"
                         : m.result[0] === "B"
-                          ? "loss"
-                          : "no-result"
+                        ? "loss"
+                        : "no-result"
                     : "?";
             }
 
@@ -1941,11 +1941,11 @@ export function Tournament(): JSX.Element {
                                                 {!tournament.settings.maximum_players
                                                     ? "+"
                                                     : parseInt(
-                                                            tournament.settings
-                                                                .maximum_players as string,
-                                                        ) > tournament.players_start
-                                                      ? "-" + tournament.settings.maximum_players
-                                                      : ""}
+                                                          tournament.settings
+                                                              .maximum_players as string,
+                                                      ) > tournament.players_start
+                                                    ? "-" + tournament.settings.maximum_players
+                                                    : ""}
                                             </span>
                                         ) : (
                                             <span>
@@ -1954,11 +1954,11 @@ export function Tournament(): JSX.Element {
                                                 {!tournament.settings.maximum_players
                                                     ? "+"
                                                     : parseInt(
-                                                            tournament.settings
-                                                                .maximum_players as string,
-                                                        ) > tournament.players_start
-                                                      ? "-" + tournament.settings.maximum_players
-                                                      : ""}
+                                                          tournament.settings
+                                                              .maximum_players as string,
+                                                      ) > tournament.players_start
+                                                    ? "-" + tournament.settings.maximum_players
+                                                    : ""}
                                                 )
                                             </span>
                                         )}

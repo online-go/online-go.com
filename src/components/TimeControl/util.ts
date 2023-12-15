@@ -506,16 +506,16 @@ export function shortDurationString(seconds) {
 type Reify<T extends TimeControlSystem> = T extends "fischer"
     ? TimeControlTypes.Fischer
     : T extends "simple"
-      ? TimeControlTypes.Simple
-      : T extends "canadian"
-        ? TimeControlTypes.Canadian
-        : T extends "byoyomi"
-          ? TimeControlTypes.ByoYomi
-          : T extends "absolute"
-            ? TimeControlTypes.Absolute
-            : T extends "none"
-              ? TimeControlTypes.None
-              : never;
+    ? TimeControlTypes.Simple
+    : T extends "canadian"
+    ? TimeControlTypes.Canadian
+    : T extends "byoyomi"
+    ? TimeControlTypes.ByoYomi
+    : T extends "absolute"
+    ? TimeControlTypes.Absolute
+    : T extends "none"
+    ? TimeControlTypes.None
+    : never;
 export type PropertyOf<T extends TimeControlSystem> = keyof Reify<T> & string;
 
 type TimeOption<T extends TimeControlSystem> = {

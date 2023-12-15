@@ -562,8 +562,8 @@ function ChatInput({
                 !user.email_validated
                     ? _("Chat will be enabled once your email address has been validated")
                     : show_say_hi_placeholder
-                      ? placeholder
-                      : ""
+                    ? placeholder
+                    : ""
             }
             disabled={user.anonymous || !user.email_validated}
             onKeyPress={onKeyPress}

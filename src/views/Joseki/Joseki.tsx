@@ -854,8 +854,8 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                 const move_type = this.computer_turn
                     ? "computer"
                     : chosen_move === undefined || bad_moves.includes(chosen_move.category)
-                      ? "bad"
-                      : "good";
+                    ? "bad"
+                    : "good";
 
                 const comment =
                     placement +
