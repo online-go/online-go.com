@@ -900,29 +900,22 @@ export function Game(): JSX.Element | null {
     };
 
     const frag_timings = () => {
-        if (
-            goban.current?.engine &&
-            goban.current.engine.config &&
-            goban.current.engine.config.moves &&
-            goban.current.engine.config.start_time &&
-            goban.current.engine.config.end_time &&
-            goban.current.engine.config.free_handicap_placement &&
-            goban.current.engine.config.handicap &&
-            goban.current.engine.config.black_player_id &&
-            goban.current.engine.config.white_player_id
-        ) {
+        if (goban.current?.engine?.config) {
             return (
                 <GameTimings
-                    moves={goban.current.engine.config.moves}
-                    start_time={goban.current.engine.config.start_time}
-                    end_time={goban.current.engine.config.end_time}
-                    free_handicap_placement={goban.current.engine.config.free_handicap_placement}
-                    handicap={goban.current.engine.config.handicap}
-                    black_id={goban.current.engine.config.black_player_id}
-                    white_id={goban.current.engine.config.white_player_id}
+                    moves={goban.current.engine.config.moves ?? []}
+                    start_time={goban.current.engine.config.start_time ?? 0}
+                    end_time={goban.current.engine.config.end_time ?? 0}
+                    free_handicap_placement={
+                        goban.current.engine.config.free_handicap_placement ?? false
+                    }
+                    handicap={goban.current.engine.config.handicap ?? 0}
+                    black_id={goban.current.engine.config.black_player_id ?? 0}
+                    white_id={goban.current.engine.config.white_player_id ?? 0}
                 />
             );
         }
+
         return null;
     };
 
