@@ -1974,8 +1974,8 @@ export function challenge_text_description(challenge: ChallengeDetails) {
 
         if (
             data.get("user") &&
-            ((c as any)?.challenger.id !== data.get("user").id ||
-                (c as any)?.user.id !== data.get("user").id)
+            ((c as any)?.challenger?.id !== data.get("user").id ||
+                (c as any)?.user?.id !== data.get("user").id)
         ) {
             if (c.challenger_color === "black") {
                 yourcolor = _("white");
