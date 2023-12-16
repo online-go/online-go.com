@@ -2365,9 +2365,7 @@ export function Tournament(): JSX.Element {
                                     {interpolate(
                                         _("Tournament starts {{relative_time_from_now}}"),
                                         {
-                                            relative_time_from_now: fromNow(
-                                                Number(tournament.time_start),
-                                            ),
+                                            relative_time_from_now: fromNow(tournament.time_start),
                                         },
                                     )}
                                 </h3>
@@ -3467,7 +3465,7 @@ export const TOURNAMENT_PAIRING_METHODS = {
     opengotha: pgettext("Tournament director will pair opponents with OpenGotha", "OpenGotha"),
 };
 
-function fromNow(t: number) {
+function fromNow(t: number | string) {
     const d = new Date(t).getTime();
     if (d - Date.now() < 0) {
         return pgettext("Tournament begins very shortly", "very shortly");
