@@ -29,21 +29,6 @@ export interface TextReplacement {
 
 const global_replacements: TextReplacement[] = [
     // spam mitigation
-    // replace tsumegodojo.worldpress.com urls with tsumegododo.worldpress.com as spam mitigation
-    {
-        split: /(https?:\/\/\S*tsumegodojo\S*)/i,
-        pattern: /(https?:\/\/[^\s\/]*)(tsumegodojo)(\S*)/i,
-        replacement: (m, idx) => (
-            <a key={idx} target="_blank" href={m[1] + "tsumegododo" + m[3]}>
-                {m[1] + "tsumegododo" + m[3]}
-            </a>
-        ),
-    },
-    {
-        split: /(\S*tsumegodojo\S*)/i,
-        pattern: /(\S*)(tsumegodojo)(\S*)/i,
-        replacement: (m, idx) => <span key={idx}>{m[1] + "tsumegododo" + m[3]}</span>,
-    },
     // Match github
     {
         split: /\b(https?:\/\/github\.com\/online-go\/online-go\.com\/pull\/[0-9]+(?:\/|\b))/i,
