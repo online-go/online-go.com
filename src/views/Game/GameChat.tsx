@@ -24,7 +24,7 @@ import { Link } from "react-router-dom";
 import { _, pgettext, interpolate, current_language } from "translate";
 import { Player } from "Player";
 import { profanity_filter } from "profanity_filter";
-import { Goban, GobanCore, protocol, GobanChatLogLine } from "goban";
+import { Goban, GobanCore, protocol } from "goban";
 import { ChatUserList, ChatUserCount } from "ChatUserList";
 import { TabCompleteInput } from "TabCompleteInput";
 import { chat_markup } from "components/Chat";
@@ -99,7 +99,7 @@ export function GameChat(props: GameChatProperties): JSX.Element {
             }, 1);
         };
 
-        const onChat = (line: GobanChatLogLine) => {
+        const onChat = (line: protocol.GameChatLine) => {
             if (!(line.chat_id in chat_log_hash.current)) {
                 chat_log_hash.current[line.chat_id] = true;
                 chat_lines.current.push(line);
@@ -128,10 +128,8 @@ export function GameChat(props: GameChatProperties): JSX.Element {
             debouncedChatUpdate();
         };
 
-        for (const log of goban.chat_log) {
-            for (const line of log.lines) {
-                onChat(line);
-            }
+        for (const line of goban.chat_log) {
+            onChat(line);
         }
 
         goban.on("chat", onChat);
