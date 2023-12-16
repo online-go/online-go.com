@@ -965,7 +965,7 @@ export class AIReview extends React.Component<AIReviewProperties, AIReviewState>
             // so subtract 1 if black goes second == b_player
             const check2 =
                 is_uploaded &&
-                (goban.config as any)["all_moves"].split("!").length - b_player !==
+                (goban.config as any)["all_moves"]?.split("!").length - b_player !==
                     this.ai_review?.scores?.length;
 
             // if there's less than 4 moves the worst moves doesn't seem to return 3 moves, otherwise look for these three moves.
