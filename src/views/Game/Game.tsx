@@ -450,9 +450,10 @@ export function Game(): JSX.Element | null {
 
         if (goban && goban.current.mode === "analyze") {
             if (goban.current.analyze_tool === "label") {
-                if (event.charCode) {
-                    const ch = String.fromCharCode(event.charCode).toUpperCase();
+                if (event.key && event.key.length === 1) {
+                    const ch = event.key.toUpperCase();
                     goban.current.setLabelCharacter(ch);
+                    event.preventDefault();
                 }
             }
         }
