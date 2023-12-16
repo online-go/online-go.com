@@ -25,7 +25,7 @@ import { AdHocPackedMove, GobanMovesArray } from "goban";
 interface GameTimingProperties {
     moves: GobanMovesArray;
     start_time: number;
-    end_time: number;
+    end_time?: number;
     free_handicap_placement: boolean;
     handicap: number;
     black_id: number;
@@ -238,11 +238,12 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
             <div>{/* empty cell at end of row */}</div>
             <div className="span-3">Final action:</div>
             <div>
-                {show_seconds_resolution(
-                    moment
-                        .duration(props.end_time - props.start_time, "seconds")
-                        .subtract(game_elapsed),
-                )}
+                {props.end_time &&
+                    show_seconds_resolution(
+                        moment
+                            .duration(props.end_time - props.start_time, "seconds")
+                            .subtract(game_elapsed),
+                    )}
             </div>
             <div>{/* empty cell at end of row */}</div>
         </div>
