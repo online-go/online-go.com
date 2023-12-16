@@ -51,6 +51,7 @@ interface GameListWhere {
     hide_end?: boolean;
     rengo_only?: boolean;
     friend_games_only?: boolean;
+    /* cspell: disable-next-line */
     malk_only?: boolean;
     players?: Array<number>;
 }
@@ -375,7 +376,7 @@ export class ObserveGamesComponent extends React.PureComponent<
                                     </div>
                                 )}
                                 <div className="right">
-                                    <label className="labelshow">{_("Show") + ":"}</label>
+                                    <label className="label_show">{_("Show") + ":"}</label>
                                     <input
                                         className="show"
                                         onChange={this.setPageSize}
@@ -461,6 +462,7 @@ export class ObserveGamesComponent extends React.PureComponent<
                         pgettext("Filter games list", "Friend games only"),
                     )}
                     {this.filterOption(
+                        /* cspell: disable-next-line */
                         "malk_only",
                         pgettext("Filter games list", "Malkovich games only"),
                     )}

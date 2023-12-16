@@ -103,7 +103,7 @@ export function OnlineLeagueSpectatorLanding(): JSX.Element {
                     </div>
                     <div className="waiting-chat">
                         <EmbeddedChatCard
-                            inputPlaceholdertText={pgettext(
+                            inputPlaceholderText={pgettext(
                                 "place holder text in a chat channel input",
                                 "Chat while you wait...",
                             )}

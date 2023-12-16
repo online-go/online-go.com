@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* cspell: words cfilterid tfilterid sfilterid josekisources tagcounts playrecord */
+
 /* A page for looking up and playing against josekis stored in the OGS OJE*/
 
 import * as React from "react";
@@ -86,7 +88,7 @@ const position_url = (node_id: string, variation_filter?: JosekiFilter, mode?: s
 
 const joseki_sources_url = server_url + "josekisources";
 
-const tagscount_url = (node_id: string): string => server_url + "position/tagcounts?id=" + node_id;
+const tag_count_url = (node_id: string): string => server_url + "position/tagcounts?id=" + node_id;
 
 // Joseki specific markdown
 
@@ -131,7 +133,7 @@ const ColorMap = {
     QUESTION: "#00ccff",
 };
 
-// Play mode move clasification
+// Play mode move classification
 type MoveType = "bad" | "good" | "computer" | "complete";
 
 type JosekiProps = RouteComponentProps<{ pos: string }>;
@@ -199,14 +201,14 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
 
     joseki_tags!: JosekiTag[]; // the list of valid tags, collected from the server
     the_joseki_tag!: JosekiTag; //  the tag that represents "Joseki Done"
-    last_server_position = ""; // the most recent position that the server returned to us, used in backstepping
+    last_server_position = ""; // the most recent position that the server returned to us, used in back stepping
     last_placement = "";
     next_moves: Array<any> = []; // these are the moves that the server has told us are available as joseki moves from the current board position
     current_marks!: Array<{ label: string; position: string }>; // the marks on the board - from the server, or from editing
     load_sequence_to_board = false; // True if we need to load the stones from the whole sequence received from the server onto the board
     show_comments_requested = false; //  If there is a "show_comments" parameter in the URL
     previous_position: { [key: string]: any } = {}; // Saving the information of the node we have moved from, so we can get back to it
-    backstepping = false; // Set to true when the person clicks the back arrow, to indicate we need to fetch the position information
+    back_stepping = false; // Set to true when the person clicks the back arrow, to indicate we need to fetch the position information
     played_mistake = false;
     computer_turn = false; // when we are placing the computer's stone in Play mode
     filter_change = false; // set to true when a position is being reloaded due to filter change
@@ -425,7 +427,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
     };
 
     resetJosekiSequence = (pos: string) => {
-        // ask the server for the moves from postion pos
+        // ask the server for the moves from position pos
         this.fetchNextFilteredMovesFor(pos, this.state.variation_filter);
     };
 
@@ -720,7 +722,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             this.setState({ move_string });
             this.processPlacement(the_move as JGOFMove, move_string); // this is responsible for making sure stone placement is turned back on
         } else {
-            this.backstepping = false; // Needed for if they backstep twice at the empty board
+            this.back_stepping = false; // Needed for if they back step twice at the empty board
         }
     };
 
@@ -740,16 +742,16 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                 : "pass"
             : "root";
 
-        if (this.backstepping) {
+        if (this.back_stepping) {
             const play = ".root." + move_string.replace(/,/g, ".");
-            //console.log("finishing backstep to ", play);
+            //console.log("finishing back step to ", play);
             //console.log("with category", this.state.current_move_category);
-            this.backstepping = false;
+            this.back_stepping = false;
             if (this.state.mode === PageMode.Play) {
-                // in theory can only happen when backstepping out of a mistake
+                // in theory can only happen when back stepping out of a mistake
                 // in this case, all the data for the position we arrived at should be valid (not reset exploratory)
                 this.played_mistake = false;
-                this.backstepping = false;
+                this.back_stepping = false;
                 this.goban.enableStonePlacement();
             } else if (this.state.current_move_category !== "new") {
                 const stepping_back_to = this.previous_position.node_id;
@@ -779,7 +781,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
                     this.fetchNextMovesFor(this.state.most_recent_known_node);
                 }
             } else {
-                this.backstepping = false; // nothing else to do
+                this.back_stepping = false; // nothing else to do
                 this.goban.enableStonePlacement();
             }
 
@@ -887,7 +889,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             if (
                 this.state.mode === PageMode.Play &&
                 this.played_mistake &&
-                !this.backstepping &&
+                !this.back_stepping &&
                 !this.computer_turn
             ) {
                 // They clicked a non-Joseki move
@@ -989,8 +991,8 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
 
     backOneMove = () => {
         // They clicked the back button ... tell goban and let it call us back with the result
-        if (!this.backstepping && !this.state.throb) {
-            this.backstepping = true; // make sure we know the reason why the goban called us back
+        if (!this.back_stepping && !this.state.throb) {
+            this.back_stepping = true; // make sure we know the reason why the goban called us back
             this.goban.showPrevious();
         }
     };
@@ -1038,7 +1040,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             const location = this.goban.engine.decodeMoves(placement)[0];
             try {
                 // Sometimes we get ahead of ourselves and try stomping stones
-                // down on top of eachother. This happens sometimes if we hit
+                // down on top of each other. This happens sometimes if we hit
                 // the forward button really fast. It'd probably be better to
                 // handle that better, so I'll open an issue for that but for
                 // now I'm catching the error so it doesn't clutter up the sentry
@@ -1091,7 +1093,7 @@ class _Joseki extends React.Component<JosekiProps, JosekiState> {
             counts_throb: true,
         });
 
-        get(tagscount_url(node_id))
+        get(tag_count_url(node_id))
             .then((body) => {
                 let tags: any[] = [];
                 if (body.tags) {

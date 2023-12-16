@@ -420,25 +420,20 @@ export class Play extends React.Component<{}, PlayState> {
 
     liveOwnChallengePending = (): Challenge | undefined => {
         // a user should have only one of these at any time
-        const locp = this.state.live_list.find((c) => c.user_challenge);
-        return locp;
+        return this.state.live_list.find((c) => c.user_challenge);
     };
 
     ownRengoChallengesPending = (): Challenge[] => {
         // multiple correspondence are possible, plus one live
-        const orcp = this.state.rengo_list.filter((c) => c.user_challenge);
-        //console.log("own rcp", orcp);
-        return orcp;
+        return this.state.rengo_list.filter((c) => c.user_challenge);
     };
 
     joinedRengoChallengesPending = (): Challenge[] => {
         // multiple correspondence are possible, plus one live
         const user_id = data.get("config.user").id;
-        const jrcp = this.state.rengo_list.filter(
+        return this.state.rengo_list.filter(
             (c) => c["rengo_participants"].includes(user_id) && !c.user_challenge,
         );
-        // console.log("joined rcp", jrcp);
-        return jrcp;
     };
 
     freezeChallenges = () => {
@@ -572,7 +567,7 @@ export class Play extends React.Component<{}, PlayState> {
                                         {m.handicap.condition === "no-preference"
                                             ? pgettext("Automatch: no preference", "No preference")
                                             : m.handicap.value === "enabled"
-                                              ? pgettext("Handicap dnabled", "Enabled")
+                                              ? pgettext("Handicap enabled", "Enabled")
                                               : pgettext("Handicap disabled", "Disabled")}
                                     </span>
 
@@ -867,7 +862,7 @@ export class Play extends React.Component<{}, PlayState> {
             null) && (
             <span className="suspect-challenge">
                 <i className="cheat-alert fa fa-exclamation-triangle fa-xs" />
-                <p className="cheat-alert-tooltiptext">
+                <p className="cheat-alert-tooltip-text">
                     {(C.komi !== null
                         ? pgettext("Warning for users accepting game", "Custom komi") +
                           ": " +
@@ -1116,7 +1111,7 @@ export class Play extends React.Component<{}, PlayState> {
     rengoChallengeManagementList = (props: { challenge_list: Challenge[]; user: any }) => (
         <>
             {!this.anyChallengesToShow(props.challenge_list) ? (
-                <tr className="ineligible" key="corre-ineligible">
+                <tr className="ineligible" key="correspondence-ineligible">
                     <td style={{ textAlign: "center" }}>
                         {
                             this.state.filter.showIneligible

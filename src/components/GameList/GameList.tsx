@@ -284,7 +284,7 @@ export class GameList extends React.PureComponent<GameListProps, GameListState> 
                 games.sort((a, b) => {
                     try {
                         // sort by number of intersection
-                        // for non-square boards with the same number of intersections, the wider board is concidered larger
+                        // for non-square boards with the same number of intersections, the wider board is considered larger
                         const a_size = a.width * a.height * 100 + a.width;
                         const b_size = b.width * b.height * 100 + b.width;
 
@@ -425,7 +425,7 @@ function LineSummaryTable({
                     black={game.black}
                     white={game.white}
                     player={player}
-                    gobanref={(goban) => (game.goban = goban)}
+                    gobanRef={(goban) => (game.goban = goban)}
                     width={game.width}
                     height={game.height}
                     rengo_teams={game.json?.rengo_teams}

@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* cspell: words tourny tournies */
+
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { _, pgettext, interpolate } from "translate";
@@ -92,7 +94,7 @@ export function TournamentListMainView(): JSX.Element {
     return (
         <div className="page-width">
             <div className="TournamentList container">
-                <div className="tabhead">
+                <div className="tab-head">
                     <h2>
                         <i className="fa fa-trophy"></i> {_("Tournaments")}
                     </h2>
@@ -294,13 +296,13 @@ function Schedule(): JSX.Element {
                                 <div>{typeDescription(entry)}</div>
                             </td>
                             <td>
-                                <div>{datefmt(entry.next_run)}</div>
+                                <div>{dateFmt(entry.next_run)}</div>
                                 <div>
                                     <i>{fromNow(entry.next_run)}</i>
                                 </div>
                             </td>
                             <td>
-                                <div>{datefmt(entry.next_run, entry.lead_time_seconds)}</div>
+                                <div>{dateFmt(entry.next_run, entry.lead_time_seconds)}</div>
                                 <div>
                                     <i>{fromNow(entry.next_run, entry.lead_time_seconds)}</i>
                                 </div>
@@ -573,7 +575,7 @@ function rrule_description(entry: any): string {
 function typeDescription(e: any) {
     return (TOURNAMENT_TYPE_NAMES as any)[e.tournament_type];
 }
-function datefmt(d: number, offset?: number) {
+function dateFmt(d: number, offset?: number) {
     if (!offset) {
         offset = 0;
     }

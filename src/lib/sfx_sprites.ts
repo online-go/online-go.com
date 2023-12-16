@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+/* cspell:disable */
+
 import { ValidSound } from "./sfx";
 
 export interface SpritePack {

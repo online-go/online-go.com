@@ -209,7 +209,7 @@ type Prefixed<T, P extends string> = {
  * The keys and corresponding types for the functions in data.ts
  *
  * ADDING NEW KEYS: There are a couple ways to add new keys.  One way is to add
- * keys directly to this interface.  The other is to add or modify a subschema
+ * keys directly to this interface.  The other is to add or modify a sub-schema
  * and prefix it using the Prefixed type.  If typing is not desired (for instance,
  * during prototyping), one can use a key that starts with an underscore.
  */

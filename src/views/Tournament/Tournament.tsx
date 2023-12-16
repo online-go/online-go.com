@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* cspell: words gameid tourn */
+
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { LoadingPage } from "Loading";
@@ -216,6 +218,7 @@ export function Tournament(): JSX.Element {
             tournament_ref.current.time_start = moment(new Date()).add(1, "minute").format();
             tournament_ref.current.rules = "japanese";
             tournament_ref.current.description =
+                /* cspell: disable-next-line */
                 "Aliquam dolor blanditiis voluptatem et harum officiis atque. Eum eos aut consequatur quis sunt. Minima nisi aut ratione. Consequatur deleniti vitae minima exercitationem illum debitis debitis sunt. Culpa officia voluptates quos sit. Reprehenderit fuga ad quo ipsam assumenda nihil quos qui.";
             tournament_ref.current.tournament_type = "elimination";
             tournament_ref.current.first_pairing_method = "slide";
@@ -538,16 +541,16 @@ export function Tournament(): JSX.Element {
             }
 
             const container = elimination_tree_container.current;
-            const lastbucket: any = {};
-            let lastcurbucket: any = {};
-            let curbucket: any = {};
+            const last_bucket: any = {};
+            let last_cur_bucket: any = {};
+            let cur_bucket: any = {};
             const em_4 = ($("#em10").width() * 0.4) / 10.0;
             const em_6 = ($("#em10").width() * 0.6) / 10.0;
             const em2_5 = ($("#em10").width() * 2.5) / 10.0;
-            const namewidth = ($("#em10").width() * 12.0) / 10.0;
-            const minspace = ($("#em10").width() * 0.5) / 10.0;
-            const h = em2_5 + minspace;
-            const w = namewidth + ($("#em10").width() * 4.0) / 10.0;
+            const name_width = ($("#em10").width() * 12.0) / 10.0;
+            const min_space = ($("#em10").width() * 0.5) / 10.0;
+            const h = em2_5 + min_space;
+            const w = name_width + ($("#em10").width() * 4.0) / 10.0;
 
             const bindHovers = (div: JQuery, id: number | object) => {
                 if (typeof id !== "number") {
@@ -577,7 +580,7 @@ export function Tournament(): JSX.Element {
 
                 for (let match_num = 0; match_num < round.matches.length; ++match_num) {
                     const match = round.matches[match_num];
-                    const matchdiv = $("<div>").addClass("matchdiv");
+                    const match_div = $("<div>").addClass("match-div");
                     const black = $("<div>")
                         .addClass("black")
                         .addClass("elimination-player-" + match.black);
@@ -614,13 +617,13 @@ export function Tournament(): JSX.Element {
                         white.addClass("win");
                     }
 
-                    matchdiv.append(black);
-                    matchdiv.append(white);
+                    match_div.append(black);
+                    match_div.append(white);
 
                     const obj = {
-                        div: matchdiv,
-                        black_src: round_num > 0 ? lastbucket[match.black] : null,
-                        white_src: round_num > 0 ? lastbucket[match.white] : null,
+                        div: match_div,
+                        black_src: round_num > 0 ? last_bucket[match.black] : null,
+                        white_src: round_num > 0 ? last_bucket[match.white] : null,
                         black_won: result === "B",
                         match: match,
                         second_bracket: false,
@@ -636,28 +639,28 @@ export function Tournament(): JSX.Element {
                     }
                     all_objects.push(obj);
 
-                    curbucket[match.black] = obj;
-                    curbucket[match.white] = obj;
+                    cur_bucket[match.black] = obj;
+                    cur_bucket[match.white] = obj;
 
-                    container.appendChild(matchdiv[0]);
+                    container.appendChild(match_div[0]);
                 }
                 for (let bye_num = 0; bye_num < round.byes.length; ++bye_num) {
                     const bye = round.byes[bye_num];
-                    const byediv = $("<div>").addClass("byediv");
-                    const byee = $("<div>")
+                    const bye_div = $("<div>").addClass("bye-div");
+                    const bye_entry = $("<div>")
                         .addClass("bye")
                         .addClass("elimination-player-" + bye);
-                    const root = ReactDOM.createRoot(byee[0]);
+                    const root = ReactDOM.createRoot(bye_entry[0]);
                     root.render(
                         <React.StrictMode>
                             <Player user={players[bye]} icon rank />
                         </React.StrictMode>,
                     );
-                    bindHovers(byee, bye);
-                    byediv.append(byee);
+                    bindHovers(bye_entry, bye);
+                    bye_div.append(bye_entry);
                     const obj = {
-                        div: byediv,
-                        bye_src: round_num > 0 ? lastbucket[bye] : null,
+                        div: bye_div,
+                        bye_src: round_num > 0 ? last_bucket[bye] : null,
                         black_won: true,
                         second_bracket: false,
                         round: round_num,
@@ -666,22 +669,22 @@ export function Tournament(): JSX.Element {
                     if (obj.bye_src) {
                         obj.bye_src.parent = obj;
                     }
-                    curbucket[bye] = obj;
+                    cur_bucket[bye] = obj;
                     all_objects.push(obj);
 
-                    container.appendChild(byediv[0]);
+                    container.appendChild(bye_div[0]);
                 }
 
-                for (const k in curbucket) {
-                    lastbucket[k] = curbucket[k];
+                for (const k in cur_bucket) {
+                    last_bucket[k] = cur_bucket[k];
                 }
-                lastcurbucket = curbucket;
-                curbucket = {};
+                last_cur_bucket = cur_bucket;
+                cur_bucket = {};
             }
 
-            const lastcurbucket_arr: any[] = [];
-            for (const k in lastcurbucket) {
-                lastcurbucket_arr.push(lastcurbucket[k]);
+            const last_cur_bucket_arr: any[] = [];
+            for (const k in last_cur_bucket) {
+                last_cur_bucket_arr.push(last_cur_bucket[k]);
             }
 
             const playerWon = (obj: { match: TournamentMatch }, player_id: number) => {
@@ -719,7 +722,7 @@ export function Tournament(): JSX.Element {
                     }
                 }
 
-                if (obj.round === rounds.length - 1 && lastcurbucket_arr.length <= 2) {
+                if (obj.round === rounds.length - 1 && last_cur_bucket_arr.length <= 2) {
                     obj.second_bracket = false;
                 }
 
@@ -905,7 +908,7 @@ export function Tournament(): JSX.Element {
                     }
 
                     obj.left = w * obj.round;
-                    obj.right = obj.left + namewidth;
+                    obj.right = obj.left + name_width;
                     obj.bottom = obj.top + em2_5;
 
                     obj.div.css({
@@ -922,9 +925,7 @@ export function Tournament(): JSX.Element {
                 }
             };
 
-            //for (let k in lastcurbucket) {
-            layout(lastcurbucket);
-            //}
+            layout(last_cur_bucket);
 
             let not_laid_out = 0;
             for (let i = 0; i < all_objects.length; ++i) {
@@ -1028,9 +1029,8 @@ export function Tournament(): JSX.Element {
                 }
             };
 
-            for (const k in lastcurbucket) {
-                //drawLines(lastcurbucket[k], rounds.length-1);
-                drawLines(lastcurbucket[k]);
+            for (const k in last_cur_bucket) {
+                drawLines(last_cur_bucket[k]);
             }
         }
     };
@@ -2359,7 +2359,7 @@ export function Tournament(): JSX.Element {
             {!loading && !tournament.started && (
                 <div className={"bottom-details not-started"}>
                     {(!tournament.start_waiting || null) && (
-                        <div className="signup-area" style={{ textAlign: "center" }}>
+                        <div className="sign-up-area" style={{ textAlign: "center" }}>
                             {(tournament.time_start || null) && (
                                 <h3>
                                     {interpolate(
@@ -2405,7 +2405,7 @@ export function Tournament(): JSX.Element {
                         </div>
                     )}
                     {(tournament.start_waiting || null) && (
-                        <div className="signup-area" style={{ textAlign: "center" }}>
+                        <div className="sign-up-area" style={{ textAlign: "center" }}>
                             <p style={{ marginTop: "6em" }}>
                                 <span>{_("Tournament is starting")}</span>
                             </p>
@@ -2529,7 +2529,7 @@ export function Tournament(): JSX.Element {
                                         </div>
                                     )}
 
-                                {/* Round robin / simul style groups */}
+                                {/* Round robin / simultaneous style groups */}
                                 {((selected_round && selected_round.groupify) || null) && (
                                     <div>
                                         {selected_round.groups.map(
@@ -3266,7 +3266,7 @@ function OpenGothaTournamentRound({
                                 value={notes}
                                 onChange={set_notes}
                                 placeholder={pgettext(
-                                    "Notes about a tournament round that are publically visible",
+                                    "Notes about a tournament round that are publicly visible",
                                     "Round notes (everyone can see this)",
                                 )}
                             />

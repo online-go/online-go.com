@@ -58,7 +58,7 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
     const game_elapsed: ReturnType<typeof moment.duration> = moment.duration(0); // running total
     const black_elapsed: ReturnType<typeof moment.duration> = moment.duration(0);
     const white_elapsed: ReturnType<typeof moment.duration> = moment.duration(0);
-    const game_elapseds: Array<ReturnType<typeof moment.duration>> = []; // the time elapsed up to each move
+    const move_elapsed: Array<ReturnType<typeof moment.duration>> = []; // the time elapsed up to each move
 
     let non_handicap_moves = [...props.moves];
     let handicap_moves: any[] = [];
@@ -82,7 +82,7 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
             handicap_move_offset = 1;
             const elapsed = (first_move as AdHocPackedMove)?.[2];
             game_elapsed.add(elapsed);
-            game_elapseds.push(game_elapsed.clone());
+            move_elapsed.push(game_elapsed.clone());
             white_elapsed.add(elapsed);
             const move_string = show_seconds_nicely(elapsed as any);
             first_row = (
@@ -90,7 +90,7 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
                     <div>0</div>
                     <div>-</div>
                     <div>{move_string}</div>
-                    <div>{`${game_elapseds[0].format()}`}</div>
+                    <div>{`${move_elapsed[0].format()}`}</div>
                 </React.Fragment>
             );
         }
@@ -111,7 +111,7 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
                 handicap_moves.map((move, move_num) => {
                     const elapsed = move[2];
                     game_elapsed.add(elapsed);
-                    game_elapseds.push(game_elapsed.clone());
+                    move_elapsed.push(game_elapsed.clone());
                     black_elapsed.add(elapsed);
                     const move_string = show_seconds_nicely(elapsed);
                     return (
@@ -119,7 +119,7 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
                             <div>{move_num + 1}</div>
                             <div>{move_string}</div>
                             <div>-</div>
-                            <div>{`${game_elapseds[move_num].format()}`}</div>
+                            <div>{`${move_elapsed[move_num].format()}`}</div>
                         </React.Fragment>
                     );
                 })
@@ -131,7 +131,7 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
                         const blacks_turn: boolean = move_num % 2 === 0;
                         const elapsed = (move as AdHocPackedMove)[2];
                         game_elapsed.add(elapsed);
-                        game_elapseds.push(game_elapsed.clone());
+                        move_elapsed.push(game_elapsed.clone());
                         if (blacks_turn) {
                             black_elapsed.add(elapsed);
                         } else {
@@ -143,14 +143,14 @@ export function GameTimings(props: GameTimingProperties): JSX.Element {
                     .reduce((acc, value, index, orig) => {
                         if (index % 2 === 0) {
                             // the elapsed array can contain handicap moves, we have to skip past those
-                            const elapseds_index =
+                            const move_elapsed_index =
                                 props.free_handicap_placement && props.handicap > 1
                                     ? props.handicap - 1 + index
                                     : index;
                             // if white didn't play (therefore has no elapsed) then the elapsed up to here is black's elapsed
-                            const total_elapsed = game_elapseds[elapseds_index + 1]
-                                ? game_elapseds[elapseds_index + 1]
-                                : game_elapseds[elapseds_index];
+                            const total_elapsed = move_elapsed[move_elapsed_index + 1]
+                                ? move_elapsed[move_elapsed_index + 1]
+                                : move_elapsed[move_elapsed_index];
                             const blur1 = (non_handicap_moves as any)?.[index]?.[4]?.blur;
                             const blur2 = (non_handicap_moves as any)?.[index + 1]?.[4]?.blur;
                             const black_sgf_download =

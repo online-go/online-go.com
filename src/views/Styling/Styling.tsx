@@ -34,8 +34,6 @@ import { alert } from "swal_config";
 import { PlayerCacheEntry } from "src/lib/player_cache";
 
 export class Styling extends React.PureComponent<{}, any> {
-    ccinput = null;
-
     constructor(props: {}) {
         super(props);
         this.state = {

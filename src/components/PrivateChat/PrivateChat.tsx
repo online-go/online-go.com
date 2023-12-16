@@ -63,8 +63,8 @@ class PrivateChat {
     player: PlayerCacheEntry;
 
     /* for generating uids */
-    chatbase = Math.floor(Math.random() * 100000).toString(36);
-    chatnum = 0;
+    chat_base = Math.floor(Math.random() * 100000).toString(36);
+    chat_num = 0;
 
     display_state = "closed";
 
@@ -679,7 +679,7 @@ class PrivateChat {
                 {
                     player_id: this.user_id,
                     username: this.player.username || "<error>",
-                    uid: this.chatbase + "." + (++this.chatnum).toString(36),
+                    uid: this.chat_base + "." + (++this.chat_num).toString(36),
                     message: line,
                     as_system,
                 },

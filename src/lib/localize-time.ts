@@ -18,7 +18,6 @@
 import * as moment from "moment-timezone";
 
 export function localize_time_strings(str: string): string {
-    //console.log(momenttz);
     try {
         // handle [time="full timestamp"]
         str = str.replace(
@@ -26,9 +25,6 @@ export function localize_time_strings(str: string): string {
             (x: string, time: string, fmt?: string) => {
                 const t = moment(time).tz(moment.tz.guess());
                 return t.format(fmt || "LLLL Z z");
-                //return t.format(fmt || "LLLL Z z");
-                //return t.format(fmt || "LLLL Z z");
-                //return momenttz.tz(`${date} ${time}`, tz).local().format(fmt || "LLLL");
             },
         );
 
@@ -38,7 +34,6 @@ export function localize_time_strings(str: string): string {
             (x: string, date: string, time: string, tz: string, y?: string, fmt?: string) => {
                 const t = moment.tz(`${date} ${time}`, tz).tz(moment.tz.guess());
                 return t.format(fmt || "LLLL Z z");
-                //return momenttz.tz(`${date} ${time}`, tz).local().format(fmt || "LLLL");
             },
         );
 

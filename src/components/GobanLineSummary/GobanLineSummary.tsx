@@ -41,7 +41,7 @@ interface GobanLineSummaryProps {
     black: UserType;
     white: UserType;
     player?: { id: number };
-    gobanref?: (goban: Goban) => void;
+    gobanRef?: (goban: Goban) => void;
     width?: number;
     height?: number;
     rengo_teams?: {
@@ -114,8 +114,8 @@ export class GobanLineSummary extends React.Component<
                 this.sync_state();
             });
 
-            if (this.props.gobanref) {
-                this.props.gobanref(this.goban);
+            if (this.props.gobanRef) {
+                this.props.gobanRef(this.goban);
             }
         });
     }

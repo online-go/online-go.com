@@ -1,10 +1,14 @@
 /*
  * Copyright (C)  Online-Go.com
  *
+ * cspell:disable
+ *
  * This file is heavily derived from "Nickname Tab Complete"
  * by Doug Neiner and any changes made to this file are
  * licensed under the same terms as the original.
  */
+
+/*  */
 
 /*!
  * Nickname Tab Complete
@@ -318,6 +322,6 @@ $.fn.nicknameTabComplete.has_newline_bug = (() => {
     return textarea[0].value === "Newline\r\nTest";
 })();
 
-export function init_tabcomplete() {
+export function init_tab_complete() {
     /* hack to ensure this gets imported since it binds to jquery */
 }

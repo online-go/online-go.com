@@ -41,12 +41,12 @@ data.watch("config.user", (user) => {
 
 interface ChatLineInterface {
     line: ChatMessage;
-    lastline?: ChatMessage;
+    lastLine?: ChatMessage;
 }
 
 export function ChatLine(props: ChatLineInterface): JSX.Element {
     const line = props.line;
-    const lastline = props.lastline;
+    const last_line = props.lastLine;
     const user = line;
 
     if (line.system) {
@@ -54,16 +54,16 @@ export function ChatLine(props: ChatLineInterface): JSX.Element {
     }
 
     const message = line.message;
-    const ts_ll = lastline ? new Date(lastline.message.t * 1000) : null;
+    const ts_ll = last_line ? new Date(last_line.message.t * 1000) : null;
     const ts = message.t ? new Date(message.t * 1000) : null;
     let third_person = false;
     let body = message.m;
     let show_date: JSX.Element | null = null;
 
-    if (!lastline || (ts && ts_ll)) {
+    if (!last_line || (ts && ts_ll)) {
         if (ts) {
             if (
-                !lastline ||
+                !last_line ||
                 moment(ts).format("YYYY-MM-DD") !== moment(ts_ll).format("YYYY-MM-DD")
             ) {
                 show_date = <div className="date">{moment(ts).format("LL")}</div>;
@@ -89,7 +89,9 @@ export function ChatLine(props: ChatLineInterface): JSX.Element {
             body = generateChatSearchLine("https://www.google.com/#q=", "/google ", body);
         }
 
+        /* cspell:disable-next-line */
         if (body.substr(0, 8) === "/lmgtfy ") {
+            /* cspell:disable-next-line */
             body = generateChatSearchLine("https://www.lmgtfy.com/?q=", "/lmgtfy ", body);
         }
     }

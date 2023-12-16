@@ -42,6 +42,7 @@ export class GameLinkModal extends Modal<Events, GameLinkModalProperties, {}> {
             sgf_url = `${window.location.protocol}//${window.location.hostname}/api/v1/games/${goban.game_id}/sgf/${goban.game_id}.sgf`;
             png_url = `${window.location.protocol}//${window.location.hostname}/api/v1/games/${goban.game_id}/png/${goban.game_id}.png`;
             const embed_url = `${window.location.protocol}//${window.location.hostname}/game/${goban.game_id}/embed`;
+            /* cspell: disable-next-line */
             embed_html = `<iframe src="${embed_url}" width="345px" height="345px" allowtransparency="true" scrolling="no" frameborder="0"></iframe>`;
         } else {
             sgf_url = `${window.location.protocol}//${window.location.hostname}/api/v1/reviews/${goban.review_id}/sgf/${goban.review_id}.sgf`;
@@ -104,6 +105,7 @@ function AnimatedPngCreator({ goban }: { goban: Goban }): JSX.Element {
 
     const url =
         `${window.location.protocol}//${window.location.hostname}` +
+        /* cspell: disable-next-line */
         `/api/v1/games/${goban.game_id}/apng/${goban.game_id}-${from_move}-${to_move}-${frame_delay}.png?from=${from_move}&to=${to_move}&frame_delay=${frame_delay}`;
 
     return (

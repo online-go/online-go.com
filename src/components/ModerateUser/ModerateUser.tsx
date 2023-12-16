@@ -261,7 +261,7 @@ export class ModerateUser extends Modal<Events, ModerateUserProperties, any> {
                             <div className="col-sm-8">
                                 <h3>Account Info</h3>
                                 <dl className="horizontal right">
-                                    {/* "search" is a hack to get lastpass to not autofill */}
+                                    {/* "search" is a hack to get LastPass to not autofill */}
                                     <dt>
                                         <label htmlFor="user-search-name">Username</label>
                                     </dt>

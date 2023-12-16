@@ -171,7 +171,7 @@ export function emitNotification(title: string, body: string, cb?: () => void) {
                 }
             }, delay);
         } else {
-            //console.log("Ignoring notificaiton sent within the first few seconds of page load", title, body);
+            //console.log("Ignoring notification sent within the first few seconds of page load", title, body);
         }
     } catch (e) {
         console.log("Error emitting notification: ", e);
@@ -543,7 +543,7 @@ export class NotificationManager {
         return true;
     }
 
-    // Clears the notifiction you get when you have some amount of
+    // Clears the notification you get when you have some amount of
     // time left to make your move. This is fine to call with a game
     // that has no notification for it yet.
     clearTimecopNotification(game_id: number) {

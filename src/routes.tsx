@@ -15,6 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* cspell: words groupadmin cotsen */
+
 import * as React from "react";
 import { unstable_HistoryRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 
@@ -87,7 +89,7 @@ function Main(props: { children: any }): JSX.Element {
 
     return (
         <Experiment name="v6">
-            <Variant value="enabled" bodyclass="v6">
+            <Variant value="enabled" bodyClass="v6">
                 <div id="variant-container">
                     <ErrorBoundary>
                         <NavBar />
