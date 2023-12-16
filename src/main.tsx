@@ -221,7 +221,7 @@ try {
 /** Connect to the chat service */
 for (const socket of [sockets.socket, sockets.ai_socket]) {
     socket.authenticate({
-        jwt: data.get("config.user_jwt", "err"),
+        jwt: data.get("config.user_jwt", ""),
         device_id: get_device_id(),
         user_agent: navigator.userAgent,
         language: ogs_current_language,
@@ -231,17 +231,15 @@ for (const socket of [sockets.socket, sockets.ai_socket]) {
 }
 
 data.watch("config.user_jwt", (jwt?: string) => {
-    if (jwt) {
-        if (sockets.ai_socket.connected) {
-            sockets.ai_socket.authenticate({
-                jwt: data.get("config.user_jwt", "err"),
-                device_id: get_device_id(),
-                user_agent: navigator.userAgent,
-                language: ogs_current_language,
-                language_version: ogs_language_version,
-                client_version: ogs_version,
-            });
-        }
+    if (sockets.ai_socket.connected) {
+        sockets.ai_socket.authenticate({
+            jwt: jwt ?? "",
+            device_id: get_device_id(),
+            user_agent: navigator.userAgent,
+            language: ogs_current_language,
+            language_version: ogs_language_version,
+            client_version: ogs_version,
+        });
     }
 });
 
