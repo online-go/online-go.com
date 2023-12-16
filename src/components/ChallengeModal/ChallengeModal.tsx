@@ -1970,7 +1970,7 @@ export function challenge_text_description(challenge: ChallengeDetails) {
             : ", " + interpolate(_("{{komi}} komi"), { komi: g.komi })) +
         (g.disable_analysis ? ", " + _("analysis disabled") : "");
     if (c.challenger_color !== "automatic") {
-        let yourcolor = "";
+        let your_color = "";
 
         if (
             data.get("user") &&
@@ -1978,17 +1978,17 @@ export function challenge_text_description(challenge: ChallengeDetails) {
                 (c as any)?.user?.id !== data.get("user").id)
         ) {
             if (c.challenger_color === "black") {
-                yourcolor = _("white");
+                your_color = _("white");
             } else if (c.challenger_color === "white") {
-                yourcolor = _("black");
+                your_color = _("black");
             } else {
-                yourcolor = _(c.challenger_color);
+                your_color = _(c.challenger_color);
             }
         } else {
-            yourcolor = _(c.challenger_color);
+            your_color = _(c.challenger_color);
         }
 
-        details_html += ", " + interpolate(pgettext("color", "you play as %s"), [yourcolor]);
+        details_html += ", " + interpolate(pgettext("color", "you play as %s"), [your_color]);
     }
 
     return details_html;
